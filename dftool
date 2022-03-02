@@ -70,8 +70,8 @@ Usage: dftool calc NETWORK OUTPUT_DIR
     print("FIXME: do rest of 'calc' work now!!")
 
     #
-    print(f"OUTPUT_DIR={OUTPUT_DIR}")
-    print(f"dftool calc: Done")
+    print(f"Created output directory: {OUTPUT_DIR}")
+    print(f"dftool calc: Done.")
 
 # ========================================================================
 def do_dispense():
