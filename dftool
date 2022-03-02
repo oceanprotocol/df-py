@@ -13,176 +13,102 @@ BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
 # ========================================================================
-HELP_MAIN = """Vesting wallet - main help
+HELP_MAIN = """Data Farming Tool - main help
 
-Usage: vw fund|release|..
-  vw fund - send funds with vesting wallet
-  vw batch - batch send funds via vesting wallets
-  vw release - request vesting wallet to release funds
-  vw token - create token, for testing
-  vw mine - force chain to pass time (ganache only)
+Usage: dftool calc|dispense|..
 
-  vw accountinfo - info about an account
-  vw walletinfo - info about a vesting wallet
-  vw help - this message
+  dftool calc - calculate rewards
+  dftool dispense - airdrop funds based on calculations
 
-Transactions are signed with envvar 'VW_KEY`.
+  dftool token - create token, for testing
+  dftool mine - force chain to pass time (ganache only)
 
-Test flow, local net,  1 wallet : token -> fund   -> mine -> release
-                       N wallets: token -> batch  -> mine -> release, rel, ..
-Test flow, remote net, 1 wallet : token -> fund   -> (wait) -> release
-                       N wallets: token -> batch  -> (wait) -> release, rel, ..
-Prod flow, remote net, 1 wallet : fund -> (wait)  -> release
-                       N wallets: batch -> (wait) -> release, rel, .."""
+  dftool accountinfo - info about an account
+  dftool walletinfo - info about a vesting wallet
+  dftool help - this message
+
+Transactions are signed with envvar 'DFTOOL_KEY`.
+"""
 def show_help():
     print(HELP_MAIN)
     sys.exit(0)
     
 # ========================================================================
-def do_fund():
-    HELP_FUND = f"""Vesting wallet - send funds with vesting wallet
+def do_calc):
+    HELP_CALC = f"""Data Farming Tool - calculate rewards
 
-Usage: vw fund NETWORK TOKEN_ADDR LOCK_TIME AMT TO_ADDR
+Usage: dftool calc NETWORK OUTPUT_DIR
 
   NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- address of token being sent. Eg 0x967da4048cd07ab37855c090aaf366e4ce1b9f48 for OCEAN on eth mainnet
-  LOCK_TIME -- Eg '10' (10 seconds) or '63113852' (2 years)
-  AMT -- e.g. '1000' (base-18, not wei)
-  TO_ADDR -- address of beneficiary"""
+  OUTPUT_DIR -- output directory for csv file.
+"""
 
-    if len(sys.argv) not in [7]:
-        print(HELP_FUND)
+    if len(sys.argv) not in [4]:
+        print(HELP_CALC)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "fund"
+    assert sys.argv[1] == "calc"
     NETWORK = sys.argv[2]
-    TOKEN_ADDR = sys.argv[3]
-    LOCK_TIME = int(sys.argv[4])
-    AMT = float(sys.argv[5])
-    TO_ADDR = sys.argv[6]
-    print(
-        f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", LOCK_TIME={LOCK_TIME}, AMT={AMT}, TO_ADDR={TO_ADDR}"
-    )
+    OUTPUT_DIR = sys.argv[3]
+    print(f"Arguments: NETWORK={NETWORK}, OUTPUT_DIR={OUTPUT_DIR}")
     
-    brownie.network.connect(NETWORK) 
-    _create_and_fund_vesting_wallet(NETWORK, TOKEN_ADDR, LOCK_TIME, AMT, TO_ADDR)
-    
-# ========================================================================
-def do_batch():
-    HELP_FUND = f"""Vesting wallet - batch send funds via vesting wallets
-
-Usage: vw batch NETWORK TOKEN_ADDR LOCK_TIME CSV
-
-  NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- address of token being sent. Eg 0x967da4048cd07ab37855c090aaf366e4ce1b9f48 for OCEAN on eth mainnet
-  LOCK_TIME -- Eg '10' (10 seconds) or '63113852' (2 years)
-  CSV -- csv file, where each row has: amt, address of beneficiary"""
-
-    if len(sys.argv) not in [6]:
-        print(HELP_FUND)
+    # handle corner cases
+    if os.path.exists(OUTPUT_DIR):
+        print(f"\nOutput path '{OUTPUT_DIR}' already exists.  Exiting.\n")
         sys.exit(0)
 
-    # extract inputs
-    assert sys.argv[1] == "batch"
-    NETWORK = sys.argv[2]
-    TOKEN_ADDR = sys.argv[3]
-    LOCK_TIME = int(sys.argv[4])
-    CSV = sys.argv[5]
-    
-    print(
-        f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", LOCK_TIME={LOCK_TIME}, CSV={CSV}"
-    )
-
-    brownie.network.connect(NETWORK)
-    TO_ADDRs, VWs = [], []
-    with open(CSV, 'r') as csv_file:
-        reader = csv.reader(csv_file)
-        for row in reader:
-            (AMT, TO_ADDR) = row
-            print(f"call vw fund for TO_ADDR: {TO_ADDR[:5]}..")
-            
-            VW = _create_and_fund_vesting_wallet(
-                NETWORK, TOKEN_ADDR, LOCK_TIME, float(AMT), TO_ADDR.strip())
-            TO_ADDRs.append(TO_ADDR)
-            VWs.append(VW)
-            
-    print(f"Done batch. TO_ADDR --> WALLET_ADDR:")
-    for (TO_ADDR, VW) in zip(TO_ADDRs, VWs):
-        print(f"{TO_ADDR} --> {VW.address}")
-
-def _create_and_fund_vesting_wallet(NETWORK, TOKEN_ADDR, LOCK_TIME, AMT, TO_ADDR):
-    """helper to do_fund() and do_batch()"""
+    # make directory
+    os.mkdir(OUTPUT_DIR)
     
     #brownie setup
+    brownie.network.connect(NETWORK)
     accounts = brownie.network.accounts
     chain = brownie.network.chain
 
     #
-    from_account = _getPrivateAccount()
+    print("FIXME: do rest of 'calc' work now!!")
 
-    #grab token
-    token = BROWNIE_PROJECT.Simpletoken.at(TOKEN_ADDR)
-    print(f"Token symbol: {token.symbol()}")
-
-    #deploy vesting wallet
-    print("Deploy vesting wallet...")
-    start_timestamp = chain[-1].timestamp + 5  # magic number
-    vesting_wallet = BROWNIE_PROJECT.VestingWallet.deploy(
-        TO_ADDR, start_timestamp, LOCK_TIME, {"from": from_account}
-    )
-
-    #send tokens to vesting wallet
-    print("Fund vesting wallet...")
-    token.transfer(vesting_wallet, toBase18(AMT), {"from": from_account})
-
-    print(f"Done. Vesting wallet address: {vesting_wallet.address}")
-
-    return vesting_wallet
-
+    #
+    print(f"OUTPUT_DIR={OUTPUT_DIR}")
+    print(f"dftool calc: Done")
 
 # ========================================================================
-def do_release():
-    HELP_RELEASE = f"""Vesting wallet - request vesting wallet to release funds
+def do_dispense():
+    HELP_DISPENSE = f"""Data Farming Tool - airdrop funds based on calculations
 
-Usage: vw release NETWORK TOKEN_ADDR WALLET_ADDR
+Usage: dftool dispense NETWORK INPUT_DIR
 
   NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- e.g. '0x123..'
-  WALLET_ADDR -- vesting wallet, e.g. '0x987...'"""
-    if len(sys.argv) not in [5]:
-        print(HELP_RELEASE)
+  INPUT_DIR -- string -- input directory for csv file.
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP_DISPENSE)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "release"
+    assert sys.argv[1] == "dispense"
     NETWORK = sys.argv[2]
-    TOKEN_ADDR = sys.argv[3]
-    WALLET_ADDR = sys.argv[4]
+    INPUT_DIR = sys.argv[3]
 
-    print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}"
-          f", WALLET_ADDR={WALLET_ADDR}"
-    )
+    print(f"Arguments: NETWORK={NETWORK}, INPUT_DIR={INPUT_DIR}")
 
     #brownie setup
     brownie.network.connect(NETWORK) 
     accounts = brownie.network.accounts
     from_account = _getPrivateAccount()
 
-    #release the token
-    vesting_wallet = BROWNIE_PROJECT.VestingWallet.at(WALLET_ADDR)
-    vesting_wallet.release(TOKEN_ADDR, {"from": from_account})
+    #
+    print("FIXME: do rest of 'dispense' work now!!")
     
-    print("Funds have been released.")
+    print("dftool dispense: Done.")
 
 
 # ========================================================================
 def do_token():
-    HELP_TOKEN = f"""Vesting wallet create test token
+    HELP_TOKEN = f"""Data Farming tool - create test token
 
-Usage: vw token NETWORK
+Usage: dftool token NETWORK
 
 NETWORK -- one of {NETWORKS}"""
     if len(sys.argv) not in [3]:
@@ -207,12 +133,13 @@ NETWORK -- one of {NETWORKS}"""
         "TST", "Test Token", 18, 1e21, {"from": from_account}
     )
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
+    print("dftool token: done")
     
 # ========================================================================
 def do_mine():
     HELP_MINE = f"""Vesting wallet - force chain to pass time (ganache only)
 
-Usage: vw mine BLOCKS TIMEDELTA
+Usage: dftool mine BLOCKS TIMEDELTA
 
   BLOCKS -- e.g. 3
   TIMEDELTA -- e.g. 100"""
@@ -237,14 +164,14 @@ Usage: vw mine BLOCKS TIMEDELTA
     #make time pass
     chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
     
-    print("Done.")
+    print("dftool mine: Done.")
 
 
 # ========================================================================
 def show_accountinfo():
     HELP_ACCOUNTINFO = f"""Vesting wallet - info about an account
 
-Usage: vw accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
+Usage: dftool accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
 
   NETWORK -- one of {NETWORKS}
   TOKEN_ADDR -- e.g. '0x123..'
@@ -273,49 +200,10 @@ Usage: vw accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
     print(f"  balance of token : {fromBase18(balance)} {token.symbol()}")
 
 # ========================================================================
-def show_walletinfo():
-    HELP_WALLETINFO = f"""Vesting wallet - show info about a vesting wallet
-
-Usage: vw walletinfo NETWORK TOKEN_ADDR WALLET_ADDR
-
-  NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- e.g. '0x123..'
-  WALLET_ADDR -- vesting wallet address"""
-    if len(sys.argv) not in [5]:
-        print(HELP_WALLETINFO)
-        sys.exit(0)
-
-    # extract inputs
-    assert sys.argv[1] == "walletinfo"
-    NETWORK = sys.argv[2]
-    TOKEN_ADDR = sys.argv[3]
-    WALLET_ADDR = sys.argv[4]
-
-    print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}"
-          f", WALLET_ADDR={WALLET_ADDR}"
-    )
-
-    #brownie setup
-    brownie.network.connect(NETWORK)
-    chain = brownie.network.chain
-
-    #release the token
-    token = BROWNIE_PROJECT.Simpletoken.at(TOKEN_ADDR)
-    wallet = BROWNIE_PROJECT.VestingWallet.at(WALLET_ADDR)
-    amt_vested = wallet.vestedAmount(token.address, chain[-1].timestamp)
-    amt_released = wallet.released(token.address)
-    print(f"For vesting wallet {WALLET_ADDR[:5]}.., token '{token.symbol()}':")
-    print(f"  beneficiary: {wallet.beneficiary()[:5]}..")
-    print(f"  start: {wallet.start()} (compare to current chain time of {chain[-1].timestamp})")
-    print(f"  duration: {wallet.duration()} s")
-    print(f"  amt vested: {fromBase18(amt_vested)} {token.symbol()}")
-    print(f"  amt released: {fromBase18(amt_released)} {token.symbol()}")
-
-# ========================================================================
 def _getPrivateAccount():
-    private_key = os.getenv('VW_KEY')
+    private_key = os.getenv('DFTOOL_KEY')
     account = brownie.network.accounts.add(private_key=private_key)
-    print(f"For private key VW_KEY, address is: {account.address}")
+    print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
 
 # ========================================================================
@@ -325,22 +213,18 @@ def do_main():
         show_help()
 
     #write actions
+    elif sys.argv[1] == "calc":
+        do_calc()
+    elif sys.argv[1] == "dispense":
+        do_dispense()
     elif sys.argv[1] == "token":
         do_token()
-    elif sys.argv[1] == "fund":
-        do_fund()
-    elif sys.argv[1] == "batch":
-        do_batch()
     elif sys.argv[1] == "mine":
         do_mine()
-    elif sys.argv[1] == "release":
-        do_release()
 
     #read actions
     elif sys.argv[1] == "accountinfo":
         show_accountinfo()
-    elif sys.argv[1] == "walletinfo":
-        show_walletinfo()
     else:
         show_help()
 
