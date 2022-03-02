@@ -2,7 +2,7 @@
 
 Command-line tools for Data Farming.
 
-Functionality is via `dftool` CLI: (building is WIP!)
+Functionality is via `dftool` CLI:
 ```text
 dftool calc - calculate rewards
 dftool dispense - airdrop funds based on calculations
