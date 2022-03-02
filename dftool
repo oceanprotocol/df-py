@@ -34,7 +34,7 @@ def show_help():
     sys.exit(0)
     
 # ========================================================================
-def do_calc):
+def do_calc():
     HELP_CALC = f"""Data Farming Tool - calculate rewards
 
 Usage: dftool calc NETWORK OUTPUT_DIR
