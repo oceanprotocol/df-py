@@ -97,7 +97,7 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 
 # Usage: DF CLI
 
-`df` is the command-line interface.
+`dftool` is the command-line interface.
 
 It needs a chain to persist between commands: either a remote chain, or a _separate_ local process (vs one auto-started for each command). To run a local chain, open a _new_ terminal and:
 ```console
