@@ -5,10 +5,10 @@ pragma solidity 0.8.10;
 
 import "../../interfaces/IERC20.sol";
 import "../../interfaces/IERC20Template.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
 
 import "../../utils/SafeERC20.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 
 contract Dispenser is ReentrancyGuard{
     using SafeMath for uint256;

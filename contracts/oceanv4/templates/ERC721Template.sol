@@ -5,8 +5,8 @@ pragma solidity 0.8.10;
 
 import "../utils/ERC721/ERC721.sol";
 import "../utils/ERC725/ERC725Ocean.sol";
-import "@openzeppelin/contracts/utils/Create2.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/Create2.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "../interfaces/IV3ERC20.sol";
 import "../interfaces/IFactory.sol";
 import "../interfaces/IERC20Template.sol";

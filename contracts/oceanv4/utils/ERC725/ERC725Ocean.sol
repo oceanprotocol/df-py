@@ -4,10 +4,10 @@ pragma solidity 0.8.10;
 import "../../interfaces/IERC725X.sol";
 import "../../interfaces/IERC725Y.sol";
 // modules
-import "@openzeppelin/contracts/utils/introspection/ERC165Storage.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/introspection/ERC165Storage.sol";
 
 // libraries
-import "@openzeppelin/contracts/utils/Create2.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/Create2.sol";
 import "solidity-bytes-utils/contracts/BytesLib.sol";
 
 
