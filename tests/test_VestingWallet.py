@@ -2,10 +2,7 @@ import brownie
 from pytest import approx
 
 from util.base18 import toBase18
-
-BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
-
-brownie.network.connect("development") #development = ganache
+from util.constants import BROWNIE_PROJECT
 
 accounts = brownie.network.accounts
 chain = brownie.network.chain

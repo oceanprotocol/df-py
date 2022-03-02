@@ -1,8 +1,8 @@
 import brownie
 
-BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
-accounts = brownie.network.accounts
+from util.constants import BROWNIE_PROJECT
 
+accounts = brownie.network.accounts
 
 def test_transfer():
     token = _deployToken()
