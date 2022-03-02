@@ -20,7 +20,7 @@ Other features:
 Backlog:
 - CLI currently supports fixed lock time ("cliff of x"); could pull up contract functionality for linear vesting
 - CLI currently supports ERC20; could pull up contract functionality for ETH
-- Usage requires `git clone` etc. Could add to pip, or make it a fully independent tool 
+- Usage requires `git clone` etc. Could add to pypi, or make it a fully independent tool 
 
 # Prerequisites
 
