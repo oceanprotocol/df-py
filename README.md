@@ -1,6 +1,6 @@
 # DF-PY
 
-CLI for Data Farming.
+Command-line tools for Data Farming.
 
 Functionality is via `dftool`: (building is WIP!)
 ```text
