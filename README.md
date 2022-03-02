@@ -2,22 +2,21 @@
 
 Command-line tools for Data Farming.
 
-Functionality is via `dftool`: (building is WIP!)
+Functionality is via `dftool` CLI: (building is WIP!)
 ```text
 dftool calc - calculate rewards
 dftool dispense - airdrop funds based on calculations
 ```
 
-# Prerequisites
+# Installation
 
+Ensure pre-requisites:
 - Linux/MacOS
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - ganache. To install: `npm install ganache-cli --global`
 
-# Installation
-
-Open a new terminal and:
+Then, open a new terminal and:
 
 ```console
 #clone repo
@@ -37,31 +36,33 @@ pip install -r requirements.txt
 brownie pm install OpenZeppelin/openzeppelin-contracts@4.0.0
 ```
 
-# Compiling
+# Main Usage: CLI
 
-From terminal:
+First, compile. From terminal:
 ```console
 brownie compile
 ```
 
-It should output:
-```text
-Brownie v1.18.1 - Python development framework for Ethereum
-
-Compiling contracts
-...
-
-Project has been compiled. Build artifacts saved at ..
- ```
-
-# Usage: try simple script
-
-In terminal:
+The `dftool` CLI needs needs a chain to persist between commands: either a remote chain, or a _separate_ local process (vs one auto-started for each command). To run a local chain, open a _new_ terminal and:
 ```console
-./scripts/run_vesting_wallet.py
+ganache-cli 
 ```
 
-# Usage: Running Tests
+Then, in the main terminal:
+```console
+#add pwd to bash path
+export PATH=$PATH:.
+
+#see dftool help. It will list `calc` and other tools.
+dftool
+```
+
+**Then, simply follow the usage directions:)**
+
+
+# Other Usage
+
+## Running Tests
 
 In terminal:
 ```console
@@ -75,7 +76,7 @@ brownie test tests/test_Simpletoken.py
 brownie test
 ```
 
-# Usage: Brownie Console
+## Brownie Console
 
 From terminal:
 ```console
@@ -94,46 +95,11 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 'TEST'
 ```
 
+## Simple script
 
-# Usage: DF CLI
-
-`dftool` is the command-line interface.
-
-It needs a chain to persist between commands: either a remote chain, or a _separate_ local process (vs one auto-started for each command). To run a local chain, open a _new_ terminal and:
+In terminal:
 ```console
-ganache-cli 
+./scripts/run_vesting_wallet.py
 ```
 
-It will output:
-```text
-Ganache CLI v6.12.2 (ganache-core: 2.13.2)
 
-Available Accounts
-==================
-(0) 0xd9870D9E8A19Aa6f4284955BAb1d9C61f2275da3 (100 ETH)
-...
-
-Listening on 127.0.0.1:8545
-```
-
-Then, in the main terminal:
-```console
-#add pwd to bash path
-export PATH=$PATH:.
-
-#see dftool help
-dftool
-```
-
-You will see something like:
-```text
-Data Farming Tool main help
-
-Usage: dftool calc|dispense|..
-
-  dftool calc - calculate rewards
-  dftool dispense - airdrop funds based on calculations
-  ...
-```
-
-**Then, simply follow the usage directions:)**
