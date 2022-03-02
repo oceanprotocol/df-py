@@ -1,11 +1,12 @@
 # DF-PY
 
-Command-line tools for Data Farming.
+CLI-based tool to administer Data Farming.
 
-Functionality is via `dftool` CLI:
 ```text
-dftool calc - calculate rewards
-dftool dispense - airdrop funds based on calculations
+Usage: dftool calc|dispense|..
+
+  dftool calc - calculate rewards
+  dftool dispense - airdrop funds based on calculations
 ```
 
 # Installation
