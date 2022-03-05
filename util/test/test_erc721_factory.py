@@ -93,9 +93,9 @@ def test_direct():  # pylint: disable=too-many-statements
     # Here, we do option (a)...
 
     # Publisher approves staking OCEAN
-    OCEAN_init_liquidity = 2000.0
+    init_OCEAN_liquidity = 2000.0
     OCEANtoken.approve(
-        router.address, toBase18(OCEAN_init_liquidity), {"from": account0}
+        router.address, toBase18(init_OCEAN_liquidity), {"from": account0}
     )
 
     # Publisher deploys 1-sided staking bot, reports info to router.
@@ -111,7 +111,7 @@ def test_direct():  # pylint: disable=too-many-statements
         18,  # OCEAN decimals
         toBase18(0.05 * DT_cap),  # vesting amount (wei)
         int(2.5e6),  # vested blocks
-        toBase18(OCEAN_init_liquidity),
+        toBase18(init_OCEAN_liquidity),
     ]
     swap_fees = [
         toBase18(0.02),  # LP swap fee
@@ -130,7 +130,7 @@ def test_direct():  # pylint: disable=too-many-statements
     pool_address = oceanv4util.poolAddressFromNewBPoolTx(tx)
     pool = BROWNIE_PROJECT.BPool.at(pool_address)
 
-    assert OCEANtoken.balanceOf(pool_address) == toBase18(OCEAN_init_liquidity)
+    assert OCEANtoken.balanceOf(pool_address) == toBase18(init_OCEAN_liquidity)
     assert pool.getSwapFee() == toBase18(0.02)
     assert pool.getMarketFee() == toBase18(0.01)
 
@@ -169,7 +169,7 @@ def test_createBPool_via_util():
     fundOCEANFromAbove(address0, toBase18(10000.0))
     OCEAN = oceanv4util.OCEANtoken()
 
-    OCEAN_init_liquidity = 2000.0
+    init_OCEAN_liquidity = 2000.0
     DT_OCEAN_rate = 0.1
     DT_vest_amt = 100
     DT_vest_num_blocks = 600
@@ -179,7 +179,7 @@ def test_createBPool_via_util():
         DT,
         erc721_factory,
         account0,
-        OCEAN_init_liquidity,
+        init_OCEAN_liquidity,
         DT_OCEAN_rate,
         DT_vest_amt,
         DT_vest_num_blocks,

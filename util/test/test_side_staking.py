@@ -22,7 +22,7 @@ def test_sideStaking_properties():
     do_extra_funding = False
     OCEAN_extra_funding = 10000
 
-    OCEAN_init_liquidity = 2000  # initial liquidity in OCEAN on pool creation
+    init_OCEAN_liquidity = 2000  # initial liquidity in OCEAN on pool creation
     DT_OCEAN_rate = 0.1
 
     DT_cap = 10000
@@ -32,7 +32,7 @@ def test_sideStaking_properties():
         OCEAN_base_funding,
         do_extra_funding,
         OCEAN_extra_funding,
-        OCEAN_init_liquidity,
+        init_OCEAN_liquidity,
         DT_OCEAN_rate,
         DT_cap,
         DT_vest_amt,
@@ -60,10 +60,10 @@ def test_sideStaking_properties():
     # No blocks have passed since pool creation. Therefore no vesting yet
     assert ssbot.getvestingAmountSoFar(DT.address) == 0
 
-    # We start out with a given OCEAN_init_liquidity. And, DT_OCEAN_rate is
+    # We start out with a given init_OCEAN_liquidity. And, DT_OCEAN_rate is
     # the initial DT:OCEAN ratio.
     # Therefore we know how many DT the bot was supposed to add to the pool:
-    # OCEAN_init_liquidity * DT_OCEAN_rate = 2000*0.1 = 200
+    # init_OCEAN_liquidity * DT_OCEAN_rate = 2000*0.1 = 200
     # Since no one's swapped for DT, then this is also DT circulating supply
     assert fromBase18(ssbot.getDatatokenCirculatingSupply(DT.address)) == 200
 
@@ -272,7 +272,7 @@ def _deployBPool(
     OCEAN_base_funding=10000,
     do_extra_funding: bool = True,
     OCEAN_extra_funding=10000,
-    OCEAN_init_liquidity=2000,
+    init_OCEAN_liquidity=2000,
     DT_OCEAN_rate=0.1,
     DT_cap=10000,
     DT_vest_amt=1000,
@@ -295,7 +295,7 @@ def _deployBPool(
         DT,
         erc721_factory,
         account0,
-        OCEAN_init_liquidity,
+        init_OCEAN_liquidity,
         DT_OCEAN_rate,
         DT_vest_amt,
         DT_vest_num_blocks,

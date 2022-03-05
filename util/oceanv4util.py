@@ -158,7 +158,7 @@ def createBPoolFromDatatoken(
     datatoken,
     erc721_factory,
     from_account,
-    OCEAN_init_liquidity=2000,
+    init_OCEAN_liquidity=2000,
     DT_OCEAN_rate=0.1,
     DT_vest_amt=1000,
     DT_vest_num_blocks=600,
@@ -174,7 +174,7 @@ def createBPoolFromDatatoken(
     router.updateMinVestingPeriod(500, {"from": from_account})
 
     OCEAN.approve(
-        router.address, toBase18(OCEAN_init_liquidity), {"from": from_account}
+        router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
 
     ssbot = deploySideStaking(from_account, router)
@@ -186,7 +186,7 @@ def createBPoolFromDatatoken(
         OCEAN.decimals(),
         toBase18(DT_vest_amt),
         DT_vest_num_blocks,  # do _not_ convert to wei
-        toBase18(OCEAN_init_liquidity),
+        toBase18(init_OCEAN_liquidity),
     ]
     swap_fees = [
         toBase18(LP_swap_fee),
