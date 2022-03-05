@@ -10,7 +10,7 @@ accounts = brownie.network.accounts
 
 def test1():
     brownie.chain.reset()
-    OCEAN = OCEANtoken()
+    OCEAN = OCEANtoken()  
 
     #fund 10 accounts
     for i in range(10):
