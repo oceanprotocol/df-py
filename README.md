@@ -15,7 +15,22 @@ Ensure pre-requisites:
 - Linux/MacOS
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
-- ganache. To install: `npm install ganache-cli --global`
+
+We use [Ocean Barge](https://github.com/oceanprotocol/barge) to run ganache, deploy contracts to Ganache, and run TheGraph with Ocean subgraphs. The deployed contracts come from github.com/oceanprotocol/contracts. df-py has a local redundant copy in its directory so that brownie easily knows what objects look like.
+
+Let's get Barge going. Open a new terminal and:
+
+```console
+#get repo
+git clone git@github.com:oceanprotocol/barge.git
+cd barge
+
+#ensure v4 repo
+git checkout v4
+
+#run barge
+sudo ./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --skip-deploy
+```
 
 Then, open a new terminal and:
 
@@ -38,17 +53,13 @@ brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
 brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 ```
 
-# Main Usage: CLI
-
 First, compile. From terminal:
 ```console
 brownie compile
 ```
 
-The `dftool` CLI needs needs a chain to persist between commands: either a remote chain, or a _separate_ local process (vs one auto-started for each command). To run a local chain, open a _new_ terminal and:
-```console
-ganache-cli 
-```
+# Main Usage: CLI
+
 
 Then, in the main terminal:
 ```console
