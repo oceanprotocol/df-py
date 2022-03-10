@@ -8,9 +8,9 @@ from util import oceanv4util
 
 accounts = brownie.network.accounts
 
-NUM_POOLS = 1 #3
-NUM_STAKERS_PER_POOL = 1 #3
-NUM_CONSUMES = 1 #100
+NUM_POOLS = 2 #3
+NUM_STAKERS_PER_POOL = 2 #3
+NUM_CONSUMES = 3 #100
 
 AMT_OCEAN_PER_ACCOUNT = 100000.0
 AVG_INIT_OCEAN_STAKE = 1000.0
