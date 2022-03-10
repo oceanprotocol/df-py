@@ -75,7 +75,7 @@ brownie test util/test/test_df.py
 brownie test
 ```
 
-Brownie uses `pytest` framework, with [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
+Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
 ## Brownie Console
 
