@@ -68,15 +68,14 @@ dftool
 
 In terminal:
 ```console
-#run one test
-brownie test tests/test_Simpletoken.py::test_transfer
-
 #run tests for one module
-brownie test tests/test_Simpletoken.py
+brownie test util/test/test_df.py
 
 #run all tests
 brownie test
 ```
+
+Brownie uses `pytest` framework, with [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
 ## Brownie Console
 
