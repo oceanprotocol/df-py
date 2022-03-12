@@ -8,7 +8,7 @@ _OCEAN_TOKEN = None
 
 
 @enforce_types
-def OCEANtoken():
+def OCEANtoken(address=None):
     global _OCEAN_TOKEN  # pylint: disable=global-statement
     try:
         token = _OCEAN_TOKEN  # may trigger failure
@@ -17,9 +17,12 @@ def OCEANtoken():
     except brownie.exceptions.ContractNotFound:
         token = None
     if token is None:
-        token = _OCEAN_TOKEN = BROWNIE_PROJECT.Simpletoken.deploy(
-            "OCEAN", "OCEAN", 18, toBase18(1e9), {"from": GOD_ACCOUNT}
-        )
+        if address is None:
+            token = _OCEAN_TOKEN = BROWNIE_PROJECT.Simpletoken.deploy(
+                "OCEAN", "OCEAN", 18, toBase18(1e9), {"from": GOD_ACCOUNT}
+            )
+        else:
+            token = BROWNIE_PROJECT.Simpletoken.at(address)
     return token
 
 

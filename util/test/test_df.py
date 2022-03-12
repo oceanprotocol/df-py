@@ -1,4 +1,5 @@
 import brownie
+import json
 from pprint import pprint
 import random
 import requests
@@ -137,7 +138,14 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
     return (DT, pool, ssbot)
 
 
-def test_thegraph():    
+def test_thegraph():
+    #address_file = "/root/.ocean/ocean-contracts/artifacts/address.json"
+    address_file = "/home/trentmc/foo_address.json"
+    with open(address_file) as json_file:
+        addresses = json.load(json_file)["development"]
+    OCEAN = OCEANtoken(addresses["Ocean"])
+    import pdb; pdb.set_trace()
+    
     #construct endpoint
     subgraph_uri = "http://127.0.0.1:9000" #barge 
     subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
