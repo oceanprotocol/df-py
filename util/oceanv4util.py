@@ -23,62 +23,32 @@ def recordDeployedContracts(address_file, network):
     CONTRACTS["Router"] = BROWNIE_PROJECT.FactoryRouter.at(addresses["Router"])
     CONTRACTS["ERC721Factory"] = BROWNIE_PROJECT.ERC721Factory.at(addresses["ERC721Factory"])
 
-def deployContracts():
-    global CONTRACTS
-    assert CONTRACTS == {}
-    CONTRACTS["Ocean"] = BROWNIE_PROJECT.Simpletoken.deploy(
-        "OCEAN", "OCEAN", 18, toBase18(1e9), {"from": GOD_ACCOUNT})
-    CONTRACTS["ERC721Template"] = BROWNIE_PROJECT.ERC721Template.deploy({"from": GOD_ACCOUNT})
-    CONTRACTS["ERC20Template"] = BROWNIE_PROJECT.ERC20Template.deploy({"from": GOD_ACCOUNT})
-    CONTRACTS["PoolTemplate"] = BROWNIE_PROJECT.BPool.deploy({"from": GOD_ACCOUNT})
-    CONTRACTS["Router"] = BROWNIE_PROJECT.FactoryRouter.deploy(
-        GOD_ACCOUNT.address,
-        CONTRACTS["Ocean"].address,
-        CONTRACTS["PoolTemplate"],
-        GOD_ACCOUNT.address,
-        [],
-        {"from": GOD_ACCOUNT})
-    CONTRACTS["ERC721Factory"] = BROWNIE_PROJECT.ERC721Factory.deploy(
-        CONTRACTS["ERC721Template"].address,
-        CONTRACTS["ERC20Template"].address,
-        GOD_ACCOUNT.address,
-        CONTRACTS["Router"].address,
-        {"from": GOD_ACCOUNT})
-
-@enforce_types
 def OCEANtoken():
     global CONTRACTS
     return CONTRACTS["Ocean"]
 
-@enforce_types
 def OCEAN_address() -> str:
     return OCEANtoken().address
 
-@enforce_types
 def fundOCEANFromAbove(dst_address: str, amount_base: int):
     OCEANtoken().transfer(dst_address, amount_base, {"from": GOD_ACCOUNT})
     
-@enforce_types
 def ERC721Template():
     global CONTRACTS
     return CONTRACTS["ERC721Template"]
 
-@enforce_types
 def ERC20Template():
     global CONTRACTS
     return CONTRACTS["ERC20Template"]
 
-@enforce_types
 def PoolTemplate():
     global CONTRACTS
     return CONTRACTS["PoolTemplate"]
 
-@enforce_types
 def factoryRouter():
     global CONTRACTS
     return CONTRACTS["Router"]
 
-@enforce_types
 def ERC721Factory():
     global CONTRACTS
     return CONTRACTS["ERC721Factory"]
@@ -134,7 +104,6 @@ def createDatatokenFromDataNFT(
     return DT
 
 
-@enforce_types
 def deploySideStaking(from_account):
     factory_router = factoryRouter()
     return BROWNIE_PROJECT.SideStaking.deploy(factory_router.address, {"from": from_account})
@@ -195,7 +164,6 @@ def createBPoolFromDatatoken(
     return pool
 
 
-@enforce_types
 def poolAddressFromNewBPoolTx(tx):
     return tx.events["NewPool"]["poolAddress"]
 
@@ -203,6 +171,7 @@ def poolAddressFromNewBPoolTx(tx):
 #fee stuff needed for consume
 
 #follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
+@enforce_types
 def get_zero_consume_mkt_fee_tuple() -> Tuple:
     d = {
         "consumeMarketFeeAddress": ZERO_ADDRESS,
@@ -218,6 +187,7 @@ def get_zero_consume_mkt_fee_tuple() -> Tuple:
     return consume_mkt_fee
 
 #follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ProviderFees
+@enforce_types
 def get_zero_provider_fee_tuple(pub_account) -> Tuple:
     d = get_zero_provider_fee_dict(pub_account)
 
@@ -235,6 +205,7 @@ def get_zero_provider_fee_tuple(pub_account) -> Tuple:
     return provider_fee
 
 #from ocean.py/tests/resources/helper_functions.py
+@enforce_types
 def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
     web3 = brownie.web3
     provider_fee_amount = 0
