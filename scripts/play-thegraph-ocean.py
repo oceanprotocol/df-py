@@ -22,9 +22,7 @@ def run_query(q):
 # The Graph query - Query Uniswap for a list of the top 10 pairs where the reserve is > 1000000 USD and the volume is >50000 USD
 query = """
 {
-  pools {
-    id
-  }
+  opcs{approvedTokens} 
 }
 """
 result = run_query(query)
