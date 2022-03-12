@@ -187,7 +187,6 @@ def createBPoolFromDatatoken(
         pool_template.address,
     ]
 
-    import pdb; pdb.set_trace()
     tx = datatoken.deployPool(
         ss_params, swap_fees, addresses, {"from": from_account})
     pool_address = poolAddressFromNewBPoolTx(tx)
