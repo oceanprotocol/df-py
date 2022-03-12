@@ -6,7 +6,6 @@ import requests
 
 from util.base18 import toBase18, fromBase18
 from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
-from util.globaltokens import fundOCEANFromAbove, OCEANtoken
 from util import oceanv4util
 
 accounts = brownie.network.accounts
@@ -25,11 +24,12 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 def test1():
     brownie.chain.reset()
-    OCEAN = OCEANtoken()
+    oceanv4util.deployContracts()
+    OCEAN = oceanv4util.OCEANtoken()
 
     #fund 10 accounts
     for i in range(10):
-        fundOCEANFromAbove(accounts[i].address, toBase18(AMT_OCEAN_PER_ACCOUNT))
+        oceanv4util.fundOCEANFromAbove(accounts[i].address, toBase18(AMT_OCEAN_PER_ACCOUNT))
 
     #create random NUM_POOLS. Randomly add stake.
     tups = [] # (pub_account_i, DT, pool, ssbot)
@@ -72,7 +72,7 @@ def _randomAddStake(pool, pub_account_i):
         _addStake(pool, OCEAN_stake, accounts[account_i])
 
 def _addStake(pool, OCEAN_stake, from_account):
-    OCEAN = OCEANtoken()
+    OCEAN = oceanv4util.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(OCEAN_stake), {"from": from_account})
     
     token_amt_in = toBase18(OCEAN_stake)
@@ -83,7 +83,7 @@ def _addStake(pool, OCEAN_stake, from_account):
         token_amt_in, min_pool_amt_out,  {"from": from_account})
 
 def _buyDT(pool, DT, DT_buy_amt: float, max_OCEAN, from_account):
-    OCEAN = OCEANtoken()
+    OCEAN = oceanv4util.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(max_OCEAN), {"from": from_account})
 
     tokenInOutMarket = [
@@ -115,10 +115,8 @@ def _randomDeployPool(pub_account):
         init_OCEAN_stake, DT_OCEAN_rate, DT_cap, pub_account)
 
 def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
-    router = oceanv4util.deployRouter(from_account)
-
     (data_NFT, erc721_factory) = oceanv4util.createDataNFT(
-        "dataNFT", "DATANFTSYMBOL", from_account, router)
+        "dataNFT", "DATANFTSYMBOL", from_account)
 
     DT = oceanv4util.createDatatokenFromDataNFT(
         "DT", "DTSYMBOL", DT_cap, data_NFT, from_account)
@@ -141,10 +139,9 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
 def test_thegraph():
     #address_file = "/root/.ocean/ocean-contracts/artifacts/address.json"
     address_file = "/home/trentmc/foo_address.json"
-    with open(address_file) as json_file:
-        addresses = json.load(json_file)["development"]
-    OCEAN = OCEANtoken(addresses["Ocean"])
-    import pdb; pdb.set_trace()
+    oceanv4util.recordDeployedContracts(address_file, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+    (DT, pool, ssbot) = _randomDeployPool(accounts[0])
     
     #construct endpoint
     subgraph_uri = "http://127.0.0.1:9000" #barge 
