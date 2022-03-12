@@ -15,16 +15,17 @@ def _contracts(key):
     
 def recordDeployedContracts(address_file, network):
     with open(address_file) as json_file:
-        addresses = json.load(json_file)[network]
+        a = json.load(json_file)[network] #dict of contract_name: address
         
     global CONTRACTS
     assert CONTRACTS == {}
-    CONTRACTS["Ocean"] = BROWNIE_PROJECT.Simpletoken.at(addresses["Ocean"])
-    CONTRACTS["ERC721Template"] = BROWNIE_PROJECT.ERC721Template.at(addresses["ERC721Template"]["1"])
-    CONTRACTS["ERC20Template"] = BROWNIE_PROJECT.ERC20Template.at(addresses["ERC20Template"]["1"])
-    CONTRACTS["PoolTemplate"] = BROWNIE_PROJECT.BPool.at(addresses["poolTemplate"])
-    CONTRACTS["Router"] = BROWNIE_PROJECT.FactoryRouter.at(addresses["Router"])
-    CONTRACTS["ERC721Factory"] = BROWNIE_PROJECT.ERC721Factory.at(addresses["ERC721Factory"])
+    B, C = BROWNIE_PROJECT, CONTRACTS
+    C["Ocean"] = B.Simpletoken.at(a["Ocean"])
+    C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
+    C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
+    C["PoolTemplate"] = B.BPool.at(a["poolTemplate"])
+    C["Router"] = B.FactoryRouter.at(a["Router"])
+    C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
 
 def OCEANtoken():
     return _contracts("Ocean")
