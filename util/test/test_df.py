@@ -1,5 +1,7 @@
 import brownie
+from pprint import pprint
 import random
+import requests
 
 from util.base18 import toBase18, fromBase18
 from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
@@ -133,3 +135,33 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
     ssbot = BROWNIE_PROJECT.SideStaking.at(ssbot_address)
 
     return (DT, pool, ssbot)
+
+
+def test_thegraph():    
+    #construct endpoint
+    subgraph_uri = "http://127.0.0.1:9000" #barge 
+    subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
+
+    #construct query
+    # see more examples at https://github.com/oceanprotocol/ocean-subgraph
+    # and at https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+    query = """
+    {
+      opcs{approvedTokens} 
+    }
+    """
+
+    #make request
+    request = requests.post(subgraph_url,
+                            '',
+                            json={'query': query})
+    if request.status_code != 200:
+        raise Exception('Query failed. return code is {}.      {}'.format(request.status_code, query))
+
+    result = request.json()
+
+    #print the results
+    print('Print Result - {}'.format(result))
+    print('#############')
+    # pretty print the results
+    pprint(result)

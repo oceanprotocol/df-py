@@ -79,6 +79,9 @@ dftool
 
 In terminal:
 ```console
+#run tests for one method, with print statements to console. "-s" is same as "--capture=no"
+brownie test util/test/test_df.py::test_thegraph -s
+
 #run tests for one module
 brownie test util/test/test_df.py
 
