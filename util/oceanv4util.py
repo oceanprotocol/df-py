@@ -9,7 +9,10 @@ from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT, GOD_ACCOUNT, ZERO_ADDRESS
 
 CONTRACTS = {}
-
+def _contracts(key):
+    global CONTRACTS
+    return CONTRACTS[key]
+    
 def recordDeployedContracts(address_file, network):
     with open(address_file) as json_file:
         addresses = json.load(json_file)[network]
@@ -24,8 +27,7 @@ def recordDeployedContracts(address_file, network):
     CONTRACTS["ERC721Factory"] = BROWNIE_PROJECT.ERC721Factory.at(addresses["ERC721Factory"])
 
 def OCEANtoken():
-    global CONTRACTS
-    return CONTRACTS["Ocean"]
+    return _contracts("Ocean")
 
 def OCEAN_address() -> str:
     return OCEANtoken().address
@@ -34,24 +36,19 @@ def fundOCEANFromAbove(dst_address: str, amount_base: int):
     OCEANtoken().transfer(dst_address, amount_base, {"from": GOD_ACCOUNT})
     
 def ERC721Template():
-    global CONTRACTS
-    return CONTRACTS["ERC721Template"]
+    return _contracts("ERC721Template")
 
 def ERC20Template():
-    global CONTRACTS
-    return CONTRACTS["ERC20Template"]
+    return _contracts("ERC20Template")
 
 def PoolTemplate():
-    global CONTRACTS
-    return CONTRACTS["PoolTemplate"]
+    return _contracts("PoolTemplate")
 
 def factoryRouter():
-    global CONTRACTS
-    return CONTRACTS["Router"]
+    return _contracts("Router")
 
 def ERC721Factory():
-    global CONTRACTS
-    return CONTRACTS["ERC721Factory"]
+    return _contracts("ERC721Factory")
 
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
