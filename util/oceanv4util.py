@@ -172,7 +172,7 @@ def createBPoolFromDatatoken(
         OCEAN.decimals(),
         toBase18(DT_vest_amt),
         DT_vest_num_blocks,  # do _not_ convert to wei
-        toBase18(100.0), #HACK toBase18(init_OCEAN_liquidity),
+        toBase18(init_OCEAN_liquidity),
     ]
     swap_fees = [
         toBase18(LP_swap_fee),
