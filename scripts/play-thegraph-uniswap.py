@@ -9,6 +9,7 @@ from pprint import pprint
 def run_query(q):
 
     # endpoint where you are making the request
+    # details: https://thegraph.com/hosted-service/subgraph/uniswap/uniswap-v2
     request = requests.post('https://api.thegraph.com/subgraphs/name/uniswap/uniswap-v2'
                             '',
                             json={'query': query})
