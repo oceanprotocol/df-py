@@ -28,6 +28,8 @@ def test_thegraph():
     address_file = "/home/trentmc/foo_address.json"
     oceanv4util.recordDeployedContracts(address_file, "development")
     OCEAN = oceanv4util.OCEANtoken()
+
+    #_deployRandom()
     (DT, pool, ssbot) = _randomDeployPool(accounts[0])
     
     #construct endpoint
@@ -48,7 +50,7 @@ def test_thegraph():
                             '',
                             json={'query': query})
     if request.status_code != 200:
-        raise Exception('Query failed. return code is {}.      {}'.format(request.status_code, query))
+        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
 
     result = request.json()
 
@@ -59,9 +61,8 @@ def test_thegraph():
     pprint(result)
 
 
-def test1():
-    brownie.chain.reset()
-    oceanv4util.deployContracts()
+def _deployRandom():
+    
     OCEAN = oceanv4util.OCEANtoken()
 
     #fund 10 accounts
