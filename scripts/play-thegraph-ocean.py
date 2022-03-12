@@ -10,7 +10,9 @@ from pprint import pprint
 def run_query(q):
 
     # endpoint where you are making the request
-    request = requests.post('http://127.0.0.1:9000/subgraphs/name/oceanprotocol/ocean-subgraph'
+    subgraph_uri = "http://127.0.0.1:9000" #barge
+    subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
+    request = requests.post(subgraph_url,
                             '',
                             json={'query': query})
     if request.status_code == 200:
