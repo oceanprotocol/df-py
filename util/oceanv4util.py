@@ -168,7 +168,7 @@ def createBPoolFromDatatoken(
     #router.addSSContract(ssbot.address, {"from": GOD_ACCOUNT})
 
     ss_params = [
-        toBase18(1.0), #HACK toBase18(DT_OCEAN_rate),
+        toBase18(DT_OCEAN_rate),
         OCEAN.decimals(),
         toBase18(DT_vest_amt),
         DT_vest_num_blocks,  # do _not_ convert to wei
