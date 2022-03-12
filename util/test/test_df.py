@@ -22,6 +22,43 @@ AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
+
+def test_thegraph():
+    #address_file = "/root/.ocean/ocean-contracts/artifacts/address.json"
+    address_file = "/home/trentmc/foo_address.json"
+    oceanv4util.recordDeployedContracts(address_file, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+    (DT, pool, ssbot) = _randomDeployPool(accounts[0])
+    
+    #construct endpoint
+    subgraph_uri = "http://127.0.0.1:9000" #barge 
+    subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
+
+    #construct query
+    # see more examples at https://github.com/oceanprotocol/ocean-subgraph
+    # and at https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+    query = """
+    {
+      opcs{approvedTokens} 
+    }
+    """
+
+    #make request
+    request = requests.post(subgraph_url,
+                            '',
+                            json={'query': query})
+    if request.status_code != 200:
+        raise Exception('Query failed. return code is {}.      {}'.format(request.status_code, query))
+
+    result = request.json()
+
+    #print the results
+    print('Print Result - {}'.format(result))
+    print('#############')
+    # pretty print the results
+    pprint(result)
+
+
 def test1():
     brownie.chain.reset()
     oceanv4util.deployContracts()
@@ -135,38 +172,3 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
 
     return (DT, pool, ssbot)
 
-
-def test_thegraph():
-    #address_file = "/root/.ocean/ocean-contracts/artifacts/address.json"
-    address_file = "/home/trentmc/foo_address.json"
-    oceanv4util.recordDeployedContracts(address_file, "development")
-    OCEAN = oceanv4util.OCEANtoken()
-    (DT, pool, ssbot) = _randomDeployPool(accounts[0])
-    
-    #construct endpoint
-    subgraph_uri = "http://127.0.0.1:9000" #barge 
-    subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
-
-    #construct query
-    # see more examples at https://github.com/oceanprotocol/ocean-subgraph
-    # and at https://github.com/oceanprotocol/df-js/blob/main/script/index.js
-    query = """
-    {
-      opcs{approvedTokens} 
-    }
-    """
-
-    #make request
-    request = requests.post(subgraph_url,
-                            '',
-                            json={'query': query})
-    if request.status_code != 200:
-        raise Exception('Query failed. return code is {}.      {}'.format(request.status_code, query))
-
-    result = request.json()
-
-    #print the results
-    print('Print Result - {}'.format(result))
-    print('#############')
-    # pretty print the results
-    pprint(result)
