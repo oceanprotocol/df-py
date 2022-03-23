@@ -114,7 +114,7 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 
 In terminal:
 ```console
-./scripts/run_vesting_wallet.py
+python scripts/play-thegraph-ipynb.py
 ```
 
 
