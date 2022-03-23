@@ -40,9 +40,18 @@ def test_thegraph():
     #construct query
     # see more examples at https://github.com/oceanprotocol/ocean-subgraph
     # and at https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+
+    # query = """
+    # {
+    #   opcs{approvedTokens}
+    # }
+    # """
+    
     query = """
     {
-      opcs{approvedTokens} 
+      pools(orderBy: transactionCount, orderDirection: desc) {
+        transactionCount
+      }
     }
     """
 
