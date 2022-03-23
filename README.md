@@ -34,10 +34,14 @@ cd barge
 #ensure v4 repo
 git checkout v4
 
-#run barge
-./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --skip-deploy
-```
+#run barge. Send stdout & stderr to out.txt
+# Includes deploying contracts, with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
+# To *not* deploy contracts, add "--skip-deploy" argument
+./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > out.txt 2>&1 &
 
+#monitor output
+tail -f out.txt
+```
 
 ### Install df-py
 
