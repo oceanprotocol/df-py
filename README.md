@@ -11,10 +11,16 @@ Usage: dftool calc|dispense|..
 
 # Installation
 
-Ensure pre-requisites:
+### Prerequisites
+
+Ensure prerequisites:
 - Linux/MacOS
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
+- Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge)
+
+
+#### Install & Run Barge
 
 We use [Ocean Barge](https://github.com/oceanprotocol/barge) to run ganache, deploy contracts to Ganache, and run TheGraph with Ocean subgraphs. The deployed contracts come from github.com/oceanprotocol/contracts. df-py has a local redundant copy in its directory so that brownie easily knows what objects look like.
 
@@ -29,8 +35,11 @@ cd barge
 git checkout v4
 
 #run barge
-sudo ./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --skip-deploy
+./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --skip-deploy
 ```
+
+
+### Install df-py
 
 Then, open a new terminal and:
 
@@ -57,6 +66,7 @@ First, compile. From terminal:
 ```console
 brownie compile
 ```
+
 
 # Main Usage: CLI
 
