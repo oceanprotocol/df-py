@@ -66,6 +66,10 @@ brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
 brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 ```
 
+### Compile contracts
+
+Barge already compiled & deployed the contracts. We compile them locally too so that Brownie knows the interfaces. (NOTE: there's probably a simpler way to do this.)
+
 First, compile. From terminal:
 ```console
 brownie compile
