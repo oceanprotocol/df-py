@@ -1,4 +1,4 @@
-pragma solidity 0.8.10;
+pragma solidity 0.8.12;
 // Copyright Balancer, BigchainDB GmbH and Ocean Protocol contributors
 // SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 // Code is Apache-2.0 and docs are CC-BY-4.0
@@ -7,6 +7,7 @@ import "./BToken.sol";
 import "./BMath.sol";
 import "../../interfaces/ISideStaking.sol";
 import "../../utils/SafeERC20.sol";
+
 
 /**
  * @title BPool
@@ -811,6 +812,7 @@ contract BPool is BMath, BToken {
         uint256[4] calldata amountsInOutMaxFee
     ) external _lock_ returns (uint256 tokenAmountOut, uint256 spotPriceAfter) {
         require(_finalized, "ERR_NOT_FINALIZED");
+        require(tokenInOutMarket[0] != tokenInOutMarket[1], 'Cannot swap same token');
         _checkBound(tokenInOutMarket[0]);
         _checkBound(tokenInOutMarket[1]);
         Record storage inRecord = _records[address(tokenInOutMarket[0])];
@@ -917,6 +919,7 @@ contract BPool is BMath, BToken {
         uint256[4] calldata amountsInOutMaxFee
     ) external _lock_ returns (uint256 tokenAmountIn, uint256 spotPriceAfter) {
         require(_finalized, "ERR_NOT_FINALIZED");
+        require(tokenInOutMarket[0] != tokenInOutMarket[1], 'Cannot swap same token');
         require(amountsInOutMaxFee[3] ==0 || amountsInOutMaxFee[3] >= MIN_FEE,'ConsumeSwapFee too low');
         require(amountsInOutMaxFee[3] <= MAX_FEE,'ConsumeSwapFee too high');
         _checkBound(tokenInOutMarket[0]);
