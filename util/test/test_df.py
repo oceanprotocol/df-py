@@ -29,7 +29,7 @@ def test_thegraph():
     oceanv4util.recordDeployedContracts(address_file, "development")
     OCEAN = oceanv4util.OCEANtoken()
 
-    #_deployRandom()
+    #_randomDeployAll()
     (DT, pool, ssbot) = _randomDeployPool(accounts[0])
     
     #construct endpoint
@@ -61,7 +61,7 @@ def test_thegraph():
     pprint(result)
 
 
-def _deployRandom():
+def _randomDeployAll():
     
     OCEAN = oceanv4util.OCEANtoken()
 
