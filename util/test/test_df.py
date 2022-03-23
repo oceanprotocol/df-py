@@ -1,5 +1,6 @@
 import brownie
 import json
+import os
 from pprint import pprint
 import random
 import requests
@@ -24,8 +25,8 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
 def test_thegraph():
-    #address_file = "/root/.ocean/ocean-contracts/artifacts/address.json"
-    address_file = "/home/trentmc/foo_address.json"
+    HOME = os.getenv('HOME')
+    address_file = f"{HOME}/.ocean/ocean-contracts/artifacts/address.json"
     oceanv4util.recordDeployedContracts(address_file, "development")
     OCEAN = oceanv4util.OCEANtoken()
 

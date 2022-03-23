@@ -14,7 +14,7 @@ def _contracts(key):
     return CONTRACTS[key]
     
 def recordDeployedContracts(address_file, network):
-    with open(address_file) as json_file:
+    with open(address_file, 'r') as json_file:
         a = json.load(json_file)[network] #dict of contract_name: address
         
     global CONTRACTS
