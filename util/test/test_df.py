@@ -11,6 +11,10 @@ from util import oceanv4util
 
 accounts = brownie.network.accounts
 
+#address file
+HOME = os.getenv('HOME')
+ADDRESS_FILE = f"{HOME}/.ocean/ocean-contracts/artifacts/address.json"
+
 #subgraph endpoint
 SUBGRAPH_URI = "http://127.0.0.1:9000" #barge 
 SUBGRAPH_URL = SUBGRAPH_URI + "/subgraphs/name/oceanprotocol/ocean-subgraph"
@@ -29,9 +33,7 @@ MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 def test_thegraph():
-    HOME = os.getenv('HOME')
-    address_file = f"{HOME}/.ocean/ocean-contracts/artifacts/address.json"
-    oceanv4util.recordDeployedContracts(address_file, "development")
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
 
     #_randomDeployAll()
