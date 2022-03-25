@@ -52,9 +52,7 @@ def test_thegraph():
     
 def test_df_endtoend():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-
     _fillAccountsWithOCEAN()
-
     _randomDeployAll()
 
     rewards = _computeRewards()
