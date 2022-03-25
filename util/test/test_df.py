@@ -44,10 +44,8 @@ def test_thegraph():
     #make request
     result = _make_request(query)
 
-    #print the results
-    print('Print Result - {}'.format(result))
+    #pretty print results
     print('#############')
-    # pretty print the results
     pprint(result)
 
     
