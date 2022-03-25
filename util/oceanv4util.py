@@ -25,6 +25,7 @@ def recordDeployedContracts(address_file, network):
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
     C["PoolTemplate"] = B.BPool.at(a["poolTemplate"])
     C["Router"] = B.FactoryRouter.at(a["Router"])
+    C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
 
 def OCEANtoken():
@@ -44,6 +45,9 @@ def PoolTemplate():
 
 def factoryRouter():
     return _contracts("Router")
+
+def Staking():
+    return _contracts("Staking")
 
 def ERC721Factory():
     return _contracts("ERC721Factory")
@@ -98,12 +102,6 @@ def createDatatokenFromDataNFT(
 
     return DT
 
-
-def deploySideStaking(from_account):
-    factory_router = factoryRouter()
-    return BROWNIE_PROJECT.SideStaking.deploy(factory_router.address, {"from": from_account})
-
-
 @enforce_types
 def createBPoolFromDatatoken(
     datatoken,
@@ -120,14 +118,12 @@ def createBPoolFromDatatoken(
     OCEAN = OCEANtoken()
     pool_template = PoolTemplate()
     router = factoryRouter() #router.routerOwner() = '0xe2DD..' = accounts[0]
-    router.updateMinVestingPeriod(500, {"from": from_account})
-
+    ssbot = Staking()
+    
     OCEAN.approve(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
 
-    ssbot = deploySideStaking(from_account)
-    router.addSSContract(ssbot.address, {"from": from_account})
 
     ss_params = [
         toBase18(DT_OCEAN_rate),
