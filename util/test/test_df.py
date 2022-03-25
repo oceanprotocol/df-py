@@ -37,7 +37,7 @@ def test_thegraph():
     OCEAN = oceanv4util.OCEANtoken()
 
     #_randomDeployAll()
-    (DT, pool, ssbot) = _randomDeployPool(accounts[0])
+    (DT, pool) = _randomDeployPool(accounts[0])
         
     #construct query
     #query = _query_list_approved_tokens()
@@ -65,16 +65,16 @@ def test_df_endtoend():
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
         
     #create random NUM_POOLS. Randomly add stake.
-    tups = [] # (pub_account_i, DT, pool, ssbot)
+    tups = [] # (pub_account_i, DT, pool)
     for account_i in range(NUM_POOLS):
-        (DT, pool, ssbot) = _randomDeployPool(accounts[account_i])
+        (DT, pool) = _randomDeployPool(accounts[account_i])
         _randomAddStake(pool, account_i)
-        tups.append((account_i, DT, pool, ssbot))
+        tups.append((account_i, DT, pool))
 
     #consume data assets randomly
     for consume_i in range(NUM_CONSUMES):
         tup = random.choice(tups)
-        (pub_account_i, DT, pool, ssbot) = tup
+        (pub_account_i, DT, pool) = tup
 
         #choose consume account
         cand_I = [i for i in range(10) if i != pub_account_i]
@@ -143,16 +143,16 @@ def _randomDeployAll():
         oceanv4util.fundOCEANFromAbove(accounts[i].address, toBase18(AMT_OCEAN_PER_ACCOUNT))
 
     #create random NUM_POOLS. Randomly add stake.
-    tups = [] # (pub_account_i, DT, pool, ssbot)
+    tups = [] # (pub_account_i, DT, pool)
     for account_i in range(NUM_POOLS):
-        (DT, pool, ssbot) = _randomDeployPool(accounts[account_i])
+        (DT, pool) = _randomDeployPool(accounts[account_i])
         _randomAddStake(pool, account_i)
-        tups.append((account_i, DT, pool, ssbot))
+        tups.append((account_i, DT, pool))
 
     #consume data assets randomly
     for consume_i in range(NUM_CONSUMES):
         tup = random.choice(tups)
-        (pub_account_i, DT, pool, ssbot) = tup
+        (pub_account_i, DT, pool) = tup
 
         #choose consume account
         cand_I = [i for i in range(10) if i != pub_account_i]
@@ -241,8 +241,5 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
         DT_vest_amt=0,
     )
 
-    ssbot_address = pool.getController()
-    ssbot = BROWNIE_PROJECT.SideStaking.at(ssbot_address)
-
-    return (DT, pool, ssbot)
+    return (DT, pool)
 
