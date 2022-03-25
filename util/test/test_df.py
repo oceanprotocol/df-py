@@ -37,24 +37,38 @@ def test_thegraph():
     subgraph_uri = "http://127.0.0.1:9000" #barge 
     subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
 
-    #construct query
-    # see more examples at https://github.com/oceanprotocol/ocean-subgraph
-    # and at https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+    #examples for queries:
+    # https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+    # https://github.com/oceanprotocol/ocean-subgraph/blob/v4main/README.md
+    
+    #construct query. 
 
+    # # QUERY: LIST APPROVED TOKENS
     # query = """
     # {
     #   opcs{approvedTokens}
     # }
     # """
-    
+        
+    # QUERY: POOLS
     query = """
     {
-      pools(orderBy: transactionCount, orderDirection: desc) {
-        transactionCount
+      pools(first:5) {
+        transactionCount,
+        id
+        datatoken {
+            id,
+            nft {
+                id
+            }
+        },
+        baseToken {
+            id
+        }
       }
     }
     """
-
+     
     #make request
     request = requests.post(subgraph_url,
                             '',
