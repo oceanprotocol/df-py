@@ -64,12 +64,12 @@ def test_df_endtoend():
         print(f"Account #{i} has {bal_after} OCEAN")
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
         
-    # #create random NUM_POOLS. Randomly add stake.
-    # tups = [] # (pub_account_i, DT, pool, ssbot)
-    # for account_i in range(NUM_POOLS):
-    #     (DT, pool, ssbot) = _randomDeployPool(accounts[account_i])
-    #     _randomAddStake(pool, account_i)
-    #     tups.append((account_i, DT, pool, ssbot))
+    #create random NUM_POOLS. Randomly add stake.
+    tups = [] # (pub_account_i, DT, pool, ssbot)
+    for account_i in range(NUM_POOLS): #NOTE: works for account 0, not 1 2 ..
+        (DT, pool, ssbot) = _randomDeployPool(accounts[account_i])
+        _randomAddStake(pool, account_i)
+        tups.append((account_i, DT, pool, ssbot))
 
     # #consume data assets randomly
     # for consume_i in range(NUM_CONSUMES):

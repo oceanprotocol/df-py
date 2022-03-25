@@ -6,7 +6,7 @@ from typing import Any, List, Dict, Tuple
 import brownie
 
 from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT, GOD_ACCOUNT, ZERO_ADDRESS
+from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
 
 CONTRACTS = {}
 def _contracts(key):
@@ -32,9 +32,6 @@ def OCEANtoken():
 
 def OCEAN_address() -> str:
     return OCEANtoken().address
-
-def fundOCEANFromAbove(dst_address: str, amount_base: int):
-    OCEANtoken().transfer(dst_address, amount_base, {"from": GOD_ACCOUNT})
     
 def ERC721Template():
     return _contracts("ERC721Template")
@@ -123,8 +120,7 @@ def createBPoolFromDatatoken(
     OCEAN = OCEANtoken()
     pool_template = PoolTemplate()
     router = factoryRouter() #router.routerOwner() = '0xe2DD..' = accounts[0]
-    #router.updateMinVestingPeriod(500, {"from": from_account})
-    router.updateMinVestingPeriod(500, {"from": GOD_ACCOUNT})
+    router.updateMinVestingPeriod(500, {"from": from_account})
 
     OCEAN.approve(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
@@ -132,7 +128,6 @@ def createBPoolFromDatatoken(
 
     ssbot = deploySideStaking(from_account)
     router.addSSContract(ssbot.address, {"from": from_account})
-    #router.addSSContract(ssbot.address, {"from": GOD_ACCOUNT})
 
     ss_params = [
         toBase18(DT_OCEAN_rate),
