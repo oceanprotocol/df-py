@@ -96,8 +96,8 @@ def _getLPList(block_range):
     print("_getLPList(): begin")
     n_blocks = block_range.numBlocks()
     for block_i, block in enumerate(block_range.getRange()):
-        if (block_i % 50) == 0:
-            print(f"  {block_i / float(n_blocks) * 100.0:.1f}% done")
+        if (block_i % 50) == 0 or (block_i == n_blocks-1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
         skip = 0
         INC = 1000 #fetch INC results at a time. Max for subgraph=1000
         while True:
@@ -183,8 +183,8 @@ def _getStake(LP_list, pool_list, block_range):
 
     n_blocks = block_range.numBlocks()
     for block_i, block in enumerate(block_range.getRange()):
-        if (block_i % 50) == 0:
-            print(f"  {block_i / float(n_blocks) * 100.0:.1f}% done")
+        if (block_i % 50) == 0 or (block_i == n_blocks-1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
         skip = 0
         INC = 1000 #fetch INC results at a time. Max for subgraph=1000
         while True:
