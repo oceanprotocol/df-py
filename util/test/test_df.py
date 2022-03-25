@@ -37,19 +37,38 @@ def test_thegraph():
     subgraph_uri = "http://127.0.0.1:9000" #barge 
     subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
 
-    #ref for queries:
+    #ref for queries: df-js script
     # https://github.com/oceanprotocol/df-js/blob/main/script/index.js
     
-    #construct query. 
+    #construct query
+    #query = _query_list_approved_tokens()
+    query = _query_list_pools1()
+     
+    #make request
+    request = requests.post(subgraph_url,
+                            '',
+                            json={'query': query})
+    if request.status_code != 200:
+        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
 
-    # # QUERY: LIST APPROVED TOKENS
-    # query = """
-    # {
-    #   opcs{approvedTokens}
-    # }
-    # """
-        
-    # QUERY: POOLS
+    result = request.json()
+
+    #print the results
+    print('Print Result - {}'.format(result))
+    print('#############')
+    # pretty print the results
+    pprint(result)
+
+
+def _query_list_approved_tokens():
+    query = """
+    {
+      opcs{approvedTokens}
+    }
+    """
+    return query
+
+def _query_list_pools1():
     query = """
     {
       pools(first:5) {
@@ -67,22 +86,8 @@ def test_thegraph():
       }
     }
     """
-     
-    #make request
-    request = requests.post(subgraph_url,
-                            '',
-                            json={'query': query})
-    if request.status_code != 200:
-        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
-
-    result = request.json()
-
-    #print the results
-    print('Print Result - {}'.format(result))
-    print('#############')
-    # pretty print the results
-    pprint(result)
-
+    return query
+    
 
 def _randomDeployAll():
     
