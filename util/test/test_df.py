@@ -74,7 +74,7 @@ def _computeRewards(start_block:int, end_block:int):
         (consume_volume_USDT, consume_volume_OCEAN) = _getConsumeVolume(
             DT_addr, start_block, end_block)
         print(f"Consume volume for DT_addr {DT_addr[:5]}: " \
-              f"${consume_volume_USDT}, {consume_volume_OCEAN} OCEAN")
+              f"{consume_volume_USDT} USD, {consume_volume_OCEAN} OCEAN")
 
 def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
     -> (float, float):
