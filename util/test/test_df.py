@@ -114,7 +114,7 @@ def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
     # (1000 is max for subgraph)
     consume_volume_USDT = consume_volume_OCEAN = 0.0
     skip = 0
-    INC = 5 #FIXME 1000
+    INC = 1000
     while True:
         query = """
         {
