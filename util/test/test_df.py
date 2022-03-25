@@ -89,9 +89,10 @@ def _getAllPools(approved_tokens):
     pools = []
     INC = 5 #FIXME: change to 1000 once tested
     while True:
+        # pools(baseToken_in:%s, skip:%s, first:%s){ #not working
         query = """
         {
-          pools(where: {baseToken_in:%s},skip:%s,first:%s){
+          pools(skip:%s, first:%s){
             transactionCount,
             id
             datatoken {
@@ -105,11 +106,18 @@ def _getAllPools(approved_tokens):
             }
           }
         }
-        """ % (approved_tokens, skip, INC)
+        """ % (skip, INC) #this works. Doesn't work: (approved_tokens,skip,INC)
         result = _submitQuery(query)
+        print(query)
+        print(result)
         import pdb; pdb.set_trace()
-        pools += result['data']['pools']
+        new_pools = result['data']['pools']
+        print(f"Found {len(new_pools)} new pools")
+        pools += new_pools
+        if not new_pools:
+            break
         skip += INC
+    print(f"Found {len(pools)} pools")
     return pools
 
 
