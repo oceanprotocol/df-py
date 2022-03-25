@@ -52,9 +52,7 @@ def test_df_endtoend():
 def _computeRewards(OCEAN_available:float, block_range):
     """ @return -- reward_per_LP -- dict of [LP_addr] : OCEAN_float"""
     # pools -- list
-    pools = _getAllPools()    
-    pools = _filterToApprovedTokens(pools)
-    pools = _filterOutPurgatory(pools)
+    pools = _getPools()
 
     # LPs -- list
     LPs = _getAllLPs()
@@ -72,6 +70,12 @@ def _computeRewards(OCEAN_available:float, block_range):
     
     reward_per_LP = {addr:R[i] for i,addr in enumerate(LPs)}
     return reward_per_LP
+
+def _getPools():
+    pools = _getAllPools()    
+    pools = _filterToApprovedTokens(pools)
+    pools = _filterOutPurgatory(pools)
+    return pools
 
 def _calcRewardPerLP(C, S, OCEAN_available:float):
     """
