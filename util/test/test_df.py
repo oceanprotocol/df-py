@@ -36,9 +36,6 @@ def test_thegraph():
     #construct endpoint
     subgraph_uri = "http://127.0.0.1:9000" #barge 
     subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
-
-    #ref for queries: df-js script
-    # https://github.com/oceanprotocol/df-js/blob/main/script/index.js
     
     #construct query
     #query = _query_list_approved_tokens()
@@ -59,69 +56,7 @@ def test_thegraph():
     # pretty print the results
     pprint(result)
 
-
-def _query_list_approved_tokens():
-    query = """
-    {
-      opcs{approvedTokens}
-    }
-    """
-    return query
-
-def _query_list_pools1():
-    query = """
-    {
-      pools(first:5) {
-        transactionCount,
-        id
-        datatoken {
-            id,
-            nft {
-                id
-            }
-        },
-        baseToken {
-            id
-        }
-      }
-    }
-    """
-    return query
     
-
-def _randomDeployAll():
-    
-    OCEAN = oceanv4util.OCEANtoken()
-
-    #fund 10 accounts
-    for i in range(10):
-        oceanv4util.fundOCEANFromAbove(accounts[i].address, toBase18(AMT_OCEAN_PER_ACCOUNT))
-
-    #create random NUM_POOLS. Randomly add stake.
-    tups = [] # (pub_account_i, DT, pool, ssbot)
-    for account_i in range(NUM_POOLS):
-        (DT, pool, ssbot) = _randomDeployPool(accounts[account_i])
-        _randomAddStake(pool, account_i)
-        tups.append((account_i, DT, pool, ssbot))
-
-    #consume data assets randomly
-    for consume_i in range(NUM_CONSUMES):
-        tup = random.choice(tups)
-        (pub_account_i, DT, pool, ssbot) = tup
-
-        #choose consume account
-        cand_I = [i for i in range(10) if i != pub_account_i]
-        consume_i = random.choice(cand_I)
-        consume_account = accounts[consume_i]
-
-        #buy asset
-        DT_buy_amt = 1.0
-        _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
-
-        #consume asset
-        pub_account = accounts[pub_account_i]
-        _consumeDT(DT, pub_account, consume_account)
-
 # def test_df_endtoend():
 #     brownie.chain.reset()
 #     OCEAN = OCEANtoken()
@@ -154,6 +89,72 @@ def _randomDeployAll():
 #         #consume asset
 #         pub_account = accounts[pub_account_i]
 #         _consumeDT(DT, pub_account, consume_account)
+
+#=======================================================================
+#SOME QUERIES. Ref: df-js script
+# https://github.com/oceanprotocol/df-js/blob/main/script/index.js   
+def _query_list_approved_tokens():
+    query = """
+    {
+      opcs{approvedTokens}
+    }
+    """
+    return query
+
+def _query_list_pools1(): 
+    query = """
+    {
+      pools(first:5) {
+        transactionCount,
+        id
+        datatoken {
+            id,
+            nft {
+                id
+            }
+        },
+        baseToken {
+            id
+        }
+      }
+    }
+    """
+    return query
+    
+#=======================================================================
+#DEPLOY STUFF
+def _randomDeployAll():
+    
+    OCEAN = oceanv4util.OCEANtoken()
+
+    #fund 10 accounts
+    for i in range(10):
+        oceanv4util.fundOCEANFromAbove(accounts[i].address, toBase18(AMT_OCEAN_PER_ACCOUNT))
+
+    #create random NUM_POOLS. Randomly add stake.
+    tups = [] # (pub_account_i, DT, pool, ssbot)
+    for account_i in range(NUM_POOLS):
+        (DT, pool, ssbot) = _randomDeployPool(accounts[account_i])
+        _randomAddStake(pool, account_i)
+        tups.append((account_i, DT, pool, ssbot))
+
+    #consume data assets randomly
+    for consume_i in range(NUM_CONSUMES):
+        tup = random.choice(tups)
+        (pub_account_i, DT, pool, ssbot) = tup
+
+        #choose consume account
+        cand_I = [i for i in range(10) if i != pub_account_i]
+        consume_i = random.choice(cand_I)
+        consume_account = accounts[consume_i]
+
+        #buy asset
+        DT_buy_amt = 1.0
+        _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
+
+        #consume asset
+        pub_account = accounts[pub_account_i]
+        _consumeDT(DT, pub_account, consume_account)
 
 def _consumeDT(DT, pub_account, consume_account):
     service_index = 0
