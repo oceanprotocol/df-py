@@ -146,7 +146,7 @@ def _calcRewardPerLP(C, S, OCEAN_available:float):
       R -- rewards -- 1d array of [LP_i] : OCEAN_float
     """
     print("_calcRewardPerLP(): begin")
-    (num_pools, num_LPs) = S.shape
+    (num_LPs, num_pools) = S.shape
     R = numpy.zeros((num_LPs,), dtype=float)
 
     for i in range(num_LPs):
