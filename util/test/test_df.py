@@ -33,6 +33,15 @@ AVG_DT_CAP = 1000.0
 AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
+    
+def test_df_endtoend():
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    _fillAccountsWithOCEAN()
+    _randomDeployAll()
+
+    rewards = _computeRewards()
+
+    _airdropFunds(rewards)
 
 def test_thegraph():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
@@ -44,15 +53,6 @@ def test_thegraph():
     result = _submitQuery(query)
 
     pprint(result)
-    
-def test_df_endtoend():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    _fillAccountsWithOCEAN()
-    _randomDeployAll()
-
-    rewards = _computeRewards()
-
-    _airdropFunds(rewards)
 
 #=======================================================================
 #COMPUTE REWARDS
