@@ -60,13 +60,13 @@ def test_thegraph_approvedTokens():
 def test_thegraph_orders():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
+ 
+    #(DT, pool) = _randomDeployPool(accounts[0])
 
-    (DT, pool) = _randomDeployPool(accounts[0])
-        
+    #orders(where: {block_gte:0, block_lte:1000, datatoken:0x57790d022853701048D5d54491DcE4c96D1EFdB4}, skip:0, first:5) 
     query = """
         {
-          orders(where: {block_gte:0, block_lte:1000, datatoken:%s}, 
-                 skip:0, first:5) {
+          orders(skip:0, first:5) {
             id,
             datatoken {
               id
@@ -77,7 +77,7 @@ def test_thegraph_orders():
             block
             }
         }
-        """ % (DT.address)
+        """ # % (DT.address)
     result = _submitQuery(query)
 
     pprint(result)
