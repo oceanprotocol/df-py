@@ -280,3 +280,14 @@ def create_checksum(text: str) -> str:
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+class BlockRange:
+    def __init__(self, start_block, end_block, block_interval):
+        self.start_block = start_block
+        self.end_block = end_block
+        self.block_interval = block_interval
+
+    def getRange(self):
+        return list(self.start_block, self.end_block, self.block_interval) + \
+            [self.end_block]

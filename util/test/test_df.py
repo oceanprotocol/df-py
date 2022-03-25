@@ -2,6 +2,7 @@
 
 import brownie
 import json
+import numpy
 import os
 from pprint import pprint
 import random
@@ -33,191 +34,140 @@ AVG_DT_CAP = 1000.0
 AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
+
     
 def test_df_endtoend():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     _fillAccountsWithOCEAN()
     _randomDeployAll(num_pools=2)
 
-    start_block = 0
-    end_block = len(brownie.network.chain)
-    block_interval = 10
-    rewards = _computeRewards(start_block, end_block, block_interval)
+    block_range = oceanv4util.BlockRange(
+        start_block=0, end_block=len(brownie.network.chain), block_interval=10)
+
+    OCEAN_available = 10000.0
+    rewards = _computeRewards(OCEAN_available, block_range)
 
     _airdropFunds(rewards)
 
-def test_thegraph_approvedTokens():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
-
-    _randomDeployPool(accounts[0])
-        
-    query = "{ opcs{approvedTokens} }"
-    result = _submitQuery(query)
-
-    pprint(result)
-    
-def test_thegraph_orders():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
-
-    (_, DT, _) = _randomDeployAll(num_pools=1)[0]
-
-    query = """
-        {
-          orders(where: {block_gte:0, block_lte:1000, datatoken:"%s"}, 
-                 skip:0, first:5) {
-            id,
-            datatoken {
-              id
-            }
-            lastPriceToken,
-            lastPriceValue
-            estimatedUSDValue,
-            block
-          }
-        }
-        """ % (DT.address)
-    result = _submitQuery(query)
-    pprint(result)
-
-def test_thegraph_poolShares():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
-
-    (_, DT, pool) = _randomDeployAll(num_pools=1)[0]
-    skip = 0
-    INC = 1000
-    block = 0
-    pool_addr = pool.address
-
-    # poolShares(skip:%s, first:%s, block:{number:%s}, where: {pool_in:"%s"}) {
-    query = """
-        {
-          poolShares(skip:%s, first:%s) {
-            pool {
-              id,
-              totalShares
-            }
-            shares,
-            user {
-              id
-            }
-          }
-        }
-        """ % (skip, INC)
-
-    result = _submitQuery(query)
-    pprint(result)
-
-#=======================================================================
-#COMPUTE REWARDS
-def _computeRewards(start_block:int, end_block:int, block_interval:int):
-    pools = _getAllPools()
-    print(f"{len(pools)} pools total")
-    
+def _computeRewards(OCEAN_available:float, block_range):
+    """ @return -- reward_per_LP -- dict of [LP_addr] : OCEAN_float"""
+    # pools -- list
+    pools = _getAllPools()    
     pools = _filterToApprovedTokens(pools)
-    print(f"{len(pools)} pools with approved tokens")
-
     pools = _filterOutPurgatory(pools)
-    print(f"{len(pools)} pools not in purgatory")
 
-    reward_per_user = {} # [user_addr] : reward_float
-    for pool in pools:
-        DT_addr = pool["datatoken"]["id"]
-        print(f"Pool with DT_addr {DT_addr[:5]}:")
-        
-        (vol_USD, vol_OCEAN) = _getConsumeVolume(
-            DT_addr, start_block, end_block)
-        print(f"  Consume volume: {vol_USD} USD, {vol_OCEAN} OCEAN")
-        
-        shares_per_user = _getPoolSharesAcrossBlocks(
-            pool["id"], start_block, end_block, block_interval)
-        print(f"  # LPs = {len(shares_per_user)}")
-              
-        for user_addr, shares in shares_per_user.items():
-            reward = log10(shares + 1.0) * log10(vol_OCEAN + 2.0)
-            print(f"  LP {user_addr[:5]} has reward {reward}" \
-                  f" = log10({shares} + 1.0) * log10({vol_OCEAN} + 2.0)")
-                
-            if user_addr not in reward_per_user:
-                reward_per_user[user_addr] = 0.0
-            reward_per_user[user_addr] += reward
+    # LPs -- list
+    LPs = _getAllLPs()
 
-    total_rewards = sum(rewards_per_user.values())
+    # C -- 1d array of [pool_j] : OCEAN_float
+    C = _getConsumeVolume(pools, block_range)
 
-def _getPoolSharesAcrossBlocks(
-        pool_addr:str, start_block:int, end_block:int, block_interval:int):
-    """@return -- dict of [user_addr_str] : num_shares_float
-    The # shares is averaged across the blocks.
+    # S -- 2d array [LP_i, pool_j] : share_float
+    LP_list = [LP["id"] for LP in LPs]
+    pool_list = [pool["id"] for pool in pools]
+    S = _getStake(LP_list, pool_list, block_range)
+
+    # R -- 1d array of [LP_i] : OCEAN_float
+    R = _calcRewardPerLP(C, S)
+    
+    reward_per_LP = {addr:R[i] for i,addr in enumerate(LPs)}
+    return reward_per_LP
+
+def _calcRewardPerLP(C, S, OCEAN_available:float):
     """
-    shares_per_user = {} # [user_addr_str] : shares_float
-    blocks = list(range(start_block, end_block, block_interval)) + [end_block]
-    for block in blocks:
-        shares_per_user_at_block = _getPoolSharesAtBlock(pool_addr, block)
-        for user_addr, shares in shares_per_user_at_block.items():
-            if user_addr not in shares_per_user:
-                shares[user_addr] = 0.0
-            shares_per_user[user_addr] += shares / len(blocks)
+    @arguments
+      C -- consume volumes - 1d array of [pool_j] : OCEAN_float
+      S -- stake -- 1d array of [LP_i,pool_j] : share_float
+      OCEAN_available -- float
 
-    return shares_per_user
+    @return
+      R -- rewards -- 1d array of [LP_i] : OCEAN_float
+    """
+    (num_pools, num_LPs) = S.size
+    R = numpy.zeros((num_LPs,), dtype=float)
 
-def _getPoolSharesAtBlock(pool_addr:str, block:int) -> dict:
-    """@return -- dict of [user_addr_str] : num_shares_float, at given block"""
+    for i in range(num_LPs):
+        for j in range(num_pools):
+            if S[i,j] == 0.0:
+                continue
+            RF_ij = log10(S[i,j] + 1.0) * log10(C[j] + 2.0)
+            R[i] += RF_ij
+
+    #normalize, and scale
+    R = R / sum(R) * OCEAN_available
+
+    return R
+
+def _getStake(pool_list:list, LP_list:int, block_range):
+    """
+    @arguments
+      LP_list -- list of [LP_i] : user_addr
+      pool_list -- list of [pool_j] : pool_addr
+      block_range -- BlockRange
+
+    @return
+      S -- 2d array [LP_i, pool_j] : relative_stake_float -- stake in pool
+    """
     SSBOT_address = oceanv4util.Staking().address()
     
-    #since we don't know how many orders we have, fetch INC at a time
-    # (1000 is max for subgraph)
-    shares_per_user_at_block = {} 
-    skip = 0
-    INC = 5 #FIXME 1000
-    while True:
-        query = """
-        {
-          poolShares(skip:%s, first:%s, block:{number:%s},
-                     where: {pool_in:"%s"}) {
-            pool {
-              id,
-              totalShares
-            }
-            shares,
-            user {
-              id
-            }
-          }
-        }
-        """ % (skip, INC, block, pool_addr)
-        result = _submitQuery(query)
-        
-        new_pool_shares = result["data"]["poolShares"] # list of dict
-        total_pool_shares = new_pool_shares["pool"]["totalShares"] #float
-        for pool_share in new_pool_shares:
-            shares = pool_share["shares"]
-            if shares == 0.0:
-                continue
-            user_addr = pool_share["user"]["id"]
-            if user_addr.lower()  == SSBOT_address.lower(): #skip ss bot
-                continue
-            shares_per_user_at_block[user_addr] = shares / total_pool_shares
-            
-        if not new_pool_shares:
-            break
-        skip += INC
-        
-    return shares_per_user_at_block
+    LP_dict = {addr:i for i,addr in enumerate(LP_list)} #[LP_addr]:LP_i
+    pool_dict = {addr:j for j,addr in enumerate(pool_list)} #[pool_addr]:pool_j
     
+    num_LPs = len(LP_addrs)
+    num_pools = len(pool_addrs)
+    S = numpy.zeros((num_LPs, num_pools), dtype=float)
 
+    for block in block_range.getRange():
+        skip = 0
+        INC = 1000 #fetch INC results at a time. Max for subgraph=1000
+        while True:
+            query = """
+            {
+              poolShares(skip:%s, first:%s, block:{number:%s}) {
+                pool {
+                  id,
+                },
+                user {
+                  id
+                }
+                shares,
+              }
+            }
+            """ % (skip, INC, block)
+            new_pool_stake = _submitQuery(query)["data"]["poolShares"]
+            if not new_pool_stake:
+                break
 
-def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
-    -> (float, float):
-    """@return (consume_volume_USDT, consume_volume_OCEAN)"""
-    OCEAN = oceanv4util.OCEANtoken()
+            for d in new_pool_stake:
+                LP_addr = d["user"]["id"]
+                pool_addr = d["pool"]["id"]
+                if user_addr.lower()  == SSBOT_address.lower(): #skip ss bot
+                    continue
+                i, j = LP_dict[LP_addr], pool_dict[pool_addr]
+                S[i,j] += d["shares"] / len(blocks) 
+
+            skip += INC
+
+    #normalize
+    for j in range(num_pools):
+        S[:,j] /= sum(S[:,j])
+        
+    return S
     
-    #since we don't know how many orders we have, fetch INC at a time
-    # (1000 is max for subgraph)
-    consume_volume_USDT = consume_volume_OCEAN = 0.0
+def _getConsumeVolume(pools:list, block_range):
+    """@return -- C -- 1d array of [pool_j] : OCEAN_float"""
+    num_pools = len(pools)
+    C = numpy.zeros((num_pools,), dtype=float)
+    for pool_j, pool in enumerate(pools):
+        DT_addr = pool["datatoken"]["id"]
+        C[pool_j] = _getConsumeVolumeAtDT(DT_addr, block_range)
+    return C
+
+def _getConsumeVolumeAtDT(DT_addr:str, block_range) -> float:
+    OCEAN_addr = oceanv4util.OCEANtoken().address
+    C_at_DT = 0.0
     skip = 0
-    INC = 1000
+    INC = 1000 #fetch INC results at a time. Max for subgraph=1000
     while True:
         query = """
         {
@@ -229,25 +179,20 @@ def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
             }
             lastPriceToken,
             lastPriceValue
-            estimatedUSDValue,
             block
           }
         }
-        """ % (start_block, end_block, DT_addr, skip, INC)
-        result = _submitQuery(query)
-        
-        new_orders = result['data']['orders']
-        for order in new_orders:
-            consume_volume_USDT += float(order["estimatedUSDValue"])
-            if (order["lastPriceToken"].lower() == OCEAN.address.lower()):
-                consume_volume_OCEAN += float(order["lastPriceValue"])
-                
+        """ % (block_range.start_block, block_range.end_block,
+               DT_addr, skip, INC)
+        new_orders = _submitQuery(query)["data"]["orders"]
         if not new_orders:
             break
+        for order in new_orders:
+            if (order["lastPriceToken"].lower() == OCEAN_addr.lower()):
+                C_at_DT += float(order["lastPriceValue"])
         skip += INC
         
-    return (consume_volume_USDT, consume_volume_OCEAN)
-    
+    return C_at_DT
 
 def _filterOutPurgatory(pools):
     """@return -- pools -- list of dict"""
@@ -455,3 +400,69 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
 
     return (DT, pool)
 
+
+def test_thegraph_approvedTokens():
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+
+    _randomDeployPool(accounts[0])
+        
+    query = "{ opcs{approvedTokens} }"
+    result = _submitQuery(query)
+
+    pprint(result)
+    
+def test_thegraph_orders():
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+
+    (_, DT, _) = _randomDeployAll(num_pools=1)[0]
+
+    query = """
+        {
+          orders(where: {block_gte:0, block_lte:1000, datatoken:"%s"}, 
+                 skip:0, first:5) {
+            id,
+            datatoken {
+              id
+            }
+            lastPriceToken,
+            lastPriceValue
+            estimatedUSDValue,
+            block
+          }
+        }
+        """ % (DT.address)
+    result = _submitQuery(query)
+    pprint(result)
+
+def test_thegraph_poolShares():
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+
+    (_, DT, pool) = _randomDeployAll(num_pools=1)[0]
+    skip = 0
+    INC = 1000
+    block = 0
+    pool_addr = pool.address
+
+    # poolShares(skip:%s, first:%s, block:{number:%s}, where: {pool_in:"%s"}) {
+    query = """
+        {
+          poolShares(skip:%s, first:%s) {
+            pool {
+              id,
+              totalShares
+            }
+            shares,
+            user {
+              id
+            }
+          }
+        }
+        """ % (skip, INC)
+
+    result = _submitQuery(query)
+    pprint(result)
+
+        
