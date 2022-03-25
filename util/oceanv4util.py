@@ -283,11 +283,15 @@ def create_checksum(text: str) -> str:
 
 
 class BlockRange:
-    def __init__(self, start_block, end_block, block_interval):
+    def __init__(self, start_block:int, end_block:int, block_interval:int):
         self.start_block = start_block
         self.end_block = end_block
         self.block_interval = block_interval
 
-    def getRange(self):
-        return list(self.start_block, self.end_block, self.block_interval) + \
-            [self.end_block]
+    def getRange(self) -> list:
+        L1 = list(range(self.start_block, self.end_block, self.block_interval))
+        L2 = [self.end_block]
+        return L1 + L2
+
+    def numBlocks(self) -> int:
+        return len(self.getRange())

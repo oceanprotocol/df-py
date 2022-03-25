@@ -3,6 +3,7 @@
 import brownie
 import json
 import numpy
+from numpy import log10
 import os
 from pprint import pprint
 import random
@@ -41,9 +42,11 @@ def test_df_endtoend():
     _fillAccountsWithOCEAN()
     _randomDeployAll(num_pools=2)
 
-    block_range = oceanv4util.BlockRange(
-        start_block=0, end_block=len(brownie.network.chain), block_interval=10)
-
+    start_block = 0
+    end_block = len(brownie.network.chain) - 3
+    block_interval = 10
+    block_range = oceanv4util.BlockRange(start_block, end_block, block_interval)
+    
     OCEAN_available = 10000.0
     rewards = _computeRewards(OCEAN_available, block_range)
 
@@ -55,28 +58,83 @@ def _computeRewards(OCEAN_available:float, block_range):
     pools = _getPools()
 
     # LPs -- list
-    LPs = _getAllLPs()
+    LP_list = _getLPList(block_range)
 
     # C -- 1d array of [pool_j] : OCEAN_float
     C = _getConsumeVolume(pools, block_range)
 
     # S -- 2d array [LP_i, pool_j] : share_float
-    LP_list = [LP["id"] for LP in LPs]
     pool_list = [pool["id"] for pool in pools]
     S = _getStake(LP_list, pool_list, block_range)
 
     # R -- 1d array of [LP_i] : OCEAN_float
-    R = _calcRewardPerLP(C, S)
+    R = _calcRewardPerLP(C, S, OCEAN_available)
     
     reward_per_LP = {addr:R[i] for i,addr in enumerate(LPs)}
     return reward_per_LP
 
 def _getPools():
+    print("_getPools(): begin")
     pools = _getAllPools()    
     pools = _filterToApprovedTokens(pools)
     pools = _filterOutPurgatory(pools)
+    print(f"  Got {len(pools)} pools")
+    print("_getPools(): done")
     return pools
 
+def _getLPList(block_range):
+    """
+    @arguments
+      block_range -- BlockRange
+
+    @return
+      LP_list - list of [LP_i] : LP_addr
+    """
+    SSBOT_address = oceanv4util.Staking().address.lower()
+    LP_set = set()
+
+    print("_getLPList(): begin")
+    n_blocks = block_range.numBlocks()
+    for block_i, block in enumerate(block_range.getRange()):
+        if (block_i % 50) == 0:
+            print(f"  {block_i / float(n_blocks) * 100.0:.1f}% done")
+        skip = 0
+        INC = 1000 #fetch INC results at a time. Max for subgraph=1000
+        while True:
+            query = """
+            {
+              poolShares(skip:%s, first:%s, block:{number:%s}) {
+                pool {
+                  id,
+                  totalShares
+                }
+                shares,
+                user {
+                  id
+                }
+              }
+            }
+            """ % (skip, INC, block)
+            result = _submitQuery(query)
+            new_pool_stake = result["data"]["poolShares"]
+            if not new_pool_stake:
+                break
+            for d in new_pool_stake:
+                LP_addr = d["user"]["id"]
+                if LP_addr.lower()  == SSBOT_address: continue #skip ss bot
+                
+                shares = float(d["shares"])
+                if shares == 0.0: continue
+                LP_set.add(LP_addr)       
+            skip += INC
+
+    #set -> list
+    LP_list = list(LP_set)
+
+    print(f"  Got {len(LP_list)} LPs")
+    print("_getLPList(): done")
+    return LP_list
+   
 def _calcRewardPerLP(C, S, OCEAN_available:float):
     """
     @arguments
@@ -87,7 +145,8 @@ def _calcRewardPerLP(C, S, OCEAN_available:float):
     @return
       R -- rewards -- 1d array of [LP_i] : OCEAN_float
     """
-    (num_pools, num_LPs) = S.size
+    print("_calcRewardPerLP(): begin")
+    (num_pools, num_LPs) = S.shape
     R = numpy.zeros((num_LPs,), dtype=float)
 
     for i in range(num_LPs):
@@ -100,71 +159,79 @@ def _calcRewardPerLP(C, S, OCEAN_available:float):
     #normalize, and scale
     R = R / sum(R) * OCEAN_available
 
+    print("_calcRewardPerLP(): done")
     return R
 
-def _getStake(pool_list:list, LP_list:int, block_range):
+def _getStake(LP_list, pool_list, block_range):
     """
     @arguments
-      LP_list -- list of [LP_i] : user_addr
+      LP_list -- list of [LP_i] : LP_addr
       pool_list -- list of [pool_j] : pool_addr
       block_range -- BlockRange
 
     @return
       S -- 2d array [LP_i, pool_j] : relative_stake_float -- stake in pool
     """
-    SSBOT_address = oceanv4util.Staking().address()
+    print("_getStake(): begin")
+    SSBOT_address = oceanv4util.Staking().address.lower()
     
     LP_dict = {addr:i for i,addr in enumerate(LP_list)} #[LP_addr]:LP_i
     pool_dict = {addr:j for j,addr in enumerate(pool_list)} #[pool_addr]:pool_j
     
-    num_LPs = len(LP_addrs)
-    num_pools = len(pool_addrs)
+    num_LPs, num_pools = len(LP_list), len(pool_list)
     S = numpy.zeros((num_LPs, num_pools), dtype=float)
 
-    for block in block_range.getRange():
+    n_blocks = block_range.numBlocks()
+    for block_i, block in enumerate(block_range.getRange()):
+        if (block_i % 50) == 0:
+            print(f"  {block_i / float(n_blocks) * 100.0:.1f}% done")
         skip = 0
         INC = 1000 #fetch INC results at a time. Max for subgraph=1000
         while True:
             query = """
-            {
+            { 
               poolShares(skip:%s, first:%s, block:{number:%s}) {
                 pool {
-                  id,
-                },
+                  id
+                }, 
                 user {
                   id
-                }
-                shares,
+                },
+                shares
               }
             }
             """ % (skip, INC, block)
             new_pool_stake = _submitQuery(query)["data"]["poolShares"]
             if not new_pool_stake:
                 break
-
             for d in new_pool_stake:
                 LP_addr = d["user"]["id"]
+                if LP_addr.lower()  == SSBOT_address: continue #skip ss bot
+                
+                shares = float(d["shares"])
+                if shares == 0.0: continue
                 pool_addr = d["pool"]["id"]
-                if user_addr.lower()  == SSBOT_address.lower(): #skip ss bot
-                    continue
-                i, j = LP_dict[LP_addr], pool_dict[pool_addr]
-                S[i,j] += d["shares"] / len(blocks) 
-
+                i = LP_dict[LP_addr]
+                j = pool_dict[pool_addr]
+                S[i,j] += shares / n_blocks
             skip += INC
-
+    
     #normalize
     for j in range(num_pools):
         S[:,j] /= sum(S[:,j])
-        
+    
+    print("_getStake(): done")
     return S
     
 def _getConsumeVolume(pools:list, block_range):
     """@return -- C -- 1d array of [pool_j] : OCEAN_float"""
+    print("_getConsumeVolume(): begin")
     num_pools = len(pools)
     C = numpy.zeros((num_pools,), dtype=float)
     for pool_j, pool in enumerate(pools):
         DT_addr = pool["datatoken"]["id"]
         C[pool_j] = _getConsumeVolumeAtDT(DT_addr, block_range)
+    print("_getConsumeVolume(): done")
     return C
 
 def _getConsumeVolumeAtDT(DT_addr:str, block_range) -> float:
@@ -180,9 +247,9 @@ def _getConsumeVolumeAtDT(DT_addr:str, block_range) -> float:
             id,
             datatoken {
               id
-            }
+            },
             lastPriceToken,
-            lastPriceValue
+            lastPriceValue,
             block
           }
         }
@@ -283,8 +350,8 @@ def _submitQuery(query: str) -> str:
 def _airdropFunds(rewards):
     pass
     
+
 #=======================================================================
-#OCEAN
 def _fillAccountsWithOCEAN():
     OCEAN = oceanv4util.OCEANtoken()
     
@@ -296,10 +363,6 @@ def _fillAccountsWithOCEAN():
         print(f"Account #{i} has {bal_after} OCEAN")
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
 
-
-    
-#=======================================================================
-#DEPLOY STUFF
 def _randomDeployAll(num_pools:int):
     #create random NUM_POOLS. Randomly add stake.
     tups = [] # (pub_account_i, DT, pool)
@@ -468,5 +531,3 @@ def test_thegraph_poolShares():
 
     result = _submitQuery(query)
     pprint(result)
-
-        
