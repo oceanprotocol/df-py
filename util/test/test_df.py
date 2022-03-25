@@ -85,11 +85,10 @@ def _getAllPools(approved_tokens):
 
     #since we don't know how many pools we have, fetch INC at a time
     # (1000 is max for subgraph)
-    skip = 0
     pools = []
-    INC = 5 #FIXME: change to 1000 once tested
+    skip = 0
+    INC = 1000
     while True:
-        # pools(baseToken_in:%s, skip:%s, first:%s){ #not working
         query = """
         {
           pools(skip:%s, first:%s){
@@ -106,18 +105,17 @@ def _getAllPools(approved_tokens):
             }
           }
         }
-        """ % (skip, INC) #this works. Doesn't work: (approved_tokens,skip,INC)
+        """ % (skip, INC)
         result = _submitQuery(query)
-        print(query)
-        print(result)
-        import pdb; pdb.set_trace()
-        new_pools = result['data']['pools']
-        print(f"Found {len(new_pools)} new pools")
+        cand_pools = result['data']['pools']
+        new_pools = [pool for pool in cand_pools
+                     if pool['baseToken']['id'] in approved_tokens]
+        print(f"Found {len(cand_pools)} pools; {len(new_pools)} were valid")
         pools += new_pools
-        if not new_pools:
+        if not cand_pools:
             break
         skip += INC
-    print(f"Found {len(pools)} pools")
+    print(f"Found {len(pools)} pools total")
     return pools
 
 
