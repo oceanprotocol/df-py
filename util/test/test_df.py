@@ -110,12 +110,11 @@ def _getAllPools(approved_tokens):
         cand_pools = result['data']['pools']
         new_pools = [pool for pool in cand_pools
                      if pool['baseToken']['id'] in approved_tokens]
-        print(f"Found {len(cand_pools)} pools; {len(new_pools)} were valid")
         pools += new_pools
         if not cand_pools:
             break
         skip += INC
-    print(f"Found {len(pools)} pools total")
+    print(f"Found {len(pools)} relevant pools")
     return pools
 
 
