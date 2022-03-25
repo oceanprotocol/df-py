@@ -59,27 +59,23 @@ def _computeRewards(OCEAN_available:float, block_range):
     print(f"  OCEAN_available: {OCEAN_available}")
     print(f"  block_range: {block_range}")
     
-    # pools -- list
-    pools = _getPools()
+    pools = _getPools() #list of dict
+    LP_list = _getLPList(block_range) #list [LP_i]:LP_addr
 
-    # LPs -- list
-    LP_list = _getLPList(block_range)
+    C = _getConsumeVolume(pools, block_range) #array [pool_j]:OCEAN_float
 
-    # C -- 1d array of [pool_j] : OCEAN_float
-    C = _getConsumeVolume(pools, block_range)
+    pool_list = [pool["id"] for pool in pools] #list [pool_j]:pool_addr
+    
+    S = _getStake(LP_list, pool_list, block_range) #array [LP_i,pool_j]:float
 
-    # S -- 2d array [LP_i, pool_j] : share_float
-    pool_list = [pool["id"] for pool in pools]
-    S = _getStake(LP_list, pool_list, block_range)
+    R = _calcRewardPerLP(C, S, OCEAN_available) #array [LP_i]:OCEAN_float
 
-    # R -- 1d array of [LP_i] : OCEAN_float
-    R = _calcRewardPerLP(C, S, OCEAN_available)
+    rewards = {addr:R[i] for i,addr in enumerate(LP_list)}
+    print("rewards: (OCEAN for each LP address)")
+    pprint(rewards)
 
     #
-    rewards = {addr:R[i] for i,addr in enumerate(LP_list)}
     sum_rewards = sum(rewards.values())
-    print(f"sum_rewards={sum_rewards}")
-    assert not numpy.isnan(sum_rewards)
     assert sum_rewards == pytest.approx(OCEAN_available, 0.01), sum_rewards
     print("_computeRewards(): done")
     return rewards

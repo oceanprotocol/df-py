@@ -111,7 +111,7 @@ def createBPoolFromDatatoken(
     init_OCEAN_liquidity=2000,
     DT_OCEAN_rate=0.1,
     DT_vest_amt=1000,
-    DT_vest_num_blocks=600,
+    DT_vest_num_blocks=2426000, #min allowed = 2426000, see FactoryRouter.sol
     LP_swap_fee=0.03,
     mkt_swap_fee=0.01,
 ): #pylint: disable=too-many-arguments
@@ -124,7 +124,6 @@ def createBPoolFromDatatoken(
     OCEAN.approve(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
-
 
     ss_params = [
         toBase18(DT_OCEAN_rate),
