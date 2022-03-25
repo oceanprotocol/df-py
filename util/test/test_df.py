@@ -76,6 +76,7 @@ def _getApprovedTokens():
     query = "{ opcs{approvedTokens} }"
     result = _submitQuery(query)
     return result['data']['opcs'][0]['approvedTokens']
+
 def _getAllPools():
     """@return -- pools  list of dict, where each dict is:
     {
