@@ -6,6 +6,7 @@ import numpy
 from numpy import log10
 import os
 from pprint import pprint
+import pytest
 import random
 import requests
     
@@ -53,7 +54,11 @@ def test_df_endtoend():
     _airdropFunds(rewards)
 
 def _computeRewards(OCEAN_available:float, block_range):
-    """ @return -- reward_per_LP -- dict of [LP_addr] : OCEAN_float"""
+    """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
+    print("_computeRewards(): begin")
+    print(f"  OCEAN_available: {OCEAN_available}")
+    print(f"  block_range: {block_range}")
+    
     # pools -- list
     pools = _getPools()
 
@@ -69,9 +74,15 @@ def _computeRewards(OCEAN_available:float, block_range):
 
     # R -- 1d array of [LP_i] : OCEAN_float
     R = _calcRewardPerLP(C, S, OCEAN_available)
-    
-    reward_per_LP = {addr:R[i] for i,addr in enumerate(LP_list)}
-    return reward_per_LP
+
+    #
+    rewards = {addr:R[i] for i,addr in enumerate(LP_list)}
+    sum_rewards = sum(rewards.values())
+    print(f"sum_rewards={sum_rewards}")
+    assert not numpy.isnan(sum_rewards)
+    assert sum_rewards == pytest.approx(OCEAN_available, 0.01), sum_rewards
+    print("_computeRewards(): done")
+    return rewards
 
 def _getPools():
     print("_getPools(): begin")

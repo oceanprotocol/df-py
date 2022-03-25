@@ -295,3 +295,10 @@ class BlockRange:
 
     def numBlocks(self) -> int:
         return len(self.getRange())
+
+    def __str__(self):
+        return f"BlockRange: start_block={self.start_block}" \
+            f", end_block={self.end_block}" \
+            f", block_interval={self.block_interval}" \
+            f", # blocks sampled={self.numBlocks()}" \
+            f", range={self.getRange()[:4]}.."
