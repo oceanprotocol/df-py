@@ -66,7 +66,7 @@ def test_thegraph_orders():
     #orders(where: {block_gte:0, block_lte:1000, datatoken:0x57790d022853701048D5d54491DcE4c96D1EFdB4}, skip:0, first:5) 
     query = """
         {
-          orders(skip:0, first:5) {
+          orders(where: {block_gte:0, block_lte:1000}, skip:0, first:5) {
             id,
             datatoken {
               id
