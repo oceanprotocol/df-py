@@ -61,6 +61,7 @@ def _computeRewards():
     assert approved_tokens, "no approved tokens"
 
     pools = _getAllPools(approved_tokens)
+    print(f"Found {len(pools)} relevant pools")
     
     RF = {} # RF[address_i][pool_j] is relative reward going to LP i in pool j
     
@@ -114,7 +115,6 @@ def _getAllPools(approved_tokens):
         if not cand_pools:
             break
         skip += INC
-    print(f"Found {len(pools)} relevant pools")
     return pools
 
 
