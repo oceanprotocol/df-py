@@ -71,23 +71,23 @@ def test_df_endtoend():
         _randomAddStake(pool, account_i)
         tups.append((account_i, DT, pool, ssbot))
 
-    # #consume data assets randomly
-    # for consume_i in range(NUM_CONSUMES):
-    #     tup = random.choice(tups)
-    #     (pub_account_i, DT, pool, ssbot) = tup
+    #consume data assets randomly
+    for consume_i in range(NUM_CONSUMES):
+        tup = random.choice(tups)
+        (pub_account_i, DT, pool, ssbot) = tup
 
-    #     #choose consume account
-    #     cand_I = [i for i in range(10) if i != pub_account_i]
-    #     consume_i = random.choice(cand_I)
-    #     consume_account = accounts[consume_i]
+        #choose consume account
+        cand_I = [i for i in range(10) if i != pub_account_i]
+        consume_i = random.choice(cand_I)
+        consume_account = accounts[consume_i]
 
-    #     #buy asset
-    #     DT_buy_amt = 1.0
-    #     _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
+        #buy asset
+        DT_buy_amt = 1.0
+        _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
 
-    #     #consume asset
-    #     pub_account = accounts[pub_account_i]
-    #     _consumeDT(DT, pub_account, consume_account)
+        #consume asset
+        pub_account = accounts[pub_account_i]
+        _consumeDT(DT, pub_account, consume_account)
 
 #=======================================================================
 #QUERIES
