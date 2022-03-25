@@ -65,7 +65,7 @@ def _computeRewards():
     print(f"{len(pools)} pools with approved tokens")
 
     pools = _filterOutPurgatory(pools)
-    print(f"{len(pools)} pools with ok standing")
+    print(f"{len(pools)} pools not in purgatory")
 
 def _filterOutPurgatory(pools):
     """@return -- pools -- list of dict"""
