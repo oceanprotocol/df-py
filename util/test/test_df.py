@@ -6,7 +6,7 @@ import os
 from pprint import pprint
 import random
 import requests
-
+    
 from util.base18 import toBase18, fromBase18
 from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
 from util import oceanv4util
@@ -63,9 +63,25 @@ def _computeRewards():
     pools = _filterToApprovedTokens(pools)
     print(f"{len(pools)} pools with approved tokens")
 
-    RF = {} # RF[address_i][pool_j] is relative reward going to LP i in pool j
+    pools = _filterOutPurgatory(pools)
+    print(f"{len(pools)} pools with ok standing")
+
+def _filterOutPurgatory(pools):
+    """@return -- pools -- list of dict"""
+    return [pool for pool in pools
+            if _poolInPurgatory(pool)]
+
+def _poolInPurgatory(pool) -> bool:
+    nft_addr = pool["datatoken"]["nft"]["id"]
+    did = oceanv4util.calcDID(nft_addr)
+    
+    url = "https://github.com/oceanprotocol/list-purgatory/blob/main/list-assets.json"
+    resp = requests.get(url)
+    #data = json.loads(resp.text)
+    #import pdb; pdb.set_trace()
     
 def _filterToApprovedTokens(pools):
+    """@return -- pools -- list of dict"""
     approved_tokens = _getApprovedTokens() #list of str of addr
     assert approved_tokens, "no approved tokens"
     return [pool for pool in pools
@@ -78,7 +94,7 @@ def _getApprovedTokens():
     return result['data']['opcs'][0]['approvedTokens']
 
 def _getAllPools():
-    """@return -- pools  list of dict, where each dict is:
+    """@return -- pools -- list of dict, where each dict is:
     {
       'id' : '0x..',
       'transactionCount' : '<e.g. 73>',

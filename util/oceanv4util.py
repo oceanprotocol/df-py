@@ -1,5 +1,6 @@
 from collections import namedtuple
 from enforce_typing import enforce_types
+import hashlib
 import json
 from typing import Any, List, Dict, Tuple
 
@@ -262,3 +263,20 @@ def to_32byte_hex(val: int) -> str:
     """
     web3 = brownie.web3
     return web3.toHex(web3.toBytes(val).rjust(32, b"\0"))
+
+@enforce_types
+def calcDID(nft_addr: str) -> str:
+    nft_addr2 = brownie.web3.toChecksumAddress(nft_addr)
+    chain_id = brownie.network.chain.id #in base10
+
+    #adapted from ocean.py/ocean_lib/ocean/ocean_assets.py
+    did = f"did:op:{create_checksum(nft_addr2 + str(chain_id))}"
+    return did
+
+#from ocean.py/ocean_lib/utils/utilities.py
+@enforce_types
+def create_checksum(text: str) -> str:
+    """
+    :return: str
+    """
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()
