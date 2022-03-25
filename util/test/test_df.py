@@ -23,7 +23,6 @@ SUBGRAPH_URI = "http://127.0.0.1:9000" #barge
 SUBGRAPH_URL = SUBGRAPH_URI + "/subgraphs/name/oceanprotocol/ocean-subgraph"
 
 #pool constants
-NUM_POOLS = 2 #3
 NUM_STAKERS_PER_POOL = 2 #3
 NUM_CONSUMES = 3 #100
 
@@ -38,11 +37,12 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 def test_df_endtoend():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     _fillAccountsWithOCEAN()
-    _randomDeployAll()
+    _randomDeployAll(num_pools=2)
 
     start_block = 0
     end_block = len(brownie.network.chain)
-    rewards = _computeRewards(start_block, end_block)
+    block_interval = 10
+    rewards = _computeRewards(start_block, end_block, block_interval)
 
     _airdropFunds(rewards)
 
@@ -50,7 +50,7 @@ def test_thegraph_approvedTokens():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
 
-    (DT, pool) = _randomDeployPool(accounts[0])
+    _randomDeployPool(accounts[0])
         
     query = "{ opcs{approvedTokens} }"
     result = _submitQuery(query)
@@ -61,34 +61,58 @@ def test_thegraph_orders():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
 
-    _randomDeployAll() #does consumes on each pool too
-    pools = _getAllPools()
+    (_, DT, _) = _randomDeployAll(num_pools=1)[0]
 
-    for pool in pools:
-        DT_addr = pool["datatoken"]["id"]
-        
-        query = """
-            {
-              orders(where: {block_gte:0, block_lte:1000, datatoken:"%s"}, skip:0, first:5) {
-                id,
-                datatoken {
-                  id
-                }
-                lastPriceToken,
-                lastPriceValue
-                estimatedUSDValue,
-                block
-                }
+    query = """
+        {
+          orders(where: {block_gte:0, block_lte:1000, datatoken:"%s"}, 
+                 skip:0, first:5) {
+            id,
+            datatoken {
+              id
             }
-            """ % (DT_addr)
-        result = _submitQuery(query)
-        pprint(result)
-        if result["data"]["orders"]: #stop once we've found a pool with orders
-            break
+            lastPriceToken,
+            lastPriceValue
+            estimatedUSDValue,
+            block
+          }
+        }
+        """ % (DT.address)
+    result = _submitQuery(query)
+    pprint(result)
+
+def test_thegraph_poolShares():
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+
+    (_, DT, pool) = _randomDeployAll(num_pools=1)[0]
+    skip = 0
+    INC = 1000
+    block = 0
+    pool_addr = pool.address
+
+    # poolShares(skip:%s, first:%s, block:{number:%s}, where: {pool_in:"%s"}) {
+    query = """
+        {
+          poolShares(skip:%s, first:%s) {
+            pool {
+              id,
+              totalShares
+            }
+            shares,
+            user {
+              id
+            }
+          }
+        }
+        """ % (skip, INC)
+
+    result = _submitQuery(query)
+    pprint(result)
 
 #=======================================================================
 #COMPUTE REWARDS
-def _computeRewards(start_block:int, end_block:int):
+def _computeRewards(start_block:int, end_block:int, block_interval:int):
     pools = _getAllPools()
     print(f"{len(pools)} pools total")
     
@@ -98,12 +122,91 @@ def _computeRewards(start_block:int, end_block:int):
     pools = _filterOutPurgatory(pools)
     print(f"{len(pools)} pools not in purgatory")
 
+    reward_per_user = {} # [user_addr] : reward_float
     for pool in pools:
         DT_addr = pool["datatoken"]["id"]
-        (consume_volume_USDT, consume_volume_OCEAN) = _getConsumeVolume(
+        print(f"Pool with DT_addr {DT_addr[:5]}:")
+        
+        (vol_USD, vol_OCEAN) = _getConsumeVolume(
             DT_addr, start_block, end_block)
-        print(f"Consume volume for DT_addr {DT_addr[:5]}: " \
-              f"{consume_volume_USDT} USD, {consume_volume_OCEAN} OCEAN")
+        print(f"  Consume volume: {vol_USD} USD, {vol_OCEAN} OCEAN")
+        
+        shares_per_user = _getPoolSharesAcrossBlocks(
+            pool["id"], start_block, end_block, block_interval)
+        print(f"  # LPs = {len(shares_per_user)}")
+              
+        for user_addr, shares in shares_per_user.items():
+            reward = log10(shares + 1.0) * log10(vol_OCEAN + 2.0)
+            print(f"  LP {user_addr[:5]} has reward {reward}" \
+                  f" = log10({shares} + 1.0) * log10({vol_OCEAN} + 2.0)")
+                
+            if user_addr not in reward_per_user:
+                reward_per_user[user_addr] = 0.0
+            reward_per_user[user_addr] += reward
+
+    total_rewards = sum(rewards_per_user.values())
+
+def _getPoolSharesAcrossBlocks(
+        pool_addr:str, start_block:int, end_block:int, block_interval:int):
+    """@return -- dict of [user_addr_str] : num_shares_float
+    The # shares is averaged across the blocks.
+    """
+    shares_per_user = {} # [user_addr_str] : shares_float
+    blocks = list(range(start_block, end_block, block_interval)) + [end_block]
+    for block in blocks:
+        shares_per_user_at_block = _getPoolSharesAtBlock(pool_addr, block)
+        for user_addr, shares in shares_per_user_at_block.items():
+            if user_addr not in shares_per_user:
+                shares[user_addr] = 0.0
+            shares_per_user[user_addr] += shares / len(blocks)
+
+    return shares_per_user
+
+def _getPoolSharesAtBlock(pool_addr:str, block:int) -> dict:
+    """@return -- dict of [user_addr_str] : num_shares_float, at given block"""
+    SSBOT_address = oceanv4util.Staking().address()
+    
+    #since we don't know how many orders we have, fetch INC at a time
+    # (1000 is max for subgraph)
+    shares_per_user_at_block = {} 
+    skip = 0
+    INC = 5 #FIXME 1000
+    while True:
+        query = """
+        {
+          poolShares(skip:%s, first:%s, block:{number:%s},
+                     where: {pool_in:"%s"}) {
+            pool {
+              id,
+              totalShares
+            }
+            shares,
+            user {
+              id
+            }
+          }
+        }
+        """ % (skip, INC, block, pool_addr)
+        result = _submitQuery(query)
+        
+        new_pool_shares = result["data"]["poolShares"] # list of dict
+        total_pool_shares = new_pool_shares["pool"]["totalShares"] #float
+        for pool_share in new_pool_shares:
+            shares = pool_share["shares"]
+            if shares == 0.0:
+                continue
+            user_addr = pool_share["user"]["id"]
+            if user_addr.lower()  == SSBOT_address.lower(): #skip ss bot
+                continue
+            shares_per_user_at_block[user_addr] = shares / total_pool_shares
+            
+        if not new_pool_shares:
+            break
+        skip += INC
+        
+    return shares_per_user_at_block
+    
+
 
 def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
     -> (float, float):
@@ -128,7 +231,7 @@ def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
             lastPriceValue
             estimatedUSDValue,
             block
-            }
+          }
         }
         """ % (start_block, end_block, DT_addr, skip, INC)
         result = _submitQuery(query)
@@ -248,10 +351,10 @@ def _fillAccountsWithOCEAN():
     
 #=======================================================================
 #DEPLOY STUFF
-def _randomDeployAll():
+def _randomDeployAll(num_pools:int):
     #create random NUM_POOLS. Randomly add stake.
     tups = [] # (pub_account_i, DT, pool)
-    for account_i in range(NUM_POOLS):
+    for account_i in range(num_pools):
         (DT, pool) = _randomDeployPool(accounts[account_i])
         _randomAddStake(pool, account_i)
         tups.append((account_i, DT, pool))
@@ -273,6 +376,8 @@ def _randomDeployAll():
         #consume asset
         pub_account = accounts[pub_account_i]
         _consumeDT(DT, pub_account, consume_account)
+
+    return tups
 
 def _consumeDT(DT, pub_account, consume_account):
     service_index = 0
