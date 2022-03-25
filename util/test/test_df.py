@@ -36,12 +36,11 @@ def test_thegraph():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
 
-    #_randomDeployAll()
     (DT, pool) = _randomDeployPool(accounts[0])
         
     #construct query
-    #query = _query_list_approved_tokens()
-    query = _query_list_pools1()
+    #query = _query_listApprovedTokens()
+    query = _query_listPools1()
      
     #make request
     result = _make_request(query)
@@ -53,9 +52,16 @@ def test_thegraph():
     
 def test_df_endtoend():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
 
-    #give OCEAN to other accounts
+    _fillAccountsWithOCEAN()
+
+    _randomDeployAll()
+
+#=======================================================================
+#OCEAN
+def _fillAccountsWithOCEAN():
+    OCEAN = oceanv4util.OCEANtoken()
+    
     for i in range(1, 10):
         bal_before = fromBase18(OCEAN.balanceOf(accounts[i]))
         if bal_before < 1000:
@@ -63,32 +69,8 @@ def test_df_endtoend():
         bal_after = fromBase18(OCEAN.balanceOf(accounts[i]))
         print(f"Account #{i} has {bal_after} OCEAN")
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
+
         
-    #create random NUM_POOLS. Randomly add stake.
-    tups = [] # (pub_account_i, DT, pool)
-    for account_i in range(NUM_POOLS):
-        (DT, pool) = _randomDeployPool(accounts[account_i])
-        _randomAddStake(pool, account_i)
-        tups.append((account_i, DT, pool))
-
-    #consume data assets randomly
-    for consume_i in range(NUM_CONSUMES):
-        tup = random.choice(tups)
-        (pub_account_i, DT, pool) = tup
-
-        #choose consume account
-        cand_I = [i for i in range(10) if i != pub_account_i]
-        consume_i = random.choice(cand_I)
-        consume_account = accounts[consume_i]
-
-        #buy asset
-        DT_buy_amt = 1.0
-        _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
-
-        #consume asset
-        pub_account = accounts[pub_account_i]
-        _consumeDT(DT, pub_account, consume_account)
-
 #=======================================================================
 #QUERIES
 
@@ -103,7 +85,7 @@ def _make_request(query: str) -> str:
     
     return result
 
-def _query_list_approved_tokens():
+def _query_listApprovedTokens():
     query = """
     {
       opcs{approvedTokens}
@@ -111,7 +93,7 @@ def _query_list_approved_tokens():
     """
     return query
 
-def _query_list_pools1(): 
+def _query_listPools1(): 
     #from: https://github.com/oceanprotocol/df-js/blob/main/script/index.js
     query = """
     {
@@ -135,13 +117,6 @@ def _query_list_pools1():
 #=======================================================================
 #DEPLOY STUFF
 def _randomDeployAll():
-    
-    OCEAN = oceanv4util.OCEANtoken()
-
-    #fund 10 accounts
-    for i in range(10):
-        oceanv4util.fundOCEANFromAbove(accounts[i].address, toBase18(AMT_OCEAN_PER_ACCOUNT))
-
     #create random NUM_POOLS. Randomly add stake.
     tups = [] # (pub_account_i, DT, pool)
     for account_i in range(NUM_POOLS):
