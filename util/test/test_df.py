@@ -46,13 +46,38 @@ def test_df_endtoend():
 
     _airdropFunds(rewards)
 
-def test_thegraph():
+def test_thegraph_approvedTokens():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
 
     (DT, pool) = _randomDeployPool(accounts[0])
         
     query = "{ opcs{approvedTokens} }"
+    result = _submitQuery(query)
+
+    pprint(result)
+    
+def test_thegraph_orders():
+    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanv4util.OCEANtoken()
+
+    (DT, pool) = _randomDeployPool(accounts[0])
+        
+    query = """
+        {
+          orders(where: {block_gte:0, block_lte:1000, datatoken:%s}, 
+                 skip:0, first:5) {
+            id,
+            datatoken {
+              id
+            }
+            lastPriceToken,
+            lastPriceValue
+            estimatedUSDValue,
+            block
+            }
+        }
+        """ % (DT.address)
     result = _submitQuery(query)
 
     pprint(result)
@@ -78,11 +103,43 @@ def _computeRewards(start_block:int, end_block:int):
 
 def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
     -> (float, float):
-    """@return
-    consume_volume_USDT -- float
-    consume_volume_OCEAN -- float
-    """
-    return (1.0, 2.0) #stub
+    """@return (consume_volume_USDT, consume_volume_OCEAN)"""
+
+    #since we don't know how many orders we have, fetch INC at a time
+    # (1000 is max for subgraph)
+    consume_volume_USDT = consume_volume_OCEAN = 0.0
+    skip = 0
+    INC = 5 #FIXME 1000
+    while True:
+        query = """
+        {
+          orders(where: {block_gte:%s, block_lte:%s, datatoken:%s}, 
+                 skip:%s, first:%s) {
+            id,
+            datatoken {
+              id
+            }
+            lastPriceToken,
+            lastPriceValue
+            estimatedUSDValue,
+            block
+            }
+        }
+        """ % (start_block, end_block, DT_addr, skip, INC)
+        result = _submitQuery(query)
+        
+        new_orders = result['data']['orders']
+        for order in new_orders:
+            consume_volume_USDT += float(order["estimatedUSDValue"])
+            if (order["lastPriceToken"].lower() == OCEAN.address.lower()):
+                consume_volume_OCEAN += float(order["lastPriceValue"])
+                
+        if not new_orders:
+            break
+        skip += INC
+        
+    return (consume_volume_USDT, consume_volume_OCEAN)
+    
 
 def _filterOutPurgatory(pools):
     """@return -- pools -- list of dict"""
@@ -114,7 +171,7 @@ def _getApprovedTokens():
     return result['data']['opcs'][0]['approvedTokens']
 
 def _getAllPools():
-    """@return -- pools -- list of dict, where each dict is:
+    """@return -- pools -- list of dict (pool), where each pool is:
     {
       'id' : '0x..',
       'transactionCount' : '<e.g. 73>',
