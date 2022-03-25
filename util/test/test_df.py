@@ -70,7 +70,7 @@ def _computeRewards(OCEAN_available:float, block_range):
     # R -- 1d array of [LP_i] : OCEAN_float
     R = _calcRewardPerLP(C, S, OCEAN_available)
     
-    reward_per_LP = {addr:R[i] for i,addr in enumerate(LPs)}
+    reward_per_LP = {addr:R[i] for i,addr in enumerate(LP_list)}
     return reward_per_LP
 
 def _getPools():
