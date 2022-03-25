@@ -39,8 +39,8 @@ def test_thegraph():
     (DT, pool) = _randomDeployPool(accounts[0])
         
     #construct query
-    #query = _query_listApprovedTokens()
-    query = _query_listPools1()
+    query = _query_listApprovedTokens()
+    #query = _query_listPools()
      
     #make request
     result = _make_request(query)
@@ -61,7 +61,19 @@ def test_df_endtoend():
 
 #=======================================================================
 def _computeRewards():
-    pass
+    RF = {} # RF[address_i][pool_j] is relative reward going to LP i in pool j
+
+    query = _query_listPools()
+    result = _make_request(query)
+    #pprint(result)
+    
+    pools = result['data']['pools'] 
+    # pools -- list of dict, where each dict is:
+    #  'id' : '0x..'
+    #  'transactionCount' : '<e.g. 73>'
+    #  'baseToken' : {'id' : '0x..'}
+    #  'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'}
+    
 
 
 #=======================================================================
@@ -104,7 +116,7 @@ def _query_listApprovedTokens():
     """
     return query
 
-def _query_listPools1(): 
+def _query_listPools(): 
     #from: https://github.com/oceanprotocol/df-js/blob/main/script/index.js
     query = """
     {
