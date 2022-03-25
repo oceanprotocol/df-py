@@ -40,7 +40,9 @@ def test_df_endtoend():
     _fillAccountsWithOCEAN()
     _randomDeployAll()
 
-    rewards = _computeRewards()
+    start_block = 0
+    end_block = len(brownie.network.chain)
+    rewards = _computeRewards(start_block, end_block)
 
     _airdropFunds(rewards)
 
@@ -57,7 +59,7 @@ def test_thegraph():
 
 #=======================================================================
 #COMPUTE REWARDS
-def _computeRewards():
+def _computeRewards(start_block:int, end_block:int):
     pools = _getAllPools()
     print(f"{len(pools)} pools total")
     
@@ -66,6 +68,21 @@ def _computeRewards():
 
     pools = _filterOutPurgatory(pools)
     print(f"{len(pools)} pools not in purgatory")
+
+    for pool in pools:
+        DT_addr = pool["datatoken"]["id"]
+        (consume_volume_USDT, consume_volume_OCEAN) = _getConsumeVolume(
+            DT_addr, start_block, end_block)
+        print(f"Consume volume for DT_addr {DT_addr[:5]}: " \
+              f"${consume_volume_USDT}, {consume_volume_OCEAN} OCEAN")
+
+def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
+    -> (float, float):
+    """@return
+    consume_volume_USDT -- float
+    consume_volume_OCEAN -- float
+    """
+    return (1.0, 2.0) #stub
 
 def _filterOutPurgatory(pools):
     """@return -- pools -- list of dict"""
@@ -136,7 +153,17 @@ def _getAllPools():
             break
         skip += INC
     return pools
+        
+def _submitQuery(query: str) -> str:
+    request = requests.post(SUBGRAPH_URL,
+                            '',
+                            json={'query': query})
+    if request.status_code != 200:
+        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
 
+    result = request.json()
+    
+    return result
 
 #=======================================================================
 def _airdropFunds(rewards):
@@ -155,19 +182,7 @@ def _fillAccountsWithOCEAN():
         print(f"Account #{i} has {bal_after} OCEAN")
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
 
-        
-#=======================================================================
-#QUERIES
-def _submitQuery(query: str) -> str:
-    request = requests.post(SUBGRAPH_URL,
-                            '',
-                            json={'query': query})
-    if request.status_code != 200:
-        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
 
-    result = request.json()
-    
-    return result
     
 #=======================================================================
 #DEPLOY STUFF
