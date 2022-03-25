@@ -37,9 +37,8 @@ def test_thegraph():
     subgraph_uri = "http://127.0.0.1:9000" #barge 
     subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
 
-    #examples for queries:
+    #ref for queries:
     # https://github.com/oceanprotocol/df-js/blob/main/script/index.js
-    # https://github.com/oceanprotocol/ocean-subgraph/blob/v4main/README.md
     
     #construct query. 
 
