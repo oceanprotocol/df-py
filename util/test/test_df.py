@@ -10,6 +10,7 @@ import requests
 from util.base18 import toBase18, fromBase18
 from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
 from util import oceanv4util
+from util.oceanv4util import calcDID
 
 accounts = brownie.network.accounts
 
@@ -68,17 +69,19 @@ def _computeRewards():
 
 def _filterOutPurgatory(pools):
     """@return -- pools -- list of dict"""
+    bad_dids = _didsInPurgatory()
     return [pool for pool in pools
-            if _poolInPurgatory(pool)]
+            if calcDID(pool["datatoken"]["nft"]["id"]) not in bad_dids]
 
-def _poolInPurgatory(pool) -> bool:
-    nft_addr = pool["datatoken"]["nft"]["id"]
-    did = oceanv4util.calcDID(nft_addr)
-    
-    url = "https://github.com/oceanprotocol/list-purgatory/blob/main/list-assets.json"
+def _didsInPurgatory():
+    """return -- list of did (str)"""
+    url = "https://raw.githubusercontent.com/oceanprotocol/list-purgatory/main/list-assets.json"
     resp = requests.get(url)
-    #data = json.loads(resp.text)
-    #import pdb; pdb.set_trace()
+
+    #list of {'did' : 'did:op:6F7...', 'reason':'..'}
+    data = json.loads(resp.text)
+
+    return [item['did'] for item in data]
     
 def _filterToApprovedTokens(pools):
     """@return -- pools -- list of dict"""
