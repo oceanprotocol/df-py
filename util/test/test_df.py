@@ -57,24 +57,26 @@ def test_df_endtoend():
 #=======================================================================
 #COMPUTE REWARDS
 def _computeRewards():
-    approved_tokens = _getApprovedTokens() #list of str of addr
-    assert approved_tokens, "no approved tokens"
-
-    pools = _getAllPools(approved_tokens)
-    print(f"Found {len(pools)} relevant pools")
+    pools = _getAllPools()
+    print(f"{len(pools)} pools total")
     
+    pools = _filterToApprovedTokens(pools)
+    print(f"{len(pools)} pools with approved tokens")
+
     RF = {} # RF[address_i][pool_j] is relative reward going to LP i in pool j
     
-    
-    
+def _filterToApprovedTokens(pools):
+    approved_tokens = _getApprovedTokens() #list of str of addr
+    assert approved_tokens, "no approved tokens"
+    return [pool for pool in pools
+            if pool['baseToken']['id'] in approved_tokens]
 
 def _getApprovedTokens():
     """@return -- token addresses -- list of str"""
     query = "{ opcs{approvedTokens} }"
     result = _submitQuery(query)
     return result['data']['opcs'][0]['approvedTokens']
-
-def _getAllPools(approved_tokens):
+def _getAllPools():
     """@return -- pools  list of dict, where each dict is:
     {
       'id' : '0x..',
@@ -108,11 +110,9 @@ def _getAllPools(approved_tokens):
         }
         """ % (skip, INC)
         result = _submitQuery(query)
-        cand_pools = result['data']['pools']
-        new_pools = [pool for pool in cand_pools
-                     if pool['baseToken']['id'] in approved_tokens]
+        new_pools = result['data']['pools']
         pools += new_pools
-        if not cand_pools:
+        if not new_pools:
             break
         skip += INC
     return pools
