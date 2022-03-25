@@ -60,27 +60,31 @@ def test_thegraph_approvedTokens():
 def test_thegraph_orders():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanv4util.OCEANtoken()
- 
-    #(DT, pool) = _randomDeployPool(accounts[0])
 
-    #orders(where: {block_gte:0, block_lte:1000, datatoken:0x57790d022853701048D5d54491DcE4c96D1EFdB4}, skip:0, first:5) 
-    query = """
-        {
-          orders(where: {block_gte:0, block_lte:1000}, skip:0, first:5) {
-            id,
-            datatoken {
-              id
-            }
-            lastPriceToken,
-            lastPriceValue
-            estimatedUSDValue,
-            block
-            }
-        }
-        """ # % (DT.address)
-    result = _submitQuery(query)
+    _randomDeployAll() #does consumes on each pool too
+    pools = _getAllPools()
 
-    pprint(result)
+    for pool in pools:
+        DT_addr = pool["datatoken"]["id"]
+        
+        query = """
+            {
+              orders(where: {block_gte:0, block_lte:1000, datatoken:"%s"}, skip:0, first:5) {
+                id,
+                datatoken {
+                  id
+                }
+                lastPriceToken,
+                lastPriceValue
+                estimatedUSDValue,
+                block
+                }
+            }
+            """ % (DT_addr)
+        result = _submitQuery(query)
+        pprint(result)
+        if result["data"]["orders"]: #stop once we've found a pool with orders
+            break
 
 #=======================================================================
 #COMPUTE REWARDS
@@ -104,7 +108,8 @@ def _computeRewards(start_block:int, end_block:int):
 def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
     -> (float, float):
     """@return (consume_volume_USDT, consume_volume_OCEAN)"""
-
+    OCEAN = oceanv4util.OCEANtoken()
+    
     #since we don't know how many orders we have, fetch INC at a time
     # (1000 is max for subgraph)
     consume_volume_USDT = consume_volume_OCEAN = 0.0
@@ -113,7 +118,7 @@ def _getConsumeVolume(DT_addr:str, start_block:int, end_block:int) \
     while True:
         query = """
         {
-          orders(where: {block_gte:%s, block_lte:%s, datatoken:%s}, 
+          orders(where: {block_gte:%s, block_lte:%s, datatoken:"%s"}, 
                  skip:%s, first:%s) {
             id,
             datatoken {
