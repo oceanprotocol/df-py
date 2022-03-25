@@ -11,6 +11,11 @@ from util import oceanv4util
 
 accounts = brownie.network.accounts
 
+#subgraph endpoint
+SUBGRAPH_URI = "http://127.0.0.1:9000" #barge 
+SUBGRAPH_URL = SUBGRAPH_URI + "/subgraphs/name/oceanprotocol/ocean-subgraph"
+
+#pool constants
 NUM_POOLS = 2 #3
 NUM_STAKERS_PER_POOL = 2 #3
 NUM_CONSUMES = 3 #100
@@ -23,7 +28,6 @@ AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
-
 def test_thegraph():
     HOME = os.getenv('HOME')
     address_file = f"{HOME}/.ocean/ocean-contracts/artifacts/address.json"
@@ -32,23 +36,13 @@ def test_thegraph():
 
     #_randomDeployAll()
     (DT, pool, ssbot) = _randomDeployPool(accounts[0])
-    
-    #construct endpoint
-    subgraph_uri = "http://127.0.0.1:9000" #barge 
-    subgraph_url = subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
-    
+        
     #construct query
     #query = _query_list_approved_tokens()
     query = _query_list_pools1()
      
     #make request
-    request = requests.post(subgraph_url,
-                            '',
-                            json={'query': query})
-    if request.status_code != 200:
-        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
-
-    result = request.json()
+    result = _make_request(query)
 
     #print the results
     print('Print Result - {}'.format(result))
@@ -91,8 +85,19 @@ def test_thegraph():
 #         _consumeDT(DT, pub_account, consume_account)
 
 #=======================================================================
-#SOME QUERIES. Ref: df-js script
-# https://github.com/oceanprotocol/df-js/blob/main/script/index.js   
+#QUERIES
+
+def _make_request(query: str) -> str:
+    request = requests.post(SUBGRAPH_URL,
+                            '',
+                            json={'query': query})
+    if request.status_code != 200:
+        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
+
+    result = request.json()
+    
+    return result
+
 def _query_list_approved_tokens():
     query = """
     {
@@ -102,6 +107,7 @@ def _query_list_approved_tokens():
     return query
 
 def _query_list_pools1(): 
+    #from: https://github.com/oceanprotocol/df-js/blob/main/script/index.js
     query = """
     {
       pools(first:5) {
