@@ -82,26 +82,34 @@ def _getAllPools(approved_tokens):
       'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'},
     }
     """
-    
-    query = """
-    {
-      pools(first:5) {
-        transactionCount,
-        id
-        datatoken {
-            id,
-            nft {
+
+    #since we don't know how many pools we have, fetch INC at a time
+    # (1000 is max for subgraph)
+    skip = 0
+    pools = []
+    INC = 5 #FIXME: change to 1000 once tested
+    while True:
+        query = """
+        {
+          pools(where: {baseToken_in:%s},skip:%s,first:%s){
+            transactionCount,
+            id
+            datatoken {
+                id,
+                nft {
+                    id
+                }
+            },
+            baseToken {
                 id
             }
-        },
-        baseToken {
-            id
+          }
         }
-      }
-    }
-    """
-    result = _submitQuery(query)
-    pools = result['data']['pools'] 
+        """ % (approved_tokens, skip, INC)
+        result = _submitQuery(query)
+        import pdb; pdb.set_trace()
+        pools += result['data']['pools']
+        skip += INC
     return pools
 
 
