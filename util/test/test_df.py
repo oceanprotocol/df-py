@@ -75,10 +75,12 @@ def _getApprovedTokens():
 
 def _getAllPools(approved_tokens):
     """@return -- pools  list of dict, where each dict is:
-    'id' : '0x..'
-    'transactionCount' : '<e.g. 73>'
-    'baseToken' : {'id' : '0x..'}
-    'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'}
+    {
+      'id' : '0x..',
+      'transactionCount' : '<e.g. 73>',
+      'baseToken' : {'id' : '0x..'},
+      'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'},
+    }
     """
     
     query = """
