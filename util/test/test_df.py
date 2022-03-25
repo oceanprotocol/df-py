@@ -57,6 +57,19 @@ def test_df_endtoend():
 
     _randomDeployAll()
 
+    rewards = _computeRewards()
+
+    _airdropFunds(rewards)
+
+#=======================================================================
+def _computeRewards():
+    pass
+
+
+#=======================================================================
+def _airdropFunds():
+    pass
+    
 #=======================================================================
 #OCEAN
 def _fillAccountsWithOCEAN():
