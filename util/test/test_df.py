@@ -1,3 +1,5 @@
+#Draws from https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+
 import brownie
 import json
 import os
@@ -38,17 +40,10 @@ def test_thegraph():
 
     (DT, pool) = _randomDeployPool(accounts[0])
         
-    #construct query
-    query = _query_listApprovedTokens()
-    #query = _query_listPools()
-     
-    #make request
-    result = _make_request(query)
+    query = "{ opcs{approvedTokens} }"
+    result = _submitQuery(query)
 
-    #pretty print results
-    print('#############')
     pprint(result)
-
     
 def test_df_endtoend():
     oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
@@ -60,24 +55,56 @@ def test_df_endtoend():
     _airdropFunds(rewards)
 
 #=======================================================================
+#COMPUTE REWARDS
 def _computeRewards():
-    RF = {} # RF[address_i][pool_j] is relative reward going to LP i in pool j
+    approved_tokens = _getApprovedTokens() #list of str of addr
+    assert approved_tokens, "no approved tokens"
 
-    query = _query_listPools()
-    result = _make_request(query)
-    #pprint(result)
+    pools = _getAllPools(approved_tokens)
     
+    RF = {} # RF[address_i][pool_j] is relative reward going to LP i in pool j
+    
+    
+    
+
+def _getApprovedTokens():
+    """@return -- token addresses -- list of str"""
+    query = "{ opcs{approvedTokens} }"
+    result = _submitQuery(query)
+    return result['data']['opcs'][0]['approvedTokens']
+
+def _getAllPools(approved_tokens):
+    """@return -- pools  list of dict, where each dict is:
+    'id' : '0x..'
+    'transactionCount' : '<e.g. 73>'
+    'baseToken' : {'id' : '0x..'}
+    'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'}
+    """
+    
+    query = """
+    {
+      pools(first:5) {
+        transactionCount,
+        id
+        datatoken {
+            id,
+            nft {
+                id
+            }
+        },
+        baseToken {
+            id
+        }
+      }
+    }
+    """
+    result = _submitQuery(query)
     pools = result['data']['pools'] 
-    # pools -- list of dict, where each dict is:
-    #  'id' : '0x..'
-    #  'transactionCount' : '<e.g. 73>'
-    #  'baseToken' : {'id' : '0x..'}
-    #  'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'}
-    
+    return pools
 
 
 #=======================================================================
-def _airdropFunds():
+def _airdropFunds(rewards):
     pass
     
 #=======================================================================
@@ -96,8 +123,7 @@ def _fillAccountsWithOCEAN():
         
 #=======================================================================
 #QUERIES
-
-def _make_request(query: str) -> str:
+def _submitQuery(query: str) -> str:
     request = requests.post(SUBGRAPH_URL,
                             '',
                             json={'query': query})
@@ -107,35 +133,6 @@ def _make_request(query: str) -> str:
     result = request.json()
     
     return result
-
-def _query_listApprovedTokens():
-    query = """
-    {
-      opcs{approvedTokens}
-    }
-    """
-    return query
-
-def _query_listPools(): 
-    #from: https://github.com/oceanprotocol/df-js/blob/main/script/index.js
-    query = """
-    {
-      pools(first:5) {
-        transactionCount,
-        id
-        datatoken {
-            id,
-            nft {
-                id
-            }
-        },
-        baseToken {
-            id
-        }
-      }
-    }
-    """
-    return query
     
 #=======================================================================
 #DEPLOY STUFF
