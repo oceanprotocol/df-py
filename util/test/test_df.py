@@ -4,44 +4,20 @@ import brownie
 import json
 import numpy
 from numpy import log10
-import os
 from pprint import pprint
 import pytest
-import random
 import requests
-    
-from util.base18 import toBase18, fromBase18
-from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
+
+from util.constants import BROWNIE_PROJECT
 from util import oceanutil
+from util.graphutil import submitQuery
 from util.oceanutil import calcDID
+from util.test import conftest
 
-accounts = brownie.network.accounts
-
-#address file
-HOME = os.getenv('HOME')
-ADDRESS_FILE = f"{HOME}/.ocean/ocean-contracts/artifacts/address.json"
-
-#subgraph endpoint
-SUBGRAPH_URI = "http://127.0.0.1:9000" #barge 
-SUBGRAPH_URL = SUBGRAPH_URI + "/subgraphs/name/oceanprotocol/ocean-subgraph"
-
-#pool constants
-NUM_STAKERS_PER_POOL = 2 #3
-NUM_CONSUMES = 3 #100
-
-AMT_OCEAN_PER_ACCOUNT = 100000.0
-AVG_INIT_OCEAN_STAKE = 100.0
-AVG_DT_OCEAN_RATE = 1.0
-AVG_DT_CAP = 1000.0
-AVG_OCEAN_STAKE = 10.0
-MAX_OCEAN_IN_BUY = 10000.0
-MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
-
-    
-def test_df_endtoend():
+def test_df_endtoend(ADDRESS_FILE, SUBGRAPH_URL):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
-    _fillAccountsWithOCEAN()
-    _randomDeployAll(num_pools=2)
+    conftest.fillAccountsWithOCEAN()
+    conftest.randomDeployAll(num_pools=2)
 
     start_block = 0
     end_block = len(brownie.network.chain) - 3
@@ -49,24 +25,24 @@ def test_df_endtoend():
     block_range = oceanutil.BlockRange(start_block, end_block, block_interval)
     
     OCEAN_available = 10000.0
-    rewards = _computeRewards(OCEAN_available, block_range)
+    rewards = _computeRewards(OCEAN_available, block_range, SUBGRAPH_URL)
 
     _airdropFunds(rewards)
 
-def _computeRewards(OCEAN_available:float, block_range):
+def _computeRewards(OCEAN_available:float, block_range, subgraph_url:str):
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
     print("_computeRewards(): begin")
     print(f"  OCEAN_available: {OCEAN_available}")
     print(f"  block_range: {block_range}")
     
-    pools = _getPools() #list of dict
-    LP_list = _getLPList(block_range) #list [LP_i]:LP_addr
+    pools = _getPools(subgraph_url) #list of dict
+    LP_list = _getLPList(block_range, subgraph_url) #list [LP_i]:LP_addr
 
-    C = _getConsumeVolume(pools, block_range) #array [pool_j]:OCEAN_float
+    C = _getConsumeVolume(pools, block_range, subgraph_url) #array [pool_j]:OCEAN_float
 
     pool_list = [pool["id"] for pool in pools] #list [pool_j]:pool_addr
     
-    S = _getStake(LP_list, pool_list, block_range) #array [LP_i,pool_j]:float
+    S = _getStake(LP_list, pool_list, block_range, subgraph_url) #array [LP_i,pool_j]:float
 
     R = _calcRewardPerLP(C, S, OCEAN_available) #array [LP_i]:OCEAN_float
 
@@ -80,19 +56,20 @@ def _computeRewards(OCEAN_available:float, block_range):
     print("_computeRewards(): done")
     return rewards
 
-def _getPools():
+def _getPools(subgraph_url:str):
     print("_getPools(): begin")
-    pools = _getAllPools()    
-    pools = _filterToApprovedTokens(pools)
+    pools = _getAllPools(subgraph_url)    
+    pools = _filterToApprovedTokens(pools, subgraph_url)
     pools = _filterOutPurgatory(pools)
     print(f"  Got {len(pools)} pools")
     print("_getPools(): done")
     return pools
 
-def _getLPList(block_range):
+def _getLPList(block_range, subgraph_url:str):
     """
     @arguments
       block_range -- BlockRange
+      subgraph_url -- str
 
     @return
       LP_list - list of [LP_i] : LP_addr
@@ -122,7 +99,7 @@ def _getLPList(block_range):
               }
             }
             """ % (skip, INC, block)
-            result = _submitQuery(query)
+            result = submitQuery(query, subgraph_url)
             new_pool_stake = result["data"]["poolShares"]
             if not new_pool_stake:
                 break
@@ -169,12 +146,13 @@ def _calcRewardPerLP(C, S, OCEAN_available:float):
     print("_calcRewardPerLP(): done")
     return R
 
-def _getStake(LP_list, pool_list, block_range):
+def _getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
     """
     @arguments
       LP_list -- list of [LP_i] : LP_addr
       pool_list -- list of [pool_j] : pool_addr
       block_range -- BlockRange
+      subgraph_url -- str
 
     @return
       S -- 2d array [LP_i, pool_j] : relative_stake_float -- stake in pool
@@ -208,7 +186,8 @@ def _getStake(LP_list, pool_list, block_range):
               }
             }
             """ % (skip, INC, block)
-            new_pool_stake = _submitQuery(query)["data"]["poolShares"]
+            result = submitQuery(query, subgraph_url)
+            new_pool_stake = result["data"]["poolShares"]
             if not new_pool_stake:
                 break
             for d in new_pool_stake:
@@ -230,18 +209,18 @@ def _getStake(LP_list, pool_list, block_range):
     print("_getStake(): done")
     return S
     
-def _getConsumeVolume(pools:list, block_range):
+def _getConsumeVolume(pools:list, block_range, subgraph_url:str):
     """@return -- C -- 1d array of [pool_j] : OCEAN_float"""
     print("_getConsumeVolume(): begin")
     num_pools = len(pools)
     C = numpy.zeros((num_pools,), dtype=float)
     for pool_j, pool in enumerate(pools):
         DT_addr = pool["datatoken"]["id"]
-        C[pool_j] = _getConsumeVolumeAtDT(DT_addr, block_range)
+        C[pool_j] = _getConsumeVolumeAtDT(DT_addr, block_range, subgraph_url)
     print("_getConsumeVolume(): done")
     return C
 
-def _getConsumeVolumeAtDT(DT_addr:str, block_range) -> float:
+def _getConsumeVolumeAtDT(DT_addr:str, block_range, subgraph_url:str) -> float:
     OCEAN_addr = oceanutil.OCEANtoken().address
     C_at_DT = 0.0
     skip = 0
@@ -262,7 +241,8 @@ def _getConsumeVolumeAtDT(DT_addr:str, block_range) -> float:
         }
         """ % (block_range.start_block, block_range.end_block,
                DT_addr, skip, INC)
-        new_orders = _submitQuery(query)["data"]["orders"]
+        result = submitQuery(query, subgraph_url)
+        new_orders = result["data"]["orders"]
         if not new_orders:
             break
         for order in new_orders:
@@ -288,20 +268,20 @@ def _didsInPurgatory():
 
     return [item['did'] for item in data]
     
-def _filterToApprovedTokens(pools):
+def _filterToApprovedTokens(pools:list, subgraph_url:str):
     """@return -- pools -- list of dict"""
-    approved_tokens = _getApprovedTokens() #list of str of addr
+    approved_tokens = _getApprovedTokens(subgraph_url) #list of str of addr
     assert approved_tokens, "no approved tokens"
     return [pool for pool in pools
             if pool['baseToken']['id'] in approved_tokens]
 
-def _getApprovedTokens():
+def _getApprovedTokens(subgraph_url:str):
     """@return -- token addresses -- list of str"""
     query = "{ opcs{approvedTokens} }"
-    result = _submitQuery(query)
+    result = submitQuery(query, subgraph_url)
     return result['data']['opcs'][0]['approvedTokens']
 
-def _getAllPools():
+def _getAllPools(subgraph_url:str):
     """@return -- pools -- list of dict (pool), where each pool is:
     {
       'id' : '0x..',
@@ -334,7 +314,7 @@ def _getAllPools():
           }
         }
         """ % (skip, INC)
-        result = _submitQuery(query)
+        result = submitQuery(query, subgraph_url)
         new_pools = result['data']['pools']
         pools += new_pools
         if not new_pools:
@@ -342,199 +322,8 @@ def _getAllPools():
         skip += INC
     return pools
         
-def _submitQuery(query: str) -> str:
-    request = requests.post(SUBGRAPH_URL,
-                            '',
-                            json={'query': query})
-    if request.status_code != 200:
-        raise Exception(f'Query failed. Return code is {request.status_code}\n{query}')
-
-    result = request.json()
-    
-    return result
 
 #=======================================================================
 def _airdropFunds(rewards):
     pass
     
-
-#=======================================================================
-def _fillAccountsWithOCEAN():
-    OCEAN = oceanutil.OCEANtoken()
-    
-    for i in range(1, 10):
-        bal_before = fromBase18(OCEAN.balanceOf(accounts[i]))
-        if bal_before < 1000:
-            OCEAN.transfer(accounts[i], toBase18(1000), {"from": accounts[0]})
-        bal_after = fromBase18(OCEAN.balanceOf(accounts[i]))
-        print(f"Account #{i} has {bal_after} OCEAN")
-    print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
-
-def _randomDeployAll(num_pools:int):
-    #create random NUM_POOLS. Randomly add stake.
-    tups = [] # (pub_account_i, DT, pool)
-    for account_i in range(num_pools):
-        (DT, pool) = _randomDeployPool(accounts[account_i])
-        _randomAddStake(pool, account_i)
-        tups.append((account_i, DT, pool))
-
-    #consume data assets randomly
-    for consume_i in range(NUM_CONSUMES):
-        tup = random.choice(tups)
-        (pub_account_i, DT, pool) = tup
-
-        #choose consume account
-        cand_I = [i for i in range(10) if i != pub_account_i]
-        consume_i = random.choice(cand_I)
-        consume_account = accounts[consume_i]
-
-        #buy asset
-        DT_buy_amt = 1.0
-        _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
-
-        #consume asset
-        pub_account = accounts[pub_account_i]
-        _consumeDT(DT, pub_account, consume_account)
-
-    return tups
-
-def _consumeDT(DT, pub_account, consume_account):
-    service_index = 0
-    provider_fee = oceanutil.get_zero_provider_fee_tuple(pub_account)
-    consume_mkt_fee = oceanutil.get_zero_consume_mkt_fee_tuple()
-    DT.startOrder(
-        consume_account, service_index, provider_fee, consume_mkt_fee,
-        {"from": consume_account})
-
-def _randomAddStake(pool, pub_account_i):
-    cand_account_I = [i for i in range(10) if i != pub_account_i]
-    account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
-    for account_i in account_I:
-        OCEAN_stake = AVG_OCEAN_STAKE * (1 + 0.1 * random.random())
-        _addStake(pool, OCEAN_stake, accounts[account_i])
-
-def _addStake(pool, OCEAN_stake, from_account):
-    OCEAN = oceanutil.OCEANtoken()
-    OCEAN.approve(pool.address, toBase18(OCEAN_stake), {"from": from_account})
-    
-    token_amt_in = toBase18(OCEAN_stake)
-    min_pool_amt_out = toBase18(MIN_POOL_BPTS_OUT_FROM_STAKE) #magic number
-
-    #assert tokenAmountIn <= poolBalanceOfToken * MAX_IN_RATIO, "ERR_MAX_IN_RATIO
-    pool.joinswapExternAmountIn(
-        token_amt_in, min_pool_amt_out,  {"from": from_account})
-
-def _buyDT(pool, DT, DT_buy_amt: float, max_OCEAN, from_account):
-    OCEAN = oceanutil.OCEANtoken()
-    OCEAN.approve(pool.address, toBase18(max_OCEAN), {"from": from_account})
-
-    tokenInOutMarket = [
-        OCEAN.address, # token in address
-        DT.address,    # token out address
-        ZERO_ADDRESS,  # market fee  address
-    ]
-    amountsInOutMaxFee = [
-        toBase18(max_OCEAN),  # max OCEAN in
-        toBase18(DT_buy_amt), # target DT out
-        toBase18(AVG_DT_OCEAN_RATE*10), # max price
-        0,                    # swap market fee
-    ]
-
-    #the following test will pass until lotsa activity
-    spot_price = fromBase18(pool.getSpotPrice(OCEAN.address, DT.address, 0))
-    assert AVG_DT_OCEAN_RATE/5 <= spot_price <= AVG_DT_OCEAN_RATE * 5
-    
-    #spotPriceBefore = calcSpotPrice(..)
-    #assert spotPriceBefore <= (max price)], "ERR_BAD_LIMIT_PRICE"
-    pool.swapExactAmountOut(
-        tokenInOutMarket, amountsInOutMaxFee, {"from": from_account})
-    
-def _randomDeployPool(pub_account):
-    init_OCEAN_stake = AVG_INIT_OCEAN_STAKE * (1 + 0.1 * random.random())
-    DT_OCEAN_rate = AVG_DT_OCEAN_RATE * (1 + 0.1 * random.random())
-    DT_cap = int(AVG_DT_CAP * (1 + 0.1 * random.random()))
-    return _deployPool(
-        init_OCEAN_stake, DT_OCEAN_rate, DT_cap, pub_account)
-
-def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
-    (data_NFT, erc721_factory) = oceanutil.createDataNFT(
-        "dataNFT", "DATANFTSYMBOL", from_account)
-
-    DT = oceanutil.createDatatokenFromDataNFT(
-        "DT", "DTSYMBOL", DT_cap, data_NFT, from_account)
-
-    pool = oceanutil.createBPoolFromDatatoken(
-        DT,
-        erc721_factory,
-        from_account,
-        init_OCEAN_stake,
-        DT_OCEAN_rate,
-        DT_vest_amt=0,
-    )
-
-    return (DT, pool)
-
-
-def test_thegraph_approvedTokens():
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanutil.OCEANtoken()
-
-    _randomDeployPool(accounts[0])
-        
-    query = "{ opcs{approvedTokens} }"
-    result = _submitQuery(query)
-
-    pprint(result)
-    
-def test_thegraph_orders():
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanutil.OCEANtoken()
-
-    (_, DT, _) = _randomDeployAll(num_pools=1)[0]
-
-    query = """
-        {
-          orders(where: {block_gte:0, block_lte:1000, datatoken:"%s"}, 
-                 skip:0, first:5) {
-            id,
-            datatoken {
-              id
-            }
-            lastPriceToken,
-            lastPriceValue
-            estimatedUSDValue,
-            block
-          }
-        }
-        """ % (DT.address)
-    result = _submitQuery(query)
-    pprint(result)
-
-def test_thegraph_poolShares():
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanutil.OCEANtoken()
-
-    (_, DT, pool) = _randomDeployAll(num_pools=1)[0]
-    skip = 0
-    INC = 1000
-    block = 0
-    pool_addr = pool.address
-
-    # poolShares(skip:%s, first:%s, block:{number:%s}, where: {pool_in:"%s"}) {
-    query = """
-        {
-          poolShares(skip:%s, first:%s) {
-            pool {
-              id,
-              totalShares
-            }
-            shares,
-            user {
-              id
-            }
-          }
-        }
-        """ % (skip, INC)
-
-    result = _submitQuery(query)
-    pprint(result)
