@@ -280,24 +280,3 @@ def create_checksum(text: str) -> str:
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
-
-class BlockRange:
-    def __init__(self, start_block:int, end_block:int, block_interval:int):
-        self.start_block = start_block
-        self.end_block = end_block
-        self.block_interval = block_interval
-
-    def getRange(self) -> list:
-        L1 = list(range(self.start_block, self.end_block, self.block_interval))
-        L2 = [self.end_block]
-        return L1 + L2
-
-    def numBlocks(self) -> int:
-        return len(self.getRange())
-
-    def __str__(self):
-        return f"BlockRange: start_block={self.start_block}" \
-            f", end_block={self.end_block}" \
-            f", block_interval={self.block_interval}" \
-            f", # blocks sampled={self.numBlocks()}" \
-            f", range={self.getRange()[:4]}.."

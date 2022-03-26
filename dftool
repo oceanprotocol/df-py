@@ -6,9 +6,11 @@ import sys
 
 import brownie
 
+from util.constants import BROWNIE_PROJECT
 from util.base18 import toBase18, fromBase18
-
-BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
+from util.graphutil import oceanSubgraphUrl
+from util.oceanutil import recordDeployedContracts
+from util.rewardsutil import BlockRange, calcRewards
 
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
@@ -20,11 +22,10 @@ Usage: dftool calc|dispense|..
   dftool calc - calculate rewards
   dftool dispense - airdrop funds based on calculations
 
-  dftool token - create token, for testing
   dftool mine - force chain to pass time (ganache only)
 
   dftool accountinfo - info about an account
-  dftool walletinfo - info about a vesting wallet
+  dftool chaininfo - info about a network
   dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
@@ -37,26 +38,49 @@ def show_help():
 def do_calc():
     HELP_CALC = f"""Data Farming Tool - calculate rewards
 
-Usage: dftool calc NETWORK OUTPUT_DIR
+Usage: dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR
 
   NETWORK -- one of {NETWORKS}
+  START -- block # to start calcs on
+  END -- block # to end calcs
+  INTERVAL -- sample every nth block
+  OCEAN -- amount of OCEAN to distribute (in decimal, not wei)
   OUTPUT_DIR -- output directory for csv file.
+
+Uses these envvars:
+  ADDRESS_FILE -- e.g. for barge ~/.ocean/ocean-contracts/artifacts/address.json
+  SUBGRAPH_URI -- e.g. for barge http://127.0.0.1:9000
 """
 
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [2+6]:
         print(HELP_CALC)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "calc"
     NETWORK = sys.argv[2]
-    OUTPUT_DIR = sys.argv[3]
-    print(f"Arguments: NETWORK={NETWORK}, OUTPUT_DIR={OUTPUT_DIR}")
-    
-    # handle corner cases
+    START, END, INTERVAL = int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
+    OCEAN = float(sys.argv[6])
+    OUTPUT_DIR = sys.argv[7]
+    print(f"Arguments:\n NETWORK={NETWORK}" \
+          f"\n START={START}\n END={END}\n INTERVAL={INTERVAL}" \
+          f"\n OCEAN={OCEAN}" \
+          f"\n OUTPUT_DIR={OUTPUT_DIR}")
+        
+    # extract envvars
+    ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
+    SUBGRAPH_URI = os.environ.get('SUBGRAPH_URI')
+    print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " \
+          f"SUBGRAPH_URI={SUBGRAPH_URI}")
+
+    # corner cases
     if os.path.exists(OUTPUT_DIR):
         print(f"\nOutput path '{OUTPUT_DIR}' already exists.  Exiting.\n")
         sys.exit(0)
+    if ADDRESS_FILE is None:
+        print("\nNeed to set envvar ADDRESS_FILE. Exiting.\n"); sys.exit(0)
+    if SUBGRAPH_URI is None:
+        print("\nNeed to set envvar SUBGRAPH_URI. Exiting.\n"); sys.exit(0)
 
     # make directory
     os.mkdir(OUTPUT_DIR)
@@ -65,9 +89,23 @@ Usage: dftool calc NETWORK OUTPUT_DIR
     brownie.network.connect(NETWORK)
     accounts = brownie.network.accounts
     chain = brownie.network.chain
+    assert END <= len(chain)
 
-    #
-    print("FIXME: do rest of 'calc' work now!!")
+    #main work
+    recordDeployedContracts(ADDRESS_FILE, NETWORK)
+    
+    block_range = BlockRange(START, END, INTERVAL)
+
+    subgraph_url = oceanSubgraphUrl(SUBGRAPH_URI)
+    rewards = calcRewards(OCEAN, block_range, subgraph_url)
+    
+    #store to csv
+    csv_file = os.path.join(OUTPUT_DIR, "rewards.csv")
+    with open(csv_file, 'w') as f:
+        writer = csv.writer(f)
+        writer.writerow(["address", "OCEAN_reward"])
+        for address, OCEAN_reward in rewards.items():
+            writer.writerow([address, OCEAN_reward])
 
     #
     print(f"Created output directory: {OUTPUT_DIR}")
@@ -104,53 +142,26 @@ Usage: dftool dispense NETWORK INPUT_DIR
     print("dftool dispense: Done.")
 
 
-# ========================================================================
-def do_token():
-    HELP_TOKEN = f"""Data Farming tool - create test token
-
-Usage: dftool token NETWORK
-
-NETWORK -- one of {NETWORKS}"""
-    if len(sys.argv) not in [3]:
-        print(HELP_TOKEN)
-        sys.exit(0)
-
-    # extract inputs
-    assert sys.argv[1] == "token"
-    NETWORK = sys.argv[2]
-
-    print(f"Arguments: NETWORK={NETWORK}")
-
-    #brownie setup
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
-
-    #
-    from_account = _getPrivateAccount()
-
-    #deploy wallet
-    token = BROWNIE_PROJECT.Simpletoken.deploy(
-        "TST", "Test Token", 18, 1e21, {"from": from_account}
-    )
-    print(f"Token '{token.symbol()}' deployed at address: {token.address}")
-    print("dftool token: done")
-    
+   
 # ========================================================================
 def do_mine():
     HELP_MINE = f"""Vesting wallet - force chain to pass time (ganache only)
 
-Usage: dftool mine BLOCKS TIMEDELTA
+Usage: dftool mine BLOCKS [TIMEDELTA]
 
   BLOCKS -- e.g. 3
   TIMEDELTA -- e.g. 100"""
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [3,4]:
         print(HELP_MINE)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "mine"
     BLOCKS = int(sys.argv[2])
-    TIMEDELTA = int(sys.argv[3])
+    if len(sys.argv) == 4:
+        TIMEDELTA = int(sys.argv[3])
+    else:
+        TIMEDELTA = None
 
     print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
 
@@ -162,14 +173,17 @@ Usage: dftool mine BLOCKS TIMEDELTA
     from_account = _getPrivateAccount()
 
     #make time pass
-    chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
-    
+    if TIMEDELTA is None:
+        chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
+    else:
+        chain.mine(blocks=BLOCKS)
+        
     print("dftool mine: Done.")
 
 
 # ========================================================================
 def show_accountinfo():
-    HELP_ACCOUNTINFO = f"""Vesting wallet - info about an account
+    HELP_ACCOUNTINFO = f"""Data Farming Tool - info about an account
 
 Usage: dftool accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
 
@@ -200,6 +214,31 @@ Usage: dftool accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
     print(f"  balance of token : {fromBase18(balance)} {token.symbol()}")
 
 # ========================================================================
+def show_chaininfo():
+    HELP_CHAININFO = f"""Data Farming Tool - info about a network
+
+Usage: dftool chaininfo NETWORK
+
+  NETWORK -- one of {NETWORKS}"""
+    if len(sys.argv) not in [3]:
+        print(HELP_CHAININFO)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "chaininfo"
+    NETWORK = sys.argv[2]
+
+    print(f"Arguments: NETWORK={NETWORK}")
+
+    #brownie setup
+    brownie.network.connect(NETWORK)
+
+    #release the token
+    blocks = len(brownie.network.chain)
+    print("\nChain info:")
+    print(f"  # blocks: {len(brownie.network.chain)}")
+
+# ========================================================================
 def _getPrivateAccount():
     private_key = os.getenv('DFTOOL_KEY')
     account = brownie.network.accounts.add(private_key=private_key)
@@ -217,14 +256,14 @@ def do_main():
         do_calc()
     elif sys.argv[1] == "dispense":
         do_dispense()
-    elif sys.argv[1] == "token":
-        do_token()
     elif sys.argv[1] == "mine":
         do_mine()
 
     #read actions
     elif sys.argv[1] == "accountinfo":
         show_accountinfo()
+    elif sys.argv[1] == "chaininfo":
+        show_chaininfo()
     else:
         show_help()
 

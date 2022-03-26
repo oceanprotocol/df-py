@@ -1,5 +1,9 @@
 import requests
 
+def oceanSubgraphUrl(subgraph_uri: str) -> str:
+    """subgraph_uri -- e.g. for barge http://127.0.0.1:9000"""
+    return subgraph_uri + "/subgraphs/name/oceanprotocol/ocean-subgraph"
+
 def submitQuery(query: str, subgraph_url:str) -> str:
     request = requests.post(subgraph_url, '', json={'query': query})
     if request.status_code != 200:

@@ -4,8 +4,8 @@ import brownie
 from pprint import pprint
 import pytest
 
-from util import oceanutil
-from util import rewardsutil
+from util.oceanutil import recordDeployedContracts
+from util.rewardsutil import BlockRange, computeRewards
 from util.test import conftest
 
 def test_df_endtoend(ADDRESS_FILE, SUBGRAPH_URL):
@@ -16,18 +16,18 @@ def test_df_endtoend(ADDRESS_FILE, SUBGRAPH_URL):
     start_block = 0
     end_block = len(brownie.network.chain) - 3
     block_interval = 10
-    block_range = oceanutil.BlockRange(start_block, end_block, block_interval)
+    block_range = BlockRange(start_block, end_block, block_interval)
     
     OCEAN_available = 10000.0
-    rewards = rewardsutil.computeRewards(OCEAN_available, block_range, SUBGRAPH_URL)
+    rewards = calcRewards(OCEAN_available, block_range, SUBGRAPH_URL)
     
     sum_rewards = sum(rewards.values())
     assert sum_rewards == pytest.approx(OCEAN_available, 0.01), sum_rewards
 
-    _airdropFunds(rewards)
+    _dispenseFunds(rewards)
 
     
 #=======================================================================
-def _airdropFunds(rewards):
+def _dispenseFunds(rewards):
     pass
     

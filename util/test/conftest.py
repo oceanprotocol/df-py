@@ -7,6 +7,8 @@ from util import oceanutil
 from util.base18 import toBase18, fromBase18
 from util.constants import ZERO_ADDRESS
 
+brownie.network.connect("development") #development = ganache
+
 accounts = brownie.network.accounts
 
 #pool constants
@@ -28,8 +30,8 @@ def ADDRESS_FILE():
 
 @pytest.fixture
 def SUBGRAPH_URL():
-    SUBGRAPH_URI = "http://127.0.0.1:9000" #barge 
-    return SUBGRAPH_URI + "/subgraphs/name/oceanprotocol/ocean-subgraph"
+    barge_subgraph_uri = "http://127.0.0.1:9000"
+    return graphutil.oceanSubgraphurl(barge_subgraph_uri)
 
 def fillAccountsWithOCEAN():
     OCEAN = oceanutil.OCEANtoken()
