@@ -12,8 +12,8 @@ import requests
     
 from util.base18 import toBase18, fromBase18
 from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
-from util import oceanv4util
-from util.oceanv4util import calcDID
+from util import oceanutil
+from util.oceanutil import calcDID
 
 accounts = brownie.network.accounts
 
@@ -39,14 +39,14 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
     
 def test_df_endtoend():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     _fillAccountsWithOCEAN()
     _randomDeployAll(num_pools=2)
 
     start_block = 0
     end_block = len(brownie.network.chain) - 3
     block_interval = 10
-    block_range = oceanv4util.BlockRange(start_block, end_block, block_interval)
+    block_range = oceanutil.BlockRange(start_block, end_block, block_interval)
     
     OCEAN_available = 10000.0
     rewards = _computeRewards(OCEAN_available, block_range)
@@ -97,7 +97,7 @@ def _getLPList(block_range):
     @return
       LP_list - list of [LP_i] : LP_addr
     """
-    SSBOT_address = oceanv4util.Staking().address.lower()
+    SSBOT_address = oceanutil.Staking().address.lower()
     LP_set = set()
 
     print("_getLPList(): begin")
@@ -180,7 +180,7 @@ def _getStake(LP_list, pool_list, block_range):
       S -- 2d array [LP_i, pool_j] : relative_stake_float -- stake in pool
     """
     print("_getStake(): begin")
-    SSBOT_address = oceanv4util.Staking().address.lower()
+    SSBOT_address = oceanutil.Staking().address.lower()
     
     LP_dict = {addr:i for i,addr in enumerate(LP_list)} #[LP_addr]:LP_i
     pool_dict = {addr:j for j,addr in enumerate(pool_list)} #[pool_addr]:pool_j
@@ -242,7 +242,7 @@ def _getConsumeVolume(pools:list, block_range):
     return C
 
 def _getConsumeVolumeAtDT(DT_addr:str, block_range) -> float:
-    OCEAN_addr = oceanv4util.OCEANtoken().address
+    OCEAN_addr = oceanutil.OCEANtoken().address
     C_at_DT = 0.0
     skip = 0
     INC = 1000 #fetch INC results at a time. Max for subgraph=1000
@@ -360,7 +360,7 @@ def _airdropFunds(rewards):
 
 #=======================================================================
 def _fillAccountsWithOCEAN():
-    OCEAN = oceanv4util.OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     
     for i in range(1, 10):
         bal_before = fromBase18(OCEAN.balanceOf(accounts[i]))
@@ -400,8 +400,8 @@ def _randomDeployAll(num_pools:int):
 
 def _consumeDT(DT, pub_account, consume_account):
     service_index = 0
-    provider_fee = oceanv4util.get_zero_provider_fee_tuple(pub_account)
-    consume_mkt_fee = oceanv4util.get_zero_consume_mkt_fee_tuple()
+    provider_fee = oceanutil.get_zero_provider_fee_tuple(pub_account)
+    consume_mkt_fee = oceanutil.get_zero_consume_mkt_fee_tuple()
     DT.startOrder(
         consume_account, service_index, provider_fee, consume_mkt_fee,
         {"from": consume_account})
@@ -414,7 +414,7 @@ def _randomAddStake(pool, pub_account_i):
         _addStake(pool, OCEAN_stake, accounts[account_i])
 
 def _addStake(pool, OCEAN_stake, from_account):
-    OCEAN = oceanv4util.OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(OCEAN_stake), {"from": from_account})
     
     token_amt_in = toBase18(OCEAN_stake)
@@ -425,7 +425,7 @@ def _addStake(pool, OCEAN_stake, from_account):
         token_amt_in, min_pool_amt_out,  {"from": from_account})
 
 def _buyDT(pool, DT, DT_buy_amt: float, max_OCEAN, from_account):
-    OCEAN = oceanv4util.OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(max_OCEAN), {"from": from_account})
 
     tokenInOutMarket = [
@@ -457,13 +457,13 @@ def _randomDeployPool(pub_account):
         init_OCEAN_stake, DT_OCEAN_rate, DT_cap, pub_account)
 
 def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
-    (data_NFT, erc721_factory) = oceanv4util.createDataNFT(
+    (data_NFT, erc721_factory) = oceanutil.createDataNFT(
         "dataNFT", "DATANFTSYMBOL", from_account)
 
-    DT = oceanv4util.createDatatokenFromDataNFT(
+    DT = oceanutil.createDatatokenFromDataNFT(
         "DT", "DTSYMBOL", DT_cap, data_NFT, from_account)
 
-    pool = oceanv4util.createBPoolFromDatatoken(
+    pool = oceanutil.createBPoolFromDatatoken(
         DT,
         erc721_factory,
         from_account,
@@ -476,8 +476,8 @@ def _deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, from_account):
 
 
 def test_thegraph_approvedTokens():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanutil.OCEANtoken()
 
     _randomDeployPool(accounts[0])
         
@@ -487,8 +487,8 @@ def test_thegraph_approvedTokens():
     pprint(result)
     
 def test_thegraph_orders():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanutil.OCEANtoken()
 
     (_, DT, _) = _randomDeployAll(num_pools=1)[0]
 
@@ -511,8 +511,8 @@ def test_thegraph_orders():
     pprint(result)
 
 def test_thegraph_poolShares():
-    oceanv4util.recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = oceanv4util.OCEANtoken()
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+    OCEAN = oceanutil.OCEANtoken()
 
     (_, DT, pool) = _randomDeployAll(num_pools=1)[0]
     skip = 0
