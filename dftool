@@ -6,6 +6,7 @@ import sys
 
 import brownie
 
+from util import dispense
 from util.constants import BROWNIE_PROJECT
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
@@ -100,15 +101,8 @@ Uses these envvars:
     rewards = calcRewards(OCEAN, block_range, subgraph_url)
     
     #store to csv
-    csv_file = os.path.join(OUTPUT_DIR, "rewards.csv")
-    with open(csv_file, 'w') as f:
-        writer = csv.writer(f)
-        writer.writerow(["address", "OCEAN_reward"])
-        for address, OCEAN_reward in rewards.items():
-            writer.writerow([address, OCEAN_reward])
-
-    #
-    print(f"Created output directory: {OUTPUT_DIR}")
+    dispense.rewardsToCsv(OUTPUT_DIR)
+    
     print(f"dftool calc: Done.")
 
 # ========================================================================
