@@ -1,12 +1,13 @@
 import csv
 import os
 
+from util import oceanutil
 from util.constants import BROWNIE_PROJECT062 as B
 
-def deployContract():
-    pass
-    # OCEAN = oceanutil.OCEANtoken()
-    # return B.MerkleAirdrop.deploy(OCEAN.address, {"from": accounts[0]})
+def deployAirdropContract():
+    OCEAN = oceanutil.OCEANtoken()
+    contract = B.MerkleAirdrop.deploy(OCEAN.address, {"from": accounts[0]})
+    return contract
 
 def dispenseRewards(csv_dir:str):
     """@arguments -- csv_dir -- directory path for csv file"""

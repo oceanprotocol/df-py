@@ -24,11 +24,19 @@ def test_1(ADDRESS_FILE):
     dispense.rewardsToCsv(rewards, csv_dir)
 
     #deploy contract
-    dispense_contract = dispense.deployContract()
+    airdrop_contract = dispense.deployAirdropContract()
 
     #=============================================================
     #dispense, first round
-    dispense.dispenseRewards(csv_dir)
+    merkle_root = FIXME
+    total_allocation = sum(rewards.values())
+    assert fromBase18(OCEAN.balanceOf(accounts[0])) >= total_allocation
+    
+    airdrop_contract.seedNewAllocations(
+        merkle_root, toBase18(total_allocation), {"from": accounts[0]})
+    
+    dispense.dispenseRewards(csv_dir, accounts[0])
+    
         
     for a in test_accounts:
         #test before claim
