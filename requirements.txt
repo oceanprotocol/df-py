@@ -1,3 +1,4 @@
 eth-brownie
 enforce_typing
 numpy
+pymerkle

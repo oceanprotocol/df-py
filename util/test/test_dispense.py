@@ -1,9 +1,13 @@
 import brownie
 import os
+from pymerkle import MerkleTree
 
 from util import dispense
 from util import oceanutil
 from util.base18 import fromBase18
+
+def test_pymerkle():
+    tree = MerkleTree()
 
 def test_1(ADDRESS_FILE):
     #set accounts
