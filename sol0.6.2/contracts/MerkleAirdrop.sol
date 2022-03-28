@@ -98,9 +98,9 @@ contract MerkleAirdrop is Ownable {
 
     // Private function - support for claimTranche() and claimTranches()
     function _claimTranche(address _liquidityProvider,
-			uint256 _tranche,
-			uint256 _balance,
-			bytes32[] memory _merkleProof)	
+			   uint256 _tranche,
+			   uint256 _balance,
+			   bytes32[] memory _merkleProof)	
 	private
     {
 	require(_tranche < tranches, "Tranche cannot be in the future");
