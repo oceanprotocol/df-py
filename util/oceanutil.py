@@ -15,12 +15,14 @@ def _contracts(key):
     return CONTRACTS[key]
     
 def recordDeployedContracts(address_file, network):
+    global CONTRACTS
+    C = CONTRACTS
+    if C != {}: #already filled
+        return
+    
     with open(address_file, 'r') as json_file:
         a = json.load(json_file)[network] #dict of contract_name: address
-        
-    global CONTRACTS
-    assert CONTRACTS == {}
-    C = CONTRACTS
+
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
