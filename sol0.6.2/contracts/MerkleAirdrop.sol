@@ -11,14 +11,7 @@ import "OpenZeppelin/openzeppelin-contracts@3.0.1/contracts/access/Ownable.sol";
 /*
 Contracts is from https://medium.com/mochilab/merkle-airdrop-one-of-the-best-airdrop-solution-for-token-issues-e2279df1c5c1
 
-About the logic of the contract:
 
-- The tranches variable stores the id of the Airdrop (we can open different airdrops)
-- Mapping merkleRoots stores the Merkle Root value of the respective Airdrop.
-- Mapping claimed is used to check if in a specific airdrop the address has been claimed or not?
-- The seedNewAllocations function is the init function of the Airdrop, after the end of the airdrop registration, the owner of the contract will call this function to transfer the token to the contract as well as save the Merkle Root value.
-- The private _claimWeek function will check the conditions to see if the user’s address has been claimed or not? Is the tranches id valid or not?
-- The _verifyClaim function will rely on the Merkle Proof submitted by the user to calculate whether the address is correct or not.
 - Finally, the _disburse function is the function that will send the token from the contract to the user when all conditions are satisfied.
 
 */
@@ -32,15 +25,23 @@ contract MerkleAirdrop is Ownable {
     event TrancheExpired(uint256 tranche);
     event RemovedFunder(address indexed _address);
 
+    // eg OCEAN token
     IERC20 public token;
+
+    // [tranche] : Merkle root
     mapping(uint256 => bytes32) public merkleRoots;
+
+    // [tranche][address] : claimed
     mapping(uint256 => mapping(address => bool)) public claimed;
+
+    // tranche id
     uint256 public tranches;
     
     constructor(IERC20 _token) public {
 	token = _token;
     }
-    
+
+    // OPF calls this after new weekly rewards are calculated
     function seedNewAllocations(bytes32 _merkleRoot, uint256 _totalAllocation)
 	public onlyOwner
 	returns (uint256 trancheId)
@@ -51,14 +52,16 @@ contract MerkleAirdrop is Ownable {
 	tranches = tranches.add(1);
 	emit TrancheAdded(trancheId, _merkleRoot, _totalAllocation);
     }
-    
+
+    // OPF calls this to retire a given week (tranche
     function expireTranche(uint256 _trancheId)
 	public onlyOwner
     {
 	merkleRoots[_trancheId] = bytes32(0);
 	emit TrancheExpired(_trancheId);
     }
-    
+
+    // An LP can call this to get OCEAN for a given week (tranche)
     function claimWeek(address _liquidityProvider,
 		       uint256 _tranche,
 		       uint256 _balance,
@@ -69,6 +72,7 @@ contract MerkleAirdrop is Ownable {
 	_disburse(_liquidityProvider, _balance);
     }
     
+    // An LP can call this to get OCEAN for >=1 weeks (tranches)
     function claimWeeks(address _liquidityProvider,
 			uint256[] memory _tranches,
 			uint256[] memory _balances,
@@ -84,7 +88,8 @@ contract MerkleAirdrop is Ownable {
 	}
 	_disburse(_liquidityProvider, totalBalance);
     }
-    
+
+    // Is the Merkle Proof submitted by the user (LP) correct?
     function verifyClaim(address _liquidityProvider,
 			 uint256 _tranche,
 			 uint256 _balance,
@@ -94,7 +99,8 @@ contract MerkleAirdrop is Ownable {
     {
 	return _verifyClaim(_liquidityProvider, _tranche, _balance, _merkleProof);
     }
-    
+
+    // Private function - support for claimWeek() and claimWeeks()
     function _claimWeek(address _liquidityProvider,
 			uint256 _tranche,
 			uint256 _balance,
@@ -108,6 +114,7 @@ contract MerkleAirdrop is Ownable {
 	emit Claimed(_liquidityProvider, _tranche, _balance);
     }
     
+    // Private function - support for verifyClaim()
     function _verifyClaim(address _liquidityProvider,
 			  uint256 _tranche,
 			  uint256 _balance,
@@ -118,7 +125,8 @@ contract MerkleAirdrop is Ownable {
 	bytes32 leaf = keccak256(abi.encodePacked(_liquidityProvider, _balance));
 	return MerkleProof.verify(_merkleProof, merkleRoots[_tranche], leaf);
     }
-    
+
+    // Disburse funds to LP
     function _disburse(address _liquidityProvider,
 		       uint256 _balance)
 	private
