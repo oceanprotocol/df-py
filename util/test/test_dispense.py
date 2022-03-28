@@ -10,12 +10,11 @@ def test_1(ADDRESS_FILE):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     test_accounts = [brownie.network.accounts[i].address for i in range(5, 10)]
     OCEAN = oceanutil.OCEANtoken()
-    bal_before = {account : fromBase18(OCEAN.balanceOf(account))
-                  for account in test_accounts}
+    bal_before = {a : fromBase18(OCEAN.balanceOf(a))
+                  for a in test_accounts}
 
     #set fake rewards
-    rewards = {account : account_i * 100.0 
-               for account_i, account in enumerate(test_accounts)}
+    rewards = {a : i*100.0 for i, a in enumerate(test_accounts)}
 
     #set test file
     csv_dir = '/tmp'
@@ -25,16 +24,58 @@ def test_1(ADDRESS_FILE):
     dispense.rewardsToCsv(rewards, csv_dir)
 
     #deploy contract
-    dispense.deployNewContract()
+    dispense_contract = dispense.deployContract()
 
-    #dispense; test account balances
+    #=============================================================
+    #dispense, first round
     dispense.dispenseRewards(csv_dir)
-    for account in test_accounts:
-        bal_after = fromBase18(OCEAN.balanceOf(account))
-        assert (bal_before[account] - bal_after) == rewards[account]
+        
+    for a in test_accounts:
+        #test before claim
+        bal_inc = fromBase18(OCEAN.balanceOf(a)) - bal_before[a]
+        claimable = fromBase18(dispense_contract.claimable(a))
+        assert bal_inc == 0.0
+        assert fromBase18(dispense_contract.claimable(at)) == rewards[a]
 
-    #dispense again; test account balances again
+        #claim: first two accounts do it, others don't
+        if a in test_accounts[:2]:
+            dispense_contract.claimReward({"from": a})
+
+        #test after claim
+        bal_inc = fromBase18(OCEAN.balanceOf(a)) - bal_before[a]
+        claimable = fromBase18(dispense_contract.claimable(a))
+        if a in test_accounts[:2]:
+            assert bal_inc == rewards[a]
+            assert claimable == 0.0
+        else:
+            assert bal_inc == 0.0
+            assert claimable == rewards[a]
+
+    #=============================================================
+    #dispense, second round
     dispense.dispenseRewards(csv_dir)
-    for account in test_accounts:
-        bal_after = fromBase18(OCEAN.balanceOf(account))
-        assert (bal_before[account] - bal_after) == (rewards[account] * 2)
+    
+    for a in test_accounts:
+        #test before claim
+        bal_inc = fromBase18(OCEAN.balanceOf(a)) - bal_before[a]
+        claimable = fromBase18(dispense_contract.claimable(a))
+        if a in test_accounts[:2]:
+            assert bal_inc == rewards[a]
+            assert claimable == rewards[a]
+        else:
+            assert bal_inc == 0.0
+            assert claimable == rewards[a]*2.0
+
+        #all accounts claim
+        if a in test_accounts:
+            dispense_contract.claimReward({"from": a})
+
+        #test after claim
+        bal_inc = fromBase18(OCEAN.balanceOf(a)) - bal_before[a]
+        claimable = fromBase18(dispense_contract.claimable(a))
+        if a in test_accounts:
+            assert bal_inc == rewards[a]*2.0
+            assert claimable == 0.0
+
+        
+        
