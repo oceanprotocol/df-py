@@ -10,7 +10,7 @@ from util.graphutil import submitQuery
 
 def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
-    print("_computeRewards(): begin")
+    print("calcRewards(): begin")
     print(f"  OCEAN_available: {OCEAN_available}")
     print(f"  block_range: {block_range}")
     
@@ -29,7 +29,7 @@ def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
     print("rewards: (OCEAN for each LP address)")
     pprint(rewards)
 
-    print("_computeRewards(): done")
+    print("calcRewards(): done")
     return rewards
 
 def getPools(subgraph_url:str):

@@ -3,7 +3,7 @@ import os
 import pytest
 import random
 
-from util import oceanutil
+from util import graphutil, oceanutil
 from util.base18 import toBase18, fromBase18
 from util.constants import ZERO_ADDRESS
 
@@ -31,7 +31,7 @@ def ADDRESS_FILE():
 @pytest.fixture
 def SUBGRAPH_URL():
     barge_subgraph_uri = "http://127.0.0.1:9000"
-    return graphutil.oceanSubgraphurl(barge_subgraph_uri)
+    return graphutil.oceanSubgraphUrl(barge_subgraph_uri)
 
 def fillAccountsWithOCEAN():
     OCEAN = oceanutil.OCEANtoken()

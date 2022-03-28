@@ -5,11 +5,11 @@ from pprint import pprint
 import pytest
 
 from util.oceanutil import recordDeployedContracts
-from util.rewardsutil import BlockRange, computeRewards
+from util.rewardsutil import BlockRange, calcRewards
 from util.test import conftest
 
 def test_df_endtoend(ADDRESS_FILE, SUBGRAPH_URL):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployAll(num_pools=2)
 
