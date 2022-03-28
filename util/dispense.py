@@ -1,9 +1,14 @@
 import csv
 import os
 
+from util.constants import BROWNIE_PROJECT
+
 def deployContract():
     """Deploy new claims contract"""
     pass
+    # return BROWNIE_PROJECT.ClaimsContract.deploy(
+    #     "TST", "Test Token", 18, 1e21, {"from": accounts[0]}
+    # )
 
 def dispenseRewards(csv_dir:str):
     """@arguments -- csv_dir -- directory path for csv file"""
