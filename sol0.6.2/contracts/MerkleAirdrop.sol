@@ -41,11 +41,8 @@ contract MerkleAirdrop is Ownable {
 	token = _token;
     }
     
-    function seedNewAllocations(
-				bytes32 _merkleRoot, uint256 _totalAllocation
-				)
-	public
-	onlyOwner
+    function seedNewAllocations(bytes32 _merkleRoot, uint256 _totalAllocation)
+	public onlyOwner
 	returns (uint256 trancheId)
     {
 	token.safeTransferFrom(msg.sender, address(this), _totalAllocation);
@@ -55,34 +52,27 @@ contract MerkleAirdrop is Ownable {
 	emit TrancheAdded(trancheId, _merkleRoot, _totalAllocation);
     }
     
-    function expireTranche(
-			   uint256 _trancheId
-			   )
-	public
-	onlyOwner
+    function expireTranche(uint256 _trancheId)
+	public onlyOwner
     {
 	merkleRoots[_trancheId] = bytes32(0);
 	emit TrancheExpired(_trancheId);
     }
     
-    function claimWeek(
-		       address _liquidityProvider,
+    function claimWeek(address _liquidityProvider,
 		       uint256 _tranche,
 		       uint256 _balance,
-		       bytes32[] memory _merkleProof
-		       )
+		       bytes32[] memory _merkleProof)
 	public
     {
 	_claimWeek(_liquidityProvider, _tranche, _balance, _merkleProof);
 	_disburse(_liquidityProvider, _balance);
     }
     
-    function claimWeeks(
-			address _liquidityProvider,
+    function claimWeeks(address _liquidityProvider,
 			uint256[] memory _tranches,
 			uint256[] memory _balances,
-			bytes32[][] memory _merkleProofs
-			)
+			bytes32[][] memory _merkleProofs)
 	public
     {
 	uint256 len = _tranches.length;
@@ -95,26 +85,20 @@ contract MerkleAirdrop is Ownable {
 	_disburse(_liquidityProvider, totalBalance);
     }
     
-    function verifyClaim(
-			 address _liquidityProvider,
+    function verifyClaim(address _liquidityProvider,
 			 uint256 _tranche,
 			 uint256 _balance,
-			 bytes32[] memory _merkleProof
-			 )
-	public
-	view
+			 bytes32[] memory _merkleProof)
+	public view
 	returns (bool valid)
     {
 	return _verifyClaim(_liquidityProvider, _tranche, _balance, _merkleProof);
     }
     
-    function _claimWeek(
-			address _liquidityProvider,
+    function _claimWeek(address _liquidityProvider,
 			uint256 _tranche,
 			uint256 _balance,
-			bytes32[] memory _merkleProof
-			)
-	
+			bytes32[] memory _merkleProof)	
 	private
     {
 	require(_tranche < tranches, "Week cannot be in the future");
@@ -124,24 +108,19 @@ contract MerkleAirdrop is Ownable {
 	emit Claimed(_liquidityProvider, _tranche, _balance);
     }
     
-    function _verifyClaim(
-			  address _liquidityProvider,
+    function _verifyClaim(address _liquidityProvider,
 			  uint256 _tranche,
 			  uint256 _balance,
-			  bytes32[] memory _merkleProof
-			  )
-	private
-	view
+			  bytes32[] memory _merkleProof)
+	private view
 	returns (bool valid)
     {
 	bytes32 leaf = keccak256(abi.encodePacked(_liquidityProvider, _balance));
 	return MerkleProof.verify(_merkleProof, merkleRoots[_tranche], leaf);
     }
     
-    function _disburse(
-		       address _liquidityProvider,
-		       uint256 _balance
-		       )
+    function _disburse(address _liquidityProvider,
+		       uint256 _balance)
 	private
     {
 	if (_balance > 0) {
