@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 
-pragma solidity ^0.8.12;
+pragma solidity ^0.6.0;
 pragma experimental ABIEncoderV2;
-import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/cryptography/MerkleProof.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/token/ERC20/IERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/token/ERC20/SafeERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/math/SafeMath.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/proxy/Initializable.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/access/Ownable.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.0.1/contracts/cryptography/MerkleProof.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.0.1/contracts/token/ERC20/IERC20.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.0.1/contracts/token/ERC20/SafeERC20.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.0.1/contracts/math/SafeMath.sol";
+import "OpenZeppelin/openzeppelin-contracts@3.0.1/contracts/access/Ownable.sol";
 
 /*
 Contracts is from https://medium.com/mochilab/merkle-airdrop-one-of-the-best-airdrop-solution-for-token-issues-e2279df1c5c1

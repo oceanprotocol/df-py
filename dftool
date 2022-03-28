@@ -20,6 +20,7 @@ HELP_MAIN = """Data Farming Tool - main help
 
 Usage: dftool calc|dispense|..
 
+  dftool compile - compile Solidity code
   dftool calc - calculate rewards
   dftool dispense - airdrop funds based on calculations
 
@@ -34,6 +35,12 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 def show_help():
     print(HELP_MAIN)
     sys.exit(0)
+
+
+# ========================================================================
+# dftool compile
+def do_compile():
+    os.system("./compile.sh")
     
 # ========================================================================
 def do_calc():
@@ -246,6 +253,8 @@ def do_main():
         show_help()
 
     #write actions
+    elif sys.argv[1] == "compile":
+        do_compile()
     elif sys.argv[1] == "calc":
         do_calc()
     elif sys.argv[1] == "dispense":
