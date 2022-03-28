@@ -1,8 +1,8 @@
-echo "compile.sh: Compile sol0.6.0/..."
-cd sol0.6.0
+echo "compile.sh: Compile sol0.6.2/..."
+cd sol0.6.2
 echo """compiler:
    solc:
-       version: 0.6.0""" > brownie-config.yaml
+       version: 0.6.2""" > brownie-config.yaml
 brownie compile
 rm brownie-config.yaml
 cd ..
@@ -10,7 +10,7 @@ cd ..
 echo ""
 
 echo "compile.sh: Compile sol0.8.12/..."
-cd sol080
+cd sol0.8.12
 echo """compiler:
    solc:
        version: 0.8.12""" > brownie-config.yaml

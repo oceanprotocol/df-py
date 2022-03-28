@@ -34,9 +34,9 @@ cd barge
 #ensure v4 repo
 git checkout v4
 
-#run barge. Send stdout & stderr to out.txt
-# Includes deploying contracts, with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
-# To *not* deploy contracts, add "--skip-deploy" argument
+#run barge
+#-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
+#-sends stdout & stderr to out.txt
 ./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > out.txt 2>&1 &
 
 #monitor output
@@ -65,28 +65,24 @@ pip install -r requirements.txt
 brownie pm install OpenZeppelin/openzeppelin-contracts@3.0.1
 brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
 brownie pm install GNSPS/solidity-bytes-utils@0.8.0
-```
 
-### Compile contracts
-
-Barge already compiled & deployed the contracts. We compile them locally too so that Brownie knows the interfaces. (NOTE: there's probably a simpler way to do this.)
-
-First, compile. From terminal:
-```console
-brownie compile
-```
-
-
-# Main Usage: CLI
-
-
-Then, in the main terminal:
-```console
 #add pwd to bash path
 export PATH=$PATH:.
 
-#see dftool help. It will list `calc` and other tools.
+#compile contracts
+dftool compile
+```
+
+# Main Usage: CLI
+
+`dftool` is the main tool. In main terminal:
+```console
+#top-level help, lists all tools
 dftool
+
+#see help for key functions
+dftool calc
+dftool dispense
 ```
 
 **Then, simply follow the usage directions:)**
@@ -128,12 +124,4 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 >>> t.symbol()                                                                                                                                                                                              
 'TEST'
 ```
-
-## Simple script
-
-In terminal:
-```console
-python scripts/play-thegraph-ipynb.py
-```
-
 
