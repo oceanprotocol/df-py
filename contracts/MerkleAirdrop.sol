@@ -1,4 +1,4 @@
-pragma solidity ^0.6.0;
+pragma solidity ^0.8.12;
 pragma experimental ABIEncoderV2;
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/cryptography/MerkleProof.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/IERC20.sol";
@@ -146,7 +146,7 @@ contract PhoneAirdrop is Ownable {
 	if (_balance > 0) {
 	    token.safeTransfer(_liquidityProvider, _balance);
 	} else {
-	    revert("No balance would be transferred — not going to waste your gas");
+	    revert("No balance would be transferred - not going to waste your gas");
 	}
     }
 }
