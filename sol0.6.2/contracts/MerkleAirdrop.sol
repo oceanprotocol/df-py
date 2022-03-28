@@ -111,7 +111,7 @@ contract MerkleAirdrop is Ownable {
 	emit Claimed(_liquidityProvider, _tranche, _balance);
     }
     
-    // Private function - support for verifyClaim()
+    // Private function - support for _claimTranche() and verifyClaim()
     function _verifyClaim(address _liquidityProvider,
 			  uint256 _tranche,
 			  uint256 _balance,
