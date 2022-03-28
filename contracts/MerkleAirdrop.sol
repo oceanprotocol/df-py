@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+
 pragma solidity ^0.8.12;
 pragma experimental ABIEncoderV2;
 import "OpenZeppelin/openzeppelin-contracts@4.5.0/contracts/cryptography/MerkleProof.sol";
