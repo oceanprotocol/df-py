@@ -1,6 +1,6 @@
 import brownie
 
-from util.constants import BROWNIE_PROJECT
+from util.constants import BROWNIE_PROJECT0812 as B
 
 accounts = brownie.network.accounts
 
@@ -34,6 +34,6 @@ def test_transferFrom():
 
 
 def _deployToken():
-    return BROWNIE_PROJECT.Simpletoken.deploy(
+    return B.Simpletoken.deploy(
         "TST", "Test Token", 18, 1e21, {"from": accounts[0]}
     )

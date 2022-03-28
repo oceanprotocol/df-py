@@ -7,7 +7,7 @@ import sys
 import brownie
 
 from util import dispense
-from util.constants import BROWNIE_PROJECT
+from util.constants import BROWNIE_PROJECT0812 as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
 from util.oceanutil import recordDeployedContracts
@@ -209,7 +209,7 @@ Usage: dftool accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
     brownie.network.connect(NETWORK)
 
     #release the token
-    token = BROWNIE_PROJECT.Simpletoken.at(TOKEN_ADDR)
+    token = B.Simpletoken.at(TOKEN_ADDR)
     balance = token.balanceOf(ACCOUNT_ADDR)
     print(f"For account {ACCOUNT_ADDR[:5]}.., token '{token.symbol()}':")
     print(f"  balance of token : {fromBase18(balance)} {token.symbol()}")

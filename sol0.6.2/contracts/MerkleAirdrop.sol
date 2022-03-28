@@ -23,7 +23,7 @@ About the logic of the contract:
 
 */
 
-contract PhoneAirdrop is Ownable {
+contract MerkleAirdrop is Ownable {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
  

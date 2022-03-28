@@ -7,7 +7,7 @@ from typing import Any, List, Dict, Tuple
 import brownie
 
 from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT, ZERO_ADDRESS
+from util.constants import BROWNIE_PROJECT0812 as B, ZERO_ADDRESS
 
 CONTRACTS = {}
 def _contracts(key):
@@ -20,7 +20,7 @@ def recordDeployedContracts(address_file, network):
         
     global CONTRACTS
     assert CONTRACTS == {}
-    B, C = BROWNIE_PROJECT, CONTRACTS
+    C = CONTRACTS
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
@@ -69,7 +69,7 @@ def createDataNFT(name: str, symbol: str, from_account):
         {"from": from_account},
     )
     data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
-    data_NFT = BROWNIE_PROJECT.ERC721Template.at(data_NFT_address)
+    data_NFT = B.ERC721Template.at(data_NFT_address)
     return (data_NFT, erc721_factory)
 
 
@@ -99,7 +99,7 @@ def createDatatokenFromDataNFT(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
     DT_address = tx.events["TokenCreated"]["newTokenAddress"]
-    DT = BROWNIE_PROJECT.ERC20Template.at(DT_address)
+    DT = B.ERC20Template.at(DT_address)
 
     return DT
 
@@ -148,7 +148,7 @@ def createBPoolFromDatatoken(
     tx = datatoken.deployPool(
         ss_params, swap_fees, addresses, {"from": from_account})
     pool_address = poolAddressFromNewBPoolTx(tx)
-    pool = BROWNIE_PROJECT.BPool.at(pool_address)
+    pool = B.BPool.at(pool_address)
 
     return pool
 
