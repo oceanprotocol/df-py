@@ -10,8 +10,8 @@ def test_1(ADDRESS_FILE):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     test_accounts = [brownie.network.accounts[i].address for i in range(5, 10)]
     OCEAN = oceanutil.OCEANtoken()
-    balances_before = {account : fromBase18(OCEAN.balanceOf(account))
-                       for account in test_accounts}
+    bal_before = {account : fromBase18(OCEAN.balanceOf(account))
+                  for account in test_accounts}
 
     #set fake rewards
     rewards = {account : account_i * 100.0 
@@ -24,13 +24,17 @@ def test_1(ADDRESS_FILE):
         os.remove(csv_file)
     dispense.rewardsToCsv(rewards, csv_dir)
 
-    #**MAIN WORK: call dispense**
-    dispense.dispenseRewards(csv_dir)
+    #deploy contract
+    dispense.deployNewContract()
 
-    #did dispense work?
+    #dispense; test account balances
+    dispense.dispenseRewards(csv_dir)
     for account in test_accounts:
-        bal_before = balances_before[account]
         bal_after = fromBase18(OCEAN.balanceOf(account))
-        exp_reward = rewards[account]
-        assert (bal_before + exp_reward) == bal_after
-                               
+        assert (bal_before[account] - bal_after) == rewards[account]
+
+    #dispense again; test account balances again
+    dispense.dispenseRewards(csv_dir)
+    for account in test_accounts:
+        bal_after = fromBase18(OCEAN.balanceOf(account))
+        assert (bal_before[account] - bal_after) == (rewards[account] * 2)

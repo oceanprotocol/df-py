@@ -1,9 +1,13 @@
 import csv
 import os
 
+def deployContract():
+    """Deploy new claims contract"""
+    pass
+
 def dispenseRewards(csv_dir:str):
     """@arguments -- csv_dir -- directory path for csv file"""
-    pass #FIXME
+    pass
 
 def rewardsPathToFile(path:str) -> str:
     return os.path.join(path, 'rewards.csv')
