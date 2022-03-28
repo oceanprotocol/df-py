@@ -14,7 +14,7 @@ Contracts is from https://medium.com/mochilab/merkle-airdrop-one-of-the-best-air
 About the logic of the contract:
 
 - The tranches variable stores the id of the Airdrop (we can open different airdrops)
-- Mapping merkelRoots stores the Merkle Root value of the respective Airdrop.
+- Mapping merkleRoots stores the Merkle Root value of the respective Airdrop.
 - Mapping claimed is used to check if in a specific airdrop the address has been claimed or not?
 - The seedNewAllocations function is the init function of the Airdrop, after the end of the airdrop registration, the owner of the contract will call this function to transfer the token to the contract as well as save the Merkle Root value.
 - The private _claimWeek function will check the conditions to see if the user’s address has been claimed or not? Is the tranches id valid or not?
