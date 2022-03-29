@@ -51,6 +51,9 @@ class LeafNode(AbstractNode):
             self._hash = web3.solidityKeccak(abi_types, values)
         return self._hash
 
+    def verify(self, proof:list, root, leaf):
+        raise NotImplementedError()
+
 class InternalNode(AbstractNode):
     def __init__(self, left:AbstractNode, right:AbstractNode):
         assert left is not None or right is not None
@@ -69,5 +72,8 @@ class InternalNode(AbstractNode):
                 values.append(self.right.solidityKeccak())
             self._hash = web3.solidityKeccak(abi_types, values)
         return self._hash
+
+    def verify(self, proof:list, root, leaf):
+        raise NotImplementedError()
 
 
