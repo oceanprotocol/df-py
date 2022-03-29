@@ -33,10 +33,10 @@ class InternalNode(AbstractNode):
             abi_types, values = [], []
             if self.left is not None:
                 abi_types.append("bytes")
-                values.append(self.left.solidityKeccak)
+                values.append(self.left.solidityKeccak())
             if self.right is not None:
                 abi_types.append("bytes")
-                values.append(self.right.solidityKeccak)
+                values.append(self.right.solidityKeccak())
             self._hash = web3.solidityKeccak(abi_types, values)
         return self._hash
 
