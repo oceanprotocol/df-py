@@ -39,6 +39,7 @@ class AbstractNode(ABC):
 
 class LeafNode(AbstractNode):
     def __init__(self, address:str, amt_OCEAN:int):
+        """The 'data' in DF Merkle trees is {address, amt_OCEAN}."""
         self.address:str = address
         self.amt_OCEAN:int = amt_OCEAN
         self._hash = None
