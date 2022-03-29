@@ -5,7 +5,7 @@ from brownie import web3
 
 class AbstractNode(ABC):
     @abstractmethod
-    def solidityKeccak(self) -> :
+    def solidityKeccak(self):
         pass
 
 class LeafNode(AbstractNode):
