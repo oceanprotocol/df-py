@@ -2,6 +2,7 @@
 
 from abc import ABC, abstractmethod
 from brownie import web3
+import numpy
 
 class AbstractNode(ABC):
     @abstractmethod
@@ -38,27 +39,62 @@ class AbstractNode(ABC):
         pass
 
 class LeafNode(AbstractNode):
-    def __init__(self, address:str, amt_OCEAN:int):
+    def __init__(self, address:str, amt_OCEAN:float):
         """The 'data' in DF Merkle trees is {address, amt_OCEAN}."""
         self.address:str = address
-        self.amt_OCEAN:int = amt_OCEAN
+        self.amt_OCEAN:float = amt_OCEAN
         self._hash = None
 
     def solidityKeccak(self):
         if self._hash is None:
             abi_types = ["address", "uint256"]
-            values = [self.address, self.amt_OCEAN]
+            values = [self.address, toBase18(self.amt_OCEAN)]
             self._hash = web3.solidityKeccak(abi_types, values)
         return self._hash
 
     def verify(self, proof:list, root, leaf):
-        raise NotImplementedError()
+        return 
+
+def buildTreeFromDict(rewards:dict):
+    """
+    @arguments 
+      rewards -- dict of [address_str] : amt_OCEAN_float
+    @return
+      tree --
+    """
+    rewards_list = _sortedRewardsList(rewards)
+    return buildTreeFromList(rewards_list)
+
+def buildTreeFromList(rewards_list):
+    """
+    @arguments 
+      rewards_list -- list of [(address_str, amt_OCEAN_float)]
+    @return
+      tree -- AbstractTree --
+    """
+    N = len(rewards_list)
+    assert N > 0, "need entries"
+    if N == 1:
+        address, amt_OCEAN = rewards_list[0]
+        return LeafNode(address, amt_OCEAN)
+    else:
+        left = _buildTreeFromList(rewards_list[:N/2])
+        right = _buildTreeFromList(rewards_list[N/2:])
+        return InternalNode(left, right)
+    
+def _sortedRewardsList(rewards_dict:dict):
+    """@return -- rewards_list -- list of (address_str, amt_OCEAN_float), 
+    sorted from largest amt_OCEAN to smallest."""
+    addrs = rewards_dict.keys()
+    amts = [rewards_dict[a] for a in addrs]
+    I = numpy.argsort(amts, reverse=True)[::-1]
+    return [(addrs[i], rewards_dict[addrs[i]]) for i in I]
+
 
 class InternalNode(AbstractNode):
-    def __init__(self, left:AbstractNode, right:AbstractNode):
-        assert left is not None or right is not None
-        self.left:AbstractNode = left
-        self.right:AbstractNode = right
+    def __init__(self, left, right):
+        self.left = left
+        self.right = right        
         self._hash = None
 
     def solidityKeccak(self):
@@ -75,5 +111,3 @@ class InternalNode(AbstractNode):
 
     def verify(self, proof:list, root, leaf):
         raise NotImplementedError()
-
-

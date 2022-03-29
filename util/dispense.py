@@ -9,19 +9,31 @@ def deployAirdropContract():
     contract = B.MerkleAirdrop.deploy(OCEAN.address, {"from": accounts[0]})
     return contract
 
-def dispenseRewards(csv_dir:str):
+def dispenseRewards(csv_dir:str, from_account):
     """@arguments -- csv_dir -- directory path for csv file"""
-    pass
+    rewards = csvToRewards(csv_dir)
+    root_node = mtree.buildTreeFromList(rewards)
+    merkle_root = root_node.solidityKeccak()
+    
+    total_allocation = sum(rewards_a)
+    assert fromBase18(OCEAN.balanceOf(from_account)) >= total_allocation
+    
+    airdrop_contract.seedNewAllocations(
+        merkle_root, toBase18(total_allocation), {"from": from_account})
 
+
+
+
+    
 def rewardsPathToFile(path:str) -> str:
     return os.path.join(path, 'rewards.csv')
 
 def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
     """
     @description
-      Given rewards dict, store is as csv:
+      Given rewards dict, store as csv:
 
-      address  OCEAN_reward  
+      address  amt_OCEAN
       0x123    123.123
       0x456    456.456
       ..       ..
@@ -34,7 +46,7 @@ def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(["address", "OCEAN_reward"])
+        writer.writerow(["address", "amt_OCEAN"])
         for address, OCEAN_reward in rewards.items():
             writer.writerow([address, OCEAN_reward])
     print(f"Filled rewards file: {csv_file}")
@@ -48,7 +60,7 @@ def csvToRewards(dir):
       csv_dir -- directory path for csv file
 
     @return
-      rewards -- dict of [LP_addr] : OCEAN_float
+      rewards -- dict of [address_str] : amt_OCEAN_float
     """
     csv_file = rewardsPathToFile(csv_dir)
     rewards = {}
