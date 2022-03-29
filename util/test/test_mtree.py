@@ -1,5 +1,6 @@
 import brownie
 from hexbytes import HexBytes
+import pytest
 
 from util.mtree import LeafNode, InternalNode
 from util.base18 import fromBase18, toBase18
@@ -11,3 +12,8 @@ def test_LeafNode():
     amt_OCEAN = toBase18(0.1)
     node = LeafNode(address, amt_OCEAN)
     assert node.solidityKeccak() == HexBytes('0xb99e933b3798d061dbc97519d2fafff7f95663d6183fa8006ebd07456718965c')
+
+def test_InternalNode_1():
+    with pytest.raises(AssertionError):
+        node = InternalNode(None, None)
+    

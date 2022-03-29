@@ -23,6 +23,7 @@ class LeafNode(AbstractNode):
 
 class InternalNode(AbstractNode):
     def __init__(self, left:AbstractNode, right:AbstractNode):
+        assert left is not None or right is not None
         self.left:AbstractNode = left
         self.right:AbstractNode = right
         self._hash = None
@@ -30,7 +31,6 @@ class InternalNode(AbstractNode):
     def solidityKeccak(self):
         if self._hash is None:
             abi_types, values = [], []
-            assert self.left is not None or self.right is not None
             if self.left is not None:
                 abi_types.append("bytes")
                 values.append(self.left.solidityKeccak)
