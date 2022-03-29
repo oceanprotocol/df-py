@@ -6,6 +6,35 @@ from brownie import web3
 class AbstractNode(ABC):
     @abstractmethod
     def solidityKeccak(self):
+        """
+        Like web3.solidityKeccak(abi_types, value):
+
+        Returns the Keccak-256 as it would be computed by the solidity keccak
+        function on a packed ABI encoding of the value list contents. The 
+        abi_types argument should be a list of solidity type strings which 
+        correspond to each of the provided values.
+
+        >>> Web3.solidityKeccak(['uint8[]'], [[97, 98, 99]])
+        HexBytes("0x233002c671295529bcc..")
+
+        >>> Web3.solidityKeccak(['address'],
+         ["0x49EdDD3769c0712032808D86597B84ac5c2F5614"])
+        HexBytes("0x2ff37b5607484cd4eecf6..")
+
+        https://web3py.readthedocs.io/en/stable/web3.main.html
+        """
+        pass
+    
+    @abstractmethod
+    def verify(self, proof:list, root, leaf):
+        """
+        Returns True if a `leaf` can be proved to be a part of a Merkle tree
+        defined by `root`. For this, a `proof` must be provided, containing
+        sibling hashes on the branch from the leaf to the root of the tree. Each
+        pair of leaves and each pair of pre-images are assumed to be sorted.
+
+        Note: this is the same interface as MerkleProof.sol::verify() by design.
+        """
         pass
 
 class LeafNode(AbstractNode):
@@ -41,19 +70,3 @@ class InternalNode(AbstractNode):
         return self._hash
 
 
-
-
-# web3.solidityKeccak(abi_types, value):
-#   Returns the Keccak-256 as it would be computed by the solidity keccak
-#   function on a packed ABI encoding of the value list contents. The abi_types
-#   argument should be a list of solidity type strings which correspond to
-#   each of the provided values.
-#
-#   >>> Web3.solidityKeccak(['uint8[]'], [[97, 98, 99]])
-#   HexBytes("0x233002c671295529bcc..")
-#
-#   >>> Web3.solidityKeccak(['address'],
-#    ["0x49EdDD3769c0712032808D86597B84ac5c2F5614"])
-#   HexBytes("0x2ff37b5607484cd4eecf6..")
-#
-#   https://web3py.readthedocs.io/en/stable/web3.main.html
