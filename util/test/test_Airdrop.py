@@ -7,18 +7,20 @@ accounts = brownie.network.accounts
 a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
 def test_no_allocate():
-    (_, airdrop) = _deployContracts(accounts[0])
+    TOK = _deployToken(accounts[0])
+    airdrop = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
     assert airdrop.claimable(a1) == 0
 
-def test_allocate_many():
-    (TOK, airdrop) = _deployContracts(accounts[0])
+def test_allocate():
+    TOK = _deployToken(accounts[9])
+    TOK.transfer(accounts[0].address, toBase18(100.0), {"from": accounts[9]})
+    
+    airdrop = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
         
     tos = [a1, a2, a3]
     values = [10, 20, 30]
     TOK.approve(airdrop, 10+20+30, {"from": accounts[0]})
     airdrop.allocate(tos, values, {"from": accounts[0]})
-
-    brownie.network.chain.mine(blocks=2)
     
     assert airdrop.claimable(a1) == 10
     assert airdrop.claimable(a2) == 20
@@ -39,10 +41,8 @@ def test_allocate_many():
     airdrop.claimFor(a3, {"from": accounts[9]})
     assert TOK.balanceOf(a3) == 30
 
-def _deployContracts(from_account):
-    TOK = B.Simpletoken.deploy(
-        "TOK", "TOK", 18, toBase18(100.0), {"from": from_account})
-    airdrop = B.Airdrop.deploy(TOK.address, {"from": from_account})
-    return (TOK, airdrop)
-
+def _deployToken(account):
+    return B.Simpletoken.deploy(
+        "TOK", "TOK", 18, toBase18(100.0), {"from": account})
+    
 
