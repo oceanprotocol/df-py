@@ -157,7 +157,7 @@ Usage: dftool deploy NETWORK TOKEN_ADDR
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "dispense"
+    assert sys.argv[1] == "deploy"
     NETWORK = sys.argv[2]
     TOKEN_ADDR = sys.argv[3]
 
