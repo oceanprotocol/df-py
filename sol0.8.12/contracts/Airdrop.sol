@@ -3,7 +3,7 @@ pragma solidity 0.8.12;
 
 
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/IERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/SafeERC20.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/SafeERC20.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 
@@ -26,9 +26,8 @@ contract Airdrop is Ownable {
 
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
-    function allocate(address[] calldata tos,  //need/want calldata??
-		      uint256[] calldata values, //""
-		      )
+    function allocate(address[] calldata tos, uint256[] calldata values)
+	external
 	returns (bool success)
     {
 	require(tos.length == values.length, "Lengths must match");
@@ -43,12 +42,12 @@ contract Airdrop is Ownable {
 
 	token.safeTransferFrom(msg.sender, address(this), total_value);
 
-	emit Allocated(tos, values)
+	emit Allocated(tos, values);
 	return true;
     }
 
     // Recipient claims for themselves
-    function claim() public returns (bool success) {
+    function claim() external returns (bool success) {
 	claim(msg.sender);
 	return true;
     }
@@ -58,7 +57,7 @@ contract Airdrop is Ownable {
 	uint256 value = balances[to];
 	require (value > 0, "Nothing to claim");
 	balances[address(this)] = balances[address(this)].sub(value);
-	token.safeTransfer(to, value)
+	token.safeTransfer(to, value);
 	balances[to] = balances[to].add(value);
 	emit Claimed(to, value);
 	return true;
