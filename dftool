@@ -17,19 +17,18 @@ NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
 # ========================================================================
 HELP = """Usage: dftool calc|dispense|..
-  Main help.
+Main help.
 
-  dftool calc - calculate rewards
-  dftool dispense - airdrop funds based on calculations
+dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR - calculate rewards
+dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - airdrop funds
 
-  dftool compile - compile Solidity code
-  dftool deploy - deploy new airdrop contract (only need once per network)
-  dftool mine - force chain to pass time (ganache only)
-  dftool newacct - generate new account
+dftool deploy NETWORK TOKEN_ADDR - deploy new airdrop contract
+dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
+dftool newacct - generate new account
 
-  dftool acctinfo - info about an account
-  dftool chaininfo - info about a network
-  dftool help - this message
+dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR - info about an account
+dftool chaininfo NETWORK - info about a network
+dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
