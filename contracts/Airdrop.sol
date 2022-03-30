@@ -22,6 +22,10 @@ contract Airdrop is Ownable, ReentrancyGuard {
 	token = IERC20(token_address);
     }
 
+    function getToken() public view returns (address) {
+	return address(token);
+    }
+
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
     function allocate(address[] calldata _tos, uint256[] calldata _values)

@@ -7,9 +7,10 @@ from util import oceanutil
 accounts = brownie.network.accounts
 a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
-def test_no_allocate():
+def test_basic():
     TOK = _deployTOK(accounts[0])
     airdrop = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
+    assert airdrop.getToken() == TOK.address
     assert airdrop.claimable(a1) == 0
 
 def test_TOK():
