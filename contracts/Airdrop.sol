@@ -46,6 +46,10 @@ contract Airdrop is Ownable {
 	return true;
     }
 
+    function claimable(address to) external view returns (uint256 value) {
+	return balances[to];
+    }
+    
     // Recipient claims for themselves
     function claim() external returns (bool success) {
 	claim(msg.sender);

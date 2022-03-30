@@ -13,12 +13,18 @@ def test_1():
         "TOK", "TOK", 18, toBase18(100.0), {"from": accounts[0]})
     
     airdrop_contract = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
-    TOK.approve(airdrop_contract, toBase18(10.0), {"from": accounts[0]})
 
+    assert airdrop_contract.claimable(a1) == 0
+    
     tos = list(rewards.keys())
     values = [toBase18(rewards[to]) for to in tos]
     assert min(values) > 0
+    TOK.approve(airdrop_contract, toBase18(sum(values)), {"from": accounts[0]})
     airdrop_contract.allocate(tos, values, {"from": accounts[0]})
+
+    assert fromBase18(airdrop_contract.claimable(a1)) == 0.1
+    assert fromBase18(airdrop_contract.claimable(a2)) == 0.2
+    assert fromBase18(airdrop_contract.claimable(a3)) == 0.3
 
     #a1 claims for itself
     assert TOK.balanceOf(a1) == 0
