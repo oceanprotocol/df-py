@@ -1,7 +1,7 @@
 import brownie
 import os
 
-from util import dispense, mtree, oceanutil
+from util import dispense, oceanutil
 from util.base18 import fromBase18
 
 def test_1(ADDRESS_FILE):

@@ -2,28 +2,18 @@ import csv
 import os
 
 from util import oceanutil
-from util.constants import BROWNIE_PROJECT062 as B
+from util.constants import BROWNIE_PROJECT0812 as B
 
 def deployAirdropContract():
-    OCEAN = oceanutil.OCEANtoken()
-    contract = B.MerkleAirdrop.deploy(OCEAN.address, {"from": accounts[0]})
+    #FIXME
+    contract = B.FOO.deploy(bar, bah, {"from": accounts[0]})
     return contract
 
 def dispenseRewards(csv_dir:str, from_account):
     """@arguments -- csv_dir -- directory path for csv file"""
     rewards = csvToRewards(csv_dir)
-    root_node = mtree.buildTreeFromList(rewards)
-    merkle_root = root_node.solidityKeccak()
-    
-    total_allocation = sum(rewards_a)
-    assert fromBase18(OCEAN.balanceOf(from_account)) >= total_allocation
-    
-    airdrop_contract.seedNewAllocations(
-        merkle_root, toBase18(total_allocation), {"from": from_account})
 
-
-
-
+    #FIXME
     
 def rewardsPathToFile(path:str) -> str:
     return os.path.join(path, 'rewards.csv')
