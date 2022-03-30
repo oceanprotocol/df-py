@@ -39,9 +39,6 @@ def test_allocate_many():
     airdrop.claimFor(a3, {"from": accounts[9]})
     assert TOK.balanceOf(a3) == 30
 
-def test_allocate_thousands():
-    pass
-
 def _deployContracts(from_account):
     TOK = B.Simpletoken.deploy(
         "TOK", "TOK", 18, toBase18(100.0), {"from": from_account})
