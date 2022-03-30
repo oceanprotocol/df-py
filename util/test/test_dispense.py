@@ -18,33 +18,7 @@ def test_csv():
     assert rewards == {to:value_f for to,value_f in zip(tos, values_float)} 
     assert values_float == [fromBase18(value_int) for value_int in values_int]
 
-def test_via_direct(ADDRESS_FILE):
-    recordDeployedContracts(ADDRESS_FILE, "development")
-    OCEAN = OCEANtoken()
-    airdrop = B.Airdrop.deploy(OCEAN.address, {"from": accounts[0]})
-
-    rewards = {a1:0.1, a2:0.2, a3:0.3}
-    
-    tos = list(rewards.keys())
-    values_int = [toBase18(rewards[to]) for to in tos]
-    
-    OCEAN.approve(airdrop, sum(values_int), {"from": accounts[0]})
-    airdrop.allocate(tos, values_int, {"from": accounts[0]})
-
-    #a1 claims for itself
-    bal_before = fromBase18(OCEAN.balanceOf(a1))
-    airdrop.claim({"from": accounts[1]})
-    bal_after = fromBase18(OCEAN.balanceOf(a1))
-    assert (bal_after - bal_before) == pytest.approx(0.1)
-
-    #a9 claims on behalf of a1
-    bal_before = fromBase18(OCEAN.balanceOf(a3))
-    airdrop.claimFor(a3, {"from": accounts[9]})
-    bal_after = fromBase18(OCEAN.balanceOf(a3))
-    assert (bal_after - bal_before) == pytest.approx(0.3)
-
-
-def test_via_dispenseRewards(ADDRESS_FILE):
+def test_main(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
 
