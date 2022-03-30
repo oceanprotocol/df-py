@@ -20,10 +20,11 @@ HELP_MAIN = """Data Farming Tool - main help
 
 Usage: dftool calc|dispense|..
 
-  dftool compile - compile Solidity code
   dftool calc - calculate rewards
   dftool dispense - airdrop funds based on calculations
 
+  dftool compile - compile Solidity code
+  dftool deploy - deploy new airdrop contract (only need once per network)
   dftool mine - force chain to pass time (ganache only)
 
   dftool accountinfo - info about an account
@@ -36,11 +37,6 @@ def show_help():
     print(HELP_MAIN)
     sys.exit(0)
 
-
-# ========================================================================
-# dftool compile
-def do_compile():
-    os.system("brownie compile")
     
 # ========================================================================
 def do_calc():
@@ -112,16 +108,18 @@ Uses these envvars:
     
     print(f"dftool calc: Done.")
 
+
 # ========================================================================
 def do_dispense():
     HELP_DISPENSE = f"""Data Farming Tool - airdrop funds based on calculations
 
-Usage: dftool dispense NETWORK INPUT_DIR
+Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
 
   NETWORK -- one of {NETWORKS}
-  INPUT_DIR -- string -- input directory for csv file.
+  INPUT_DIR -- string -- input directory for csv file
+  AIRDROP_ADDR -- string -- address of the airdrop contract
 """
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [5]:
         print(HELP_DISPENSE)
         sys.exit(0)
 
@@ -129,19 +127,58 @@ Usage: dftool dispense NETWORK INPUT_DIR
     assert sys.argv[1] == "dispense"
     NETWORK = sys.argv[2]
     INPUT_DIR = sys.argv[3]
+    AIRDROP_ADDR = sys.argv[4]
 
-    print(f"Arguments: NETWORK={NETWORK}, INPUT_DIR={INPUT_DIR}")
+    print(f"Arguments: NETWORK={NETWORK}, INPUT_DIR={INPUT_DIR}" \
+          f", AIRDROP_ADDR={AIRDROP_ADDR}")
 
     #brownie setup
     brownie.network.connect(NETWORK) 
     accounts = brownie.network.accounts
     from_account = _getPrivateAccount()
 
-    #
-    print("FIXME: do rest of 'dispense' work now!!")
-    
+    #main work
+    dispense.dispenseFromCsv(INPUT_DIR, AIRDROP_ADDR, from_account)
+
     print("dftool dispense: Done.")
 
+    
+# ========================================================================
+def do_deploy():
+    HELP_DEPLOY = f"""Data Farming Tool - deploy new airdrop contract
+
+Usage: dftool deploy NETWORK TOKEN_ADDR
+
+  NETWORK -- one of {NETWORKS}
+  TOKEN_ADDR -- e.g. OCEAN address
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP_DEPLOY)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "dispense"
+    NETWORK = sys.argv[2]
+    TOKEN_ADDR = sys.argv[3]
+
+    print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}")
+
+    #brownie setup
+    brownie.network.connect(NETWORK) 
+    accounts = brownie.network.accounts
+    from_account = _getPrivateAccount()
+
+    #main work
+    airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": accounts[0]})
+    print(f"Deployed new Airdrop contract, with address: {airdrop.address}")
+    
+    print("dftool deploy: Done.")
+
+
+# ========================================================================
+# dftool compile
+def do_compile():
+    os.system("brownie compile")
 
    
 # ========================================================================
@@ -257,6 +294,8 @@ def do_main():
         do_compile()
     elif sys.argv[1] == "calc":
         do_calc()
+    elif sys.argv[1] == "deploy":
+        do_deploy()
     elif sys.argv[1] == "dispense":
         do_dispense()
     elif sys.argv[1] == "mine":
