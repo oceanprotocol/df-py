@@ -26,44 +26,56 @@ contract Airdrop is Ownable {
 
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
-    function allocate(address[] calldata tos, uint256[] calldata values)
-	external
-	returns (bool success)
+    function allocate(address[] calldata _tos, uint256[] calldata _values)
+	external returns (bool)
     {
-	require(tos.length == values.length, "Lengths must match");
+	require(_tos.length == _values.length, "Lengths must match");
 
 	uint256 total_value = 0.0;
-	for (uint i = 0; i < values.length; i += 1) {
-            require(tos[i] != address(0), "Address invalid");
-            require(values[i] > 0, "Value invalid");	 
-	    balances[tos[i]].add(values[i]);
-	    total_value = total_value + values[i];
+	for (uint i = 0; i < _values.length; i += 1) {
+            require(_tos[i] != address(0), "Address invalid");
+            require(_values[i] > 0, "Value invalid");
+	    address to = _tos[i];
+	    uint256 value = _values[i];
+	    balances[to].add(value);
+	    total_value = total_value + value;
         }
 
 	token.safeTransferFrom(msg.sender, address(this), total_value);
 
-	emit Allocated(tos, values);
+	emit Allocated(_tos, _values);
 	return true;
     }
 
-    function claimable(address to) external view returns (uint256 value) {
-	return balances[to];
+    // We can allocate just one address as well
+    function allocate1(address _to, uint256 _value) external returns (bool)
+    {
+	require(_to != address(0), "Address invalid");
+	require(_value > 0, "Value invalid");
+	balances[_to] = _value;
+	//balances[_to].add(_value);
+	token.safeTransferFrom(msg.sender, address(this), _value);
+	return true;
+    }
+
+    function claimable(address _to) public view returns (uint256) {
+	return balances[_to];
     }
     
     // Recipient claims for themselves
-    function claim() external returns (bool success) {
-	claim(msg.sender);
+    function claim() external returns (bool) {
+	claimFor(msg.sender);
 	return true;
     }
 
     // Others claim on behalf of recipient
-    function claim(address to) public returns (bool success) {
-	uint256 value = balances[to];
+    function claimFor(address _to) public returns (bool) {
+	uint256 value = balances[_to];
 	require (value > 0, "Nothing to claim");
 	balances[address(this)] = balances[address(this)].sub(value);
-	token.safeTransfer(to, value);
-	balances[to] = balances[to].add(value);
-	emit Claimed(to, value);
+	token.safeTransfer(_to, value);
+	balances[_to] = balances[_to].add(value);
+	emit Claimed(_to, value);
 	return true;
     }
 }
