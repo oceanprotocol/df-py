@@ -16,9 +16,8 @@ from util.rewardsutil import BlockRange, calcRewards
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
 # ========================================================================
-HELP = """Data Farming Tool - main help
-
-Usage: dftool calc|dispense|..
+HELP = """Usage: dftool calc|dispense|..
+  Main help.
 
   dftool calc - calculate rewards
   dftool dispense - airdrop funds based on calculations
@@ -41,9 +40,8 @@ def show_help():
     
 # ========================================================================
 def do_calc():
-    HELP = f"""Data Farming Tool - calculate rewards
-
-Usage: dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR
+    HELP = f"""Usage: dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR
+  Calculate rewards.
 
   NETWORK -- one of {NETWORKS}
   START -- block # to start calcs on
@@ -112,9 +110,8 @@ Uses these envvars:
 
 # ========================================================================
 def do_dispense():
-    HELP = f"""Data Farming Tool - airdrop funds based on calculations
-
-Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
+    HELP = f"""Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
+  Airdrop funds based on calculations.
 
   NETWORK -- one of {NETWORKS}
   INPUT_DIR -- string -- input directory for csv file
@@ -146,9 +143,8 @@ Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
     
 # ========================================================================
 def do_deploy():
-    HELP = f"""Data Farming Tool - deploy new airdrop contract
-
-Usage: dftool deploy NETWORK TOKEN_ADDR
+    HELP = f"""Usage: dftool deploy NETWORK TOKEN_ADDR
+  Deploy new airdrop contract.
 
   NETWORK -- one of {NETWORKS}
   TOKEN_ADDR -- e.g. OCEAN address
@@ -184,9 +180,8 @@ def do_compile():
    
 # ========================================================================
 def do_mine():
-    HELP = f"""Data Farming tool - force chain to pass time (ganache only)
-
-Usage: dftool mine BLOCKS [TIMEDELTA]
+    HELP = f"""Usage: dftool mine BLOCKS [TIMEDELTA]
+  Force chain to pass time (ganache only).
 
   BLOCKS -- e.g. 3
   TIMEDELTA -- e.g. 100"""
@@ -222,9 +217,8 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 
 # ========================================================================
 def do_newacct():
-    HELP = f"""Data Farming tool - generate new account
-
-Usage: dftool newacct
+    HELP = f"""Usage: dftool newacct
+  Generate new account.
 """
     if len(sys.argv) not in [2]:
         print(HELP)
@@ -233,23 +227,20 @@ Usage: dftool newacct
     # extract inputs
     assert sys.argv[1] == "newacct"
 
-    print(f"Arguments: <NONE>")
-
     #brownie setup
     NETWORK = 'development' #hardcoded bc it's the only one we can force
     brownie.network.connect(NETWORK) 
     account = brownie.network.accounts.add()
     
-    print("New account:")
+    print("Generated new account:")
     print(f" private_key = {account.private_key}")
     print(f" address = {account.address}")
     print(f" For other dftools: export DFTOOL_KEY={account.private_key}")
 
 # ========================================================================
 def show_acctinfo():
-    HELP = f"""Data Farming Tool - info about an account
-
-Usage: dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
+    HELP = f"""Usage: dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
+  Info about an account.
 
   NETWORK -- one of {NETWORKS}
   TOKEN_ADDR -- e.g. '0x123..'
@@ -278,9 +269,8 @@ Usage: dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
 
 # ========================================================================
 def show_chaininfo():
-    HELP = f"""Data Farming Tool - info about a network
-
-Usage: dftool chaininfo NETWORK
+    HELP = f"""Usage: dftool chaininfo NETWORK
+  Info about a network.
 
   NETWORK -- one of {NETWORKS}"""
     if len(sys.argv) not in [3]:
@@ -328,7 +318,6 @@ def do_main():
         do_mine()
     elif sys.argv[1] == "newacct":
         do_newacct()
-        
 
     #read actions
     elif sys.argv[1] == "acctinfo":
