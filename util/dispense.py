@@ -3,17 +3,11 @@ import os
 
 from util import oceanutil
 from util.constants import BROWNIE_PROJECT as B
+from util.base18 import fromBase18, toBase18
 
-def deployAirdropContract():
-    #FIXME
-    contract = B.FOO.deploy(bar, bah, {"from": accounts[0]})
-    return contract
-
-def dispenseRewards(csv_dir:str, from_account):
+def dispenseRewards(csv_dir:str, airdrop_contract_addr:str, from_account):
     """@arguments -- csv_dir -- directory path for csv file"""
-    rewards = csvToRewards(csv_dir)
-
-    #FIXME
+    raise NotImplementedError()
     
 def rewardsPathToFile(path:str) -> str:
     return os.path.join(path, 'rewards.csv')
@@ -41,7 +35,7 @@ def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
             writer.writerow([address, OCEAN_reward])
     print(f"Filled rewards file: {csv_file}")
 
-def csvToRewards(dir):
+def csvToRewards(csv_dir):
     """
     @description
       Given rewards csv, extract it as dict
@@ -55,10 +49,11 @@ def csvToRewards(dir):
     csv_file = rewardsPathToFile(csv_dir)
     rewards = {}
     with open(csv_file, 'r') as f:
-        reader = csv.writer(f)
+        reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i > 0:
-                (address, OCEAN_reward) = row
+                address = row[0]
+                OCEAN_reward = float(row[1])
                 rewards[address] = OCEAN_reward
     return rewards
 
