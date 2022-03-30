@@ -52,8 +52,7 @@ contract Airdrop is Ownable {
     {
 	require(_to != address(0), "Address invalid");
 	require(_value > 0, "Value invalid");
-	balances[_to] = _value;
-	//balances[_to].add(_value);
+	balances[_to].add(_value);
 	token.safeTransferFrom(msg.sender, address(this), _value);
 	return true;
     }
