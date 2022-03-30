@@ -16,7 +16,7 @@ from util.rewardsutil import BlockRange, calcRewards
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
 # ========================================================================
-HELP_MAIN = """Data Farming Tool - main help
+HELP = """Data Farming Tool - main help
 
 Usage: dftool calc|dispense|..
 
@@ -26,21 +26,22 @@ Usage: dftool calc|dispense|..
   dftool compile - compile Solidity code
   dftool deploy - deploy new airdrop contract (only need once per network)
   dftool mine - force chain to pass time (ganache only)
+  dftool newacct - generate new account
 
-  dftool accountinfo - info about an account
+  dftool acctinfo - info about an account
   dftool chaininfo - info about a network
   dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
 def show_help():
-    print(HELP_MAIN)
+    print(HELP)
     sys.exit(0)
 
     
 # ========================================================================
 def do_calc():
-    HELP_CALC = f"""Data Farming Tool - calculate rewards
+    HELP = f"""Data Farming Tool - calculate rewards
 
 Usage: dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR
 
@@ -57,7 +58,7 @@ Uses these envvars:
 """
 
     if len(sys.argv) not in [2+6]:
-        print(HELP_CALC)
+        print(HELP)
         sys.exit(0)
 
     # extract inputs
@@ -111,7 +112,7 @@ Uses these envvars:
 
 # ========================================================================
 def do_dispense():
-    HELP_DISPENSE = f"""Data Farming Tool - airdrop funds based on calculations
+    HELP = f"""Data Farming Tool - airdrop funds based on calculations
 
 Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
 
@@ -120,7 +121,7 @@ Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
   AIRDROP_ADDR -- string -- address of the airdrop contract
 """
     if len(sys.argv) not in [5]:
-        print(HELP_DISPENSE)
+        print(HELP)
         sys.exit(0)
 
     # extract inputs
@@ -145,7 +146,7 @@ Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
     
 # ========================================================================
 def do_deploy():
-    HELP_DEPLOY = f"""Data Farming Tool - deploy new airdrop contract
+    HELP = f"""Data Farming Tool - deploy new airdrop contract
 
 Usage: dftool deploy NETWORK TOKEN_ADDR
 
@@ -153,7 +154,7 @@ Usage: dftool deploy NETWORK TOKEN_ADDR
   TOKEN_ADDR -- e.g. OCEAN address
 """
     if len(sys.argv) not in [4]:
-        print(HELP_DEPLOY)
+        print(HELP)
         sys.exit(0)
 
     # extract inputs
@@ -166,10 +167,10 @@ Usage: dftool deploy NETWORK TOKEN_ADDR
     #brownie setup
     brownie.network.connect(NETWORK) 
     accounts = brownie.network.accounts
-    from_account = _getPrivateAccount()
 
     #main work
-    airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": accounts[0]})
+    from_account = _getPrivateAccount()
+    airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": from_account})
     print(f"Deployed new Airdrop contract, with address: {airdrop.address}")
     
     print("dftool deploy: Done.")
@@ -183,14 +184,14 @@ def do_compile():
    
 # ========================================================================
 def do_mine():
-    HELP_MINE = f"""Vesting wallet - force chain to pass time (ganache only)
+    HELP = f"""Data Farming tool - force chain to pass time (ganache only)
 
 Usage: dftool mine BLOCKS [TIMEDELTA]
 
   BLOCKS -- e.g. 3
   TIMEDELTA -- e.g. 100"""
     if len(sys.argv) not in [3,4]:
-        print(HELP_MINE)
+        print(HELP)
         sys.exit(0)
 
     # extract inputs
@@ -220,27 +221,51 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 
 
 # ========================================================================
-def show_accountinfo():
-    HELP_ACCOUNTINFO = f"""Data Farming Tool - info about an account
+def do_newacct():
+    HELP = f"""Data Farming tool - generate new account
 
-Usage: dftool accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
+Usage: dftool newacct
+"""
+    if len(sys.argv) not in [2]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "newacct"
+
+    print(f"Arguments: <NONE>")
+
+    #brownie setup
+    NETWORK = 'development' #hardcoded bc it's the only one we can force
+    brownie.network.connect(NETWORK) 
+    account = brownie.network.accounts.add()
+    
+    print("New account:")
+    print(f" private_key = {account.private_key}")
+    print(f" address = {account.address}")
+    print(f" For other dftools: export DFTOOL_KEY={account.private_key}")
+
+# ========================================================================
+def show_acctinfo():
+    HELP = f"""Data Farming Tool - info about an account
+
+Usage: dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
 
   NETWORK -- one of {NETWORKS}
   TOKEN_ADDR -- e.g. '0x123..'
   ACCOUNT_ADDR -- account address, e.g. '0x987...'"""
     if len(sys.argv) not in [5]:
-        print(HELP_ACCOUNTINFO)
+        print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "accountinfo"
+    assert sys.argv[1] == "acctinfo"
     NETWORK = sys.argv[2]
     TOKEN_ADDR = sys.argv[3]
     ACCOUNT_ADDR = sys.argv[4]
 
     print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}"
-          f", ACCOUNT_ADDR={ACCOUNT_ADDR}"
-    )
+          f", ACCOUNT_ADDR={ACCOUNT_ADDR}"    )
 
     #brownie setup
     brownie.network.connect(NETWORK)
@@ -253,13 +278,13 @@ Usage: dftool accountinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
 
 # ========================================================================
 def show_chaininfo():
-    HELP_CHAININFO = f"""Data Farming Tool - info about a network
+    HELP = f"""Data Farming Tool - info about a network
 
 Usage: dftool chaininfo NETWORK
 
   NETWORK -- one of {NETWORKS}"""
     if len(sys.argv) not in [3]:
-        print(HELP_CHAININFO)
+        print(HELP)
         sys.exit(0)
 
     # extract inputs
@@ -279,6 +304,7 @@ Usage: dftool chaininfo NETWORK
 # ========================================================================
 def _getPrivateAccount():
     private_key = os.getenv('DFTOOL_KEY')
+    assert private_key is not None, "Need to set envvar DFTOOL_KEY"
     account = brownie.network.accounts.add(private_key=private_key)
     print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
@@ -290,20 +316,23 @@ def do_main():
         show_help()
 
     #write actions
-    elif sys.argv[1] == "compile":
-        do_compile()
     elif sys.argv[1] == "calc":
         do_calc()
+    elif sys.argv[1] == "compile":
+        do_compile()
     elif sys.argv[1] == "deploy":
         do_deploy()
     elif sys.argv[1] == "dispense":
         do_dispense()
     elif sys.argv[1] == "mine":
         do_mine()
+    elif sys.argv[1] == "newacct":
+        do_newacct()
+        
 
     #read actions
-    elif sys.argv[1] == "accountinfo":
-        show_accountinfo()
+    elif sys.argv[1] == "acctinfo":
+        show_acctinfo()
     elif sys.argv[1] == "chaininfo":
         show_chaininfo()
     else:
