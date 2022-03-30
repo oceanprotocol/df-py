@@ -19,7 +19,7 @@ NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 HELP = """Usage: dftool calc|dispense|..
 Main help.
 
-dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR - calculate rewards
+dftool calc NETWORK START END INTERVAL TOT_OCEAN OUTPUT_DIR - calculate rewards
 dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - airdrop funds
 
 dftool deploy NETWORK TOKEN_ADDR - deploy new airdrop contract
@@ -39,14 +39,14 @@ def show_help():
     
 # ========================================================================
 def do_calc():
-    HELP = f"""Usage: dftool calc NETWORK START END INTERVAL OCEAN OUTPUT_DIR
+    HELP = f"""Usage: dftool calc NETWORK START END INTERVAL TOT_OCEAN OUTPUT_DIR
   Calculate rewards.
 
   NETWORK -- one of {NETWORKS}
   START -- block # to start calcs on
   END -- block # to end calcs
   INTERVAL -- sample every nth block
-  OCEAN -- amount of OCEAN to distribute (in decimal, not wei)
+  TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
   OUTPUT_DIR -- output directory for csv file.
 
 Uses these envvars:
@@ -62,11 +62,11 @@ Uses these envvars:
     assert sys.argv[1] == "calc"
     NETWORK = sys.argv[2]
     START, END, INTERVAL = int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
-    OCEAN = float(sys.argv[6])
+    TOT_OCEAN = float(sys.argv[6])
     OUTPUT_DIR = sys.argv[7]
     print(f"Arguments:\n NETWORK={NETWORK}" \
           f"\n START={START}\n END={END}\n INTERVAL={INTERVAL}" \
-          f"\n OCEAN={OCEAN}" \
+          f"\n TOT_OCEAN={TOT_OCEAN}" \
           f"\n OUTPUT_DIR={OUTPUT_DIR}")
         
     # extract envvars
@@ -99,7 +99,7 @@ Uses these envvars:
     block_range = BlockRange(START, END, INTERVAL)
 
     subgraph_url = oceanSubgraphUrl(SUBGRAPH_URI)
-    rewards = calcRewards(OCEAN, block_range, subgraph_url)
+    rewards = calcRewards(TOT_OCEAN, block_range, subgraph_url)
     
     #store to csv
     dispense.rewardsToCsv(OUTPUT_DIR)
@@ -109,14 +109,14 @@ Uses these envvars:
 
 # ========================================================================
 def do_dispense():
-    HELP = f"""Usage: dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR
+    HELP = f"""Usage: dftool dispense NETWORK INPUT_DIR [AIRDROP_ADDR]
   Airdrop funds based on calculations.
 
   NETWORK -- one of {NETWORKS}
-  INPUT_DIR -- string -- input directory for csv file
-  AIRDROP_ADDR -- string -- address of the airdrop contract
+  INPUT_DIR -- input directory for csv file
+  AIRDROP_ADDR -- airdrop contract. If not given, uses envvar AIRDROP_ADDR
 """
-    if len(sys.argv) not in [5]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
@@ -124,10 +124,15 @@ def do_dispense():
     assert sys.argv[1] == "dispense"
     NETWORK = sys.argv[2]
     INPUT_DIR = sys.argv[3]
-    AIRDROP_ADDR = sys.argv[4]
-
+    if len(sys.argv) == 4:
+        print("Set AIRDROP_ADDR from envvar")
+        AIRDROP_ADDR = os.getenv('AIRDROP_ADDR')
+    else:
+        AIRDROP_ADDR = sys.argv[4]
+        
     print(f"Arguments: NETWORK={NETWORK}, INPUT_DIR={INPUT_DIR}" \
           f", AIRDROP_ADDR={AIRDROP_ADDR}")
+    assert AIRDROP_ADDR is not None
 
     #brownie setup
     brownie.network.connect(NETWORK) 
@@ -146,7 +151,7 @@ def do_deploy():
   Deploy new airdrop contract.
 
   NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- e.g. OCEAN address
+  TOKEN_ADDR -- e.g. address of OCEAN token
 """
     if len(sys.argv) not in [4]:
         print(HELP)
