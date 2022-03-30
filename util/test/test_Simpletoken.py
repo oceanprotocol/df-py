@@ -1,6 +1,6 @@
 import brownie
 
-from util.constants import BROWNIE_PROJECT0812 as B
+from util.constants import BROWNIE_PROJECT as B
 
 accounts = brownie.network.accounts
 

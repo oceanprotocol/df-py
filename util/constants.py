@@ -2,4 +2,4 @@ import brownie
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
-BROWNIE_PROJECT0812 = brownie.project.load("./sol0.8.12", name="Project0812")
+BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")

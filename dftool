@@ -7,7 +7,7 @@ import sys
 import brownie
 
 from util import dispense
-from util.constants import BROWNIE_PROJECT0812 as B
+from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
 from util.oceanutil import recordDeployedContracts
@@ -40,7 +40,7 @@ def show_help():
 # ========================================================================
 # dftool compile
 def do_compile():
-    os.system("./compile.sh")
+    os.system("brownie compile")
     
 # ========================================================================
 def do_calc():

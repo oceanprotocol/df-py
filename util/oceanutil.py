@@ -7,7 +7,7 @@ from typing import Any, List, Dict, Tuple
 import brownie
 
 from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT0812 as B, ZERO_ADDRESS
+from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
 CONTRACTS = {}
 def _contracts(key):
