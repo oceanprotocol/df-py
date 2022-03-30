@@ -1,11 +1,11 @@
 import brownie
 import os
 
-from util import dispense
-from util import oceanutil
+from util import dispense, mtree, oceanutil
 from util.base18 import fromBase18
 
 def test_1(ADDRESS_FILE):
+    #=============================================================
     #set accounts
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     test_accounts = [brownie.network.accounts[i].address for i in range(5, 10)]
@@ -23,19 +23,13 @@ def test_1(ADDRESS_FILE):
         os.remove(csv_file)
     dispense.rewardsToCsv(rewards, csv_dir)
 
+    #=============================================================
     #deploy contract
     airdrop_contract = dispense.deployAirdropContract()
 
     #=============================================================
-    #dispense, first round
-    merkle_root = FIXME
-    total_allocation = sum(rewards.values())
-    assert fromBase18(OCEAN.balanceOf(accounts[0])) >= total_allocation
-    
-    airdrop_contract.seedNewAllocations(
-        merkle_root, toBase18(total_allocation), {"from": accounts[0]})
-    
-    dispense.dispenseRewards(csv_dir, accounts[0])
+    #dispense, first round    
+    dispense.dispenseRewards(csv_dir, from_account=accounts[0])
     
         
     for a in test_accounts:
@@ -43,7 +37,7 @@ def test_1(ADDRESS_FILE):
         bal_inc = fromBase18(OCEAN.balanceOf(a)) - bal_before[a]
         claimable = fromBase18(dispense_contract.claimable(a))
         assert bal_inc == 0.0
-        assert fromBase18(dispense_contract.claimable(at)) == rewards[a]
+        assert claimable == rewards[a]
 
         #claim: first two accounts do it, others don't
         if a in test_accounts[:2]:
