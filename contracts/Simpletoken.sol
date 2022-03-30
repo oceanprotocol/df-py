@@ -15,7 +15,7 @@ contract Simpletoken {
     mapping(address => uint256) balances;
     mapping(address => mapping(address => uint256)) allowed;
 
-
+    event NewToken(address newTokenAddress);
     event Transfer(address from, address to, uint256 value);
     event Approval(address owner, address spender, uint256 value);
 
@@ -32,7 +32,7 @@ contract Simpletoken {
         decimals = _decimals;
         totalSupply = _totalSupply;
         balances[msg.sender] = _totalSupply;
-        emit Transfer(address(0), msg.sender, _totalSupply);
+        emit NewToken(address(this));
     }
 
     fallback () external payable { // >= 0.6.0

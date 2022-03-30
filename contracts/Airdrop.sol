@@ -20,8 +20,8 @@ contract Airdrop is Ownable {
     // eg OCEAN token
     IERC20 public token;
 
-    constructor(IERC20 _token) public {
-	token = _token;
+    constructor(address token_address) public {
+	token = IERC20(token_address);
     }
 
     // Caller calls token.safeApprove(contract_addr, sum(values)),

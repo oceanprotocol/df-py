@@ -1,6 +1,6 @@
 import brownie
 
-from util.constants import BROWNIE_PROJECT0812 as B
+from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 
 accounts = brownie.network.accounts
@@ -12,11 +12,12 @@ def test_1():
     TOK = B.Simpletoken.deploy(
         "TOK", "TOK", 18, toBase18(100.0), {"from": accounts[0]})
     
-    airdrop_contract = B.Airdrop.deploy(TOK, {"from": accounts[0]})
+    airdrop_contract = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
     TOK.approve(airdrop_contract, toBase18(10.0), {"from": accounts[0]})
 
     tos = list(rewards.keys())
-    values = [rewards[to] for to in tos]
+    values = [toBase18(rewards[to]) for to in tos]
+    assert min(values) > 0
     airdrop_contract.allocate(tos, values, {"from": accounts[0]})
 
     #a1 claims for itself
