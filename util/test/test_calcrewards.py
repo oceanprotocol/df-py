@@ -1,11 +1,9 @@
-#Draws from https://github.com/oceanprotocol/df-js/blob/main/script/index.js
-
 import brownie
 from pprint import pprint
 import pytest
 
 from util.oceanutil import recordDeployedContracts
-from util.rewardsutil import BlockRange, calcRewards
+from util.calcrewards import BlockRange, calcRewards
 from util.test import conftest
 
 def test_1(ADDRESS_FILE, SUBGRAPH_URL):

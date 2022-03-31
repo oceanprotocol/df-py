@@ -11,7 +11,7 @@ from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
 from util.oceanutil import recordDeployedContracts, OCEANtoken
-from util.rewardsutil import BlockRange, calcRewards
+from util.calcrewards import BlockRange, calcRewards
 
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
