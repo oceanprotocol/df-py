@@ -8,7 +8,7 @@ from util.oceanutil import recordDeployedContracts
 from util.rewardsutil import BlockRange, calcRewards
 from util.test import conftest
 
-def test_df_endtoend(ADDRESS_FILE, SUBGRAPH_URL):
+def test_1(ADDRESS_FILE, SUBGRAPH_URL):
     recordDeployedContracts(ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployAll(num_pools=2)
@@ -24,10 +24,4 @@ def test_df_endtoend(ADDRESS_FILE, SUBGRAPH_URL):
     sum_rewards = sum(rewards.values())
     assert sum_rewards == pytest.approx(OCEAN_available, 0.01), sum_rewards
 
-    _dispenseFunds(rewards)
-
-    
-#=======================================================================
-def _dispenseFunds(rewards):
-    pass
     

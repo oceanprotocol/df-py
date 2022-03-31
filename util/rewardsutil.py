@@ -1,3 +1,5 @@
+#Draws from https://github.com/oceanprotocol/df-js/blob/main/script/index.js
+
 import json
 import numpy
 from numpy import log10
