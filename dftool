@@ -10,7 +10,7 @@ from util import dispense
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
-from util.oceanutil import recordDeployedContracts
+from util.oceanutil import recordDeployedContracts, OCEANtoken
 from util.rewardsutil import BlockRange, calcRewards
 
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
@@ -22,11 +22,11 @@ Main help.
 dftool calc NETWORK START END INTERVAL TOT_OCEAN OUTPUT_DIR - calculate rewards
 dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - airdrop funds
 
-dftool deploy NETWORK TOKEN_ADDR - deploy new airdrop contract
+dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
 dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
 dftool newacct - generate new account
 
-dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR - info about an account
+dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
 dftool chaininfo NETWORK - info about a network
 dftool help - this message
 
@@ -40,14 +40,14 @@ def show_help():
 # ========================================================================
 def do_calc():
     HELP = f"""Usage: dftool calc NETWORK START END INTERVAL TOT_OCEAN OUTPUT_DIR
-  Calculate rewards.
+Calculate rewards.
 
-  NETWORK -- one of {NETWORKS}
-  START -- block # to start calcs on
-  END -- block # to end calcs
-  INTERVAL -- sample every nth block
-  TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
-  OUTPUT_DIR -- output directory for csv file.
+NETWORK -- one of {NETWORKS}
+START -- block # to start calcs on
+END -- block # to end calcs
+INTERVAL -- sample every nth block
+TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
+OUTPUT_DIR -- output directory for csv file.
 
 Uses these envvars:
   ADDRESS_FILE -- e.g. for barge ~/.ocean/ocean-contracts/artifacts/address.json
@@ -110,11 +110,11 @@ Uses these envvars:
 # ========================================================================
 def do_dispense():
     HELP = f"""Usage: dftool dispense NETWORK INPUT_DIR [AIRDROP_ADDR]
-  Airdrop funds based on calculations.
+Airdrop funds based on calculations.
 
-  NETWORK -- one of {NETWORKS}
-  INPUT_DIR -- input directory for csv file
-  AIRDROP_ADDR -- airdrop contract. If not given, uses envvar AIRDROP_ADDR
+NETWORK -- one of {NETWORKS}
+INPUT_DIR -- input directory for csv file
+AIRDROP_ADDR -- airdrop contract. If not given, uses envvar AIRDROP_ADDR
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
@@ -146,19 +146,19 @@ def do_dispense():
 
     
 # ========================================================================
-def do_deploy():
-    HELP = f"""Usage: dftool deploy NETWORK TOKEN_ADDR
-  Deploy new airdrop contract.
+def do_newcontract():
+    HELP = f"""Usage: dftool newcontract NETWORK TOKEN_ADDR
+Deploy new airdrop contract.
 
-  NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- e.g. address of OCEAN token
+NETWORK -- one of {NETWORKS}
+TOKEN_ADDR -- e.g. address of OCEAN token
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "deploy"
+    assert sys.argv[1] == "newcontract"
     NETWORK = sys.argv[2]
     TOKEN_ADDR = sys.argv[3]
 
@@ -173,7 +173,7 @@ def do_deploy():
     airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": from_account})
     print(f"Deployed new Airdrop contract, with address: {airdrop.address}")
     
-    print("dftool deploy: Done.")
+    print("dftool newcontract: Done.")
 
 
 # ========================================================================
@@ -222,7 +222,7 @@ def do_mine():
 # ========================================================================
 def do_newacct():
     HELP = f"""Usage: dftool newacct
-  Generate new account.
+Generate new account.
 """
     if len(sys.argv) not in [2]:
         print(HELP)
@@ -243,40 +243,55 @@ def do_newacct():
 
 # ========================================================================
 def show_acctinfo():
-    HELP = f"""Usage: dftool acctinfo NETWORK TOKEN_ADDR ACCOUNT_ADDR
-  Info about an account.
+    HELP = f"""Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
+Info about an account.
 
-  NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- e.g. '0x123..'
-  ACCOUNT_ADDR -- account address, e.g. '0x987...'"""
-    if len(sys.argv) not in [5]:
+NETWORK -- one of {NETWORKS}
+ACCOUNT_ADDR -- e.g. '0x987...' or '4'. If the latter, uses accounts[i]
+TOKEN_ADDR -- e.g. '0x123..'
+
+If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
+"""
+    if len(sys.argv) not in [4,5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "acctinfo"
     NETWORK = sys.argv[2]
-    TOKEN_ADDR = sys.argv[3]
-    ACCOUNT_ADDR = sys.argv[4]
+    ACCOUNT_ADDR = sys.argv[3]
+    TOKEN_ADDR = sys.argv[4] if len(sys.argv) >= 5 else None
 
-    print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}"
-          f", ACCOUNT_ADDR={ACCOUNT_ADDR}"    )
-
-    #brownie setup
     brownie.network.connect(NETWORK)
+    if len(str(ACCOUNT_ADDR)) == 1:
+        addr_i = int(ACCOUNT_ADDR)
+        ACCOUNT_ADDR = brownie.accounts[addr_i]
+    
+    #do work
+    print("Account info:")
+    print(f"  Address = {ACCOUNT_ADDR}")
 
-    #release the token
-    token = B.Simpletoken.at(TOKEN_ADDR)
-    balance = token.balanceOf(ACCOUNT_ADDR)
-    print(f"For account {ACCOUNT_ADDR[:5]}.., token '{token.symbol()}':")
-    print(f"  balance of token : {fromBase18(balance)} {token.symbol()}")
+    if TOKEN_ADDR is not None:
+        token = B.Simpletoken.at(TOKEN_ADDR)
+        balance = token.balanceOf(ACCOUNT_ADDR)
+        print(f"  {fromBase18(balance)} {token.symbol()}")
+
+    #Give balance for OCEAN token too.
+    ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE, NETWORK)
+        OCEAN = OCEANtoken()
+        if OCEAN.address != TOKEN_ADDR:
+            print(f"  {fromBase18(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
+            
+        
 
 # ========================================================================
 def show_chaininfo():
     HELP = f"""Usage: dftool chaininfo NETWORK
-  Info about a network.
+Info about a network.
 
-  NETWORK -- one of {NETWORKS}"""
+NETWORK -- one of {NETWORKS}"""
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
@@ -285,12 +300,8 @@ def show_chaininfo():
     assert sys.argv[1] == "chaininfo"
     NETWORK = sys.argv[2]
 
-    print(f"Arguments: NETWORK={NETWORK}")
-
-    #brownie setup
+    #do work
     brownie.network.connect(NETWORK)
-
-    #release the token
     blocks = len(brownie.network.chain)
     print("\nChain info:")
     print(f"  # blocks: {len(brownie.network.chain)}")
@@ -314,8 +325,8 @@ def do_main():
         do_calc()
     elif sys.argv[1] == "compile":
         do_compile()
-    elif sys.argv[1] == "deploy":
-        do_deploy()
+    elif sys.argv[1] == "newcontract":
+        do_newcontract()
     elif sys.argv[1] == "dispense":
         do_dispense()
     elif sys.argv[1] == "mine":
