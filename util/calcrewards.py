@@ -7,12 +7,14 @@ from numpy import log10
 from pprint import pprint
 import requests
 
-from util import oceanutil, blockrange
+from util import oceanutil
+from util.blockrange import BlockRange
 from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
 @enforce_types
-def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
+def calcRewards(OCEAN_available:float, block_range:BlockRange,
+                subgraph_url:str) -> dict:
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
     print("calcRewards(): begin")
     print(f"  OCEAN_available: {OCEAN_available}")
@@ -21,11 +23,13 @@ def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
     pools = getPools(subgraph_url) #list of dict
     LP_list = getLPList(block_range, subgraph_url) #list [LP_i]:LP_addr
 
-    C = getConsumeVolume(pools, block_range, subgraph_url) #array [pool_j]:OCEAN_float
+    C = getConsumeVolume(
+        pools, block_range, subgraph_url) #array [pool_j]:OCEAN_float
 
     pool_list = [pool["id"] for pool in pools] #list [pool_j]:pool_addr
     
-    S = getStake(LP_list, pool_list, block_range, subgraph_url) #array [LP_i,pool_j]:float
+    S = getStake(
+        LP_list, pool_list, block_range, subgraph_url) #array [LP_i,pool_j]:flt
 
     R = _calcRewardPerLP(C, S, OCEAN_available) #array [LP_i]:OCEAN_float
 
@@ -47,15 +51,8 @@ def getPools(subgraph_url:str):
     return pools
 
 @enforce_types
-def getLPList(block_range, subgraph_url:str):
-    """
-    @arguments
-      block_range -- BlockRange
-      subgraph_url -- str
-
-    @return
-      LP_list - list of [LP_i] : LP_addr
-    """
+def getLPList(block_range:BlockRange, subgraph_url:str):
+    """@return -- list of [LP_i] : LP_addr"""
     SSBOT_address = oceanutil.Staking().address.lower()
     LP_set = set()
 
@@ -130,7 +127,8 @@ def _calcRewardPerLP(C, S, OCEAN_available:float):
     return R
 
 @enforce_types
-def getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
+def getStake(
+        LP_list:list, pool_list:list, block_range:BlockRange, subgraph_url:str):
     """
     @arguments
       LP_list -- list of [LP_i] : LP_addr
@@ -194,7 +192,7 @@ def getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
     return S
     
 @enforce_types
-def getConsumeVolume(pools:list, block_range, subgraph_url:str):
+def getConsumeVolume(pools:list, block_range:BlockRange, subgraph_url:str):
     """@return -- C -- 1d array of [pool_j] : OCEAN_float"""
     print("getConsumeVolume(): begin")
     num_pools = len(pools)
@@ -206,7 +204,8 @@ def getConsumeVolume(pools:list, block_range, subgraph_url:str):
     return C
 
 @enforce_types
-def getConsumeVolumeAtDT(DT_addr:str, block_range, subgraph_url:str) -> float:
+def getConsumeVolumeAtDT(
+        DT_addr:str, block_range:BlockRange, subgraph_url:str) -> float:
     OCEAN_addr = oceanutil.OCEANtoken().address
     C_at_DT = 0.0
     skip = 0
