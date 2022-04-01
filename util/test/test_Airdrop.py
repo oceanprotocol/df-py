@@ -1,4 +1,5 @@
 import brownie
+from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
@@ -7,12 +8,14 @@ from util import oceanutil
 accounts = brownie.network.accounts
 a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
+@enforce_types
 def test_basic():
     TOK = _deployTOK(accounts[0])
     airdrop = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
     assert airdrop.getToken() == TOK.address
     assert airdrop.claimable(a1) == 0
 
+@enforce_types
 def test_TOK():
     TOK = _deployTOK(accounts[9])
     TOK.transfer(accounts[0].address, toBase18(100.0), {"from": accounts[9]})
@@ -43,6 +46,7 @@ def test_TOK():
     airdrop.claimFor(a3, {"from": accounts[9]})
     assert TOK.balanceOf(a3) == 30
 
+@enforce_types
 def test_OCEAN(ADDRESS_FILE):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()
@@ -60,6 +64,7 @@ def test_OCEAN(ADDRESS_FILE):
     bal_after = OCEAN.balanceOf(a1)
     assert (bal_after - bal_before) == 10    
 
+@enforce_types
 def _deployTOK(account):
     return B.Simpletoken.deploy(
         "TOK", "TOK", 18, toBase18(100.0), {"from": account})

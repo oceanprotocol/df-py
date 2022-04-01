@@ -10,11 +10,14 @@ from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
 CONTRACTS = {}
-def _contracts(key):
+
+@enforce_types
+def _contracts(key:str):
     global CONTRACTS
     return CONTRACTS[key]
-    
-def recordDeployedContracts(address_file, network):
+
+@enforce_types
+def recordDeployedContracts(address_file:str, network:str):
     global CONTRACTS
     C = CONTRACTS
     if C != {}: #already filled
@@ -56,7 +59,7 @@ def ERC721Factory():
     return _contracts("ERC721Factory")
 
 @enforce_types
-def createDataNFT(name: str, symbol: str, from_account):
+def createDataNFT(name:str, symbol:str, from_account):
     erc721_factory = ERC721Factory()
     erc721_template_index = 1
     factory_router = factoryRouter()
@@ -77,7 +80,7 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 @enforce_types
 def createDatatokenFromDataNFT(
-    DT_name: str, DT_symbol: str, DT_cap: int, dataNFT, from_account
+    DT_name:str, DT_symbol:str, DT_cap:float, dataNFT, from_account
 ):
 
     erc20_template_index = 1
@@ -110,12 +113,12 @@ def createBPoolFromDatatoken(
     datatoken,
     erc721_factory,
     from_account,
-    init_OCEAN_liquidity=2000,
-    DT_OCEAN_rate=0.1,
-    DT_vest_amt=1000,
-    DT_vest_num_blocks=2426000, #min allowed = 2426000, see FactoryRouter.sol
-    LP_swap_fee=0.03,
-    mkt_swap_fee=0.01,
+    init_OCEAN_liquidity:float=2000.0,
+    DT_OCEAN_rate:float=0.1,
+    DT_vest_amt:float=1000.0,
+    DT_vest_num_blocks:int=2426000, #min allowed=2426000, see FactoryRouter.sol
+    LP_swap_fee:float=0.03,
+    mkt_swap_fee:float=0.01,
 ): #pylint: disable=too-many-arguments
 
     OCEAN = OCEANtoken()
@@ -149,13 +152,13 @@ def createBPoolFromDatatoken(
 
     tx = datatoken.deployPool(
         ss_params, swap_fees, addresses, {"from": from_account})
-    pool_address = poolAddressFromNewBPoolTx(tx)
+    pool_address = _poolAddressFromNewBPoolTx(tx)
     pool = B.BPool.at(pool_address)
 
     return pool
 
-
-def poolAddressFromNewBPoolTx(tx):
+@enforce_types
+def _poolAddressFromNewBPoolTx(tx) -> str:
     return tx.events["NewPool"]["poolAddress"]
 
 #===============================================================================

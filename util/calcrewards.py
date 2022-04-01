@@ -1,40 +1,43 @@
 #Draws from https://github.com/oceanprotocol/df-js/blob/main/script/index.js
 
+import brownie
+from enforce_typing import enforce_types
 import json
 import numpy
 from numpy import log10
 from pprint import pprint
 import requests
+from typing import Dict, List, Set
 
 from util import oceanutil
+from util.blockrange import BlockRange
+from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
-def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
+@enforce_types
+def queryAndCalcRewards(rng:BlockRange, OCEAN_avail:float, 
+                        subgraph_url:str) -> Dict[str, float]:
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
-    print("calcRewards(): begin")
-    print(f"  OCEAN_available: {OCEAN_available}")
-    print(f"  block_range: {block_range}")
-    
-    pools = getPools(subgraph_url) #list of dict
-    LP_list = getLPList(block_range, subgraph_url) #list [LP_i]:LP_addr
+    print("==calcRewards(): begin==")
+    print(f"OCEAN available = {OCEAN_avail}")
+    print(f"block range = {rng}")
 
-    C = getConsumeVolume(pools, block_range, subgraph_url) #array [pool_j]:OCEAN_float
+    #grab data from chain
+    pools = getPools(subgraph_url)
+    stakes = getStakes(pools, rng, subgraph_url) 
+    pool_vols = getPoolVolumes(pools,rng.st,rng.fin,subgraph_url)
 
-    pool_list = [pool["id"] for pool in pools] #list [pool_j]:pool_addr
-    
-    S = getStake(LP_list, pool_list, block_range, subgraph_url) #array [LP_i,pool_j]:float
-
-    R = _calcRewardPerLP(C, S, OCEAN_available) #array [LP_i]:OCEAN_float
-
-    rewards = {addr:R[i] for i,addr in enumerate(LP_list)}
+    #calc rewards
+    rewards = calcRewards(stakes, pool_vols, OCEAN_avail)
     print("rewards: (OCEAN for each LP address)")
     pprint(rewards)
 
-    print("calcRewards(): done")
+    print("==calcRewards(): done==")
     return rewards
 
-def getPools(subgraph_url:str):
+@enforce_types
+def getPools(subgraph_url:str) -> list: #list of BPool
     print("getPools(): begin")
     pools = getAllPools(subgraph_url)    
     pools = _filterToApprovedTokens(pools, subgraph_url)
@@ -42,114 +45,58 @@ def getPools(subgraph_url:str):
     print(f"  Got {len(pools)} pools")
     print("getPools(): done")
     return pools
-
-def getLPList(block_range, subgraph_url:str):
-    """
-    @arguments
-      block_range -- BlockRange
-      subgraph_url -- str
-
-    @return
-      LP_list - list of [LP_i] : LP_addr
-    """
-    SSBOT_address = oceanutil.Staking().address.lower()
-    LP_set = set()
-
-    print("getLPList(): begin")
-    n_blocks = block_range.numBlocks()
-    for block_i, block in enumerate(block_range.getRange()):
-        if (block_i % 50) == 0 or (block_i == n_blocks-1):
-            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
-        skip = 0
-        INC = 1000 #fetch INC results at a time. Max for subgraph=1000
-        while True:
-            query = """
-            {
-              poolShares(skip:%s, first:%s, block:{number:%s}) {
-                pool {
-                  id,
-                  totalShares
-                }
-                shares,
-                user {
-                  id
-                }
-              }
-            }
-            """ % (skip, INC, block)
-            result = submitQuery(query, subgraph_url)
-            new_pool_stake = result["data"]["poolShares"]
-            if not new_pool_stake:
-                break
-            for d in new_pool_stake:
-                LP_addr = d["user"]["id"]
-                if LP_addr.lower()  == SSBOT_address: continue #skip ss bot
-                
-                shares = float(d["shares"])
-                if shares == 0.0: continue
-                LP_set.add(LP_addr)       
-            skip += INC
-
-    #set -> list
-    LP_list = list(LP_set)
-
-    print(f"  Got {len(LP_list)} LPs")
-    print("getLPList(): done")
-    return LP_list
    
-def _calcRewardPerLP(C, S, OCEAN_available:float):
+@enforce_types
+def calcRewards(stakes:dict, pool_vols:dict, OCEAN_avail:float):
     """
     @arguments
-      C -- consume volumes - 1d array of [pool_j] : OCEAN_float
-      S -- stake -- 1d array of [LP_i,pool_j] : share_float
-      OCEAN_available -- float
+      stakes - dict of [pool_addr][LP_addr] : stake
+      pool_vols -- dict of [pool_addr] -> vol
+      OCEAN_avail -- float
 
     @return
-      R -- rewards -- 1d array of [LP_i] : OCEAN_float
+      rewards -- dict of [LP_addr] : OCEAN_float
     """
     print("_calcRewardPerLP(): begin")
-    (num_LPs, num_pools) = S.shape
-    R = numpy.zeros((num_LPs,), dtype=float)
 
-    for i in range(num_LPs):
-        for j in range(num_pools):
-            if S[i,j] == 0.0:
-                continue
-            RF_ij = log10(S[i,j] + 1.0) * log10(C[j] + 2.0)
-            R[i] += RF_ij
+    #base data
+    pool_addrs = list(pool_vols.keys())
+    LP_addrs = list({addr for addrs in stakes.values() for addr in addrs})
 
-    #normalize, and scale
-    R = R / sum(R) * OCEAN_available
+    #fill in R
+    rewards = {} # [LP_addr] : OCEAN_float
+    for i, LP_addr in enumerate(LP_addrs):
+        rewards[LP_addr] = 0.0
+        for j, pool_addr in enumerate(pool_addrs):
+            if pool_addr not in stakes: continue
+            Sij = stakes[pool_addr].get(LP_addr, 0.0)
+            Cj = pool_vols.get(pool_addr, 0.0)
+            if Sij == 0 or Cj == 0: continue
+            RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0) #main formula!
+            rewards[LP_addr] += RF_ij
 
+    #normalize and scale rewards
+    sum_ = sum(rewards.values())
+    for LP_addr, reward in rewards.items():
+        rewards[LP_addr] = reward / sum_ * OCEAN_avail
+
+    #return dict
     print("_calcRewardPerLP(): done")
-    return R
+    return rewards
 
-def getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
-    """
-    @arguments
-      LP_list -- list of [LP_i] : LP_addr
-      pool_list -- list of [pool_j] : pool_addr
-      block_range -- BlockRange
-      subgraph_url -- str
-
-    @return
-      S -- 2d array [LP_i, pool_j] : relative_stake_float -- stake in pool
-    """
-    print("getStake(): begin")
+@enforce_types
+def getStakes(pools:list, rng:BlockRange, subgraph_url:str):
+    """@return - stakes - dict of [pool_addr][LP_addr] : stake"""
+    print("getStakes(): begin")
     SSBOT_address = oceanutil.Staking().address.lower()
-    
-    LP_dict = {addr:i for i,addr in enumerate(LP_list)} #[LP_addr]:LP_i
-    pool_dict = {addr:j for j,addr in enumerate(pool_list)} #[pool_addr]:pool_j
-    
-    num_LPs, num_pools = len(LP_list), len(pool_list)
-    S = numpy.zeros((num_LPs, num_pools), dtype=float)
-
-    n_blocks = block_range.numBlocks()
-    for block_i, block in enumerate(block_range.getRange()):
+    stakes = {}
+    n_blocks = rng.numBlocks()
+    blocks = rng.getBlocks()
+    for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks-1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
-        skip = 0
-        INC = 1000 #fetch INC results at a time. Max for subgraph=1000
+        offset = 0
+        chunk_size = 1000 #max for subgraph=1000
         while True:
             query = """
             { 
@@ -163,51 +110,54 @@ def getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
                 shares
               }
             }
-            """ % (skip, INC, block)
+            """ % (offset, chunk_size, block)
             result = submitQuery(query, subgraph_url)
             new_pool_stake = result["data"]["poolShares"]
             if not new_pool_stake:
                 break
             for d in new_pool_stake:
-                LP_addr = d["user"]["id"]
-                if LP_addr.lower()  == SSBOT_address: continue #skip ss bot
-                
+                pool_addr = d["pool"]["id"].lower()
+                LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
-                if shares == 0.0: continue
-                pool_addr = d["pool"]["id"]
-                i = LP_dict[LP_addr]
-                j = pool_dict[pool_addr]
-                S[i,j] += shares / n_blocks
-            skip += INC
-    
-    #normalize
-    for j in range(num_pools):
-        S[:,j] /= sum(S[:,j])
-    
-    print("getStake(): done")
-    return S
-    
-def getConsumeVolume(pools:list, block_range, subgraph_url:str):
-    """@return -- C -- 1d array of [pool_j] : OCEAN_float"""
-    print("getConsumeVolume(): begin")
-    num_pools = len(pools)
-    C = numpy.zeros((num_pools,), dtype=float)
-    for pool_j, pool in enumerate(pools):
-        DT_addr = pool["datatoken"]["id"]
-        C[pool_j] = getConsumeVolumeAtDT(DT_addr, block_range, subgraph_url)
-    print("getConsumeVolume(): done")
-    return C
+                if LP_addr == SSBOT_address: continue #skip ss bot
+                if pool_addr not in stakes:
+                    stakes[pool_addr] = {}
+                if LP_addr not in stakes[pool_addr]:
+                    stakes[pool_addr][LP_addr] = 0.0
+                stakes[pool_addr][LP_addr] += shares / n_blocks
+            offset += chunk_size
 
-def getConsumeVolumeAtDT(DT_addr:str, block_range, subgraph_url:str) -> float:
-    OCEAN_addr = oceanutil.OCEANtoken().address
-    C_at_DT = 0.0
-    skip = 0
-    INC = 1000 #fetch INC results at a time. Max for subgraph=1000
-    while True:
+    return stakes
+    print("getStakes(): done")
+    return S
+
+@enforce_types
+def getPoolVolumes(pools:list, st_block:int, end_block:int, subgraph_url:str) \
+    -> Dict[str, float]:
+    """Return dict of [pool_addr] : vol"""
+
+    DT_vols = getDTVolumes(st_block, end_block, subgraph_url) # [DT_addr] : vol
+
+    pool_vols = {}
+    for pool in pools:
+        DT_addr = pool.getDatatokenAddress().lower()
+        if DT_addr in DT_vols:
+            pool_vols[pool.address.lower()] = DT_vols[DT_addr]
+            
+    return pool_vols
+
+def getDTVolumes(st_block:int, end_block:int, subgraph_url:str) \
+    -> Dict[str, float]: # [DT_addr] -> volume
+    
+    print("getDTVolumes(): begin")
+    OCEAN_addr = oceanutil.OCEANtoken().address.lower()
+    
+    DT_vols = {}
+    chunk_size = 1000 #max for subgraph = 1000
+    for offset in range(0, end_block - st_block, chunk_size):
         query = """
         {
-          orders(where: {block_gte:%s, block_lte:%s, datatoken:"%s"}, 
-                 skip:%s, first:%s) {
+          orders(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
             id,
             datatoken {
               id
@@ -217,27 +167,30 @@ def getConsumeVolumeAtDT(DT_addr:str, block_range, subgraph_url:str) -> float:
             block
           }
         }
-        """ % (block_range.start_block, block_range.end_block,
-               DT_addr, skip, INC)
+        """ % (st_block, end_block, offset, chunk_size)
         result = submitQuery(query, subgraph_url)
         new_orders = result["data"]["orders"]
-        if not new_orders:
-            break
         for order in new_orders:
-            if (order["lastPriceToken"].lower() == OCEAN_addr.lower()):
-                C_at_DT += float(order["lastPriceValue"])
-        skip += INC
-        
-    return C_at_DT
+            if (order["lastPriceToken"].lower() == OCEAN_addr):
+                DT_addr = order["datatoken"]["id"].lower()
+                lastPriceValue = float(order["lastPriceValue"])
+                if DT_addr not in DT_vols:
+                    DT_vols[DT_addr] = 0.0
+                DT_vols[DT_addr] += lastPriceValue
+                
+    print("getDTVolumes(): done")
+    return DT_vols
 
-def _filterOutPurgatory(pools):
-    """@return -- pools -- list of dict"""
+@enforce_types
+def _filterOutPurgatory(pools:list) -> list: #list of BPool
+    """return pools that aren't in purgatory"""
     bad_dids = _didsInPurgatory()
     return [pool for pool in pools
-            if calcDID(pool["datatoken"]["nft"]["id"]) not in bad_dids]
+            if calcDID(pool.nft_addr) not in bad_dids]
 
-def _didsInPurgatory():
-    """return -- list of did (str)"""
+@enforce_types
+def _didsInPurgatory() -> List[str]:
+    """return dids that are in purgatory"""
     url = "https://raw.githubusercontent.com/oceanprotocol/list-purgatory/main/list-assets.json"
     resp = requests.get(url)
 
@@ -246,81 +199,50 @@ def _didsInPurgatory():
 
     return [item['did'] for item in data]
     
-def _filterToApprovedTokens(pools:list, subgraph_url:str):
-    """@return -- pools -- list of dict"""
-    approved_tokens = getApprovedTokens(subgraph_url) #list of str of addr
+@enforce_types
+def _filterToApprovedTokens(pools:list, subgraph_url:str) -> list:#list of BPool
+    """Only keep pools that have approved basetokens (e.g. OCEAN)"""
+    approved_tokens = getApprovedTokens(subgraph_url) #list of addr_str
     assert approved_tokens, "no approved tokens"
     return [pool for pool in pools
-            if pool['baseToken']['id'] in approved_tokens]
+            if pool.getBaseTokenAddress() in approved_tokens]
 
-def getApprovedTokens(subgraph_url:str):
-    """@return -- token addresses -- list of str"""
+@enforce_types
+def getApprovedTokens(subgraph_url:str) -> List[str]: #list of BPool
+    """Return addresses of approved basetokens"""
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, subgraph_url)
     return result['data']['opcs'][0]['approvedTokens']
 
-def getAllPools(subgraph_url:str):
-    """@return -- pools -- list of dict (pool), where each pool is:
-    {
-      'id' : '0x..',
-      'transactionCount' : '<e.g. 73>',
-      'baseToken' : {'id' : '0x..'},
-      'dataToken' : {'id' : '0x..', 'nft': {'id' : '0x..'},
-    }
-    """
-
-    #since we don't know how many pools we have, fetch INC at a time
-    # (1000 is max for subgraph)
+@enforce_types
+def getAllPools(subgraph_url:str) -> list: #list of BPool
     pools = []
-    skip = 0
-    INC = 1000
-    while True:
+    offset = 0
+    chunk_size = 1000 #max for subgraph = 1000
+    num_blocks = len(brownie.network.chain)
+    for offset in range(0, num_blocks, chunk_size):
         query = """
         {
           pools(skip:%s, first:%s){
             transactionCount,
             id
             datatoken {
-                id,
                 nft {
                     id
                 }
-            },
-            baseToken {
-                id
             }
           }
         }
-        """ % (skip, INC)
+        """ % (offset, chunk_size)
         result = submitQuery(query, subgraph_url)
-        new_pools = result['data']['pools']
-        pools += new_pools
-        if not new_pools:
-            break
-        skip += INC
+        ds = result['data']['pools']
+        for d in ds:
+            tx_count = int(d["transactionCount"])
+            if tx_count == 0: continue
+            pool = B.BPool.at(d["id"])
+            pool.nft_addr = d["datatoken"]["nft"]["id"].lower()
+            pools.append(pool)
+        
     return pools
         
 
-class BlockRange:
-    def __init__(self, start_block:int, end_block:int, block_interval:int):
-        assert start_block <= end_block
-        assert block_interval > 0
-        
-        self.start_block = start_block
-        self.end_block = end_block
-        self.block_interval = block_interval
-
-    def getRange(self) -> list:
-        L1 = list(range(self.start_block, self.end_block, self.block_interval))
-        L2 = [self.end_block]
-        return L1 + L2
-
-    def numBlocks(self) -> int:
-        return len(self.getRange())
-
-    def __str__(self):
-        return f"BlockRange: start_block={self.start_block}" \
-            f", end_block={self.end_block}" \
-            f", block_interval={self.block_interval}" \
-            f", # blocks sampled={self.numBlocks()}" \
-            f", range={self.getRange()[:4]}.."

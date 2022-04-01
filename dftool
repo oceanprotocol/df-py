@@ -6,12 +6,11 @@ import sys
 
 import brownie
 
-from util import dispense
+from util import blockrange, calcrewards, dispense
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
 from util.oceanutil import recordDeployedContracts, OCEANtoken
-from util.calcrewards import BlockRange, calcRewards
 
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
@@ -91,15 +90,12 @@ Uses these envvars:
     brownie.network.connect(NETWORK)
     accounts = brownie.network.accounts
     chain = brownie.network.chain
-    assert END <= len(chain)
 
     #main work
     recordDeployedContracts(ADDRESS_FILE, NETWORK)
-    
-    block_range = BlockRange(START, END, INTERVAL)
-
-    subgraph_url = oceanSubgraphUrl(SUBGRAPH_URI)
-    rewards = calcRewards(TOT_OCEAN, block_range, subgraph_url)
+    rng = blockrange, BlockRange(START, END, INTERVAL)
+    url = oceanSubgraphUrl(SUBGRAPH_URI)
+    rewards = calcrewards.queryAndCalcRewards(rng, TOT_OCEAN, url)
     
     #store to csv
     dispense.rewardsToCsv(OUTPUT_DIR)
