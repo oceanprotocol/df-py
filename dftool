@@ -61,7 +61,7 @@ Uses these envvars:
     assert sys.argv[1] == "calc"
     NETWORK = sys.argv[2]
     START = int(sys.argv[3])
-    FIN = int(sys.argv[4])
+    FIN = sys.argv[4]
     NSAMP = int(sys.argv[5])
     TOT_OCEAN = float(sys.argv[6])
     OUTPUT_DIR = sys.argv[7]
@@ -92,10 +92,15 @@ Uses these envvars:
     accounts = brownie.network.accounts
     chain = brownie.network.chain
 
+    if FIN == 'latest':
+        fin_block = len(chain)
+    else:
+        fin_block = int(FIN)
+
     #main work
     recordDeployedContracts(ADDRESS_FILE, NETWORK)
-    seed = FIN 
-    rng = blockrange.BlockRange(START, FIN, NSAMP, seed)
+    seed = fin_block 
+    rng = blockrange.BlockRange(START, fin_block, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
     rewards = calcrewards.queryAndCalcRewards(rng, TOT_OCEAN, url)
     
