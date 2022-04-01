@@ -4,9 +4,18 @@ import pytest
 from util.blockrange import BlockRange
 
 @enforce_types
-def test_StartEndClash():
-    with pytest.raises(Exception):
+def test_failures():
+    with pytest.raises(Exception): # end < start
         BlockRange(start_block=20, end_block=10, num_samples=5)
+
+    with pytest.raises(Exception): # arg1 negative
+        BlockRange(start_block=-1, end_block=10, num_samples=5)
+
+    with pytest.raises(Exception): # arg2 negative
+        BlockRange(start_block=1, end_block=-1, num_samples=5)
+
+    with pytest.raises(Exception): # arg3 negative
+        BlockRange(start_block=1, end_block=10, num_samples=-5)
 
 @enforce_types
 def test_availableN_samples0():

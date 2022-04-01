@@ -5,6 +5,9 @@ import numpy
 class BlockRange:
     def __init__(self, start_block:int, end_block:int, num_samples:int,
                  random_seed=None):
+        assert start_block > 0
+        assert end_block > 0
+        assert num_samples >= 0
         assert start_block <= end_block
         cand_blocks = list(range(start_block, end_block+1))
         num_samples = min(num_samples, len(cand_blocks))
