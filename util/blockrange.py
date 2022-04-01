@@ -1,5 +1,7 @@
+from enforce_typing import enforce_types
 import numpy
 
+@enforce_types
 class BlockRange:
     def __init__(self, start_block:int, end_block:int, num_samples:int,
                  random_seed=None):
@@ -10,8 +12,8 @@ class BlockRange:
             numpy.random.seed(random_seed)
         self._range = sorted(numpy.random.choice(cand_blocks, num_samples, replace=False))
         
-        self._start_block = start_block
-        self._end_block = end_block
+        self._start_block:int = start_block
+        self._end_block:int = end_block
 
     def getRange(self) -> list:
         return self._range
