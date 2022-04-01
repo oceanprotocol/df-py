@@ -16,8 +16,8 @@ from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
 @enforce_types
-def calcRewards(rng:BlockRange, OCEAN_avail:float, 
-                subgraph_url:str) -> Dict[str, float]:
+def queryAndCalcRewards(rng:BlockRange, OCEAN_avail:float, 
+                        subgraph_url:str) -> Dict[str, float]:
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
     print("==calcRewards(): begin==")
     print(f"OCEAN available = {OCEAN_avail}")
@@ -29,7 +29,7 @@ def calcRewards(rng:BlockRange, OCEAN_avail:float,
     pool_vols = getPoolVolumes(pools,rng.st,rng.fin,subgraph_url)
 
     #calc rewards
-    rewards = calcRewardsFromStakesAndVols(stakes, pool_vols, OCEAN_avail)
+    rewards = calcRewards(stakes, pool_vols, OCEAN_avail)
     print("rewards: (OCEAN for each LP address)")
     pprint(rewards)
 
@@ -47,8 +47,7 @@ def getPools(subgraph_url:str) -> list: #list of BPool
     return pools
    
 @enforce_types
-def calcRewardsFromStakesAndVols(
-        stakes:dict, pool_vols:dict, OCEAN_avail:float):
+def calcRewards(stakes:dict, pool_vols:dict, OCEAN_avail:float):
     """
     @arguments
       stakes - dict of [pool_addr][LP_addr] : stake

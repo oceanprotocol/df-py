@@ -17,7 +17,7 @@ def test_main(ADDRESS_FILE, SUBGRAPH_URL):
     st, fin, n = 1, len(chain), 5
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
-    rewards = calcrewards.calcRewards(rng, OCEAN_avail, SUBGRAPH_URL)
+    rewards = calcrewards.queryAndCalcRewards(rng, OCEAN_avail, SUBGRAPH_URL)
     sum_ = sum(rewards.values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
     
@@ -55,6 +55,40 @@ def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
     pool_vols = calcrewards.getPoolVolumes(pools, st, fin, SUBGRAPH_URL)
     assert pool_vols
     assert sum(pool_vols.values()) > 0.0
+
+@enforce_types
+def test_calcRewards1():
+    stakes = {'pool1': {'LP1':1.0}}
+    pool_vols = {'pool1':1.0}
+    rewards = calcrewards.calcRewards(stakes, pool_vols, OCEAN_avail=10.0)
+    assert rewards == {'LP1':10.0}
+
+@enforce_types
+def test_calcRewards2():
+    stakes = {'pool1': {'LP1':1.0, 'LP2':1.0}}
+    pool_vols = {'pool1':1.0}
+    rewards = calcrewards.calcRewards(stakes, pool_vols, OCEAN_avail=10.0)
+    assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
+    assert rewards == {'LP1':5.0, 'LP2':5.0}
+    
+@enforce_types
+def test_calcRewards3():
+    stakes = {'pool1': {'LP1':1.0, 'LP2':1.0},
+              'pool2': {'LP1':1.0, 'LP3':1.0}}
+    pool_vols = {'pool1':1.0} #pool1 has volume, but not pool2
+    rewards = calcrewards.calcRewards(stakes, pool_vols, OCEAN_avail=10.0)
+    assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
+    assert rewards == {'LP1':5.0, 'LP2':5.0}
+
+@enforce_types
+def test_calcRewards4():
+    stakes = {'pool1': {'LP1':1.0, 'LP2':1.0},
+              'pool2': {'LP1':1.0, 'LP3':1.0}}
+    pool_vols = {'pool1':1.0, 'pool2':1.0} #pool1 and 2 both have volume
+    rewards = calcrewards.calcRewards(stakes, pool_vols, OCEAN_avail=10.0)
+    assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
+    assert rewards == {'LP1':2.5, 'LP2':2.5, 'LP3':2.5}
+
 
 #========================================================================
 @enforce_types
