@@ -199,18 +199,27 @@ def getConsumeVolume(pools:list, block_range:BlockRange, subgraph_url:str):
     C = numpy.zeros((num_pools,), dtype=float)
     for pool_j, pool in enumerate(pools):
         DT_addr = pool["datatoken"]["id"]
-        C[pool_j] = getConsumeVolumeAtDT(DT_addr, block_range, subgraph_url)
+        (vol, _, _) = getConsumeVolumeAtDT(DT_addr, block_range, subgraph_url) 
+        C[pool_j] = vol
     print("getConsumeVolume(): done")
     return C
 
 @enforce_types
-def getConsumeVolumeAtDT(
-        DT_addr:str, block_range:BlockRange, subgraph_url:str) -> float:
+def getConsumeVolumeAtDT(DT_addr:str, block_range:BlockRange, subgraph_url:str):
+    """
+    @return 
+      vol -- float -- consume volume (in OCEAN) for the given DT & block range
+      num_consumes -- int
+      lastPriceValues -- list of lastPriceValue_float
+    """
     OCEAN_addr = oceanutil.OCEANtoken().address
-    C_at_DT = 0.0
+    
+    vol = 0.0
+    num_consumes = 0
+    lastPriceValues = []
+    
     skip = 0
     INC = 1000 #fetch INC results at a time. Max for subgraph=1000
-    found_orders = False #HACK
     while True:
         query = """
         {
@@ -231,14 +240,15 @@ def getConsumeVolumeAtDT(
         new_orders = result["data"]["orders"]
         if not new_orders:
             break
-        found_orders = True #HACK
         for order in new_orders:
             if (order["lastPriceToken"].lower() == OCEAN_addr.lower()):
-                C_at_DT += float(order["lastPriceValue"])
+                lastPriceValue = float(order["lastPriceValue"])
+                vol += lastPriceValue
+                num_consumes += 1
+                lastPriceValues.append(lastPriceValue)
         skip += INC
 
-    print(f"found_orders = {found_orders}") #HACK
-    return C_at_DT
+    return (vol, num_consumes, lastPriceValues)
 
 @enforce_types
 def _filterOutPurgatory(pools:list) -> list:

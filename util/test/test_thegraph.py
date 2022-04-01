@@ -22,7 +22,7 @@ def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()
 
-    (_, DT, _) = conftest.randomDeployAll(num_pools=1)[0]
+    (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)[0]
 
     query = """
         {
@@ -47,7 +47,9 @@ def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()
 
-    (_, DT, pool) = conftest.randomDeployAll(num_pools=1)[0]
+    tups = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
+    (_, DT, pool) = tups[0]
+    
     skip = 0
     INC = 1000
     block = 0

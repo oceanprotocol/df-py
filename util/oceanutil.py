@@ -152,13 +152,13 @@ def createBPoolFromDatatoken(
 
     tx = datatoken.deployPool(
         ss_params, swap_fees, addresses, {"from": from_account})
-    pool_address = poolAddressFromNewBPoolTx(tx)
+    pool_address = _poolAddressFromNewBPoolTx(tx)
     pool = B.BPool.at(pool_address)
 
     return pool
 
 @enforce_types
-def poolAddressFromNewBPoolTx(tx) -> str:
+def _poolAddressFromNewBPoolTx(tx) -> str:
     return tx.events["NewPool"]["poolAddress"]
 
 #===============================================================================

@@ -49,7 +49,7 @@ def fillAccountsWithOCEAN():
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
 
 @enforce_types
-def randomDeployAll(num_pools:int):
+def randomDeployTokensAndPoolsThenConsume(num_pools:int):
     #create random NUM_POOLS. Randomly add stake.
     tups = [] # (pub_account_i, DT, pool)
     for account_i in range(num_pools):
@@ -69,16 +69,16 @@ def randomDeployAll(num_pools:int):
 
         #buy asset
         DT_buy_amt = 1.0
-        _buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
+        buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
 
         #consume asset
         pub_account = accounts[pub_account_i]
-        _consumeDT(DT, pub_account, consume_account)
+        consumeDT(DT, pub_account, consume_account)
 
     return tups
 
 @enforce_types
-def _consumeDT(DT, pub_account, consume_account):
+def consumeDT(DT, pub_account, consume_account):
     service_index = 0
     provider_fee = oceanutil.get_zero_provider_fee_tuple(pub_account)
     consume_mkt_fee = oceanutil.get_zero_consume_mkt_fee_tuple()
@@ -92,10 +92,10 @@ def randomAddStake(pool, pub_account_i:int):
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
         OCEAN_stake = AVG_OCEAN_STAKE * (1 + 0.1 * random.random())
-        _addStake(pool, OCEAN_stake, accounts[account_i])
+        addStake(pool, OCEAN_stake, accounts[account_i])
 
 @enforce_types
-def _addStake(pool, OCEAN_stake:float, from_account):
+def addStake(pool, OCEAN_stake:float, from_account):
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(OCEAN_stake), {"from": from_account})
     
@@ -107,7 +107,7 @@ def _addStake(pool, OCEAN_stake:float, from_account):
         token_amt_in, min_pool_amt_out,  {"from": from_account})
 
 @enforce_types
-def _buyDT(pool, DT, DT_buy_amt:float, max_OCEAN:float, from_account):
+def buyDT(pool, DT, DT_buy_amt:float, max_OCEAN:float, from_account):
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(max_OCEAN), {"from": from_account})
 
