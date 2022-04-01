@@ -23,11 +23,11 @@ def calcRewards(OCEAN_available:float, block_range:BlockRange,
     print(f"OCEAN_available: {OCEAN_available}")
     print(f"block_range: {block_range}")
 
-    #[pool_j] : BPool
-    pools:list = getPools(subgraph_url)
-
     #[LP_i] : LP_addr
     LPs:List[str] = getLPs(block_range, subgraph_url) 
+
+    #[pool_j] : BPool
+    pools:list = getPools(subgraph_url)
 
     #DT_addr : OCEAN_vol
     DT_vols = getConsumeVolumes(
@@ -78,7 +78,6 @@ def getLPs(block_range:BlockRange, subgraph_url:str) -> List[str]:
 
         chunk_size = 1000 #max for subgraph = 1000
         offset = 0
-        chunk_size = 1000 #fetch chunk_size results at a time. Max for subgraph=1000
         while True:
             query = """
             {
