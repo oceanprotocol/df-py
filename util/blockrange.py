@@ -3,29 +3,36 @@ import numpy
 
 @enforce_types
 class BlockRange:
-    def __init__(self, start_block:int, end_block:int, num_samples:int,
+    def __init__(self, st:int, fin:int, num_samples:int,
                  random_seed=None):
-        assert start_block > 0
-        assert end_block > 0
+        """
+        @arguments
+          st -- start block
+          fin -- end block
+          num_samples -- # blocks to randomly sample from (without replacement)
+          random_seed -- pass in an integer for predictable sampling
+        """
+        assert st > 0
+        assert fin > 0
         assert num_samples >= 0
-        assert start_block <= end_block
-        cand_blocks = list(range(start_block, end_block+1))
+        assert st <= fin
+        cand_blocks = list(range(st, fin+1))
         num_samples = min(num_samples, len(cand_blocks))
         if random_seed is not None:
             numpy.random.seed(random_seed)
-        self._range = sorted(numpy.random.choice(cand_blocks, num_samples, replace=False))
+            
+        self._blocks = sorted(numpy.random.choice(cand_blocks, num_samples, replace=False))
         
-        self.start_block:int = start_block
-        self.end_block:int = end_block
+        self.st:int = st
+        self.fin:int = fin
 
-    def getRange(self) -> list:
-        return self._range
+    def getBlocks(self) -> list:
+        return self._blocks
 
     def numBlocks(self) -> int:
-        return len(self.getRange())
+        return len(self.getBlocks())
 
     def __str__(self):
-        return f"BlockRange: start_block={self.start_block}" \
-            f", end_block={self.end_block}" \
+        return f"BlockRange: st={self.st}, fin={self.fin}" \
             f", # blocks sampled={self.numBlocks()}" \
-            f", range={self.getRange()[:4]}.."
+            f", range={self.getBlocks()[:4]}.."
