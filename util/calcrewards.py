@@ -21,7 +21,7 @@ def queryAndCalcRewards(rng:BlockRange, OCEAN_avail:float,
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
     print("==calcRewards(): begin==")
     print(f"OCEAN available = {OCEAN_avail}")
-    print(f"block range = {rng}")
+    print(f"{rng}")
 
     #grab data from chain
     pools = getPools(subgraph_url)

@@ -18,7 +18,7 @@ NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 HELP = """Usage: dftool calc|dispense|..
 Main help.
 
-dftool calc NETWORK START END INTERVAL TOT_OCEAN OUTPUT_DIR - calculate rewards
+dftool calc NETWORK ST FIN NSAMP TOT_OCEAN OUTPUT_DIR - calculate rewards
 dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - airdrop funds
 
 dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
@@ -38,13 +38,13 @@ def show_help():
     
 # ========================================================================
 def do_calc():
-    HELP = f"""Usage: dftool calc NETWORK START END INTERVAL TOT_OCEAN OUTPUT_DIR
+    HELP = f"""Usage: dftool calc NETWORK ST END NSAMP TOT_OCEAN OUTPUT_DIR
 Calculate rewards.
 
 NETWORK -- one of {NETWORKS}
-START -- block # to start calcs on
-END -- block # to end calcs
-INTERVAL -- sample every nth block
+ST -- first block # to calc on | YYYY:MM:DD | YYYY:MM:DD:HH:MM
+FIN -- last block # to calc on | YYYY:MM:DD | YYYY:MM:DD:HH:MM | latest
+NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
 TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
 OUTPUT_DIR -- output directory for csv file.
 
@@ -60,13 +60,14 @@ Uses these envvars:
     # extract inputs
     assert sys.argv[1] == "calc"
     NETWORK = sys.argv[2]
-    START, END, INTERVAL = int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5])
+    START = int(sys.argv[3])
+    FIN = int(sys.argv[4])
+    NSAMP = int(sys.argv[5])
     TOT_OCEAN = float(sys.argv[6])
     OUTPUT_DIR = sys.argv[7]
     print(f"Arguments:\n NETWORK={NETWORK}" \
-          f"\n START={START}\n END={END}\n INTERVAL={INTERVAL}" \
-          f"\n TOT_OCEAN={TOT_OCEAN}" \
-          f"\n OUTPUT_DIR={OUTPUT_DIR}")
+          f"\n START={START}\n FIN={FIN}\n NSAMP={NSAMP}" \
+          f"\n TOT_OCEAN={TOT_OCEAN}, OUTPUT_DIR={OUTPUT_DIR}")
         
     # extract envvars
     ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
@@ -93,7 +94,8 @@ Uses these envvars:
 
     #main work
     recordDeployedContracts(ADDRESS_FILE, NETWORK)
-    rng = blockrange, BlockRange(START, END, INTERVAL)
+    seed = FIN 
+    rng = blockrange.BlockRange(START, FIN, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
     rewards = calcrewards.queryAndCalcRewards(rng, TOT_OCEAN, url)
     

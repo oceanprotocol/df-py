@@ -3,8 +3,7 @@ import numpy
 
 @enforce_types
 class BlockRange:
-    def __init__(self, st:int, fin:int, num_samples:int,
-                 random_seed=None):
+    def __init__(self, st:int, fin:int, num_samples:int, random_seed=None):
         """
         @arguments
           st -- start block
