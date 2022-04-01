@@ -52,7 +52,11 @@ def fillAccountsWithOCEAN():
 def randomDeployTokensAndPoolsThenConsume(num_pools:int):
     #create random NUM_POOLS. Randomly add stake.
     tups = [] # (pub_account_i, DT, pool)
-    for account_i in range(num_pools):
+    for pool_i in range(num_pools):
+        if pool_i < len(accounts):
+            account_i = pool_i
+        else:
+            account_i = random.randint(len(accounts))
         (DT, pool) = randomDeployPool(accounts[account_i])
         randomAddStake(pool, account_i)
         tups.append((account_i, DT, pool))
