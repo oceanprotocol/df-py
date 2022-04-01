@@ -43,7 +43,7 @@ def fillAccountsWithOCEAN():
     for i in range(1, 10):
         bal_before:int = fromBase18(OCEAN.balanceOf(accounts[i]))
         if bal_before < 1000:
-            OCEAN.transfer(accounts[i], toBase18(1000), {"from": accounts[0]})
+            OCEAN.transfer(accounts[i], toBase18(1000.0), {"from": accounts[0]})
         bal_after:int = fromBase18(OCEAN.balanceOf(accounts[i]))
         print(f"Account #{i} has {bal_after} OCEAN")
     print(f"Account #0 has {fromBase18(OCEAN.balanceOf(accounts[0]))} OCEAN")
