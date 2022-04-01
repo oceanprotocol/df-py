@@ -1,9 +1,11 @@
 import brownie
+from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 
 accounts = brownie.network.accounts
 
+@enforce_types
 def test_transfer():
     token = _deployToken()
     assert token.totalSupply() == 1e21
@@ -11,7 +13,7 @@ def test_transfer():
     assert token.balanceOf(accounts[1]) == 1e20
     assert token.balanceOf(accounts[0]) == 9e20
 
-
+@enforce_types
 def test_approve():
     token = _deployToken()
     token.approve(accounts[1], 1e19, {"from": accounts[0]})
@@ -21,7 +23,7 @@ def test_approve():
     token.approve(accounts[1], 6e18, {"from": accounts[0]})
     assert token.allowance(accounts[0], accounts[1]) == 6e18
 
-
+@enforce_types
 def test_transferFrom():
     token = _deployToken()
     token.approve(accounts[1], 6e18, {"from": accounts[0]})
@@ -32,7 +34,7 @@ def test_transferFrom():
     assert token.balanceOf(accounts[0]) == 9.95e20
     assert token.allowance(accounts[0], accounts[1]) == 1e18
 
-
+@enforce_types
 def _deployToken():
     return B.Simpletoken.deploy(
         "TST", "Test Token", 18, 1e21, {"from": accounts[0]}

@@ -1,9 +1,11 @@
+from enforce_typing import enforce_types
 from pprint import pprint
 
 from util import oceanutil
 from util.graphutil import submitQuery
 from util.test import conftest
 
+@enforce_types
 def test_thegraph_approvedTokens(ADDRESS_FILE, SUBGRAPH_URL, accounts):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()
@@ -15,6 +17,7 @@ def test_thegraph_approvedTokens(ADDRESS_FILE, SUBGRAPH_URL, accounts):
 
     pprint(result)
     
+@enforce_types
 def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()
@@ -39,6 +42,7 @@ def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
     result = submitQuery(query, SUBGRAPH_URL)
     pprint(result)
 
+@enforce_types
 def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()

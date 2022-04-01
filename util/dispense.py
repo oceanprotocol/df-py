@@ -1,4 +1,5 @@
 import csv
+from enforce_typing import enforce_types
 import os
 
 from util.constants import BROWNIE_PROJECT as B
@@ -6,6 +7,7 @@ from util.base18 import fromBase18, toBase18
 
 BATCH_SIZE = 100
 
+@enforce_types
 def dispenseFromCsv(csv_dir:str, airdrop_addr:str, from_account):
     """
     @description
@@ -20,6 +22,7 @@ def dispenseFromCsv(csv_dir:str, airdrop_addr:str, from_account):
     [tos, _, values_int] = csvToRewardsLists(csv_dir)
     dispenseFromLists(tos, values_int, airdrop_addr, from_account)
     
+@enforce_types
 def dispenseFromLists(
         tos: list, values_int:list, airdrop_addr:str, from_account,
         batch_size:int=BATCH_SIZE):
@@ -42,9 +45,11 @@ def dispenseFromLists(
         airdrop.allocate(tos[st:fin], values_int[st:fin], {"from":from_account})
     print("dispense: done")
     
+@enforce_types
 def rewardsPathToFile(path:str) -> str:
     return os.path.join(path, 'rewards.csv')
 
+@enforce_types
 def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
     """
     @description
@@ -68,7 +73,8 @@ def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
             writer.writerow([to_addr, value])
     print(f"Filled rewards file: {csv_file}")
 
-def csvToRewardsLists(csv_dir):
+@enforce_types
+def csvToRewardsLists(csv_dir:str):
     """
     @description
       Given rewards csv, extract it two lists

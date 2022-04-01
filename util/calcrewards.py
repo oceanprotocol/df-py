@@ -1,5 +1,6 @@
 #Draws from https://github.com/oceanprotocol/df-js/blob/main/script/index.js
 
+from enforce_typing import enforce_types
 import json
 import numpy
 from numpy import log10
@@ -10,6 +11,7 @@ from util import oceanutil, blockrange
 from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
+@enforce_types
 def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
     """ @return -- rewards -- dict of [LP_addr] : OCEAN_float"""
     print("calcRewards(): begin")
@@ -34,6 +36,7 @@ def calcRewards(OCEAN_available:float, block_range, subgraph_url:str):
     print("calcRewards(): done")
     return rewards
 
+@enforce_types
 def getPools(subgraph_url:str):
     print("getPools(): begin")
     pools = getAllPools(subgraph_url)    
@@ -43,6 +46,7 @@ def getPools(subgraph_url:str):
     print("getPools(): done")
     return pools
 
+@enforce_types
 def getLPList(block_range, subgraph_url:str):
     """
     @arguments
@@ -97,6 +101,7 @@ def getLPList(block_range, subgraph_url:str):
     print("getLPList(): done")
     return LP_list
    
+@enforce_types
 def _calcRewardPerLP(C, S, OCEAN_available:float):
     """
     @arguments
@@ -124,6 +129,7 @@ def _calcRewardPerLP(C, S, OCEAN_available:float):
     print("_calcRewardPerLP(): done")
     return R
 
+@enforce_types
 def getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
     """
     @arguments
@@ -187,6 +193,7 @@ def getStake(LP_list:list, pool_list:list, block_range, subgraph_url:str):
     print("getStake(): done")
     return S
     
+@enforce_types
 def getConsumeVolume(pools:list, block_range, subgraph_url:str):
     """@return -- C -- 1d array of [pool_j] : OCEAN_float"""
     print("getConsumeVolume(): begin")
@@ -198,11 +205,13 @@ def getConsumeVolume(pools:list, block_range, subgraph_url:str):
     print("getConsumeVolume(): done")
     return C
 
+@enforce_types
 def getConsumeVolumeAtDT(DT_addr:str, block_range, subgraph_url:str) -> float:
     OCEAN_addr = oceanutil.OCEANtoken().address
     C_at_DT = 0.0
     skip = 0
     INC = 1000 #fetch INC results at a time. Max for subgraph=1000
+    found_orders = False #HACK
     while True:
         query = """
         {
@@ -223,20 +232,24 @@ def getConsumeVolumeAtDT(DT_addr:str, block_range, subgraph_url:str) -> float:
         new_orders = result["data"]["orders"]
         if not new_orders:
             break
+        found_orders = True #HACK
         for order in new_orders:
             if (order["lastPriceToken"].lower() == OCEAN_addr.lower()):
                 C_at_DT += float(order["lastPriceValue"])
         skip += INC
-        
+
+    print(f"found_orders = {found_orders}") #HACK
     return C_at_DT
 
-def _filterOutPurgatory(pools):
+@enforce_types
+def _filterOutPurgatory(pools:list) -> list:
     """@return -- pools -- list of dict"""
     bad_dids = _didsInPurgatory()
     return [pool for pool in pools
             if calcDID(pool["datatoken"]["nft"]["id"]) not in bad_dids]
 
-def _didsInPurgatory():
+@enforce_types
+def _didsInPurgatory() -> list:
     """return -- list of did (str)"""
     url = "https://raw.githubusercontent.com/oceanprotocol/list-purgatory/main/list-assets.json"
     resp = requests.get(url)
@@ -246,20 +259,23 @@ def _didsInPurgatory():
 
     return [item['did'] for item in data]
     
-def _filterToApprovedTokens(pools:list, subgraph_url:str):
+@enforce_types
+def _filterToApprovedTokens(pools:list, subgraph_url:str) -> list:
     """@return -- pools -- list of dict"""
     approved_tokens = getApprovedTokens(subgraph_url) #list of str of addr
     assert approved_tokens, "no approved tokens"
     return [pool for pool in pools
             if pool['baseToken']['id'] in approved_tokens]
 
-def getApprovedTokens(subgraph_url:str):
+@enforce_types
+def getApprovedTokens(subgraph_url:str) -> list:
     """@return -- token addresses -- list of str"""
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, subgraph_url)
     return result['data']['opcs'][0]['approvedTokens']
 
-def getAllPools(subgraph_url:str):
+@enforce_types
+def getAllPools(subgraph_url:str) -> list:
     """@return -- pools -- list of dict (pool), where each pool is:
     {
       'id' : '0x..',
