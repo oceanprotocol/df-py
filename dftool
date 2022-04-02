@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
+import brownie
 import csv
+from enforce_typing import enforce_types
 import os
 import sys
 
-import brownie
-
-from util import blockrange, calcrewards, dispense
+from util import blockrange, blocktime, calcrewards, dispense
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
@@ -31,19 +31,21 @@ dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
+@enforce_types
 def show_help():
     print(HELP)
     sys.exit(0)
 
     
 # ========================================================================
+@enforce_types
 def do_calc():
     HELP = f"""Usage: dftool calc NETWORK ST END NSAMP TOT_OCEAN OUTPUT_DIR
 Calculate rewards.
 
 NETWORK -- one of {NETWORKS}
-ST -- first block # to calc on | YYYY:MM:DD | YYYY:MM:DD:HH:MM
-FIN -- last block # to calc on | YYYY:MM:DD | YYYY:MM:DD:HH:MM | latest
+ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD HH:MM
+FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD HH:MM | latest
 NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
 TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
 OUTPUT_DIR -- output directory for csv file.
@@ -92,15 +94,22 @@ Uses these envvars:
     accounts = brownie.network.accounts
     chain = brownie.network.chain
 
+    if '-' in ST:
+        st_block = blocktime.datetimeToBlock(chain, ST)
+    else:
+        st_block = int(ST)
+
     if FIN == 'latest':
         fin_block = len(chain)
+    elif '-' in FIN:
+        fin_block = blocktime.datetimeToBlock(chain, FIN)
     else:
         fin_block = int(FIN)
 
     #main work
     recordDeployedContracts(ADDRESS_FILE, NETWORK)
     seed = fin_block 
-    rng = blockrange.BlockRange(START, fin_block, NSAMP, seed)
+    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
     rewards = calcrewards.queryAndCalcRewards(rng, TOT_OCEAN, url)
     
@@ -111,6 +120,7 @@ Uses these envvars:
 
 
 # ========================================================================
+@enforce_types
 def do_dispense():
     HELP = f"""Usage: dftool dispense NETWORK INPUT_DIR [AIRDROP_ADDR]
 Airdrop funds based on calculations.
@@ -149,6 +159,7 @@ AIRDROP_ADDR -- airdrop contract. If not given, uses envvar AIRDROP_ADDR
 
     
 # ========================================================================
+@enforce_types
 def do_newcontract():
     HELP = f"""Usage: dftool newcontract NETWORK TOKEN_ADDR
 Deploy new airdrop contract.
@@ -181,11 +192,13 @@ TOKEN_ADDR -- e.g. address of OCEAN token
 
 # ========================================================================
 # dftool compile
+@enforce_types
 def do_compile():
     os.system("brownie compile")
 
    
 # ========================================================================
+@enforce_types
 def do_mine():
     HELP = f"""Usage: dftool mine BLOCKS [TIMEDELTA]
   Force chain to pass time (ganache only).
@@ -223,6 +236,7 @@ def do_mine():
 
 
 # ========================================================================
+@enforce_types
 def do_newacct():
     HELP = f"""Usage: dftool newacct
 Generate new account.
@@ -245,6 +259,7 @@ Generate new account.
     print(f" For other dftools: export DFTOOL_KEY={account.private_key}")
 
 # ========================================================================
+@enforce_types
 def show_acctinfo():
     HELP = f"""Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
 Info about an account.
@@ -290,6 +305,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
         
 
 # ========================================================================
+@enforce_types
 def show_chaininfo():
     HELP = f"""Usage: dftool chaininfo NETWORK
 Info about a network.
@@ -310,6 +326,7 @@ NETWORK -- one of {NETWORKS}"""
     print(f"  # blocks: {len(brownie.network.chain)}")
 
 # ========================================================================
+@enforce_types
 def _getPrivateAccount():
     private_key = os.getenv('DFTOOL_KEY')
     assert private_key is not None, "Need to set envvar DFTOOL_KEY"
@@ -319,6 +336,7 @@ def _getPrivateAccount():
 
 # ========================================================================
 # main
+@enforce_types
 def do_main():
     if len(sys.argv) == 1 or sys.argv[1] == "help":
         show_help()
