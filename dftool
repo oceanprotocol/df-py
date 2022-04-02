@@ -51,8 +51,8 @@ TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
 OUTPUT_DIR -- output directory for csv file.
 
 Uses these envvars:
-  ADDRESS_FILE -- e.g. for barge ~/.ocean/ocean-contracts/artifacts/address.json
-  SUBGRAPH_URI -- e.g. for barge http://127.0.0.1:9000
+ADDRESS_FILE -- e.g. for barge: ~/.ocean/ocean-contracts/artifacts/address.json
+SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 """
 
     if len(sys.argv) not in [2+6]:
