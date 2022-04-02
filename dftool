@@ -95,14 +95,14 @@ Uses these envvars:
     chain = brownie.network.chain
 
     if '-' in ST:
-        st_block = blocktime.datetimeToBlock(chain, ST)
+        st_block = blocktime.strtimeToBlock(chain, ST)
     else:
         st_block = int(ST)
 
     if FIN == 'latest':
         fin_block = len(chain)
     elif '-' in FIN:
-        fin_block = blocktime.datetimeToBlock(chain, FIN)
+        fin_block = blocktime.strtimeToBlock(chain, FIN)
     else:
         fin_block = int(FIN)
 
