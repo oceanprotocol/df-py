@@ -1,15 +1,16 @@
 from datetime import datetime
 from enforce_typing import enforce_types
+from typing import Union
 
 @enforce_types
 def timestrToBlock(chain, timestr:str) -> int:
     """
-    Examples: 2022-03-29 17:55 --> 4928
+    Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
 
     @arguments
       chain -- brownie.networks.chain
-      timestr -- str - YYYY-MM-DD | YYYY-MM-DD HH:MM
+      timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM
     @return
       block -- int
     """
@@ -19,21 +20,43 @@ def timestrToBlock(chain, timestr:str) -> int:
 
 @enforce_types
 def timestrToTimestamp(timestr:str) -> float:
-    """Examples: 2022-03-29 17:55 --> 1648872899.3 (unix time)
+    """Examples: 2022-03-29_17:55 --> 1648872899.3 (unix time)
                  2022-03-29 --> 1648872899.0
     """
     ncolon = timestr.count(":")
     if ncolon == 1:
-        d = datetime.strptime(timestr, "%Y-%m-%d %H:%M")
+        d = datetime.strptime(timestr, "%Y-%m-%d_%H:%M")
     else:
         d = datetime.strptime(timestr, "%Y-%m-%d")
     return d.timestamp()
 
 @enforce_types
-def timestampToBlock(chain, timestamp:float) -> int:
+def timestampToBlock(chain, timestamp:Union[float,int]) -> int:
     """Example: 1648872899.0 --> 4928"""
-    raise NotImplementedError('build me')
+    from scipy import optimize
 
-    #1. get block 0 timestamp, block N timestamp, then bisect-search
-    #2. https://github.com/ethereum/web3.py/issues/1872#issuecomment-932675448
-    #3. https://github.com/ethereum/web3.py/issues/1872#issuecomment-1041224541
+    class C:
+        def __init__(self, target_timestamp):
+            self.target_timestamp = target_timestamp
+
+        def distToTargetTimestamp(self, block_i):
+            block_timestamp = chain[int(block_i)].timestamp
+            return block_timestamp - self.target_timestamp
+    
+    f = C(timestamp).distToTargetTimestamp
+    a = 0
+    b = len(chain) - 1
+    (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
+    if False: #set to True to debug
+        print(f"iterations = {results.iterations}")
+        print(f"function calls = {results.function_calls}")
+        print(f"converged? {results.converged}")
+        print(f"cause of termination? {results.flag}")
+        print("")
+
+        print(f"target timestamp = {timestamp}")
+        print(f"distToTargetTimestamp(a=0) = {f(0)}")
+        print(f"distToTargetTimestamp(b={b}) = {f(b)}")
+        print(f"distToTargetTimestamp(result=block_i={block_i}) = {f(block_i)}")
+
+    return int(block_i)

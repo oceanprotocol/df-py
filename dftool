@@ -44,8 +44,8 @@ def do_calc():
 Calculate rewards.
 
 NETWORK -- one of {NETWORKS}
-ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD HH:MM
-FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD HH:MM | latest
+ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
+FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
 NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
 TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
 OUTPUT_DIR -- output directory for csv file.
@@ -62,13 +62,11 @@ Uses these envvars:
     # extract inputs
     assert sys.argv[1] == "calc"
     NETWORK = sys.argv[2]
-    START = int(sys.argv[3])
-    FIN = sys.argv[4]
-    NSAMP = int(sys.argv[5])
+    ST, FIN, NSAMP = sys.argv[3], sys.argv[4], int(sys.argv[5])
     TOT_OCEAN = float(sys.argv[6])
     OUTPUT_DIR = sys.argv[7]
     print(f"Arguments:\n NETWORK={NETWORK}" \
-          f"\n START={START}\n FIN={FIN}\n NSAMP={NSAMP}" \
+          f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}" \
           f"\n TOT_OCEAN={TOT_OCEAN}, OUTPUT_DIR={OUTPUT_DIR}")
         
     # extract envvars
@@ -95,14 +93,14 @@ Uses these envvars:
     chain = brownie.network.chain
 
     if '-' in ST:
-        st_block = blocktime.strtimeToBlock(chain, ST)
+        st_block = blocktime.timestrToBlock(chain, ST)
     else:
         st_block = int(ST)
 
     if FIN == 'latest':
         fin_block = len(chain)
     elif '-' in FIN:
-        fin_block = blocktime.strtimeToBlock(chain, FIN)
+        fin_block = blocktime.timestrToBlock(chain, FIN)
     else:
         fin_block = int(FIN)
 
