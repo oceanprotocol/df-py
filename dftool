@@ -26,7 +26,7 @@ Usage: dftool query|calc|dispense|..
 
   dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain for stakes & volumes
   dftool calc CSV_DIR TOT_OCEAN - from stakes & volumes, calculate rewards
-  dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - from rewards, airdrop funds
+  dftool dispense NETWORK INPUT_DIR [AIRDROP_ADDR] - from rewards, airdrop funds
 
   dftool compile - compile contracts
   dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
@@ -84,8 +84,8 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
         print("\nNeed to set envvar ADDRESS_FILE. Exiting."); sys.exit(0)
     if SUBGRAPH_URI is None:
         print("\nNeed to set envvar SUBGRAPH_URI. Exiting."); sys.exit(0)
-
-    # check files
+    
+    # shouldn't already have the output files
     c1 = csvs.stakesCsvFilename(CSV_DIR, NETWORK)
     if os.path.exists(c1):
         print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
@@ -93,7 +93,7 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
     if os.path.exists(c2):
         print(f"\nFile {c2} exists. Exiting."); sys.exit(0)
 
-    # make directory
+    # make directory if needed
     if not os.path.exists(CSV_DIR):
         print(f"Directory {CSV_DIR} did not exist, so created it")
         os.mkdir(CSV_DIR)
@@ -147,6 +147,17 @@ Usage: dftool calc CSV_DIR TOT_OCEAN
     TOT_OCEAN = float(sys.argv[3])
     print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
 
+    # do we have the input files?
+    if not csvs.stakesCsvFilenames(CSV_DIR): 
+        print(f"\nNo 'stakes*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+    if not csvs.poolVolsCsvFilenames(CSV_DIR): 
+        print(f"\nNo 'pool_vol*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+
+    # shouldn't already have the output file
+    c = csvs.rewardsCsvFilename(CSV_DIR)
+    if os.path.exists(c):
+        print(f"\nFile {c} exists. Exiting."); sys.exit(0)
+    
     #main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     pool_vols = csvs.loadPoolVolsCsvs(CSV_DIR)
