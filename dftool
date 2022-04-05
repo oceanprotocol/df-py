@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 import os
 import sys
 
-from util import blockrange, blocktime, calcrewards, dispense
+from util import blockrange, blocktime, calcrewards, csvs, dispense, query
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
@@ -109,12 +109,12 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 
     #main work
     recordDeployedContracts(ADDRESS_FILE, NETWORK)
-    seed = fin_block 
+    seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
     (stakes, pool_vols) = query.query(rng, url)
-    query.saveStakesCsv(stakes, CSV_DIR)
-    query.savePoolVolsCsv(pool_vols, CSV_DIR)
+    csvs.saveStakesCsv(stakes, CSV_DIR, NETWORK)
+    csvs.savePoolVolsCsv(pool_vols, CSV_DIR, NETWORK)
     
     print(f"dftool query: Done.")
 
@@ -184,7 +184,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
 
     #main work
-    rewards = loadRewardsCsv(CSV_DIR)
+    rewards = csv.loadRewardsCsv(CSV_DIR)
     dispense.dispense(rewards, AIRDROP_ADDR, from_account)
     
     print("dftool dispense: Done.")
