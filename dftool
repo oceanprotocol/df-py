@@ -14,8 +14,7 @@ from util.oceanutil import recordDeployedContracts, OCEANtoken
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
 # ========================================================================
-HELP = """Usage: dftool query|calc|dispense|..
-Data Farming tool, for use by OPF.
+HELP = """Data Farming tool, for use by OPF.
 
 Main flow: 
 1. OPF runs 'query' for each NETWORK (Eth, Poly). Chain in, csv out.
@@ -23,18 +22,20 @@ Main flow:
 3. OPF runs 'dispense' for each reward token. Csv in, chain update out.
 4. LPs call Airdrop.claim() or claimFor(LP addr). Chain update out.
 
-dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain for stakes & volumes
-dftool calc CSV_DIR TOT_OCEAN - from stakes & volumes, calculate rewards
-dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - from rewards, airdrop funds
+Usage: dftool query|calc|dispense|..
 
-dftool compile
-dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
-dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
-dftool newacct - generate new account
+  dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain for stakes & volumes
+  dftool calc CSV_DIR TOT_OCEAN - from stakes & volumes, calculate rewards
+  dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - from rewards, airdrop funds
 
-dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
-dftool chaininfo NETWORK - info about a network
-dftool help - this message
+  dftool compile - compile contracts
+  dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
+  dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
+  dftool newacct - generate new account
+
+  dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
+  dftool chaininfo NETWORK - info about a network
+  dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -47,14 +48,14 @@ def show_help():
 # ========================================================================
 @enforce_types
 def do_query():
-    HELP = f"""Usage: dftool query NETWORK ST FIN NSAMP CSV_DIR
-Query chain for stakes & volumes.
+    HELP = f"""Query chain for stakes & volumes.
 
-NETWORK -- one of {NETWORKS}
-ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-CSV_DIR -- output directory for csv files
+Usage: dftool query NETWORK ST FIN NSAMP CSV_DIR
+  NETWORK -- one of {NETWORKS}
+  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
+  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
+  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
+  CSV_DIR -- output directory for csv files
 
 Uses these envvars:
 ADDRESS_FILE -- e.g. for barge: ~/.ocean/ocean-contracts/artifacts/address.json
@@ -117,11 +118,11 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 # ========================================================================
 @enforce_types
 def do_calc():
-    HELP = f"""Usage: dftool calc CSV_DIR TOT_OCEAN
-From stakes & volumes, calculate rewards.
+    HELP = f"""From stakes & volumes, calculate rewards.
 
-CSV_DIR -- directory: input stakes & volumes csvs, output rewards csv
-TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
+Usage: dftool calc CSV_DIR TOT_OCEAN
+  CSV_DIR -- directory: input stakes & volumes csvs, output rewards csv
+  TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
 """
 
     if len(sys.argv) not in [2+2]:
@@ -146,12 +147,12 @@ TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
 # ========================================================================
 @enforce_types
 def do_dispense():
-    HELP = f"""Usage: dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR]
-From rewards, airdrop funds.
+    HELP = f"""From rewards, airdrop funds.
 
-CSV_DIR -- input directory for csv rewards file
-NETWORK -- one of {NETWORKS}. Airdrop contract's network
-AIRDROP_ADDR -- airdrop contract's address. If not given, uses envvar AIRDROP_ADDR
+Usage: dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR]
+  CSV_DIR -- input directory for csv rewards file
+  NETWORK -- one of {NETWORKS}. Airdrop contract's network
+  AIRDROP_ADDR -- airdrop contract's address. If not given, uses envvar AIRDROP_ADDR
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -188,11 +189,11 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 # ========================================================================
 @enforce_types
 def do_newcontract():
-    HELP = f"""Usage: dftool newcontract NETWORK TOKEN_ADDR
-Deploy new airdrop contract.
+    HELP = f"""Deploy new airdrop contract.
 
-NETWORK -- one of {NETWORKS}
-TOKEN_ADDR -- e.g. address of OCEAN token
+Usage: dftool newcontract NETWORK TOKEN_ADDR
+  NETWORK -- one of {NETWORKS}
+  TOKEN_ADDR -- e.g. address of OCEAN token
 """
     if len(sys.argv) not in [4]:
         print(HELP)
@@ -221,17 +222,26 @@ TOKEN_ADDR -- e.g. address of OCEAN token
 # dftool compile
 @enforce_types
 def do_compile():
+    HELP = f"""Compile contracts
+
+Usage: dftool compile
+"""
+    if len(sys.argv) not in [2]:
+        print(HELP)
+        sys.exit(0)
+
     os.system("brownie compile")
 
-   
+
 # ========================================================================
 @enforce_types
 def do_mine():
-    HELP = f"""Usage: dftool mine BLOCKS [TIMEDELTA]
-  Force chain to pass time (ganache only).
+    HELP = f"""Force chain to pass time (ganache only).
 
+Usage: dftool mine BLOCKS [TIMEDELTA]
   BLOCKS -- e.g. 3
-  TIMEDELTA -- e.g. 100"""
+  TIMEDELTA -- e.g. 100
+"""
     if len(sys.argv) not in [3,4]:
         print(HELP)
         sys.exit(0)
@@ -265,8 +275,9 @@ def do_mine():
 # ========================================================================
 @enforce_types
 def do_newacct():
-    HELP = f"""Usage: dftool newacct
-Generate new account.
+    HELP = f"""Generate new account.
+
+Usage: dftool newacct
 """
     if len(sys.argv) not in [2]:
         print(HELP)
@@ -288,12 +299,12 @@ Generate new account.
 # ========================================================================
 @enforce_types
 def show_acctinfo():
-    HELP = f"""Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
-Info about an account.
+    HELP = f"""Info about an account.
 
-NETWORK -- one of {NETWORKS}
-ACCOUNT_ADDR -- e.g. '0x987...' or '4'. If the latter, uses accounts[i]
-TOKEN_ADDR -- e.g. '0x123..'
+Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
+  NETWORK -- one of {NETWORKS}
+  ACCOUNT_ADDR -- e.g. '0x987...' or '4'. If the latter, uses accounts[i]
+  TOKEN_ADDR -- e.g. '0x123..'
 
 If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 """
@@ -334,10 +345,11 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 # ========================================================================
 @enforce_types
 def show_chaininfo():
-    HELP = f"""Usage: dftool chaininfo NETWORK
-Info about a network.
+    HELP = f"""Info about a network.
 
-NETWORK -- one of {NETWORKS}"""
+Usage: dftool chaininfo NETWORK
+  NETWORK -- one of {NETWORKS}
+"""
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
@@ -370,7 +382,7 @@ def do_main():
 
     #write actions
     elif sys.argv[1] == "query":
-        do_calc()
+        do_query()
     elif sys.argv[1] == "calc":
         do_calc()
     elif sys.argv[1] == "dispense":
