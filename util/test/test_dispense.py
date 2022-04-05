@@ -14,23 +14,25 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 @enforce_types
 def test_csv():
     rewards = {a1:0.1, a2:0.2, a3:0.3}
-    _rewardsToCsvWithRemove(rewards, '/tmp')
-    (tos, values_float, values_int) = dispense.csvToRewardsLists('/tmp')
+    _saveRewardsCsvWithRemove(rewards, '/tmp')
+    (tos, values_float, values_int) = dispense.loadRewardsCsv('/tmp')
     assert len(tos) == len(values_float) == len(values_int)
     assert rewards == {to:value_f for to,value_f in zip(tos, values_float)} 
     assert values_float == [fromBase18(value_int) for value_int in values_int]
 
 @enforce_types
-def test_dispenseFromCsv(ADDRESS_FILE):
+def test_dispenseWithCsv(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
 
     airdrop = B.Airdrop.deploy(OCEAN.address, {"from": accounts[0]})
     
     rewards = {a1:0.1, a2:0.2, a3:0.3}
-    _rewardsToCsvWithRemove(rewards, '/tmp')
+    csv_dir = '/tmp'
+    _saveRewardsCsvWithRemove(rewards, csv_dir)
 
-    dispense.dispenseFromCsv('/tmp', airdrop.address, accounts[0])
+    (tos, _, values_int) = loadRewardsCsv(csv_dir)
+    dispenseFromLists(tos, values_int, airdrop.address, accounts[0])
 
     #a1 claims for itself
     bal_before = fromBase18(OCEAN.balanceOf(a1))
@@ -61,9 +63,9 @@ def test_dispenseFromLists_with_batching(ADDRESS_FILE):
         tos, values_int, airdrop.address, accounts[0], batch_size=batch_size)
 
 @enforce_types
-def _rewardsToCsvWithRemove(rewards:dict, csv_dir:str):
+def _saveRewardsCsvWithRemove(rewards:dict, csv_dir:str):
     csv_file = dispense.rewardsPathToFile(csv_dir)
     if os.path.exists(csv_file):
         os.remove(csv_file)
-    dispense.rewardsToCsv(rewards, csv_dir)
+    dispense.saveRewardsCsv(rewards, csv_dir)
     return csv_file

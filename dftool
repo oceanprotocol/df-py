@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 import brownie
-import csv
 from enforce_typing import enforce_types
 import os
 import sys
@@ -108,14 +107,11 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
     seed = fin_block 
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
-    
-    query_results = query.query(rng, url)
-    
-    #store to csv
-    query.queryResultsToCsv(query_results, CSV_DIR)
+    (stakes, pool_vols) = query.query(rng, url)
+    query.saveStakesCsv(stakes, CSV_DIR)
+    query.savePoolVolsCsv(pool_vols, CSV_DIR)
     
     print(f"dftool query: Done.")
-
 
 
 # ========================================================================
@@ -139,10 +135,10 @@ TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
     print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
 
     #main work
-    rewards = calcrewards.calcRewards(CSV_DIR, TOT_OCEAN)
-    
-    #store to csv
-    calcrewards.rewardsToCsv(CSV_DIR)
+    stakes = csvs.loadStakesCsvs(CSV_DIR)
+    pool_vols = csvs.loadPoolVolsCsvs(CSV_DIR)
+    rewards = calcrewards.calcRewards(stakes, pool_vols, TOT_OCEAN)
+    csvs.saveRewardsCsv(rewards, CSV_DIR)
     
     print(f"dftool calc: Done.")
 
@@ -183,8 +179,9 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
 
     #main work
-    dispense.dispenseFromCsv(CSV_DIR, AIRDROP_ADDR, from_account)
-
+    (tos, _, values_int) = loadRewardsCsv(CSV_DIR)
+    dispenseFromLists(tos, values_int, AIRDROP_ADDR, from_account)
+    
     print("dftool dispense: Done.")
 
     
