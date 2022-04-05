@@ -179,8 +179,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
 
     #main work
-    (tos, _, values_int) = loadRewardsCsv(CSV_DIR)
-    dispenseFromLists(tos, values_int, AIRDROP_ADDR, from_account)
+    rewards = loadRewardsCsv(CSV_DIR)
+    dispense.dispense(rewards, AIRDROP_ADDR, from_account)
     
     print("dftool dispense: Done.")
 

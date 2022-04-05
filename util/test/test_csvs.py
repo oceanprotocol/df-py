@@ -37,6 +37,15 @@ def test_poolVols(tmp_path):
 
 @enforce_types
 def test_rewards(tmp_path):
-    #tests for rewards csvs are currently in test_dispense.py
-    pass
+    rewards = {"LP1":1.1, "LP2":2.2, "LP3":3.0}
+    target_rewards = rewards
+    
+    csv_dir = str(tmp_path)
+    csvs.saveRewardsCsv(rewards, csv_dir)
+        
+    loaded_rewards = csvs.loadRewardsCsv(csv_dir)
+    assert loaded_rewards == target_rewards
+
+    for value in rewards.values(): #ensures we don't deal in weis
+        assert type(value) == float
     

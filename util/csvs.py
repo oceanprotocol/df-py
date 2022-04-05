@@ -113,32 +113,26 @@ def saveRewardsCsv(rewards:dict, csv_dir:str) -> str:
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, 'w') as f:
         writer = csv.writer(f)
-        writer.writerow(["LP_address", "OCEAN_reward_amount"])
+        writer.writerow(["LP_address", "OCEAN_float"])
         for to_addr, value in rewards.items():
             writer.writerow([to_addr, value])
 
 @enforce_types
 def loadRewardsCsv(csv_dir:str):
-    """Loads values from rewards csv.
-
-    @return
-      tos -- list of to_addr_str
-      values_float -- list of value_float (*not* base 18)
-      values_int -- list of value_int (base 18, like wei)
-    """
+    """Loads rewards -- dict of [LP_addr]:OCEAN_float (not wei), from csv"""
     csv_file = rewardsCsvFilename(csv_dir)
-    tos, values_float, values_int = [], [], []
+    rewards = {}
+    
     with open(csv_file, 'r') as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0: #header
                 continue
-            to, value_float = row[0], float(row[1])
-            value_int = toBase18(value_float)
-            tos.append(to)
-            values_float.append(value_float)
-            values_int.append(value_int)
-    return (tos, values_float, values_int)
+            LP_addr, OCEAN_float = row[0], float(row[1])
+            assert LP_addr not in rewards, "duplicate found"
+            rewards[LP_addr] = OCEAN_float
+
+    return rewards
 
 @enforce_types
 def rewardsCsvFilename(csv_dir:str) -> str:
