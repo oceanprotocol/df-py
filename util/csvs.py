@@ -24,6 +24,7 @@ def saveStakesCsv(stakes:dict, csv_dir:str, network:str):
         for pool_addr, d in stakes.items():
             for LP_addr, stake in d.items():
                 writer.writerow([pool_addr, LP_addr, stake])
+    print(f"Created {csv_file}")
 
 @enforce_types
 def loadStakesCsvs(csv_dir:str):
@@ -41,6 +42,7 @@ def loadStakesCsvs(csv_dir:str):
                     stakes[pool_addr] = {}
                 assert LP_addr not in stakes[pool_addr], "duplicate found"
                 stakes[pool_addr][LP_addr] = stake
+        print(f"Loaded {csv_file}")
 
     return stakes
 
@@ -72,6 +74,7 @@ def savePoolVolsCsv(pool_vols:dict, csv_dir:str, network:str):
         writer.writerow(["pool_address", "vol_amount"])
         for pool_addr, vol in pool_vols.items():
             writer.writerow([pool_addr, vol])
+    print(f"Created {csv_file}")
 
 @enforce_types
 def loadPoolVolsCsvs(csv_dir:str):
@@ -87,6 +90,7 @@ def loadPoolVolsCsvs(csv_dir:str):
                 pool_addr, vol = row[0], float(row[1])
                 assert pool_addr not in pool_vols, "duplicate found"
                 pool_vols[pool_addr] = vol
+        print(f"Loaded {csv_file}")
 
     return pool_vols
 
@@ -116,6 +120,7 @@ def saveRewardsCsv(rewards:dict, csv_dir:str) -> str:
         writer.writerow(["LP_address", "OCEAN_float"])
         for to_addr, value in rewards.items():
             writer.writerow([to_addr, value])
+    print(f"Created {csv_file}")
 
 @enforce_types
 def loadRewardsCsv(csv_dir:str):
@@ -131,6 +136,7 @@ def loadRewardsCsv(csv_dir:str):
             LP_addr, OCEAN_float = row[0], float(row[1])
             assert LP_addr not in rewards, "duplicate found"
             rewards[LP_addr] = OCEAN_float
+    print(f"Loaded {csv_file}")
 
     return rewards
 
