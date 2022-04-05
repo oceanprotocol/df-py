@@ -47,7 +47,7 @@ def dispenseFromLists(
     
 @enforce_types
 def rewardsPathToFile(path:str) -> str:
-    return os.path.join(path, 'rewards.csv')
+    return os.path.join(path, 'rewards-OCEAN.csv')
 
 @enforce_types
 def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
@@ -77,7 +77,7 @@ def rewardsToCsv(rewards:dict, csv_dir:str) -> str:
 def csvToRewardsLists(csv_dir:str):
     """
     @description
-      Given rewards csv, extract it two lists
+      Given rewards csv, extract two lists from it
 
     @arguments
       csv_dir -- directory path for csv file
