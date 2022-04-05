@@ -66,15 +66,17 @@ def calcRewards(stakes:dict, pool_vols:dict, OCEAN_avail:float):
     #fill in R
     rewards = {} # [LP_addr] : OCEAN_float
     for i, LP_addr in enumerate(LP_addrs):
-        rewards[LP_addr] = 0.0
+        reward_i = 0.0
         for j, pool_addr in enumerate(pool_addrs):
             if pool_addr not in stakes: continue
             Sij = stakes[pool_addr].get(LP_addr, 0.0)
             Cj = pool_vols.get(pool_addr, 0.0)
             if Sij == 0 or Cj == 0: continue
             RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0) #main formula!
-            rewards[LP_addr] += RF_ij
-
+            reward_i += RF_ij
+        if reward_i > 0.0:
+            rewards[LP_addr] = reward_i
+            
     #normalize and scale rewards
     sum_ = sum(rewards.values())
     for LP_addr, reward in rewards.items():

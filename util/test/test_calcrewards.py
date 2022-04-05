@@ -78,6 +78,7 @@ def test_calcRewards3():
     pool_vols = {'pool1':1.0} #pool1 has volume, but not pool2
     rewards = calcrewards.calcRewards(stakes, pool_vols, OCEAN_avail=10.0)
     assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
+    assert min(rewards.values()) > 0, "shouldn't have entries with 0 rewards"
     assert rewards == {'LP1':5.0, 'LP2':5.0}
 
 @enforce_types
