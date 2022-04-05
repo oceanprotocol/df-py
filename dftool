@@ -80,6 +80,10 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
     SUBGRAPH_URI = os.environ.get('SUBGRAPH_URI')
     print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " \
           f"SUBGRAPH_URI={SUBGRAPH_URI}")
+    if ADDRESS_FILE is None:
+        print("\nNeed to set envvar ADDRESS_FILE. Exiting."); sys.exit()
+    if SUBGRAPH_URI is None:
+        print("\nNeed to set envvar SUBGRAPH_URI. Exiting."); sys.exit()
 
     # make directory
     if not os.path.exists(CSV_DIR):
