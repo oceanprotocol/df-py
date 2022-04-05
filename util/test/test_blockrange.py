@@ -18,6 +18,11 @@ def test_failures():
         BlockRange(st=1, fin=10, num_samples=-5)
 
 @enforce_types
+def test_startAtZero():
+    r = BlockRange(st=0, fin=3, num_samples=10).getBlocks()
+    assert r == [0, 1, 2, 3]
+    
+@enforce_types
 def test_availableN_samples0():
     r = BlockRange(st=10, fin=20, num_samples=0).getBlocks()
     assert r == []
