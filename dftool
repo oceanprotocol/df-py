@@ -81,15 +81,23 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
     print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " \
           f"SUBGRAPH_URI={SUBGRAPH_URI}")
     if ADDRESS_FILE is None:
-        print("\nNeed to set envvar ADDRESS_FILE. Exiting."); sys.exit()
+        print("\nNeed to set envvar ADDRESS_FILE. Exiting."); sys.exit(0)
     if SUBGRAPH_URI is None:
-        print("\nNeed to set envvar SUBGRAPH_URI. Exiting."); sys.exit()
+        print("\nNeed to set envvar SUBGRAPH_URI. Exiting."); sys.exit(0)
+
+    # check files
+    c1 = csvs.stakesCsvFilename(CSV_DIR, NETWORK)
+    if os.path.exists(c1):
+        print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
+    c2 = csvs.poolVolsCsvFilename(CSV_DIR, NETWORK)
+    if os.path.exists(c2):
+        print(f"\nFile {c2} exists. Exiting."); sys.exit(0)
 
     # make directory
     if not os.path.exists(CSV_DIR):
         print(f"Directory {CSV_DIR} did not exist, so created it")
         os.mkdir(CSV_DIR)
-    
+            
     #brownie setup
     brownie.network.connect(NETWORK)
     accounts = brownie.network.accounts
