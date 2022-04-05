@@ -48,10 +48,10 @@ def timestampToBlock(chain, timestamp:Union[float,int]) -> int:
     b = len(chain) - 1
     
     if f(a) > 0 and f(b) > 0: #corner case: everything's in the past
-        return 0.0
+        return 0
     
     elif f(a) < 0 and f(b) < 0: #corner case: everything's in the future
-        return float(len(chain))
+        return len(chain)
     
     (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
     if False: #set to True to debug
