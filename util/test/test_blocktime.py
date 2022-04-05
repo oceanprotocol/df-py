@@ -8,10 +8,18 @@ chain = brownie.network.chain
 from util.blocktime import timestrToBlock, timestrToTimestamp, \
     timestampToBlock
 
-def test_timestrToBlock():
+def test_timestrToBlock_1():
     #tests here are light, the real tests are in test_*() below
-    assert timestrToBlock(chain, "1970-01-01") > 0.0
-    assert timestrToBlock(chain, "1970-01-01_1:00") > 0.0
+    assert timestrToBlock(chain, "2022-03-29") > 0.0
+    assert timestrToBlock(chain, "2022-03-29_1:00") > 0.0
+    
+def test_timestampToBlock_FarLeft():
+    assert timestrToBlock(chain, "1970-01-01") == 0.0
+    assert timestrToBlock(chain, "1970-01-01_1:00") == 0.0
+    
+def test_timestampToBlock_FarRight():
+    assert timestrToBlock(chain, "2030-01-01") == len(chain)
+    assert timestrToBlock(chain, "2030-01-01_1:00") == len(chain)
         
 def test_timestrToTimestamp():
     assert timestrToTimestamp("1970-01-01_1:00") == 0.0
