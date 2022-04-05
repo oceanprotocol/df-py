@@ -26,12 +26,13 @@ Usage: dftool query|calc|dispense|..
 
   dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain for stakes & volumes
   dftool calc CSV_DIR TOT_OCEAN - from stakes & volumes, calculate rewards
-  dftool dispense NETWORK INPUT_DIR [AIRDROP_ADDR] - from rewards, airdrop funds
+  dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] - from rewards, airdrop funds
 
   dftool compile - compile contracts
-  dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
+  dftool newairdrop NETWORK TOKEN_ADDR - deploy new airdrop contract
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
+  dftool newtoken NETWORK - generate new token (for testing)
 
   dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo NETWORK - info about a network
@@ -203,7 +204,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
 
     #main work
-    rewards = csv.loadRewardsCsv(CSV_DIR)
+    rewards = csvs.loadRewardsCsv(CSV_DIR)
     dispense.dispense(rewards, AIRDROP_ADDR, from_account)
     
     print("dftool dispense: Done.")
@@ -211,10 +212,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     
 # ========================================================================
 @enforce_types
-def do_newcontract():
+def do_newairdrop():
     HELP = f"""Deploy new airdrop contract.
 
-Usage: dftool newcontract NETWORK TOKEN_ADDR
+Usage: dftool newairdrop NETWORK TOKEN_ADDR
   NETWORK -- one of {NETWORKS}
   TOKEN_ADDR -- e.g. address of OCEAN token
 """
@@ -223,22 +224,20 @@ Usage: dftool newcontract NETWORK TOKEN_ADDR
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "newcontract"
+    assert sys.argv[1] == "newairdrop"
     NETWORK = sys.argv[2]
     TOKEN_ADDR = sys.argv[3]
 
     print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}")
 
-    #brownie setup
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
-
     #main work
+    brownie.network.connect(NETWORK)
+    accounts = brownie.network.accounts
     from_account = _getPrivateAccount()
     airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": from_account})
-    print(f"Deployed new Airdrop contract, with address: {airdrop.address}")
+    print(f"New airdrop contract deployed at address: {airdrop.address}")
     
-    print("dftool newcontract: Done.")
+    print("dftool newairdrop: Done.")
 
 
 # ========================================================================
@@ -321,6 +320,30 @@ Usage: dftool newacct
 
 # ========================================================================
 @enforce_types
+def do_newtoken():
+    HELP = f"""Generate new token (for testing).
+
+Usage: dftool newtoken NETWORK
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "newtoken"
+    NETWORK = sys.argv[2]
+    print(f"Arguments:\n NETWORK={NETWORK}")
+
+    #main work
+    brownie.network.connect(NETWORK)
+    accounts = brownie.network.accounts
+    from_account = _getPrivateAccount()
+    token = B.Simpletoken.deploy(
+        "TST", "Test Token", 18, 1e21, {"from": from_account})
+    print(f"Token '{token.symbol()}' deployed at address: {token.address}")
+
+# ========================================================================
+@enforce_types
 def show_acctinfo():
     HELP = f"""Info about an account.
 
@@ -341,13 +364,15 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     ACCOUNT_ADDR = sys.argv[3]
     TOKEN_ADDR = sys.argv[4] if len(sys.argv) >= 5 else None
 
+    # do work
+    print("Account info:")
+
     brownie.network.connect(NETWORK)
     if len(str(ACCOUNT_ADDR)) == 1:
         addr_i = int(ACCOUNT_ADDR)
         ACCOUNT_ADDR = brownie.accounts[addr_i]
     
     #do work
-    print("Account info:")
     print(f"  Address = {ACCOUNT_ADDR}")
 
     if TOKEN_ADDR is not None:
@@ -413,12 +438,14 @@ def do_main():
         
     elif sys.argv[1] == "compile":
         do_compile()
-    elif sys.argv[1] == "newcontract":
-        do_newcontract()
+    elif sys.argv[1] == "newairdrop":
+        do_newairdrop()
     elif sys.argv[1] == "mine":
         do_mine()
     elif sys.argv[1] == "newacct":
         do_newacct()
+    elif sys.argv[1] == "newtoken":
+        do_newtoken()
 
     #read actions
     elif sys.argv[1] == "acctinfo":
