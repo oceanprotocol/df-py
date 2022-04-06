@@ -36,6 +36,20 @@ def test_poolVols(tmp_path):
     assert loaded_pool_vols == target_pool_vols
 
 @enforce_types
+def test_rates(tmp_path):
+    rates = {"OCEAN" : 0.66, "H2O" : 1.618}
+        
+    csv_dir = str(tmp_path)
+    assert len(csvs.rateCsvFilenames(csv_dir)) == 0
+    csvs.saveRateCsv("OCEAN", rates["OCEAN"], csv_dir)
+    assert len(csvs.rateCsvFilenames(csv_dir)) == 1
+    csvs.saveRateCsv("H2O", rates["H2O"], csv_dir)
+    assert len(csvs.rateCsvFilenames(csv_dir)) == 2
+    
+    loaded_rates = csvs.loadRateCsvs(csv_dir)
+    assert loaded_rates == rates
+
+@enforce_types
 def test_rewards(tmp_path):
     rewards = {"LP1":1.1, "LP2":2.2, "LP3":3.0}
     target_rewards = rewards
@@ -48,4 +62,3 @@ def test_rewards(tmp_path):
 
     for value in rewards.values(): #ensures we don't deal in weis
         assert type(value) == float
-    

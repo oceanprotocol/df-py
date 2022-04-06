@@ -2,7 +2,7 @@ import csv
 from enforce_typing import enforce_types
 import glob
 import os
-from typing import List
+from typing import Dict, List
 
 #========================================================================
 #stakes csvs
@@ -13,12 +13,12 @@ def saveStakesCsv(stakes:dict, csv_dir:str, network:str):
     @arguments
       stakes -- dict of [pool_addr][LP_addr] : stake
       csv_dir -- str
-      network -- e.g. 'development'
+      network -- e.g. "development"
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = stakesCsvFilename(csv_dir, network)
     assert not os.path.exists(csv_file), csv_file
-    with open(csv_file, 'w') as f:
+    with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["pool_address", "LP_address", "stake_amount"])
         for pool_addr, d in stakes.items():
@@ -32,7 +32,7 @@ def loadStakesCsvs(csv_dir:str):
     csv_files = stakesCsvFilenames(csv_dir)
     stakes = {}
     for csv_file in csv_files:
-        with open(csv_file, 'r') as f:
+        with open(csv_file, "r") as f:
             reader = csv.reader(f)
             for row_i, row in enumerate(reader):
                 if row_i == 0: #header
@@ -64,12 +64,12 @@ def savePoolVolsCsv(pool_vols:dict, csv_dir:str, network:str):
     @arguments
       pool_vols -- dict of [pool_addr] : vol
       csv_dir -- str
-      network -- e.g. 'development'
+      network -- e.g. "development"
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = poolVolsCsvFilename(csv_dir, network)
     assert not os.path.exists(csv_file), csv_file
-    with open(csv_file, 'w') as f:
+    with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["pool_address", "vol_amount"])
         for pool_addr, vol in pool_vols.items():
@@ -82,7 +82,7 @@ def loadPoolVolsCsvs(csv_dir:str):
     csv_files = poolVolsCsvFilenames(csv_dir)
     pool_vols = {}
     for csv_file in csv_files:
-        with open(csv_file, 'r') as f:
+        with open(csv_file, "r") as f:
             reader = csv.reader(f)
             for row_i, row in enumerate(reader):
                 if row_i == 0: #header
@@ -104,10 +104,61 @@ def poolVolsCsvFilename(csv_dir:str, network) -> str:
     return os.path.join(csv_dir, f"pool_vols-{network}.csv")
 
 #========================================================================
+#exchange rate csvs
+
+@enforce_types
+def saveRateCsv(token_symbol:str, USD_per_token:float, csv_dir:str) -> str:
+    """
+    @description
+      Save a csv file for an exchange rate.
+
+    @arguments
+      token_symbol -- str -- e.g. "OCEAN", "H2O"
+      USD_per_token -- float -- e.g. 0.86
+      csv_dir -- directory holding csvs
+    """
+    csv_file = rateCsvFilename(token_symbol, csv_dir)
+    assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["token_symbol", "USD_per_token"])
+        writer.writerow([token_symbol, str(USD_per_token)])
+    print(f"Created {csv_file}")
+
+@enforce_types
+def loadRateCsvs(csv_dir:str):
+    """Loads rates -- dict of [token_symbol]:USD_per_token, from csvs"""
+    csv_files = rateCsvFilenames(csv_dir)
+    rates = {}
+    for csv_file in csv_files:
+        with open(csv_file, "r") as f:
+            reader = csv.reader(f)
+            for row_i, row in enumerate(reader):
+                if row_i == 0: #header
+                    continue
+                elif row_i == 1:
+                    token_symbol, USD_per_token = row[0], float(row[1])
+                    rates[token_symbol] = USD_per_token
+                else:
+                    raise AssertionError("unexpected file format")
+        print(f"Loaded {csv_file}")
+
+    return rates
+    
+@enforce_types
+def rateCsvFilenames(csv_dir:str) -> List[str]:
+    """Returns all exchange rate files in this directory"""
+    return glob.glob(os.path.join(csv_dir, "rate*.csv"))
+
+@enforce_types
+def rateCsvFilename(token_symbol:str, csv_dir:str) -> str:
+    return os.path.join(csv_dir, f"rate-{token_symbol}.csv")
+
+#========================================================================
 #rewards csvs
 
 @enforce_types
-def saveRewardsCsv(rewards:dict, csv_dir:str) -> str:
+def saveRewardsCsv(rewards:Dict[str,float], csv_dir:str):
     """
     @arguments
       rewards -- dict of [to_addr] : value_float (*not* base 18)
@@ -115,7 +166,7 @@ def saveRewardsCsv(rewards:dict, csv_dir:str) -> str:
     """
     csv_file = rewardsCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
-    with open(csv_file, 'w') as f:
+    with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["LP_address", "OCEAN_float"])
         for to_addr, value in rewards.items():
@@ -123,12 +174,12 @@ def saveRewardsCsv(rewards:dict, csv_dir:str) -> str:
     print(f"Created {csv_file}")
 
 @enforce_types
-def loadRewardsCsv(csv_dir:str):
+def loadRewardsCsv(csv_dir:str) -> Dict[str,float]:
     """Loads rewards -- dict of [LP_addr]:OCEAN_float (not wei), from csv"""
     csv_file = rewardsCsvFilename(csv_dir)
     rewards = {}
     
-    with open(csv_file, 'r') as f:
+    with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0: #header
@@ -142,4 +193,6 @@ def loadRewardsCsv(csv_dir:str):
 
 @enforce_types
 def rewardsCsvFilename(csv_dir:str) -> str:
-    return os.path.join(csv_dir, 'rewards-OCEAN.csv')
+    return os.path.join(csv_dir, "rewards-OCEAN.csv")
+
+
