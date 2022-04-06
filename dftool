@@ -29,7 +29,7 @@ Then LP steps:
 Usage: dftool query|getrate|calc|dispense|..
 
   dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
-  dftool getrate TOKEN ST FIN NSAMP CSV_DIR - get exchange rate
+  dftool getrate TOKEN ST FIN CSV_DIR - get exchange rate
   dftool calc CSV_DIR TOT_OCEAN - from stakes/vols/rates, calc rewards
   dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] - from rewards, airdrop funds
 
@@ -136,26 +136,25 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 def do_getrate():
     HELP = f"""Get exchange rate, and output rate csv.
 
-Usage: dftool getrate TOKEN ST FIN NSAMP CSV_DIR
+Usage: dftool getrate TOKEN ST FIN CSV_DIR
   TOKEN -- e.g. OCEAN, H2O
-  ST -- start time -- YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- end time -- YYYY-MM-DD | YYYY-MM-DD_HH:MM | now
-  NSAMP -- # times to randomly sample from, in [ST, FIN]
-  CSV_DIR -- output directory for rate-{TOKEN}.csv file
+  ST -- start time -- YYYY-MM-DD
+  FIN -- end time -- YYYY-MM-DD
+  CSV_DIR -- output directory for rate-TOKEN.csv file
 """
-    if len(sys.argv) not in [2+5]:
+    if len(sys.argv) not in [2+4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "getrate"
     TOKEN = sys.argv[2]
-    ST, FIN, NSAMP = sys.argv[3], sys.argv[4], int(sys.argv[5])
-    CSV_DIR = sys.argv[6]
-    print(f"Arguments: ST={ST}, FIN={FIN}, NSAMP={NSAMP}, CSV_DIR={CSV_DIR}")
+    ST, FIN = sys.argv[3], sys.argv[4]
+    CSV_DIR = sys.argv[5]
+    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}")
     
     # shouldn't already have the output file
-    c1 = csvs.rateCsvFilename(CSV_DIR)
+    c1 = csvs.rateCsvFilename(TOKEN, CSV_DIR)
     if os.path.exists(c1):
         print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
 
@@ -165,10 +164,9 @@ Usage: dftool getrate TOKEN ST FIN NSAMP CSV_DIR
         os.mkdir(CSV_DIR)
             
     #main work
-    seed = 32 #could make this fancier
-    rate = getrates.getrate(TOKEN, ST, FIN, NSAMP, seed)
-    csvs.saveRateCsv(rate, CSV_DIR)
-    print(f"dftool getrates: Done.")
+    rate = getrate.getrate(TOKEN, ST, FIN)
+    print(f"rate = ${rate:.4f} / {TOKEN}")
+    csvs.saveRateCsv(TOKEN, rate, CSV_DIR)
 
 # ========================================================================
 @enforce_types
@@ -472,8 +470,8 @@ def do_main():
     #write actions
     elif sys.argv[1] == "query":
         do_query()
-    elif sys.argv[1] == "getrates":
-        do_calc()
+    elif sys.argv[1] == "getrate":
+        do_getrate()
     elif sys.argv[1] == "calc":
         do_calc()
     elif sys.argv[1] == "dispense":
