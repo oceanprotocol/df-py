@@ -10,10 +10,12 @@ from typing import Dict, List
 @enforce_types
 def saveStakesCsv(stakes:dict, csv_dir:str, network:str):
     """
+    @description
+      Save the stakes csv for this network
+
     @arguments
       stakes -- dict of [pool_addr][LP_addr] : stake
-      csv_dir -- str
-      network -- e.g. "development"
+      ..
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = stakesCsvFilename(csv_dir, network)
@@ -28,7 +30,13 @@ def saveStakesCsv(stakes:dict, csv_dir:str, network:str):
 
 @enforce_types
 def loadStakesCsvs(csv_dir:str):
-    """Loads stakes -- dict of [pool_addr][LP_addr]:stake, from csvs in dir"""
+    """
+    @description
+      Load all stakes csvs, and return result as a single dict
+
+    @return
+      stakes -- dict of [pool_addr][LP_addr]:stake, from csvs in dir
+    """
     csv_files = stakesCsvFilenames(csv_dir)
     stakes = {}
     for csv_file in csv_files:
@@ -48,11 +56,12 @@ def loadStakesCsvs(csv_dir:str):
 
 @enforce_types
 def stakesCsvFilenames(csv_dir:str) -> List[str]:
-    """Returns all stakes files in this directory"""
+    """Returns a list of stakes filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "stakes*.csv"))
 
 @enforce_types
-def stakesCsvFilename(csv_dir:str, network) -> str:
+def stakesCsvFilename(csv_dir:str, network:str) -> str:
+    """Returns the stakes filename for a given network"""
     return os.path.join(csv_dir, f"stakes-{network}.csv")
 
 #========================================================================
@@ -61,10 +70,12 @@ def stakesCsvFilename(csv_dir:str, network) -> str:
 @enforce_types
 def savePoolVolsCsv(pool_vols:dict, csv_dir:str, network:str):
     """
+    @description
+      Save the pool_vols csv for this network
+
     @arguments
       pool_vols -- dict of [pool_addr] : vol
-      csv_dir -- str
-      network -- e.g. "development"
+      ..
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = poolVolsCsvFilename(csv_dir, network)
@@ -78,7 +89,13 @@ def savePoolVolsCsv(pool_vols:dict, csv_dir:str, network:str):
 
 @enforce_types
 def loadPoolVolsCsvs(csv_dir:str):
-    """Loads pool_vols -- dict of [pool_addr]:vol, from csvs in dir"""
+    """
+    @description
+      Load all pool_vols csvs, and return result as a single dict
+
+    @return
+      pool_vols -- dict of [pool_addr]:vol, from csvs in dir
+    """
     csv_files = poolVolsCsvFilenames(csv_dir)
     pool_vols = {}
     for csv_file in csv_files:
@@ -96,11 +113,12 @@ def loadPoolVolsCsvs(csv_dir:str):
 
 @enforce_types
 def poolVolsCsvFilenames(csv_dir:str) -> List[str]:
-    """Returns all pool_vol files in this directory"""
+    """Returns a list of pool_vols filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "pool_vols*.csv"))
 
 @enforce_types
 def poolVolsCsvFilename(csv_dir:str, network) -> str:
+    """Returns the pool_vols filename for a given network"""
     return os.path.join(csv_dir, f"pool_vols-{network}.csv")
 
 #========================================================================
@@ -127,7 +145,13 @@ def saveRateCsv(token_symbol:str, USD_per_token:float, csv_dir:str) -> str:
 
 @enforce_types
 def loadRateCsvs(csv_dir:str):
-    """Loads rates -- dict of [token_symbol]:USD_per_token, from csvs"""
+    """
+    @description
+      Load all exchange rate csvs, and return result as a single dict
+
+    @return
+      rates -- dict of [token_symbol]:USD_per_token, from csvs
+    """
     csv_files = rateCsvFilenames(csv_dir)
     rates = {}
     for csv_file in csv_files:
@@ -136,22 +160,22 @@ def loadRateCsvs(csv_dir:str):
             for row_i, row in enumerate(reader):
                 if row_i == 0: #header
                     continue
-                elif row_i == 1:
-                    token_symbol, USD_per_token = row[0], float(row[1])
+                else: #row_i == 1:
+                    symbol, USD_per_token = row[0], float(row[1])
                     rates[token_symbol] = USD_per_token
-                else:
-                    raise AssertionError("unexpected file format")
+                    break
         print(f"Loaded {csv_file}")
 
     return rates
     
 @enforce_types
 def rateCsvFilenames(csv_dir:str) -> List[str]:
-    """Returns all exchange rate files in this directory"""
+    """Returns a list of exchange rate filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "rate*.csv"))
 
 @enforce_types
 def rateCsvFilename(token_symbol:str, csv_dir:str) -> str:
+    """Returns the exchange rate filename for a given token"""
     return os.path.join(csv_dir, f"rate-{token_symbol}.csv")
 
 #========================================================================
@@ -160,9 +184,12 @@ def rateCsvFilename(token_symbol:str, csv_dir:str) -> str:
 @enforce_types
 def saveRewardsCsv(rewards:Dict[str,float], csv_dir:str):
     """
+    @description
+      Save the rewards dict as a csv,
+
     @arguments
       rewards -- dict of [to_addr] : value_float (*not* base 18)
-      csv_dir -- directory holding csvs
+      ..
     """
     csv_file = rewardsCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
