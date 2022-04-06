@@ -14,6 +14,8 @@ def calcRewards(stakes:dict, pool_vols:dict, rates:Dict[str,float],
 
     @return
       rewards -- dict of [LP_addr] : OCEAN_float
+
+    A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
     stakes_USD, pool_vols_USD = _convertToUSD(stakes, pool_vols, rates)
     rewards = _calcRewardsUSD(stakes_USD, pool_vols_USD, OCEAN_avail)
@@ -23,7 +25,8 @@ def _convertToUSD(stakes:dict, pool_vols:dict, rates:Dict[str,float]) \
     -> Tuple[dict, dict]:
     """
     @description
-      Aggregates across basetokens by converting all to USD
+      Converts stake and vol values from denomination in basetoken (eg OCEAN)
+      to being denominated in USD. Then we can compare apples to apples.
 
     @arguments
       stakes - dict of [basetoken_symbol][pool_addr][LP_addr] : stake

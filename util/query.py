@@ -5,7 +5,7 @@ import numpy
 from numpy import log10
 from pprint import pprint
 import requests
-from typing import Dict, List, Set
+from typing import Dict, List, Set, Tuple
 
 from util import oceanutil
 from util.blockrange import BlockRange
@@ -14,11 +14,13 @@ from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
 @enforce_types
-def query(rng:BlockRange, subgraph_url:str) -> Dict[str, float]:
+def query(rng:BlockRange, subgraph_url:str) -> Tuple[dict, dict]:
     """
     @return
       stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
       pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
+      
+    A stake or vol value is in terms of basetoken (eg OCEAN, H2O).
     """
     pools = getPools(subgraph_url)
     stakes = getStakes(pools, rng, subgraph_url) 
@@ -33,8 +35,7 @@ def getPools(subgraph_url:str) -> list: #list of BPool
 
 @enforce_types
 def getStakes(pools:list, rng:BlockRange, subgraph_url:str) -> dict:
-    """@return - dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-    """
+    """@return - dict of [basetoken_symbol][pool_addr][LP_addr] : stake"""
     print("getStakes(): begin")
     SSBOT_address = oceanutil.Staking().address.lower()
     approved_tokens = getApprovedTokens(subgraph_url) # addr : symbol
