@@ -4,11 +4,20 @@ from util import csvs
 
 @enforce_types
 def test_stakes(tmp_path):
-    stakes_chain1 = {"pool1": {"LP1": 1.1, "LP2": 2.2},
-                     "pool2": {"LP1": 3.3, "LP3": 4.4}}
-    stakes_chain2 = {"pool3": {"LP1": 5.5, "LP4": 6.6}}
-    target_stakes = {**stakes_chain1, **stakes_chain2} #merge two dicts
+    stakes_chain1 = {"OCEAN": {"pool1": {"LP1": 1.1, "LP1": 1.2},
+                               "pool2": {"LP1": 2.1, "LP3": 2.3}},
+                     "H2O"  : {"pool3": {"LP1": 3.1, "LP4": 3.4}}}
+                               
+    stakes_chain2 = {"OCEAN": {"pool4": {"LP1": 4.1, "LP5": 4.5}},
+                     "H2O"  : {"pool5": {"LP6": 5.6}}}
 
+    #target is a merging of the above dicts
+    target_stakes = {"OCEAN": {"pool1": {"LP1": 1.1, "LP1": 1.2},
+                               "pool2": {"LP1": 2.1, "LP3": 2.3},
+                               "pool4": {"LP1": 4.1, "LP5": 4.5}},
+                     "H2O"  : {"pool3": {"LP1": 3.1, "LP4": 3.4},
+                               "pool5": {"LP6": 5.6}}}
+    
     csv_dir = str(tmp_path)
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
     csvs.saveStakesCsv(stakes_chain1, csv_dir, "chain1")
@@ -21,10 +30,16 @@ def test_stakes(tmp_path):
 
 @enforce_types
 def test_poolVols(tmp_path):
-    pool_vols_chain1 = {"pool1":1.1, "pool2":2.2}
-    pool_vols_chain2 = {"pool3":3.3}
-    target_pool_vols = {**pool_vols_chain1, **pool_vols_chain2} #merge two dicts
-    
+    pool_vols_chain1 = {"OCEAN": {"pool1":1.1, "pool2":2.1},
+                        "H2O"  : {"pool3":3.1}}
+    pool_vols_chain2 = {"OCEAN": {"pool4":4.1, "pool5":5.1},
+                        "H2O"  : {"pool6":6.1}}
+
+    #target is a merging of the above dicts
+    target_pool_vols = {"OCEAN": {"pool1":1.1, "pool2":2.1,
+                                  "pool4":4.1, "pool5":5.1},
+                        "H2O"  : {"pool3":3.1, "pool6":6.1}}
+        
     csv_dir = str(tmp_path)
     assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 0
     csvs.savePoolVolsCsv(pool_vols_chain1, csv_dir, "chain1")

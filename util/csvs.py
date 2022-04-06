@@ -14,7 +14,7 @@ def saveStakesCsv(stakes:dict, csv_dir:str, network:str):
       Save the stakes csv for this network
 
     @arguments
-      stakes -- dict of [pool_addr][LP_addr] : stake
+      stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
       ..
     """
     assert os.path.exists(csv_dir), csv_dir
@@ -22,10 +22,12 @@ def saveStakesCsv(stakes:dict, csv_dir:str, network:str):
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["pool_address", "LP_address", "stake_amount"])
-        for pool_addr, d in stakes.items():
-            for LP_addr, stake in d.items():
-                writer.writerow([pool_addr, LP_addr, stake])
+        writer.writerow(
+            ["basetoken", "pool_address", "LP_address", "stake_amount"])
+        for basetoken in stakes.keys():
+            for pool_addr in stakes[basetoken].keys():
+                for LP_addr, stake in stakes[basetoken][pool_addr].items():
+                    writer.writerow([basetoken, pool_addr, LP_addr, stake])
     print(f"Created {csv_file}")
 
 @enforce_types
@@ -35,7 +37,7 @@ def loadStakesCsvs(csv_dir:str):
       Load all stakes csvs, and return result as a single dict
 
     @return
-      stakes -- dict of [pool_addr][LP_addr]:stake, from csvs in dir
+      stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
     """
     csv_files = stakesCsvFilenames(csv_dir)
     stakes = {}
@@ -45,13 +47,19 @@ def loadStakesCsvs(csv_dir:str):
             for row_i, row in enumerate(reader):
                 if row_i == 0: #header
                     continue
-                pool_addr, LP_addr, stake = row[0], row[1], float(row[2])
-                if pool_addr not in stakes:
-                    stakes[pool_addr] = {}
-                assert LP_addr not in stakes[pool_addr], "duplicate found"
-                stakes[pool_addr][LP_addr] = stake
+                basetoken, pool_addr, LP_addr, stake = \
+                    row[0], row[1], row[2], float(row[3])
+                if basetoken not in stakes:
+                    stakes[basetoken] = {}
+                if pool_addr not in stakes[basetoken]:
+                    stakes[basetoken][pool_addr] = {}
+                try:
+                    assert LP_addr not in stakes[basetoken][pool_addr],"dupl. found"
+                except:
+                    import pdb; pdb.set_trace()
+                stakes[basetoken][pool_addr][LP_addr] = stake
         print(f"Loaded {csv_file}")
-
+        
     return stakes
 
 @enforce_types
@@ -74,7 +82,7 @@ def savePoolVolsCsv(pool_vols:dict, csv_dir:str, network:str):
       Save the pool_vols csv for this network
 
     @arguments
-      pool_vols -- dict of [pool_addr] : vol
+      pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
       ..
     """
     assert os.path.exists(csv_dir), csv_dir
@@ -82,9 +90,10 @@ def savePoolVolsCsv(pool_vols:dict, csv_dir:str, network:str):
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["pool_address", "vol_amount"])
-        for pool_addr, vol in pool_vols.items():
-            writer.writerow([pool_addr, vol])
+        writer.writerow(["basetoken", "pool_address", "vol_amount"])
+        for basetoken in pool_vols.keys():
+            for pool_addr, vol in pool_vols[basetoken].items():
+                writer.writerow([basetoken, pool_addr, vol])
     print(f"Created {csv_file}")
 
 @enforce_types
@@ -94,7 +103,7 @@ def loadPoolVolsCsvs(csv_dir:str):
       Load all pool_vols csvs, and return result as a single dict
 
     @return
-      pool_vols -- dict of [pool_addr]:vol, from csvs in dir
+      pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
     """
     csv_files = poolVolsCsvFilenames(csv_dir)
     pool_vols = {}
@@ -104,11 +113,13 @@ def loadPoolVolsCsvs(csv_dir:str):
             for row_i, row in enumerate(reader):
                 if row_i == 0: #header
                     continue
-                pool_addr, vol = row[0], float(row[1])
-                assert pool_addr not in pool_vols, "duplicate found"
-                pool_vols[pool_addr] = vol
+                basetoken, pool_addr, vol = row[0], row[1], float(row[2])
+                if basetoken not in pool_vols:
+                    pool_vols[basetoken] = {}
+                assert pool_addr not in pool_vols[basetoken], "duplicate found"
+                pool_vols[basetoken][pool_addr] = vol
         print(f"Loaded {csv_file}")
-
+        
     return pool_vols
 
 @enforce_types
@@ -161,7 +172,7 @@ def loadRateCsvs(csv_dir:str):
                 if row_i == 0: #header
                     continue
                 else: #row_i == 1:
-                    symbol, USD_per_token = row[0], float(row[1])
+                    token_symbol, USD_per_token = row[0], float(row[1])
                     rates[token_symbol] = USD_per_token
                     break
         print(f"Loaded {csv_file}")
