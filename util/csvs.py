@@ -136,22 +136,22 @@ def poolVolsCsvFilename(csv_dir:str, network) -> str:
 #exchange rate csvs
 
 @enforce_types
-def saveRateCsv(token_symbol:str, USD_per_token:float, csv_dir:str) -> str:
+def saveRateCsv(token_symbol:str, rate:float, csv_dir:str) -> str:
     """
     @description
       Save a csv file for an exchange rate.
 
     @arguments
       token_symbol -- str -- e.g. "OCEAN", "H2O"
-      USD_per_token -- float -- e.g. 0.86
+      rate -- float -- $/token, e.g. 0.86
       csv_dir -- directory holding csvs
     """
     csv_file = rateCsvFilename(token_symbol, csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["token_symbol", "USD_per_token"])
-        writer.writerow([token_symbol, str(USD_per_token)])
+        writer.writerow(["token_symbol", "rate"])
+        writer.writerow([token_symbol, str(rate)])
     print(f"Created {csv_file}")
 
 @enforce_types
@@ -161,7 +161,7 @@ def loadRateCsvs(csv_dir:str):
       Load all exchange rate csvs, and return result as a single dict
 
     @return
-      rates -- dict of [token_symbol]:USD_per_token, from csvs
+      rates -- dict of [token_symbol] : rate
     """
     csv_files = rateCsvFilenames(csv_dir)
     rates = {}
@@ -172,8 +172,8 @@ def loadRateCsvs(csv_dir:str):
                 if row_i == 0: #header
                     continue
                 else: #row_i == 1:
-                    token_symbol, USD_per_token = row[0], float(row[1])
-                    rates[token_symbol] = USD_per_token
+                    token_symbol, rate = row[0], float(row[1])
+                    rates[token_symbol] = rate
                     break
         print(f"Loaded {csv_file}")
 
