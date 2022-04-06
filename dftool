@@ -5,7 +5,8 @@ from enforce_typing import enforce_types
 import os
 import sys
 
-from util import blockrange, blocktime, calcrewards, csvs, dispense, query
+from util import blockrange, blocktime, calcrewards, csvs, dispense, getrate, \
+    query
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
@@ -16,16 +17,20 @@ NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 # ========================================================================
 HELP = """Data Farming tool, for use by OPF.
 
-Main flow: 
-1. OPF runs 'query' for each NETWORK (Eth, Poly). Chain in, csv out.
-2. OPF runs 'calc' for each reward token (OCEAN, EWT). Csv in, csv out.
-3. OPF runs 'dispense' for each reward token. Csv in, chain update out.
-4. LPs call Airdrop.claim() or claimFor(LP addr). Chain update out.
+OPF steps:
+1. query - per NETWORK (Eth, Poly)
+2. getrate - per basetoken (OCEAN, H2O)
+3. calc - per reward token (OCEAN, EWT)
+4. dispense - per reward token
 
-Usage: dftool query|calc|dispense|..
+Then LP steps:
+5. call Airdrop.claim() or claimFor(LP addr)
 
-  dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain for stakes & volumes
-  dftool calc CSV_DIR TOT_OCEAN - from stakes & volumes, calculate rewards
+Usage: dftool query|getrate|calc|dispense|..
+
+  dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
+  dftool getrate TOKEN ST FIN NSAMP CSV_DIR - get exchange rate
+  dftool calc CSV_DIR TOT_OCEAN - from stakes/vols/rates, calc rewards
   dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] - from rewards, airdrop funds
 
   dftool compile - compile contracts
@@ -49,20 +54,19 @@ def show_help():
 # ========================================================================
 @enforce_types
 def do_query():
-    HELP = f"""Query chain for stakes & volumes.
+    HELP = f"""Query chain, output stakes & vols csvs
 
 Usage: dftool query NETWORK ST FIN NSAMP CSV_DIR
   NETWORK -- one of {NETWORKS}
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output directory for csv files
+  CSV_DIR -- output dir for stakes-{NETWORK}.csv and pool_vols-{NETWORK}.csv
 
 Uses these envvars:
 ADDRESS_FILE -- e.g. for barge: ~/.ocean/ocean-contracts/artifacts/address.json
 SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 """
-
     if len(sys.argv) not in [2+5]:
         print(HELP)
         sys.exit(0)
@@ -101,7 +105,6 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
             
     #brownie setup
     brownie.network.connect(NETWORK)
-    accounts = brownie.network.accounts
     chain = brownie.network.chain
 
     if '-' in ST:
@@ -130,12 +133,53 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 
 # ========================================================================
 @enforce_types
+def do_getrate():
+    HELP = f"""Get exchange rate, and output rate csv.
+
+Usage: dftool getrate TOKEN ST FIN NSAMP CSV_DIR
+  TOKEN -- e.g. OCEAN, H2O
+  ST -- start time -- YYYY-MM-DD | YYYY-MM-DD_HH:MM
+  FIN -- end time -- YYYY-MM-DD | YYYY-MM-DD_HH:MM | now
+  NSAMP -- # times to randomly sample from, in [ST, FIN]
+  CSV_DIR -- output directory for rate-{TOKEN}.csv file
+"""
+    if len(sys.argv) not in [2+5]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "getrate"
+    TOKEN = sys.argv[2]
+    ST, FIN, NSAMP = sys.argv[3], sys.argv[4], int(sys.argv[5])
+    CSV_DIR = sys.argv[6]
+    print(f"Arguments: ST={ST}, FIN={FIN}, NSAMP={NSAMP}, CSV_DIR={CSV_DIR}")
+    
+    # shouldn't already have the output file
+    c1 = csvs.rateCsvFilename(CSV_DIR)
+    if os.path.exists(c1):
+        print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
+
+    # make directory if needed
+    if not os.path.exists(CSV_DIR):
+        print(f"Directory {CSV_DIR} did not exist, so created it")
+        os.mkdir(CSV_DIR)
+            
+    #main work
+    seed = 32 #could make this fancier
+    rate = getrates.getrate(TOKEN, ST, FIN, NSAMP, seed)
+    csvs.saveRateCsv(rate, CSV_DIR)
+    print(f"dftool getrates: Done.")
+
+# ========================================================================
+@enforce_types
 def do_calc():
-    HELP = f"""From stakes & volumes, calculate rewards.
+    HELP = f"""From stakes/vols/rates csvs, output rewards csv.
 
 Usage: dftool calc CSV_DIR TOT_OCEAN
-  CSV_DIR -- directory: input stakes & volumes csvs, output rewards csv
+  CSV_DIR -- directory: input stakes & volumes csvs, output rewards.csv
   TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
+
+Outputs 
 """
 
     if len(sys.argv) not in [2+2]:
@@ -153,6 +197,12 @@ Usage: dftool calc CSV_DIR TOT_OCEAN
         print(f"\nNo 'stakes*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
     if not csvs.poolVolsCsvFilenames(CSV_DIR): 
         print(f"\nNo 'pool_vol*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+    if not csvs.rateCsvFilenames(CSV_DIR): 
+        print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+
+        
+    if not os.path.exists(csvs.rateCsvFilename(CSV_DIR)):
+        print(f"\nNo 'rates.csv' file in '{CSV_DIR}'. Exiting."); sys.exit(0)
 
     # shouldn't already have the output file
     c = csvs.rewardsCsvFilename(CSV_DIR)
@@ -162,7 +212,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN
     #main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     pool_vols = csvs.loadPoolVolsCsvs(CSV_DIR)
-    rewards = calcrewards.calcRewards(stakes, pool_vols, TOT_OCEAN)
+    rates = csvs.loadRateCsvs(CSV_DIR)
+    rewards = calcrewards.calcRewards(stakes, pool_vols, rates, TOT_OCEAN)
     csvs.saveRewardsCsv(rewards, CSV_DIR)
     
     print(f"dftool calc: Done.")
@@ -171,7 +222,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN
 # ========================================================================
 @enforce_types
 def do_dispense():
-    HELP = f"""From rewards, airdrop funds.
+    HELP = f"""From rewards csv, airdrop funds to chain.
 
 Usage: dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR]
   CSV_DIR -- input directory for csv rewards file
@@ -198,12 +249,9 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
           f", AIRDROP_ADDR={AIRDROP_ADDR}")
     assert AIRDROP_ADDR is not None
 
-    #brownie setup
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
-    from_account = _getPrivateAccount()
-
     #main work
+    brownie.network.connect(NETWORK)
+    from_account = _getPrivateAccount()
     rewards = csvs.loadRewardsCsv(CSV_DIR)
     dispense.dispense(rewards, AIRDROP_ADDR, from_account)
     
@@ -232,7 +280,6 @@ Usage: dftool newairdrop NETWORK TOKEN_ADDR
 
     #main work
     brownie.network.connect(NETWORK)
-    accounts = brownie.network.accounts
     from_account = _getPrivateAccount()
     airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": from_account})
     print(f"New airdrop contract deployed at address: {airdrop.address}")
@@ -278,21 +325,16 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 
     print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
 
-    #brownie setup
+    #main work
     NETWORK = 'development' #hardcoded bc it's the only one we can force
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
+    brownie.network.connect(NETWORK)
     chain = brownie.network.chain
-    from_account = _getPrivateAccount()
-
-    #make time pass
     if TIMEDELTA is None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
     else:
         chain.mine(blocks=BLOCKS)
         
     print("dftool mine: Done.")
-
 
 # ========================================================================
 @enforce_types
@@ -336,7 +378,6 @@ Usage: dftool newtoken NETWORK
 
     #main work
     brownie.network.connect(NETWORK)
-    accounts = brownie.network.accounts
     from_account = _getPrivateAccount()
     token = B.Simpletoken.deploy(
         "TST", "Test Token", 18, 1e21, {"from": from_account})
@@ -431,6 +472,8 @@ def do_main():
     #write actions
     elif sys.argv[1] == "query":
         do_query()
+    elif sys.argv[1] == "getrates":
+        do_calc()
     elif sys.argv[1] == "calc":
         do_calc()
     elif sys.argv[1] == "dispense":
