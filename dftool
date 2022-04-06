@@ -61,7 +61,7 @@ Usage: dftool query NETWORK ST FIN NSAMP CSV_DIR
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-{NETWORK}.csv and pool_vols-{NETWORK}.csv
+  CSV_DIR -- output dir for stakes-NETWORK.csv and pool_vols-NETWORK.csv
 
 Uses these envvars:
 ADDRESS_FILE -- e.g. for barge: ~/.ocean/ocean-contracts/artifacts/address.json
@@ -197,10 +197,6 @@ Outputs
         print(f"\nNo 'pool_vol*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
     if not csvs.rateCsvFilenames(CSV_DIR): 
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
-
-        
-    if not os.path.exists(csvs.rateCsvFilename(CSV_DIR)):
-        print(f"\nNo 'rates.csv' file in '{CSV_DIR}'. Exiting."); sys.exit(0)
 
     # shouldn't already have the output file
     c = csvs.rewardsCsvFilename(CSV_DIR)
