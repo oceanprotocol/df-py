@@ -3,10 +3,11 @@
 CLI-based tool to administer Data Farming.
 
 ```text
-Usage: dftool calc|dispense|..
+Usage: dftool query|calc|dispense|..
 
+  dftool query - query chain for stakes & volumes
   dftool calc - calculate rewards
-  dftool dispense - airdrop funds based on calculations
+  dftool dispense - airdrop funds
 ```
 
 # Installation
