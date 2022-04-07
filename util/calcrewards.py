@@ -49,7 +49,7 @@ def _convertToUSD(stakes:dict, pool_vols:dict, rates:Dict[str,float]) \
             for LP_addr, stake in stakes[basetoken][pool_addr].items():
                 stakes_USD[pool_addr][LP_addr] = stake * rate
         
-            vol = pool_vols[basetoken][pool_addr]
+        for pool_addr, vol in pool_vols[basetoken].items():
             pool_vols_USD[pool_addr] = vol * rate
             
     return (stakes_USD, pool_vols_USD)

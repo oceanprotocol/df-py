@@ -1,9 +1,9 @@
 from enforce_typing import enforce_types
 import pytest
 
-from util.calcrewards import calcRewards
+from util.calcrewards import calcRewards, _convertToUSD
 
-RATES = {"ocean":0.5, "h2o":1.618}
+RATES = {"ocean":0.5, "h2o":1.6}
 
 @enforce_types
 def test_calcRewards1():
@@ -38,3 +38,11 @@ def test_calcRewards4():
     rewards = calcRewards(stakes, pool_vols, RATES, OCEAN_avail=10.0)
     assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
     assert rewards == {"LP1":5.0, "LP2":2.5, "LP3":2.5}
+
+@enforce_types
+def test_convertToUSD1():
+    stakes = {"ocean": {"pool1": {"LP1":3.0}}}
+    pool_vols = {"ocean": {"pool1":9.0}}
+    (stakes_USD, pool_vols_USD) = _convertToUSD(stakes, pool_vols, RATES)
+    assert stakes_USD == {"pool1": {"LP1":3.0*0.5}}
+    assert pool_vols_USD == {"pool1":9.0*0.5}
