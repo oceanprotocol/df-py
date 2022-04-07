@@ -42,6 +42,8 @@ def _convertToUSD(stakes:dict, pool_vols:dict, rates:Dict[str,float]) \
 
     for basetoken, rate in rates.items():
         if basetoken not in stakes: continue
+        if basetoken not in pool_vols: continue
+        
         for pool_addr in stakes[basetoken].keys():
             stakes_USD[pool_addr] = {}
             for LP_addr, stake in stakes[basetoken][pool_addr].items():
