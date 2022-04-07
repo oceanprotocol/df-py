@@ -46,3 +46,16 @@ def test_convertToUSD1():
     (stakes_USD, pool_vols_USD) = _convertToUSD(stakes, pool_vols, RATES)
     assert stakes_USD == {"pool1": {"LP1":3.0*0.5, "LP2":4.0*0.5}}
     assert pool_vols_USD == {"pool1":9.0*0.5, "pool2":11.0*0.5}
+
+@enforce_types
+def test_convertToUSD2():
+    stakes = {"ocean": {"pool1": {"LP1":3.0, "LP2":4.0}},
+              "h2o"  : {"pool3":{"LP1":5.0, "LP4":6.0}}}
+    pool_vols = {"ocean": {"pool1":9.0,  "pool2":11.0},
+                 "h2o"  : {"pool3":13.0, "pool4":15.0}}
+    (stakes_USD, pool_vols_USD) = _convertToUSD(stakes, pool_vols, RATES)
+    assert stakes_USD == {"pool1": {"LP1":3.0*0.5, "LP2":4.0*0.5},
+                          "pool3": {"LP1":5.0*1.6, "LP4":6.0*1.6}}
+    assert pool_vols_USD == {"pool1":9.0*0.5,  "pool2":11.0*0.5,
+                             "pool3":13.0*1.6, "pool4":15.0*1.6}
+
