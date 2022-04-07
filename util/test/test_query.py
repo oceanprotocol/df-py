@@ -46,7 +46,7 @@ def test_getDTVolumes(ADDRESS_FILE, SUBGRAPH_URL):
     _setup(ADDRESS_FILE, SUBGRAPH_URL)
     st, fin = 1, len(chain)
     DT_vols = query.getDTVolumes(st, fin, SUBGRAPH_URL)
-    assert sum(DT_vols.values()) > 0.0
+    assert sum(DT_vols["OCEAN"].values()) > 0.0
 
 @enforce_types
 def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
@@ -54,8 +54,8 @@ def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
     pools = query.getPools(SUBGRAPH_URL)
     st, fin = 1, len(chain)
     pool_vols = query.getPoolVolumes(pools, st, fin, SUBGRAPH_URL)
-    assert pool_vols
-    assert sum(pool_vols.values()) > 0.0
+    assert pool_vols 
+    assert sum(pool_vols["OCEAN"].values()) > 0.0
 
 
 #========================================================================
