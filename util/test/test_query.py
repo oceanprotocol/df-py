@@ -5,7 +5,7 @@ import pytest
 
 from util import calcrewards, query 
 from util.blockrange import BlockRange
-from util.oceanutil import recordDeployedContracts
+from util.oceanutil import OCEAN_address, recordDeployedContracts
 from util.test import conftest
 
 accounts = brownie.network.accounts
@@ -36,8 +36,7 @@ def test_getStakes(ADDRESS_FILE, SUBGRAPH_URL):
     pools = query.getPools(SUBGRAPH_URL)
     stakes = query.getStakes(pools, rng, SUBGRAPH_URL)
 
-    assert len(stakes) > 0
-    for stakes_at_pool in stakes.values():
+    for stakes_at_pool in stakes["OCEAN"].values():
         assert len(stakes_at_pool) > 0
         assert min(stakes_at_pool.values()) > 0.0
     
@@ -57,6 +56,13 @@ def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
     assert pool_vols 
     assert sum(pool_vols["OCEAN"].values()) > 0.0
 
+
+@enforce_types
+def test_getApprovedTokens(ADDRESS_FILE, SUBGRAPH_URL):
+    _setup(ADDRESS_FILE, SUBGRAPH_URL)
+    approved_tokens = query.getApprovedTokens(SUBGRAPH_URL)
+    assert OCEAN_address().lower() in approved_tokens.keys()
+    assert "ocean" in approved_tokens.values()
 
 #========================================================================
 @enforce_types

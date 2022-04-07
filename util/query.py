@@ -70,8 +70,8 @@ def getStakes(pools:list, rng:BlockRange, subgraph_url:str) -> dict:
             if not new_pool_stake:
                 break
             for d in new_pool_stake:
-                base_token_addr = d["pool"]["basetoken"]["id"].lower()
-                base_token_symbol = approved_tokens[base_token_addr]
+                base_token_addr = d["pool"]["baseToken"]["id"].lower()
+                base_token_symbol = approved_tokens[base_token_addr].lower()
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
@@ -166,7 +166,8 @@ def getApprovedTokens(subgraph_url:str) -> Dict[str,str]:
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, subgraph_url)
     addrs = result['data']['opcs'][0]['approvedTokens']
-    d = {addr.lower() : B.Simpletoken.at(addr).symbol() for addr in addrs}
+    d = {addr.lower() : B.Simpletoken.at(addr).symbol().lower()
+         for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
     return d
 
