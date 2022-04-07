@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
 import pytest
 
-from util.calcrewards import calcRewards, _convertToUSD
+from util.calcrewards import calcRewards, _stakesToUSD, _poolVolsToUSD
 
 RATES = {"ocean":0.5, "h2o":1.6}
 
@@ -40,22 +40,31 @@ def test_calcRewards4():
     assert rewards == {"LP1":5.0, "LP2":2.5, "LP3":2.5}
 
 @enforce_types
-def test_convertToUSD1():
+def test_stakesToUSD_onebasetoken():
     stakes = {"ocean": {"pool1": {"LP1":3.0, "LP2":4.0}}}
-    pool_vols = {"ocean": {"pool1":9.0, "pool2":11.0}}
-    (stakes_USD, pool_vols_USD) = _convertToUSD(stakes, pool_vols, RATES)
+    stakes_USD = _stakesToUSD(stakes, RATES)
     assert stakes_USD == {"pool1": {"LP1":3.0*0.5, "LP2":4.0*0.5}}
+
+@enforce_types
+def test_stakesToUSD_twobasetokens(): 
+    stakes = {"ocean": {"pool1": {"LP1":3.0, "LP2":4.0}},
+              "h2o"  : {"pool3": {"LP1":5.0, "LP4":6.0}}}
+    stakes_USD = _stakesToUSD(stakes, RATES)
+    assert stakes_USD == {"pool1": {"LP1":3.0*0.5, "LP2":4.0*0.5},
+                          "pool3": {"LP1":5.0*1.6, "LP4":6.0*1.6}}
+
+@enforce_types
+def test_poolVolsToUSD_onebasetoken():
+    pool_vols = {"ocean": {"pool1":9.0, "pool2":11.0}}
+    pool_vols_USD = _poolVolsToUSD(pool_vols, RATES)
     assert pool_vols_USD == {"pool1":9.0*0.5, "pool2":11.0*0.5}
 
 @enforce_types
-def test_convertToUSD2():
-    stakes = {"ocean": {"pool1": {"LP1":3.0, "LP2":4.0}},
-              "h2o"  : {"pool3":{"LP1":5.0, "LP4":6.0}}}
+def test_poolVolsToUSD_twobasetokens():
     pool_vols = {"ocean": {"pool1":9.0,  "pool2":11.0},
-                 "h2o"  : {"pool3":13.0, "pool4":15.0}}
-    (stakes_USD, pool_vols_USD) = _convertToUSD(stakes, pool_vols, RATES)
-    assert stakes_USD == {"pool1": {"LP1":3.0*0.5, "LP2":4.0*0.5},
-                          "pool3": {"LP1":5.0*1.6, "LP4":6.0*1.6}}
+                 "h2o"  : {"pool3":13.0}}
+    pool_vols_USD = _poolVolsToUSD(pool_vols, RATES)
     assert pool_vols_USD == {"pool1":9.0*0.5,  "pool2":11.0*0.5,
-                             "pool3":13.0*1.6, "pool4":15.0*1.6}
+                             "pool3":13.0*1.6}
+
 
