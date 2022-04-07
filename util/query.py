@@ -203,7 +203,7 @@ def getAllPools(subgraph_url:str) -> list: #list of BPool
                 addr=d["id"].lower(),
                 nft_addr=d["datatoken"]["nft"]["id"].lower(),
                 DT_addr=d["datatoken"]["id"].lower(),
-                basetoken_addr=d["id"]["baseToken"]["id"].lower())
+                basetoken_addr=d["baseToken"]["id"].lower())
             pools.append(pool)
         
     return pools
