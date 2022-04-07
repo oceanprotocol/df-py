@@ -41,8 +41,8 @@ def test_calcRewards4():
 
 @enforce_types
 def test_convertToUSD1():
-    stakes = {"ocean": {"pool1": {"LP1":3.0}}}
-    pool_vols = {"ocean": {"pool1":9.0}}
+    stakes = {"ocean": {"pool1": {"LP1":3.0, "LP2":4.0}}}
+    pool_vols = {"ocean": {"pool1":9.0, "pool2":11.0}}
     (stakes_USD, pool_vols_USD) = _convertToUSD(stakes, pool_vols, RATES)
-    assert stakes_USD == {"pool1": {"LP1":3.0*0.5}}
-    assert pool_vols_USD == {"pool1":9.0*0.5}
+    assert stakes_USD == {"pool1": {"LP1":3.0*0.5, "LP2":4.0*0.5}}
+    assert pool_vols_USD == {"pool1":9.0*0.5, "pool2":11.0*0.5}
