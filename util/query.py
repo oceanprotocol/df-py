@@ -39,7 +39,7 @@ def getStakes(pools:list, rng:BlockRange, subgraph_url:str) -> dict:
     print("getStakes(): begin")
     SSBOT_address = oceanutil.Staking().address.lower()
     approved_tokens = getApprovedTokens(subgraph_url) # addr : symbol
-    approved_token_addrs = set(d.keys())
+    approved_token_addrs = set(approved_tokens.keys())
     stakes = {symbol:{} for symbol in approved_tokens.values()}
     n_blocks = rng.numBlocks()
     blocks = rng.getBlocks()
