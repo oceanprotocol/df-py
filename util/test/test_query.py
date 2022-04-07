@@ -17,8 +17,11 @@ def test_queryAndCalcResults(ADDRESS_FILE, SUBGRAPH_URL):
     st, fin, n = 1, len(chain), 5
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
+    
     (stakes, pool_vols) = query.query(rng, SUBGRAPH_URL)
-    rewards = calcrewards.calcRewards(stakes, pool_vols, OCEAN_avail)
+    rates = {"ocean":0.5, "h2o":1.618}
+    
+    rewards = calcrewards.calcRewards(stakes, pool_vols, rates, OCEAN_avail)
     sum_ = sum(rewards.values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
     
