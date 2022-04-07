@@ -3,10 +3,11 @@
 CLI-based tool to administer Data Farming.
 
 ```text
-Usage: dftool calc|dispense|..
+Usage: dftool query|calc|dispense|..
 
+  dftool query - query chain for stakes & volumes
   dftool calc - calculate rewards
-  dftool dispense - airdrop funds based on calculations
+  dftool dispense - airdrop funds
 ```
 
 # Installation
@@ -17,7 +18,7 @@ Ensure prerequisites:
 - Linux/MacOS
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
-- Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge)
+- Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
 
 
 #### Install & Run Barge

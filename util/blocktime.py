@@ -39,13 +39,20 @@ def timestampToBlock(chain, timestamp:Union[float,int]) -> int:
         def __init__(self, target_timestamp):
             self.target_timestamp = target_timestamp
 
-        def distToTargetTimestamp(self, block_i):
+        def timeSinceTimestamp(self, block_i):
             block_timestamp = chain[int(block_i)].timestamp
             return block_timestamp - self.target_timestamp
     
-    f = C(timestamp).distToTargetTimestamp
+    f = C(timestamp).timeSinceTimestamp
     a = 0
     b = len(chain) - 1
+    
+    if f(a) > 0 and f(b) > 0: #corner case: everything's in the past
+        return 0
+    
+    elif f(a) < 0 and f(b) < 0: #corner case: everything's in the future
+        return len(chain)
+    
     (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
     if False: #set to True to debug
         print(f"iterations = {results.iterations}")

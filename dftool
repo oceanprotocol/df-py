@@ -1,12 +1,12 @@
 #!/usr/bin/env python
 
 import brownie
-import csv
 from enforce_typing import enforce_types
 import os
 import sys
 
-from util import blockrange, blocktime, calcrewards, dispense
+from util import blockrange, blocktime, calcrewards, csvs, dispense, getrate, \
+    query
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
@@ -15,19 +15,33 @@ from util.oceanutil import recordDeployedContracts, OCEANtoken
 NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 
 # ========================================================================
-HELP = """Usage: dftool calc|dispense|..
-Main help.
+HELP = """Data Farming tool, for use by OPF.
 
-dftool calc NETWORK ST FIN NSAMP TOT_OCEAN OUTPUT_DIR - calculate rewards
-dftool dispense NETWORK INPUT_DIR AIRDROP_ADDR - airdrop funds
+OPF steps:
+1. query - per NETWORK (Eth, Poly)
+2. getrate - per basetoken (OCEAN, H2O)
+3. calc - per reward token (OCEAN, EWT)
+4. dispense - per reward token
 
-dftool newcontract NETWORK TOKEN_ADDR - deploy new airdrop contract
-dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
-dftool newacct - generate new account
+Then LP steps:
+5. call Airdrop.claim() or claimFor(LP addr)
 
-dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
-dftool chaininfo NETWORK - info about a network
-dftool help - this message
+Usage: dftool query|getrate|calc|dispense|..
+
+  dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
+  dftool getrate TOKEN ST FIN CSV_DIR - get exchange rate
+  dftool calc CSV_DIR TOT_OCEAN - from stakes/vols/rates, calc rewards
+  dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] - from rewards, airdrop funds
+
+  dftool compile - compile contracts
+  dftool newairdrop NETWORK TOKEN_ADDR - deploy new airdrop contract
+  dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
+  dftool newacct - generate new account
+  dftool newtoken NETWORK - generate new token (for testing)
+
+  dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
+  dftool chaininfo NETWORK - info about a network
+  dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -36,60 +50,61 @@ def show_help():
     print(HELP)
     sys.exit(0)
 
-    
+
 # ========================================================================
 @enforce_types
-def do_calc():
-    HELP = f"""Usage: dftool calc NETWORK ST END NSAMP TOT_OCEAN OUTPUT_DIR
-Calculate rewards.
+def do_query():
+    HELP = f"""Query chain, output stakes & vols csvs
 
-NETWORK -- one of {NETWORKS}
-ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
-OUTPUT_DIR -- output directory for csv file.
+Usage: dftool query NETWORK ST FIN NSAMP CSV_DIR
+  NETWORK -- one of {NETWORKS}
+  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
+  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
+  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
+  CSV_DIR -- output dir for stakes-NETWORK.csv and pool_vols-NETWORK.csv
 
 Uses these envvars:
 ADDRESS_FILE -- e.g. for barge: ~/.ocean/ocean-contracts/artifacts/address.json
 SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 """
-
-    if len(sys.argv) not in [2+6]:
+    if len(sys.argv) not in [2+5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "calc"
+    assert sys.argv[1] == "query"
     NETWORK = sys.argv[2]
     ST, FIN, NSAMP = sys.argv[3], sys.argv[4], int(sys.argv[5])
-    TOT_OCEAN = float(sys.argv[6])
-    OUTPUT_DIR = sys.argv[7]
+    CSV_DIR = sys.argv[6]
     print(f"Arguments:\n NETWORK={NETWORK}" \
           f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}" \
-          f"\n TOT_OCEAN={TOT_OCEAN}, OUTPUT_DIR={OUTPUT_DIR}")
+          f"\n CSV_DIR={CSV_DIR}")
         
     # extract envvars
     ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
     SUBGRAPH_URI = os.environ.get('SUBGRAPH_URI')
     print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " \
           f"SUBGRAPH_URI={SUBGRAPH_URI}")
-
-    # corner cases
-    if os.path.exists(OUTPUT_DIR):
-        print(f"\nOutput path '{OUTPUT_DIR}' already exists.  Exiting.\n")
-        sys.exit(0)
     if ADDRESS_FILE is None:
-        print("\nNeed to set envvar ADDRESS_FILE. Exiting.\n"); sys.exit(0)
+        print("\nNeed to set envvar ADDRESS_FILE. Exiting."); sys.exit(0)
     if SUBGRAPH_URI is None:
-        print("\nNeed to set envvar SUBGRAPH_URI. Exiting.\n"); sys.exit(0)
-
-    # make directory
-    os.mkdir(OUTPUT_DIR)
+        print("\nNeed to set envvar SUBGRAPH_URI. Exiting."); sys.exit(0)
     
+    # shouldn't already have the output files
+    c1 = csvs.stakesCsvFilename(CSV_DIR, NETWORK)
+    if os.path.exists(c1):
+        print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
+    c2 = csvs.poolVolsCsvFilename(CSV_DIR, NETWORK)
+    if os.path.exists(c2):
+        print(f"\nFile {c2} exists. Exiting."); sys.exit(0)
+
+    # make directory if needed
+    if not os.path.exists(CSV_DIR):
+        print(f"Directory {CSV_DIR} did not exist, so created it")
+        os.mkdir(CSV_DIR)
+            
     #brownie setup
     brownie.network.connect(NETWORK)
-    accounts = brownie.network.accounts
     chain = brownie.network.chain
 
     if '-' in ST:
@@ -106,13 +121,94 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 
     #main work
     recordDeployedContracts(ADDRESS_FILE, NETWORK)
-    seed = fin_block 
+    seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
-    rewards = calcrewards.queryAndCalcRewards(rng, TOT_OCEAN, url)
+    (stakes, pool_vols) = query.query(rng, url)
+    csvs.saveStakesCsv(stakes, CSV_DIR, NETWORK)
+    csvs.savePoolVolsCsv(pool_vols, CSV_DIR, NETWORK)
     
-    #store to csv
-    dispense.rewardsToCsv(OUTPUT_DIR)
+    print(f"dftool query: Done.")
+
+
+# ========================================================================
+@enforce_types
+def do_getrate():
+    HELP = f"""Get exchange rate, and output rate csv.
+
+Usage: dftool getrate TOKEN ST FIN CSV_DIR
+  TOKEN -- e.g. OCEAN, H2O
+  ST -- start time -- YYYY-MM-DD
+  FIN -- end time -- YYYY-MM-DD
+  CSV_DIR -- output directory for rate-TOKEN.csv file
+"""
+    if len(sys.argv) not in [2+4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "getrate"
+    TOKEN = sys.argv[2]
+    ST, FIN = sys.argv[3], sys.argv[4]
+    CSV_DIR = sys.argv[5]
+    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}")
+    
+    # shouldn't already have the output file
+    c1 = csvs.rateCsvFilename(TOKEN, CSV_DIR)
+    if os.path.exists(c1):
+        print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
+
+    # make directory if needed
+    if not os.path.exists(CSV_DIR):
+        print(f"Directory {CSV_DIR} did not exist, so created it")
+        os.mkdir(CSV_DIR)
+            
+    #main work
+    rate = getrate.getrate(TOKEN, ST, FIN)
+    print(f"rate = ${rate:.4f} / {TOKEN}")
+    csvs.saveRateCsv(TOKEN, rate, CSV_DIR)
+
+# ========================================================================
+@enforce_types
+def do_calc():
+    HELP = f"""From stakes/vols/rates csvs, output rewards csv.
+
+Usage: dftool calc CSV_DIR TOT_OCEAN
+  CSV_DIR -- directory: input stakes & volumes csvs, output rewards.csv
+  TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
+
+Outputs 
+"""
+
+    if len(sys.argv) not in [2+2]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "calc"
+    CSV_DIR = sys.argv[2]
+    TOT_OCEAN = float(sys.argv[3])
+    print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
+
+    # do we have the input files?
+    if not csvs.stakesCsvFilenames(CSV_DIR): 
+        print(f"\nNo 'stakes*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+    if not csvs.poolVolsCsvFilenames(CSV_DIR): 
+        print(f"\nNo 'pool_vol*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+    if not csvs.rateCsvFilenames(CSV_DIR): 
+        print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
+
+    # shouldn't already have the output file
+    c = csvs.rewardsCsvFilename(CSV_DIR)
+    if os.path.exists(c):
+        print(f"\nFile {c} exists. Exiting."); sys.exit(0)
+    
+    #main work
+    stakes = csvs.loadStakesCsvs(CSV_DIR)
+    pool_vols = csvs.loadPoolVolsCsvs(CSV_DIR)
+    rates = csvs.loadRateCsvs(CSV_DIR)
+    rewards = calcrewards.calcRewards(stakes, pool_vols, rates, TOT_OCEAN)
+    csvs.saveRewardsCsv(rewards, CSV_DIR)
     
     print(f"dftool calc: Done.")
 
@@ -120,12 +216,14 @@ SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
 # ========================================================================
 @enforce_types
 def do_dispense():
-    HELP = f"""Usage: dftool dispense NETWORK INPUT_DIR [AIRDROP_ADDR]
-Airdrop funds based on calculations.
+    HELP = f"""From rewards csv, airdrop funds to chain.
 
-NETWORK -- one of {NETWORKS}
-INPUT_DIR -- input directory for csv file
-AIRDROP_ADDR -- airdrop contract. If not given, uses envvar AIRDROP_ADDR
+Usage: dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR]
+  CSV_DIR -- input directory for csv rewards file
+  NETWORK -- one of {NETWORKS}. Airdrop contract's network
+  AIRDROP_ADDR -- airdrop contract's address. If not given, uses envvar AIRDROP_ADDR
+
+Transactions are signed with envvar 'DFTOOL_KEY`.
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
@@ -133,76 +231,80 @@ AIRDROP_ADDR -- airdrop contract. If not given, uses envvar AIRDROP_ADDR
 
     # extract inputs
     assert sys.argv[1] == "dispense"
-    NETWORK = sys.argv[2]
-    INPUT_DIR = sys.argv[3]
+    CSV_DIR = sys.argv[2]
+    NETWORK = sys.argv[3]
     if len(sys.argv) == 4:
         print("Set AIRDROP_ADDR from envvar")
         AIRDROP_ADDR = os.getenv('AIRDROP_ADDR')
     else:
         AIRDROP_ADDR = sys.argv[4]
         
-    print(f"Arguments: NETWORK={NETWORK}, INPUT_DIR={INPUT_DIR}" \
+    print(f"Arguments: CSV_DIR={CSV_DIR}, NETWORK={NETWORK}" \
           f", AIRDROP_ADDR={AIRDROP_ADDR}")
     assert AIRDROP_ADDR is not None
 
-    #brownie setup
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
-    from_account = _getPrivateAccount()
-
     #main work
-    dispense.dispenseFromCsv(INPUT_DIR, AIRDROP_ADDR, from_account)
-
+    brownie.network.connect(NETWORK)
+    from_account = _getPrivateAccount()
+    rewards = csvs.loadRewardsCsv(CSV_DIR)
+    dispense.dispense(rewards, AIRDROP_ADDR, from_account)
+    
     print("dftool dispense: Done.")
 
     
 # ========================================================================
 @enforce_types
-def do_newcontract():
-    HELP = f"""Usage: dftool newcontract NETWORK TOKEN_ADDR
-Deploy new airdrop contract.
+def do_newairdrop():
+    HELP = f"""Deploy new airdrop contract.
 
-NETWORK -- one of {NETWORKS}
-TOKEN_ADDR -- e.g. address of OCEAN token
+Usage: dftool newairdrop NETWORK TOKEN_ADDR
+  NETWORK -- one of {NETWORKS}
+  TOKEN_ADDR -- e.g. address of OCEAN token
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "newcontract"
+    assert sys.argv[1] == "newairdrop"
     NETWORK = sys.argv[2]
     TOKEN_ADDR = sys.argv[3]
 
     print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}")
 
-    #brownie setup
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
-
     #main work
+    brownie.network.connect(NETWORK)
     from_account = _getPrivateAccount()
     airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": from_account})
-    print(f"Deployed new Airdrop contract, with address: {airdrop.address}")
+    print(f"New airdrop contract deployed at address: {airdrop.address}")
     
-    print("dftool newcontract: Done.")
+    print("dftool newairdrop: Done.")
 
 
 # ========================================================================
 # dftool compile
 @enforce_types
 def do_compile():
+    HELP = f"""Compile contracts
+
+Usage: dftool compile
+"""
+    if len(sys.argv) not in [2]:
+        print(HELP)
+        sys.exit(0)
+
     os.system("brownie compile")
 
-   
+
 # ========================================================================
 @enforce_types
 def do_mine():
-    HELP = f"""Usage: dftool mine BLOCKS [TIMEDELTA]
-  Force chain to pass time (ganache only).
+    HELP = f"""Force chain to pass time (ganache only).
 
+Usage: dftool mine BLOCKS [TIMEDELTA]
   BLOCKS -- e.g. 3
-  TIMEDELTA -- e.g. 100"""
+  TIMEDELTA -- e.g. 100
+"""
     if len(sys.argv) not in [3,4]:
         print(HELP)
         sys.exit(0)
@@ -217,14 +319,10 @@ def do_mine():
 
     print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
 
-    #brownie setup
+    #main work
     NETWORK = 'development' #hardcoded bc it's the only one we can force
-    brownie.network.connect(NETWORK) 
-    accounts = brownie.network.accounts
+    brownie.network.connect(NETWORK)
     chain = brownie.network.chain
-    from_account = _getPrivateAccount()
-
-    #make time pass
     if TIMEDELTA is None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
     else:
@@ -232,12 +330,12 @@ def do_mine():
         
     print("dftool mine: Done.")
 
-
 # ========================================================================
 @enforce_types
 def do_newacct():
-    HELP = f"""Usage: dftool newacct
-Generate new account.
+    HELP = f"""Generate new account.
+
+Usage: dftool newacct
 """
     if len(sys.argv) not in [2]:
         print(HELP)
@@ -258,13 +356,36 @@ Generate new account.
 
 # ========================================================================
 @enforce_types
-def show_acctinfo():
-    HELP = f"""Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
-Info about an account.
+def do_newtoken():
+    HELP = f"""Generate new token (for testing).
 
-NETWORK -- one of {NETWORKS}
-ACCOUNT_ADDR -- e.g. '0x987...' or '4'. If the latter, uses accounts[i]
-TOKEN_ADDR -- e.g. '0x123..'
+Usage: dftool newtoken NETWORK
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "newtoken"
+    NETWORK = sys.argv[2]
+    print(f"Arguments:\n NETWORK={NETWORK}")
+
+    #main work
+    brownie.network.connect(NETWORK)
+    from_account = _getPrivateAccount()
+    token = B.Simpletoken.deploy(
+        "TST", "Test Token", 18, 1e21, {"from": from_account})
+    print(f"Token '{token.symbol()}' deployed at address: {token.address}")
+
+# ========================================================================
+@enforce_types
+def show_acctinfo():
+    HELP = f"""Info about an account.
+
+Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
+  NETWORK -- one of {NETWORKS}
+  ACCOUNT_ADDR -- e.g. '0x987...' or '4'. If the latter, uses accounts[i]
+  TOKEN_ADDR -- e.g. '0x123..'
 
 If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 """
@@ -278,13 +399,15 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     ACCOUNT_ADDR = sys.argv[3]
     TOKEN_ADDR = sys.argv[4] if len(sys.argv) >= 5 else None
 
+    # do work
+    print("Account info:")
+
     brownie.network.connect(NETWORK)
     if len(str(ACCOUNT_ADDR)) == 1:
         addr_i = int(ACCOUNT_ADDR)
         ACCOUNT_ADDR = brownie.accounts[addr_i]
     
     #do work
-    print("Account info:")
     print(f"  Address = {ACCOUNT_ADDR}")
 
     if TOKEN_ADDR is not None:
@@ -305,10 +428,11 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 # ========================================================================
 @enforce_types
 def show_chaininfo():
-    HELP = f"""Usage: dftool chaininfo NETWORK
-Info about a network.
+    HELP = f"""Info about a network.
 
-NETWORK -- one of {NETWORKS}"""
+Usage: dftool chaininfo NETWORK
+  NETWORK -- one of {NETWORKS}
+"""
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
@@ -340,18 +464,25 @@ def do_main():
         show_help()
 
     #write actions
+    elif sys.argv[1] == "query":
+        do_query()
+    elif sys.argv[1] == "getrate":
+        do_getrate()
     elif sys.argv[1] == "calc":
         do_calc()
-    elif sys.argv[1] == "compile":
-        do_compile()
-    elif sys.argv[1] == "newcontract":
-        do_newcontract()
     elif sys.argv[1] == "dispense":
         do_dispense()
+        
+    elif sys.argv[1] == "compile":
+        do_compile()
+    elif sys.argv[1] == "newairdrop":
+        do_newairdrop()
     elif sys.argv[1] == "mine":
         do_mine()
     elif sys.argv[1] == "newacct":
         do_newacct()
+    elif sys.argv[1] == "newtoken":
+        do_newtoken()
 
     #read actions
     elif sys.argv[1] == "acctinfo":

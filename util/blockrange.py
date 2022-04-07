@@ -11,7 +11,7 @@ class BlockRange:
           num_samples -- # blocks to randomly sample from (without replacement)
           random_seed -- pass in an integer for predictable sampling
         """
-        assert st > 0
+        assert st >= 0
         assert fin > 0
         assert num_samples >= 0
         assert st <= fin

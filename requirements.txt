@@ -2,4 +2,4 @@ eth-brownie
 enforce_typing
 numpy
 scipy
-
+pycoingecko
