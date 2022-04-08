@@ -59,10 +59,11 @@ contract Airdrop is Ownable, ReentrancyGuard {
 
     // Others claim on behalf of recipient
     function claimFor(address _to) public nonReentrant returns (bool) {
-	require (balances[_to] > 0, "Nothing to claim");
-	token.safeTransfer(_to, balances[_to]);
-	emit Claimed(_to, balances[_to]);
+	uint256 amt = balances[_to];
+	require (amt > 0, "Nothing to claim");
 	balances[_to] = 0;
+	token.safeTransfer(_to, amt);
+	emit Claimed(_to, amt);
 	return true;
     }
 }
