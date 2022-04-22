@@ -60,6 +60,7 @@ python -m venv venv
 source venv/bin/activate
 
 #install dependencies
+pip install wheel
 pip install -r requirements.txt
 
 #install openzeppelin library, to import from .sol (ignore FileExistsErrors)
