@@ -19,7 +19,7 @@ Ensure prerequisites:
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
-
+- [Ganache](https://www.npmjs.com/package//ganache-cli)
 
 #### Install & Run Barge
 
@@ -88,18 +88,22 @@ dftool dispense
 
 **Then, simply follow the usage directions:)**
 
-
 # Other Usage
+
+## Setting up Tests
+
+Depending on the functionality and tests you need to run, you may have to update your envvars.
+Please read dftool to understand this further before beginning tests
 
 ## Running Tests
 
 In terminal:
 ```console
 #run tests for one method, with print statements to console. "-s" is same as "--capture=no"
-brownie test util/test/test_df.py::test_thegraph -s
+brownie test util/test/test_calcrewards.py::test_calcRewards1 -s
 
 #run tests for one module
-brownie test util/test/test_df.py
+brownie test util/test/test_calcrewards.py
 
 #run all tests
 brownie test
