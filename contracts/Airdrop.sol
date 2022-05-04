@@ -38,9 +38,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
 
 
     // Don't allow eth transfers
-    fallback()
-    external
-    payable
+    fallback() external
     {
         revert('Invalid ether transfer');
     }
