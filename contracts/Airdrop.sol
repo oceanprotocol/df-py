@@ -36,6 +36,15 @@ contract Airdrop is Ownable, ReentrancyGuard {
         emit TreasuryWithdraw(msg.sender, amount, token);
     }
 
+
+    // Don't allow eth transfers
+    fallback()
+    external
+    payable
+    {
+        revert('Invalid ether transfer');
+    }
+
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
     function allocate(address[] calldata _tos, uint256[] calldata _values)
