@@ -33,7 +33,6 @@ contract Airdrop is Ownable, ReentrancyGuard {
      */
     function withdrawFunds(uint256 amount, address token) external onlyOwner {
         IERC20(token).transfer(msg.sender, amount);
-        emit TreasuryWithdraw(msg.sender, amount, token);
     }
 
 
