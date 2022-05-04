@@ -31,7 +31,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
      * @param _amount The amount of tokens to withdraw.
      * @param _token The token address to withdraw.
      */
-    function withdrawFunds(uint256 amount, address token) external onlyOwner {
+    function withdrawERCToken(uint256 amount, address token) external onlyOwner {
         IERC20(token).transfer(msg.sender, amount);
     }
 
