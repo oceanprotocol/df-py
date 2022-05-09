@@ -26,6 +26,23 @@ contract Airdrop is Ownable, ReentrancyGuard {
 	return address(token);
     }
 
+    /*
+     * @dev Withdraw any ERC20 token from the contract except the airdrop token.
+     * @param _amount The amount of tokens to withdraw.
+     * @param _token The token address to withdraw.
+     */
+    function withdrawERCToken(uint256 amount, address _token) external onlyOwner {
+        require(_token != address(token),"Cannot withdraw main token");
+        IERC20(_token).transfer(msg.sender, amount);
+    }
+
+
+    // Don't allow eth transfers
+    fallback() external
+    {
+        revert('Invalid ether transfer');
+    }
+
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
     function allocate(address[] calldata _tos, uint256[] calldata _values)
