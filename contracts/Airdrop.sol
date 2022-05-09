@@ -46,7 +46,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
     function allocate(address[] calldata _tos, uint256[] calldata _values)
-	external onlyOwner returns (bool)
+	external returns (bool)
     {
 	require(_tos.length == _values.length, "Lengths must match");
 
