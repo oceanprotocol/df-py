@@ -24,7 +24,7 @@ def test_transfer_eth_reverts():
 
 @enforce_types
 def test_erc20_withdraw_random():
-    # owner can withdraw other erc20 tokens from the airdrop contract
+    """owner can withdraw other erc20 tokens from the airdrop contract"""
 
     random_token = _deployTOK(accounts[1])
 
