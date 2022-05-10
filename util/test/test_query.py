@@ -14,9 +14,7 @@ chain = brownie.network.chain
 
 @enforce_types
 def test_queryAndCalcResults(ADDRESS_FILE, SUBGRAPH_URL):
-    print("ASDSADASDADASD")
     _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=2)
-    return
     st, fin, n = 1, len(chain), 5
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
