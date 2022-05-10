@@ -91,7 +91,11 @@ contract Airdrop is Ownable, ReentrancyGuard {
         external
         onlyOwner
     {
-        require(allocated[_token] == 0, "Cannot withdraw allocated token");
+        require(
+            IERC20(_token).balanceOf(address(this)) - amount >=
+                allocated[_token],
+            "Cannot withdraw allocated token"
+        );
         IERC20(_token).transfer(msg.sender, amount);
     }
 
