@@ -16,20 +16,22 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 def test_small_batch(ADDRESS_FILE, tmp_path):
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
-    airdrop = B.Airdrop.deploy(OCEAN.address, {"from": accounts[0]})
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
     rewards = {a1: 0.1, a2: 0.2, a3: 0.3}
-    dispense.dispense(rewards, airdrop.address, accounts[0])
+    dispense.dispense(
+        rewards, airdrop.address, accounts[0], token_address=OCEAN.address
+    )
 
     # a1 claims for itself
     bal_before = fromBase18(OCEAN.balanceOf(a1))
-    airdrop.claim({"from": accounts[1]})
+    airdrop.claim([OCEAN.address], {"from": accounts[1]})
     bal_after = fromBase18(OCEAN.balanceOf(a1))
     assert (bal_after - bal_before) == pytest.approx(0.1)
 
     # a9 claims on behalf of a1
     bal_before = fromBase18(OCEAN.balanceOf(a3))
-    airdrop.claimFor(a3, {"from": accounts[9]})
+    airdrop.claimFor(a3, OCEAN.address, {"from": accounts[9]})
     bal_after = fromBase18(OCEAN.balanceOf(a3))
     assert (bal_after - bal_before) == pytest.approx(0.3)
 
@@ -38,7 +40,7 @@ def test_small_batch(ADDRESS_FILE, tmp_path):
 def test_batching(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
-    airdrop = B.Airdrop.deploy(OCEAN.address, {"from": accounts[0]})
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
     batch_size = 3
     N = batch_size * 3 + 1  # enough accounts to ensure batching
@@ -46,4 +48,10 @@ def test_batching(ADDRESS_FILE):
 
     rewards = {accounts[i]: (i + 1.0) for i in range(N)}
 
-    dispense.dispense(rewards, airdrop.address, accounts[0], batch_size=batch_size)
+    dispense.dispense(
+        rewards,
+        airdrop.address,
+        accounts[0],
+        batch_size=batch_size,
+        token_address=OCEAN.address,
+    )

@@ -16,7 +16,7 @@ def _deployTOK(account):
 @enforce_types
 def test_transfer_eth_reverts():
     """sending native tokens to airdrop contract should revert"""
-    airdrop = B.Airdrop.deploy(a1, {"from": accounts[0]})
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
     with brownie.reverts("Cannot send ether to nonpayable function"):
         # transfer native eth to airdrop contract
         accounts[0].transfer(airdrop, "1 ether")
@@ -28,7 +28,7 @@ def test_erc20_withdraw_random():
 
     random_token = _deployTOK(accounts[1])
 
-    airdrop = B.Airdrop.deploy(a1, {"from": accounts[0]})
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
     random_token.transfer(airdrop, toBase18(100.0), {"from": accounts[1]})
 
@@ -48,9 +48,25 @@ def test_erc20_withdraw_main():
 
     TOK = _deployTOK(accounts[0])
 
-    airdrop = B.Airdrop.deploy(TOK.address, {"from": accounts[0]})
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
-    TOK.transfer(airdrop, toBase18(100.0), {"from": accounts[0]})
+    TOK.transfer(airdrop, toBase18(40.0), {"from": accounts[0]})
 
-    with brownie.reverts("Cannot withdraw main token"):
-        airdrop.withdrawERCToken(toBase18(100.0), TOK.address, {"from": accounts[0]})
+    tos = [a1]
+    values = [toBase18(10.0)]
+    TOK.approve(airdrop, sum(values), {"from": accounts[0]})
+    airdrop.allocate(tos, values, TOK.address, {"from": accounts[0]})
+
+    with brownie.reverts("Cannot withdraw allocated token"):
+        airdrop.withdrawERCToken(toBase18(50.0), TOK.address, {"from": accounts[0]})
+
+    with brownie.reverts("Ownable: caller is not the owner"):
+        airdrop.withdrawERCToken(toBase18(20.0), TOK.address, {"from": accounts[1]})
+
+    airdrop.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
+    with brownie.reverts("Cannot withdraw allocated token"):
+        airdrop.withdrawERCToken(toBase18(1.0), TOK.address, {"from": accounts[0]})
+    airdrop.claim([TOK.address], {"from": accounts[1]})
+
+    TOK.transfer(airdrop, 100, {"from": accounts[0]})
+    airdrop.withdrawERCToken(100, TOK.address, {"from": accounts[0]})
