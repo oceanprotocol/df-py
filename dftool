@@ -31,10 +31,10 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool query NETWORK ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
   dftool getrate TOKEN ST FIN CSV_DIR - get exchange rate
   dftool calc CSV_DIR TOT_OCEAN - from stakes/vols/rates, calc rewards
-  dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] - from rewards, airdrop funds
+  dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] [TOKEN_ADDR,,] - from rewards, airdrop funds
 
   dftool compile - compile contracts
-  dftool newairdrop NETWORK TOKEN_ADDR - deploy new airdrop contract
+  dftool newairdrop NETWORK - deploy new airdrop contract
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken NETWORK - generate new token (for testing)
@@ -239,6 +239,15 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     else:
         AIRDROP_ADDR = sys.argv[4]
         
+    if len(sys.argv) == 5:
+        print("Set AIRDROP_ADDR from envvar")
+        TOKEN_ADDR = os.getenv('AIRDROP_ADDR')
+    else:
+        TOKEN_ADDR = sys.argv[5]
+    assert TOKEN_ADDR is not None
+    TOKEN_ADDR = TOKEN_ADDR.split(",")
+
+
     print(f"Arguments: CSV_DIR={CSV_DIR}, NETWORK={NETWORK}" \
           f", AIRDROP_ADDR={AIRDROP_ADDR}")
     assert AIRDROP_ADDR is not None
@@ -247,7 +256,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     brownie.network.connect(NETWORK)
     from_account = _getPrivateAccount()
     rewards = csvs.loadRewardsCsv(CSV_DIR)
-    dispense.dispense(rewards, AIRDROP_ADDR, from_account)
+    dispense.dispense(rewards, AIRDROP_ADDR, from_account,token_address=TOKEN_ADDR)
     
     print("dftool dispense: Done.")
 
@@ -259,23 +268,21 @@ def do_newairdrop():
 
 Usage: dftool newairdrop NETWORK TOKEN_ADDR
   NETWORK -- one of {NETWORKS}
-  TOKEN_ADDR -- e.g. address of OCEAN token
 """
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "newairdrop"
     NETWORK = sys.argv[2]
-    TOKEN_ADDR = sys.argv[3]
 
-    print(f"Arguments: NETWORK={NETWORK}, TOKEN_ADDR={TOKEN_ADDR}")
+    print(f"Arguments: NETWORK={NETWORK}")
 
     #main work
     brownie.network.connect(NETWORK)
     from_account = _getPrivateAccount()
-    airdrop = B.Airdrop.deploy(TOKEN_ADDR, {"from": from_account})
+    airdrop = B.Airdrop.deploy({"from": from_account})
     print(f"New airdrop contract deployed at address: {airdrop.address}")
     
     print("dftool newairdrop: Done.")
