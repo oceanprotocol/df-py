@@ -60,7 +60,13 @@ def test_erc20_withdraw_main():
     with brownie.reverts("Cannot withdraw allocated token"):
         airdrop.withdrawERCToken(toBase18(50.0), TOK.address, {"from": accounts[0]})
 
+    with brownie.reverts("Ownable: caller is not the owner"):
+        airdrop.withdrawERCToken(toBase18(20.0), TOK.address, {"from": accounts[1]})
+
     airdrop.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
     with brownie.reverts("Cannot withdraw allocated token"):
         airdrop.withdrawERCToken(toBase18(1.0), TOK.address, {"from": accounts[0]})
     airdrop.claim([TOK.address], {"from": accounts[1]})
+
+    TOK.transfer(airdrop, 100, {"from": accounts[0]})
+    airdrop.withdrawERCToken(100, TOK.address, {"from": accounts[0]})
