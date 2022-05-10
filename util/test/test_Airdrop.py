@@ -16,6 +16,7 @@ def test_basic():
     assert airdrop.claimable(a1, TOK.address) == 0
 
 
+
 @enforce_types
 def test_TOK():
     TOK = _deployTOK(accounts[9])
