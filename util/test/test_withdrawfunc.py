@@ -50,16 +50,17 @@ def test_erc20_withdraw_main():
 
     airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
-    TOK.transfer(airdrop, toBase18(50.0), {"from": accounts[0]})
+    TOK.transfer(airdrop, toBase18(40.0), {"from": accounts[0]})
 
     tos = [a1]
-    values = [10]
+    values = [toBase18(10.0)]
     TOK.approve(airdrop, sum(values), {"from": accounts[0]})
     airdrop.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     with brownie.reverts("Cannot withdraw allocated token"):
-        airdrop.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
-
-    airdrop.claim([TOK.address], {"from": accounts[1]})
+        airdrop.withdrawERCToken(toBase18(50.0), TOK.address, {"from": accounts[0]})
 
     airdrop.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
+    with brownie.reverts("Cannot withdraw allocated token"):
+        airdrop.withdrawERCToken(toBase18(1.0), TOK.address, {"from": accounts[0]})
+    airdrop.claim([TOK.address], {"from": accounts[1]})
