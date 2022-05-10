@@ -11,20 +11,22 @@ from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
 CONTRACTS = {}
 
+
 @enforce_types
-def _contracts(key:str):
+def _contracts(key: str):
     global CONTRACTS
     return CONTRACTS[key]
 
+
 @enforce_types
-def recordDeployedContracts(address_file:str, network:str):
+def recordDeployedContracts(address_file: str, network: str):
     global CONTRACTS
     C = CONTRACTS
-    if C != {}: #already filled
+    if C != {}:  # already filled
         return
-    
-    with open(address_file, 'r') as json_file:
-        a = json.load(json_file)[network] #dict of contract_name: address
+
+    with open(address_file, "r") as json_file:
+        a = json.load(json_file)[network]  # dict of contract_name: address
 
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
@@ -34,32 +36,41 @@ def recordDeployedContracts(address_file:str, network:str):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
 
+
 def OCEANtoken():
     return _contracts("Ocean")
 
+
 def OCEAN_address() -> str:
     return OCEANtoken().address
-    
+
+
 def ERC721Template():
     return _contracts("ERC721Template")
+
 
 def ERC20Template():
     return _contracts("ERC20Template")
 
+
 def PoolTemplate():
     return _contracts("PoolTemplate")
+
 
 def factoryRouter():
     return _contracts("Router")
 
+
 def Staking():
     return _contracts("Staking")
+
 
 def ERC721Factory():
     return _contracts("ERC721Factory")
 
+
 @enforce_types
-def createDataNFT(name:str, symbol:str, from_account):
+def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
     erc721_template_index = 1
     factory_router = factoryRouter()
@@ -80,7 +91,7 @@ def createDataNFT(name:str, symbol:str, from_account):
 
 @enforce_types
 def createDatatokenFromDataNFT(
-    DT_name:str, DT_symbol:str, DT_cap:float, dataNFT, from_account
+    DT_name: str, DT_symbol: str, DT_cap: float, dataNFT, from_account
 ):
 
     erc20_template_index = 1
@@ -108,24 +119,25 @@ def createDatatokenFromDataNFT(
 
     return DT
 
+
 @enforce_types
 def createBPoolFromDatatoken(
     datatoken,
     erc721_factory,
     from_account,
-    init_OCEAN_liquidity:float=2000.0,
-    DT_OCEAN_rate:float=0.1,
-    DT_vest_amt:float=1000.0,
-    DT_vest_num_blocks:int=2426000, #min allowed=2426000, see FactoryRouter.sol
-    LP_swap_fee:float=0.03,
-    mkt_swap_fee:float=0.01,
-): #pylint: disable=too-many-arguments
+    init_OCEAN_liquidity: float = 2000.0,
+    DT_OCEAN_rate: float = 0.1,
+    DT_vest_amt: float = 1000.0,
+    DT_vest_num_blocks: int = 2426000,  # min allowed=2426000, see FactoryRouter.sol
+    LP_swap_fee: float = 0.03,
+    mkt_swap_fee: float = 0.01,
+):  # pylint: disable=too-many-arguments
 
     OCEAN = OCEANtoken()
     pool_template = PoolTemplate()
-    router = factoryRouter() #router.routerOwner() = '0xe2DD..' = accounts[0]
+    router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
-    
+
     OCEAN.approve(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
@@ -150,29 +162,30 @@ def createBPoolFromDatatoken(
         pool_template.address,
     ]
 
-    tx = datatoken.deployPool(
-        ss_params, swap_fees, addresses, {"from": from_account})
+    tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
     pool_address = _poolAddressFromNewBPoolTx(tx)
     pool = B.BPool.at(pool_address)
 
     return pool
 
+
 @enforce_types
 def _poolAddressFromNewBPoolTx(tx) -> str:
     return tx.events["NewPool"]["poolAddress"]
 
-#===============================================================================
-#fee stuff needed for consume
 
-#follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
+# ===============================================================================
+# fee stuff needed for consume
+
+# follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
 @enforce_types
 def get_zero_consume_mkt_fee_tuple() -> Tuple:
     d = {
         "consumeMarketFeeAddress": ZERO_ADDRESS,
         "consumeMarketFeeToken": ZERO_ADDRESS,
         "consumeMarketFeeAmount": 0,
-        }
-    
+    }
+
     consume_mkt_fee = (
         d["consumeMarketFeeAddress"],
         d["consumeMarketFeeToken"],
@@ -180,7 +193,8 @@ def get_zero_consume_mkt_fee_tuple() -> Tuple:
     )
     return consume_mkt_fee
 
-#follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ProviderFees
+
+# follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ProviderFees
 @enforce_types
 def get_zero_provider_fee_tuple(pub_account) -> Tuple:
     d = get_zero_provider_fee_dict(pub_account)
@@ -194,11 +208,12 @@ def get_zero_provider_fee_tuple(pub_account) -> Tuple:
         d["s"],
         d["validUntil"],
         d["providerData"],
-        )
+    )
 
     return provider_fee
 
-#from ocean.py/tests/resources/helper_functions.py
+
+# from ocean.py/tests/resources/helper_functions.py
 @enforce_types
 def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
     web3 = brownie.web3
@@ -236,10 +251,11 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
 
     return provider_fee
 
-#from ocean.py/ocean_lib/web3_internal/utils.py
+
+# from ocean.py/ocean_lib/web3_internal/utils.py
 Signature = namedtuple("Signature", ("v", "r", "s"))
 
-#from ocean.py/ocean_lib/web3_internal/utils.py
+# from ocean.py/ocean_lib/web3_internal/utils.py
 @enforce_types
 def split_signature(signature: Any) -> Signature:
     """
@@ -257,7 +273,8 @@ def split_signature(signature: Any) -> Signature:
 
     return Signature(v, r, s)
 
-#from ocean.py/ocean_lib/web3_internal/utils.py
+
+# from ocean.py/ocean_lib/web3_internal/utils.py
 @enforce_types
 def to_32byte_hex(val: int) -> str:
     """
@@ -268,20 +285,21 @@ def to_32byte_hex(val: int) -> str:
     web3 = brownie.web3
     return web3.toHex(web3.toBytes(val).rjust(32, b"\0"))
 
+
 @enforce_types
 def calcDID(nft_addr: str) -> str:
     nft_addr2 = brownie.web3.toChecksumAddress(nft_addr)
-    chain_id = brownie.network.chain.id #in base10
+    chain_id = brownie.network.chain.id  # in base10
 
-    #adapted from ocean.py/ocean_lib/ocean/ocean_assets.py
+    # adapted from ocean.py/ocean_lib/ocean/ocean_assets.py
     did = f"did:op:{create_checksum(nft_addr2 + str(chain_id))}"
     return did
 
-#from ocean.py/ocean_lib/utils/utilities.py
+
+# from ocean.py/ocean_lib/utils/utilities.py
 @enforce_types
 def create_checksum(text: str) -> str:
     """
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
