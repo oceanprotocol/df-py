@@ -2,8 +2,9 @@ from datetime import datetime
 from enforce_typing import enforce_types
 from typing import Union
 
+
 @enforce_types
-def timestrToBlock(chain, timestr:str) -> int:
+def timestrToBlock(chain, timestr: str) -> int:
     """
     Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
@@ -18,10 +19,11 @@ def timestrToBlock(chain, timestr:str) -> int:
     block = timestampToBlock(chain, timestamp)
     return block
 
+
 @enforce_types
-def timestrToTimestamp(timestr:str) -> float:
+def timestrToTimestamp(timestr: str) -> float:
     """Examples: 2022-03-29_17:55 --> 1648872899.3 (unix time)
-                 2022-03-29 --> 1648872899.0
+    2022-03-29 --> 1648872899.0
     """
     ncolon = timestr.count(":")
     if ncolon == 1:
@@ -30,8 +32,9 @@ def timestrToTimestamp(timestr:str) -> float:
         d = datetime.strptime(timestr, "%Y-%m-%d")
     return d.timestamp()
 
+
 @enforce_types
-def timestampToBlock(chain, timestamp:Union[float,int]) -> int:
+def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
     from scipy import optimize
 
@@ -42,19 +45,19 @@ def timestampToBlock(chain, timestamp:Union[float,int]) -> int:
         def timeSinceTimestamp(self, block_i):
             block_timestamp = chain[int(block_i)].timestamp
             return block_timestamp - self.target_timestamp
-    
+
     f = C(timestamp).timeSinceTimestamp
     a = 0
     b = len(chain) - 1
-    
-    if f(a) > 0 and f(b) > 0: #corner case: everything's in the past
+
+    if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
         return 0
-    
-    elif f(a) < 0 and f(b) < 0: #corner case: everything's in the future
+
+    elif f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
         return len(chain)
-    
+
     (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
-    if False: #set to True to debug
+    if False:  # set to True to debug
         print(f"iterations = {results.iterations}")
         print(f"function calls = {results.function_calls}")
         print(f"converged? {results.converged}")

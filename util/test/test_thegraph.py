@@ -5,18 +5,20 @@ from util import oceanutil
 from util.graphutil import submitQuery
 from util.test import conftest
 
+
 @enforce_types
 def test_thegraph_approvedTokens(ADDRESS_FILE, SUBGRAPH_URL, accounts):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = oceanutil.OCEANtoken()
 
     conftest.randomDeployPool(accounts[0])
-        
+
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, SUBGRAPH_URL)
 
     pprint(result)
-    
+
+
 @enforce_types
 def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
@@ -38,9 +40,12 @@ def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
             block
           }
         }
-        """ % (DT.address)
+        """ % (
+        DT.address
+    )
     result = submitQuery(query, SUBGRAPH_URL)
     pprint(result)
+
 
 @enforce_types
 def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
@@ -49,7 +54,7 @@ def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
 
     tups = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
     (_, DT, pool) = tups[0]
-    
+
     skip = 0
     INC = 1000
     block = 0
@@ -69,7 +74,10 @@ def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
             }
           }
         }
-        """ % (skip, INC)
+        """ % (
+        skip,
+        INC,
+    )
 
     result = submitQuery(query, SUBGRAPH_URL)
     pprint(result)
