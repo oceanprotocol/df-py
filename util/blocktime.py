@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from enforce_typing import enforce_types
 from typing import Union
 
@@ -24,13 +24,18 @@ def timestrToBlock(chain, timestr: str) -> int:
 def timestrToTimestamp(timestr: str) -> float:
     """Examples: 2022-03-29_17:55 --> 1648872899.3 (unix time)
     2022-03-29 --> 1648872899.0
+    Does not use local time, rather always uses UTC
     """
     ncolon = timestr.count(":")
     if ncolon == 1:
-        d = datetime.strptime(timestr, "%Y-%m-%d_%H:%M")
+        dt = datetime.strptime(timestr, "%Y-%m-%d_%H:%M")
     else:
-        d = datetime.strptime(timestr, "%Y-%m-%d")
-    return d.timestamp()
+        dt = datetime.strptime(timestr, "%Y-%m-%d")
+
+    #obtain POSIX timestamp. https://docs.python.org/3/library/datetime.html
+    timestamp = dt.replace(tzinfo=timezone.utc).timestamp()
+    
+    return timestamp
 
 
 @enforce_types
