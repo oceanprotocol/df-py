@@ -15,6 +15,7 @@ def dispense(
     airdrop_addr: str,
     from_account,
     batch_size: int = BATCH_SIZE,
+    token_address: str = "",
 ):
     """
     @arguments
@@ -26,7 +27,7 @@ def dispense(
     print(f"  # addresses: {len(rewards)}")
 
     airdrop = B.Airdrop.at(airdrop_addr)
-    TOK = B.Simpletoken.at(airdrop.getToken())
+    TOK = B.Simpletoken.at(token_address)
     print(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 
     to_addrs = list(rewards.keys())
@@ -39,5 +40,7 @@ def dispense(
     for i, st in enumerate(sts):
         fin = st + batch_size
         print(f"  Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses")
-        airdrop.allocate(to_addrs[st:fin], values[st:fin], {"from": from_account})
+        airdrop.allocate(
+            to_addrs[st:fin], values[st:fin], TOK.address, {"from": from_account}
+        )
     print("dispense: done")

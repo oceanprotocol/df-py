@@ -19,7 +19,6 @@ Ensure prerequisites:
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
-- [Ganache](https://www.npmjs.com/package//ganache-cli)
 
 #### Install & Run Barge
 
@@ -105,8 +104,8 @@ brownie test util/test/test_calcrewards.py::test_calcRewards1 -s
 #run tests for one module
 brownie test util/test/test_calcrewards.py
 
-#run all tests
-brownie test
+#run all tests. Note: util is the only directory _with_ tests
+brownie test util
 ```
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
