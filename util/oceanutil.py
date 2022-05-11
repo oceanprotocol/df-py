@@ -72,26 +72,32 @@ def ERC721Factory():
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
-    erc721_template_index = 1
-    factory_router = factoryRouter()
-    token_URI = "https://mystorage.com/mytoken.png"
+    template_index = 1
+    additional_metadata_updater = ZERO_ADDRESS
+    additional_erc20_deployer = factoryRouter().address
+    transferable = True
+    owner = from_account.address
+    token_uri = "https://mystorage.com/mytoken.png"
+    
     tx = erc721_factory.deployERC721Contract(
         name,
         symbol,
-        erc721_template_index,
-        factory_router.address,
-        ZERO_ADDRESS,  # additionalMetaDataUpdater set to 0x00 for now
-        token_URI,
+        template_index,
+        additional_metadata_updater,
+        additional_erc20_deployer,
+        token_uri,
+        transferable,
+        owner,
         {"from": from_account},
     )
     data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
     data_NFT = B.ERC721Template.at(data_NFT_address)
-    return (data_NFT, erc721_factory)
+    return data_NFT
 
 
 @enforce_types
 def createDatatokenFromDataNFT(
-    DT_name: str, DT_symbol: str, DT_cap: float, dataNFT, from_account
+    DT_name: str, DT_symbol: str, data_NFT, from_account
 ):
 
     erc20_template_index = 1
@@ -106,12 +112,12 @@ def createDatatokenFromDataNFT(
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(DT_cap),
+        toBase18(1.0),  # cap. Note contract will hardcod this to max_int
         toBase18(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
 
-    tx = dataNFT.createERC20(
+    tx = data_NFT.createERC20(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
     DT_address = tx.events["TokenCreated"]["newTokenAddress"]
@@ -123,17 +129,15 @@ def createDatatokenFromDataNFT(
 @enforce_types
 def createBPoolFromDatatoken(
     datatoken,
-    erc721_factory,
     from_account,
     init_OCEAN_liquidity: float = 2000.0,
     DT_OCEAN_rate: float = 0.1,
-    DT_vest_amt: float = 1000.0,
-    DT_vest_num_blocks: int = 2426000,  # min allowed=2426000, see FactoryRouter.sol
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
-):  # pylint: disable=too-many-arguments
+):
 
     OCEAN = OCEANtoken()
+    erc721_factory = ERC721Factory()
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
@@ -142,24 +146,28 @@ def createBPoolFromDatatoken(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
 
+    #dummy values since vestin is now turned off
+    DT_vest_amt: float = 1000.0
+    DT_vest_num_blocks: int = 2426000
+    
     ss_params = [
-        toBase18(DT_OCEAN_rate),
-        OCEAN.decimals(),
-        toBase18(DT_vest_amt),
-        DT_vest_num_blocks,  # do _not_ convert to wei
-        toBase18(init_OCEAN_liquidity),
+        toBase18(DT_OCEAN_rate), # rate (wei)
+        OCEAN.decimals(),        # baseToken (decimals)
+        toBase18(DT_vest_amt),   # vesting amount (wei)
+        DT_vest_num_blocks,      # vested blocks (int, *not* wei)
+        toBase18(init_OCEAN_liquidity), # initial liquidity (wei)
     ]
     swap_fees = [
-        toBase18(LP_swap_fee),
-        toBase18(mkt_swap_fee),
+        toBase18(LP_swap_fee),   # swap fee for LPs (wei)
+        toBase18(mkt_swap_fee),  # swap fee for marketplace runner (wei)
     ]
     addresses = [
-        ssbot.address,
-        OCEAN.address,
-        from_account.address,
-        from_account.address,
-        from_account.address,
-        pool_template.address,
+        ssbot.address,           # ssbot address
+        OCEAN.address,           # baseToken address
+        from_account.address,    # baseTokenSender, provides init baseToken liquidity
+        from_account.address,    # publisherAddress, will get the vested amt
+        from_account.address,    # marketFeeCollector address
+        pool_template.address,   # poolTemplate address
     ]
 
     tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})

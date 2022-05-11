@@ -250,7 +250,7 @@ contract ERC20TemplateEnterprise is
      * @param uints_  refers to an array of uints
      *                     [0] = cap_ the total ERC20 cap
      *                     [1] = publishing Market Fee Amount
-     * @param bytes_  refers to an array of bytes
+     * param bytes_  refers to an array of bytes
      *                     Currently not used, usefull for future templates
      */
     function _initialize(
@@ -258,7 +258,7 @@ contract ERC20TemplateEnterprise is
         address[] memory addresses_,
         address[] memory factoryAddresses_,
         uint256[] memory uints_,
-        bytes[] memory bytes_
+        bytes[] memory
     ) private returns (bool) {
         address erc721Address = factoryAddresses_[0];
         address communityFeeCollector = factoryAddresses_[1];
@@ -334,12 +334,12 @@ contract ERC20TemplateEnterprise is
     ) external onlyERC20Deployer nonReentrant returns (bytes32 exchangeId) {
         //force FRE allowedSwapper to this contract address. no one else can swap
         addresses[3] = address(this);
+        if (uints[4] > 0) _addMinter(fixedPriceAddress);
         exchangeId = IFactoryRouter(router).deployFixedRate(
             fixedPriceAddress,
             addresses,
             uints
         );
-        if (uints[4] > 0) _addMinter(fixedPriceAddress);
         emit NewFixedRate(exchangeId, addresses[1], fixedPriceAddress, addresses[0]);
         fixedRateExchanges.push(fixedRate(fixedPriceAddress,exchangeId));
     }
@@ -351,15 +351,19 @@ contract ERC20TemplateEnterprise is
      * @param maxTokens - max tokens to dispense
      * @param maxBalance - max balance of requester.
      * @param withMint - with MinterRole
-     * @param allowedSwapper - have it here for compat reasons, will be overwritten
+     * param allowedSwapper have it here for compat reasons, will be overwritten
      */
     function createDispenser(
         address _dispenser,
         uint256 maxTokens,
         uint256 maxBalance,
         bool withMint,
-        address allowedSwapper
+        address
     ) external onlyERC20Deployer nonReentrant {
+        // add dispenser contract as minter if withMint == true
+        if (withMint) _addMinter(_dispenser);
+        dispensers.push(_dispenser);
+        emit NewDispenser(_dispenser);
         IFactoryRouter(router).deployDispenser(
             _dispenser,
             address(this),
@@ -368,10 +372,6 @@ contract ERC20TemplateEnterprise is
             msg.sender,
             address(this)
         );
-        // add FixedPriced contract as minter if withMint == true
-        if (withMint) _addMinter(_dispenser);
-        dispensers.push(_dispenser);
-        emit NewDispenser(_dispenser);
     }
 
     /**
@@ -391,12 +391,12 @@ contract ERC20TemplateEnterprise is
     }
 
     /**
-     * @dev checkProviderFee
+     * @dev _checkProviderFee
      *      Checks if a providerFee structure is valid, signed and 
      *      transfers fee to providerAddress
      * @param _providerFee providerFee structure
      */
-    function checkProviderFee(providerFee calldata _providerFee) internal{
+    function _checkProviderFee(providerFee calldata _providerFee) internal{
         // check if they are signed
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 message = keccak256(
@@ -467,7 +467,6 @@ contract ERC20TemplateEnterprise is
         consumeMarketFee calldata _consumeMarketFee
     ) public {
         uint256 amount = 1e18; // we always pay 1 DT. No more, no less
-        uint256 communityFeePublish = 0;
         require(
             balanceOf(msg.sender) >= amount,
             "Not enough datatokens to start Order"
@@ -517,7 +516,7 @@ contract ERC20TemplateEnterprise is
             );
         }
 
-        checkProviderFee(_providerFee);
+        _checkProviderFee(_providerFee);
         
         burn(amount);
     }
@@ -540,7 +539,7 @@ contract ERC20TemplateEnterprise is
             block.timestamp,
             block.number
         );
-        checkProviderFee(_providerFee);
+        _checkProviderFee(_providerFee);
     }
 
     /**
@@ -948,6 +947,13 @@ contract ERC20TemplateEnterprise is
     fallback() external payable {}
 
     /**
+     * @dev receive function
+     *      this is a default receive function in which receives
+     *      the collected ether.
+     */
+    receive() external payable {}
+    
+    /**
      * @dev withdrawETH
      *      transfers all the accumlated ether the collector account
      */
@@ -1051,9 +1057,8 @@ contract ERC20TemplateEnterprise is
                     ,
                     ,
                     ,
-                    uint256 dtBalance,
+                    ,
                     uint256 btBalance,
-                    bool withMint
         ) = fre.getExchange(_freParams.exchangeId);
         if(btBalance>0)
             fre.collectBT(_freParams.exchangeId, btBalance);
@@ -1084,13 +1089,12 @@ contract ERC20TemplateEnterprise is
         _orderParams._providerFee, _orderParams._consumeMarketFee);
     }
 
-     /**
-     * @dev isERC20Deployer
-     *      returns true if address has deployERC20 role
-     */
-    function isERC20Deployer(address user) public returns(bool deployer){
-        deployer = IERC721Template(_erc721Address).getPermissions(user).deployERC20;
-        return(deployer);
+    /**
+    * @dev isERC20Deployer
+    *      returns true if address has deployERC20 role
+    */
+    function isERC20Deployer(address user) public view returns(bool){
+        return(IERC721Template(_erc721Address).getPermissions(user).deployERC20);
     }
 
     /**
@@ -1150,7 +1154,7 @@ contract ERC20TemplateEnterprise is
                 )
             )
         );
-        require(ecrecovery(providerHash, providerSignature) == msg.sender, "Provider signature check failed");
+        require(_ecrecovery(providerHash, providerSignature) == msg.sender, "Provider signature check failed");
         bytes32 consumerHash = keccak256(
             abi.encodePacked(prefix,
                 keccak256(
@@ -1160,14 +1164,14 @@ contract ERC20TemplateEnterprise is
                 )
             )
         );
-        require(ecrecovery(consumerHash, consumerSignature) == consumerAddress, "Consumer signature check failed");
+        require(_ecrecovery(consumerHash, consumerSignature) == consumerAddress, "Consumer signature check failed");
         emit OrderExecuted(msg.sender, consumerAddress ,orderTxId, providerData, providerSignature,
                 consumerData, consumerSignature, block.timestamp, block.number);
     }
 
 
 
-    function ecrecovery(bytes32 hash, bytes memory sig) pure internal returns (address) {
+    function _ecrecovery(bytes32 hash, bytes memory sig) pure internal returns (address) {
         bytes32 r;
         bytes32 s;
         uint8 v;

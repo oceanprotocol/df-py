@@ -4,6 +4,7 @@ pragma solidity 0.8.12;
 // Code is Apache-2.0 and docs are CC-BY-4.0
 
 import "./utils/Deployer.sol";
+import "./interfaces/IFactory.sol";
 import "./interfaces/IERC721Template.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 import "./interfaces/IERC20Template.sol";
@@ -21,7 +22,7 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyG
  *      New datatoken proxy contracts are links to the template contract's bytecode.
  *      Proxy contract functionality is based on Ocean Protocol custom implementation of ERC1167 standard.
  */
-contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
+contract ERC721Factory is Deployer, Ownable, ReentrancyGuard, IFactory {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     address private communityFeeCollector;
@@ -43,12 +44,14 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
     mapping(address => bool) public erc20List;
 
     event NFTCreated(
-        address indexed newTokenAddress,
+        address newTokenAddress,
         address indexed templateAddress,
         string tokenName,
-        address admin,
+        address indexed admin,
         string symbol,
-        string tokenURI
+        string tokenURI,
+        bool transferable,
+        address indexed creator
     );
 
        uint256 private currentTokenCount = 0;
@@ -123,6 +126,8 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
      * @param _templateIndex template index we want to use
      * @param additionalERC20Deployer if != address(0), we will add it with ERC20Deployer role
      * @param additionalMetaDataUpdater if != address(0), we will add it with updateMetadata role
+     * @param transferable if NFT is transferable. Cannot be changed afterwards
+     * @param owner owner of the NFT
      */
 
     function deployERC721Contract(
@@ -131,7 +136,9 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
         uint256 _templateIndex,
         address additionalERC20Deployer,
         address additionalMetaDataUpdater,
-        string memory tokenURI
+        string memory tokenURI,
+        bool transferable,
+        address owner
     ) public returns (address token) {
         require(
             _templateIndex <= nftTemplateCount && _templateIndex != 0,
@@ -143,7 +150,10 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             tokenTemplate.isActive,
             "ERC721DTFactory: ERC721Token Template disabled"
         );
-
+        require(
+            owner!=address(0),
+            "ERC721DTFactory: address(0) cannot be owner"
+        );
         token = deploy(tokenTemplate.templateAddress);
 
         require(
@@ -152,23 +162,24 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
         );
        
         erc721List[token] = token;
-
+        emit NFTCreated(token, tokenTemplate.templateAddress, name, owner, symbol, tokenURI, transferable, msg.sender);
+        currentNFTCount += 1;
         IERC721Template tokenInstance = IERC721Template(token);
         require(
             tokenInstance.initialize(
-                msg.sender,
+                owner,
                 name,
                 symbol,
                 address(this),
                 additionalERC20Deployer,
                 additionalMetaDataUpdater,
-                tokenURI
+                tokenURI,
+                transferable
             ),
             "ERC721DTFactory: Unable to initialize token instance"
         );
 
-        emit NFTCreated(token, tokenTemplate.templateAddress, name, msg.sender, symbol, tokenURI);
-        currentNFTCount += 1;
+        
     }
     
     /**
@@ -209,7 +220,7 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _templateAddress != address(0),
             "ERC721DTFactory: ERC721 template address(0) NOT ALLOWED"
         );
-        require(isContract(_templateAddress), "ERC721Factory: NOT CONTRACT");
+        require(_isContract(_templateAddress), "ERC721Factory: NOT CONTRACT");
         nftTemplateCount += 1;
         Template memory template = Template(_templateAddress, true);
         nftTemplateList[nftTemplateCount] = template;
@@ -267,7 +278,7 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
      *  - an address where a contract lived, but was destroyed
      * ====
      */
-    function isContract(address account) internal view returns (bool) {
+    function _isContract(address account) internal view returns (bool) {
         // This method relies on extcodesize, which returns 0 for contracts in
         // construction, since the code is only stored at the end of the
         // constructor execution.
@@ -425,7 +436,7 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _templateAddress != address(0),
             "ERC20Factory: ERC721 template address(0) NOT ALLOWED"
         );
-        require(isContract(_templateAddress), "ERC20Factory: NOT CONTRACT");
+        require(_isContract(_templateAddress), "ERC20Factory: NOT CONTRACT");
         templateCount += 1;
         Template memory template = Template(_templateAddress, true);
         templateList[templateCount] = template;
@@ -578,24 +589,7 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
     }
 
     // helper functions to save number of transactions
-    struct NftCreateData{
-        string name;
-        string symbol;
-        uint256 templateIndex;
-        string tokenURI;
-    }
-    struct ErcCreateData{
-        uint256 templateIndex;
-        string[] strings;
-        address[] addresses;
-        uint256[] uints;
-        bytes[] bytess;
-    }
-    
-    
 
-    
-  
     /**
      * @dev createNftWithErc20
      *      Creates a new NFT, then a ERC20,all in one call
@@ -614,7 +608,10 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _NftCreateData.templateIndex,
             address(this),
             address(0),
-            _NftCreateData.tokenURI);
+            _NftCreateData.tokenURI,
+            _NftCreateData.transferable,
+            _NftCreateData.owner
+            );
         erc20Address = IERC721Template(erc721Address).createERC20(
             _ErcCreateData.templateIndex,
             _ErcCreateData.strings,
@@ -624,12 +621,6 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
         );
         // remove our selfs from the erc20DeployerRole
         IERC721Template(erc721Address).removeFromCreateERC20List(address(this));
-    }
-
-    struct PoolData{
-        uint256[] ssParams;
-        uint256[] swapFees;
-        address[] addresses;
     }
 
     /**
@@ -655,7 +646,9 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _NftCreateData.templateIndex,
             address(this),
             address(0),
-             _NftCreateData.tokenURI);
+            _NftCreateData.tokenURI,
+            _NftCreateData.transferable,
+            _NftCreateData.owner);
         erc20Address = IERC721Template(erc721Address).createERC20(
             _ErcCreateData.templateIndex,
             _ErcCreateData.strings,
@@ -674,13 +667,8 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
         // remove our selfs from the erc20DeployerRole
         IERC721Template(erc721Address).removeFromCreateERC20List(address(this));
     
-    }
+   }
 
-    struct FixedData{
-        address fixedPriceAddress;
-        address[] addresses;
-        uint256[] uints;
-    }
     /**
      * @dev createNftWithErc20WithFixedRate
      *      Creates a new NFT, then a ERC20, then a FixedRateExchange, all in one call
@@ -701,7 +689,9 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _NftCreateData.templateIndex,
             address(this),
             address(0),
-             _NftCreateData.tokenURI);
+            _NftCreateData.tokenURI,
+            _NftCreateData.transferable,
+            _NftCreateData.owner);
         erc20Address = IERC721Template(erc721Address).createERC20(
             _ErcCreateData.templateIndex,
             _ErcCreateData.strings,
@@ -718,13 +708,6 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
         IERC721Template(erc721Address).removeFromCreateERC20List(address(this));
     }
 
-    struct DispenserData{
-        address dispenserAddress;
-        uint256 maxTokens;
-        uint256 maxBalance;
-        bool withMint;
-        address allowedSwapper;
-    }
     /**
      * @dev createNftWithErc20WithDispenser
      *      Creates a new NFT, then a ERC20, then a Dispenser, all in one call
@@ -745,7 +728,9 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _NftCreateData.templateIndex,
             address(this),
             address(0),
-             _NftCreateData.tokenURI);
+            _NftCreateData.tokenURI,
+            _NftCreateData.transferable,
+            _NftCreateData.owner);
         erc20Address = IERC721Template(erc721Address).createERC20(
             _ErcCreateData.templateIndex,
             _ErcCreateData.strings,
@@ -794,7 +779,9 @@ contract ERC721Factory is Deployer, Ownable, ReentrancyGuard {
             _NftCreateData.templateIndex,
             address(0),
             address(this),
-             _NftCreateData.tokenURI);
+            _NftCreateData.tokenURI,
+            _NftCreateData.transferable,
+            _NftCreateData.owner);
         // set metadata
         IERC721Template(erc721Address).setMetaData(_MetaData._metaDataState, _MetaData._metaDataDecryptorUrl
         , _MetaData._metaDataDecryptorAddress, _MetaData.flags, 

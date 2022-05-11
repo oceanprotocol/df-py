@@ -34,6 +34,9 @@ cd barge
 #ensure v4 repo
 git checkout v4
 
+#clean up old containers (to be sure)
+docker system prune -a --volumes
+
 #run barge
 #-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
 #-sends stdout & stderr to out.txt
