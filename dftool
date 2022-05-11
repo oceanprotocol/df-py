@@ -20,8 +20,8 @@ HELP = """Data Farming tool, for use by OPF.
 OPF steps:
 1. query - run per NETWORK (Eth, Poly)
 2. getrate - run per basetoken (OCEAN, H2O)
-3. calc - run per rewardtoken (store amt per NETWORK): OCEAN (Eth+Poly), EWC (EWT)..
-4. dispense - run per rewardtoken*NETWORK: OCEAN*Eth, OCEAN*Poly, EWT*EWC..
+3. calc - per reward token (OCEAN, EWT)
+4. dispense - per reward token
 
 Then LP steps:
 5. call Airdrop.claim() or claimFor(LP addr)
