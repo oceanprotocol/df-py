@@ -2,6 +2,8 @@ pragma solidity 0.8.12;
 // Copyright BigchainDB GmbH and Ocean Protocol contributors
 // SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 // Code is Apache-2.0 and docs are CC-BY-4.0
+
+import "../../interfaces/ISideStaking.sol";
 import "../../interfaces/IERC20.sol";
 import "../../interfaces/IERC20Template.sol";
 import "../../interfaces/IERC721Template.sol";
@@ -24,7 +26,7 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyG
      *                     [4]  = initial liquidity in baseToken for pool creation
  *
  */
-contract SideStaking is ReentrancyGuard {
+contract SideStaking is ReentrancyGuard, ISideStaking {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     address public router;
@@ -89,7 +91,7 @@ contract SideStaking is ReentrancyGuard {
      * @dev constructor
      *      Called on contract deployment.
      */
-    constructor(address _router) public {
+    constructor(address _router) {
         require(_router != address(0), "Invalid _router address");
         router = _router;
     }
@@ -136,6 +138,7 @@ contract SideStaking is ReentrancyGuard {
             bpool.getBaseTokenAddress() == baseTokenAddress,
             "baseToken address missmatch"
         );
+        require(ssParams[0]>1e12 , "Invalid rate");
         // check if we are the minter of DT
         IERC20Template dt = IERC20Template(datatokenAddress);
         require(
@@ -146,6 +149,10 @@ contract SideStaking is ReentrancyGuard {
         dt.mint(address(this), dt.cap());
 
         require(dt.balanceOf(address(this)) >= dt.totalSupply(), "Mint failed");
+
+        //force vesting to 0, see https://github.com/oceanprotocol/contracts/issues/603
+        ssParams[2] = 0;
+        ssParams[3] = 0;
         require(dt.totalSupply().div(10) >= ssParams[2], "Max vesting 10%");
         //we are rich :)let's setup the records and we are good to go
         _datatokens[datatokenAddress] = Record({
@@ -172,7 +179,7 @@ contract SideStaking is ReentrancyGuard {
             _datatokens[datatokenAddress].vestingAmount
         );
 
-        notifyFinalize(datatokenAddress, ssParams[1]);
+        _notifyFinalize(datatokenAddress, ssParams[1]);
 
         return (true);
     }
@@ -427,7 +434,7 @@ contract SideStaking is ReentrancyGuard {
     }
 
     //called by the pool (or by us) when we should finalize the pool
-    function notifyFinalize(address datatokenAddress, uint256 decimals)
+    function _notifyFinalize(address datatokenAddress, uint256 decimals)
         internal
     {
         if (!_datatokens[datatokenAddress].bound) return;
@@ -483,34 +490,16 @@ contract SideStaking is ReentrancyGuard {
 
     /**
      *  Get available vesting now
-     * @param datatokenAddress - datatokenAddress
+     * param datatokenAddress - datatokenAddress
 
      */
-    function getAvailableVesting(address datatokenAddress)
+    function getAvailableVesting(address)
         public
         view
         returns (uint256)
     {
-        uint256 blocksPassed;
-        if (!_datatokens[datatokenAddress].bound) return (0);
-        if (_datatokens[datatokenAddress].vestingEndBlock < block.number) {
-            blocksPassed =
-                _datatokens[datatokenAddress].vestingEndBlock -
-                _datatokens[datatokenAddress].vestingLastBlock;
-        } else {
-            blocksPassed =
-                block.number -
-                _datatokens[datatokenAddress].vestingLastBlock;
-        }
-
-        uint256 availableVesting = blocksPassed
-            .mul(_datatokens[datatokenAddress].vestingAmount)
-            .div(
-                _datatokens[datatokenAddress].vestingEndBlock -
-                    _datatokens[datatokenAddress].blockDeployed
-            );
-
-        return availableVesting;
+        // see https://github.com/oceanprotocol/contracts/issues/603
+        return 0;
     }
 
     /**

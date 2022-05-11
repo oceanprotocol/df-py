@@ -258,7 +258,7 @@ contract ERC20Template is
      * @param uints_  refers to an array of uints
      *                     [0] = cap_ the total ERC20 cap
      *                     [1] = publishing Market Fee Amount
-     * @param bytes_  refers to an array of bytes
+     * param bytes_  refers to an array of bytes
      *                     Currently not used, usefull for future templates
      */
     function _initialize(
@@ -266,7 +266,7 @@ contract ERC20Template is
         address[] memory addresses_,
         address[] memory factoryAddresses_,
         uint256[] memory uints_,
-        bytes[] memory bytes_
+        bytes[] memory
     ) private returns (bool) {
         address erc721Address = factoryAddresses_[0];
         address communityFeeCollector = factoryAddresses_[1];
@@ -280,8 +280,9 @@ contract ERC20Template is
             "ERC20Template: Invalid community fee collector, zero address"
         );
 
-        require(uints_[0] != 0, "DatatokenTemplate: Invalid cap value");
-        _cap = uints_[0];
+        // require(uints_[0] != 0, "DatatokenTemplate: Invalid cap value");
+        // _cap = uints_[0];
+        _cap = 0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff;
         _name = strings_[0];
         _symbol = strings_[1];
         _erc721Address = erc721Address;
@@ -389,13 +390,13 @@ contract ERC20Template is
         address[] memory addresses,
         uint256[] memory uints
     ) external onlyERC20Deployer nonReentrant returns (bytes32 exchangeId) {
+        // add FixedPriced contract as minter if withMint == true
+        if (uints[4] > 0) _addMinter(fixedPriceAddress);
         exchangeId = IFactoryRouter(router).deployFixedRate(
             fixedPriceAddress,
             addresses,
             uints
         );
-        // add FixedPriced contract as minter if withMint == true
-        if (uints[4] > 0) _addMinter(fixedPriceAddress);
         emit NewFixedRate(exchangeId, addresses[1], fixedPriceAddress, addresses[0]);
         fixedRateExchanges.push(fixedRate(fixedPriceAddress,exchangeId));
 
@@ -417,6 +418,10 @@ contract ERC20Template is
         bool withMint,
         address allowedSwapper
     ) external onlyERC20Deployer nonReentrant {
+        // add FixedPriced contract as minter if withMint == true
+        if (withMint) _addMinter(_dispenser);
+        dispensers.push(_dispenser);
+        emit NewDispenser(_dispenser);
         IFactoryRouter(router).deployDispenser(
             _dispenser,
             address(this),
@@ -425,10 +430,6 @@ contract ERC20Template is
             msg.sender,
             allowedSwapper
         );
-        // add FixedPriced contract as minter if withMint == true
-        if (withMint) _addMinter(_dispenser);
-        dispensers.push(_dispenser);
-        emit NewDispenser(_dispenser);
     }
 
     /**
@@ -449,12 +450,12 @@ contract ERC20Template is
 
     
     /**
-     * @dev checkProviderFee
+     * @dev _checkProviderFee
      *      Checks if a providerFee structure is valid, signed and 
      *      transfers fee to providerAddress
      * @param _providerFee providerFee structure
      */
-    function checkProviderFee(providerFee calldata _providerFee) internal{
+    function _checkProviderFee(providerFee calldata _providerFee) internal{
         // check if they are signed
         bytes memory prefix = "\x19Ethereum Signed Message:\n32";
         bytes32 message = keccak256(
@@ -527,7 +528,6 @@ contract ERC20Template is
         consumeMarketFee calldata _consumeMarketFee
     ) external nonReentrant {
         uint256 amount = 1e18; // we always pay 1 DT. No more, no less
-        uint256 communityFeePublish = 0;
         require(
             balanceOf(msg.sender) >= amount,
             "Not enough datatokens to start Order"
@@ -577,7 +577,7 @@ contract ERC20Template is
                 _consumeMarketFee.consumeMarketFeeAmount
             );
         }
-        checkProviderFee(_providerFee);
+        _checkProviderFee(_providerFee);
         uint256 OPCFee = IFactoryRouter(router).getOPCConsumeFee();
         
         // send datatoken to publisher
@@ -609,7 +609,7 @@ contract ERC20Template is
             block.timestamp,
             block.number
         );
-        checkProviderFee(_providerFee);
+        _checkProviderFee(_providerFee);
     }
 
     /**
@@ -1017,6 +1017,13 @@ contract ERC20Template is
      *      the collected ether.
      */
     fallback() external payable {}
+    
+    /**
+     * @dev receive function
+     *      this is a default receive function in which receives
+     *      the collected ether.
+     */
+    receive() external payable {}
 
     /**
      * @dev withdrawETH
@@ -1027,14 +1034,11 @@ contract ERC20Template is
     }
 
     /**
-     * @dev isERC20Deployer
-     *      returns true if address has deployERC20 role
-     */
-    function isERC20Deployer(address user) public returns (bool deployer) {
-        deployer = IERC721Template(_erc721Address)
-            .getPermissions(user)
-            .deployERC20;
-        return (deployer);
+    * @dev isERC20Deployer
+    *      returns true if address has deployERC20 role
+    */
+    function isERC20Deployer(address user) public view returns(bool){
+        return(IERC721Template(_erc721Address).getPermissions(user).deployERC20);
     }
 
     /**
@@ -1102,7 +1106,7 @@ contract ERC20Template is
                 )
             )
         );
-        require(ecrecovery(providerHash, providerSignature) == msg.sender, "Provider signature check failed");
+        require(_ecrecovery(providerHash, providerSignature) == msg.sender, "Provider signature check failed");
         bytes32 consumerHash = keccak256(
             abi.encodePacked(prefix,
                 keccak256(
@@ -1112,14 +1116,14 @@ contract ERC20Template is
                 )
             )
         );
-        require(ecrecovery(consumerHash, consumerSignature) == consumerAddress, "Consumer signature check failed");
+        require(_ecrecovery(consumerHash, consumerSignature) == consumerAddress, "Consumer signature check failed");
         emit OrderExecuted(msg.sender, consumerAddress ,orderTxId, providerData, providerSignature,
                 consumerData, consumerSignature, block.timestamp, block.number);
     }
 
 
 
-    function ecrecovery(bytes32 hash, bytes memory sig) pure internal returns (address) {
+    function _ecrecovery(bytes32 hash, bytes memory sig) pure internal returns (address) {
         bytes32 r;
         bytes32 s;
         uint8 v;

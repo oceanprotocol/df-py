@@ -5,6 +5,7 @@ pragma solidity 0.8.12;
 
 import "./BToken.sol";
 import "./BMath.sol";
+import "../../interfaces/IPool.sol";
 import "../../interfaces/ISideStaking.sol";
 import "../../utils/SafeERC20.sol";
 
@@ -21,7 +22,7 @@ import "../../utils/SafeERC20.sol";
  * All fees are expressed in wei.  Examples:
  *  (1e17 = 10 % , 1e16 = 1% , 1e15 = 0.1%, 1e14 = 0.01%)
  */
-contract BPool is BMath, BToken {
+contract BPool is BMath, BToken, IPool {
     using SafeERC20 for IERC20;
     struct Record {
         bool bound; // is token bound to pool
@@ -36,7 +37,10 @@ contract BPool is BMath, BToken {
         address indexed tokenOut,
         uint256 tokenAmountIn,
         uint256 tokenAmountOut,
-        uint256 timestamp
+        uint256 timestamp,
+        uint256 inBalance,
+        uint256 outBalance,
+        uint256 newSpotPrice
     );
 
     event LOG_JOIN(
@@ -91,7 +95,7 @@ contract BPool is BMath, BToken {
         uint consumeMarketFeeAmount, address tokenFeeAddress);
     //emitted for every change done by publisherMarket
     event PublishMarketFeeChanged(address caller, address newMarketCollector, uint256 swapFee);
-
+    event Gulped(address token, uint256 oldBalance, uint256 newBalance);
     modifier _lock_() {
         require(!_mutex, "ERR_REENTRY");
         _mutex = true;
@@ -331,8 +335,8 @@ contract BPool is BMath, BToken {
         for (uint256 i = 0; i < tokens.length; i++) {
             uint256 amount = communityFees[tokens[i]];
             communityFees[tokens[i]] = 0;
-            IERC20(tokens[i]).safeTransfer(_opcCollector, amount);
             emit OPCFee(msg.sender, _opcCollector, tokens[i], amount);
+            IERC20(tokens[i]).safeTransfer(_opcCollector, amount);
         }
     }
 
@@ -388,13 +392,13 @@ contract BPool is BMath, BToken {
         for (uint256 i = 0; i < tokens.length; i++) {
             uint256 amount = publishMarketFees[tokens[i]];
             publishMarketFees[tokens[i]] = 0;
-            IERC20(tokens[i]).safeTransfer(_publishMarketCollector, amount);
             emit PublishMarketFee(
                 msg.sender,
                 _publishMarketCollector,
                 tokens[i],
                 amount
             );
+            IERC20(tokens[i]).safeTransfer(_publishMarketCollector, amount);
         }
     }
 
@@ -736,72 +740,6 @@ contract BPool is BMath, BToken {
 
 
     /**
-     * @dev joinPool
-     *      Adds dual side liquidity to the pool (both datatoken and basetoken)
-     * @param poolAmountOut expected number of pool shares that you will get
-     * @param maxAmountsIn array with maxium amounts spent
-     */
-    function joinPool(uint256 poolAmountOut, uint256[] calldata maxAmountsIn)
-        external
-        _lock_
-    {
-        require(_finalized, "ERR_NOT_FINALIZED");
-
-        uint256 poolTotal = totalSupply();
-        uint256 ratio = bdiv(poolAmountOut, poolTotal);
-        require(ratio != 0, "ERR_MATH_APPROX");
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            address t = _tokens[i];
-            uint256 bal = _records[t].balance;
-            uint256 tokenAmountIn = bmul(ratio, bal);
-            require(tokenAmountIn != 0, "ERR_MATH_APPROX");
-            require(tokenAmountIn <= maxAmountsIn[i], "ERR_LIMIT_IN");
-            _records[t].balance = badd(_records[t].balance, tokenAmountIn);
-            emit LOG_JOIN(msg.sender, t, tokenAmountIn, block.timestamp);
-            _pullUnderlying(t, msg.sender, tokenAmountIn);
-        }
-        _mintPoolShare(poolAmountOut);
-        _pushPoolShare(msg.sender, poolAmountOut);
-        emit LOG_BPT(poolAmountOut);
-    }
-
-    /**
-     * @dev exitPool
-     *      Removes dual side liquidity from the pool (both datatoken and basetoken)
-     * @param poolAmountIn amount of pool shares spent
-     * @param minAmountsOut array with minimum amount of tokens expected
-     */
-    function exitPool(uint256 poolAmountIn, uint256[] calldata minAmountsOut)
-        external
-        _lock_
-    {
-        require(_finalized, "ERR_NOT_FINALIZED");
-
-        uint256 poolTotal = totalSupply();
-        //uint256 exitFee = bmul(poolAmountIn, EXIT_FEE);
-        //uint256 pAiAfterExitFee = bsub(poolAmountIn, exitFee);
-        
-        uint256 ratio = bdiv(poolAmountIn, poolTotal);
-        require(ratio != 0, "ERR_MATH_APPROX");
-
-        _pullPoolShare(msg.sender, poolAmountIn);
-        //_pushPoolShare(_factory, exitFee);
-        _burnPoolShare(poolAmountIn);
-
-        for (uint256 i = 0; i < _tokens.length; i++) {
-            address t = _tokens[i];
-            uint256 bal = _records[t].balance;
-            uint256 tokenAmountOut = bmul(ratio, bal);
-            require(tokenAmountOut != 0, "ERR_MATH_APPROX");
-            require(tokenAmountOut >= minAmountsOut[i], "ERR_LIMIT_OUT");
-            _records[t].balance = bsub(_records[t].balance, tokenAmountOut);
-            emit LOG_EXIT(msg.sender, t, tokenAmountOut, block.timestamp);
-            _pushUnderlying(t, msg.sender, tokenAmountOut);
-        }
-        emit LOG_BPT(poolAmountIn);
-    }
-
-    /**
      * @dev swapExactAmountIn
      *      Swaps an exact amount of tokensIn to get a mimum amount of tokenOut
      * @param tokenInOutMarket array of addreses: [tokenIn, tokenOut, consumeMarketFeeAddress]
@@ -883,7 +821,11 @@ contract BPool is BMath, BToken {
             tokenInOutMarket[1],
             amountsInOutMaxFee[0],
             tokenAmountOut,
-            block.timestamp
+            block.timestamp,
+            inRecord.balance,
+            outRecord.balance,
+            spotPriceAfter
+
         );
 
         _pullUnderlying(tokenInOutMarket[0], msg.sender, amountsInOutMaxFee[0]);
@@ -993,7 +935,10 @@ contract BPool is BMath, BToken {
             tokenInOutMarket[1],
             tokenAmountIn,
             amountsInOutMaxFee[1],
-            block.timestamp
+            block.timestamp,
+            inRecord.balance,
+            outRecord.balance,
+            spotPriceAfter
         );
         _pullUnderlying(tokenInOutMarket[0], msg.sender, tokenAmountIn);
         uint256 consumeMarketFeeAmount = bsub(
@@ -1047,13 +992,10 @@ contract BPool is BMath, BToken {
         require(poolAmountOut >= minPoolAmountOut, "ERR_LIMIT_OUT");
 
         inRecord.balance = badd(inRecord.balance, tokenAmountIn);
-
         emit LOG_JOIN(msg.sender, _baseTokenAddress, tokenAmountIn, block.timestamp);
         emit LOG_BPT(poolAmountOut);
-        _mintPoolShare(poolAmountOut);
-        _pushPoolShare(msg.sender, poolAmountOut);
 
-        _pullUnderlying(_baseTokenAddress, msg.sender, tokenAmountIn);
+        
 
         //ask the ssContract to stake as well
         //calculate how much should the 1ss stake
@@ -1066,6 +1008,7 @@ contract BPool is BMath, BToken {
             poolAmountOut
         );
         if (ssContract.canStake(_datatokenAddress, ssAmountIn)) {
+            
             //call 1ss to approve
             ssContract.Stake(_datatokenAddress, ssAmountIn);
             // follow the same path
@@ -1080,7 +1023,11 @@ contract BPool is BMath, BToken {
             _mintPoolShare(poolAmountOut);
             _pushPoolShare(_controller, poolAmountOut);
             _pullUnderlying(_datatokenAddress, _controller, ssAmountIn);
+            
         }
+        _mintPoolShare(poolAmountOut);
+        _pushPoolShare(msg.sender, poolAmountOut);
+        _pullUnderlying(_baseTokenAddress, msg.sender, tokenAmountIn);
         return poolAmountOut;
     }
 
@@ -1109,7 +1056,6 @@ contract BPool is BMath, BToken {
             _totalWeight,
             poolAmountIn
         );
-
         require(tokenAmountOut >= minAmountOut, "ERR_LIMIT_OUT");
 
         require(
@@ -1120,16 +1066,8 @@ contract BPool is BMath, BToken {
         outRecord.balance = bsub(outRecord.balance, tokenAmountOut);
 
         //uint256 exitFee = bmul(poolAmountIn, EXIT_FEE);
-
         emit LOG_EXIT(msg.sender, _baseTokenAddress, tokenAmountOut, block.timestamp);
         emit LOG_BPT(poolAmountIn);
-
-        _pullPoolShare(msg.sender, poolAmountIn);
-
-        //_burnPoolShare(bsub(poolAmountIn, exitFee));
-        _burnPoolShare(poolAmountIn);
-        //_pushPoolShare(_factory, exitFee);
-        _pushUnderlying(_baseTokenAddress, msg.sender, tokenAmountOut);
 
         //ask the ssContract to unstake as well
         //calculate how much should the 1ss unstake
@@ -1167,6 +1105,12 @@ contract BPool is BMath, BToken {
             );
             emit LOG_BPT_SS(poolAmountIn);
         }
+        
+        _pullPoolShare(msg.sender, poolAmountIn);
+        //_burnPoolShare(bsub(poolAmountIn, exitFee));
+        _burnPoolShare(poolAmountIn);
+        //_pushPoolShare(_factory, exitFee);
+        _pushUnderlying(_baseTokenAddress, msg.sender, tokenAmountOut);
         return tokenAmountOut;
     }
 
@@ -1308,5 +1252,16 @@ contract BPool is BMath, BToken {
 
     function _burnPoolShare(uint256 amount) internal {
         _burn(amount);
+    }
+
+    // Absorb any tokens that have been sent to this contract into the pool
+    function gulp(address token)
+        external
+        _lock_
+    {
+        require(_records[token].bound, "ERR_NOT_BOUND");
+        uint256 oldBalance = _records[token].balance;
+        _records[token].balance = IERC20(token).balanceOf(address(this));
+        emit Gulped(token,oldBalance, _records[token].balance);
     }
 }
