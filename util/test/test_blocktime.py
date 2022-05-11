@@ -10,8 +10,8 @@ from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
 
 def test_timestrToBlock_1():
     # tests here are light, the real tests are in test_*() below
-    assert timestrToBlock(chain, "2022-03-29") > 0.0
-    assert timestrToBlock(chain, "2022-03-29_1:00") > 0.0
+    assert timestrToBlock(chain, "2022-03-29") >= 0.0
+    assert timestrToBlock(chain, "2022-03-29_1:00") >= 0.0
 
 
 def test_timestampToBlock_FarLeft():
