@@ -18,8 +18,8 @@ NETWORKS = ['development', 'eth_mainnet'] #development = ganache
 HELP = """Data Farming tool, for use by OPF.
 
 OPF steps:
-1. query - per NETWORK (Eth, Poly)
-2. getrate - per basetoken (OCEAN, H2O)
+1. query - run per NETWORK (Eth, Poly)
+2. getrate - run per basetoken (OCEAN, H2O)
 3. calc - per reward token (OCEAN, EWT)
 4. dispense - per reward token
 
@@ -46,7 +46,7 @@ Usage: dftool query|getrate|calc|dispense|..
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
 @enforce_types
-def show_help():
+def do_help():
     print(HELP)
     sys.exit(0)
 
@@ -351,11 +351,10 @@ Usage: dftool newacct
     # extract inputs
     assert sys.argv[1] == "newacct"
 
-    #brownie setup
+    #main work
     NETWORK = 'development' #hardcoded bc it's the only one we can force
     brownie.network.connect(NETWORK) 
     account = brownie.network.accounts.add()
-    
     print("Generated new account:")
     print(f" private_key = {account.private_key}")
     print(f" address = {account.address}")
@@ -386,7 +385,7 @@ Usage: dftool newtoken NETWORK
 
 # ========================================================================
 @enforce_types
-def show_acctinfo():
+def do_acctinfo():
     HELP = f"""Info about an account.
 
 Usage: dftool acctinfo NETWORK ACCOUNT_ADDR [TOKEN_ADDR]
@@ -408,15 +407,12 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 
     # do work
     print("Account info:")
-
     brownie.network.connect(NETWORK)
     if len(str(ACCOUNT_ADDR)) == 1:
         addr_i = int(ACCOUNT_ADDR)
         ACCOUNT_ADDR = brownie.accounts[addr_i]
-    
-    #do work
     print(f"  Address = {ACCOUNT_ADDR}")
-
+    
     if TOKEN_ADDR is not None:
         token = B.Simpletoken.at(TOKEN_ADDR)
         balance = token.balanceOf(ACCOUNT_ADDR)
@@ -429,12 +425,10 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
         OCEAN = OCEANtoken()
         if OCEAN.address != TOKEN_ADDR:
             print(f"  {fromBase18(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
-            
-        
 
 # ========================================================================
 @enforce_types
-def show_chaininfo():
+def do_chaininfo():
     HELP = f"""Info about a network.
 
 Usage: dftool chaininfo NETWORK
@@ -468,7 +462,7 @@ def _getPrivateAccount():
 @enforce_types
 def do_main():
     if len(sys.argv) == 1 or sys.argv[1] == "help":
-        show_help()
+        do_help()
 
     #write actions
     elif sys.argv[1] == "query":
@@ -493,11 +487,11 @@ def do_main():
 
     #read actions
     elif sys.argv[1] == "acctinfo":
-        show_acctinfo()
+        do_acctinfo()
     elif sys.argv[1] == "chaininfo":
-        show_chaininfo()
+        do_chaininfo()
     else:
-        show_help()
+        do_help()
 
 if __name__ == "__main__":
     do_main()
