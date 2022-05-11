@@ -105,8 +105,8 @@ brownie test util/test/test_calcrewards.py::test_calcRewards1 -s
 #run tests for one module
 brownie test util/test/test_calcrewards.py
 
-#run all tests. Note: util is the only directory _with_ tests
-brownie test util
+#run all tests
+brownie test
 ```
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
