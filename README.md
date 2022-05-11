@@ -19,7 +19,6 @@ Ensure prerequisites:
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
-- [Ganache](https://www.npmjs.com/package//ganache-cli)
 
 #### Install & Run Barge
 
