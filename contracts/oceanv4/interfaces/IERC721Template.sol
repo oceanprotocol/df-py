@@ -199,13 +199,9 @@ interface IERC721Template {
         address erc20Factory,
         address additionalERC20Deployer,
         address additionalMetaDataUpdater,
-        string calldata tokenURI
+        string calldata tokenURI,
+        bool transferable
     ) external returns (bool);
-
-    function hasRole(bytes32 role, address account)
-        external
-        view
-        returns (bool);
 
      struct Roles {
         bool manager;
@@ -220,7 +216,7 @@ interface IERC721Template {
         bytes32 r; // r of validator signed message
         bytes32 s; // s of validator signed message
     }
-    function getPermissions(address user) external returns (Roles memory);
+    function getPermissions(address user) external view returns (Roles memory);
 
     function setDataERC20(bytes32 _key, bytes calldata _value) external;
     function setMetaData(uint8 _metaDataState, string calldata _metaDataDecryptorUrl
