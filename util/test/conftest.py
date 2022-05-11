@@ -24,13 +24,13 @@ AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
+_HOME = os.getenv("HOME")
+_ADDRESS_FILE = f"{_HOME}/.ocean/ocean-contracts/artifacts/address.json"
 
 @pytest.fixture
 @enforce_types
 def ADDRESS_FILE() -> str:
-    HOME = os.getenv("HOME")
-    return f"{HOME}/.ocean/ocean-contracts/artifacts/address.json"
-
+    return _ADDRESS_FILE
 
 @pytest.fixture
 @enforce_types

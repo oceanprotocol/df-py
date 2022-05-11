@@ -20,8 +20,8 @@ HELP = """Data Farming tool, for use by OPF.
 OPF steps:
 1. query - run per NETWORK (Eth, Poly)
 2. getrate - run per basetoken (OCEAN, H2O)
-3. calc - per reward token (OCEAN, EWT)
-4. dispense - per reward token
+3. calc - run per rewardtoken (store amt per NETWORK): OCEAN (Eth+Poly), EWC (EWT)..
+4. dispense - run per rewardtoken*NETWORK: OCEAN*Eth, OCEAN*Poly, EWT*EWC..
 
 Then LP steps:
 5. call Airdrop.claim() or claimFor(LP addr)
@@ -34,6 +34,7 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool dispense CSV_DIR NETWORK [AIRDROP_ADDR] [TOKEN_ADDR] - from rewards, airdrop funds
 
   dftool compile - compile contracts
+  dftool manyrandom - deploy many random tokens & pools then consume (for testing)
   dftool newairdrop NETWORK - deploy new airdrop contract
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
@@ -289,7 +290,6 @@ Usage: dftool newairdrop NETWORK TOKEN_ADDR
 
 
 # ========================================================================
-# dftool compile
 @enforce_types
 def do_compile():
     HELP = f"""Compile contracts
@@ -299,6 +299,25 @@ Usage: dftool compile
     if len(sys.argv) not in [2]:
         print(HELP)
         sys.exit(0)
+
+    os.system("brownie compile")
+
+# ========================================================================
+@enforce_types
+def do_manyrandom():
+    HELP = f"""Deploy many random tokens & pools then consume (for testing)
+
+Usage: dftool manyrandom
+"""
+    if len(sys.argv) not in [2]:
+        print(HELP)
+        sys.exit(0)
+        
+    from util.test import conftest
+    recordDeployedContracts(conftest._ADDRESS_FILE, "development")
+    conftest.fillAccountsWithOCEAN()
+    num_pools = 1 #magic number
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
 
     os.system("brownie compile")
 
@@ -476,6 +495,8 @@ def do_main():
         
     elif sys.argv[1] == "compile":
         do_compile()
+    elif sys.argv[1] == "manyrandom":
+        do_manyrandom()
     elif sys.argv[1] == "newairdrop":
         do_newairdrop()
     elif sys.argv[1] == "mine":
