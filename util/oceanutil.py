@@ -129,17 +129,15 @@ def createDatatokenFromDataNFT(
 @enforce_types
 def createBPoolFromDatatoken(
     datatoken,
-    erc721_factory,
     from_account,
     init_OCEAN_liquidity: float = 2000.0,
     DT_OCEAN_rate: float = 0.1,
-    DT_vest_amt: float = 1000.0,
-    DT_vest_num_blocks: int = 2426000,  # min allowed=2426000, see FactoryRouter.sol
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
-):  # pylint: disable=too-many-arguments
+):
 
     OCEAN = OCEANtoken()
+    erc721_factory = ERC721Factory()
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
@@ -148,6 +146,10 @@ def createBPoolFromDatatoken(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
 
+    #dummy values since vestin is now turned off
+    DT_vest_amt: float = 1000.0,
+    DT_vest_num_blocks: int = 2426000
+    
     ss_params = [
         toBase18(DT_OCEAN_rate),
         OCEAN.decimals(),
