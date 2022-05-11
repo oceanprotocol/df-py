@@ -97,7 +97,7 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 @enforce_types
 def createDatatokenFromDataNFT(
-    DT_name: str, DT_symbol: str, DT_cap: float, dataNFT, from_account
+    DT_name: str, DT_symbol: str, data_NFT, from_account
 ):
 
     erc20_template_index = 1
@@ -112,12 +112,12 @@ def createDatatokenFromDataNFT(
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(DT_cap),
+        toBase18(1.0),  # cap. Note contract will hardcod this to max_int
         toBase18(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
 
-    tx = dataNFT.createERC20(
+    tx = data_NFT.createERC20(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
     DT_address = tx.events["TokenCreated"]["newTokenAddress"]
