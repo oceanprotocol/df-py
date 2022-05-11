@@ -10,7 +10,7 @@ import "../interfaces/IFixedRateExchange.sol";
 import "../interfaces/IPool.sol";
 import "../interfaces/IDispenser.sol";
 import "../utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
 
 contract FactoryRouter is BFactory, IFactoryRouter {
     using SafeERC20 for IERC20;

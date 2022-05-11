@@ -6,12 +6,12 @@ pragma solidity 0.8.12;
 import "./utils/Deployer.sol";
 import "./interfaces/IFactory.sol";
 import "./interfaces/IERC721Template.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 import "./interfaces/IERC20Template.sol";
 import "./interfaces/IERC20.sol";
 import "./utils/SafeERC20.sol";
-import "@openzeppelin/contracts/utils/math/SafeMath.sol";
-import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 /**
  * @title DTFactory contract
  * @author Ocean Protocol Team
