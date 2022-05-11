@@ -92,7 +92,7 @@ def createDataNFT(name: str, symbol: str, from_account):
     )
     data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
     data_NFT = B.ERC721Template.at(data_NFT_address)
-    return (data_NFT, erc721_factory)
+    return data_NFT
 
 
 @enforce_types

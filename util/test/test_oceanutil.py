@@ -22,3 +22,5 @@ def test_OCEANtoken(ADDRESS_FILE):
 def test_createDataNFT(ADDRESS_FILE):
     oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
     data_NFT = oceanutil.createDataNFT("fooname", "foosymbol", account1)
+    assert data_NFT.name() == "fooname"
+    assert data_NFT.symbol() == "foosymbol"
