@@ -72,16 +72,22 @@ def ERC721Factory():
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
-    erc721_template_index = 1
-    factory_router = factoryRouter()
-    token_URI = "https://mystorage.com/mytoken.png"
+    template_index = 1
+    additional_metadata_updater = ZERO_ADDRESS
+    additional_erc20_deployer = factoryRouter().address
+    transferable = True
+    owner = from_account.address
+    token_uri = "https://mystorage.com/mytoken.png"
+    
     tx = erc721_factory.deployERC721Contract(
         name,
         symbol,
-        erc721_template_index,
-        factory_router.address,
-        ZERO_ADDRESS,  # additionalMetaDataUpdater set to 0x00 for now
-        token_URI,
+        template_index,
+        additional_metadata_updater,
+        additional_erc20_deployer,
+        token_uri,
+        transferable,
+        owner,
         {"from": from_account},
     )
     data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
