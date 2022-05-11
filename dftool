@@ -316,7 +316,7 @@ Usage: dftool manyrandom
     from util.test import conftest
     recordDeployedContracts(conftest._ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
-    num_pools = 1 #magic number
+    num_pools = 10 #magic number
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
 
     os.system("brownie compile")
