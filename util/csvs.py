@@ -187,7 +187,8 @@ def loadRateCsvs(csv_dir: str):
             reader = csv.reader(f)
             for row_i, row in enumerate(reader):
                 if row_i == 0:  # header
-                    continue
+                    #row[0] will be e.g. "OCEAN"
+                    assert row[1] == "rate"
                 else:  # row_i == 1:
                     token_symbol, rate = row[0], float(row[1])
                     rates[token_symbol] = rate
@@ -220,23 +221,23 @@ def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_name: str):
       Save the rewards dict as a csv,
 
     @arguments
-      rewards -- dict of [LP_addr][chainID] : value_float (*not* base 18)
+      rewards -- dict of [chainID][LP_addr] : value_float (*not* base 18)
       ..
     """
     csv_file = rewardsCsvFilename(csv_dir, token_name)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["LP_address", "chainID", "OCEAN_float"])
-        for to_addr, innerdict in rewards.items():
-            for chainID, value in innerdict.items():
-                writer.writerow([to_addr, chainID, value])
+        writer.writerow(["chainID", "LP_address", f"{token_name}_float"])
+        for chainID, innerdict in rewards.items():
+            for LP_addr, value in innerdict.items():
+                writer.writerow([chainID, LP_addr, value])
     print(f"Created {csv_file}")
 
 
 @enforce_types
 def loadRewardsCsv(csv_dir: str, token_name: str) -> Dict[str, float]:
-    """Loads rewards -- dict of [LP_addr][chainID]:value_float, from csv"""
+    """Loads rewards -- dict of [chainID][LP_addr]:value_float, from csv"""
     csv_file = rewardsCsvFilename(csv_dir, token_name)
     rewards = {}
 
@@ -244,12 +245,14 @@ def loadRewardsCsv(csv_dir: str, token_name: str) -> Dict[str, float]:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                continue
+                assert row[0] == "chainID"
+                assert row[1] == "LP_address"
+                #row[2] is e.g. "OCEAN"
             LP_addr, chainID, OCEAN_float = row[0], int(row[1]), float(row[2])
-            if LP_addr not in rewards:
-                rewards[LP_addr] = {}
-            assert chainID not in rewards[LP_addr], "duplicate found"
-            rewards[LP_addr][chainID] = OCEAN_float
+            if chainID not in rewards:
+                rewards[chainID] = {}
+            assert LP_addr not in rewards[chainID], "duplicate found"
+            rewards[chainID][LP_addr] = OCEAN_float
     print(f"Loaded {csv_file}")
 
     return rewards

@@ -82,9 +82,8 @@ def test_rewards_filename(tmp_path):
     
 @enforce_types
 def test_rewards_main(tmp_path):
-    rewards = {"LP1": {1: 1.1, 137: 137.1},
-               "LP2": {1: 2.2},
-               "LP3": {1: 3.0, 137:137.3}}
+    rewards = {1: {"LP1": 1.1, "LP2": 2.2, "LP3": 3.3},
+               137: {"LP1": 137.1, "LP3": 137.3}}
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
@@ -92,7 +91,7 @@ def test_rewards_main(tmp_path):
 
     loaded_rewards = csvs.loadRewardsCsv(csv_dir, "MYTOKEN")
     assert loaded_rewards == target_rewards
-
+    
     for innerdict in rewards.values():  # ensures we don't deal in weis
         for value in innerdict.values():
             assert type(value) == float
