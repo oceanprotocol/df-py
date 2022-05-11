@@ -19,7 +19,6 @@ NUM_CONSUMES = 3  # 100
 AMT_OCEAN_PER_ACCOUNT = 100000.0
 AVG_INIT_OCEAN_STAKE = 100.0
 AVG_DT_OCEAN_RATE = 1.0
-AVG_DT_CAP = 1000.0
 AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
@@ -153,29 +152,19 @@ def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account):
 def randomDeployPool(pub_account):
     init_OCEAN_stake = AVG_INIT_OCEAN_STAKE * (1 + 0.1 * random.random())
     DT_OCEAN_rate = AVG_DT_OCEAN_RATE * (1 + 0.1 * random.random())
-    DT_cap = AVG_DT_CAP * (1 + 0.1 * random.random())
-    return deployPool(init_OCEAN_stake, DT_OCEAN_rate, DT_cap, pub_account)
+    return deployPool(init_OCEAN_stake, DT_OCEAN_rate, pub_account)
 
 
 @enforce_types
-def deployPool(
-    init_OCEAN_stake: float, DT_OCEAN_rate: float, DT_cap: float, from_account
-):
-    (data_NFT, erc721_factory) = oceanutil.createDataNFT(
-        "dataNFT", "DATANFTSYMBOL", from_account
-    )
-
-    DT = oceanutil.createDatatokenFromDataNFT(
-        "DT", "DTSYMBOL", DT_cap, data_NFT, from_account
-    )
+def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account):
+    data_NFT = oceanutil.createDataNFT("1", "1", from_account)
+    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
     pool = oceanutil.createBPoolFromDatatoken(
         DT,
-        erc721_factory,
         from_account,
-        init_OCEAN_stake,
-        DT_OCEAN_rate,
-        DT_vest_amt=0.0,
+        init_OCEAN_liquidity=init_OCEAN_stake,
+        DT_OCEAN_rate=DT_OCEAN_rate,
     )
 
     return (DT, pool)
