@@ -214,29 +214,30 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 
 @enforce_types
-def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str):
+def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_name: str):
     """
     @description
       Save the rewards dict as a csv,
 
     @arguments
-      rewards -- dict of [to_addr] : value_float (*not* base 18)
+      rewards -- dict of [LP_addr][chainID] : value_float (*not* base 18)
       ..
     """
-    csv_file = rewardsCsvFilename(csv_dir)
+    csv_file = rewardsCsvFilename(csv_dir, token_name)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["LP_address", "OCEAN_float"])
-        for to_addr, value in rewards.items():
-            writer.writerow([to_addr, value])
+        writer.writerow(["LP_address", "chainID", "OCEAN_float"])
+        for to_addr, innerdict in rewards.items():
+            for chainID, value in innerdict.items():
+                writer.writerow([to_addr, chainID, value])
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadRewardsCsv(csv_dir: str) -> Dict[str, float]:
-    """Loads rewards -- dict of [LP_addr]:OCEAN_float (not wei), from csv"""
-    csv_file = rewardsCsvFilename(csv_dir)
+def loadRewardsCsv(csv_dir: str, token_name: str) -> Dict[str, float]:
+    """Loads rewards -- dict of [LP_addr][chainID]:value_float, from csv"""
+    csv_file = rewardsCsvFilename(csv_dir, token_name)
     rewards = {}
 
     with open(csv_file, "r") as f:
@@ -244,14 +245,16 @@ def loadRewardsCsv(csv_dir: str) -> Dict[str, float]:
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
                 continue
-            LP_addr, OCEAN_float = row[0], float(row[1])
-            assert LP_addr not in rewards, "duplicate found"
-            rewards[LP_addr] = OCEAN_float
+            LP_addr, chainID, OCEAN_float = row[0], int(row[1]), float(row[2])
+            if LP_addr not in rewards:
+                rewards[LP_addr] = {}
+            assert chainID not in rewards[LP_addr], "duplicate found"
+            rewards[LP_addr][chainID] = OCEAN_float
     print(f"Loaded {csv_file}")
 
     return rewards
 
 
 @enforce_types
-def rewardsCsvFilename(csv_dir: str) -> str:
-    return os.path.join(csv_dir, "rewards-OCEAN.csv")
+def rewardsCsvFilename(csv_dir: str, token_name:str) -> str:
+    return os.path.join(csv_dir, f"rewards-{token_name}.csv")

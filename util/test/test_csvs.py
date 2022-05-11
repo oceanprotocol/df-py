@@ -74,15 +74,25 @@ def test_rates(tmp_path):
 
 
 @enforce_types
-def test_rewards(tmp_path):
-    rewards = {"LP1": 1.1, "LP2": 2.2, "LP3": 3.0}
+def test_rewards_filename(tmp_path):
+    csv_dir = str(tmp_path)
+    fname = csvs.rewardsCsvFilename(csv_dir, "MYTOKEN")
+    target_fname = csv_dir + '/' + "rewards-MYTOKEN.csv"
+    assert fname == target_fname 
+    
+@enforce_types
+def test_rewards_main(tmp_path):
+    rewards = {"LP1": {1: 1.1, 137: 137.1},
+               "LP2": {1: 2.2},
+               "LP3": {1: 3.0, 137:137.3}}
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsCsv(rewards, csv_dir)
+    csvs.saveRewardsCsv(rewards, csv_dir, "MYTOKEN")
 
-    loaded_rewards = csvs.loadRewardsCsv(csv_dir)
+    loaded_rewards = csvs.loadRewardsCsv(csv_dir, "MYTOKEN")
     assert loaded_rewards == target_rewards
 
-    for value in rewards.values():  # ensures we don't deal in weis
-        assert type(value) == float
+    for innerdict in rewards.values():  # ensures we don't deal in weis
+        for value in innerdict.values():
+            assert type(value) == float
