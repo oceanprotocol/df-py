@@ -3,6 +3,7 @@ from enforce_typing import enforce_types
 
 from util.oceanutil import recordDeployedContracts, OCEANtoken, \
     createDataNFT, createDatatokenFromDataNFT, createBPoolFromDatatoken
+from util import oceanutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 
@@ -12,6 +13,14 @@ account0 = accounts[0]
 @enforce_types
 def test_recordDeployedContracts(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, "development")
+    assert oceanutil.OCEANtoken()
+    assert isinstance(oceanutil.OCEAN_address(), str)
+    assert oceanutil.ERC721Template()
+    assert oceanutil.ERC20Template()
+    assert oceanutil.PoolTemplate()
+    assert oceanutil.factoryRouter()
+    assert oceanutil.Staking()
+    assert oceanutil.ERC721Factory()
     
 @enforce_types
 def test_OCEANtoken(ADDRESS_FILE):
