@@ -2,13 +2,14 @@ pragma solidity 0.8.12;
 // Copyright BigchainDB GmbH and Ocean Protocol contributors
 // SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 // Code is Apache-2.0 and docs are CC-BY-4.0
+import "../../interfaces/IFixedRateExchange.sol";
 import "../../interfaces/IERC20.sol";
 import "../../interfaces/IERC20Template.sol";
 import "../../interfaces/IERC721Template.sol";
 import "../../interfaces/IFactoryRouter.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../utils/SafeERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**
  * @title FixedRateExchange
@@ -20,12 +21,12 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyG
 
 
 
-contract FixedRateExchange is ReentrancyGuard {
+contract FixedRateExchange is ReentrancyGuard, IFixedRateExchange {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
     uint256 private constant BASE = 1e18;
     uint public constant MIN_FEE           = BASE / 1e4;
-    uint public constant MAX_FEE           = BASE / 10;
+    uint public constant MAX_FEE           = 5e17;
     uint public constant MIN_RATE          = 1e10;
 
     address public router;
@@ -161,10 +162,6 @@ contract FixedRateExchange is ReentrancyGuard {
         address newMarketCollector,
         uint256 swapFee);
 
-    
-    event Terminated(
-        bytes32 exchangeId
-        );
 
     constructor(address _router, address _opcCollector) {
         require(_router != address(0), "FixedRateExchange: Wrong Router address");
@@ -289,7 +286,7 @@ contract FixedRateExchange is ReentrancyGuard {
             uint256 consumeMarketFeeAmount;
     }
         
-    function getBaseTokenOutPrice(bytes32 exchangeId, uint256 datatokenAmount) 
+    function _getBaseTokenOutPrice(bytes32 exchangeId, uint256 datatokenAmount) 
     internal view returns (uint256 baseTokenAmount){
         baseTokenAmount = datatokenAmount
             .mul(exchanges[exchangeId].fixedRate)
@@ -317,7 +314,7 @@ contract FixedRateExchange is ReentrancyGuard {
 
 
     {
-        uint256 baseTokenAmountBeforeFee = getBaseTokenOutPrice(exchangeId, datatokenAmount);
+        uint256 baseTokenAmountBeforeFee = _getBaseTokenOutPrice(exchangeId, datatokenAmount);
         Fees memory fee = Fees(0,0,0,0);
         uint256 opcFee = getOPCFee(exchanges[exchangeId].baseToken);
         if (opcFee != 0) {
@@ -372,7 +369,7 @@ contract FixedRateExchange is ReentrancyGuard {
             uint256 consumeMarketFeeAmount
         )
     {
-        uint256 baseTokenAmountBeforeFee = getBaseTokenOutPrice(exchangeId, datatokenAmount);
+        uint256 baseTokenAmountBeforeFee = _getBaseTokenOutPrice(exchangeId, datatokenAmount);
 
         Fees memory fee = Fees(0,0,0,0);
         uint256 opcFee = getOPCFee(exchanges[exchangeId].baseToken);
@@ -603,7 +600,7 @@ contract FixedRateExchange is ReentrancyGuard {
     }
 
     function _collectBT(bytes32 exchangeId, uint256 amount) internal{
-        require(amount <= exchanges[exchangeId].btBalance);
+        require(amount <= exchanges[exchangeId].btBalance, "Amount too high");
         address destination = IERC20Template(exchanges[exchangeId].datatoken).getPaymentCollector();
         exchanges[exchangeId].btBalance = exchanges[exchangeId].btBalance.sub(amount);
         emit TokenCollected(
@@ -628,7 +625,7 @@ contract FixedRateExchange is ReentrancyGuard {
         _collectDT(exchangeId, amount);
     }
     function _collectDT(bytes32 exchangeId, uint256 amount) internal {
-        require(amount <= exchanges[exchangeId].dtBalance);
+        require(amount <= exchanges[exchangeId].dtBalance, "Amount too high");
         address destination = IERC20Template(exchanges[exchangeId].datatoken).getPaymentCollector();
         exchanges[exchangeId].dtBalance = exchanges[exchangeId].dtBalance.sub(amount);
         emit TokenCollected(
@@ -656,15 +653,16 @@ contract FixedRateExchange is ReentrancyGuard {
     function _collectMarketFee(bytes32 exchangeId) internal {
         uint256 amount = exchanges[exchangeId].marketFeeAvailable;
         exchanges[exchangeId].marketFeeAvailable = 0;
-        IERC20(exchanges[exchangeId].baseToken).safeTransfer(
-            exchanges[exchangeId].marketFeeCollector,
-            amount
-        );
         emit MarketFeeCollected(
             exchangeId,
             exchanges[exchangeId].baseToken,
             amount
         );
+        IERC20(exchanges[exchangeId].baseToken).safeTransfer(
+            exchanges[exchangeId].marketFeeCollector,
+            amount
+        );
+        
     }
 
     /**
@@ -745,8 +743,10 @@ contract FixedRateExchange is ReentrancyGuard {
         external
         onlyExchangeOwner(exchangeId)
     {
-        require(newRate != 0, "FixedRateExchange: Ratio must be >0");
-
+        require(
+            newRate >= MIN_RATE,
+            "FixedRateExchange: Invalid exchange rate value"
+        );
         exchanges[exchangeId].fixedRate = newRate;
         emit ExchangeRateChanged(exchangeId, msg.sender, newRate);
     }
@@ -763,7 +763,7 @@ contract FixedRateExchange is ReentrancyGuard {
     {
         // check if owner still has role, maybe he was an ERC20Deployer when fixedrate was created, but not anymore
         exchanges[exchangeId].withMint = 
-            checkAllowedWithMint(exchanges[exchangeId].exchangeOwner, exchanges[exchangeId].datatoken,withMint);
+            _checkAllowedWithMint(exchanges[exchangeId].exchangeOwner, exchanges[exchangeId].datatoken,withMint);
         emit ExchangeMintStateChanged(exchangeId, msg.sender, withMint);
     }
 
@@ -775,7 +775,7 @@ contract FixedRateExchange is ReentrancyGuard {
      * @param datatoken datatoken address
      * @param withMint desired flag, might get overwritten if owner has no roles
      */
-    function checkAllowedWithMint(address owner, address datatoken, bool withMint) internal returns(bool){
+    function _checkAllowedWithMint(address owner, address datatoken, bool withMint) internal view returns(bool){
             //if owner does not want withMint, return false
             if(withMint == false) return false;
             IERC721Template nft = IERC721Template(IERC20Template(datatoken).getERC721Address());

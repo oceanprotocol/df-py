@@ -17,7 +17,7 @@ pragma solidity 0.8.12;
 // Code is Apache-2.0 and docs are CC-BY-4.0
 
 import './BNum.sol';
-// import 'OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/IERC20.sol';
+// import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/IERC20.sol';
 // Highly opinionated token implementation
 
@@ -150,7 +150,7 @@ contract BToken is BTokenBase {
         _move(src, dst, amt);
         if (msg.sender != src && _allowance[src][msg.sender] != uint256(int(-1)) ) {
             _allowance[src][msg.sender] = bsub(_allowance[src][msg.sender], amt);
-            emit Approval(msg.sender, dst, _allowance[src][msg.sender]);
+            emit Approval(src, msg.sender, _allowance[src][msg.sender]);
         }
         return true;
     }

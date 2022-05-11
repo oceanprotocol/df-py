@@ -10,10 +10,9 @@ import "../interfaces/IFixedRateExchange.sol";
 import "../interfaces/IPool.sol";
 import "../interfaces/IDispenser.sol";
 import "../utils/SafeERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
-
-contract FactoryRouter is BFactory {
+contract FactoryRouter is BFactory, IFactoryRouter {
     using SafeERC20 for IERC20;
     using SafeMath for uint256;
     address public routerOwner;
@@ -82,7 +81,7 @@ contract FactoryRouter is BFactory {
         address _bpoolTemplate,
         address _opcCollector,
         address[] memory _preCreatedPools
-    ) public BFactory(_bpoolTemplate, _opcCollector, _preCreatedPools) {
+    ) BFactory(_bpoolTemplate, _opcCollector, _preCreatedPools) {
         require(
             _routerOwner != address(0),
             "FactoryRouter: Invalid router owner"
@@ -484,7 +483,7 @@ contract FactoryRouter is BFactory {
         return pool;
     }
 
-    function getLength(IERC20[] memory array) internal pure returns (uint256) {
+    function _getLength(IERC20[] memory array) internal pure returns (uint256) {
         return array.length;
     }
 
@@ -581,26 +580,6 @@ contract FactoryRouter is BFactory {
     // Perks:
 
     // one single call to buy multiple DT for multiple assets (better UX, better gas optimization)
-
-    enum operationType {
-        SwapExactIn,
-        SwapExactOut,
-        FixedRate,
-        Dispenser
-    }
-
-    struct Operations {
-        bytes32 exchangeIds; // used for fixedRate or dispenser
-        address source; // pool, dispenser or fixed rate address
-        operationType operation; // type of operation: enum operationType
-        address tokenIn; // token in address, only for pools
-        uint256 amountsIn; // ExactAmount In for swapExactIn operation, maxAmount In for swapExactOut
-        address tokenOut; // token out address, only for pools
-        uint256 amountsOut; // minAmountOut for swapExactIn or exactAmountOut for swapExactOut
-        uint256 maxPrice; // maxPrice, only for pools
-        uint256 swapMarketFee;
-        address marketFeeAddress;
-    }
 
     // require tokenIn approvals for router from user. (except for dispenser operations)
     function buyDTBatch(Operations[] calldata _operations) external {
@@ -717,11 +696,6 @@ contract FactoryRouter is BFactory {
         }
     }
 
-    struct Stakes {
-        address poolAddress;
-        uint256 tokenAmountIn;
-        uint256 minPoolAmountOut;
-    }
     // require pool[].baseToken (for each pool) approvals for router from user.
     function stakeBatch(Stakes[] calldata _stakes) external {
         // TODO: to avoid DOS attack, we set a limit to maximum orders (50?)
@@ -760,5 +734,14 @@ contract FactoryRouter is BFactory {
         IERC20(erc20).safeTransferFrom(from, to, amount);
         require(IERC20(erc20).balanceOf(to) >= balanceBefore.add(amount),
                     "Transfer amount is too low");
+    }
+
+    function getPoolTemplates() public view override(BFactory, IFactoryRouter) returns (address[] memory) {
+        return BFactory.getPoolTemplates();
+    }
+
+    function isPoolTemplate(address poolTemplate) public view override(BFactory, IFactoryRouter)
+        returns (bool) {
+        return BFactory.isPoolTemplate(poolTemplate);
     }
 }
