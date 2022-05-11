@@ -34,7 +34,7 @@ cd barge
 #ensure v4 repo
 git checkout v4
 
-# Clean up old containers (to be sure)
+#clean up old containers (to be sure)
 docker system prune -a --volumes
 
 #run barge
