@@ -41,7 +41,6 @@ def test_createBPoolFromDatatoken(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, "development")
     data_NFT = createDataNFT("foo", "foo", account1)
     DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account1)
-    import pdb; pdb.set_trace()
     pool = createBPoolFromDatatoken(DT, account1)
 
 

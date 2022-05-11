@@ -147,27 +147,27 @@ def createBPoolFromDatatoken(
     )
 
     #dummy values since vestin is now turned off
-    DT_vest_amt: float = 1000.0,
+    DT_vest_amt: float = 1000.0
     DT_vest_num_blocks: int = 2426000
     
     ss_params = [
-        toBase18(DT_OCEAN_rate),
-        OCEAN.decimals(),
-        toBase18(DT_vest_amt),
-        DT_vest_num_blocks,  # do _not_ convert to wei
-        toBase18(init_OCEAN_liquidity),
+        toBase18(DT_OCEAN_rate), # rate (wei)
+        OCEAN.decimals(),        # baseToken (decimals)
+        toBase18(DT_vest_amt),   # vesting amount (wei)
+        DT_vest_num_blocks,      # vested blocks (int, *not* wei)
+        toBase18(init_OCEAN_liquidity), # initial liquidity (wei)
     ]
     swap_fees = [
-        toBase18(LP_swap_fee),
-        toBase18(mkt_swap_fee),
+        toBase18(LP_swap_fee),   # swap fee for LPs (wei)
+        toBase18(mkt_swap_fee),  # swap fee for marketplace runner (wei)
     ]
     addresses = [
-        ssbot.address,
-        OCEAN.address,
-        from_account.address,
-        from_account.address,
-        from_account.address,
-        pool_template.address,
+        ssbot.address,           # ssbot address
+        OCEAN.address,           # baseToken address
+        from_account.address,    # baseTokenSender, provides init baseToken liquidity
+        from_account.address,    # publisherAddress, will get the vested amt
+        from_account.address,    # marketFeeCollector address
+        pool_template.address,   # poolTemplate address
     ]
 
     tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
