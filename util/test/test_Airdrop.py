@@ -68,5 +68,53 @@ def test_OCEAN(ADDRESS_FILE):
 
 
 @enforce_types
+def test_multiple_TOK():
+    TOK1 = _deployTOK(accounts[0])
+    TOK2 = _deployTOK(accounts[0])
+
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+
+    tos = [a1, a2, a3]
+    values = [10, 20, 30]
+
+    TOK1.approve(airdrop, sum(values), {"from": accounts[0]})
+    TOK2.approve(airdrop, sum(values) + 15, {"from": accounts[0]})
+
+    airdrop.allocate(tos, values, TOK1.address, {"from": accounts[0]})
+    airdrop.allocate(tos, [x + 5 for x in values], TOK2.address, {"from": accounts[0]})
+
+    assert airdrop.claimables(a1, [TOK1.address, TOK2.address]) == [10, 15]
+    assert airdrop.claimables(a2, [TOK1.address, TOK2.address]) == [20, 25]
+    assert airdrop.claimables(a3, [TOK1.address, TOK2.address]) == [30, 35]
+
+    # multiple claims
+
+    # a1 claims for itself
+    assert TOK1.balanceOf(a1) == 0
+    assert TOK2.balanceOf(a1) == 0
+    airdrop.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
+    assert TOK1.balanceOf(a1) == 10
+    assert TOK2.balanceOf(a1) == 15
+
+    # a2 claims for itself
+    assert TOK1.balanceOf(a2) == 0
+    assert TOK2.balanceOf(a2) == 0
+    airdrop.claim([TOK1.address, TOK2.address], {"from": accounts[2]})
+    assert TOK1.balanceOf(a2) == 20
+    assert TOK2.balanceOf(a2) == 25
+
+    # a3 claims for itself
+    assert TOK1.balanceOf(a3) == 0
+    assert TOK2.balanceOf(a3) == 0
+    airdrop.claim([TOK1.address, TOK2.address], {"from": accounts[3]})
+    assert TOK1.balanceOf(a3) == 30
+    assert TOK2.balanceOf(a3) == 35
+
+    # a1 can't claim extra
+    with brownie.reverts("Nothing to claim"):
+        airdrop.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
+
+
+@enforce_types
 def _deployTOK(account):
     return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})

@@ -45,6 +45,18 @@ contract Airdrop is Ownable, ReentrancyGuard {
         return true;
     }
 
+    function claimables(address _to, address[] calldata tokenAddresses)
+        external
+        view
+        returns (uint256[] memory result)
+    {
+        result = new uint256[](tokenAddresses.length);
+        for (uint256 i = 0; i < tokenAddresses.length; i += 1) {
+            result[i] = claimable(_to, tokenAddresses[i]);
+        }
+        return result;
+    }
+
     function claimable(address _to, address tokenAddress)
         public
         view
