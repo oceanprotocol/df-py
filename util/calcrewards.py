@@ -5,23 +5,24 @@ from numpy import log10
 
 @enforce_types
 def calcRewards(
-    stakes: dict, poolvols: dict, rates: Dict[str, float], OCEAN_avail: float
+    stakes: dict, poolvols: dict, rates: Dict[str, float], TOKEN_avail: float
 ) -> Dict[str, float]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
       poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
       rates -- dict of [basetoken_symbol] : USD_per_basetoken
-      OCEAN_avail -- float
+      TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
-      rewards -- dict of [chainID][LP_addr] : OCEAN_float
+      rewards -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
 
-    A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
+    @notes
+      A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
-    rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, OCEAN_avail)
+    rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
     return rewards
 
 
@@ -85,16 +86,16 @@ def _poolvolsToUsdAtChain(poolvols_at_chain: dict, rates: Dict[str, float]) -> D
 
 
 def _calcRewardsUsd(
-    stakes_USD: dict, poolvols_USD: Dict[str, float], basetoken_avail: float
+    stakes_USD: dict, poolvols_USD: Dict[str, float], TOKEN_avail: float
 ) -> Dict[str, float]:
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
       poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
-      basetoken_avail -- float, e.g. amount of OCEAN available
+      TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
-      rewards -- dict of [chainID][LP_addr] : basetoken_float
+      rewards -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
     """
     # base data
     chainIDs = list(stakes_USD.keys())
@@ -127,7 +128,7 @@ def _calcRewardsUsd(
     # normalize and scale rewards
     for chainID in chainIDs:
         for LP_addr, reward in rewards[chainID].items():
-            rewards[chainID][LP_addr] = reward / tot_rewards * basetoken_avail
+            rewards[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
 
     # return dict
     return rewards
