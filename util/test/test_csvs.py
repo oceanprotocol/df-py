@@ -3,6 +3,7 @@ from enforce_typing import enforce_types
 from util import csvs
 
 #for shorter lines
+C1, C2 = "chain1", "chain2"
 PA, PB, PC, PD, PE, PF = "poolA", "poolB", "poolC", "poolD", "poolE", "poolF"
 LP1, LP2, LP3, LP4, LP5, LP6 = "LP1", "LP2", "LP3", "LP4", "LP5", "LP6"
 OCN, H2O = "OCEAN", "H2O"
@@ -31,9 +32,9 @@ def test_stakes(tmp_path):
 
     csv_dir = str(tmp_path)
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
-    csvs.saveStakesCsv(stakes_chain1, csv_dir, "chain1")
+    csvs.saveStakesCsv(stakes_chain1, csv_dir, C1)
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 1
-    csvs.saveStakesCsv(stakes_chain2, csv_dir, "chain2")
+    csvs.saveStakesCsv(stakes_chain2, csv_dir, C2)
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 2
 
     loaded_stakes = csvs.loadStakesCsvs(csv_dir)
@@ -53,9 +54,9 @@ def test_poolVols(tmp_path):
 
     csv_dir = str(tmp_path)
     assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 0
-    csvs.savePoolVolsCsv(pool_vols_chain1, csv_dir, "chain1")
+    csvs.savePoolVolsCsv(pool_vols_chain1, csv_dir, C1)
     assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 1
-    csvs.savePoolVolsCsv(pool_vols_chain2, csv_dir, "chain2")
+    csvs.savePoolVolsCsv(pool_vols_chain2, csv_dir, C2)
     assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 2
 
     loaded_pool_vols = csvs.loadPoolVolsCsvs(csv_dir)
