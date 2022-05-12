@@ -20,7 +20,7 @@ def calcRewards(
     A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
     stakes_USD = _stakesToUsd(stakes, rates)
-    poolvols_USD = _poolvolsToUsd(pool_vols, rates)
+    poolvols_USD = _poolvolsToUsd(poolvols, rates)
     rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, OCEAN_avail)
     return rewards
 
@@ -69,7 +69,7 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float]) -> Dict[str, float]:
     """
     poolvols_USD = {}
     for chainID in poolvols:
-        poolvols_USD[chainID] = _poolvolsToUsdAtChain(pool_vols[chainID], rates)
+        poolvols_USD[chainID] = _poolvolsToUsdAtChain(poolvols[chainID], rates)
     return poolvols_USD
 
 def _poolvolsToUsdAtChain(poolvols_at_chain: dict, rates: Dict[str, float]) -> Dict[str, float]:
