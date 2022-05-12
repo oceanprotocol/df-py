@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
 import pytest
 
-from util.calcrewards import calcRewards, _stakesToUSD, _poolVolsToUSD
+from util.calcrewards import calcRewards, _stakesToUsd, _poolVolsToUsd
 
 RATES = {"ocean": 0.5, "h2o": 1.6}
 
@@ -58,19 +58,19 @@ def test_calcRewards4():
 
 
 @enforce_types
-def test_stakesToUSD_onebasetoken():
+def test_stakesToUsd_onebasetoken():
     stakes = {C1: {OCN: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = _stakesToUSD(stakes, RATES)
+    stakes_USD = _stakesToUsd(stakes, RATES)
     assert stakes_USD == {C1: {PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5}}}
 
 
 @enforce_types
-def test_stakesToUSD_twobasetokens():
+def test_stakesToUsd_twobasetokens():
     stakes = {C1: {
         OCN: {PA: {LP1: 3.0, LP2: 4.0}},
         H2O: {PC: {LP1: 5.0, LP4: 6.0}},
     }}
-    stakes_USD = _stakesToUSD(stakes, RATES)
+    stakes_USD = _stakesToUsd(stakes, RATES)
     assert stakes_USD == {C1: {
         PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
         PC: {LP1: 5.0 * 1.6, LP4: 6.0 * 1.6},
@@ -78,16 +78,16 @@ def test_stakesToUSD_twobasetokens():
 
 
 @enforce_types
-def test_poolVolsToUSD_onebasetoken():
+def test_poolVolsToUsd_onebasetoken():
     pool_vols = {C1: {OCN: {PA: 9.0, PB: 11.0}}}
-    pool_vols_USD = _poolVolsToUSD(pool_vols, RATES)
+    pool_vols_USD = _poolVolsToUsd(pool_vols, RATES)
     assert pool_vols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
 
 
 @enforce_types
-def test_poolVolsToUSD_twobasetokens():
+def test_poolVolsToUsd_twobasetokens():
     pool_vols = {C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}}}
-    pool_vols_USD = _poolVolsToUSD(pool_vols, RATES)
+    pool_vols_USD = _poolVolsToUsd(pool_vols, RATES)
     assert pool_vols_USD == {C1: {
         PA: 9.0 * 0.5,
         PB: 11.0 * 0.5,

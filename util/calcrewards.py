@@ -73,7 +73,7 @@ def _poolVolsToUsd(pool_vols: dict, rates: Dict[str, float]) -> Dict[str, float]
     return pool_vols_USD
 
 def _poolVolsToUsdAtChain(pool_vols_at_chain: dict, rates: Dict[str, float]) -> Dict[str, float]:
-    """Like _poolVolsToUSD, but at a given chainID"""
+    """Like _poolVolsToUsd, but at a given chainID"""
     pool_vols_USD_at_chain = {}  # dict of [pool_addr] : vol_USD
     for basetoken, rate in rates.items():
         if basetoken not in pool_vols_at_chain:
