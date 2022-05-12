@@ -6,28 +6,38 @@ import os
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import fromBase18, toBase18
 
-BATCH_SIZE = 100
+MAX_BATCH_SIZE = 100
 
 
 @enforce_types
 def dispense(
-    rewards: Dict[str, float],
+    rewards_at_chain: Dict[str, float],
     airdrop_addr: str,
+    token_addr: str,
     from_account,
-    batch_size: int = BATCH_SIZE,
-    token_address: str = "",
+    batch_size: int = MAX_BATCH_SIZE,
 ):
     """
+    @description  
+      Allocate rewards to LPs. 
+
     @arguments
-      rewards -- dict of [LP_addr]:OCEAN_float (not wei), from csv
+      rewards_at_chain -- dict of [LP_addr]:TOKEN_amt (float, not wei) 
+        -- rewards for each LP on this chain
       airdrop_addr -- address of airdrop contract
-      ..
+      token_addr -- address of token we're allocating rewards with (eg OCEAN)
+      from_account -- account doing the spending
+      batch_size -- largest # LPs allocated per tx (due to EVM limits)
+
+    @return 
+      <<nothing, but updates the airdrop contract on-chain>>
     """
+    rewards = rewards_at_chain
     print("dispense: begin")
     print(f"  # addresses: {len(rewards)}")
 
     airdrop = B.Airdrop.at(airdrop_addr)
-    TOK = B.Simpletoken.at(token_address)
+    TOK = B.Simpletoken.at(token_addr)
     print(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 
     to_addrs = list(rewards.keys())
