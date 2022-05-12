@@ -34,7 +34,7 @@ def test_calcRewards2():
     stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}}}}
     pool_vols = {C1: {OCN: {PA: 1.0}}}
     rewards = calcRewards(stakes, pool_vols, RATES, OCEAN_avail=10.0)
-    assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewards[C1].values()) == pytest.approx(10.0, 0.01)
     assert rewards == {C1: {LP1: 5.0, LP2: 5.0}}
 
 
@@ -43,8 +43,8 @@ def test_calcRewards3():
     stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}, PB: {LP1: 1.0, LP3: 1.0}}}}
     pool_vols = {C1: {OCN: {PA: 1.0}}}  # P1 has volume, but not P2
     rewards = calcRewards(stakes, pool_vols, RATES, OCEAN_avail=10.0)
-    assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
-    assert min(rewards.values()) > 0, "shouldn't have entries with 0 rewards"
+    assert sum(rewards[C1].values()) == pytest.approx(10.0, 0.01)
+    assert min(rewards[C1].values()) > 0,"shouldn't have entries with 0 rewards"
     assert rewards == {C1: {LP1: 5.0, LP2: 5.0}}
 
 
