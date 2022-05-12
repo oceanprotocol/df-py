@@ -5,12 +5,12 @@ from numpy import log10
 
 @enforce_types
 def calcRewards(
-    stakes: dict, pool_vols: dict, rates: Dict[str, float], OCEAN_avail: float
+    stakes: dict, poolvols: dict, rates: Dict[str, float], OCEAN_avail: float
 ) -> Dict[str, float]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
-      pool_vols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
+      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
       rates -- dict of [basetoken_symbol] : USD_per_basetoken
       OCEAN_avail -- float
 
@@ -20,8 +20,8 @@ def calcRewards(
     A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
     stakes_USD = _stakesToUsd(stakes, rates)
-    pool_vols_USD = _poolVolsToUsd(pool_vols, rates)
-    rewards = _calcRewardsUsd(stakes_USD, pool_vols_USD, OCEAN_avail)
+    poolvols_USD = _poolvolsToUsd(pool_vols, rates)
+    rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, OCEAN_avail)
     return rewards
 
 
@@ -55,42 +55,42 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     return stakes_USD_at_chain
 
 
-def _poolVolsToUsd(pool_vols: dict, rates: Dict[str, float]) -> Dict[str, float]:
+def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float]) -> Dict[str, float]:
     """
     @description
       For a given chain, converts volume values to be USD-denominated.
 
     @arguments
-      pool_vols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
+      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
       rates -- dict of [basetoken_symbol] : USD_per_basetoken
 
     @return
-      pool_vols_USD -- dict of [chainID][pool_addr] : vol_USD
+      poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
     """
-    pool_vols_USD = {}
-    for chainID in pool_vols:
-        pool_vols_USD[chainID] = _poolVolsToUsdAtChain(pool_vols[chainID], rates)
-    return pool_vols_USD
+    poolvols_USD = {}
+    for chainID in poolvols:
+        poolvols_USD[chainID] = _poolvolsToUsdAtChain(pool_vols[chainID], rates)
+    return poolvols_USD
 
-def _poolVolsToUsdAtChain(pool_vols_at_chain: dict, rates: Dict[str, float]) -> Dict[str, float]:
-    """Like _poolVolsToUsd, but at a given chainID"""
-    pool_vols_USD_at_chain = {}  # dict of [pool_addr] : vol_USD
+def _poolvolsToUsdAtChain(poolvols_at_chain: dict, rates: Dict[str, float]) -> Dict[str, float]:
+    """Like _poolvolsToUsd, but at a given chainID"""
+    poolvols_USD_at_chain = {}  # dict of [pool_addr] : vol_USD
     for basetoken, rate in rates.items():
-        if basetoken not in pool_vols_at_chain:
+        if basetoken not in poolvols_at_chain:
             continue
-        for pool_addr, vol in pool_vols_at_chain[basetoken].items():
-            pool_vols_USD_at_chain[pool_addr] = vol * rate
+        for pool_addr, vol in poolvols_at_chain[basetoken].items():
+            poolvols_USD_at_chain[pool_addr] = vol * rate
 
-    return pool_vols_USD_at_chain
+    return poolvols_USD_at_chain
 
 
 def _calcRewardsUsd(
-    stakes_USD: dict, pool_vols_USD: Dict[str, float], basetoken_avail: float
+    stakes_USD: dict, poolvols_USD: Dict[str, float], basetoken_avail: float
 ) -> Dict[str, float]:
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
-      pool_vols_USD -- dict of [chainID][pool_addr] : vol_USD
+      poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
       basetoken_avail -- float, e.g. amount of OCEAN available
 
     @return
@@ -100,7 +100,7 @@ def _calcRewardsUsd(
     chainIDs = list(stakes_USD.keys())
     pool_addr_set, LP_addr_set = set(), set()
     for chainID in chainIDs:
-        pool_addr_set |= set(pool_vols_USD[chainID].keys())
+        pool_addr_set |= set(poolvols_USD[chainID].keys())
         LP_addr_set |= set({addr for addrs in stakes_USD[chainID].values()
                             for addr in addrs})
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
@@ -115,7 +115,7 @@ def _calcRewardsUsd(
                 if pool_addr not in stakes_USD[chainID]:
                     continue
                 Sij = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
-                Cj = pool_vols_USD[chainID].get(pool_addr, 0.0)
+                Cj = poolvols_USD[chainID].get(pool_addr, 0.0)
                 if Sij == 0 or Cj == 0:
                     continue
                 RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0)  # main formula!

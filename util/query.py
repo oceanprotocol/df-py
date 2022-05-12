@@ -19,14 +19,14 @@ def query(rng: BlockRange, subgraph_url: str) -> Tuple[dict, dict]:
     """
     @return
       stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
+      poolvols -- dict of [basetoken_symbol][pool_addr] : vol
 
     A stake or vol value is in terms of basetoken (eg OCEAN, H2O).
     """
     pools = getPools(subgraph_url)
     stakes = getStakes(pools, rng, subgraph_url)
-    pool_vols = getPoolVolumes(pools, rng.st, rng.fin, subgraph_url)
-    return (stakes, pool_vols)
+    poolvols = getPoolVolumes(pools, rng.st, rng.fin, subgraph_url)
+    return (stakes, poolvols)
 
 
 @enforce_types
@@ -110,13 +110,13 @@ def getPoolVolumes(
     approved_tokens = getApprovedTokens(subgraph_url)  # basetoken_addr : symbol
 
     # dict of [basetoken_symbol][pool_addr] : vol
-    pool_vols = {symbol: {} for symbol in approved_tokens.values()}
+    poolvols = {symbol: {} for symbol in approved_tokens.values()}
     for pool in pools:
         if pool.DT_addr in DTs_with_consume:
             basetoken_symbol = approved_tokens[pool.basetoken_addr]
-            pool_vols[basetoken_symbol][pool.addr] = DT_vols[pool.DT_addr]
+            poolvols[basetoken_symbol][pool.addr] = DT_vols[pool.DT_addr]
 
-    return pool_vols
+    return poolvols
 
 
 def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) -> Dict[str, float]:

@@ -19,10 +19,10 @@ def test_queryAndCalcResults(ADDRESS_FILE, SUBGRAPH_URL):
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
-    (stakes, pool_vols) = query.query(rng, SUBGRAPH_URL)
+    (stakes, poolvols) = query.query(rng, SUBGRAPH_URL)
     rates = {"ocean": 0.5, "h2o": 1.618}
 
-    rewards = calcrewards.calcRewards(stakes, pool_vols, rates, OCEAN_avail)
+    rewards = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
     sum_ = sum(rewards.values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
@@ -60,9 +60,9 @@ def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
     _setup(ADDRESS_FILE, SUBGRAPH_URL)
     pools = query.getPools(SUBGRAPH_URL)
     st, fin = 1, len(chain)
-    pool_vols = query.getPoolVolumes(pools, st, fin, SUBGRAPH_URL)
-    assert pool_vols
-    assert sum(pool_vols["ocean"].values()) > 0.0
+    poolvols = query.getPoolVolumes(pools, st, fin, SUBGRAPH_URL)
+    assert poolvols
+    assert sum(poolvols["ocean"].values()) > 0.0
 
 
 @enforce_types

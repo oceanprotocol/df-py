@@ -3,65 +3,84 @@ from enforce_typing import enforce_types
 from util import csvs
 
 #for shorter lines
-C1, C2 = "chain1", "chain2"
+C1, C2 = 1, 137
 PA, PB, PC, PD, PE, PF = "poolA", "poolB", "poolC", "poolD", "poolE", "poolF"
 LP1, LP2, LP3, LP4, LP5, LP6 = "LP1", "LP2", "LP3", "LP4", "LP5", "LP6"
 OCN, H2O = "OCEAN", "H2O"
 
+
+#=================================================================
+# stakes csvs
+
+
 @enforce_types
-def test_stakes(tmp_path):
-    stakes_chain1 = {
-        OCN: {PA: {LP1: 1.1, LP1: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O: {PC: {LP1: 3.1, LP4: 3.4}},
-    }
+def test_chainIDforStakeCsv():
+    assert csvs.chainIDforStakeCsv("stakes-chain101.csv") == 101
+    assert csvs.chainIDforStakeCsv("path1/32/stakes-chain92.csv") == 92
 
-    stakes_chain2 = {
-        OCN: {PD: {LP1: 4.1, LP5: 4.5}},
-        H2O: {PE: {LP6: 5.6}},
-    }
-
-    # target is a merging of the above dicts
-    target_stakes = {
-        OCN: {
-            PA: {LP1: 1.1, LP1: 1.2},
-            PB: {LP1: 2.1, LP3: 2.3},
-            PD: {LP1: 4.1, LP5: 4.5},
-        },
-        H2O: {PC: {LP1: 3.1, LP4: 3.4}, PE: {LP6: 5.6}},
-    }
-
+@enforce_types
+def test_stakes_onechain(tmp_path):
     csv_dir = str(tmp_path)
-    assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
-    csvs.saveStakesCsv(stakes_chain1, csv_dir, C1)
-    assert len(csvs.stakesCsvFilenames(csv_dir)) == 1
-    csvs.saveStakesCsv(stakes_chain2, csv_dir, C2)
+    S1 = {OCN: {PA: {LP1: 1.1, LP1: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+          H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
+    csvs.saveStakesCsv(S1, csv_dir, C1)
+    target_S1 = S1
+    loaded_S1 = csvs.loadStakesCsv(csv_dir, C1)
+    assert loaded_S1 == target_S1
+    
+@enforce_types
+def test_stakes_twochains(tmp_path):
+    csv_dir = str(tmp_path)
+    S1 = {OCN: {PA: {LP1: 1.1, LP1: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+          H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
+    S2 = {OCN: {PD: {LP1: 4.1, LP5: 4.5}},
+          H2O: {PE: {LP6: 5.6}}}
+
+    assert len(csvs.stakesCsvFilenames(csv_dir)) == 0    
+    csvs.saveStakesCsv(S1, csv_dir, C1)
+    csvs.saveStakesCsv(S2, csv_dir, C2)
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 2
 
-    loaded_stakes = csvs.loadStakesCsvs(csv_dir)
-    assert loaded_stakes == target_stakes
+    target_S = {C1: S1, C2: S2}
+    loaded_S = csvs.loadStakesCsvs(csv_dir)
+    assert loaded_S == target_S
 
+#=================================================================
+# poolvols csvs
 
 @enforce_types
-def test_poolVols(tmp_path):
-    pool_vols_chain1 = {OCN: {PA: 1.1, PB: 2.1}, H2O: {PC: 3.1}}
-    pool_vols_chain2 = {OCN: {PD: 4.1, PE: 5.1}, H2O: {PF: 6.1}}
+def test_chainIDforPoolvolsCsv():
+    assert csvs.chainIDforPoolvolsCsv("poolvols-chain101.csv") == 101
+    assert csvs.chainIDforPoolvolsCsv("path1/32/poolvols-chain92.csv") == 92
 
-    # target is a merging of the above dicts
-    target_pool_vols = {
-        OCN: {PA: 1.1, PB: 2.1, PD: 4.1, PE: 5.1},
-        H2O: {PC: 3.1, PF: 6.1},
-    }
-
+@enforce_types
+def test_poolvols_onechain(tmp_path):
     csv_dir = str(tmp_path)
-    assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 0
-    csvs.savePoolVolsCsv(pool_vols_chain1, csv_dir, C1)
-    assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 1
-    csvs.savePoolVolsCsv(pool_vols_chain2, csv_dir, C2)
-    assert len(csvs.poolVolsCsvFilenames(csv_dir)) == 2
+    V1 = {OCN: {PA: 1.1, PB: 2.1}, H2O: {PC: 3.1}}
+    csvs.savePoolvolsCsv(V1, csv_dir, C1)
 
-    loaded_pool_vols = csvs.loadPoolVolsCsvs(csv_dir)
-    assert loaded_pool_vols == target_pool_vols
+    target_V1 = V1
+    loaded_V1 = csvs.loadPoolvolsCsv(csv_dir, C1)
+    assert loaded_V1 == target_V1
+    
+@enforce_types
+def test_poolvols_twochains(tmp_path):
+    csv_dir = str(tmp_path)
+    V1 = {OCN: {PA: 1.1, PB: 2.1}, H2O: {PC: 3.1}}
+    V2 = {OCN: {PD: 4.1, PE: 5.1}, H2O: {PF: 6.1}}
 
+    assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 0
+    csvs.savePoolvolsCsv(V1, csv_dir, C1)
+    csvs.savePoolvolsCsv(V2, csv_dir, C2)
+    assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 2
+
+    target_V = {C1: V1, C2: V2}
+    loaded_V = csvs.loadPoolvolsCsvs(csv_dir)
+    assert loaded_V == target_V
+
+
+#=================================================================
+# exchange rate csvs
 
 @enforce_types
 def test_rates(tmp_path):
@@ -76,6 +95,10 @@ def test_rates(tmp_path):
 
     loaded_rates = csvs.loadRateCsvs(csv_dir)
     assert loaded_rates == rates
+
+
+# ========================================================================
+# rewards csvs
 
 
 @enforce_types
