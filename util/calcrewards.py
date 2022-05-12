@@ -106,11 +106,12 @@ def _calcRewardsUsd(
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
 
     # fill in R
-    rewards_across_chains = {} # [LP_addr]:basetoken_float
-    for i, LP_addr in enumerate(LP_addrs):
-        reward_i = 0.0
-        for j, pool_addr in enumerate(pool_addrs):
-            for chainID in chainIDs:
+    rewards = {cID:{} for cID in chainIDs} # [chainID][LP_addr]:basetoken_float
+    tot_rewards = 0.0
+    for chainID in chainIDs:
+        for i, LP_addr in enumerate(LP_addrs):
+            reward_i = 0.0
+            for j, pool_addr in enumerate(pool_addrs):
                 if pool_addr not in stakes_USD[chainID]:
                     continue
                 Sij = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
@@ -119,16 +120,14 @@ def _calcRewardsUsd(
                     continue
                 RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0)  # main formula!
                 reward_i += RF_ij
-        if reward_i > 0.0:
-            rewards_across_chains[LP_addr] = reward_i
+            if reward_i > 0.0:
+                rewards[chainID][LP_addr] = reward_i
+                tot_rewards += reward_i
 
     # normalize and scale rewards
-    sum_ = sum(rewards_across_chains.values())
-    for LP_addr, reward in rewards.items():
-        rewards_across_chains[LP_addr] = reward / sum_ * basetoken_avail
-
-    #FIXME: need to figure out how to put reward on each given chain
-    # (won't be trivial!)
+    for chainID in chainIDs:
+        for LP_addr, reward in rewards[chainID].items():
+            rewards[chainID][LP_addr] = reward / tot_rewards * basetoken_avail
 
     # return dict
     return rewards
