@@ -2,27 +2,31 @@ from enforce_typing import enforce_types
 
 from util import csvs
 
+#for shorter lines
+PA, PB, PC, PD, PE, PF = "poolA", "poolB", "poolC", "poolD", "poolE", "poolF"
+LP1, LP2, LP3, LP4, LP5, LP6 = "LP1", "LP2", "LP3", "LP4", "LP5", "LP6"
+OCN, H2O = "OCEAN", "H2O"
 
 @enforce_types
 def test_stakes(tmp_path):
     stakes_chain1 = {
-        "OCEAN": {"pool1": {"LP1": 1.1, "LP1": 1.2}, "pool2": {"LP1": 2.1, "LP3": 2.3}},
-        "H2O": {"pool3": {"LP1": 3.1, "LP4": 3.4}},
+        OCN: {PA: {LP1: 1.1, LP1: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O: {PC: {LP1: 3.1, LP4: 3.4}},
     }
 
     stakes_chain2 = {
-        "OCEAN": {"pool4": {"LP1": 4.1, "LP5": 4.5}},
-        "H2O": {"pool5": {"LP6": 5.6}},
+        OCN: {PD: {LP1: 4.1, LP5: 4.5}},
+        H2O: {PE: {LP6: 5.6}},
     }
 
     # target is a merging of the above dicts
     target_stakes = {
-        "OCEAN": {
-            "pool1": {"LP1": 1.1, "LP1": 1.2},
-            "pool2": {"LP1": 2.1, "LP3": 2.3},
-            "pool4": {"LP1": 4.1, "LP5": 4.5},
+        OCN: {
+            PA: {LP1: 1.1, LP1: 1.2},
+            PB: {LP1: 2.1, LP3: 2.3},
+            PD: {LP1: 4.1, LP5: 4.5},
         },
-        "H2O": {"pool3": {"LP1": 3.1, "LP4": 3.4}, "pool5": {"LP6": 5.6}},
+        H2O: {PC: {LP1: 3.1, LP4: 3.4}, PE: {LP6: 5.6}},
     }
 
     csv_dir = str(tmp_path)
@@ -38,13 +42,13 @@ def test_stakes(tmp_path):
 
 @enforce_types
 def test_poolVols(tmp_path):
-    pool_vols_chain1 = {"OCEAN": {"pool1": 1.1, "pool2": 2.1}, "H2O": {"pool3": 3.1}}
-    pool_vols_chain2 = {"OCEAN": {"pool4": 4.1, "pool5": 5.1}, "H2O": {"pool6": 6.1}}
+    pool_vols_chain1 = {OCN: {PA: 1.1, PB: 2.1}, H2O: {PC: 3.1}}
+    pool_vols_chain2 = {OCN: {PD: 4.1, PE: 5.1}, H2O: {PF: 6.1}}
 
     # target is a merging of the above dicts
     target_pool_vols = {
-        "OCEAN": {"pool1": 1.1, "pool2": 2.1, "pool4": 4.1, "pool5": 5.1},
-        "H2O": {"pool3": 3.1, "pool6": 6.1},
+        OCN: {PA: 1.1, PB: 2.1, PD: 4.1, PE: 5.1},
+        H2O: {PC: 3.1, PF: 6.1},
     }
 
     csv_dir = str(tmp_path)
@@ -60,13 +64,13 @@ def test_poolVols(tmp_path):
 
 @enforce_types
 def test_rates(tmp_path):
-    rates = {"OCEAN": 0.66, "H2O": 1.618}
+    rates = {OCN: 0.66, H2O: 1.618}
 
     csv_dir = str(tmp_path)
     assert len(csvs.rateCsvFilenames(csv_dir)) == 0
-    csvs.saveRateCsv("OCEAN", rates["OCEAN"], csv_dir)
+    csvs.saveRateCsv(OCN, rates[OCN], csv_dir)
     assert len(csvs.rateCsvFilenames(csv_dir)) == 1
-    csvs.saveRateCsv("H2O", rates["H2O"], csv_dir)
+    csvs.saveRateCsv(H2O, rates[H2O], csv_dir)
     assert len(csvs.rateCsvFilenames(csv_dir)) == 2
 
     loaded_rates = csvs.loadRateCsvs(csv_dir)
@@ -82,8 +86,8 @@ def test_rewards_filename(tmp_path):
     
 @enforce_types
 def test_rewards_main(tmp_path):
-    rewards = {1: {"LP1": 1.1, "LP2": 2.2, "LP3": 3.3},
-               137: {"LP1": 137.1, "LP3": 137.3}}
+    rewards = {1: {LP1: 1.1, LP2: 2.2, LP3: 3.3},
+               137: {LP1: 137.1, LP3: 137.3}}
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
