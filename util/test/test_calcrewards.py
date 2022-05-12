@@ -10,15 +10,17 @@ C1, C2 = "chain1", "chain2"
 PA, PB, PC = "poolA", "poolB", "poolC"
 LP1, LP2, LP3, LP4 = "LP1", "LP2", "LP3", "LP4"
 OCN, H2O = "ocean", "h2o"
-
+    
+    
 @enforce_types
 def test_calcRewards1_onechain():
     stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}
-    rewards = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
-    assert rewards == {C1: {LP1: 10.0}}
+    target_rewards = {C1: {LP1: 10.0}}
+    TOKEN_avail = 10.0
+    assert target_rewards == calcRewards(stakes, poolvols, RATES, TOKEN_avail)
 
-    
+
 @enforce_types
 def test_calcRewards1_twochains():
     stakes = {C1: {OCN: {PA: {LP1: 1.0}}},
@@ -58,6 +60,22 @@ def test_calcRewards4():
 
 
 @enforce_types
+def test_calcRewards5_mix_upper_and_lower_case():
+    stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
+    poolvols = {C1: {OCN: {PA: 1.0}}}
+    target_rewards = {C1: {LP1: 10.0}}
+    TOKEN_avail = 10.0
+    
+    stakes2 = {C1: {"OcEaN": {PA: {LP1: 1.0}}}}
+    poolvols2 = {C1: {"OceaN": {PA: 1.0}}}
+    rates2 = {"oceaN": 0.5, "h2O": 1.6}
+    
+    assert target_rewards == calcRewards(stakes2, poolvols, RATES, TOKEN_avail)
+    assert target_rewards == calcRewards(stakes, poolvols2, RATES, TOKEN_avail)
+    assert target_rewards == calcRewards(stakes, poolvols, rates2, TOKEN_avail)
+    
+
+@enforce_types
 def test_stakesToUsd_onebasetoken():
     stakes = {C1: {OCN: {PA: {LP1: 3.0, LP2: 4.0}}}}
     stakes_USD = _stakesToUsd(stakes, RATES)
@@ -93,3 +111,4 @@ def test_poolvolsToUsd_twobasetokens():
         PB: 11.0 * 0.5,
         PC: 13.0 * 1.6,
     }}
+
