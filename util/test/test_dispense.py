@@ -22,7 +22,7 @@ def test_small_batch(ADDRESS_FILE, tmp_path):
     dispense.dispense(
         rewards_at_chain,
         airdrop_addr = airdrop.address,
-        token_address = OCEAN.address,
+        token_addr = OCEAN.address,
         from_account = accounts[0],
     )
 
@@ -54,7 +54,7 @@ def test_batching(ADDRESS_FILE):
     dispense.dispense(
         rewards_at_chain,
         airdrop_addr = airdrop.address,
-        token_address = OCEAN.address,
+        token_addr = OCEAN.address,
         from_account = accounts[0],
         batch_size = batch_size
     )
