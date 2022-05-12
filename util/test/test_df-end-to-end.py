@@ -30,31 +30,43 @@ def test_without_csvs(ADDRESS_FILE, SUBGRAPH_URL):
 
 @enforce_types
 def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
+    """
+    Simulate these steps, with csvs in between
+    1. dftool query
+    2. dftool getrate
+    3. dftool calc
+    4. dftool dispense
+    """
     _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=1)
     
     st, fin, n = 1, len(chain), 5
     rng = BlockRange(st, fin, n)
 
-    #simulate "dftool query"
+    #1. simulate "dftool query"
     (stakes_at_chain, poolvols_at_chain) = query.query(rng, SUBGRAPH_URL)
     chainID = 1
     csvs.saveStakesCsv(stakes_at_chain, csv_dir, chainID)
     csvs.savePoolvolsCsv(poolvols_at_chain, csv_dir, chainID)
+    stakes_at_chain = poolvols_at_chian = None #ensure not used later
 
-    #simulate "dftool getrate"
+    #2. simulate "dftool getrate"
     csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
-    #simulate dftool calc"
+    #3. simulate dftool calc"
     stakes = csvs.loadStakesCsvs(csv_dir)
     poolvols = csvs.loadPoolvolsCsvs(csv_dir)
     rates = csvs.loadRatesCsvs(csv_dir)
     OCEAN_avail = 10000.0
     rewards = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
-    
-    sum_ = sum(rewards[1].values())
+    sum_ = sum(rewards[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
+    csvs.saveRewardsCsv(rewards, csv_dir, "OCEAN")
+    rewards = None #ensure not used later
 
+    #4. simulate "dftool dispense"
+    rewards = csvs.loadRewardsCsv(csv_dir, "OCEAN")
+    #FIXME: do rest of dispense
 
 # ========================================================================
 @enforce_types
