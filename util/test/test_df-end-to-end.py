@@ -38,6 +38,7 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
     4. dftool dispense
     """
     _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=1)
+    csv_dir = str(tmp_path)
     
     st, fin, n = 1, len(chain), 5
     rng = BlockRange(st, fin, n)
@@ -56,7 +57,7 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
     #3. simulate dftool calc"
     stakes = csvs.loadStakesCsvs(csv_dir)
     poolvols = csvs.loadPoolvolsCsvs(csv_dir)
-    rates = csvs.loadRatesCsvs(csv_dir)
+    rates = csvs.loadRateCsvs(csv_dir)
     OCEAN_avail = 10000.0
     rewards = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
     sum_ = sum(rewards[chainID].values())
