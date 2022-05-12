@@ -49,7 +49,7 @@ def test_batching(ADDRESS_FILE):
     N = batch_size * 3 + 1  # enough accounts to ensure batching
     assert len(accounts) >= N
 
-    rewards = {accounts[i]: (i + 1.0) for i in range(N)}
+    rewards_at_chain = {accounts[i]: (i + 1.0) for i in range(N)}
 
     dispense.dispense(
         rewards_at_chain,
