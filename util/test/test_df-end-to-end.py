@@ -3,8 +3,9 @@ from enforce_typing import enforce_types
 from pprint import pprint
 import pytest
 
-from util import calcrewards, csvs, query
+from util import calcrewards, csvs, dispense, query
 from util.blockrange import BlockRange
+from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import OCEAN_address, recordDeployedContracts
 from util.test import conftest
 
@@ -67,8 +68,8 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
 
     #4. simulate "dftool dispense"
     rewards = csvs.loadRewardsCsv(csv_dir, "OCEAN")
-    token_addr = OCEANtoken().address
-    airdrop_addr = B.Airdrop.deploy({"from": accounts[0]}).addr
+    token_addr = OCEAN_address()
+    airdrop_addr = B.Airdrop.deploy({"from": accounts[0]}).address
     dispense.dispense(rewards[chainID], airdrop_addr, token_addr, accounts[0])
 
 # ========================================================================

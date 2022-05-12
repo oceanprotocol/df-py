@@ -2,14 +2,15 @@ from enforce_typing import enforce_types
 import pytest
 
 from util.calcrewards import calcRewards, _stakesToUsd, _poolvolsToUsd
+from util import cleancase
 
-RATES = {"ocean": 0.5, "h2o": 1.6}
+RATES = {"OCEAN": 0.5, "H2O": 1.6}
 
 #for shorter lines
-C1, C2 = "chain1", "chain2"
-PA, PB, PC = "poolA", "poolB", "poolC"
-LP1, LP2, LP3, LP4 = "LP1", "LP2", "LP3", "LP4"
-OCN, H2O = "ocean", "h2o"
+C1, C2 = 7, 137
+PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
+LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
+OCN, H2O = "OCEAN", "H2O"
     
     
 @enforce_types
@@ -61,17 +62,38 @@ def test_calcRewards4():
 
 @enforce_types
 def test_calcRewards5_mix_upper_and_lower_case():
-    stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
-    poolvols = {C1: {OCN: {PA: 1.0}}}
-    target_rewards = {C1: {LP1: 10.0}}
-    TOKEN_avail = 10.0
+    #PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
+    #LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
+    #OCN, H2O = "OCEAN", "H2O"
     
-    stakes2 = {C1: {"OcEaN": {PA: {LP1: 1.0}}}}
-    poolvols2 = {C1: {"OceaN": {PA: 1.0}}}
+    stakes   = {C1: {OCN:     {PA:           {LP1:        1.0}}}}
+    stakes2a = {C1: {"OcEaN": {PA:           {LP1:        1.0}}}}
+    stakes2b = {C1: {OCN:     {"pOoLa_aDDr": {LP1:        1.0}}}}
+    stakes2c = {C1: {OCN:     {PA:           {"lP1_aDdR": 1.0}}}}
+    
+    poolvols   = {C1: {OCN:     {PA:           1.0}}}
+    poolvols2a = {C1: {"OceaN": {PA:           1.0}}}
+    poolvols2b = {C1: {OCN:     {"pOola_adDr": 1.0}}}
+    
+    rates = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
     
-    assert target_rewards == calcRewards(stakes2, poolvols, RATES, TOKEN_avail)
-    assert target_rewards == calcRewards(stakes, poolvols2, RATES, TOKEN_avail)
+    target_rewards = {C1: {LP1: 10.0}}
+    TOKEN_avail = 10.0
+
+    #sanity check
+    cleancase.assertStakes(stakes)
+    cleancase.assertPoolvols(poolvols)
+    cleancase.assertRates(rates)
+
+    #the real tests
+    assert target_rewards == calcRewards(stakes2a, poolvols, rates, TOKEN_avail)
+    assert target_rewards == calcRewards(stakes2b, poolvols, rates, TOKEN_avail)
+    assert target_rewards == calcRewards(stakes2c, poolvols, rates, TOKEN_avail)
+    
+    assert target_rewards == calcRewards(stakes, poolvols2a, rates, TOKEN_avail)
+    assert target_rewards == calcRewards(stakes, poolvols2b, rates, TOKEN_avail)
+    
     assert target_rewards == calcRewards(stakes, poolvols, rates2, TOKEN_avail)
     
 
