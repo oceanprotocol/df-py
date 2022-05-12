@@ -2,6 +2,7 @@ from enforce_typing import enforce_types
 from typing import Dict, Set, Tuple
 from numpy import log10
 
+from util import cleancase
 
 @enforce_types
 def calcRewards(
@@ -20,11 +21,16 @@ def calcRewards(
     @notes
       A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
+    # get cases happy
+    stakes = cleancase.modStakes(stakes)
+    poolvols = cleancase.modPoolvols(poolvols)
+    rates = cleancase.modRates(rates)
+    
+    #
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
     rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
     return rewards
-
 
 def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
     """
