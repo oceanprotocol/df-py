@@ -1,5 +1,5 @@
 
-def modStakes(stakes: dict) --> dict:
+def modStakes(stakes: dict) -> dict:
     """
     Make addresses lowercase, and token symbols uppercase
       stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
@@ -28,12 +28,12 @@ def assertStakes(stakes: dict):
         for basetoken in stakes[chainID]:
             assert basetoken == basetoken.upper()
             for pool_addr in stakes[chainID][basetoken]:
-                assert pool_addr = pool_addr.lower()
+                assert pool_addr == pool_addr.lower()
                 for LP_addr in stakes[chainID][basetoken][pool_addr]:
-                    assert LP_addr = LP_addr.lower()
+                    assert LP_addr == LP_addr.lower()
                                              
                 
-def modPoolvols(poolvols: dict) --> dict:
+def modPoolvols(poolvols: dict) -> dict:
     """
     Make addresses lowercase, and token symbols uppercase
       poolvols - dict of [chainID][basetoken_symbol][pool_addr] : vol
@@ -45,7 +45,7 @@ def modPoolvols(poolvols: dict) --> dict:
         for basetoken in poolvols[chainID]:
             basetoken2 = basetoken.upper()
             poolvols2[chainID2][basetoken2] = {}
-            for pool_addr, vol in poolvols[chainID][basetoken].items()
+            for pool_addr, vol in poolvols[chainID][basetoken].items():
                 pool_addr2 = pool_addr.lower()
                 poolvols2[chainID2][basetoken2][pool_addr2] = vol
 
@@ -64,7 +64,7 @@ def assertPoolvols(poolvols: dict):
                 assert pool_addr == pool_addr.lower()
 
 
-def modRates(rates: dict) --> dict:
+def modRates(rates: dict) -> dict:
     """
     Make addresses lowercase, and token symbols uppercase
       rates - dict of [basetoken_symbol] : USD_per_basetoken
