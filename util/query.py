@@ -14,6 +14,19 @@ from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
 
+class SimplePool:
+    """
+    A simple object to store pools retrieved from chain.
+    Easier to retrieve info than using dicts keyed by strings, and
+      more lightweight than a full BPool object.
+    """
+    def __init__(self, addr: str, nft_addr: str, DT_addr: str, basetoken_addr: str):
+        self.addr = addr
+        self.nft_addr = nft_addr
+        self.DT_addr = DT_addr
+        self.basetoken_addr = basetoken_addr
+
+
 @enforce_types
 def query(rng: BlockRange, subgraph_url: str) -> Tuple[dict, dict]:
     """
@@ -289,15 +302,3 @@ def getAllPools(subgraph_url: str) -> list[SimplePool]:
 
     return pools
 
-
-class SimplePool:
-    """
-    A simple object to store pools retrieved from chain.
-    Easier to retrieve info than using dicts keyed by strings, and
-      more lightweight than a full BPool object.
-    """
-    def __init__(self, addr: str, nft_addr: str, DT_addr: str, basetoken_addr: str):
-        self.addr = addr
-        self.nft_addr = nft_addr
-        self.DT_addr = DT_addr
-        self.basetoken_addr = basetoken_addr
