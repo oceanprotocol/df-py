@@ -197,7 +197,7 @@ def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) \
 
 
 @enforce_types
-def _filterOutPurgatory(pools: list[SimplePool]) -> list[SimplePool]:
+def _filterOutPurgatory(pools: List[SimplePool]) -> List[SimplePool]:
     """
     @description
       Return pools that aren't in purgatory
@@ -253,7 +253,7 @@ def getApprovedTokens(subgraph_url: str) -> Dict[str, str]:
 
 
 @enforce_types
-def getAllPools(subgraph_url: str) -> list[SimplePool]:
+def getAllPools(subgraph_url: str) -> List[SimplePool]:
     """
     @description
       Query the chain and return all pools
