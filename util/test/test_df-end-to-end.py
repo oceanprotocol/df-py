@@ -48,7 +48,7 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
     chainID = 1
     csvs.saveStakesCsv(stakes_at_chain, csv_dir, chainID)
     csvs.savePoolvolsCsv(poolvols_at_chain, csv_dir, chainID)
-    stakes_at_chain = poolvols_at_chian = None #ensure not used later
+    stakes_at_chain = poolvols_at_chain = None #ensure not used later
 
     #2. simulate "dftool getrate"
     csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
