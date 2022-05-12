@@ -22,11 +22,11 @@ def test_main(ADDRESS_FILE, SUBGRAPH_URL):
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
-    (Si, Vi) = query.query(rng, SUBGRAPH_URL)
+    (stakes_at_chain, poolvols_at_chain) = query.query(rng, SUBGRAPH_URL)
     rates = {"ocean": 0.5, "h2o": 1.618}
 
-    rewards = calcrewards.calcRewards(Si, Vi, rates, OCEAN_avail)
-    chainID = rewards.keys()[0]
-    sum_ = sum(rewards[chainID].values())
+    stakes, poolvols = {1: stakes_at_chain}, {1: poolvols_at_chain}
+    rewards = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
+    sum_ = sum(rewards[1].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
