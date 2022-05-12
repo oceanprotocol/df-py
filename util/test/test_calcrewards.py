@@ -80,14 +80,14 @@ def test_stakesToUsd_twobasetokens():
 @enforce_types
 def test_poolvolsToUsd_onebasetoken():
     poolvols = {C1: {OCN: {PA: 9.0, PB: 11.0}}}
-    poolvols_USD = _poolvolsToUsd(pool_vols, RATES)
+    poolvols_USD = _poolvolsToUsd(poolvols, RATES)
     assert poolvols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
 
 
 @enforce_types
 def test_poolvolsToUsd_twobasetokens():
     poolvols = {C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}}}
-    poolvols_USD = _poolvolsToUsd(pool_vols, RATES)
+    poolvols_USD = _poolvolsToUsd(poolvols, RATES)
     assert poolvols_USD == {C1: {
         PA: 9.0 * 0.5,
         PB: 11.0 * 0.5,
