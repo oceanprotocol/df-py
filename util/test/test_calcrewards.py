@@ -53,7 +53,7 @@ def test_calcRewards4():
     stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}, PB: {LP1: 1.0, LP3: 1.0}}}}
     pool_vols = {C1: {OCN: {PA: 1.0, PB: 1.0}}}  # P1 & P2 both have volume
     rewards = calcRewards(stakes, pool_vols, RATES, OCEAN_avail=10.0)
-    assert sum(rewards.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewards[C1].values()) == pytest.approx(10.0, 0.01)
     assert rewards == {C1: {LP1: 5.0, LP2: 2.5, LP3: 2.5}}
 
 
