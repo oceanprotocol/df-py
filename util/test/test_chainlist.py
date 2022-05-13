@@ -11,10 +11,18 @@ def test_cacheData():
 
 
 @enforce_types
+def test_chainIdToNetwork_forBrownie():
+    assert chainlist.chainIdToNetwork(0) == "development"
+    assert chainlist.chainIdToNetwork(137) == "polygon"
+
+    
+@enforce_types
 def test_chainIdToNetwork():
+    assert chainlist.chainIdToNetwork(0) == "kardia"
     assert chainlist.chainIdToNetwork(137) == "polygon"
 
 
 @enforce_types
 def test_networkToChainId():
+    assert chainlist.networkToChainId("kardia") == 0
     assert chainlist.networkToChainId("polygon") == 137
