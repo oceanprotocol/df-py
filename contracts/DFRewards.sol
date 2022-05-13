@@ -95,7 +95,7 @@ contract DFRewards is Ownable, ReentrancyGuard {
     }
 
     /*
-     * @dev Withdraw any ERC20 token from the contract except the airdrop token.
+     * @dev Withdraw any ERC20 token from the contract, cannot withdraw the allocated amount.
      * @param _amount The amount of tokens to withdraw.
      * @param _token The token address to withdraw.
      */
