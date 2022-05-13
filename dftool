@@ -229,7 +229,7 @@ Usage: dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR]
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
-    if len(sys.argv) not in [4, 5]:
+    if len(sys.argv) not in [2+2, 2+3, 2+4]:
         print(HELP)
         sys.exit(0)
 
@@ -249,8 +249,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     else:
         TOKEN_ADDR = sys.argv[5]
     assert TOKEN_ADDR is not None
-    TOKEN_ADDR = TOKEN_ADDR.split(",")
-
 
     print(f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}" \
           f", AIRDROP_ADDR={AIRDROP_ADDR}")
@@ -259,8 +257,9 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     #main work
     _connectToChain(CHAINID)
     from_account = _getPrivateAccount()
-    rewards = csvs.loadRewardsCsv(CSV_DIR)
-    dispense.dispense(rewards, AIRDROP_ADDR, from_account,token_address=TOKEN_ADDR)
+    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol()
+    rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
+    dispense.dispense(rewards[chainID], AIRDROP_ADDR, TOKEN_ADDR, from_account)
     
     print("dftool dispense: Done.")
 
