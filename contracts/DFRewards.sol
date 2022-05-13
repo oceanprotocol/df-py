@@ -6,7 +6,7 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/Sa
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 
-contract Airdrop is Ownable, ReentrancyGuard {
+contract DFRewards is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Allocated(address[] tos, uint256[] values);
@@ -95,7 +95,7 @@ contract Airdrop is Ownable, ReentrancyGuard {
     }
 
     /*
-     * @dev Withdraw any ERC20 token from the contract except the airdrop token.
+     * @dev Withdraw any ERC20 token from the contract, cannot withdraw the allocated amount.
      * @param _amount The amount of tokens to withdraw.
      * @param _token The token address to withdraw.
      */
