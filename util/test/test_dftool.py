@@ -9,10 +9,13 @@ from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
 from util.test import conftest
 
 PREV = None
+DISPENSE_ACCT = None
+
 CHAINID = 0
 
 def test_query(tmp_path):
     #insert fake inputs: info onto the chain
+    ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
     recordDeployedContracts(ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
@@ -57,6 +60,8 @@ def test_calc(tmp_path):
     poolvols_at_chain = {"OCEAN": {"pool_addra": 1.0}}
     csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
     
+    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+    
     #main cmd
     TOKEN_SYMBOL = "OCEAN"
     TOT_TOKEN = 1000.0
@@ -65,24 +70,31 @@ def test_calc(tmp_path):
     os.system(cmd)
 
     #test result
-    rewards_csv = csvs.rewardsCsvFilename(csv_dir, TOKEN_SYMBOL)
+    rewards_csv = csvs.rewardsCsvFilename(CSV_DIR, TOKEN_SYMBOL)
     assert os.path.exists(rewards_csv)
+
 
 def test_dispense(tmp_path):
     #values used for inputs or main cmd
-    account0 = brownie.network.accounts[0]
-    account1 = brownie.network.accounts[1]
+    accounts = brownie.network.accounts
+    account1 = accounts[1]
+    address1 = account1.address.lower()
     CSV_DIR = str(tmp_path)
     TOKEN_SYMBOL = "OCEAN"
     TOT_TOKEN = 1000.0
     
     #insert fake inputs: rewards csv, new airdrop.sol contract
-    rewards = {CHAINID: {account1.address.lower(): TOT_TOKEN}}
+    rewards = {CHAINID: {address1: TOT_TOKEN}}
     csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)   
     
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+
+    #accounts[0] has OCEAN. Ensure that dispensing account has some
+    global DISPENSE_ACCT
+    ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
     recordDeployedContracts(ADDRESS_FILE, "development")
-    #conftest.fillAccountsWithOCEAN() #FIXME: uncomment if needed, else delete
-    airdrop = B.Airdrop.deploy({"from": account0})
+    OCEAN = OCEANtoken()
+    OCEAN.transfer(DISPENSE_ACCT, TOT_TOKEN, {"from": accounts[0]})
 
     #main command
     CSV_DIR = str(tmp_path)
@@ -93,17 +105,16 @@ def test_dispense(tmp_path):
     os.system(cmd)
     
     #test result
-    OCEAN = OCEANtoken()
-    bal_before = OCEAN.balanceOf(account1.address)
+    bal_before = OCEAN.balanceOf(address1)
     airdrop.claim([OCEAN.address], {"from": account1})
-    bal_after = OCEAN.balanceOf(account1.address)
+    bal_after = OCEAN.balanceOf(address1)
     assert bal_after > bal_before
     
 
 def setup_module():
     """This automatically gets called at the beginning of each test.
     It sets envvars for use in the test."""
-    global PREV
+    global PREV, DISPENSE_ACCT
 
     if not brownie.network.is_connected():
         brownie.network.connect("development")
@@ -111,7 +122,8 @@ def setup_module():
     PREV = types.SimpleNamespace()
     
     PREV.DFTOOL_KEY = os.environ.get('DFTOOL_KEY')
-    os.environ['DFTOOL_KEY'] = brownie.network.accounts[0].private_key
+    DISPENSE_ACCT = brownie.network.accounts.add()
+    os.environ['DFTOOL_KEY'] = DISPENSE_ACCT.private_key
     
     PREV.ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
     os.environ['ADDRESS_FILE'] = \
