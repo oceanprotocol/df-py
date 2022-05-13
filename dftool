@@ -311,8 +311,8 @@ Usage: dftool newairdrop CHAINID
     # main work
     _connectToChain(CHAINID)
     from_account = _getPrivateAccount()
-    airdrop = B.DFRewards.deploy({"from": from_account})
-    print(f"New airdrop contract deployed at address: {airdrop.address}")
+    df_rewards = B.DFRewards.deploy({"from": from_account})
+    print(f"New airdrop contract deployed at address: {df_rewards.address}")
 
     print("dftool newairdrop: Done.")
 

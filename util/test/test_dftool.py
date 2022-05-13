@@ -98,18 +98,18 @@ def test_dispense(tmp_path):
     rewards = {CHAINID: {address1: TOT_TOKEN}}
     csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
 
-    airdrop = B.DFRewards.deploy({"from": accounts[0]})
+    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
     # main command
     CSV_DIR = str(tmp_path)
-    AIRDROP_ADDR = airdrop.address
+    AIRDROP_ADDR = df_rewards.address
     TOKEN_ADDR = OCEAN_address()
 
     cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {AIRDROP_ADDR} {TOKEN_ADDR}"
     os.system(cmd)
 
     # test result
-    assert airdrop.claimable(address1, OCEAN.address)
+    assert df_rewards.claimable(address1, OCEAN.address)
 
 
 def setup_module():
