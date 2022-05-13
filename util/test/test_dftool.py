@@ -14,7 +14,7 @@ def test_do_query(tmp_path):
     NSAMP = 5
     CSV_DIR = str(tmp_path)
     
-    cmd = f"dftool query {CHAINID} {ST} {FIN} {NSAMP} {CSV_DIR}"
+    cmd = f"./dftool query {CHAINID} {ST} {FIN} {NSAMP} {CSV_DIR}"
     os.system(cmd)
 
     assert csvs.stakesCsvFilenames(CSV_DIR)
@@ -27,7 +27,7 @@ def _setBargeEnvvars():
     prev = types.SimpleNamespace()
     
     prev.ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
-    os.environ['ADDRESS_FILE'] = constants.BARGE_ADDRESS_FILE
+    os.environ['ADDRESS_FILE'] = os.path.expanduser(constants.BARGE_ADDRESS_FILE)
     
     prev.SUBGRAPH_URI = os.environ.get('SUBGRAPH_URI')
     os.environ['SUBGRAPH_URI'] = constants.BARGE_SUBGRAPH_URI
