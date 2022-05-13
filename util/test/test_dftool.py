@@ -4,6 +4,7 @@ from enforce_typing import enforce_types
 import types
 
 from util import constants, csvs
+from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
 from util.test import conftest
@@ -82,19 +83,20 @@ def test_dispense(tmp_path):
     CSV_DIR = str(tmp_path)
     TOKEN_SYMBOL = "OCEAN"
     TOT_TOKEN = 1000.0
-    
-    #insert fake inputs: rewards csv, new airdrop.sol contract
-    rewards = {CHAINID: {address1: TOT_TOKEN}}
-    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
-    
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
     #accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
     ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
-    OCEAN.transfer(DISPENSE_ACCT, TOT_TOKEN, {"from": accounts[0]})
+    OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
+    assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
+    
+    #insert fake inputs: rewards csv, new airdrop.sol contract
+    rewards = {CHAINID: {address1: TOT_TOKEN}}
+    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
+    
+    airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
     #main command
     CSV_DIR = str(tmp_path)
