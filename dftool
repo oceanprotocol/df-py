@@ -5,8 +5,8 @@ from enforce_typing import enforce_types
 import os
 import sys
 
-from util import blockrange, blocktime, calcrewards, chainlist, csvs, \
-    dispense, getrate, query
+from util import blockrange, blocktime, calcrewards, chainlist, constants, \
+    csvs, dispense, getrate, query
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
 from util.graphutil import oceanSubgraphUrl
@@ -65,8 +65,8 @@ Usage: dftool query CHAINID ST FIN NSAMP CSV_DIR
   CSV_DIR -- output dir for stakes-CHAINID.csv and poolvols-CHAINID.csv
 
 Uses these envvars:
-ADDRESS_FILE -- e.g. for barge: ~/.ocean/ocean-contracts/artifacts/address.json
-SUBGRAPH_URI -- e.g. for barge: http://127.0.0.1:9000
+ADDRESS_FILE -- e.g. for barge: {constants.BARGE_ADDRESS_FILE}
+SUBGRAPH_URI -- e.g. for barge: {constants.BARGE_SUBGRAPH_URI}
 """
     if len(sys.argv) not in [2+5]:
         print(HELP)
@@ -476,7 +476,7 @@ def _getPrivateAccount():
     print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
 
-def _connnectToChain(chainID):
+def _connectToChain(chainID):
     network = chainlist.chainIdToNetwork_forBrownie(chainID)
     brownie.network.connect(network)
 
