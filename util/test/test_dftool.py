@@ -1,13 +1,23 @@
+import brownie
 import os
 from enforce_typing import enforce_types
 import types
 
 from util import constants, csvs
+from util.constants import BROWNIE_PROJECT as B
+from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
+from util.test import conftest
 
 PREV = None
+CHAINID = 0
 
-def test_do_query(tmp_path):
-    CHAINID = 0
+def test_query(tmp_path):
+    #insert fake inputs: info onto the chain
+    recordDeployedContracts(ADDRESS_FILE, "development")
+    conftest.fillAccountsWithOCEAN()
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
+    
+    #main cmd
     ST = 0
     FIN = "latest"
     NSAMP = 5
@@ -16,13 +26,92 @@ def test_do_query(tmp_path):
     cmd = f"./dftool query {CHAINID} {ST} {FIN} {NSAMP} {CSV_DIR}"
     os.system(cmd)
 
+    #test result
     assert csvs.stakesCsvFilenames(CSV_DIR)
     assert csvs.poolvolsCsvFilenames(CSV_DIR)
 
+
+def test_getrate(tmp_path):
+    #insert fake inputs:
+    #<nothing to insert>
+    
+    #main cmd
+    TOKEN_SYMBOL = "OCEAN"
+    ST = "2022-01-01"
+    FIN = "2022-02-02"
+    CSV_DIR = str(tmp_path)
+
+    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    os.system(cmd)
+
+    #test result
+    assert csvs.rateCsvFilenames(CSV_DIR)
+
+def test_calc(tmp_path):
+    CSV_DIR = str(tmp_path)
+    
+    #insert fake inputs: csvs for stakes, poolvols, and rewards
+    stakes_at_chain = {"OCEAN": {"pool_addra": {"lp_addr1": 1.0}}}
+    csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
+    
+    poolvols_at_chain = {"OCEAN": {"pool_addra": 1.0}}
+    csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
+    
+    #main cmd
+    TOKEN_SYMBOL = "OCEAN"
+    TOT_TOKEN = 1000.0
+    
+    cmd = f"./dftool calc {CSV_DIR} {TOT_TOKEN} {TOKEN_SYMBOL}"
+    os.system(cmd)
+
+    #test result
+    rewards_csv = csvs.rewardsCsvFilename(csv_dir, TOKEN_SYMBOL)
+    assert os.path.exists(rewards_csv)
+
+def test_dispense(tmp_path):
+    #values used for inputs or main cmd
+    account0 = brownie.network.accounts[0]
+    account1 = brownie.network.accounts[1]
+    CSV_DIR = str(tmp_path)
+    TOKEN_SYMBOL = "OCEAN"
+    TOT_TOKEN = 1000.0
+    
+    #insert fake inputs: rewards csv, new airdrop.sol contract
+    rewards = {CHAINID: {account1.address.lower(): TOT_TOKEN}}
+    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)   
+    
+    recordDeployedContracts(ADDRESS_FILE, "development")
+    #conftest.fillAccountsWithOCEAN() #FIXME: uncomment if needed, else delete
+    airdrop = B.Airdrop.deploy({"from": account0})
+
+    #main command
+    CSV_DIR = str(tmp_path)
+    AIRDROP_ADDR = airdrop.address
+    TOKEN_ADDR = OCEAN_address()
+
+    cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {AIRDROP_ADDR} {TOKEN_ADDR}"
+    os.system(cmd)
+    
+    #test result
+    OCEAN = OCEANtoken()
+    bal_before = OCEAN.balanceOf(account1.address)
+    airdrop.claim([OCEAN.address], {"from": account1})
+    bal_after = OCEAN.balanceOf(account1.address)
+    assert bal_after > bal_before
+    
+
 def setup_module():
-    """This automatically gets called at the beginning of each test"""
+    """This automatically gets called at the beginning of each test.
+    It sets envvars for use in the test."""
     global PREV
+
+    if not brownie.network.is_connected():
+        brownie.network.connect("development")
+    
     PREV = types.SimpleNamespace()
+    
+    PREV.DFTOOL_KEY = os.environ.get('DFTOOL_KEY')
+    os.environ['DFTOOL_KEY'] = brownie.network.accounts[0].private_key
     
     PREV.ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
     os.environ['ADDRESS_FILE'] = \
@@ -33,8 +122,15 @@ def setup_module():
 
 
 def teardown_module():
-    """This automatically gets called at the end of each test"""
+    """This automatically gets called at the end of each test.
+    It restores envvars that existed prior to the test."""
     global PREV
+
+    if PREV.DFTOOL_KEY is None:
+        del os.environ['DFTOOL_KEY']
+    else:
+        os.environ['DFTOOL_KEY'] = PREV.DFTOOL_KEY
+
     if PREV.ADDRESS_FILE is None:
         del os.environ['ADDRESS_FILE']
     else:
@@ -44,4 +140,6 @@ def teardown_module():
         del os.environ['SUBGRAPH_URI']
     else:
         os.environ['SUBGRAPH_URI'] = PREV.SUBGRAPH_URI
+
+    brownie.network.disconnect("development")
 
