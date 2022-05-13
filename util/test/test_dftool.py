@@ -4,10 +4,9 @@ import types
 
 from util import constants, csvs
 
+PREV = None
 
 def test_do_query(tmp_path):
-    prev = _setBargeEnvvars()
-    
     CHAINID = 0
     ST = 0
     FIN = "latest"
@@ -20,29 +19,29 @@ def test_do_query(tmp_path):
     assert csvs.stakesCsvFilenames(CSV_DIR)
     assert csvs.poolvolsCsvFilenames(CSV_DIR)
 
-    _restorePrevEnvvars(prev)
-
-
-def _setBargeEnvvars():
-    prev = types.SimpleNamespace()
+def setup_module():
+    """This automatically gets called at the beginning of each test"""
+    global PREV
+    PREV = types.SimpleNamespace()
     
-    prev.ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
-    os.environ['ADDRESS_FILE'] = os.path.expanduser(constants.BARGE_ADDRESS_FILE)
+    PREV.ADDRESS_FILE = os.environ.get('ADDRESS_FILE')
+    os.environ['ADDRESS_FILE'] = \
+        os.path.expanduser(constants.BARGE_ADDRESS_FILE)
     
-    prev.SUBGRAPH_URI = os.environ.get('SUBGRAPH_URI')
+    PREV.SUBGRAPH_URI = os.environ.get('SUBGRAPH_URI')
     os.environ['SUBGRAPH_URI'] = constants.BARGE_SUBGRAPH_URI
 
-    return prev
 
-
-def _restorePrevEnvvars(prev):
-    if prev.ADDRESS_FILE is None:
+def teardown_module():
+    """This automatically gets called at the end of each test"""
+    global PREV
+    if PREV.ADDRESS_FILE is None:
         del os.environ['ADDRESS_FILE']
     else:
-        os.environ['ADDRESS_FILE'] = prev.ADDRESS_FILE
+        os.environ['ADDRESS_FILE'] = PREV.ADDRESS_FILE
         
-    if prev.SUBGRAPH_URI is None:
+    if PREV.SUBGRAPH_URI is None:
         del os.environ['SUBGRAPH_URI']
     else:
-        os.environ['SUBGRAPH_URI'] = prev.SUBGRAPH_URI
+        os.environ['SUBGRAPH_URI'] = PREV.SUBGRAPH_URI
 
