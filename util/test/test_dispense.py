@@ -21,7 +21,7 @@ def test_small_batch(ADDRESS_FILE, tmp_path):
     rewards_at_chain = {a1: 0.1, a2: 0.2, a3: 0.3}
     dispense.dispense(
         rewards_at_chain,
-        airdrop_addr=df_rewards.address,
+        dfrewards_addr=df_rewards.address,
         token_addr=OCEAN.address,
         from_account=accounts[0],
     )
@@ -53,7 +53,7 @@ def test_batching(ADDRESS_FILE):
 
     dispense.dispense(
         rewards_at_chain,
-        airdrop_addr=df_rewards.address,
+        dfrewards_addr=df_rewards.address,
         token_addr=OCEAN.address,
         from_account=accounts[0],
         batch_size=batch_size,

@@ -94,7 +94,7 @@ def test_dispense(tmp_path):
     OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
 
-    # insert fake inputs: rewards csv, new airdrop.sol contract
+    # insert fake inputs: rewards csv, new dfrewards.sol contract
     rewards = {CHAINID: {address1: TOT_TOKEN}}
     csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
 

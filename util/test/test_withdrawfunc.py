@@ -15,16 +15,16 @@ def _deployTOK(account):
 
 @enforce_types
 def test_transfer_eth_reverts():
-    """sending native tokens to airdrop contract should revert"""
+    """sending native tokens to dfrewards contract should revert"""
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     with brownie.reverts("Cannot send ether to nonpayable function"):
-        # transfer native eth to airdrop contract
+        # transfer native eth to dfrewards contract
         accounts[0].transfer(df_rewards, "1 ether")
 
 
 @enforce_types
 def test_erc20_withdraw_random():
-    """owner can withdraw other erc20 tokens from the airdrop contract"""
+    """owner can withdraw other erc20 tokens from the dfrewards contract"""
 
     random_token = _deployTOK(accounts[1])
 

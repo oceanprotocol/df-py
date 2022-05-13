@@ -70,8 +70,8 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
     # 4. simulate "dftool dispense"
     rewards = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     token_addr = OCEAN_address()
-    airdrop_addr = B.DFRewards.deploy({"from": accounts[0]}).address
-    dispense.dispense(rewards[chainID], airdrop_addr, token_addr, accounts[0])
+    dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
+    dispense.dispense(rewards[chainID], dfrewards_addr, token_addr, accounts[0])
 
 
 # ========================================================================
