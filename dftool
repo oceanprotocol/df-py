@@ -259,7 +259,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol()
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
-    dispense.dispense(rewards[chainID], AIRDROP_ADDR, TOKEN_ADDR, from_account)
+    dispense.dispense(rewards[CHAINID], AIRDROP_ADDR, TOKEN_ADDR, from_account)
     
     print("dftool dispense: Done.")
 
