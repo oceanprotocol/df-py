@@ -14,6 +14,7 @@ from util.oceanutil import calcDID
 from util.graphutil import submitQuery
 
 
+@enforce_types
 class SimplePool:
     """
     A simple object to store pools retrieved from chain.
