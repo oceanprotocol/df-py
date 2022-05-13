@@ -40,7 +40,7 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool query CHAINID ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from stakes/vols/rates, calc rewards
-  dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool compile - compile contracts
   dftool manyrandom - deploy many random tokens & pools then consume (for testing)
@@ -245,10 +245,10 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
 def do_dispense():
     HELP = f"""From rewards csv, dispense funds to chain.
 
-Usage: dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR]
+Usage: dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR]
   CSV_DIR -- input directory for csv rewards file
   CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
-  AIRDROP_ADDR -- DFRewards contract's address. If not given, uses envvar AIRDROP_ADDR
+  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
@@ -262,30 +262,30 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
     if len(sys.argv) == 4:
-        print("Set AIRDROP_ADDR from envvar")
-        AIRDROP_ADDR = os.getenv("AIRDROP_ADDR")
+        print("Set DFREWARDS_ADDR from envvar")
+        DFREWARDS_ADDR = os.getenv("DFREWARDS_ADDR")
     else:
-        AIRDROP_ADDR = sys.argv[4]
+        DFREWARDS_ADDR = sys.argv[4]
 
     if len(sys.argv) == 5:
-        print("Set AIRDROP_ADDR from envvar")
-        TOKEN_ADDR = os.getenv("AIRDROP_ADDR")
+        print("Set DFREWARDS_ADDR from envvar")
+        TOKEN_ADDR = os.getenv("DFREWARDS_ADDR")
     else:
         TOKEN_ADDR = sys.argv[5]
     assert TOKEN_ADDR is not None
 
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
-        f", AIRDROP_ADDR={AIRDROP_ADDR}"
+        f", DFREWARDS_ADDR={DFREWARDS_ADDR}"
     )
-    assert AIRDROP_ADDR is not None
+    assert DFREWARDS_ADDR is not None
 
     # main work
     _connectToChain(CHAINID)
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol()
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
-    dispense.dispense(rewards[CHAINID], AIRDROP_ADDR, TOKEN_ADDR, from_account)
+    dispense.dispense(rewards[CHAINID], DFREWARDS_ADDR, TOKEN_ADDR, from_account)
 
     print("dftool dispense: Done.")
 
