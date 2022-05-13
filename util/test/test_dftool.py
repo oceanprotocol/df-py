@@ -105,11 +105,7 @@ def test_dispense(tmp_path):
     os.system(cmd)
     
     #test result
-    bal_before = OCEAN.balanceOf(address1)
-    airdrop.claim([OCEAN.address], {"from": account1})
-    bal_after = OCEAN.balanceOf(address1)
-    assert bal_after > bal_before
-    
+    assert airdrop.claimable(address1, OCEAN.address)
 
 def setup_module():
     """This automatically gets called at the beginning of each test.
