@@ -85,7 +85,7 @@ def test_dispense(tmp_path):
     
     #insert fake inputs: rewards csv, new airdrop.sol contract
     rewards = {CHAINID: {address1: TOT_TOKEN}}
-    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)   
+    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
     
     airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
