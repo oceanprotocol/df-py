@@ -30,7 +30,7 @@ Usage: dftool query|getrate|calc|dispense|..
 
   dftool query CHAINID ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
   dftool getrate TOKEN ST FIN CSV_DIR - get exchange rate
-  dftool calc CSV_DIR TOT_OCEAN - from stakes/vols/rates, calc rewards
+  dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from stakes/vols/rates, calc rewards
   dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR] - from rewards, airdrop funds
 
   dftool compile - compile contracts
@@ -175,22 +175,23 @@ Usage: dftool getrate TOKEN ST FIN CSV_DIR
 def do_calc():
     HELP = f"""From stakes/vols/rates csvs, output rewards csv.
 
-Usage: dftool calc CSV_DIR TOT_OCEAN
+Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
   CSV_DIR -- directory: input stakes & volumes csvs, output rewards.csv
-  TOT_OCEAN -- total amount of OCEAN to distribute (in decimal, not wei)
-
-Outputs 
+  TOT_TOKEN -- total amount of TOKEN to distribute (decimal, not wei)
+  TOKEN_SYMBOL -- e.g. OCEAN
 """
 
-    if len(sys.argv) not in [2+2]:
+    if len(sys.argv) not in [2+3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
-    TOT_OCEAN = float(sys.argv[3])
-    print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
+    TOT_TOKEN = float(sys.argv[3])
+    TOKEN_SYMBOL = sys.argv[4]
+    print(f"Arguments:\n TOT_TOKEN={TOT_TOKEN}, CSV_DIR={CSV_DIR}"
+          f", TOKEN_SYMBOL={TOKEN_SYMBOL}")
 
     # do we have the input files?
     if not csvs.stakesCsvFilenames(CSV_DIR): 
@@ -209,8 +210,8 @@ Outputs
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)
     rates = csvs.loadRateCsvs(CSV_DIR)
-    rewards = calcrewards.calcRewards(stakes, poolvols, rates, TOT_OCEAN)
-    csvs.saveRewardsCsv(rewards, CSV_DIR)
+    rewards = calcrewards.calcRewards(stakes, poolvols, rates, TOT_TOKEN)
+    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
     
     print(f"dftool calc: Done.")
 
@@ -224,6 +225,7 @@ Usage: dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR]
   CSV_DIR -- input directory for csv rewards file
   CHAINID -- Airdrop contract's network.{CHAINID_EXAMPLES}
   AIRDROP_ADDR -- airdrop contract's address. If not given, uses envvar AIRDROP_ADDR
+  TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
