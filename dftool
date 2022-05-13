@@ -40,11 +40,11 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool query CHAINID ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from stakes/vols/rates, calc rewards
-  dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR] - from rewards, airdrop funds
+  dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool compile - compile contracts
   dftool manyrandom - deploy many random tokens & pools then consume (for testing)
-  dftool newairdrop CHAINID - deploy new airdrop contract
+  dftool newdfrewards CHAINID - deploy new DFRewards contract
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
@@ -243,12 +243,12 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
 # ========================================================================
 @enforce_types
 def do_dispense():
-    HELP = f"""From rewards csv, airdrop funds to chain.
+    HELP = f"""From rewards csv, dispense funds to chain.
 
 Usage: dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR]
   CSV_DIR -- input directory for csv rewards file
   CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
-  AIRDROP_ADDR -- airdrop contract's address. If not given, uses envvar AIRDROP_ADDR
+  AIRDROP_ADDR -- DFRewards contract's address. If not given, uses envvar AIRDROP_ADDR
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
@@ -292,10 +292,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 # ========================================================================
 @enforce_types
-def do_newairdrop():
-    HELP = f"""Deploy new airdrop contract.
+def do_newdfrewards():
+    HELP = f"""Deploy new DFRewards contract.
 
-Usage: dftool newairdrop CHAINID
+Usage: dftool newdfrewards CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 """
     if len(sys.argv) not in [3]:
@@ -303,7 +303,7 @@ Usage: dftool newairdrop CHAINID
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "newairdrop"
+    assert sys.argv[1] == "newdfrewards"
     CHAINID = int(sys.argv[2])
 
     print(f"Arguments: CHAINID={CHAINID}")
@@ -312,9 +312,9 @@ Usage: dftool newairdrop CHAINID
     _connectToChain(CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = B.DFRewards.deploy({"from": from_account})
-    print(f"New airdrop contract deployed at address: {df_rewards.address}")
+    print(f"New dispense contract deployed at address: {df_rewards.address}")
 
-    print("dftool newairdrop: Done.")
+    print("dftool newdfrewards: Done.")
 
 
 # ========================================================================
@@ -536,8 +536,8 @@ def do_main():
         do_compile()
     elif sys.argv[1] == "manyrandom":
         do_manyrandom()
-    elif sys.argv[1] == "newairdrop":
-        do_newairdrop()
+    elif sys.argv[1] == "newdfrewards":
+        do_newdfrewards()
     elif sys.argv[1] == "mine":
         do_mine()
     elif sys.argv[1] == "newacct":
