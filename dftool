@@ -202,7 +202,7 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting."); sys.exit(0)
 
     # shouldn't already have the output file
-    c = csvs.rewardsCsvFilename(CSV_DIR)
+    c = csvs.rewardsCsvFilename(CSV_DIR, TOKEN_SYMBOL)
     if os.path.exists(c):
         print(f"\nFile {c} exists. Exiting."); sys.exit(0)
     
