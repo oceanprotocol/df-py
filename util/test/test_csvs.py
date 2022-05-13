@@ -18,6 +18,7 @@ def test_chainIDforStakeCsv():
     assert csvs.chainIDforStakeCsv("stakes-chain101.csv") == 101
     assert csvs.chainIDforStakeCsv("path1/32/stakes-chain92.csv") == 92
 
+
 @enforce_types
 def test_stakes_onechain(tmp_path):
     csv_dir = str(tmp_path)
@@ -27,7 +28,8 @@ def test_stakes_onechain(tmp_path):
     target_S1 = S1
     loaded_S1 = csvs.loadStakesCsv(csv_dir, C1)
     assert loaded_S1 == target_S1
-    
+
+
 @enforce_types
 def test_stakes_twochains(tmp_path):
     csv_dir = str(tmp_path)
@@ -45,13 +47,16 @@ def test_stakes_twochains(tmp_path):
     loaded_S = csvs.loadStakesCsvs(csv_dir)
     assert loaded_S == target_S
 
+
 #=================================================================
 # poolvols csvs
+
 
 @enforce_types
 def test_chainIDforPoolvolsCsv():
     assert csvs.chainIDforPoolvolsCsv("poolvols-chain101.csv") == 101
     assert csvs.chainIDforPoolvolsCsv("path1/32/poolvols-chain92.csv") == 92
+
 
 @enforce_types
 def test_poolvols_onechain(tmp_path):
@@ -62,7 +67,8 @@ def test_poolvols_onechain(tmp_path):
     target_V1 = V1
     loaded_V1 = csvs.loadPoolvolsCsv(csv_dir, C1)
     assert loaded_V1 == target_V1
-    
+
+
 @enforce_types
 def test_poolvols_twochains(tmp_path):
     csv_dir = str(tmp_path)
@@ -81,6 +87,7 @@ def test_poolvols_twochains(tmp_path):
 
 #=================================================================
 # exchange rate csvs
+
 
 @enforce_types
 def test_rates(tmp_path):
@@ -107,7 +114,8 @@ def test_rewards_filename(tmp_path):
     fname = csvs.rewardsCsvFilename(csv_dir, "MYTOKEN")
     target_fname = csv_dir + '/' + "rewards-MYTOKEN.csv"
     assert fname == target_fname 
-    
+
+
 @enforce_types
 def test_rewards_main(tmp_path):
     rewards = {1: {LP1: 1.1, LP2: 2.2, LP3: 3.3},
