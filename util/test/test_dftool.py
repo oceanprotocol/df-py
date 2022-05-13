@@ -102,10 +102,10 @@ def test_dispense(tmp_path):
 
     # main command
     CSV_DIR = str(tmp_path)
-    AIRDROP_ADDR = df_rewards.address
+    DFREWARDS_ADDR = df_rewards.address
     TOKEN_ADDR = OCEAN_address()
 
-    cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {AIRDROP_ADDR} {TOKEN_ADDR}"
+    cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
     os.system(cmd)
 
     # test result
