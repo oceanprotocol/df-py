@@ -29,7 +29,7 @@ Then LP steps:
 Usage: dftool query|getrate|calc|dispense|..
 
   dftool query CHAINID ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
-  dftool getrate TOKEN ST FIN CSV_DIR - get exchange rate
+  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from stakes/vols/rates, calc rewards
   dftool dispense CSV_DIR CHAINID [AIRDROP_ADDR] [TOKEN_ADDR] - from rewards, airdrop funds
 
@@ -138,11 +138,11 @@ SUBGRAPH_URI -- e.g. for barge: {constants.BARGE_SUBGRAPH_URI}
 def do_getrate():
     HELP = f"""Get exchange rate, and output rate csv.
 
-Usage: dftool getrate TOKEN ST FIN CSV_DIR
-  TOKEN -- e.g. OCEAN, H2O
+Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
+  TOKEN_SYMBOL -- e.g. OCEAN, H2O
   ST -- start time -- YYYY-MM-DD
   FIN -- end time -- YYYY-MM-DD
-  CSV_DIR -- output directory for rate-TOKEN.csv file
+  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
 """
     if len(sys.argv) not in [2+4]:
         print(HELP)
@@ -150,13 +150,13 @@ Usage: dftool getrate TOKEN ST FIN CSV_DIR
 
     # extract inputs
     assert sys.argv[1] == "getrate"
-    TOKEN = sys.argv[2]
+    TOKEN_SYMBOL = sys.argv[2]
     ST, FIN = sys.argv[3], sys.argv[4]
     CSV_DIR = sys.argv[5]
     print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}")
     
     # shouldn't already have the output file
-    c1 = csvs.rateCsvFilename(TOKEN, CSV_DIR)
+    c1 = csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR)
     if os.path.exists(c1):
         print(f"\nFile {c1} exists. Exiting."); sys.exit(0)
 
@@ -166,9 +166,9 @@ Usage: dftool getrate TOKEN ST FIN CSV_DIR
         os.mkdir(CSV_DIR)
             
     #main work
-    rate = getrate.getrate(TOKEN, ST, FIN)
-    print(f"rate = ${rate:.4f} / {TOKEN}")
-    csvs.saveRateCsv(TOKEN, rate, CSV_DIR)
+    rate = getrate.getrate(TOKEN_SYMBOL, ST, FIN)
+    print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
+    csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
 # ========================================================================
 @enforce_types
