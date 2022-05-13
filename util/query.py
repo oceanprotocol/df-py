@@ -21,7 +21,8 @@ class SimplePool:
     Easier to retrieve info than using dicts keyed by strings, and
       more lightweight than a full BPool object.
     """
-    def __init__(self, addr: str, nft_addr: str, DT_addr: str, basetoken_addr: str):
+    def __init__(self, addr: str, nft_addr: str, DT_addr: str,
+                 basetoken_addr: str):
         self.addr = addr
         self.nft_addr = nft_addr
         self.DT_addr = DT_addr
