@@ -4,8 +4,8 @@ from util import csvs
 
 #for shorter lines
 C1, C2 = 1, 137
-PA, PB, PC, PD, PE, PF = "poolA", "poolB", "poolC", "poolD", "poolE", "poolF"
-LP1, LP2, LP3, LP4, LP5, LP6 = "LP1", "LP2", "LP3", "LP4", "LP5", "LP6"
+PA, PB, PC, PD, PE, PF = "poola", "poolb", "poolc", "poold", "poole", "poolf"
+LP1, LP2, LP3, LP4, LP5, LP6 = "lp1", "lp2", "lp3", "lp4", "lp5", "lp6"
 OCN, H2O = "OCEAN", "H2O"
 
 

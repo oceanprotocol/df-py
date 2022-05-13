@@ -72,8 +72,11 @@ def loadStakesCsv(csv_dir: str, chainID: int):
                                "LP_addr", "stake_amt"]
                 continue
 
-            chainID2, basetoken, pool_addr, LP_addr, stake_amt = \
-                int(row[0]), row[1], row[2], row[3], float(row[4])
+            chainID2 = int(row[0])
+            basetoken = row[1].upper()
+            pool_addr = row[2].lower()
+            LP_addr = row[3].lower()
+            stake_amt = float(row[4])
             assert chainID2 == chainID, "csv had data from different chain"
 
             if basetoken not in S:
@@ -168,8 +171,10 @@ def loadPoolvolsCsv(csv_dir: str, chainID: int):
                 assert row == ["chainID", "basetoken", "pool_addr",
                                "vol_amt"]
                 continue
-            chainID2, basetoken, pool_addr, vol_amt = \
-                int(row[0]), row[1], row[2], float(row[3])
+            chainID2 = int(row[0])
+            basetoken = row[1].upper()
+            pool_addr = row[2].lower()
+            vol_amt = float(row[3])
             assert chainID2 == chainID, "csv had data from different chain"
 
             if basetoken not in V:
@@ -214,6 +219,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str) -> str:
       rate -- float -- $/token, e.g. 0.86
       csv_dir -- directory holding csvs
     """
+    token_symbol = token_symbol.upper()
     csv_file = rateCsvFilename(token_symbol, csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
@@ -241,7 +247,8 @@ def loadRateCsvs(csv_dir: str):
                 if row_i == 0:  # header
                     assert row == ["token", "rate"]
                 elif row_i == 1:
-                    token, rate = row[0], float(row[1])
+                    token = row[0].upper()
+                    rate = float(row[1])
                     rates[token] = rate
                 else:
                     raise ValueError("csv should only have two rows")
@@ -259,7 +266,7 @@ def rateCsvFilenames(csv_dir: str) -> List[str]:
 @enforce_types
 def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
     """Returns the exchange rate filename for a given token"""
-    return os.path.join(csv_dir, f"rate-{token_symbol}.csv")
+    return os.path.join(csv_dir, f"rate-{token_symbol.upper()}.csv")
 
 
 # ========================================================================
@@ -276,6 +283,7 @@ def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_symbol: str):
       rewards -- dict of [chainID][LP_addr] : value (float, *not* base 18)
       ..
     """
+    token_symbol = token_symbol.upper()
     csv_file = rewardsCsvFilename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
@@ -290,6 +298,7 @@ def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_symbol: str):
 @enforce_types
 def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, float]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
+    token_symbol = token_symbol.upper()
     csv_file = rewardsCsvFilename(csv_dir, token_symbol)
     rewards = {}
 
