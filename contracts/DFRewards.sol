@@ -6,7 +6,7 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/Sa
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 
-contract Airdrop is Ownable, ReentrancyGuard {
+contract DFRewards is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     event Allocated(address[] tos, uint256[] values);

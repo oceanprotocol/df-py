@@ -18,25 +18,25 @@ def dispense(
     batch_size: int = MAX_BATCH_SIZE,
 ):
     """
-    @description  
-      Allocate rewards to LPs. 
+    @description
+      Allocate rewards to LPs.
 
     @arguments
-      rewards_at_chain -- dict of [LP_addr]:TOKEN_amt (float, not wei) 
+      rewards_at_chain -- dict of [LP_addr]:TOKEN_amt (float, not wei)
         -- rewards for each LP on this chain
       airdrop_addr -- address of airdrop contract
       token_addr -- address of token we're allocating rewards with (eg OCEAN)
       from_account -- account doing the spending
       batch_size -- largest # LPs allocated per tx (due to EVM limits)
 
-    @return 
+    @return
       <<nothing, but updates the airdrop contract on-chain>>
     """
     rewards = rewards_at_chain
     print("dispense: begin")
     print(f"  # addresses: {len(rewards)}")
 
-    airdrop = B.Airdrop.at(airdrop_addr)
+    airdrop = B.DFRewards.at(airdrop_addr)
     TOK = B.Simpletoken.at(token_addr)
     print(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 

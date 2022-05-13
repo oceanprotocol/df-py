@@ -16,14 +16,14 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 def test_small_batch(ADDRESS_FILE, tmp_path):
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+    airdrop = B.DFRewards.deploy({"from": accounts[0]})
 
     rewards_at_chain = {a1: 0.1, a2: 0.2, a3: 0.3}
     dispense.dispense(
         rewards_at_chain,
-        airdrop_addr = airdrop.address,
-        token_addr = OCEAN.address,
-        from_account = accounts[0],
+        airdrop_addr=airdrop.address,
+        token_addr=OCEAN.address,
+        from_account=accounts[0],
     )
 
     # a1 claims for itself
@@ -43,7 +43,7 @@ def test_small_batch(ADDRESS_FILE, tmp_path):
 def test_batching(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, "development")
     OCEAN = OCEANtoken()
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+    airdrop = B.DFRewards.deploy({"from": accounts[0]})
 
     batch_size = 3
     N = batch_size * 3 + 1  # enough accounts to ensure batching
@@ -53,8 +53,8 @@ def test_batching(ADDRESS_FILE):
 
     dispense.dispense(
         rewards_at_chain,
-        airdrop_addr = airdrop.address,
-        token_addr = OCEAN.address,
-        from_account = accounts[0],
-        batch_size = batch_size
+        airdrop_addr=airdrop.address,
+        token_addr=OCEAN.address,
+        from_account=accounts[0],
+        batch_size=batch_size,
     )

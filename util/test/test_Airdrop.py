@@ -12,7 +12,7 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 @enforce_types
 def test_basic():
     TOK = _deployTOK(accounts[0])
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+    airdrop = B.DFRewards.deploy({"from": accounts[0]})
     assert airdrop.claimable(a1, TOK.address) == 0
 
 
@@ -21,7 +21,7 @@ def test_TOK():
     TOK = _deployTOK(accounts[9])
     TOK.transfer(accounts[0].address, toBase18(100.0), {"from": accounts[9]})
 
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+    airdrop = B.DFRewards.deploy({"from": accounts[0]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
@@ -54,7 +54,7 @@ def test_OCEAN(ADDRESS_FILE):
     OCEAN = oceanutil.OCEANtoken()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+    airdrop = B.DFRewards.deploy({"from": accounts[0]})
 
     OCEAN.approve(airdrop, 10, {"from": accounts[0]})
     airdrop.allocate([a1], [10], OCEAN.address, {"from": accounts[0]})
@@ -72,7 +72,7 @@ def test_multiple_TOK():
     TOK1 = _deployTOK(accounts[0])
     TOK2 = _deployTOK(accounts[0])
 
-    airdrop = B.Airdrop.deploy({"from": accounts[0]})
+    airdrop = B.DFRewards.deploy({"from": accounts[0]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
