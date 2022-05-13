@@ -15,18 +15,37 @@ from util.graphutil import submitQuery
 
 
 @enforce_types
+class SimplePool:
+    """
+    A simple object to store pools retrieved from chain.
+    Easier to retrieve info than using dicts keyed by strings, and
+      more lightweight than a full BPool object.
+    """
+    def __init__(self, addr: str, nft_addr: str, DT_addr: str,
+                 basetoken_addr: str):
+        self.addr = addr
+        self.nft_addr = nft_addr
+        self.DT_addr = DT_addr
+        self.basetoken_addr = basetoken_addr
+
+
+@enforce_types
 def query(rng: BlockRange, subgraph_url: str) -> Tuple[dict, dict]:
     """
-    @return
-      stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
+    @description
+      Return stakes and poolvols at the chain of the subgraph_url
 
-    A stake or vol value is in terms of basetoken (eg OCEAN, H2O).
+    @return
+      stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
+      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol
+
+    @notes
+      A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
     """
     pools = getPools(subgraph_url)
-    stakes = getStakes(pools, rng, subgraph_url)
-    pool_vols = getPoolVolumes(pools, rng.st, rng.fin, subgraph_url)
-    return (stakes, pool_vols)
+    Si = getStakes(pools, rng, subgraph_url)
+    Vi = getPoolVolumes(pools, rng.st, rng.fin, subgraph_url)
+    return (Si, Vi) #i.e. (stakes_at_chain, poolvols_at_chain)
 
 
 @enforce_types
@@ -38,7 +57,13 @@ def getPools(subgraph_url: str) -> list:  # list of BPool
 
 @enforce_types
 def getStakes(pools: list, rng: BlockRange, subgraph_url: str) -> dict:
-    """@return - dict of [basetoken_symbol][pool_addr][LP_addr] : stake"""
+    """
+    @description
+      Return stakes at the chain of the subgraph_url
+
+    @return
+      stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr]:stake
+    """
     print("getStakes(): begin")
     SSBOT_address = oceanutil.Staking().address.lower()
     approved_tokens = getApprovedTokens(subgraph_url)  # addr : symbol
@@ -97,30 +122,44 @@ def getStakes(pools: list, rng: BlockRange, subgraph_url: str) -> dict:
                 stakes[base_token_symbol][pool_addr][LP_addr] += shares / n_blocks
             offset += chunk_size
 
-    return stakes
+    return stakes #ie stakes_at_chain
 
 
 @enforce_types
 def getPoolVolumes(
-    pools: list, st_block: int, end_block: int, subgraph_url: str
-) -> dict:
-    """@return - dict of [basetoken_symbol][pool_addr] : vol"""
+    pools: list, st_block: int, end_block: int, subgraph_url: str) \
+    -> dict:
+    """
+    @description
+      Return poolvols at the chain of the subgraph_url
+
+    @return
+      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr]:vol_amt
+    """
     DT_vols = getDTVolumes(st_block, end_block, subgraph_url)  # DT_addr : vol
     DTs_with_consume = set(DT_vols.keys())
     approved_tokens = getApprovedTokens(subgraph_url)  # basetoken_addr : symbol
 
     # dict of [basetoken_symbol][pool_addr] : vol
-    pool_vols = {symbol: {} for symbol in approved_tokens.values()}
+    poolvols = {symbol: {} for symbol in approved_tokens.values()}
     for pool in pools:
         if pool.DT_addr in DTs_with_consume:
             basetoken_symbol = approved_tokens[pool.basetoken_addr]
-            pool_vols[basetoken_symbol][pool.addr] = DT_vols[pool.DT_addr]
+            poolvols[basetoken_symbol][pool.addr] = DT_vols[pool.DT_addr]
 
-    return pool_vols
+    return poolvols #ie poolvols_at_chain
 
 
-def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) -> Dict[str, float]:
-    """Return dict of [DT_addr] -> vol"""
+def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) \
+    -> Dict[str, float]:
+    """
+    @description
+      Return estimated datatoken (DT) volumes within given start:end block
+      range, at the chain of the subgraph_url
+
+    @return
+      DTvols_at_chain -- dict of [DT_addr]:vol_amt
+    """
     print("getDTVolumes(): begin")
     OCEAN_addr = oceanutil.OCEANtoken().address.lower()
 
@@ -156,41 +195,74 @@ def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) -> Dict[str, 
                 DT_vols[DT_addr] += lastPriceValue
 
     print("getDTVolumes(): done")
-    return DT_vols
+    return DT_vols #ie DTvols_at_chain
 
 
 @enforce_types
-def _filterOutPurgatory(pools: list) -> list:  # list of BPool
-    """return pools that aren't in purgatory"""
+def _filterOutPurgatory(pools: List[SimplePool]) -> List[SimplePool]:
+    """
+    @description
+      Return pools that aren't in purgatory
+
+    @arguments
+      pools -- list of SimplePool
+
+    @return
+      filtered_pools -- list of SimplePool
+    """
     bad_dids = _didsInPurgatory()
-    return [pool for pool in pools if calcDID(pool.nft_addr) not in bad_dids]
+    filtered_pools = [pool
+                      for pool in pools
+                      if calcDID(pool.nft_addr) not in bad_dids]
+    return filtered_pools
 
 
 @enforce_types
 def _didsInPurgatory() -> List[str]:
-    """return dids that are in purgatory"""
+    """
+    @description
+      Return dids of data assets that are in purgatory 
+
+    @return
+      dids -- list of str
+    """
     url = "https://raw.githubusercontent.com/oceanprotocol/list-purgatory/main/list-assets.json"
     resp = requests.get(url)
 
     # list of {'did' : 'did:op:6F7...', 'reason':'..'}
     data = json.loads(resp.text)
 
-    return [item["did"] for item in data]
+    dids = [item["did"] for item in data]
+    return dids
 
 
 @enforce_types
 def getApprovedTokens(subgraph_url: str) -> Dict[str, str]:
-    """@return - dict of [token_addr] : token_symbol"""
+    """
+    @description
+      Return basetokens that are 'approved', ie eligible for data farming
+    
+    @return
+      d - dict of [token_addr] : token_symbol
+    """
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, subgraph_url)
     addrs = result["data"]["opcs"][0]["approvedTokens"]
-    d = {addr.lower(): B.Simpletoken.at(addr).symbol().lower() for addr in addrs}
+    d = {addr.lower(): B.Simpletoken.at(addr).symbol().lower()
+         for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
     return d
 
 
 @enforce_types
-def getAllPools(subgraph_url: str) -> list:  # list of BPool
+def getAllPools(subgraph_url: str) -> List[SimplePool]:
+    """
+    @description
+      Query the chain and return all pools
+    
+    @return
+      pools - list of SimplePool
+    """
     pools = []
     offset = 0
     chunk_size = 1000  # max for subgraph = 1000
@@ -232,10 +304,3 @@ def getAllPools(subgraph_url: str) -> list:  # list of BPool
 
     return pools
 
-
-class SimplePool:
-    def __init__(self, addr: str, nft_addr: str, DT_addr: str, basetoken_addr: str):
-        self.addr = addr
-        self.nft_addr = nft_addr
-        self.DT_addr = DT_addr
-        self.basetoken_addr = basetoken_addr

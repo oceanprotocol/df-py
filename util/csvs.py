@@ -2,32 +2,38 @@ import csv
 from enforce_typing import enforce_types
 import glob
 import os
+import re
 from typing import Dict, List
+
 
 # ========================================================================
 # stakes csvs
 
 
 @enforce_types
-def saveStakesCsv(stakes: dict, csv_dir: str, network: str):
+def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
-      Save the stakes csv for this network
+      Save the stakes csv for this chain
 
     @arguments
-      stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      ..
+      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
+      csv_dir -- directory that holds csv files
+      chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = stakesCsvFilename(csv_dir, network)
+    csv_file = stakesCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
+    S = stakes_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["basetoken", "pool_address", "LP_address", "stake_amount"])
-        for basetoken in stakes.keys():
-            for pool_addr in stakes[basetoken].keys():
-                for LP_addr, stake in stakes[basetoken][pool_addr].items():
-                    writer.writerow([basetoken, pool_addr, LP_addr, stake])
+        row = ["chainID", "basetoken", "pool_addr", "LP_addr", "stake_amt"]
+        writer.writerow(row)
+        for basetoken in S.keys():
+            for pool_addr in S[basetoken].keys():
+                for LP_addr, stake in S[basetoken][pool_addr].items():
+                    row = [chainID, basetoken, pool_addr, LP_addr, stake]
+                    writer.writerow(row)
     print(f"Created {csv_file}")
 
 
@@ -35,39 +41,53 @@ def saveStakesCsv(stakes: dict, csv_dir: str, network: str):
 def loadStakesCsvs(csv_dir: str):
     """
     @description
-      Load all stakes csvs, and return result as a single dict
+      Load all stakes csvs (across all chains); return result as a single dict
 
     @return
-      stakes -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
+      stakes -- dict of [chainID][basetoken_sym][pool_addr][LP_addr] : stake_amt
     """
     csv_files = stakesCsvFilenames(csv_dir)
     stakes = {}
     for csv_file in csv_files:
-        with open(csv_file, "r") as f:
-            reader = csv.reader(f)
-            for row_i, row in enumerate(reader):
-                if row_i == 0:  # header
-                    continue
-                basetoken, pool_addr, LP_addr, stake = (
-                    row[0],
-                    row[1],
-                    row[2],
-                    float(row[3]),
-                )
-                if basetoken not in stakes:
-                    stakes[basetoken] = {}
-                if pool_addr not in stakes[basetoken]:
-                    stakes[basetoken][pool_addr] = {}
-                try:
-                    assert LP_addr not in stakes[basetoken][pool_addr], "dupl. found"
-                except:
-                    import pdb
-
-                    pdb.set_trace()
-                stakes[basetoken][pool_addr][LP_addr] = stake
-        print(f"Loaded {csv_file}")
-
+        chainID = chainIDforStakeCsv(csv_file)
+        stakes[chainID] = loadStakesCsv(csv_dir, chainID)
     return stakes
+
+@enforce_types
+def loadStakesCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load stakes csv for this chainID
+
+    @return
+      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
+    """
+    csv_file = stakesCsvFilename(csv_dir, chainID)
+    S = {} #ie stakes_at_chain
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0: # header
+                assert row == ["chainID", "basetoken", "pool_addr",
+                               "LP_addr", "stake_amt"]
+                continue
+
+            chainID2 = int(row[0])
+            basetoken = row[1].upper()
+            pool_addr = row[2].lower()
+            LP_addr = row[3].lower()
+            stake_amt = float(row[4])
+            assert chainID2 == chainID, "csv had data from different chain"
+
+            if basetoken not in S:
+                S[basetoken] = {}
+            if pool_addr not in S[basetoken]:
+                S[basetoken][pool_addr] = {}
+            assert LP_addr not in S[basetoken][pool_addr], "duplicate found"
+            S[basetoken][pool_addr][LP_addr] = stake_amt
+    print(f"Loaded {csv_file}")
+
+    return S
 
 
 @enforce_types
@@ -77,74 +97,111 @@ def stakesCsvFilenames(csv_dir: str) -> List[str]:
 
 
 @enforce_types
-def stakesCsvFilename(csv_dir: str, network: str) -> str:
-    """Returns the stakes filename for a given network"""
-    return os.path.join(csv_dir, f"stakes-{network}.csv")
-
-
-# ========================================================================
-# pool_vols csvs
+def stakesCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the stakes filename for a given chainID"""
+    return os.path.join(csv_dir, f"stakes-chain{chainID}.csv")
 
 
 @enforce_types
-def savePoolVolsCsv(pool_vols: dict, csv_dir: str, network: str):
+def chainIDforStakeCsv(filename) -> int:
+    """Returns chainID for a given stakes csv filename"""
+    return _lastInt(filename)
+
+
+# ========================================================================
+# poolvols csvs
+
+
+@enforce_types
+def savePoolvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
-      Save the pool_vols csv for this network
+      Save the poolvols csv for this chain
 
     @arguments
-      pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
-      ..
+      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol_amt
+      csv_dir -- directory that holds csv files
+      chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = poolVolsCsvFilename(csv_dir, network)
+    csv_file = poolvolsCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
+    V = poolvols_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["basetoken", "pool_address", "vol_amount"])
-        for basetoken in pool_vols.keys():
-            for pool_addr, vol in pool_vols[basetoken].items():
-                writer.writerow([basetoken, pool_addr, vol])
+        writer.writerow(["chainID", "basetoken", "pool_addr", "vol_amt"])
+        for basetoken in V.keys():
+            for pool_addr, vol in V[basetoken].items():
+                writer.writerow([chainID, basetoken, pool_addr, vol])
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadPoolVolsCsvs(csv_dir: str):
+def loadPoolvolsCsvs(csv_dir: str):
     """
     @description
-      Load all pool_vols csvs, and return result as a single dict
+      Load all poolvols csvs (across all chains); return result as single dict
 
     @return
-      pool_vols -- dict of [basetoken_symbol][pool_addr] : vol
+      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol_amt
     """
-    csv_files = poolVolsCsvFilenames(csv_dir)
-    pool_vols = {}
+    csv_files = poolvolsCsvFilenames(csv_dir)
+    poolvols = {}
     for csv_file in csv_files:
-        with open(csv_file, "r") as f:
-            reader = csv.reader(f)
-            for row_i, row in enumerate(reader):
-                if row_i == 0:  # header
-                    continue
-                basetoken, pool_addr, vol = row[0], row[1], float(row[2])
-                if basetoken not in pool_vols:
-                    pool_vols[basetoken] = {}
-                assert pool_addr not in pool_vols[basetoken], "duplicate found"
-                pool_vols[basetoken][pool_addr] = vol
-        print(f"Loaded {csv_file}")
-
-    return pool_vols
+        chainID = chainIDforPoolvolsCsv(csv_file)
+        poolvols[chainID] = loadPoolvolsCsv(csv_dir, chainID)
+    return poolvols
 
 
 @enforce_types
-def poolVolsCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of pool_vols filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "pool_vols*.csv"))
+def loadPoolvolsCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load poolvols for this chainID
+
+    @return
+      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol_amt
+    """
+    csv_file = poolvolsCsvFilename(csv_dir, chainID)
+    V = {} # ie poolvols_at_chain
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == ["chainID", "basetoken", "pool_addr",
+                               "vol_amt"]
+                continue
+            chainID2 = int(row[0])
+            basetoken = row[1].upper()
+            pool_addr = row[2].lower()
+            vol_amt = float(row[3])
+            assert chainID2 == chainID, "csv had data from different chain"
+
+            if basetoken not in V:
+                V[basetoken] = {}
+            assert pool_addr not in V[basetoken], "duplicate found"
+            V[basetoken][pool_addr] = vol_amt
+    print(f"Loaded {csv_file}")
+
+    return V
 
 
 @enforce_types
-def poolVolsCsvFilename(csv_dir: str, network) -> str:
-    """Returns the pool_vols filename for a given network"""
-    return os.path.join(csv_dir, f"pool_vols-{network}.csv")
+def poolvolsCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of poolvols filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "poolvols*.csv"))
+
+
+@enforce_types
+def poolvolsCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the poolvols filename for a given chainID"""
+    return os.path.join(csv_dir, f"poolvols-{chainID}.csv")
+
+@enforce_types
+def chainIDforPoolvolsCsv(filename) -> int:
+    """Returns chainID for a given poolvols csv filename"""
+    return _lastInt(filename)
+
 
 
 # ========================================================================
@@ -162,11 +219,12 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str) -> str:
       rate -- float -- $/token, e.g. 0.86
       csv_dir -- directory holding csvs
     """
+    token_symbol = token_symbol.upper()
     csv_file = rateCsvFilename(token_symbol, csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["token_symbol", "rate"])
+        writer.writerow(["token", "rate"])
         writer.writerow([token_symbol, str(rate)])
     print(f"Created {csv_file}")
 
@@ -178,7 +236,7 @@ def loadRateCsvs(csv_dir: str):
       Load all exchange rate csvs, and return result as a single dict
 
     @return
-      rates -- dict of [token_symbol] : rate
+      rates -- dict of [token_sym] : rate
     """
     csv_files = rateCsvFilenames(csv_dir)
     rates = {}
@@ -187,11 +245,13 @@ def loadRateCsvs(csv_dir: str):
             reader = csv.reader(f)
             for row_i, row in enumerate(reader):
                 if row_i == 0:  # header
-                    continue
-                else:  # row_i == 1:
-                    token_symbol, rate = row[0], float(row[1])
-                    rates[token_symbol] = rate
-                    break
+                    assert row == ["token", "rate"]
+                elif row_i == 1:
+                    token = row[0].upper()
+                    rate = float(row[1])
+                    rates[token] = rate
+                else:
+                    raise ValueError("csv should only have two rows")
         print(f"Loaded {csv_file}")
 
     return rates
@@ -206,7 +266,7 @@ def rateCsvFilenames(csv_dir: str) -> List[str]:
 @enforce_types
 def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
     """Returns the exchange rate filename for a given token"""
-    return os.path.join(csv_dir, f"rate-{token_symbol}.csv")
+    return os.path.join(csv_dir, f"rate-{token_symbol.upper()}.csv")
 
 
 # ========================================================================
@@ -214,44 +274,60 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 
 @enforce_types
-def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str):
+def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_symbol: str):
     """
     @description
       Save the rewards dict as a csv,
 
     @arguments
-      rewards -- dict of [to_addr] : value_float (*not* base 18)
+      rewards -- dict of [chainID][LP_addr] : value (float, *not* base 18)
       ..
     """
-    csv_file = rewardsCsvFilename(csv_dir)
+    token_symbol = token_symbol.upper()
+    csv_file = rewardsCsvFilename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["LP_address", "OCEAN_float"])
-        for to_addr, value in rewards.items():
-            writer.writerow([to_addr, value])
+        writer.writerow(["chainID", "LP_addr", f"{token_symbol}_amt"])
+        for chainID, innerdict in rewards.items():
+            for LP_addr, value in innerdict.items():
+                writer.writerow([chainID, LP_addr, value])
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadRewardsCsv(csv_dir: str) -> Dict[str, float]:
-    """Loads rewards -- dict of [LP_addr]:OCEAN_float (not wei), from csv"""
-    csv_file = rewardsCsvFilename(csv_dir)
+def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, float]:
+    """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
+    token_symbol = token_symbol.upper()
+    csv_file = rewardsCsvFilename(csv_dir, token_symbol)
     rewards = {}
 
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                continue
-            LP_addr, OCEAN_float = row[0], float(row[1])
-            assert LP_addr not in rewards, "duplicate found"
-            rewards[LP_addr] = OCEAN_float
+                assert row == ["chainID", "LP_addr", f"{token_symbol}_amt"]
+            else:
+                chainID, LP_addr, amt = \
+                    int(row[0]), row[1], float(row[2])
+                if chainID not in rewards:
+                    rewards[chainID] = {}
+                assert LP_addr not in rewards[chainID], "duplicate found"
+                rewards[chainID][LP_addr] = amt
     print(f"Loaded {csv_file}")
 
     return rewards
 
 
 @enforce_types
-def rewardsCsvFilename(csv_dir: str) -> str:
-    return os.path.join(csv_dir, "rewards-OCEAN.csv")
+def rewardsCsvFilename(csv_dir: str, token_symbol:str) -> str:
+    return os.path.join(csv_dir, f"rewards-{token_symbol.upper()}.csv")
+
+#=======================================================================
+#helper funcs
+
+@enforce_types
+def _lastInt(s:str) -> int:
+    """Return the last integer in the given str"""
+    nbr_strs = re.findall('[0-9]+', s)
+    return int(nbr_strs[-1])

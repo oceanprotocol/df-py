@@ -18,9 +18,12 @@ def test_small_batch(ADDRESS_FILE, tmp_path):
     OCEAN = OCEANtoken()
     airdrop = B.Airdrop.deploy({"from": accounts[0]})
 
-    rewards = {a1: 0.1, a2: 0.2, a3: 0.3}
+    rewards_at_chain = {a1: 0.1, a2: 0.2, a3: 0.3}
     dispense.dispense(
-        rewards, airdrop.address, accounts[0], token_address=OCEAN.address
+        rewards_at_chain,
+        airdrop_addr = airdrop.address,
+        token_addr = OCEAN.address,
+        from_account = accounts[0],
     )
 
     # a1 claims for itself
@@ -46,12 +49,12 @@ def test_batching(ADDRESS_FILE):
     N = batch_size * 3 + 1  # enough accounts to ensure batching
     assert len(accounts) >= N
 
-    rewards = {accounts[i]: (i + 1.0) for i in range(N)}
+    rewards_at_chain = {accounts[i]: (i + 1.0) for i in range(N)}
 
     dispense.dispense(
-        rewards,
-        airdrop.address,
-        accounts[0],
-        batch_size=batch_size,
-        token_address=OCEAN.address,
+        rewards_at_chain,
+        airdrop_addr = airdrop.address,
+        token_addr = OCEAN.address,
+        from_account = accounts[0],
+        batch_size = batch_size
     )
