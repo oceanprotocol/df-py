@@ -7,7 +7,7 @@ Usage: dftool query|calc|dispense|..
 
   dftool query - query chain for stakes & volumes
   dftool calc - calculate rewards
-  dftool dispense - airdrop funds
+  dftool dispense - dispense funds
 ```
 
 # Installation
@@ -131,4 +131,3 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 >>> t.symbol()                                                                                                                                                                                              
 'TEST'
 ```
-
