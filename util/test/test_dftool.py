@@ -151,5 +151,4 @@ def teardown_module():
     else:
         os.environ['SUBGRAPH_URI'] = PREV.SUBGRAPH_URI
 
-    brownie.network.disconnect("development")
 
