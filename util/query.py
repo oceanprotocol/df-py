@@ -43,13 +43,20 @@ def query(rng: BlockRange, subgraph_url: str) -> Tuple[dict, dict]:
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
     """
     pools = getPools(subgraph_url)
-    Si = getStakes(pools, rng, subgraph_url)
-    Vi = getPoolVolumes(pools, rng.st, rng.fin, subgraph_url)
-    return (Si, Vi) #i.e. (stakes_at_chain, poolvols_at_chain)
+    stakes_at_chain = getStakes(pools, rng, subgraph_url)
+    poolvols_at_chain = getPoolVolumes(pools, rng.st, rng.fin, subgraph_url)
+    return (stakes_at_chain, poolvols_at_chain)
 
 
 @enforce_types
-def getPools(subgraph_url: str) -> list:  # list of BPool
+def getPools(subgraph_url: str) -> list:
+    """
+    @description
+      Return all pools eligible for DF.
+
+    @return
+      pools -- list of SimplePool
+    """
     pools = getAllPools(subgraph_url)
     pools = _filterOutPurgatory(pools)
     return pools
