@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
-
 import pandas as pd
-from query import SimplePool
+
+from util.query import SimplePool
 from util import csvs
 
 #for shorter lines
@@ -95,9 +95,9 @@ def test_poolvols_twochains(tmp_path):
 @enforce_types
 def test_poolinfo(tmp_path):
     csv_dir = str(tmp_path)
-    P1 = [SimplePool(addr=PA, "nft1_addr", "dt1_addr", "ocn_addr"),
-          SimplePool(addr=PB, "nft2_addr", "dt2_addr", "h2o_addr"),
-          SimplePool(addr=PC, "nft3_addr", "dt3_addr", "ocn_addr")]
+    P1 = [SimplePool(PA, "nft1_addr", "dt1_addr", "ocn_addr"),
+          SimplePool(PB, "nft2_addr", "dt2_addr", "h2o_addr"),
+          SimplePool(PC, "nft3_addr", "dt3_addr", "ocn_addr")]
     S1 = {OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
           H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
     V1 = {OCN: {PA: 0.11, PB: 0.12},
