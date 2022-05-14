@@ -18,7 +18,7 @@ CHAINID = 0
 def test_query(tmp_path):
     # insert fake inputs: info onto the chain
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
 
@@ -89,7 +89,7 @@ def test_dispense(tmp_path):
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = OCEANtoken()
     OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
@@ -116,9 +116,6 @@ def setup_module():
     """This automatically gets called at the beginning of each test.
     It sets envvars for use in the test."""
     global PREV, DISPENSE_ACCT
-
-    if not brownie.network.is_connected():
-        brownie.network.connect("development")
 
     PREV = types.SimpleNamespace()
 

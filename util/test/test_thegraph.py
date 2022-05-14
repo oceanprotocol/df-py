@@ -5,23 +5,24 @@ from util import oceanutil
 from util.graphutil import submitQuery
 from util.test import conftest
 
+CHAINID = 0
 
 @enforce_types
-def test_thegraph_approvedTokens(ADDRESS_FILE, SUBGRAPH_URL, accounts):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+def test_thegraph_approvedTokens(ADDRESS_FILE, accounts):
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = oceanutil.OCEANtoken()
 
     conftest.randomDeployPool(accounts[0])
 
     query = "{ opcs{approvedTokens} }"
-    result = submitQuery(query, SUBGRAPH_URL)
+    result = submitQuery(query, CHAINID)
 
     pprint(result)
 
 
 @enforce_types
-def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+def test_thegraph_orders(ADDRESS_FILE):
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = oceanutil.OCEANtoken()
 
     (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)[0]
@@ -43,13 +44,13 @@ def test_thegraph_orders(ADDRESS_FILE, SUBGRAPH_URL):
         """ % (
         DT.address
     )
-    result = submitQuery(query, SUBGRAPH_URL)
+    result = submitQuery(query, CHAINID)
     pprint(result)
 
 
 @enforce_types
-def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+def test_thegraph_poolShares(ADDRESS_FILE):
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = oceanutil.OCEANtoken()
 
     tups = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
@@ -79,5 +80,5 @@ def test_thegraph_poolShares(ADDRESS_FILE, SUBGRAPH_URL):
         INC,
     )
 
-    result = submitQuery(query, SUBGRAPH_URL)
+    result = submitQuery(query, CHAINID)
     pprint(result)

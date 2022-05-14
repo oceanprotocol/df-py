@@ -11,7 +11,7 @@ from util.test import conftest
 
 accounts = brownie.network.accounts
 chain = brownie.network.chain
-
+CHAINID = 0
 
 @enforce_types
 def test_without_csvs(ADDRESS_FILE, SUBGRAPH_URL):
@@ -21,7 +21,7 @@ def test_without_csvs(ADDRESS_FILE, SUBGRAPH_URL):
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
-    (stakes_at_chain, poolvols_at_chain) = query.query(rng, SUBGRAPH_URL)
+    (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, SUBGRAPH_URL)
     rates = {"ocean": 0.5, "h2o": 1.618}
 
     stakes, poolvols = {1: stakes_at_chain}, {1: poolvols_at_chain}
@@ -46,7 +46,7 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
     rng = BlockRange(st, fin, n)
 
     # 1. simulate "dftool query"
-    (stakes_at_chain, poolvols_at_chain) = query.query(rng, SUBGRAPH_URL)
+    (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, SUBGRAPH_URL)
     chainID = 1
     csvs.saveStakesCsv(stakes_at_chain, csv_dir, chainID)
     csvs.savePoolvolsCsv(poolvols_at_chain, csv_dir, chainID)
@@ -77,6 +77,6 @@ def test_with_csvs(ADDRESS_FILE, SUBGRAPH_URL, tmp_path):
 # ========================================================================
 @enforce_types
 def _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools):
-    recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools)

@@ -4,11 +4,10 @@ import os
 import pytest
 import random
 
-from util import graphutil, oceanutil
+from util import constants, graphutil, oceanutil
 from util.base18 import toBase18, fromBase18
-from util.constants import ZERO_ADDRESS
 
-brownie.network.connect("development")  # development = ganache
+brownie.network.connect("development")  #ie ganache / barge, CHAINID = 0
 
 accounts = brownie.network.accounts
 
@@ -23,19 +22,12 @@ AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
-_HOME = os.getenv("HOME")
-_ADDRESS_FILE = f"{_HOME}/.ocean/ocean-contracts/artifacts/address.json"
+_ADDRESS_FILE = os.path.expanduser(constants.BARGE_ADDRESS_FILE)
 
 @pytest.fixture
 @enforce_types
 def ADDRESS_FILE() -> str:
     return _ADDRESS_FILE
-
-@pytest.fixture
-@enforce_types
-def SUBGRAPH_URL() -> str:
-    barge_subgraph_uri = "http://127.0.0.1:9000"
-    return graphutil.oceanSubgraphUrl(barge_subgraph_uri)
 
 
 @enforce_types
@@ -128,7 +120,7 @@ def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account):
     tokenInOutMarket = [
         OCEAN.address,  # token in address
         DT.address,  # token out address
-        ZERO_ADDRESS,  # market fee  address
+        constants.ZERO_ADDRESS,  # market fee  address
     ]
     amountsInOutMaxFee = [
         toBase18(max_OCEAN),  # max OCEAN in

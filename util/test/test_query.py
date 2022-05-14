@@ -11,20 +11,22 @@ from util.test import conftest
 accounts = brownie.network.accounts
 chain = brownie.network.chain
 
+CHAINID = 0
+
 @enforce_types
-def test_getPools(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
-    pools = query.getPools(SUBGRAPH_URL)
+def test_getPools(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
+    pools = query.getPools(CHAINID)
     assert pools
 
 
 @enforce_types
-def test_getStakes(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
+def test_getStakes(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
     st, fin, n = 1, len(chain), 50
     rng = BlockRange(st, fin, n)
-    pools = query.getPools(SUBGRAPH_URL)
-    stakes = query.getStakes(pools, rng, SUBGRAPH_URL)
+    pools = query.getPools(CHAINID)
+    stakes = query.getStakes(pools, rng)
 
     for stakes_at_pool in stakes["ocean"].values():
         assert len(stakes_at_pool) > 0
@@ -32,34 +34,34 @@ def test_getStakes(ADDRESS_FILE, SUBGRAPH_URL):
 
 
 @enforce_types
-def test_getDTVolumes(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
+def test_getDTVolumes(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
     st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin, SUBGRAPH_URL)
+    DT_vols = query.getDTVolumes(st, fin)
     assert sum(DT_vols.values()) > 0.0
 
 
 @enforce_types
-def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
-    pools = query.getPools(SUBGRAPH_URL)
+def test_getPoolVolumes(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
+    pools = query.getPools(CHAINID)
     st, fin = 1, len(chain)
-    poolvols = query.getPoolVolumes(pools, st, fin, SUBGRAPH_URL)
+    poolvols = query.getPoolVolumes(pools, st, fin)
     assert poolvols
     assert sum(poolvols["ocean"].values()) > 0.0
 
 
 @enforce_types
-def test_getApprovedTokens(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
-    approved_tokens = query.getApprovedTokens(SUBGRAPH_URL)
+def test_getApprovedTokens(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
+    approved_tokens = query.getApprovedTokens(CHAINID)
     assert OCEAN_address().lower() in approved_tokens.keys()
     assert "ocean" in approved_tokens.values()
 
 
 # ========================================================================
 @enforce_types
-def _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=1):
-    recordDeployedContracts(ADDRESS_FILE, "development")
+def _setup(ADDRESS_FILE, num_pools=1):
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools)

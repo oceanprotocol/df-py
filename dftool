@@ -18,7 +18,6 @@ from util import (
 )
 from util.base18 import toBase18, fromBase18
 from util.constants import BROWNIE_PROJECT as B
-from util.graphutil import oceanSubgraphUrl
 from util.oceanutil import recordDeployedContracts, OCEANtoken
 
 CHAINID_EXAMPLES = "0 for development, 1 for ethereum, 137 for polygon"
@@ -78,7 +77,6 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
 
 Uses these envvars:
 ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={constants.BARGE_ADDRESS_FILE}
-SUBGRAPH_URI -- eg for barge: export SUBGRAPH_URI={constants.BARGE_SUBGRAPH_URI}
 """
     if len(sys.argv) not in [2 + 5]:
         print(HELP)
@@ -98,7 +96,7 @@ SUBGRAPH_URI -- eg for barge: export SUBGRAPH_URI={constants.BARGE_SUBGRAPH_URI}
     )
 
     # extract envvars
-    (ADDRESS_FILE, SUBGRAPH_URI) = _getAddressAndSubgraphEnvvarsOrExit()
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     # shouldn't already have the output files
     c1 = csvs.stakesCsvFilename(CSV_DIR, CHAINID)
@@ -132,14 +130,14 @@ SUBGRAPH_URI -- eg for barge: export SUBGRAPH_URI={constants.BARGE_SUBGRAPH_URI}
         fin_block = int(FIN)
 
     # main work
-    network = chainlist.chainIdToNetwork_forBrownie(CHAINID)
+    network = chainlist.chainIdToNetwork(CHAINID)
     recordDeployedContracts(ADDRESS_FILE, network)
     seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
-    url = oceanSubgraphUrl(SUBGRAPH_URI)
-    (stakes_at_chain, poolvols_at_chain) = query.query(rng, url)
-    csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
-    csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
+    (Pi, Si, Vi) = query.query(rng, CHAINID)
+    csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
+    csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
+    csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
 
     print(f"dftool query: Done")
 
@@ -491,7 +489,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     # Give balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
-        network = chainlist.chainIdToNetwork_forBrownie(CHAINID)
+        network = chainlist.chainIdToNetwork(CHAINID)
         recordDeployedContracts(ADDRESS_FILE, network)
         OCEAN = OCEANtoken()
         if OCEAN.address != TOKEN_ADDR:
@@ -525,17 +523,13 @@ Usage: dftool chaininfo CHAINID
 # utilities
 
 
-def _getAddressAndSubgraphEnvvarsOrExit() -> tuple:
+def _getAddressEnvvarOrExit() -> tuple:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
-    print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " f"SUBGRAPH_URI={SUBGRAPH_URI}")
+    print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:
         print("\nNeed to set envvar ADDRESS_FILE. Exiting.")
         sys.exit(0)
-    if SUBGRAPH_URI is None:
-        print("\nNeed to set envvar SUBGRAPH_URI. Exiting.")
-        sys.exit(0)
-    return (ADDRESS_FILE, SUBGRAPH_URI)
+    return ADDRESS_FILE
     
 
 @enforce_types
@@ -549,7 +543,7 @@ def _getPrivateAccount():
 
 @enforce_types
 def _connectToChain(chainID: int):
-    network = chainlist.chainIdToNetwork_forBrownie(chainID)
+    network = chainlist.chainIdToNetwork(chainID)
     brownie.network.connect(network)
 
 
