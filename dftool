@@ -137,9 +137,9 @@ SUBGRAPH_URI -- eg for barge: export SUBGRAPH_URI={constants.BARGE_SUBGRAPH_URI}
     seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     url = oceanSubgraphUrl(SUBGRAPH_URI)
-    (stakes, poolvols) = query.query(rng, url)
-    csvs.saveStakesCsv(stakes, CSV_DIR, CHAINID)
-    csvs.savePoolvolsCsv(poolvols, CSV_DIR, CHAINID)
+    (stakes_at_chain, poolvols_at_chain) = query.query(rng, url)
+    csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
+    csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
 
     print(f"dftool query: Done")
 
