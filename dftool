@@ -33,15 +33,16 @@ OPF steps:
 4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
 
 Then LP steps:
-5. call DFRewards.claim() or claimFor(LP addr)
+5. call DFRewards.claim(), or related
 
 Usage: dftool query|getrate|calc|dispense|..
 
-  dftool query CHAINID ST FIN NSAMP CSV_DIR - query chain, get stakes & vols
+  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get stakes & vols
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from stakes/vols/rates, calc rewards
   dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
+  dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
   dftool manyrandom - deploy many random tokens & pools then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
@@ -68,16 +69,16 @@ def do_help():
 def do_query():
     HELP = f"""Query chain, output stakes & vols csvs
 
-Usage: dftool query CHAINID ST FIN NSAMP CSV_DIR
-  CHAINID -- {CHAINID_EXAMPLES}
+Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv and poolvols-CHAINID.csv
+  CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
-ADDRESS_FILE -- e.g. for barge: {constants.BARGE_ADDRESS_FILE}
-SUBGRAPH_URI -- e.g. for barge: {constants.BARGE_SUBGRAPH_URI}
+ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={constants.BARGE_ADDRESS_FILE}
+SUBGRAPH_URI -- eg for barge: export SUBGRAPH_URI={constants.BARGE_SUBGRAPH_URI}
 """
     if len(sys.argv) not in [2 + 5]:
         print(HELP)
@@ -85,25 +86,19 @@ SUBGRAPH_URI -- e.g. for barge: {constants.BARGE_SUBGRAPH_URI}
 
     # extract inputs
     assert sys.argv[1] == "query"
-    CHAINID = int(sys.argv[2])
-    ST, FIN, NSAMP = sys.argv[3], sys.argv[4], int(sys.argv[5])
-    CSV_DIR = sys.argv[6]
+    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
+    CSV_DIR = sys.argv[5]
+    CHAINID = int(sys.argv[6])
+    print(f"dftool query: Begin")
     print(
-        f"Arguments:\n CHAINID={CHAINID}"
+        f"Arguments:\n "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
         f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
     )
 
     # extract envvars
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
-    print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " f"SUBGRAPH_URI={SUBGRAPH_URI}")
-    if ADDRESS_FILE is None:
-        print("\nNeed to set envvar ADDRESS_FILE. Exiting.")
-        sys.exit(0)
-    if SUBGRAPH_URI is None:
-        print("\nNeed to set envvar SUBGRAPH_URI. Exiting.")
-        sys.exit(0)
+    (ADDRESS_FILE, SUBGRAPH_URI) = _getAddressAndSubgraphEnvvarsOrExit()
 
     # shouldn't already have the output files
     c1 = csvs.stakesCsvFilename(CSV_DIR, CHAINID)
@@ -146,7 +141,7 @@ SUBGRAPH_URI -- e.g. for barge: {constants.BARGE_SUBGRAPH_URI}
     csvs.saveStakesCsv(stakes, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(poolvols, CSV_DIR, CHAINID)
 
-    print(f"dftool query: Done.")
+    print(f"dftool query: Done")
 
 
 # ========================================================================
@@ -237,7 +232,7 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     rewards = calcrewards.calcRewards(stakes, poolvols, rates, TOT_TOKEN)
     csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
 
-    print(f"dftool calc: Done.")
+    print(f"dftool calc: Done")
 
 
 # ========================================================================
@@ -287,7 +282,33 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(rewards[CHAINID], DFREWARDS_ADDR, TOKEN_ADDR, from_account)
 
-    print("dftool dispense: Done.")
+    print("dftool dispense: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_querymany():
+    HELP = f"""Like 'query' except query *many* chains.
+
+Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
+"""
+    if len(sys.argv) < 7:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "querymany"
+    ST, FIN, NSAMP, CSV_DIR = sys.argv[2:6]
+    CHAINIDS = [int(arg) for arg in sys.argv[6:]]
+    print(f"dftool querymany: Begin. CHAINIDs={CHAINIDS}")
+
+    for CHAINID in CHAINIDS:
+        print(f"Call dftool query for CHAINID={CHAINID}: Begin")
+        cmd = f"dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+        os.system(cmd)
+        print(f"Call dftool query for CHAINID={CHAINID}: Done")
+        
+    print(f"dftool querymany: Done")
 
 
 # ========================================================================
@@ -314,7 +335,7 @@ Usage: dftool newdfrewards CHAINID
     df_rewards = B.DFRewards.deploy({"from": from_account})
     print(f"New dispense contract deployed at address: {df_rewards.address}")
 
-    print("dftool newdfrewards: Done.")
+    print("dftool newdfrewards: Done")
 
 
 # ========================================================================
@@ -383,7 +404,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
     else:
         chain.mine(blocks=BLOCKS)
 
-    print("dftool mine: Done.")
+    print("dftool mine: Done")
 
 
 # ========================================================================
@@ -501,6 +522,22 @@ Usage: dftool chaininfo CHAINID
 
 
 # ========================================================================
+# utilities
+
+
+def _getAddressAndSubgraphEnvvarsOrExit() -> tuple:
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
+    print(f"Envvars:\n ADDRESS_FILE={ADDRESS_FILE}\n " f"SUBGRAPH_URI={SUBGRAPH_URI}")
+    if ADDRESS_FILE is None:
+        print("\nNeed to set envvar ADDRESS_FILE. Exiting.")
+        sys.exit(0)
+    if SUBGRAPH_URI is None:
+        print("\nNeed to set envvar SUBGRAPH_URI. Exiting.")
+        sys.exit(0)
+    return (ADDRESS_FILE, SUBGRAPH_URI)
+    
+
 @enforce_types
 def _getPrivateAccount():
     private_key = os.getenv("DFTOOL_KEY")
@@ -510,7 +547,8 @@ def _getPrivateAccount():
     return account
 
 
-def _connectToChain(chainID):
+@enforce_types
+def _connectToChain(chainID: int):
     network = chainlist.chainIdToNetwork_forBrownie(chainID)
     brownie.network.connect(network)
 
@@ -532,6 +570,8 @@ def do_main():
     elif sys.argv[1] == "dispense":
         do_dispense()
 
+    elif sys.argv[1] == "querymany":
+        do_querymany()
     elif sys.argv[1] == "compile":
         do_compile()
     elif sys.argv[1] == "manyrandom":
