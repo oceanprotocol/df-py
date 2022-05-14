@@ -4,9 +4,6 @@ import re
 import requests
 from typing import Dict
 
-CHAINID_TO_NETWORK = None # dict of [chainID_int] : network_str
-NETWORK_TO_CHAINID = None # dict of [network_str] : chainID_int
-
 
 @enforce_types
 def chainIdToSubgraphUri(chainID: int) -> str:
@@ -15,47 +12,20 @@ def chainIdToSubgraphUri(chainID: int) -> str:
         return "http://127.0.0.1:9000" #ganache / barge
     else:
         raise NotImplementedError()
-    
-@enforce_types
-def chainIdToNetwork_forBrownie(chainID: int) -> str:
-    """
-    @description
-      Maps chainID to network, but ensures network name is brownie-friendly.
 
-      Examples:
-        0: "development"
-        137: "polygon"
 
-    @arguments
-      chainID -- int -- e.g. 137
+CHAINID_TO_NETWORK = None # dict of [chainID_int] : network_str
+NETWORK_TO_CHAINID = None # dict of [network_str] : chainID_int
 
-    @return
-      network -- str -- e.g. "polygon"
-    """
-    #special cases
-    if chainID == 0:
-        return "development"
-
-    #default case
-    else:
-        return chainIdToNetwork(chainID)
     
 @enforce_types
 def chainIdToNetwork(chainID: int) -> str:
-    """
-    @description
-      Directly uses chainlist.org info to map chainID to network.
+    """Returns the network name for a given chainID"""
+    #corner case
+    if chainID == 0:
+        return "development"
 
-      Examples:
-        0: "kardia"
-        137: "polygon"
-
-    @arguments
-      chainID -- int 
-
-    @return
-      network -- str
-    """
+    #main case
     global CHAINID_TO_NETWORK
     if CHAINID_TO_NETWORK is None:
         _cacheDataFromChainlist()
@@ -63,14 +33,12 @@ def chainIdToNetwork(chainID: int) -> str:
 
 
 def networkToChainId(network:str) -> int:
-    """
-    @description
-      Directly uses chainlist.org info to map chainID to network.
-    @arguments
-      network -- str -- e.g. "polygon"
-    @return
-      chainID -- int -- e.g. 137
-    """
+    """Returns the chainID for a given network name"""
+    #corner case
+    if network == "development":
+        return 0
+    
+    #main case
     global NETWORK_TO_CHAINID
     if NETWORK_TO_CHAINID is None:
         _cacheDataFromChainlist()
