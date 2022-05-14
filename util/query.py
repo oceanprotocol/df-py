@@ -20,11 +20,13 @@ class SimplePool:
     Easier to retrieve info than using dicts keyed by strings, and
       more lightweight than a full BPool object.
     """
-    def __init__(self, addr: str, nft_addr: str, DT_addr: str,
+    def __init__(self, addr: str, nft_addr: str,
+                 DT_addr: str, DT_symbol: str,
                  basetoken_addr: str):
         self.addr = addr
         self.nft_addr = nft_addr
         self.DT_addr = DT_addr
+        self.DT_symbol = DT_symbol
         self.basetoken_addr = basetoken_addr
 
 
@@ -283,6 +285,7 @@ def getAllPools(chainID: int) -> List[SimplePool]:
             },
             datatoken {
                 id,
+                symbol,
                 nft {
                     id
                 }
@@ -303,6 +306,7 @@ def getAllPools(chainID: int) -> List[SimplePool]:
                 addr=d["id"].lower(),
                 nft_addr=d["datatoken"]["nft"]["id"].lower(),
                 DT_addr=d["datatoken"]["id"].lower(),
+                DT_symbol=d["datatoken"]["id"].upper(),
                 basetoken_addr=d["baseToken"]["id"].lower(),
             )
             pools.append(pool)

@@ -5,6 +5,8 @@ import os
 import re
 from typing import Dict, List
 
+from util import constants, oceanutil
+
 
 # ========================================================================
 # stakes csvs
@@ -250,11 +252,10 @@ def savePoolinfoCsv(
                 row += [stake_amt]
                 
                 p = pools_by_addr[pool_addr]
-                DT_symbol = B.Simpletoken.at(p.DT_addr).symbol()
-                row += [p.nft_addr, p.DT_addr, DT_symbol, p.basetoken_addr]
+                row += [p.nft_addr, p.DT_addr, p.DT_symbol, p.basetoken_addr]
 
-                did = oceanutil.calcDID(nft_addr, chainID)
-                url = "https://v4.market.oceanprotocol.com/asset/" + did
+                did = oceanutil.calcDID(p.nft_addr, chainID)
+                url = constants.MARKET_ASSET_BASE_URL + did
                 row += [did, url]
                 
                 writer.writerow(row)
