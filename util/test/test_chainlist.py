@@ -1,6 +1,16 @@
 from enforce_typing import enforce_types
+import pytest
 
 from util import chainlist
+
+
+@enforce_types
+def test_chainIdToSubgraphUri():
+    assert chainlist.chainIdToSubgraphUri(0) == "http://127.0.0.1:9000"
+    
+    for chainID in [1, 137]:
+        with pytest.raises(NotImplementedError):
+            chainlist.chainIdToSubgraphUri(chainID)
 
 
 @enforce_types

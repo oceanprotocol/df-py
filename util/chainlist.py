@@ -9,6 +9,14 @@ NETWORK_TO_CHAINID = None # dict of [network_str] : chainID_int
 
 
 @enforce_types
+def chainIdToSubgraphUri(chainID: int) -> str:
+    """Returns the subgraph URI for a given chainID"""
+    if chainID == 0:
+        return "http://127.0.0.1:9000" #ganache / barge
+    else:
+        raise NotImplementedError()
+    
+@enforce_types
 def chainIdToNetwork_forBrownie(chainID: int) -> str:
     """
     @description
