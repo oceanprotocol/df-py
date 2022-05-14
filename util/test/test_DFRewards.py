@@ -1,5 +1,6 @@
 import brownie
 from enforce_typing import enforce_types
+import pytest
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
@@ -15,6 +16,32 @@ def test_basic():
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     assert df_rewards.claimable(a1, TOK.address) == 0
 
+
+@enforce_types
+def test_lostERC20():
+    TOK = _deployTOK(accounts[0])
+    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+
+    #account 0 accidentally sends TOK to DF_contract
+    TOK.transfer(df_rewards.address, toBase18(12.0), {"from": accounts[0]})
+
+    #the wallet supports recovering funds. Non-owners can't do it
+    with pytest.raises(Exception):
+        df_rewards.withdrawERCToken(toBase18(12.0), TOK.address, {"from": accounts[1]})
+
+    #contract owner *can* recover funds
+    TOK_before = fromBase18(TOK.balanceOf(accounts[0].address))
+    df_rewards.withdrawERCToken(toBase18(12.0), TOK.address, {"from": accounts[0]})
+    TOK_after = fromBase18(TOK.balanceOf(accounts[0].address))
+    assert (TOK_after - TOK_before) == 12.0
+
+    
+@enforce_types
+def test_lostETH():
+    #account 0 accidentally sends ETH to DF_contract
+    # So the contract makes the tx fail, yay:)
+    with pytest.raises(Exception):
+        accounts[1].transfer(toBase18(0.1))
 
 @enforce_types
 def test_TOK():
