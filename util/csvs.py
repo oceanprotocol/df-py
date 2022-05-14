@@ -204,6 +204,71 @@ def chainIDforPoolvolsCsv(filename) -> int:
 
 
 
+
+# ========================================================================
+# poolinfo csvs
+
+
+@enforce_types
+def savePoolinfoCsv(
+        pools_at_chain: list,
+        stakes_at_chain: dict,
+        poolvols_at_chain: dict,
+        csv_dir: str,
+        chainID: int):
+    """
+    @description
+      Save detailed info for this pool.
+
+    @arguments
+      pools_at_chain -- list of SimplePool
+      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
+      poolvols_at_chain -- dict of [basetoken_sym][pool_addr] : vol_amt
+      csv_dir -- directory that holds csv files
+      chainID -- which network
+    """
+    assert os.path.exists(csv_dir), f"{csv_dir} should exist"
+    csv_file = poolinfoCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
+
+    pools_by_addr = {pool.addr:pool for pool in pools_at_chain}
+    
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "basetoken", "pool_addr", "vol_amt",
+                         "stake_amt",
+                         "nft_addr", "DT_addr", "DT_symbol", "basetoken_addr",
+                         "did", "url"])
+            
+        for basetoken in poolvols_at_chain:
+            for pool_addr, vol in poolvols_at_chain[basetoken].items():
+                row = []
+                
+                row += [chainID, basetoken, pool_addr, vol]
+                
+                stake_amt = sum(poolvols_at_chain[basetoken][pool_addr])
+                row += [stake_amt]
+                
+                p = pools_by_addr[pool_addr]
+                DT_symbol = B.Simpletoken.at(p.DT_addr).symbol()
+                row += [p.nft_addr, p.DT_addr, DT_symbol, p.basetoken_addr]
+
+                did = oceanutil.calcDID(nft_addr, chainID)
+                url = "https://v4.market.oceanprotocol.com/asset/" + did
+                row += [did, url]
+                
+                writer.writerow(row)
+                
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def poolinfoCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the poolinfo filename for a given chainID"""
+    return os.path.join(csv_dir, f"poolinfo-{chainID}.csv")
+
+    
+
 # ========================================================================
 # exchange rate csvs
 
