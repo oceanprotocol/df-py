@@ -1,8 +1,11 @@
+import brownie
 from enforce_typing import enforce_types
 import pandas as pd
 
 from util.query import SimplePool
 from util import csvs
+
+accounts = brownie.network.accounts
 
 #for shorter lines
 C1, C2 = 1, 137
@@ -95,9 +98,11 @@ def test_poolvols_twochains(tmp_path):
 @enforce_types
 def test_poolinfo(tmp_path):
     csv_dir = str(tmp_path)
-    P1 = [SimplePool(PA, "nft1_addr", "dt1_addr", "DT1_SYM", "ocn_addr"),
-          SimplePool(PB, "nft2_addr", "dt2_addr", "DT2_SYM", "h2o_addr"),
-          SimplePool(PC, "nft3_addr", "dt3_addr", "DT3_SYM", "ocn_addr")]
+    nft1_addr, nft2_addr, nft3_addr = \
+        accounts[5].address, accounts[6].address, accounts[7].address
+    P1 = [SimplePool(PA, nft1_addr, "dt1_addr", "DT1_SYM", "ocn_addr"),
+          SimplePool(PB, nft2_addr, "dt2_addr", "DT2_SYM", "h2o_addr"),
+          SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", "ocn_addr")]
     S1 = {OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
           H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
     V1 = {OCN: {PA: 0.11, PB: 0.12},
@@ -111,8 +116,8 @@ def test_poolinfo(tmp_path):
                      "nft_addr", "DT_addr", "DT_symbol", "basetoken_addr",
                      "did", "url"]
     
-    df = pd.read_csv(csv_file)
-    header = df.FIXME
+    data = pd.read_csv(csv_file)
+    header = [c for c in data.columns]
     assert header == target_header
 
     #(skip fancier tests)
