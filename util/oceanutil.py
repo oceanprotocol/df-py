@@ -6,6 +6,7 @@ from typing import Any, List, Dict, Tuple
 
 import brownie
 
+from util import chainlist
 from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
@@ -19,12 +20,13 @@ def _contracts(key: str):
 
 
 @enforce_types
-def recordDeployedContracts(address_file: str, network: str):
+def recordDeployedContracts(address_file: str, chainID: int):
     global CONTRACTS
     C = CONTRACTS
     if C != {}:  # already filled
         return
 
+    network = chainlist.chainIdToNetwork(chainID)
     with open(address_file, "r") as json_file:
         a = json.load(json_file)[network]  # dict of contract_name: address
 
@@ -295,12 +297,11 @@ def to_32byte_hex(val: int) -> str:
 
 
 @enforce_types
-def calcDID(nft_addr: str) -> str:
+def calcDID(nft_addr: str, chainID: int) -> str:
     nft_addr2 = brownie.web3.toChecksumAddress(nft_addr)
-    chain_id = brownie.network.chain.id  # in base10
 
     # adapted from ocean.py/ocean_lib/ocean/ocean_assets.py
-    did = f"did:op:{create_checksum(nft_addr2 + str(chain_id))}"
+    did = f"did:op:{create_checksum(nft_addr2 + str(chainID))}"
     return did
 
 

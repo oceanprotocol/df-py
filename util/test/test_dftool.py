@@ -3,7 +3,7 @@ import os
 from enforce_typing import enforce_types
 import types
 
-from util import constants, csvs
+from util import chainlist, constants, csvs
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
@@ -18,7 +18,7 @@ CHAINID = 0
 def test_query(tmp_path):
     # insert fake inputs: info onto the chain
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
 
@@ -28,7 +28,7 @@ def test_query(tmp_path):
     NSAMP = 5
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool query {CHAINID} {ST} {FIN} {NSAMP} {CSV_DIR}"
+    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
 
     # test result
@@ -89,7 +89,7 @@ def test_dispense(tmp_path):
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = OCEANtoken()
     OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
@@ -117,9 +117,6 @@ def setup_module():
     It sets envvars for use in the test."""
     global PREV, DISPENSE_ACCT
 
-    if not brownie.network.is_connected():
-        brownie.network.connect("development")
-
     PREV = types.SimpleNamespace()
 
     PREV.DFTOOL_KEY = os.environ.get("DFTOOL_KEY")
@@ -127,10 +124,10 @@ def setup_module():
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
     PREV.ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    os.environ["ADDRESS_FILE"] = os.path.expanduser(constants.BARGE_ADDRESS_FILE)
+    os.environ["ADDRESS_FILE"] = chainlist.chainIdToAddressFile(CHAINID)
 
     PREV.SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
-    os.environ["SUBGRAPH_URI"] = constants.BARGE_SUBGRAPH_URI
+    os.environ["SUBGRAPH_URI"] = chainlist.chainIdToSubgraphUri(CHAINID)
 
 
 def teardown_module():

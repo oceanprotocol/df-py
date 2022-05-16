@@ -9,6 +9,7 @@ from util import oceanutil
 accounts = brownie.network.accounts
 a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
+CHAINID = 0
 
 @enforce_types
 def test_basic():
@@ -65,7 +66,7 @@ def test_TOK():
 
 @enforce_types
 def test_OCEAN(ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, "development")
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = oceanutil.OCEANtoken()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
