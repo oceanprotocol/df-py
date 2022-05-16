@@ -1,3 +1,4 @@
+import time
 import brownie
 import os
 from enforce_typing import enforce_types
@@ -21,6 +22,7 @@ def test_query(tmp_path):
     recordDeployedContracts(ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
+    time.sleep(2)
 
     # main cmd
     ST = 0

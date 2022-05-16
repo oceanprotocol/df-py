@@ -1,15 +1,17 @@
+from time import time
 import brownie
 from enforce_typing import enforce_types
 from pprint import pprint
 import pytest
-
 from util import query
 from util.blockrange import BlockRange
 from util.oceanutil import OCEAN_address, recordDeployedContracts
 from util.test import conftest
+import time
 
 accounts = brownie.network.accounts
 chain = brownie.network.chain
+
 
 @enforce_types
 def test_getPools(ADDRESS_FILE, SUBGRAPH_URL):
@@ -63,3 +65,4 @@ def _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=1):
     recordDeployedContracts(ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
+    time.sleep(2)

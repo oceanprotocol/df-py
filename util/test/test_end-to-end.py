@@ -1,3 +1,4 @@
+import time
 import brownie
 from enforce_typing import enforce_types
 from pprint import pprint
@@ -80,3 +81,4 @@ def _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools):
     recordDeployedContracts(ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
+    time.sleep(2)
