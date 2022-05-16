@@ -134,9 +134,14 @@ def createBPoolFromDatatoken(
     DT_OCEAN_rate: float = 0.1,
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
+    token=None
 ):
 
-    OCEAN = OCEANtoken()
+    if token == None:
+        OCEAN = OCEANtoken()
+    else:
+        OCEAN = token
+        
     erc721_factory = ERC721Factory()
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]

@@ -127,7 +127,7 @@ def getStakes(pools: list, rng: BlockRange, subgraph_url: str) -> dict:
 
 @enforce_types
 def getPoolVolumes(
-    pools: list, st_block: int, end_block: int, subgraph_url: str) \
+    pools: list, st_block: int, end_block: int, subgraph_url: str, token_addr:str=None) \
     -> dict:
     """
     @description
@@ -136,7 +136,7 @@ def getPoolVolumes(
     @return
       poolvols_at_chain -- dict of [basetoken_symbol][pool_addr]:vol_amt
     """
-    DT_vols = getDTVolumes(st_block, end_block, subgraph_url)  # DT_addr : vol
+    DT_vols = getDTVolumes(st_block, end_block, subgraph_url,token_addr)  # DT_addr : vol
     DTs_with_consume = set(DT_vols.keys())
     approved_tokens = getApprovedTokens(subgraph_url)  # basetoken_addr : symbol
 
@@ -150,7 +150,7 @@ def getPoolVolumes(
     return poolvols #ie poolvols_at_chain
 
 
-def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) \
+def getDTVolumes(st_block: int, end_block: int, subgraph_url: str,token_addr:str=None) \
     -> Dict[str, float]:
     """
     @description
@@ -161,7 +161,11 @@ def getDTVolumes(st_block: int, end_block: int, subgraph_url: str) \
       DTvols_at_chain -- dict of [DT_addr]:vol_amt
     """
     print("getDTVolumes(): begin")
-    OCEAN_addr = oceanutil.OCEANtoken().address.lower()
+
+    if token_addr == None:
+      OCEAN_addr = oceanutil.OCEANtoken().address.lower()
+    else:
+      OCEAN_addr = token_addr.lower()
 
     DT_vols = {}
     chunk_size = 1000  # max for subgraph = 1000
@@ -303,4 +307,3 @@ def getAllPools(subgraph_url: str) -> List[SimplePool]:
             pools.append(pool)
 
     return pools
-

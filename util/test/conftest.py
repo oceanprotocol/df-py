@@ -1,3 +1,4 @@
+from pickle import NONE
 import brownie
 from enforce_typing import enforce_types
 import os
@@ -39,8 +40,9 @@ def SUBGRAPH_URL() -> str:
 
 
 @enforce_types
-def fillAccountsWithOCEAN():
-    OCEAN = oceanutil.OCEANtoken()
+def fillAccountsWithOCEAN(OCEAN=None):
+    if OCEAN == None:
+        OCEAN = oceanutil.OCEANtoken()
 
     for i in range(1, 10):
         bal_before: int = fromBase18(OCEAN.balanceOf(accounts[i]))
@@ -52,7 +54,7 @@ def fillAccountsWithOCEAN():
 
 
 @enforce_types
-def randomDeployTokensAndPoolsThenConsume(num_pools: int):
+def randomDeployTokensAndPoolsThenConsume(num_pools: int,base_token=None):
     # create random NUM_POOLS. Randomly add stake.
     tups = []  # (pub_account_i, DT, pool)
     for pool_i in range(num_pools):
@@ -60,8 +62,8 @@ def randomDeployTokensAndPoolsThenConsume(num_pools: int):
             account_i = pool_i
         else:
             account_i = random.randint(len(accounts))
-        (DT, pool) = randomDeployPool(accounts[account_i])
-        randomAddStake(pool, account_i)
+        (DT, pool) = randomDeployPool(accounts[account_i],base_token)
+        randomAddStake(pool, account_i,base_token)
         tups.append((account_i, DT, pool))
 
     # consume data assets randomly
@@ -76,7 +78,7 @@ def randomDeployTokensAndPoolsThenConsume(num_pools: int):
 
         # buy asset
         DT_buy_amt = 1.0
-        buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account)
+        buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account,base_token)
 
         # consume asset
         pub_account = accounts[pub_account_i]
@@ -100,17 +102,19 @@ def consumeDT(DT, pub_account, consume_account):
 
 
 @enforce_types
-def randomAddStake(pool, pub_account_i: int):
+def randomAddStake(pool, pub_account_i: int,token=None):
     cand_account_I = [i for i in range(10) if i != pub_account_i]
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
         OCEAN_stake = AVG_OCEAN_STAKE * (1 + 0.1 * random.random())
-        addStake(pool, OCEAN_stake, accounts[account_i])
+        addStake(pool, OCEAN_stake, accounts[account_i], token)
 
 
 @enforce_types
-def addStake(pool, OCEAN_stake: float, from_account):
-    OCEAN = oceanutil.OCEANtoken()
+def addStake(pool, OCEAN_stake: float, from_account,OCEAN=None):
+    if OCEAN == None:
+        OCEAN = oceanutil.OCEANtoken()
+
     OCEAN.approve(pool.address, toBase18(OCEAN_stake), {"from": from_account})
 
     token_amt_in = toBase18(OCEAN_stake)
@@ -121,8 +125,9 @@ def addStake(pool, OCEAN_stake: float, from_account):
 
 
 @enforce_types
-def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account):
-    OCEAN = oceanutil.OCEANtoken()
+def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account,OCEAN=None):
+    if OCEAN == None:
+        OCEAN = oceanutil.OCEANtoken()
     OCEAN.approve(pool.address, toBase18(max_OCEAN), {"from": from_account})
 
     tokenInOutMarket = [
@@ -149,14 +154,14 @@ def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account):
 
 
 @enforce_types
-def randomDeployPool(pub_account):
+def randomDeployPool(pub_account,token=None):
     init_OCEAN_stake = AVG_INIT_OCEAN_STAKE * (1 + 0.1 * random.random())
     DT_OCEAN_rate = AVG_DT_OCEAN_RATE * (1 + 0.1 * random.random())
-    return deployPool(init_OCEAN_stake, DT_OCEAN_rate, pub_account)
+    return deployPool(init_OCEAN_stake, DT_OCEAN_rate, pub_account,token)
 
 
 @enforce_types
-def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account):
+def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account,token):
     data_NFT = oceanutil.createDataNFT("1", "1", from_account)
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
@@ -165,6 +170,7 @@ def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account):
         from_account,
         init_OCEAN_liquidity=init_OCEAN_stake,
         DT_OCEAN_rate=DT_OCEAN_rate,
+        token=token
     )
 
     return (DT, pool)
