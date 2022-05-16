@@ -74,4 +74,4 @@ def _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=1):
         added = True
     conftest.fillAccountsWithOCEAN(CO2)
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools,CO2)
-    time.sleep(7)
+    time.sleep(2)
