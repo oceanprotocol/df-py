@@ -1,15 +1,15 @@
 from enforce_typing import enforce_types
 from pprint import pprint
 
-from util import oceanutil
+from util import chainlist, oceanutil
 from util.graphutil import submitQuery
 from util.test import conftest
 
 CHAINID = 0
+ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
 
 @enforce_types
-def test_thegraph_approvedTokens(ADDRESS_FILE, accounts):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
+def test_thegraph_approvedTokens(accounts):
     OCEAN = oceanutil.OCEANtoken()
 
     conftest.randomDeployPool(accounts[0])
@@ -21,8 +21,7 @@ def test_thegraph_approvedTokens(ADDRESS_FILE, accounts):
 
 
 @enforce_types
-def test_thegraph_orders(ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
+def test_thegraph_orders():
     OCEAN = oceanutil.OCEANtoken()
 
     (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)[0]
@@ -49,8 +48,7 @@ def test_thegraph_orders(ADDRESS_FILE):
 
 
 @enforce_types
-def test_thegraph_poolShares(ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
+def test_thegraph_poolShares():
     OCEAN = oceanutil.OCEANtoken()
 
     tups = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
@@ -82,3 +80,8 @@ def test_thegraph_poolShares(ADDRESS_FILE):
 
     result = submitQuery(query, CHAINID)
     pprint(result)
+
+def setup_module():
+    """This automatically gets called at the beginning of each test."""
+    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    conftest.fillAccountsWithOCEAN()
