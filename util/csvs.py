@@ -5,6 +5,8 @@ import os
 import re
 from typing import Dict, List
 
+from util import constants, oceanutil
+
 
 # ========================================================================
 # stakes csvs
@@ -203,6 +205,74 @@ def chainIDforPoolvolsCsv(filename) -> int:
     return _lastInt(filename)
 
 
+
+
+# ========================================================================
+# poolinfo csvs
+
+
+@enforce_types
+def savePoolinfoCsv(
+        pools_at_chain: list,
+        stakes_at_chain: dict,
+        poolvols_at_chain: dict,
+        csv_dir: str,
+        chainID: int):
+    """
+    @description
+      Save detailed info for this pool.
+
+    @arguments
+      pools_at_chain -- list of SimplePool
+      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
+      poolvols_at_chain -- dict of [basetoken_sym][pool_addr] : vol_amt
+      csv_dir -- directory that holds csv files
+      chainID -- which network
+    """
+    assert os.path.exists(csv_dir), f"{csv_dir} should exist"
+    csv_file = poolinfoCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
+
+    pools_by_addr = {pool.addr:pool for pool in pools_at_chain}
+    
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "basetoken", "pool_addr", "vol_amt",
+                         "stake_amt",
+                         "nft_addr", "DT_addr", "DT_symbol", "basetoken_addr",
+                         "did", "url"])
+            
+        for basetoken in poolvols_at_chain:
+            if basetoken not in stakes_at_chain:
+                continue
+            for pool_addr, vol in poolvols_at_chain[basetoken].items():
+                row = []
+                
+                row += [chainID, basetoken, pool_addr, vol]
+
+                if pool_addr not in stakes_at_chain[basetoken]:
+                    continue
+                stake_amt = sum(stakes_at_chain[basetoken][pool_addr].values())
+                row += [stake_amt]
+
+                p = pools_by_addr[pool_addr]
+                row += [p.nft_addr, p.DT_addr, p.DT_symbol, p.basetoken_addr]
+
+                did = oceanutil.calcDID(p.nft_addr, chainID)
+                url = constants.MARKET_ASSET_BASE_URL + did
+                row += [did, url]
+                
+                writer.writerow(row)
+                
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def poolinfoCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the poolinfo filename for a given chainID"""
+    return os.path.join(csv_dir, f"poolinfo-{chainID}.csv")
+
+    
 
 # ========================================================================
 # exchange rate csvs

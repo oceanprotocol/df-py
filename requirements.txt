@@ -1,5 +1,6 @@
 eth-brownie
 enforce_typing
 numpy
+pandas
 scipy
 pycoingecko

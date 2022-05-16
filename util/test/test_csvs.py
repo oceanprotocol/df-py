@@ -1,6 +1,11 @@
+import brownie
 from enforce_typing import enforce_types
+import pandas as pd
 
+from util.query import SimplePool
 from util import csvs
+
+accounts = brownie.network.accounts
 
 #for shorter lines
 C1, C2 = 1, 137
@@ -22,7 +27,7 @@ def test_chainIDforStakeCsv():
 @enforce_types
 def test_stakes_onechain(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {OCN: {PA: {LP1: 1.1, LP1: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+    S1 = {OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
           H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
     csvs.saveStakesCsv(S1, csv_dir, C1)
     target_S1 = S1
@@ -33,7 +38,7 @@ def test_stakes_onechain(tmp_path):
 @enforce_types
 def test_stakes_twochains(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {OCN: {PA: {LP1: 1.1, LP1: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+    S1 = {OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
           H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
     S2 = {OCN: {PD: {LP1: 4.1, LP5: 4.5}},
           H2O: {PE: {LP6: 5.6}}}
@@ -83,6 +88,39 @@ def test_poolvols_twochains(tmp_path):
     target_V = {C1: V1, C2: V2}
     loaded_V = csvs.loadPoolvolsCsvs(csv_dir)
     assert loaded_V == target_V
+
+
+
+#=================================================================
+# poolinfo csvs
+
+
+@enforce_types
+def test_poolinfo(tmp_path):
+    csv_dir = str(tmp_path)
+    nft1_addr, nft2_addr, nft3_addr = \
+        accounts[5].address, accounts[6].address, accounts[7].address
+    P1 = [SimplePool(PA, nft1_addr, "dt1_addr", "DT1_SYM", "ocn_addr"),
+          SimplePool(PB, nft2_addr, "dt2_addr", "DT2_SYM", "h2o_addr"),
+          SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", "ocn_addr")]
+    S1 = {OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+          H2O: {PC: {LP1: 3.1, LP4: 3.4}}}
+    V1 = {OCN: {PA: 0.11, PB: 0.12},
+          H2O: {PC: 3.1}}
+    csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
+
+    csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
+    
+    target_header = ["chainID", "basetoken", "pool_addr", "vol_amt",
+                     "stake_amt",
+                     "nft_addr", "DT_addr", "DT_symbol", "basetoken_addr",
+                     "did", "url"]
+    
+    data = pd.read_csv(csv_file)
+    header = [c for c in data.columns]
+    assert header == target_header
+
+    #(skip fancier tests)
 
 
 #=================================================================
