@@ -4,7 +4,7 @@ import os
 import pytest
 import random
 
-from util import constants, graphutil, oceanutil
+from util import chainlist, constants, graphutil, oceanutil
 from util.base18 import toBase18, fromBase18
 
 brownie.network.connect("development")  #ie ganache / barge, CHAINID = 0
@@ -22,12 +22,11 @@ AVG_OCEAN_STAKE = 10.0
 MAX_OCEAN_IN_BUY = 10000.0
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
-_ADDRESS_FILE = os.path.expanduser(constants.BARGE_ADDRESS_FILE)
 
 @pytest.fixture
 @enforce_types
 def ADDRESS_FILE() -> str:
-    return _ADDRESS_FILE
+    return chainlist.chainIdToAddressFile(chainID=0)
 
 
 @enforce_types

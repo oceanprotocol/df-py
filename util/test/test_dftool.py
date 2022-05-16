@@ -3,7 +3,7 @@ import os
 from enforce_typing import enforce_types
 import types
 
-from util import constants, csvs
+from util import chainlist, constants, csvs
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
@@ -124,10 +124,10 @@ def setup_module():
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
     PREV.ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    os.environ["ADDRESS_FILE"] = os.path.expanduser(constants.BARGE_ADDRESS_FILE)
+    os.environ["ADDRESS_FILE"] = chainlist.chainIdToAddressFile(CHAINID)
 
     PREV.SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
-    os.environ["SUBGRAPH_URI"] = constants.BARGE_SUBGRAPH_URI
+    os.environ["SUBGRAPH_URI"] = chainlist.chainIdToSubgraphUri(CHAINID)
 
 
 def teardown_module():

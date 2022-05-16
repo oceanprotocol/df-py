@@ -1,21 +1,34 @@
 import ast
 from enforce_typing import enforce_types
+import os
 import re
 import requests
 from typing import Dict
 
+_BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
+_BARGE_SUBGRAPH_URI = "http://127.0.0.1:9000"
 
+_CHAINID_TO_NETWORK = None # dict of [chainID_int] : network_str
+_NETWORK_TO_CHAINID = None # dict of [network_str] : chainID_int
+_CHAINIDS_JS_URL = "https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/chainIds.js"
+
+
+@enforce_types
+def chainIdToAddressFile(chainID: int) -> str:
+    """Returns the address file for a given chainID"""
+    if chainID == 0:
+        return os.path.expanduser(_BARGE_ADDRESS_FILE)
+    else:
+        raise NotImplementedError()
+
+    
 @enforce_types
 def chainIdToSubgraphUri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
     if chainID == 0:
-        return "http://127.0.0.1:9000" #ganache / barge
+        return _BARGE_SUBGRAPH_URI
     else:
         raise NotImplementedError()
-
-
-CHAINID_TO_NETWORK = None # dict of [chainID_int] : network_str
-NETWORK_TO_CHAINID = None # dict of [network_str] : chainID_int
 
     
 @enforce_types
@@ -26,10 +39,10 @@ def chainIdToNetwork(chainID: int) -> str:
         return "development"
 
     #main case
-    global CHAINID_TO_NETWORK
-    if CHAINID_TO_NETWORK is None:
+    global _CHAINID_TO_NETWORK
+    if _CHAINID_TO_NETWORK is None:
         _cacheDataFromChainlist()
-    return CHAINID_TO_NETWORK[chainID]
+    return _CHAINID_TO_NETWORK[chainID]
 
 
 def networkToChainId(network:str) -> int:
@@ -39,10 +52,10 @@ def networkToChainId(network:str) -> int:
         return 0
     
     #main case
-    global NETWORK_TO_CHAINID
-    if NETWORK_TO_CHAINID is None:
+    global _NETWORK_TO_CHAINID
+    if _NETWORK_TO_CHAINID is None:
         _cacheDataFromChainlist()
-    return NETWORK_TO_CHAINID[network]
+    return _NETWORK_TO_CHAINID[network]
 
 
 def _cacheDataFromChainlist():
@@ -52,12 +65,12 @@ def _cacheDataFromChainlist():
       Its core data is found at the github url given below. 
       This function grabs that core data and stores it as a global.
     """
-    global CHAINID_TO_NETWORK, NETWORK_TO_CHAINID
-    if CHAINID_TO_NETWORK is not None:
-        assert NETWORK_TO_CHAINID is not None, "should set both globals at once"
+    global _CHAINID_TO_NETWORK, _NETWORK_TO_CHAINID
+    if _CHAINID_TO_NETWORK is not None:
+        assert _NETWORK_TO_CHAINID is not None, "should set both globals at once"
         return
 
-    url = "https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/chainIds.js"
+    url = _CHAINIDS_JS_URL
     resp = requests.get(url)
 
     text = resp.text
@@ -71,8 +84,8 @@ def _cacheDataFromChainlist():
     text = re.sub(".*{", "{", text) #remove all before the "{"
     text = re.sub(",}.*", "}", text) #remove all after the "}"
 
-    CHAINID_TO_NETWORK = ast.literal_eval(text)
-    NETWORK_TO_CHAINID = {network: chainID
-                          for chainID, network in CHAINID_TO_NETWORK.items()}
+    _CHAINID_TO_NETWORK = ast.literal_eval(text)
+    _NETWORK_TO_CHAINID = {network: chainID
+                           for chainID, network in _CHAINID_TO_NETWORK.items()}
     
 
