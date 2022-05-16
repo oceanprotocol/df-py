@@ -36,7 +36,7 @@ def test_getStakes(ADDRESS_FILE):
     pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
 
-    for stakes_at_pool in stakes["ocean"].values():
+    for stakes_at_pool in stakes["OCEAN"].values():
         assert len(stakes_at_pool) > 0
         assert min(stakes_at_pool.values()) > 0.0
 
@@ -56,7 +56,7 @@ def test_getPoolVolumes(ADDRESS_FILE):
     st, fin = 1, len(chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
     assert poolvols
-    assert sum(poolvols["ocean"].values()) > 0.0
+    assert sum(poolvols["OCEAN"].values()) > 0.0
 
 
 @enforce_types
@@ -64,7 +64,7 @@ def test_getApprovedTokens(ADDRESS_FILE):
     _setup(ADDRESS_FILE)
     approved_tokens = query.getApprovedTokens(CHAINID)
     assert OCEAN_address().lower() in approved_tokens.keys()
-    assert "ocean" in approved_tokens.values()
+    assert "OCEAN" in approved_tokens.values()
 
 
 # ========================================================================
