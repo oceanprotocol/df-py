@@ -60,7 +60,7 @@ def getPools(chainID: int) -> list:
       pools -- list of SimplePool
     """
     pools = getAllPools(chainID)
-    pools = _filterOutPurgatory(pools)
+    pools = _filterOutPurgatory(pools, chainID)
     return pools
 
 
@@ -206,7 +206,8 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) \
 
 
 @enforce_types
-def _filterOutPurgatory(pools: List[SimplePool]) -> List[SimplePool]:
+def _filterOutPurgatory(pools: List[SimplePool], chainID:int) \
+    -> List[SimplePool]:
     """
     @description
       Return pools that aren't in purgatory
@@ -218,9 +219,10 @@ def _filterOutPurgatory(pools: List[SimplePool]) -> List[SimplePool]:
       filtered_pools -- list of SimplePool
     """
     bad_dids = _didsInPurgatory()
-    filtered_pools = [pool
-                      for pool in pools
-                      if oceanutil.calcDID(pool.nft_addr) not in bad_dids]
+    filtered_pools = [
+        pool
+        for pool in pools
+        if oceanutil.calcDID(pool.nft_addr, chainID) not in bad_dids]
     return filtered_pools
 
 
