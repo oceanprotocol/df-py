@@ -76,7 +76,7 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
-ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={constants.BARGE_ADDRESS_FILE}
+ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFile(chainID=0)}
 """
     if len(sys.argv) not in [2 + 5]:
         print(HELP)
