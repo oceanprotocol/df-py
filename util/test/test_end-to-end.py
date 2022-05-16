@@ -17,12 +17,12 @@ CHAINID = 0
 def test_without_csvs(ADDRESS_FILE):
     _setup(ADDRESS_FILE, num_pools=1)
 
-    st, fin, n = 1, len(chain), 5
+    st, fin, n = 1, len(chain), 25
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
     (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, CHAINID)
-    rates = {"ocean": 0.5, "h2o": 1.618}
+    rates = {"OCEAN": 0.5, "H2O": 1.618}
 
     stakes, poolvols = {CHAINID: stakes_at_chain}, {CHAINID: poolvols_at_chain}
     rewards = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
@@ -42,7 +42,7 @@ def test_with_csvs(ADDRESS_FILE, tmp_path):
     _setup(ADDRESS_FILE, num_pools=1)
     csv_dir = str(tmp_path)
 
-    st, fin, n = 1, len(chain), 5
+    st, fin, n = 1, len(chain), 25
     rng = BlockRange(st, fin, n)
 
     # 1. simulate "dftool query"
