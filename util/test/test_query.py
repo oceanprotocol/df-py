@@ -13,6 +13,14 @@ chain = brownie.network.chain
 
 CHAINID = 0
 
+
+@enforce_types
+def test_SimplePool():
+    pool = query.SimplePool(
+        "0xpool_addr", "0xnft_addr", "0xdt_addr", "DT", "0xbasetoken_addr")
+    assert "SimplePool" in str(pool)
+
+
 @enforce_types
 def test_getPools(ADDRESS_FILE):
     _setup(ADDRESS_FILE)
