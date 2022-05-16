@@ -1,4 +1,3 @@
-from pickle import NONE
 import brownie
 from enforce_typing import enforce_types
 import os
