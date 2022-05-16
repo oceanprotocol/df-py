@@ -26,7 +26,7 @@ def test_getStakes(ADDRESS_FILE):
     st, fin, n = 1, len(chain), 50
     rng = BlockRange(st, fin, n)
     pools = query.getPools(CHAINID)
-    stakes = query.getStakes(pools, rng)
+    stakes = query.getStakes(pools, rng, CHAINID)
 
     for stakes_at_pool in stakes["ocean"].values():
         assert len(stakes_at_pool) > 0
@@ -37,7 +37,7 @@ def test_getStakes(ADDRESS_FILE):
 def test_getDTVolumes(ADDRESS_FILE):
     _setup(ADDRESS_FILE)
     st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin)
+    DT_vols = query.getDTVolumes(st, fin, CHAINID)
     assert sum(DT_vols.values()) > 0.0
 
 
@@ -46,7 +46,7 @@ def test_getPoolVolumes(ADDRESS_FILE):
     _setup(ADDRESS_FILE)
     pools = query.getPools(CHAINID)
     st, fin = 1, len(chain)
-    poolvols = query.getPoolVolumes(pools, st, fin)
+    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
     assert poolvols
     assert sum(poolvols["ocean"].values()) > 0.0
 
