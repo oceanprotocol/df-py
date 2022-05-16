@@ -6,7 +6,7 @@ import requests
 from typing import Dict
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
-_BARGE_SUBGRAPH_URI = "http://127.0.0.1:9000"
+_BARGE_SUBGRAPH_URI = "http://127.0.0.1:9000/subgraphs/name/oceanprotocol/ocean-subgraph"
 
 _CHAINID_TO_NETWORK = None # dict of [chainID_int] : network_str
 _NETWORK_TO_CHAINID = None # dict of [network_str] : chainID_int
