@@ -111,24 +111,24 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
             if not new_pool_stake:
                 break
             for d in new_pool_stake:
-                base_token_addr = d["pool"]["baseToken"]["id"].lower()
-                base_token_symbol = approved_tokens[base_token_addr].lower()
+                basetoken_addr = d["pool"]["baseToken"]["id"].lower()
+                basetoken_symbol = approved_tokens[basetoken_addr].lower()
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
-                if base_token_addr not in approved_token_addrs:
+                if basetoken_addr not in approved_token_addrs:
                     continue
                 if LP_addr == SSBOT_address:
                     continue  # skip ss bot
 
-                if base_token_symbol not in stakes:
-                    stakes[base_token_symbol] = {}
-                if pool_addr not in stakes[base_token_symbol]:
-                    stakes[base_token_symbol][pool_addr] = {}
-                if LP_addr not in stakes[base_token_symbol][pool_addr]:
-                    stakes[base_token_symbol][pool_addr][LP_addr] = 0.0
+                if basetoken_symbol not in stakes:
+                    stakes[basetoken_symbol] = {}
+                if pool_addr not in stakes[basetoken_symbol]:
+                    stakes[basetoken_symbol][pool_addr] = {}
+                if LP_addr not in stakes[basetoken_symbol][pool_addr]:
+                    stakes[basetoken_symbol][pool_addr][LP_addr] = 0.0
 
-                stakes[base_token_symbol][pool_addr][LP_addr] += shares / n_blocks
+                stakes[basetoken_symbol][pool_addr][LP_addr] += shares / n_blocks
             offset += chunk_size
 
     return stakes #ie stakes_at_chain
