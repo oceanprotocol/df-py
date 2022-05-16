@@ -29,6 +29,16 @@ class SimplePool:
         self.DT_symbol = DT_symbol
         self.basetoken_addr = basetoken_addr
 
+    def __str__(self):
+        s = ["SimplePool={"]
+        s += [f"addr={self.addr[:5]}"]
+        s += [f", nft_addr={self.nft_addr[:5]}"]
+        s += [f", DT_addr={self.DT_addr[:5]}"]
+        s += [f", DT_symbol={self.DT_symbol}"]
+        s += [f", basetoken_addr={self.basetoken_addr[:5]}"]
+        s += [" /SimplePool}"]
+        return "".join(s)        
+
 
 @enforce_types
 def query(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
@@ -112,7 +122,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 break
             for d in new_pool_stake:
                 basetoken_addr = d["pool"]["baseToken"]["id"].lower()
-                basetoken_symbol = approved_tokens[basetoken_addr].lower()
+                basetoken_symbol = approved_tokens[basetoken_addr].upper()
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
@@ -257,9 +267,11 @@ def getApprovedTokens(chainID: int) -> Dict[str, str]:
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, chainID)
     addrs = result["data"]["opcs"][0]["approvedTokens"]
-    d = {addr.lower(): B.Simpletoken.at(addr).symbol().lower()
+    d = {addr.lower(): B.Simpletoken.at(addr).symbol().upper()
          for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
+    for symbol in d.values():
+        assert symbol == symbol.upper(), "symbols should be uppercase"
     return d
 
 
