@@ -4,7 +4,7 @@ from enforce_typing import enforce_types
 from util.oceanutil import recordDeployedContracts, OCEANtoken, \
     createDataNFT, createDatatokenFromDataNFT, createBPoolFromDatatoken, \
     calcDID
-from util import oceanutil
+from util import chainlist, oceanutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.test import conftest
@@ -13,7 +13,7 @@ accounts = brownie.network.accounts
 account0 = accounts[0]
 
 CHAINID = 0
-ADDRESS_FILE = conftest._ADDRESS_FILE
+ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
 
 @enforce_types
 def test_recordDeployedContracts():
