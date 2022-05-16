@@ -13,60 +13,62 @@ import time, random, string
 accounts = brownie.network.accounts
 chain = brownie.network.chain
 
+CHAINID = 0
+
 rndString = ''.join(random.sample(list(string.ascii_lowercase),5))
 CO2 = B.Simpletoken.deploy(f"Carbon Dioxide {rndString}", f"CO2 ${rndString}", 18, 1e26, {"from": accounts[0]})
 
 @enforce_types
-def test_getPools(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
-    pools = query.getPools(SUBGRAPH_URL)
+def test_getPools(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
+    pools = query.getPools(CHAINID)
     assert pools
 
 
 @enforce_types
-def test_getStakes(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
+def test_getStakes(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
     st, fin, n = 1, len(chain), 50
     rng = BlockRange(st, fin, n)
-    pools = query.getPools(SUBGRAPH_URL)
-    stakes = query.getStakes(pools, rng, SUBGRAPH_URL)
-    for stakes_at_pool in stakes[f"Carbon Dioxide {rndString}".lower()].values():
+    pools = query.getPools(CHAINID)
+    stakes = query.getStakes(pools, rng, CHAINID)
+    for stakes_at_pool in stakes[f"Carbon Dioxide {rndString}".upper()].values():
         assert len(stakes_at_pool) > 0
         assert min(stakes_at_pool.values()) > 0.0
 
 
 @enforce_types
-def test_getDTVolumes(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
+def test_getDTVolumes(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
     st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin, SUBGRAPH_URL, CO2.address)
+    DT_vols = query.getDTVolumes(st, fin, CHAINID, CO2.address)
     assert sum(DT_vols.values()) > 0.0
 
 
 @enforce_types
-def test_getPoolVolumes(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
-    pools = query.getPools(SUBGRAPH_URL)
+def test_getPoolVolumes(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
+    pools = query.getPools(CHAINID)
     st, fin = 1, len(chain)
-    poolvols = query.getPoolVolumes(pools, st, fin, SUBGRAPH_URL, CO2.address)
+    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID, CO2.address)
     assert poolvols
-    assert sum(poolvols[f"Carbon Dioxide {rndString}".lower()].values()) > 0.0
+    assert sum(poolvols[f"Carbon Dioxide {rndString}".upper()].values()) > 0.0
 
 
 @enforce_types
-def test_getApprovedTokens(ADDRESS_FILE, SUBGRAPH_URL):
-    _setup(ADDRESS_FILE, SUBGRAPH_URL)
-    approved_tokens = query.getApprovedTokens(SUBGRAPH_URL)
+def test_getApprovedTokens(ADDRESS_FILE):
+    _setup(ADDRESS_FILE)
+    approved_tokens = query.getApprovedTokens(CHAINID)
     assert CO2.address.lower() in approved_tokens.keys()
-    assert f"Carbon Dioxide {rndString}".lower() in approved_tokens.values()
+    assert f"Carbon Dioxide {rndString}".upper() in approved_tokens.values()
 
 
 # ========================================================================
 added = False
 @enforce_types
-def _setup(ADDRESS_FILE, SUBGRAPH_URL, num_pools=1):
+def _setup(ADDRESS_FILE, num_pools=1):
     global added
-    recordDeployedContracts(ADDRESS_FILE, "development")
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
     if added == False:
         CONTRACTS["Router"].addApprovedToken(
             CO2.address,{"from":accounts[0]}
