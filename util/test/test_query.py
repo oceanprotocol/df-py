@@ -45,12 +45,12 @@ def _test_getPools(base_token_str):
 
 
 @enforce_types
-def test_getStakes_OCEAN(base_token):
+def test_getStakes_OCEAN():
     _test_getStakes("OCEAN")
 
 
 @enforce_types
-def test_getStakes_CO2(base_token):
+def test_getStakes_CO2():
     _test_getStakes("CO2")
 
 
