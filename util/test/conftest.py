@@ -16,9 +16,10 @@ NUM_STAKERS_PER_POOL = 2  # 3
 NUM_CONSUMES = 3  # 100
 
 AMT_OCEAN_PER_ACCOUNT = 100000.0
-AVG_INIT_OCEAN_STAKE = 100.0
-AVG_DT_OCEAN_RATE = 1.0
-AVG_OCEAN_STAKE = 10.0
+
+AVG_INIT_TOKEN_STAKE = 100.0
+AVG_DT_TOKEN_RATE = 1.0
+AVG_TOKEN_STAKE = 10.0
 MAX_TOKEN_IN_BUY = 10000.0 #e.g. max OCEAN
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
@@ -97,15 +98,15 @@ def randomAddStake(pool, pub_account_i: int,token):
     cand_account_I = [i for i in range(10) if i != pub_account_i]
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
-        OCEAN_stake = AVG_OCEAN_STAKE * (1 + 0.1 * random.random())
-        addStake(pool, OCEAN_stake, accounts[account_i], token)
+        TOKEN_stake = AVG_TOKEN_STAKE * (1 + 0.1 * random.random())
+        addStake(pool, TOKEN_stake, accounts[account_i], token)
 
 
 @enforce_types
-def addStake(pool, OCEAN_stake: float, from_account,token):
-    token.approve(pool.address, toBase18(OCEAN_stake), {"from": from_account})
+def addStake(pool, TOKEN_stake: float, from_account,token):
+    token.approve(pool.address, toBase18(TOKEN_stake), {"from": from_account})
 
-    token_amt_in = toBase18(OCEAN_stake)
+    token_amt_in = toBase18(TOKEN_stake)
     min_pool_amt_out = toBase18(MIN_POOL_BPTS_OUT_FROM_STAKE)  # magic number
 
     # assert tokenAmountIn <= poolBalanceOfToken * MAX_IN_RATIO, "ERR_MAX_IN_RATIO
@@ -113,8 +114,8 @@ def addStake(pool, OCEAN_stake: float, from_account,token):
 
 
 @enforce_types
-def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account, base_token):
-    base_token.approve(pool.address, toBase18(max_OCEAN), {"from": from_account})
+def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
+    base_token.approve(pool.address, toBase18(max_TOKEN), {"from": from_account})
 
     tokenInOutMarket = [
         base_token.address,  # token in address
@@ -122,15 +123,15 @@ def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account, base_toke
         constants.ZERO_ADDRESS,  # market fee  address
     ]
     amountsInOutMaxFee = [
-        toBase18(max_OCEAN),  # max OCEAN in
+        toBase18(max_TOKEN),  # max TOKEN in
         toBase18(DT_buy_amt),  # target DT out
-        toBase18(AVG_DT_OCEAN_RATE * 10),  # max price
+        toBase18(AVG_DT_TOKEN_RATE * 10),  # max price
         0,  # swap market fee
     ]
 
     # the following test will pass until lotsa activity
     spot_price = fromBase18(pool.getSpotPrice(base_token.address, DT.address, 0))
-    assert AVG_DT_OCEAN_RATE / 5 <= spot_price <= AVG_DT_OCEAN_RATE * 5
+    assert AVG_DT_TOKEN_RATE / 5 <= spot_price <= AVG_DT_TOKEN_RATE * 5
 
     # spotPriceBefore = calcSpotPrice(..)
     # assert spotPriceBefore <= (max price)], "ERR_BAD_LIMIT_PRICE"
@@ -140,14 +141,14 @@ def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account, base_toke
 
 
 @enforce_types
-def randomDeployPool(pub_account,token):
-    init_OCEAN_stake = AVG_INIT_OCEAN_STAKE * (1 + 0.1 * random.random())
-    DT_TOKEN_rate = AVG_DT_OCEAN_RATE * (1 + 0.1 * random.random())
-    return deployPool(init_OCEAN_stake, DT_TOKEN_rate, pub_account,token)
+def randomDeployPool(pub_account, token):
+    init_TOKEN_stake = AVG_INIT_TOKEN_STAKE * (1 + 0.1 * random.random())
+    DT_TOKEN_rate = AVG_DT_TOKEN_RATE * (1 + 0.1 * random.random())
+    return deployPool(init_TOKEN_stake, DT_TOKEN_rate, pub_account,token)
 
 
 @enforce_types
-def deployPool(init_OCEAN_stake: float, DT_TOKEN_rate: float, from_account,token):
+def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account,token):
     data_NFT = oceanutil.createDataNFT("1", "1", from_account)
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
@@ -155,7 +156,7 @@ def deployPool(init_OCEAN_stake: float, DT_TOKEN_rate: float, from_account,token
         DT,
         from_account,
         token,
-        init_TOKEN_liquidity=init_OCEAN_stake,
+        init_TOKEN_liquidity=init_TOKEN_stake,
         DT_TOKEN_rate=DT_TOKEN_rate,
     )
 
