@@ -4,7 +4,7 @@ from pprint import pprint
 import pytest
 from util import query
 from util.blockrange import BlockRange
-from util.oceanutil import OCEAN_address, CONTRACTS, recordDeployedContracts
+from util.oceanutil import OCEAN_address, CONTRACTS, OCEANtoken, recordDeployedContracts
 from util.test import conftest
 from util.constants import BROWNIE_PROJECT as B
 import time, random, string
@@ -56,7 +56,7 @@ def test_getStakes(ADDRESS_FILE):
 def test_getDTVolumes(ADDRESS_FILE):
     _setup(ADDRESS_FILE)
     st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin, CHAINID)
+    DT_vols = query.getDTVolumes(st, fin, CHAINID, OCEAN_address())
     assert sum(DT_vols.values()) > 0.0
 
 @enforce_types
@@ -73,7 +73,7 @@ def test_getPoolVolumes(ADDRESS_FILE):
     _setup(ADDRESS_FILE)
     pools = query.getPools(CHAINID)
     st, fin = 1, len(chain)
-    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
+    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID, OCEAN_address())
     assert poolvols
     assert sum(poolvols["OCEAN"].values()) > 0.0
 
@@ -106,7 +106,7 @@ def test_getApprovedTokens(ADDRESS_FILE):
 def _setup(ADDRESS_FILE, num_pools=1):
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
     time.sleep(2)
 
 added = False
@@ -119,6 +119,6 @@ def _setup_co2(ADDRESS_FILE, num_pools=1):
             CO2.address,{"from":accounts[0]}
         )
         added = True
-    conftest.fillAccountsWithOCEAN(CO2)
+    conftest.fillAccountsWithToken(CO2)
     conftest.randomDeployTokensAndPoolsThenConsume(num_pools,CO2)
     time.sleep(2)

@@ -41,7 +41,7 @@ class SimplePool:
 
 
 @enforce_types
-def query(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
+def query(rng: BlockRange, chainID: int, token_addr: str) -> Tuple[list, dict, dict]:
     """
     @description
       Return pool info, stakes & poolvols, for the input block range and chain.
@@ -56,7 +56,7 @@ def query(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
     """
     Pi = getPools(chainID)
     Si = getStakes(Pi, rng, chainID)
-    Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID)
+    Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID, token_addr)
     return (Pi, Si, Vi)
 
 
@@ -146,7 +146,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
 
 @enforce_types
 def getPoolVolumes(
-        pools: list, st_block: int, end_block: int, chainID: int, token_addr:str=None) -> dict:
+        pools: list, st_block: int, end_block: int, chainID: int, token_addr:str) -> dict:
     """
     @description
       Query the chain for pool volumes.
@@ -168,7 +168,7 @@ def getPoolVolumes(
     return poolvols #ie poolvols_at_chain
 
 
-def getDTVolumes(st_block: int, end_block: int, chainID: int, token_addr:str=None) \
+def getDTVolumes(st_block: int, end_block: int, chainID: int, token_addr:str) \
     -> Dict[str, float]:
     """
     @description
@@ -179,11 +179,8 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int, token_addr:str=Non
     """
     print("getDTVolumes(): begin")
 
-    if token_addr == None:
-      OCEAN_addr = oceanutil.OCEANtoken().address.lower()
-    else:
-      OCEAN_addr = token_addr.lower()
-
+    token_addr = token_addr.lower()
+      
     DT_vols = {}
     chunk_size = 1000  # max for subgraph = 1000
     for offset in range(0, end_block - st_block, chunk_size):
@@ -208,7 +205,7 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int, token_addr:str=Non
         result = submitQuery(query, chainID)
         new_orders = result["data"]["orders"]
         for order in new_orders:
-            if order["lastPriceToken"].lower() == OCEAN_addr:
+            if order["lastPriceToken"].lower() == token_addr:
                 DT_addr = order["datatoken"]["id"].lower()
                 lastPriceValue = float(order["lastPriceValue"])
                 if DT_addr not in DT_vols:

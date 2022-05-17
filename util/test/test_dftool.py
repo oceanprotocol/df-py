@@ -21,7 +21,7 @@ def test_query(tmp_path):
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEANtoken())
     time.sleep(2)
 
     # main cmd
@@ -30,7 +30,7 @@ def test_query(tmp_path):
     NSAMP = 5
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID} {OCEAN_address()}"
     os.system(cmd)
 
     # test result

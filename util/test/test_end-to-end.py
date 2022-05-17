@@ -7,7 +7,7 @@ import pytest
 from util import calcrewards, csvs, dispense, query
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
-from util.oceanutil import OCEAN_address, recordDeployedContracts
+from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
 from util.test import conftest
 
 accounts = brownie.network.accounts
@@ -22,7 +22,7 @@ def test_without_csvs(ADDRESS_FILE):
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
-    (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, CHAINID)
+    (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, CHAINID, OCEAN_address())
     rates = {"OCEAN": 0.5, "H2O": 1.618}
 
     stakes, poolvols = {CHAINID: stakes_at_chain}, {CHAINID: poolvols_at_chain}
@@ -45,9 +45,10 @@ def test_with_csvs(ADDRESS_FILE, tmp_path):
 
     st, fin, n = 1, len(chain), 25
     rng = BlockRange(st, fin, n)
+    token_addr = OCEAN_address()
 
     # 1. simulate "dftool query"
-    (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, CHAINID)
+    (_, stakes_at_chain, poolvols_at_chain) = query.query(rng, CHAINID, token_addr)
     csvs.saveStakesCsv(stakes_at_chain, csv_dir, CHAINID)
     csvs.savePoolvolsCsv(poolvols_at_chain, csv_dir, CHAINID)
     stakes_at_chain = poolvols_at_chain = None  # ensure not used later
@@ -69,7 +70,6 @@ def test_with_csvs(ADDRESS_FILE, tmp_path):
 
     # 4. simulate "dftool dispense"
     rewards = csvs.loadRewardsCsv(csv_dir, "OCEAN")
-    token_addr = OCEAN_address()
     dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
     dispense.dispense(rewards[CHAINID], dfrewards_addr, token_addr, accounts[0])
 
@@ -79,5 +79,5 @@ def test_with_csvs(ADDRESS_FILE, tmp_path):
 def _setup(ADDRESS_FILE, num_pools):
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     conftest.fillAccountsWithOCEAN()
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
     time.sleep(2)

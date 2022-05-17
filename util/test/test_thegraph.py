@@ -12,7 +12,7 @@ ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
 def test_thegraph_approvedTokens(accounts):
     OCEAN = oceanutil.OCEANtoken()
 
-    conftest.randomDeployPool(accounts[0])
+    conftest.randomDeployPool(accounts[0], OCEAN)
 
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, CHAINID)
@@ -24,7 +24,7 @@ def test_thegraph_approvedTokens(accounts):
 def test_thegraph_orders():
     OCEAN = oceanutil.OCEANtoken()
 
-    (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)[0]
+    (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEAN)[0]
 
     query = """
         {
@@ -51,7 +51,7 @@ def test_thegraph_orders():
 def test_thegraph_poolShares():
     OCEAN = oceanutil.OCEANtoken()
 
-    tups = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1)
+    tups = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEAN)
     (_, DT, pool) = tups[0]
 
     skip = 0
