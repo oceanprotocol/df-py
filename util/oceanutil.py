@@ -133,7 +133,7 @@ def createBPoolFromDatatoken(
     datatoken,
     from_account,
     base_TOKEN,
-    init_OCEAN_liquidity: float = 2000.0,
+    init_TOKEN_liquidity: float = 2000.0,
     DT_OCEAN_rate: float = 0.1,
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
@@ -144,7 +144,7 @@ def createBPoolFromDatatoken(
     ssbot = Staking()
 
     base_TOKEN.approve(
-        router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
+        router.address, toBase18(init_TOKEN_liquidity), {"from": from_account}
     )
 
     #dummy values since vestin is now turned off
@@ -156,7 +156,7 @@ def createBPoolFromDatatoken(
         base_TOKEN.decimals(),        # baseToken (decimals)
         toBase18(DT_vest_amt),   # vesting amount (wei)
         DT_vest_num_blocks,      # vested blocks (int, *not* wei)
-        toBase18(init_OCEAN_liquidity), # initial liquidity (wei)
+        toBase18(init_TOKEN_liquidity), # initial liquidity (wei)
     ]
     swap_fees = [
         toBase18(LP_swap_fee),   # swap fee for LPs (wei)

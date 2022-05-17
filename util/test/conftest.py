@@ -155,7 +155,7 @@ def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account,token
         DT,
         from_account,
         token,
-        init_OCEAN_liquidity=init_OCEAN_stake,
+        init_TOKEN_liquidity=init_OCEAN_stake,
         DT_OCEAN_rate=DT_OCEAN_rate,
     )
 
