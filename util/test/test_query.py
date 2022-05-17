@@ -2,21 +2,21 @@ import brownie
 from enforce_typing import enforce_types
 from pprint import pprint
 import pytest
-from util import query
+from util import chainlist, query
 from util.blockrange import BlockRange
-from util.oceanutil import OCEAN_address, CONTRACTS, OCEANtoken, recordDeployedContracts
+from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
 from util.test import conftest
 from util.constants import BROWNIE_PROJECT as B
 import time, random, string
 
-
-accounts = brownie.network.accounts
+account0 = brownie.network.accounts[0]
 chain = brownie.network.chain
 
 CHAINID = 0
 
 rndString = ''.join(random.sample(list(string.ascii_lowercase),5))
-CO2 = B.Simpletoken.deploy(f"Carbon Dioxide {rndString}", f"CO2 ${rndString}", 18, 1e26, {"from": accounts[0]})
+CO2 = B.Simpletoken.deploy(f"CO2 {rndString}", f"CO2_${rndString}", 18, 1e26, {"from": account0})
+
 
 @enforce_types
 def test_SimplePool():
@@ -26,99 +26,109 @@ def test_SimplePool():
 
 
 @enforce_types
-def test_getPools(ADDRESS_FILE):
-    _setup(ADDRESS_FILE)
-    pools = query.getPools(CHAINID)
-    assert pools
+def test_getPools_OCEAN():
+    _test_getPools("OCEAN")
 
 
 @enforce_types
-def test_getStakes(ADDRESS_FILE):
-    _setup(ADDRESS_FILE)
-    _setup_co2(ADDRESS_FILE)
+def test_getPools_CO2():
+    _test_getPools("CO2")
+
+
+@enforce_types
+def _test_getPools(base_token_str):
+    base_token = _setup_pools(base_token_str)
+    pools = query.getPools(CHAINID)
+    pools_with_token = [pool.basetoken_addr == base_token.address
+                        for pool in pools]
+    assert pools_with_token
+
+
+@enforce_types
+def test_getStakes_OCEAN(base_token):
+    _test_getStakes("OCEAN")
+
+
+@enforce_types
+def test_getStakes_CO2(base_token):
+    _test_getStakes("CO2")
+
+
+@enforce_types
+def _test_getStakes(base_token_str):
+    base_token = _setup_pools(base_token_str)
     st, fin, n = 1, len(chain), 50
     rng = BlockRange(st, fin, n)
     pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
 
-    # OCEAN
-    for stakes_at_pool in stakes["OCEAN"].values():
-        assert len(stakes_at_pool) > 0
-        assert min(stakes_at_pool.values()) > 0.0
-
-    # CO2
-    for stakes_at_pool in stakes[f"Carbon Dioxide {rndString}".upper()].values():
+    for stakes_at_pool in stakes[base_token.symbol()].values():
         assert len(stakes_at_pool) > 0
         assert min(stakes_at_pool.values()) > 0.0
 
 
 @enforce_types
-def test_getDTVolumes(ADDRESS_FILE):
-    _setup(ADDRESS_FILE)
+def test_getDTVolumes_OCEAN():
+    _tesT_getDTVolumes("OCEAN")
+
+
+@enforce_types
+def test_getDTVolumes_CO2():
+    _tesT_getDTVolumes("CO2")
+
+
+@enforce_types
+def _test_getDTVolumes(base_token_str):
+    base_token = _setup_pools(base_token_str)
     st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin, CHAINID, OCEAN_address())
+    DT_vols = query.getDTVolumes(st, fin, CHAINID, base_token.address)
     assert sum(DT_vols.values()) > 0.0
 
-@enforce_types
-def test_getDTVolumes_CO2(ADDRESS_FILE):
-    _setup_co2(ADDRESS_FILE)
-    st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin, CHAINID, CO2.address)
-    assert sum(DT_vols.values()) > 0.0
 
+@enforce_types
+def test_getPoolVolumes_OCEAN():
+    _test_getPoolVolumes("OCEAN")
 
 
 @enforce_types
-def test_getPoolVolumes(ADDRESS_FILE):
-    _setup(ADDRESS_FILE)
+def test_getPoolVolumes_CO2():
+    _test_getPoolVolumes("CO2")
+
+
+@enforce_types
+def _test_getPoolVolumes(base_token_str):
+    base_token = _setup_pools(base_token_str)
     pools = query.getPools(CHAINID)
     st, fin = 1, len(chain)
-    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID, OCEAN_address())
+    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID, base_token.address)
     assert poolvols
-    assert sum(poolvols["OCEAN"].values()) > 0.0
-
-@enforce_types
-def test_getPoolVolumes_CO2(ADDRESS_FILE):
-    _setup_co2(ADDRESS_FILE)
-    pools = query.getPools(CHAINID)
-    st, fin = 1, len(chain)
-    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID, CO2.address)
-    assert poolvols
-    assert sum(poolvols[f"Carbon Dioxide {rndString}".upper()].values()) > 0.0
+    assert sum(poolvols[base_token.symbol()].values()) > 0.0
 
 
 @enforce_types
-def test_getApprovedTokens(ADDRESS_FILE):
-    _setup(ADDRESS_FILE)
+def test_getApprovedTokens():
+    _setup_pools("OCEAN")
+    _setup_pools("CO2")
     approved_tokens = query.getApprovedTokens(CHAINID)
 
-    # OCEAN
+    # OCEAN - approved
     assert OCEAN_address().lower() in approved_tokens.keys()
     assert "OCEAN" in approved_tokens.values()
 
-    # CO2
-    assert CO2.address.lower() in approved_tokens.keys()
-    assert f"Carbon Dioxide {rndString}".upper() in approved_tokens.values()
+    # CO2 - not approved
+    assert CO2.address.lower() not in approved_tokens.keys()
+    assert f"CO_{rndString}".upper() in approved_tokens.values()
 
 
 # ========================================================================
 @enforce_types
-def _setup(ADDRESS_FILE, num_pools=1):
+def _setup_pools(base_token_str:str, num_pools=1):
+    assert base_token_str in ["OCEAN", "CO2"], "only testing OCEAN & CO2"
+    ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    conftest.fillAccountsWithOCEAN()
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
+    base_token = OCEANtoken() if base_token_str == "OCEAN" else CO2
+    conftest.fillAccountsWithToken(base_token)
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, base_token)
     time.sleep(2)
-
-added = False
-@enforce_types
-def _setup_co2(ADDRESS_FILE, num_pools=1):
-    global added
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    if added == False:
-        CONTRACTS["Router"].addApprovedToken(
-            CO2.address,{"from":accounts[0]}
-        )
-        added = True
-    conftest.fillAccountsWithToken(CO2)
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools,CO2)
-    time.sleep(2)
+    return base_token
+    
