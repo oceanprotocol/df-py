@@ -63,7 +63,6 @@ def _test_getStakes(base_token_str):
     pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
 
-    import pdb; pdb.set_trace()
     for stakes_at_pool in stakes[base_token.symbol().upper()].values():
         assert len(stakes_at_pool) > 0
         assert min(stakes_at_pool.values()) > 0.0
