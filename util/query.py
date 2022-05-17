@@ -136,7 +136,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 if LP_addr not in stakes[basetoken_symbol][pool_addr]:
                     stakes[basetoken_symbol][pool_addr][LP_addr] = 0.0
 
-                stakes[basetoken_symbol][pool_addr][LP_addr] += shares / n_blocks
+                stakes[basetoken_symbol][pool_addr][LP_addr] += shares/n_blocks
             offset += chunk_size
 
     return stakes #ie stakes_at_chain
