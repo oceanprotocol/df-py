@@ -74,12 +74,11 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv and poolvols-CHAINID.csv
   CHAINID -- {CHAINID_EXAMPLES}
-  TOKEN_ADDRESS -- Base token address
 
 Uses these envvars:
 ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFile(chainID=0)}
 """
-    if len(sys.argv) not in [2 + 6]:
+    if len(sys.argv) not in [2 + 5]:
         print(HELP)
         sys.exit(0)
 
@@ -88,8 +87,6 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFil
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
-    TOKEN_ADDR = sys.argv[7]
-
     print(f"dftool query: Begin")
     print(
         f"Arguments:\n "
@@ -136,7 +133,7 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFil
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
-    (Pi, Si, Vi) = query.query(rng, CHAINID, TOKEN_ADDR)
+    (Pi, Si, Vi) = query.query(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
