@@ -22,7 +22,7 @@ CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
 @enforce_types
 def test_SimplePool():
     pool = query.SimplePool(
-        "0xpool_addr", "0xnft_addr", "0xdt_addr", "DT", "0xbasetoken_addr")
+        "0xpool_addr", "0xnft_addr", "0xdt_addr", "DT", CO2.address)
     assert "SimplePool" in str(pool)
 
 
