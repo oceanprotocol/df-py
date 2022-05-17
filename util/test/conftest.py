@@ -142,12 +142,12 @@ def buyDT(pool, DT, DT_buy_amt: float, max_OCEAN: float, from_account, base_toke
 @enforce_types
 def randomDeployPool(pub_account,token):
     init_OCEAN_stake = AVG_INIT_OCEAN_STAKE * (1 + 0.1 * random.random())
-    DT_OCEAN_rate = AVG_DT_OCEAN_RATE * (1 + 0.1 * random.random())
-    return deployPool(init_OCEAN_stake, DT_OCEAN_rate, pub_account,token)
+    DT_TOKEN_rate = AVG_DT_OCEAN_RATE * (1 + 0.1 * random.random())
+    return deployPool(init_OCEAN_stake, DT_TOKEN_rate, pub_account,token)
 
 
 @enforce_types
-def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account,token):
+def deployPool(init_OCEAN_stake: float, DT_TOKEN_rate: float, from_account,token):
     data_NFT = oceanutil.createDataNFT("1", "1", from_account)
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
@@ -156,7 +156,7 @@ def deployPool(init_OCEAN_stake: float, DT_OCEAN_rate: float, from_account,token
         from_account,
         token,
         init_TOKEN_liquidity=init_OCEAN_stake,
-        DT_OCEAN_rate=DT_OCEAN_rate,
+        DT_TOKEN_rate=DT_TOKEN_rate,
     )
 
     return (DT, pool)
