@@ -132,7 +132,7 @@ def createDatatokenFromDataNFT(
 def createBPoolFromDatatoken(
     datatoken,
     from_account,
-    base_token,
+    base_TOKEN,
     init_OCEAN_liquidity: float = 2000.0,
     DT_OCEAN_rate: float = 0.1,
     LP_swap_fee: float = 0.03,
@@ -143,7 +143,7 @@ def createBPoolFromDatatoken(
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
 
-    base_token.approve(
+    base_TOKEN.approve(
         router.address, toBase18(init_OCEAN_liquidity), {"from": from_account}
     )
 
@@ -153,7 +153,7 @@ def createBPoolFromDatatoken(
     
     ss_params = [
         toBase18(DT_OCEAN_rate), # rate (wei)
-        base_token.decimals(),        # baseToken (decimals)
+        base_TOKEN.decimals(),        # baseToken (decimals)
         toBase18(DT_vest_amt),   # vesting amount (wei)
         DT_vest_num_blocks,      # vested blocks (int, *not* wei)
         toBase18(init_OCEAN_liquidity), # initial liquidity (wei)
@@ -164,7 +164,7 @@ def createBPoolFromDatatoken(
     ]
     addresses = [
         ssbot.address,           # ssbot address
-        base_token.address,           # baseToken address
+        base_TOKEN.address,           # baseToken address
         from_account.address,    # baseTokenSender, provides init baseToken liquidity
         from_account.address,    # publisherAddress, will get the vested amt
         from_account.address,    # marketFeeCollector address

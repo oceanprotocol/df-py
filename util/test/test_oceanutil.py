@@ -54,7 +54,8 @@ def test_createBPoolFromDatatoken():
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     data_NFT = createDataNFT("foo", "foo", account0)
     DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account0)
-    pool = createBPoolFromDatatoken(DT, account0, oceanutil.OCEANtoken())
+    base_TOKEN = oceanutil.OCEANtoken()
+    pool = createBPoolFromDatatoken(DT, account0, base_TOKEN)
 
 
 @enforce_types
