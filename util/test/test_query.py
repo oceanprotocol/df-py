@@ -69,21 +69,13 @@ def _test_getStakes(base_token_str):
 
 
 @enforce_types
-def test_getDTVolumes_OCEAN():
-    _test_getDTVolumes("OCEAN")
-
-
-@enforce_types
-def test_getDTVolumes_CO2():
-    _test_getDTVolumes("CO2")
-
-
-@enforce_types
-def _test_getDTVolumes(base_token_str):
-    base_token = _setup(base_token_str)
+def test_getDTVolumes():
+    _setup("OCEAN")
+    _setup("CO2")
     st, fin = 1, len(chain)
-    DT_vols = query.getDTVolumes(st, fin, CHAINID, base_token.address)
-    assert sum(DT_vols.values()) > 0.0
+    DT_vols = query.getDTVolumes(st, fin, CHAINID)
+    assert sum(DT_vols["OCEAN"].values()) > 0.0
+    assert sum(DT_vols[CO2_SYM].values()) > 0.0
 
 
 @enforce_types

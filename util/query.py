@@ -160,6 +160,8 @@ def getPoolVolumes(
     for pool in pools:
         if pool.DT_addr in DTs_with_consume:
             basetoken_symbol = _symbol(pool.basetoken_addr)
+            if basetoken_symbol not in poolvols:
+                poolvols[basetoken_symbol] = {}
             poolvols[basetoken_symbol][pool.addr] = DT_vols[pool.DT_addr]
 
     return poolvols #ie poolvols_at_chain
@@ -172,7 +174,7 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) \
       Return estimated datatoken (DT) volumes within given block range.
 
     @return
-      DTvols_at_chain -- dict of [basetoken_addr][DT_addr]:vol_amt
+      DTvols_at_chain -- dict of [basetoken_symbol][DT_addr]:vol_amt
     """
     print("getDTVolumes(): begin")
 
@@ -201,14 +203,15 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) \
         new_orders = result["data"]["orders"]
         for order in new_orders:
             DT_addr = order["datatoken"]["id"].lower()
-            basetoken_addr = lastPriceToken
-            if basetoken_addr not in DT_vols:
-                DT_vols[basetoken_addr] = {}
+            basetoken_addr = order["lastPriceToken"]
+            basetoken_symbol = _symbol(basetoken_addr)
+            if basetoken_symbol not in DT_vols:
+                DT_vols[basetoken_symbol] = {}
                 
             lastPriceValue = float(order["lastPriceValue"])
-            if DT_addr not in DT_vols[basetoken_addr]:
-                DT_vols[basetoken_addr][DT_addr] = 0.0
-            DT_vols[basetoken_addr][DT_addr] += lastPriceValue
+            if DT_addr not in DT_vols[basetoken_symbol]:
+                DT_vols[basetoken_symbol][DT_addr] = 0.0
+            DT_vols[basetoken_symbol][DT_addr] += lastPriceValue
 
     print("getDTVolumes(): done")
     return DT_vols #ie DTvols_at_chain
