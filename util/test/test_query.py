@@ -70,12 +70,12 @@ def _test_getStakes(base_token_str):
 
 @enforce_types
 def test_getDTVolumes_OCEAN():
-    _tesT_getDTVolumes("OCEAN")
+    _test_getDTVolumes("OCEAN")
 
 
 @enforce_types
 def test_getDTVolumes_CO2():
-    _tesT_getDTVolumes("CO2")
+    _test_getDTVolumes("CO2")
 
 
 @enforce_types
