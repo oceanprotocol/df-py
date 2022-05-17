@@ -19,7 +19,7 @@ AMT_OCEAN_PER_ACCOUNT = 100000.0
 AVG_INIT_OCEAN_STAKE = 100.0
 AVG_DT_OCEAN_RATE = 1.0
 AVG_OCEAN_STAKE = 10.0
-MAX_OCEAN_IN_BUY = 10000.0
+MAX_TOKEN_IN_BUY = 10000.0 #e.g. max OCEAN
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
@@ -69,7 +69,7 @@ def randomDeployTokensAndPoolsThenConsume(num_pools: int, base_token):
 
         # buy asset
         DT_buy_amt = 1.0
-        buyDT(pool, DT, DT_buy_amt, MAX_OCEAN_IN_BUY, consume_account, base_token)
+        buyDT(pool, DT, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token)
 
         # consume asset
         pub_account = accounts[pub_account_i]
