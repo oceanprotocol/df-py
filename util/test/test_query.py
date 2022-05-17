@@ -58,7 +58,7 @@ def test_getStakes_CO2():
 @enforce_types
 def _test_getStakes(base_token_str):
     base_token = _setup(base_token_str)
-    st, fin, n = 1, len(chain), 50
+    st, fin, n = 1, len(chain), 250
     rng = BlockRange(st, fin, n)
     pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
