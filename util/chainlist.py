@@ -21,7 +21,7 @@ def chainIdToAddressFile(chainID: int) -> str:
     else:
         raise NotImplementedError()
 
-    
+
 @enforce_types
 def chainIdToSubgraphUri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
@@ -30,7 +30,7 @@ def chainIdToSubgraphUri(chainID: int) -> str:
     else:
         raise NotImplementedError()
 
-    
+
 @enforce_types
 def chainIdToNetwork(chainID: int) -> str:
     """Returns the network name for a given chainID"""
@@ -50,7 +50,7 @@ def networkToChainId(network:str) -> int:
     #corner case
     if network == "development":
         return 0
-    
+
     #main case
     global _NETWORK_TO_CHAINID
     if _NETWORK_TO_CHAINID is None:
@@ -62,7 +62,7 @@ def _cacheDataFromChainlist():
     """
     @description
       chainlist.org is a site that gives full info about each EVM chain.
-      Its core data is found at the github url given below. 
+      Its core data is found at the github url given below.
       This function grabs that core data and stores it as a global.
     """
     global _CHAINID_TO_NETWORK, _NETWORK_TO_CHAINID
@@ -85,7 +85,16 @@ def _cacheDataFromChainlist():
     text = re.sub(",}.*", "}", text) #remove all after the "}"
 
     _CHAINID_TO_NETWORK = ast.literal_eval(text)
+
+    dev_chains = {
+        3: 'ropsten',
+        4: 'rinkeby'
+    }
+
+    #inject eth development chains
+    _CHAINID_TO_NETWORK = {**_CHAINID_TO_NETWORK, **dev_chains}
+
     _NETWORK_TO_CHAINID = {network: chainID
                            for chainID, network in _CHAINID_TO_NETWORK.items()}
-    
+
 
