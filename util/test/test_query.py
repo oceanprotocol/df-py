@@ -62,7 +62,7 @@ def _test_getStakes(base_token_str):
     pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
 
-    for stakes_at_pool in stakes[base_token.symbol()].values():
+    for stakes_at_pool in stakes[base_token.symbol().upper()].values():
         assert len(stakes_at_pool) > 0
         assert min(stakes_at_pool.values()) > 0.0
 
@@ -102,7 +102,7 @@ def _test_getPoolVolumes(base_token_str):
     st, fin = 1, len(chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID, base_token.address)
     assert poolvols
-    assert sum(poolvols[base_token.symbol()].values()) > 0.0
+    assert sum(poolvols[base_token.symbol().upper()].values()) > 0.0
 
 
 @enforce_types
