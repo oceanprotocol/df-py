@@ -151,22 +151,24 @@ def getPoolVolumes(
         pools: list, st_block: int, end_block: int, chainID: int) -> dict:
     """
     @description
-      Query the chain for pool volumes.
+      Query the chain for pool volumes within the given block range.
 
     @return
       poolvols_at_chain -- dict of [basetoken_symbol][pool_addr]:vol_amt
     """
-    DT_vols = getDTVolumes(st_block, end_block, chainID)  # DT_addr : vol
-    DTs_with_consume = set(DT_vols.keys())
+    DTvols = getDTVolumes(st_block, end_block, chainID) #[basesym][DT_addr]:vol
+    DTs_with_consume = set(DT_addr
+                           for basetoken_sym in DTvols
+                           for DT_addr in DTvols[basetoken_sym])#set of addr
 
-    # dict of [basetoken_symbol][pool_addr] : vol
     poolvols = {}
     for pool in pools:
-        if pool.DT_addr in DTs_with_consume:
-            basetoken_symbol = _symbol(pool.basetoken_addr)
-            if basetoken_symbol not in poolvols:
-                poolvols[basetoken_symbol] = {}
-            poolvols[basetoken_symbol][pool.addr] = DT_vols[pool.DT_addr]
+        if pool.DT_addr not in DTs_with_consume:
+            continue
+        basesym = _symbol(pool.basetoken_addr)
+        if basesym not in poolvols:
+            poolvols[basesym] = {}
+        poolvols[basesym][pool.addr] = DTvols[basesym][pool.DT_addr]
 
     return poolvols #ie poolvols_at_chain
 
@@ -175,14 +177,14 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) \
     -> Dict[str, float]:
     """
     @description
-      Return estimated datatoken (DT) volumes within given block range.
+      Query the chain for datatoken (DT) volumes within the given block range.
 
     @return
       DTvols_at_chain -- dict of [basetoken_symbol][DT_addr]:vol_amt
     """
     print("getDTVolumes(): begin")
 
-    DT_vols = {}
+    DTvols = {}
     chunk_size = 1000  # max for subgraph = 1000
     for offset in range(0, end_block - st_block, chunk_size):
         query = """
@@ -209,16 +211,16 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) \
             DT_addr = order["datatoken"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
             basetoken_symbol = _symbol(basetoken_addr)
-            if basetoken_symbol not in DT_vols:
-                DT_vols[basetoken_symbol] = {}
+            if basetoken_symbol not in DTvols:
+                DTvols[basetoken_symbol] = {}
                 
             lastPriceValue = float(order["lastPriceValue"])
-            if DT_addr not in DT_vols[basetoken_symbol]:
-                DT_vols[basetoken_symbol][DT_addr] = 0.0
-            DT_vols[basetoken_symbol][DT_addr] += lastPriceValue
+            if DT_addr not in DTvols[basetoken_symbol]:
+                DTvols[basetoken_symbol][DT_addr] = 0.0
+            DTvols[basetoken_symbol][DT_addr] += lastPriceValue
 
     print("getDTVolumes(): done")
-    return DT_vols #ie DTvols_at_chain
+    return DTvols #ie DTvols_at_chain
 
 
 @enforce_types
