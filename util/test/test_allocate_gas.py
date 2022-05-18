@@ -1,5 +1,6 @@
 import brownie
 from enforce_typing import enforce_types
+from util.samples.random_addresses import get_random_addresses
 from util.oceanutil import recordDeployedContracts, OCEANtoken
 from util.constants import BROWNIE_PROJECT as B
 import web3
@@ -12,7 +13,7 @@ w3 = web3.Web3()
 def batch_allocate(number: int) -> str:
     OCEAN = OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    addresses = [w3.eth.account.create().address for i in range(number)]
+    addresses = get_random_addresses(number)
     rewards = [1 for i in range(number)]
     OCEAN.approve(df_rewards,sum(rewards),{"from":accounts[0]})
     tx = df_rewards.allocate(
