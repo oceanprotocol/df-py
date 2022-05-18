@@ -1,23 +1,21 @@
 import brownie
 from enforce_typing import enforce_types
 from pprint import pprint
-import pytest
+import random
+
 from util import chainlist, query
 from util.blockrange import BlockRange
-from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
-from util.test import conftest
 from util.constants import BROWNIE_PROJECT as B
-import time, random, string
+from util.oceanutil import OCEANtoken, recordDeployedContracts
+from util.test import conftest
 
 account0 = brownie.network.accounts[0]
 chain = brownie.network.chain
 
 CHAINID = 0
 
-rndString = "".join(random.sample(list(string.ascii_uppercase),5))
-CO2_SYM = f"CO2_{rndString.upper()}"
-CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
-
+OCEAN = None
+CO2, CO2_SYM = None
 
 @enforce_types
 def test_SimplePool():
@@ -27,51 +25,27 @@ def test_SimplePool():
 
 
 @enforce_types
-def test_getPools_OCEAN():
-    _test_getPools("OCEAN")
+def test_getPools():
+    assert _poolsHaveToken("OCEAN")
+    assert _poolsHaveToken(CO2_SYM)
 
 
 @enforce_types
-def test_getPools_CO2():
-    _test_getPools("CO2")
-
-
-@enforce_types
-def _test_getPools(base_token_str):
-    base_token = _setup(base_token_str)
-    pools = query.getPools(CHAINID)
-    pools_with_token = [pool.basetoken_addr == base_token.address
-                        for pool in pools]
-    assert pools_with_token
-
-
-@enforce_types
-def test_getStakes_OCEAN():
-    _test_getStakes("OCEAN")
-
-
-@enforce_types
-def test_getStakes_CO2():
-    _test_getStakes("CO2")
-
-
-@enforce_types
-def _test_getStakes(base_token_str):
-    base_token = _setup(base_token_str)
+def test_getStakes():
     st, fin, n = 1, len(chain), 250
     rng = BlockRange(st, fin, n)
     pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
 
-    for stakes_at_pool in stakes[base_token.symbol().upper()].values():
-        assert len(stakes_at_pool) > 0
-        assert min(stakes_at_pool.values()) > 0.0
+    for basetoken_symbol in ["OCEAN", CO2_SYM]:
+        assert basetoken_symbol in stakes
+        for stakes_at_pool in stakes[basetoken_symbol].values():
+            assert len(stakes_at_pool) > 0
+            assert min(stakes_at_pool.values()) > 0.0
 
 
 @enforce_types
 def test_getDTVolumes():
-    _setup("OCEAN")
-    _setup("CO2")
     st, fin = 1, len(chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     assert sum(DT_vols["OCEAN"].values()) > 0.0
@@ -80,48 +54,53 @@ def test_getDTVolumes():
 
 @enforce_types
 def test_getPoolVolumes():
-    _setup("OCEAN")
-    _setup("CO2")
     pools = query.getPools(CHAINID)
     st, fin = 1, len(chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
-    assert poolvols
-    assert sum(poolvols[base_token.symbol().upper()].values()) > 0.0
+    assert sum(poolvols["OCEAN"].values()) > 0.0
+    assert sum(poolvols[CO2_SYM].values()) > 0.0
 
 
 @enforce_types
-def test_getApprovedTokens_OCEAN():
-    _setup("OCEAN")
+def test_getApprovedTokens():
     approved_tokens = query.getApprovedTokens(CHAINID)
-
-    
-    #OCEAN is approved
-    assert OCEAN_address().lower() in approved_tokens.keys()
     assert "OCEAN" in approved_tokens.values()
+    assert CO2_SYM not in approved_tokens.values()
     
-@enforce_types
-@pytest.mark.skip(reason="querying recent chain is too finicky even with sleep")
-def test_getApprovedTokens_CO2():
-    _setup("CO2")
-    approved_tokens = query.getApprovedTokens(CHAINID)
-
-    # CO2 is not approved
-    assert CO2.address.lower() not in approved_tokens.keys()
-    assert CO2_SYM in approved_tokens.values()
-
 
 # ========================================================================
 @enforce_types
-def _setup(base_token_str:str, num_pools=1):
-    assert base_token_str in ["OCEAN", "CO2"], "only testing OCEAN & CO2"
+def setup_module():
+    """Runs before each test"""
+
+    address_file = chainlist.chainIdToAddressFile(CHAINID)
+    recordDeployedContracts(address_file, CHAINID)
     
-    ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    
-    base_token = OCEANtoken() if base_token_str == "OCEAN" else CO2
-    conftest.fillAccountsWithToken(base_token)
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, base_token)
-    time.sleep(2)
-    
-    return base_token
-    
+    global OCEAN
+    if OCEAN is None:
+        OCEAN = OCEANtoken()
+        conftest.fillAccountsWithToken(OCEAN)
+        
+    global CO2, CO2_SYM
+    if CO2 is None:
+        CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
+        CO2 = B.Simpletoken.deploy(
+            CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
+        conftest.fillAccountsWithToken(CO2)
+        
+    _randomDeployUntilHaveTokenOrTimeout("OCEAN")
+    _randomDeployUntilHaveTokenOrTimeout(CO2_SYM)
+
+
+def _deployEtcUntilHaveTokenOrTimeout(symbol:str):
+    for loop_i in range(10):
+        if _poolsHaveToken(symbol):
+            break
+        conftest.randomDeployTokensAndPoolsThenConsume(2, symbol)
+        time.sleep(2)
+
+
+def _poolsHaveToken(symbol:str) -> bool:
+    pools = query.getPools(CHAINID)
+    return bool([pool for pool in pools
+                 if p.basetoken_symbol == "OCEAN" for p in pools])
