@@ -34,7 +34,7 @@ def test_all():
     # (assumes that with volume, everything else is there too
     for loop_i in range(100):
         assert loop_i < 5, "timeout" 
-        if _volumeSeen(CO2_SYM):
+        if _foundStakeAndConsume(CO2_SYM):
             break
         conftest.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
         conftest.randomDeployTokensAndPoolsThenConsume(2, CO2)
@@ -50,15 +50,31 @@ def test_all():
     _test_getPoolVolumes(CO2_SYM)
 
 
-def _volumeSeen(CO2_SYM):
+def _foundStakeAndConsume(CO2_SYM):
+    #nonzero CO2 stake?
+    pools = query.getPools(CHAINID)
+    st, fin, n = 1, len(chain), 250
+    rng = BlockRange(st, fin, n)
+    stakes_at_chain = query.getStakes(pools, rng, CHAINID)
+    if CO2_SYM not in stakes_at_chain:
+        return False
+    for stakes_at_pool in stakes_at_chain[CO2_SYM].values():
+        if not stakes_at_pool:
+            return False
+        lowest_stake = min(stakes_at_pool.values())
+        if lowest_stake == 0:
+            return False
+    
+    #nonzero CO2 volume?
     st, fin = 1, len(chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_SYM not in DT_vols:
         return False
-    
-    vol_OCEAN = sum(DT_vols["OCEAN"].values())
-    vol_CO2 =  sum(DT_vols[CO2_SYM].values())
-    return (vol_OCEAN > 0.0) and (vol_CO2 > 0.0)
+    if sum(DT_vols[CO2_SYM].values()) == 0:
+        return False
+
+    #all good
+    return True
 
 
 @enforce_types
@@ -84,9 +100,9 @@ def _test_pools(CO2_SYM:str):
 
 @enforce_types
 def _test_stakes(CO2_SYM:str):
+    pools = query.getPools(CHAINID)
     st, fin, n = 1, len(chain), 250
     rng = BlockRange(st, fin, n)
-    pools = query.getPools(CHAINID)
     stakes = query.getStakes(pools, rng, CHAINID)
 
     assert "OCEAN" in stakes, stakes.keys()
