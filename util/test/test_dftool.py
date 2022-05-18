@@ -30,7 +30,7 @@ def test_query(tmp_path):
     NSAMP = 5
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID} {OCEAN_address()}"
+    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}}"
     os.system(cmd)
 
     # test result
