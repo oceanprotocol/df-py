@@ -104,7 +104,7 @@ def _test_pools(CO2_SYM:str):
 @enforce_types
 def _test_stakes(CO2_SYM:str):
     pools = query.getPools(CHAINID)
-    st, fin, n = QUERY_ST, len(chain), 20
+    st, fin, n = QUERY_ST, len(chain), 500
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 
@@ -140,7 +140,7 @@ def _test_getPoolVolumes(CO2_SYM:str):
 
 @enforce_types
 def _test_query(CO2_SYM:str):
-    st, fin, n = QUERY_ST, len(chain), 20
+    st, fin, n = QUERY_ST, len(chain), 500
     rng = BlockRange(st, fin, n)
     (P0, S0, V0) = query.query(rng, CHAINID)
 
