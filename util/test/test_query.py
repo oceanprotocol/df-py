@@ -54,7 +54,7 @@ def test_all():
 def _foundStakeAndConsume(CO2_SYM):
     #nonzero CO2 stake?
     pools = query.getPools(CHAINID)
-    st, fin, n = 1, len(chain), 10000
+    st, fin, n = len(chain) - 200, len(chain), 20
     rng = BlockRange(st, fin, n)
     stakes_at_chain = query.getStakes(pools, rng, CHAINID)
     if CO2_SYM not in stakes_at_chain:
@@ -102,7 +102,7 @@ def _test_pools(CO2_SYM:str):
 @enforce_types
 def _test_stakes(CO2_SYM:str):
     pools = query.getPools(CHAINID)
-    st, fin, n = 1, len(chain), 10000
+    st, fin, n = len(chain) - 200, len(chain), 20
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 
