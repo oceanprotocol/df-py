@@ -156,21 +156,24 @@ def getPoolVolumes(
     @return
       poolvols_at_chain -- dict of [basetoken_symbol][pool_addr]:vol_amt
     """
-    DTvols = getDTVolumes(st_block, end_block, chainID) #[basesym][DT_addr]:vol
-    DTs_with_consume = set(DT_addr
-                           for basetoken_sym in DTvols
-                           for DT_addr in DTvols[basetoken_sym])#set of addr
+    #[basesym][DT_addr]:vol
+    DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
 
-    poolvols = {}
-    for pool in pools:
-        if pool.DT_addr not in DTs_with_consume:
-            continue
-        basesym = _symbol(pool.basetoken_addr)
-        if basesym not in poolvols:
-            poolvols[basesym] = {}
-        poolvols[basesym][pool.addr] = DTvols[basesym][pool.DT_addr]
+    #[basesym][pool_addr]:vol
+    poolvols_at_chain = {}
+    for basesym in DTvols_at_chain:
+        if basesym not in poolvols_at_chain:
+            poolvols_at_chain[basesym] = {}
 
-    return poolvols #ie poolvols_at_chain
+        for DT_addr in DTvols_at_chain[basesym]:
+            #handle if >1 pool has the DT
+            pools_with_DT = [p for p in pools if p.DT_addr == DT_addr]
+            vol = DTvols_at_chain[basesym][DT_addr]
+            for pool in pools_with_DT:
+                #the "/" spreads vol evenly among pools holding the DT
+                poolvols_at_chain[basesym][pool.addr] = vol/len(pools_with_DT)
+    
+    return poolvols_at_chain
 
 
 def getDTVolumes(st_block: int, end_block: int, chainID: int) \
