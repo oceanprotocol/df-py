@@ -29,6 +29,10 @@ class SimplePool:
         self.DT_symbol = DT_symbol
         self.basetoken_addr = basetoken_addr
 
+    @property
+    def basetoken_symbol(self) -> str:
+        return _symbol(self.basetoken_addr)
+
     def __str__(self):
         s = ["SimplePool={"]
         s += [f"addr={self.addr[:5]}"]
@@ -36,7 +40,7 @@ class SimplePool:
         s += [f", DT_addr={self.DT_addr[:5]}"]
         s += [f", DT_symbol={self.DT_symbol}"]
         s += [f", basetoken_addr={self.basetoken_addr[:5]}"]
-        s += [f", basetoken_symbol={_symbol(self.basetoken_addr)}"]
+        s += [f", basetoken_symbol={self.basetoken_symbol}"]
         s += [" /SimplePool}"]
         return "".join(s)        
 
