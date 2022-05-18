@@ -36,8 +36,11 @@ def fillAccountsWithToken(token):
         if bal_before < 1000:
             token.transfer(accounts[i], toBase18(1000.0), {"from": accounts[0]})
         bal_after: int = fromBase18(token.balanceOf(accounts[i]))
-        print(f"Account #{i} has {bal_after} {token.symbol()}")
-    print(f"Account #0 has {fromBase18(token.balanceOf(accounts[0]))} token") 
+
+    print(f"fillAccountsWithToken({token.symbol()}), balances after:")
+    for i in range(10):
+        amt = fromBase18(token.balanceOf(accounts[i]))
+        print(f"  Account #{i} has {amt} {token.symbol()}")
 
 @enforce_types
 def fillAccountsWithOCEAN():
