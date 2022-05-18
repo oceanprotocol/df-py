@@ -33,12 +33,13 @@ def test_all():
     #keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
     for loop_i in range(100):
+        print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout" 
         if _foundStakeAndConsume(CO2_SYM):
             break
         conftest.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
         conftest.randomDeployTokensAndPoolsThenConsume(2, CO2)
-        print(f"loop_i={loop_i}")
+        print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
 
     #run actual tests
@@ -53,7 +54,7 @@ def test_all():
 def _foundStakeAndConsume(CO2_SYM):
     #nonzero CO2 stake?
     pools = query.getPools(CHAINID)
-    st, fin, n = 1, len(chain), 250
+    st, fin, n = 1, len(chain), 10000
     rng = BlockRange(st, fin, n)
     stakes_at_chain = query.getStakes(pools, rng, CHAINID)
     if CO2_SYM not in stakes_at_chain:
@@ -101,7 +102,7 @@ def _test_pools(CO2_SYM:str):
 @enforce_types
 def _test_stakes(CO2_SYM:str):
     pools = query.getPools(CHAINID)
-    st, fin, n = 1, len(chain), 250
+    st, fin, n = 1, len(chain), 10000
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 

@@ -93,13 +93,15 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
     SSBOT_address = oceanutil.Staking().address.lower()
     stakes = {}
     n_blocks = rng.numBlocks()
+    n_blocks_sampled = 0
     blocks = rng.getBlocks()
-    for block_i, block in enumerate(blocks):
+    for block_i, block in enumerate(blocks): #loop across block groups
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
-        offset = 0
+        LP_offset = 0
         chunk_size = 1000  # max for subgraph=1000
-        while True:
+        
+        while True: #loop across LP groups
             query = """
             { 
               poolShares(skip:%s, first:%s, block:{number:%s}) {
@@ -115,34 +117,47 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 shares
               }
             }
-            """ % (
-                offset,
-                chunk_size,
-                block,
-            )
+            """ % (LP_offset, chunk_size, block)
             result = submitQuery(query, chainID)
+            
+            if "errors" in result and \
+               "indexed up to block number" in result["errors"][0]["message"]:
+                LP_offset += chunk_size
+                break
+            n_blocks_sampled += 1
+                
             new_pool_stake = result["data"]["poolShares"]
+            
             if not new_pool_stake:
                 break
+            
             for d in new_pool_stake:
                 basetoken_addr = d["pool"]["baseToken"]["id"].lower()
-                basetoken_symbol = _symbol(basetoken_addr)
+                basesym = _symbol(basetoken_addr)
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
                 if LP_addr == SSBOT_address:
                     continue  # skip ss bot
 
-                if basetoken_symbol not in stakes:
-                    stakes[basetoken_symbol] = {}
-                if pool_addr not in stakes[basetoken_symbol]:
-                    stakes[basetoken_symbol][pool_addr] = {}
-                if LP_addr not in stakes[basetoken_symbol][pool_addr]:
-                    stakes[basetoken_symbol][pool_addr][LP_addr] = 0.0
+                if basesym not in stakes:
+                    stakes[basesym] = {}
+                if pool_addr not in stakes[basesym]:
+                    stakes[basesym][pool_addr] = {}
+                if LP_addr not in stakes[basesym][pool_addr]:
+                    stakes[basesym][pool_addr][LP_addr] = 0.0
 
-                stakes[basetoken_symbol][pool_addr][LP_addr] += shares/n_blocks
-            offset += chunk_size
+                stakes[basesym][pool_addr][LP_addr] += shares
+                
+            LP_offset += chunk_size
 
+    #normalize stake based on # blocks sampled
+    # (this may be lower than target # blocks, if we hit indexing errors)
+    assert n_blocks_sampled > 0
+    for basesym in stakes:
+        for pool_addr in stakes[basesym]:
+            for LP_addr in stakes[basesym][pool_addr]:
+                stakes[basesym][pool_addr][LP_addr] /= n_blocks_sampled
     return stakes #ie stakes_at_chain
 
 
@@ -213,14 +228,14 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) \
         for order in new_orders:
             DT_addr = order["datatoken"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
-            basetoken_symbol = _symbol(basetoken_addr)
-            if basetoken_symbol not in DTvols:
-                DTvols[basetoken_symbol] = {}
+            basesym = _symbol(basetoken_addr)
+            if basesym not in DTvols:
+                DTvols[basesym] = {}
                 
             lastPriceValue = float(order["lastPriceValue"])
-            if DT_addr not in DTvols[basetoken_symbol]:
-                DTvols[basetoken_symbol][DT_addr] = 0.0
-            DTvols[basetoken_symbol][DT_addr] += lastPriceValue
+            if DT_addr not in DTvols[basesym]:
+                DTvols[basesym][DT_addr] = 0.0
+            DTvols[basesym][DT_addr] += lastPriceValue
 
     print("getDTVolumes(): done")
     return DTvols #ie DTvols_at_chain
