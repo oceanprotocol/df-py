@@ -13,6 +13,7 @@ account0 = brownie.network.accounts[0]
 chain = brownie.network.chain
 
 CHAINID = 0
+QUERY_ST = max(0, len(chain) - 200)
    
 
 def test_all():
@@ -49,12 +50,13 @@ def test_all():
     _test_stakes(CO2_SYM)
     _test_getDTVolumes(CO2_SYM)
     _test_getPoolVolumes(CO2_SYM)
+    _test_query(CO2_SYM)
 
 
 def _foundStakeAndConsume(CO2_SYM):
     #nonzero CO2 stake?
     pools = query.getPools(CHAINID)
-    st, fin, n = len(chain) - 200, len(chain), 20
+    st, fin, n = QUERY_ST, len(chain), 20
     rng = BlockRange(st, fin, n)
     stakes_at_chain = query.getStakes(pools, rng, CHAINID)
     if CO2_SYM not in stakes_at_chain:
@@ -67,7 +69,7 @@ def _foundStakeAndConsume(CO2_SYM):
             return False
     
     #nonzero CO2 volume?
-    st, fin = 1, len(chain)
+    st, fin = QUERY_ST, len(chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_SYM not in DT_vols:
         return False
@@ -102,7 +104,7 @@ def _test_pools(CO2_SYM:str):
 @enforce_types
 def _test_stakes(CO2_SYM:str):
     pools = query.getPools(CHAINID)
-    st, fin, n = len(chain) - 200, len(chain), 20
+    st, fin, n = QUERY_ST, len(chain), 20
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 
@@ -117,7 +119,7 @@ def _test_stakes(CO2_SYM:str):
 
 @enforce_types
 def _test_getDTVolumes(CO2_SYM:str):
-    st, fin = 1, len(chain)
+    st, fin = QUERY_ST, len(chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     assert "OCEAN" in DT_vols, DT_vols.keys()
     assert CO2_SYM in DT_vols, (CO2_SYM, DT_vols.keys())
@@ -128,9 +130,21 @@ def _test_getDTVolumes(CO2_SYM:str):
 @enforce_types
 def _test_getPoolVolumes(CO2_SYM:str):
     pools = query.getPools(CHAINID)
-    st, fin = 1, len(chain)
+    st, fin = QUERY_ST, len(chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
     assert "OCEAN" in poolvols, poolvols.keys()
     assert CO2_SYM in poolvols, (CO2_SYM, poolvols.keys())
     assert sum(poolvols["OCEAN"].values()) > 0.0
     assert sum(poolvols[CO2_SYM].values()) > 0.0
+
+
+@enforce_types
+def _test_query(CO2_SYM:str):
+    st, fin, n = QUERY_ST, len(chain), 20
+    rng = BlockRange(st, fin, n)
+    (P0, S0, V0) = query.query(rng, CHAINID)
+
+    #tests are light here, as we've tested piecewise elsewhere
+    assert CO2_SYM in S0
+    assert CO2_SYM in V0
+    
