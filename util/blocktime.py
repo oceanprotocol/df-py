@@ -32,9 +32,9 @@ def timestrToTimestamp(timestr: str) -> float:
     else:
         dt = datetime.strptime(timestr, "%Y-%m-%d")
 
-    #obtain POSIX timestamp. https://docs.python.org/3/library/datetime.html
+    # obtain POSIX timestamp. https://docs.python.org/3/library/datetime.html
     timestamp = dt.replace(tzinfo=timezone.utc).timestamp()
-    
+
     return timestamp
 
 

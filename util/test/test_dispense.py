@@ -13,6 +13,7 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
 CHAINID = 0
 
+
 @enforce_types
 def test_small_batch(ADDRESS_FILE, tmp_path):
     recordDeployedContracts(ADDRESS_FILE, CHAINID)

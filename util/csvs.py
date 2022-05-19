@@ -55,6 +55,7 @@ def loadStakesCsvs(csv_dir: str):
         stakes[chainID] = loadStakesCsv(csv_dir, chainID)
     return stakes
 
+
 @enforce_types
 def loadStakesCsv(csv_dir: str, chainID: int):
     """
@@ -65,13 +66,18 @@ def loadStakesCsv(csv_dir: str, chainID: int):
       stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
     """
     csv_file = stakesCsvFilename(csv_dir, chainID)
-    S = {} #ie stakes_at_chain
+    S = {}  # ie stakes_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
-            if row_i == 0: # header
-                assert row == ["chainID", "basetoken", "pool_addr",
-                               "LP_addr", "stake_amt"]
+            if row_i == 0:  # header
+                assert row == [
+                    "chainID",
+                    "basetoken",
+                    "pool_addr",
+                    "LP_addr",
+                    "stake_amt",
+                ]
                 continue
 
             chainID2 = int(row[0])
@@ -165,13 +171,12 @@ def loadPoolvolsCsv(csv_dir: str, chainID: int):
       poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol_amt
     """
     csv_file = poolvolsCsvFilename(csv_dir, chainID)
-    V = {} # ie poolvols_at_chain
+    V = {}  # ie poolvols_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "basetoken", "pool_addr",
-                               "vol_amt"]
+                assert row == ["chainID", "basetoken", "pool_addr", "vol_amt"]
                 continue
             chainID2 = int(row[0])
             basetoken = row[1].upper()
@@ -199,12 +204,11 @@ def poolvolsCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the poolvols filename for a given chainID"""
     return os.path.join(csv_dir, f"poolvols-{chainID}.csv")
 
+
 @enforce_types
 def chainIDforPoolvolsCsv(filename) -> int:
     """Returns chainID for a given poolvols csv filename"""
     return _lastInt(filename)
-
-
 
 
 # ========================================================================
@@ -213,11 +217,12 @@ def chainIDforPoolvolsCsv(filename) -> int:
 
 @enforce_types
 def savePoolinfoCsv(
-        pools_at_chain: list,
-        stakes_at_chain: dict,
-        poolvols_at_chain: dict,
-        csv_dir: str,
-        chainID: int):
+    pools_at_chain: list,
+    stakes_at_chain: dict,
+    poolvols_at_chain: dict,
+    csv_dir: str,
+    chainID: int,
+):
     """
     @description
       Save detailed info for this pool.
@@ -233,21 +238,32 @@ def savePoolinfoCsv(
     csv_file = poolinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
 
-    pools_by_addr = {pool.addr:pool for pool in pools_at_chain}
-    
+    pools_by_addr = {pool.addr: pool for pool in pools_at_chain}
+
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "basetoken", "pool_addr", "vol_amt",
-                         "stake_amt",
-                         "nft_addr", "DT_addr", "DT_symbol", "basetoken_addr",
-                         "did", "url"])
-            
+        writer.writerow(
+            [
+                "chainID",
+                "basetoken",
+                "pool_addr",
+                "vol_amt",
+                "stake_amt",
+                "nft_addr",
+                "DT_addr",
+                "DT_symbol",
+                "basetoken_addr",
+                "did",
+                "url",
+            ]
+        )
+
         for basetoken in poolvols_at_chain:
             if basetoken not in stakes_at_chain:
                 continue
             for pool_addr, vol in poolvols_at_chain[basetoken].items():
                 row = []
-                
+
                 row += [chainID, basetoken, pool_addr, vol]
 
                 if pool_addr not in stakes_at_chain[basetoken]:
@@ -261,9 +277,9 @@ def savePoolinfoCsv(
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
                 row += [did, url]
-                
+
                 writer.writerow(row)
-                
+
     print(f"Created {csv_file}")
 
 
@@ -272,7 +288,6 @@ def poolinfoCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the poolinfo filename for a given chainID"""
     return os.path.join(csv_dir, f"poolinfo-{chainID}.csv")
 
-    
 
 # ========================================================================
 # exchange rate csvs
@@ -378,8 +393,7 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, float]:
             if row_i == 0:  # header
                 assert row == ["chainID", "LP_addr", f"{token_symbol}_amt"]
             else:
-                chainID, LP_addr, amt = \
-                    int(row[0]), row[1], float(row[2])
+                chainID, LP_addr, amt = int(row[0]), row[1], float(row[2])
                 if chainID not in rewards:
                     rewards[chainID] = {}
                 assert LP_addr not in rewards[chainID], "duplicate found"
@@ -390,14 +404,16 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, float]:
 
 
 @enforce_types
-def rewardsCsvFilename(csv_dir: str, token_symbol:str) -> str:
+def rewardsCsvFilename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewards-{token_symbol.upper()}.csv")
 
-#=======================================================================
-#helper funcs
+
+# =======================================================================
+# helper funcs
+
 
 @enforce_types
-def _lastInt(s:str) -> int:
+def _lastInt(s: str) -> int:
     """Return the last integer in the given str"""
-    nbr_strs = re.findall('[0-9]+', s)
+    nbr_strs = re.findall("[0-9]+", s)
     return int(nbr_strs[-1])

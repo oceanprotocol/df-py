@@ -8,6 +8,7 @@ from util.test import conftest
 CHAINID = 0
 ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
 
+
 @enforce_types
 def test_thegraph_approvedTokens(accounts):
     OCEAN = oceanutil.OCEANtoken()
@@ -24,7 +25,9 @@ def test_thegraph_approvedTokens(accounts):
 def test_thegraph_orders():
     OCEAN = oceanutil.OCEANtoken()
 
-    (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEAN)[0]
+    (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(
+        num_pools=1, base_token=OCEAN
+    )[0]
 
     query = """
         {
@@ -80,6 +83,7 @@ def test_thegraph_poolShares():
 
     result = submitQuery(query, CHAINID)
     pprint(result)
+
 
 def setup_module():
     """This automatically gets called at the beginning of each test."""

@@ -14,7 +14,7 @@ chain = brownie.network.chain
 
 CHAINID = 0
 QUERY_ST = max(0, len(chain) - 200)
-   
+
 
 def test_all():
     """Run this all as a single test, because we may have to
@@ -22,20 +22,19 @@ def test_all():
 
     address_file = chainlist.chainIdToAddressFile(CHAINID)
     recordDeployedContracts(address_file, CHAINID)
-    
+
     OCEAN = OCEANtoken()
     conftest.fillAccountsWithToken(OCEAN)
-        
+
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(
-        CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
+    CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
     conftest.fillAccountsWithToken(CO2)
 
-    #keep deploying, until TheGraph node sees volume, or timeout
+    # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
     for loop_i in range(100):
         print(f"loop {loop_i} start")
-        assert loop_i < 5, "timeout" 
+        assert loop_i < 5, "timeout"
         if _foundStakeAndConsume(CO2_SYM):
             break
         conftest.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
@@ -43,7 +42,7 @@ def test_all():
         print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
 
-    #run actual tests
+    # run actual tests
     _test_SimplePool(CO2)
     _test_getApprovedTokens(CO2_SYM)
     _test_pools(CO2_SYM)
@@ -54,7 +53,7 @@ def test_all():
 
 
 def _foundStakeAndConsume(CO2_SYM):
-    #nonzero CO2 stake?
+    # nonzero CO2 stake?
     pools = query.getPools(CHAINID)
     st, fin, n = QUERY_ST, len(chain), 20
     rng = BlockRange(st, fin, n)
@@ -67,8 +66,8 @@ def _foundStakeAndConsume(CO2_SYM):
         lowest_stake = min(stakes_at_pool.values())
         if lowest_stake == 0:
             return False
-    
-    #nonzero CO2 volume?
+
+    # nonzero CO2 volume?
     st, fin = QUERY_ST, len(chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_SYM not in DT_vols:
@@ -76,33 +75,32 @@ def _foundStakeAndConsume(CO2_SYM):
     if sum(DT_vols[CO2_SYM].values()) == 0:
         return False
 
-    #all good
+    # all good
     return True
 
 
 @enforce_types
 def _test_SimplePool(CO2):
-    pool = query.SimplePool(
-        "0xpool_addr", "0xnft_addr", "0xdt_addr", "DT", CO2.address)
+    pool = query.SimplePool("0xpool_addr", "0xnft_addr", "0xdt_addr", "DT", CO2.address)
     assert "SimplePool" in str(pool)
 
 
 @enforce_types
-def _test_getApprovedTokens(CO2_SYM:str):
+def _test_getApprovedTokens(CO2_SYM: str):
     approved_tokens = query.getApprovedTokens(CHAINID)
     assert "OCEAN" in approved_tokens.values()
     assert CO2_SYM not in approved_tokens.values()
 
-    
+
 @enforce_types
-def _test_pools(CO2_SYM:str):
+def _test_pools(CO2_SYM: str):
     pools = query.getPools(CHAINID)
     assert [p for p in pools if p.basetoken_symbol == "OCEAN"]
     assert [p for p in pools if p.basetoken_symbol == CO2_SYM]
 
 
 @enforce_types
-def _test_stakes(CO2_SYM:str):
+def _test_stakes(CO2_SYM: str):
     pools = query.getPools(CHAINID)
     st, fin, n = QUERY_ST, len(chain), 500
     rng = BlockRange(st, fin, n)
@@ -110,7 +108,7 @@ def _test_stakes(CO2_SYM:str):
 
     assert "OCEAN" in stakes, stakes.keys()
     assert CO2_SYM in stakes, (CO2_SYM, stakes.keys())
-    
+
     for basetoken_symbol in ["OCEAN", CO2_SYM]:
         for stakes_at_pool in stakes[basetoken_symbol].values():
             assert len(stakes_at_pool) > 0
@@ -118,7 +116,7 @@ def _test_stakes(CO2_SYM:str):
 
 
 @enforce_types
-def _test_getDTVolumes(CO2_SYM:str):
+def _test_getDTVolumes(CO2_SYM: str):
     st, fin = QUERY_ST, len(chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     assert "OCEAN" in DT_vols, DT_vols.keys()
@@ -128,7 +126,7 @@ def _test_getDTVolumes(CO2_SYM:str):
 
 
 @enforce_types
-def _test_getPoolVolumes(CO2_SYM:str):
+def _test_getPoolVolumes(CO2_SYM: str):
     pools = query.getPools(CHAINID)
     st, fin = QUERY_ST, len(chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
@@ -139,12 +137,11 @@ def _test_getPoolVolumes(CO2_SYM:str):
 
 
 @enforce_types
-def _test_query(CO2_SYM:str):
+def _test_query(CO2_SYM: str):
     st, fin, n = QUERY_ST, len(chain), 500
     rng = BlockRange(st, fin, n)
     (P0, S0, V0) = query.query(rng, CHAINID)
 
-    #tests are light here, as we've tested piecewise elsewhere
+    # tests are light here, as we've tested piecewise elsewhere
     assert CO2_SYM in S0
     assert CO2_SYM in V0
-    

@@ -3,6 +3,7 @@ import requests
 
 from util import chainlist
 
+
 def submitQuery(query: str, chainID: int) -> str:
     subgraph_url = chainlist.chainIdToSubgraphUri(chainID)
     request = requests.post(subgraph_url, "", json={"query": query})

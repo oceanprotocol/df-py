@@ -7,7 +7,7 @@ import random
 from util import chainlist, constants, graphutil, oceanutil
 from util.base18 import toBase18, fromBase18
 
-brownie.network.connect("development")  #ie ganache / barge, CHAINID = 0
+brownie.network.connect("development")  # ie ganache / barge, CHAINID = 0
 
 accounts = brownie.network.accounts
 
@@ -20,7 +20,7 @@ AMT_OCEAN_PER_ACCOUNT = 100000.0
 AVG_INIT_TOKEN_STAKE = 100.0
 AVG_DT_TOKEN_RATE = 1.0
 AVG_TOKEN_STAKE = 10.0
-MAX_TOKEN_IN_BUY = 10000.0 #e.g. max OCEAN
+MAX_TOKEN_IN_BUY = 10000.0  # e.g. max OCEAN
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
@@ -28,6 +28,7 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 @enforce_types
 def ADDRESS_FILE() -> str:
     return chainlist.chainIdToAddressFile(chainID=0)
+
 
 @enforce_types
 def fillAccountsWithToken(token):
@@ -41,6 +42,7 @@ def fillAccountsWithToken(token):
     for i in range(10):
         amt = fromBase18(token.balanceOf(accounts[i]))
         print(f"  Account #{i} has {amt} {token.symbol()}")
+
 
 @enforce_types
 def fillAccountsWithOCEAN():
@@ -97,7 +99,7 @@ def consumeDT(DT, pub_account, consume_account):
 
 
 @enforce_types
-def randomAddStake(pool, pub_account_i: int,token):
+def randomAddStake(pool, pub_account_i: int, token):
     cand_account_I = [i for i in range(10) if i != pub_account_i]
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
@@ -106,7 +108,7 @@ def randomAddStake(pool, pub_account_i: int,token):
 
 
 @enforce_types
-def addStake(pool, TOKEN_stake: float, from_account,token):
+def addStake(pool, TOKEN_stake: float, from_account, token):
     token.approve(pool.address, toBase18(TOKEN_stake), {"from": from_account})
 
     token_amt_in = toBase18(TOKEN_stake)
@@ -147,11 +149,11 @@ def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_toke
 def randomDeployPool(pub_account, token):
     init_TOKEN_stake = AVG_INIT_TOKEN_STAKE * (1 + 0.1 * random.random())
     DT_TOKEN_rate = AVG_DT_TOKEN_RATE * (1 + 0.1 * random.random())
-    return deployPool(init_TOKEN_stake, DT_TOKEN_rate, pub_account,token)
+    return deployPool(init_TOKEN_stake, DT_TOKEN_rate, pub_account, token)
 
 
 @enforce_types
-def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account,token):
+def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account, token):
     data_NFT = oceanutil.createDataNFT("1", "1", from_account)
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 

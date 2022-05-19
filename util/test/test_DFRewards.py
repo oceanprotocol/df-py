@@ -11,6 +11,7 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
 CHAINID = 0
 
+
 @enforce_types
 def test_basic():
     TOK = _deployTOK(accounts[0])
@@ -20,15 +21,15 @@ def test_basic():
 
 @enforce_types
 def test_lostERC20():
-    #Can recover when an account accidentally sends ERC20 to DFRewards.sol?
-    #test_withdrawfunc.py handles this, so no work here
+    # Can recover when an account accidentally sends ERC20 to DFRewards.sol?
+    # test_withdrawfunc.py handles this, so no work here
     pass
 
-    
+
 @enforce_types
 def test_lostETH():
-    #Can recover when an account accidentally sends ETH to DFRewards.sol?
-    #test_withdrawfunc.py handles this, so no work here
+    # Can recover when an account accidentally sends ETH to DFRewards.sol?
+    # test_withdrawfunc.py handles this, so no work here
     pass
 
 
