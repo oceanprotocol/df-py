@@ -10,7 +10,7 @@ from util import chainlist
 from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
-CONTRACTS = {}
+CONTRACTS: dict = {}
 
 
 @enforce_types

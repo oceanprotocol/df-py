@@ -39,7 +39,7 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
         rates.append(rate_day)
 
     rate = numpy.average(rates)
-    return rate
+    return float(rate)
 
 
 def coingeckoRate(token_symbol: str, timestr: str) -> float:

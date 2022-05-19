@@ -8,7 +8,7 @@ from util import cleancase
 @enforce_types
 def calcRewards(
     stakes: dict, poolvols: dict, rates: Dict[str, float], TOKEN_avail: float
-) -> Dict[str, float]:
+) -> Dict[str, Dict[str, float]]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
@@ -71,7 +71,7 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     cleancase.assertStakesAtChain(stakes_at_chain)
     cleancase.assertRates(rates)
 
-    stakes_USD_at_chain = {}
+    stakes_USD_at_chain: Dict[str, Dict[str, float]] = {}
     for basetoken, rate in rates.items():
         if basetoken not in stakes_at_chain:
             continue
@@ -84,7 +84,9 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     return stakes_USD_at_chain
 
 
-def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float]) -> Dict[str, float]:
+def _poolvolsToUsd(
+    poolvols: dict, rates: Dict[str, float]
+) -> Dict[str, Dict[str, float]]:
     """
     @description
       For a given chain, converts volume values to be USD-denominated.
@@ -126,8 +128,8 @@ def _poolvolsToUsdAtChain(
 
 
 def _calcRewardsUsd(
-    stakes_USD: dict, poolvols_USD: Dict[str, float], TOKEN_avail: float
-) -> Dict[str, float]:
+    stakes_USD: dict, poolvols_USD: Dict[str, Dict[str, float]], TOKEN_avail: float
+) -> Dict[str, Dict[str, float]]:
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
@@ -151,7 +153,9 @@ def _calcRewardsUsd(
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
 
     # fill in R
-    rewards = {cID: {} for cID in chainIDs}  # [chainID][LP_addr]:basetoken_float
+    rewards: Dict[str, Dict[str, float]] = {
+        cID: {} for cID in chainIDs
+    }  # [chainID][LP_addr]:basetoken_float
     tot_rewards = 0.0
     for chainID in chainIDs:
         for i, LP_addr in enumerate(LP_addrs):

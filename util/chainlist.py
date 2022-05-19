@@ -10,8 +10,9 @@ _BARGE_SUBGRAPH_URI = (
     "http://127.0.0.1:9000/subgraphs/name/oceanprotocol/ocean-subgraph"
 )
 
-_CHAINID_TO_NETWORK = None  # dict of [chainID_int] : network_str
-_NETWORK_TO_CHAINID = None  # dict of [network_str] : chainID_int
+
+_CHAINID_TO_NETWORK: Dict[int, str] = None  # type: ignore  # dict of [chainID_int] : network_str
+_NETWORK_TO_CHAINID: Dict[str, int] = None  # type: ignore  # dict of [network_str] : chainID_int
 _CHAINIDS_JS_URL = (
     "https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/chainIds.js"
 )

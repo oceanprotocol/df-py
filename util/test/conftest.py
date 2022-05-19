@@ -58,7 +58,7 @@ def randomDeployTokensAndPoolsThenConsume(num_pools: int, base_token):
         if pool_i < len(accounts):
             account_i = pool_i
         else:
-            account_i = random.randint(len(accounts))
+            account_i = random.randint(0, len(accounts))
         (DT, pool) = randomDeployPool(accounts[account_i], base_token)
         randomAddStake(pool, account_i, base_token)
         tups.append((account_i, DT, pool))

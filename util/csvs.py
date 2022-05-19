@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 import glob
 import os
 import re
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from util import constants, oceanutil
 
@@ -34,7 +34,7 @@ def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
         for basetoken in S.keys():
             for pool_addr in S[basetoken].keys():
                 for LP_addr, stake in S[basetoken][pool_addr].items():
-                    row = [chainID, basetoken, pool_addr, LP_addr, stake]
+                    row = [str(chainID), basetoken, pool_addr, LP_addr, stake]
                     writer.writerow(row)
     print(f"Created {csv_file}")
 
@@ -66,7 +66,7 @@ def loadStakesCsv(csv_dir: str, chainID: int):
       stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
     """
     csv_file = stakesCsvFilename(csv_dir, chainID)
-    S = {}  # ie stakes_at_chain
+    S: Dict[str, Dict[str, Dict[str, float]]] = {}  # ie stakes_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -171,7 +171,7 @@ def loadPoolvolsCsv(csv_dir: str, chainID: int):
       poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol_amt
     """
     csv_file = poolvolsCsvFilename(csv_dir, chainID)
-    V = {}  # ie poolvols_at_chain
+    V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -294,7 +294,7 @@ def poolinfoCsvFilename(csv_dir: str, chainID: int) -> str:
 
 
 @enforce_types
-def saveRateCsv(token_symbol: str, rate: float, csv_dir: str) -> str:
+def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
     """
     @description
       Save a csv file for an exchange rate.
@@ -359,7 +359,9 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 
 @enforce_types
-def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_symbol: str):
+def saveRewardsCsv(
+    rewards: Dict[str, Dict[str, float]], csv_dir: str, token_symbol: str
+):
     """
     @description
       Save the rewards dict as a csv,
@@ -381,11 +383,11 @@ def saveRewardsCsv(rewards: Dict[str, float], csv_dir: str, token_symbol: str):
 
 
 @enforce_types
-def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, float]:
+def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float]]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
     token_symbol = token_symbol.upper()
     csv_file = rewardsCsvFilename(csv_dir, token_symbol)
-    rewards = {}
+    rewards: Dict[Any, Dict[str, float]] = {}
 
     with open(csv_file, "r") as f:
         reader = csv.reader(f)

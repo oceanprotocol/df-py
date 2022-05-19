@@ -97,7 +97,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
     """
     print("getStakes(): begin")
     SSBOT_address = oceanutil.Staking().address.lower()
-    stakes = {}
+    stakes: Dict[str, Dict[str, Dict[str, float]]] = {}
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
@@ -186,7 +186,7 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
     DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
 
     # [basesym][pool_addr]:vol
-    poolvols_at_chain = {}
+    poolvols_at_chain: Dict[str, Dict[str, float]] = {}
     for basesym in DTvols_at_chain:
         if basesym not in poolvols_at_chain:
             poolvols_at_chain[basesym] = {}
@@ -202,7 +202,9 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
     return poolvols_at_chain
 
 
-def getDTVolumes(st_block: int, end_block: int, chainID: int) -> Dict[str, float]:
+def getDTVolumes(
+    st_block: int, end_block: int, chainID: int
+) -> Dict[str, Dict[str, float]]:
     """
     @description
       Query the chain for datatoken (DT) volumes within the given block range.
@@ -212,7 +214,7 @@ def getDTVolumes(st_block: int, end_block: int, chainID: int) -> Dict[str, float
     """
     print("getDTVolumes(): begin")
 
-    DTvols = {}
+    DTvols: Dict[str, Dict[str, float]] = {}
     chunk_size = 1000  # max for subgraph = 1000
     for offset in range(0, end_block - st_block, chunk_size):
         query = """
