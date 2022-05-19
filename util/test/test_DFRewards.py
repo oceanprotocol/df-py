@@ -1,9 +1,8 @@
 import brownie
 from enforce_typing import enforce_types
-import pytest
 
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18, fromBase18
+from util.base18 import toBase18
 from util import oceanutil
 
 accounts = brownie.network.accounts

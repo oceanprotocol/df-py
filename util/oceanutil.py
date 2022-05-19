@@ -1,10 +1,11 @@
 from collections import namedtuple
-from enforce_typing import enforce_types
+from typing import Any, List, Dict, Tuple
 import hashlib
 import json
-from typing import Any, List, Dict, Tuple
 
 import brownie
+from enforce_typing import enforce_types
+
 
 from util import chainlist
 from util.base18 import toBase18
@@ -27,7 +28,7 @@ def recordDeployedContracts(address_file: str, chainID: int):
         return
 
     network = chainlist.chainIdToNetwork(chainID)
-    with open(address_file, "r") as json_file:
+    with open(address_file, "r", encoding="UTF-8") as json_file:
         a = json.load(json_file)[network]  # dict of contract_name: address
 
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
@@ -136,7 +137,6 @@ def createBPoolFromDatatoken(
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
 ):
-    erc721_factory = ERC721Factory()
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
@@ -249,7 +249,8 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
         "providerFeeToken": provider_fee_token,
         "providerFeeAmount": provider_fee_amount,
         "providerData": web3.toHex(web3.toBytes(text=provider_data)),
-        # make it compatible with last openzepellin https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
+        # make it compatible with last openzepellin
+        # https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
         "v": signature.v,
         "r": signature.r,
         "s": signature.s,

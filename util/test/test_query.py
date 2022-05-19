@@ -1,7 +1,8 @@
+import random
+import time
+
 import brownie
 from enforce_typing import enforce_types
-from pprint import pprint
-import random, time
 
 from util import chainlist, query
 from util.blockrange import BlockRange
@@ -140,7 +141,7 @@ def _test_getPoolVolumes(CO2_SYM: str):
 def _test_query(CO2_SYM: str):
     st, fin, n = QUERY_ST, len(chain), 500
     rng = BlockRange(st, fin, n)
-    (P0, S0, V0) = query.query(rng, CHAINID)
+    (_, S0, V0) = query.query(rng, CHAINID)
 
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_SYM in S0

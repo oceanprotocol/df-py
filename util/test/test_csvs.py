@@ -134,7 +134,7 @@ def test_poolinfo(tmp_path):
     ]
 
     data = pd.read_csv(csv_file)
-    header = [c for c in data.columns]
+    header = list(data.columns)
     assert header == target_header
 
     # (skip fancier tests)
@@ -184,4 +184,4 @@ def test_rewards_main(tmp_path):
 
     for innerdict in rewards.values():  # ensures we don't deal in weis
         for value in innerdict.values():
-            assert type(value) == float
+            assert isinstance(value, float)

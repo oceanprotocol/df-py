@@ -1,10 +1,9 @@
-import brownie
-from enforce_typing import enforce_types
-import os
-import pytest
 import random
+import brownie
+import pytest
 
-from util import chainlist, constants, graphutil, oceanutil
+from enforce_typing import enforce_types
+from util import chainlist, constants, oceanutil
 from util.base18 import toBase18, fromBase18
 
 brownie.network.connect("development")  # ie ganache / barge, CHAINID = 0
@@ -36,7 +35,7 @@ def fillAccountsWithToken(token):
         bal_before: int = fromBase18(token.balanceOf(accounts[i]))
         if bal_before < 1000:
             token.transfer(accounts[i], toBase18(1000.0), {"from": accounts[0]})
-        bal_after: int = fromBase18(token.balanceOf(accounts[i]))
+        # bal_after: int = fromBase18(token.balanceOf(accounts[i]))
 
     print(f"fillAccountsWithToken({token.symbol()}), balances after:")
     for i in range(10):

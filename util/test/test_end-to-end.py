@@ -1,7 +1,6 @@
 import time
 import brownie
 from enforce_typing import enforce_types
-from pprint import pprint
 import pytest
 
 from util import calcrewards, csvs, dispense, query

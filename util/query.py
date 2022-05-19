@@ -1,11 +1,9 @@
+import json
+from typing import Dict, List, Tuple
+
+import requests
 import brownie
 from enforce_typing import enforce_types
-import json
-import numpy
-from numpy import log10
-from pprint import pprint
-import requests
-from typing import Dict, List, Tuple
 
 from util import oceanutil
 from util.blockrange import BlockRange

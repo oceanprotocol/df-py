@@ -10,9 +10,6 @@ from util.oceanutil import (
     calcDID,
 )
 from util import chainlist, oceanutil
-from util.base18 import fromBase18, toBase18
-from util.constants import BROWNIE_PROJECT as B
-from util.test import conftest
 
 accounts = brownie.network.accounts
 account0 = accounts[0]
@@ -64,7 +61,7 @@ def test_createBPoolFromDatatoken():
     data_NFT = createDataNFT("foo", "foo", account0)
     DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account0)
     base_TOKEN = oceanutil.OCEANtoken()
-    pool = createBPoolFromDatatoken(DT, account0, base_TOKEN)
+    _ = createBPoolFromDatatoken(DT, account0, base_TOKEN)
 
 
 @enforce_types

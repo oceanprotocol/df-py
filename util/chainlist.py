@@ -1,9 +1,11 @@
 import ast
-from enforce_typing import enforce_types
 import os
 import re
-import requests
 from typing import Dict
+
+import requests
+
+from enforce_typing import enforce_types
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 _BARGE_SUBGRAPH_URI = (
@@ -23,8 +25,8 @@ def chainIdToAddressFile(chainID: int) -> str:
     """Returns the address file for a given chainID"""
     if chainID == 0:
         return os.path.expanduser(_BARGE_ADDRESS_FILE)
-    else:
-        raise NotImplementedError()
+
+    raise NotImplementedError()
 
 
 @enforce_types
@@ -32,8 +34,8 @@ def chainIdToSubgraphUri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
     if chainID == 0:
         return _BARGE_SUBGRAPH_URI
-    else:
-        raise NotImplementedError()
+
+    raise NotImplementedError()
 
 
 @enforce_types

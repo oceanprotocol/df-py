@@ -10,7 +10,6 @@ from util import (
     blocktime,
     calcrewards,
     chainlist,
-    constants,
     csvs,
     dispense,
     getrate,
@@ -23,7 +22,7 @@ from util.oceanutil import recordDeployedContracts, OCEANtoken
 CHAINID_EXAMPLES = "0 for development, 1 for ethereum, 137 for polygon"
 
 # ========================================================================
-HELP = """Data Farming tool, for use by OPF.
+HELP_MAIN = """Data Farming tool, for use by OPF.
 
 OPF steps:
 1. query - run per CHAINID (0, 1, 137, ..)
@@ -59,7 +58,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 @enforce_types
 def do_help():
-    print(HELP)
+    print(HELP_MAIN)
     sys.exit(0)
 
 
@@ -304,7 +303,7 @@ Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
         cmd = f"dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
         os.system(cmd)
         print(f"Call dftool query for CHAINID={CHAINID}: Done")
-        
+
     print(f"dftool querymany: Done")
 
 
@@ -529,7 +528,7 @@ def _getAddressEnvvarOrExit() -> tuple:
         print("\nNeed to set envvar ADDRESS_FILE. Exiting.")
         sys.exit(0)
     return ADDRESS_FILE
-    
+
 
 @enforce_types
 def _getPrivateAccount():
