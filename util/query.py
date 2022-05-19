@@ -94,6 +94,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
       stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr]:stake
     """
     print("getStakes(): begin")
+    _ = pools  # little trick because pools isn't used
     SSBOT_address = oceanutil.Staking().address.lower()
     stakes: Dict[str, Dict[str, Dict[str, float]]] = {}
     n_blocks = rng.numBlocks()
@@ -164,6 +165,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
     # normalize stake based on # blocks sampled
     # (this may be lower than target # blocks, if we hit indexing errors)
     assert n_blocks_sampled > 0
+    # pylint: disable=consider-using-dict-items
     for basesym in stakes:
         for pool_addr in stakes[basesym]:
             for LP_addr in stakes[basesym][pool_addr]:
@@ -184,6 +186,7 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
     DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
 
     # [basesym][pool_addr]:vol
+    # pylint: disable=consider-using-dict-items
     poolvols_at_chain: Dict[str, Dict[str, float]] = {}
     for basesym in DTvols_at_chain:
         if basesym not in poolvols_at_chain:

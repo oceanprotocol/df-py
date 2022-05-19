@@ -1,9 +1,10 @@
 #!/usr/bin/env python
 
-import brownie
-from enforce_typing import enforce_types
 import os
 import sys
+
+import brownie
+from enforce_typing import enforce_types
 
 from util import (
     blockrange,
@@ -15,7 +16,7 @@ from util import (
     getrate,
     query,
 )
-from util.base18 import toBase18, fromBase18
+from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import recordDeployedContracts, OCEANtoken
 
@@ -86,7 +87,7 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFil
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
-    print(f"dftool query: Begin")
+    print("dftool query: Begin")
     print(
         f"Arguments:\n "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
@@ -137,13 +138,13 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFil
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
 
-    print(f"dftool query: Done")
+    print("dftool query: Done")
 
 
 # ========================================================================
 @enforce_types
 def do_getrate():
-    HELP = f"""Get exchange rate, and output rate csv.
+    HELP = """Get exchange rate, and output rate csv.
 
 Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
   TOKEN_SYMBOL -- e.g. OCEAN, H2O
@@ -182,7 +183,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
 # ========================================================================
 @enforce_types
 def do_calc():
-    HELP = f"""From stakes/vols/rates csvs, output rewards csv.
+    HELP = """From stakes/vols/rates csvs, output rewards csv.
 
 Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
   CSV_DIR -- directory: input stakes & volumes csvs, output rewards.csv
@@ -228,7 +229,7 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     rewards = calcrewards.calcRewards(stakes, poolvols, rates, TOT_TOKEN)
     csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
 
-    print(f"dftool calc: Done")
+    print("dftool calc: Done")
 
 
 # ========================================================================
@@ -284,7 +285,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 # ========================================================================
 @enforce_types
 def do_querymany():
-    HELP = f"""Like 'query' except query *many* chains.
+    HELP = """Like 'query' except query *many* chains.
 
 Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
 """
@@ -294,6 +295,7 @@ Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
 
     # extract inputs
     assert sys.argv[1] == "querymany"
+    # pylint: disable=unbalanced-tuple-unpacking
     ST, FIN, NSAMP, CSV_DIR = sys.argv[2:6]
     CHAINIDS = [int(arg) for arg in sys.argv[6:]]
     print(f"dftool querymany: Begin. CHAINIDs={CHAINIDS}")
@@ -304,7 +306,7 @@ Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
         os.system(cmd)
         print(f"Call dftool query for CHAINID={CHAINID}: Done")
 
-    print(f"dftool querymany: Done")
+    print("dftool querymany: Done")
 
 
 # ========================================================================
@@ -337,7 +339,7 @@ Usage: dftool newdfrewards CHAINID
 # ========================================================================
 @enforce_types
 def do_compile():
-    HELP = f"""Compile contracts
+    HELP = """Compile contracts
 
 Usage: dftool compile
 """
@@ -351,7 +353,7 @@ Usage: dftool compile
 # ========================================================================
 @enforce_types
 def do_manyrandom():
-    HELP = f"""Deploy many random tokens & pools then consume (for testing)
+    HELP = """Deploy many random tokens & pools then consume (for testing)
 
 Usage: dftool manyrandom
 """
@@ -359,12 +361,12 @@ Usage: dftool manyrandom
         print(HELP)
         sys.exit(0)
 
-    from util.test import conftest
+    from util.test import conftest  # pylint: disable=import-outside-toplevel
 
     recordDeployedContracts(conftest._ADDRESS_FILE, "development")
     conftest.fillAccountsWithOCEAN()
     num_pools = 10  # magic number
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools)
+    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
 
     os.system("brownie compile")
 
@@ -372,7 +374,7 @@ Usage: dftool manyrandom
 # ========================================================================
 @enforce_types
 def do_mine():
-    HELP = f"""Force chain to pass time (ganache only).
+    HELP = """Force chain to pass time (ganache only).
 
 Usage: dftool mine BLOCKS [TIMEDELTA]
   BLOCKS -- e.g. 3
@@ -406,7 +408,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 # ========================================================================
 @enforce_types
 def do_newacct():
-    HELP = f"""Generate new account.
+    HELP = """Generate new account.
 
 Usage: dftool newacct
 """
@@ -429,7 +431,7 @@ Usage: dftool newacct
 # ========================================================================
 @enforce_types
 def do_newtoken():
-    HELP = f"""Generate new token (for testing).
+    HELP = """Generate new token (for testing).
 
 Usage: dftool newtoken CHAINID
 """
@@ -512,7 +514,7 @@ Usage: dftool chaininfo CHAINID
 
     # do work
     _connectToChain(CHAINID)
-    blocks = len(brownie.network.chain)
+    # blocks = len(brownie.network.chain)
     print("\nChain info:")
     print(f"  # blocks: {len(brownie.network.chain)}")
 

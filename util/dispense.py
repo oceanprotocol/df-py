@@ -1,10 +1,9 @@
-import csv
-from enforce_typing import enforce_types
 from typing import Dict
-import os
+
+from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import fromBase18, toBase18
+from util.base18 import toBase18
 
 MAX_BATCH_SIZE = 100
 
