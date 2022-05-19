@@ -22,7 +22,7 @@ def test_without_csvs(ADDRESS_FILE):
     rng = BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
-    (_, S0, V0) = query.query(rng, CHAINID)
+    (_, S0, V0) = query.query_all(rng, CHAINID)
     rates = {"OCEAN": 0.5, "H2O": 1.618}
 
     stakes, poolvols = {CHAINID: S0}, {CHAINID: V0}
@@ -48,7 +48,7 @@ def test_with_csvs(ADDRESS_FILE, tmp_path):
     token_addr = OCEAN_address()
 
     # 1. simulate "dftool query"
-    (_, S0, V0) = query.query(rng, CHAINID)
+    (_, S0, V0) = query.query_all(rng, CHAINID)
     csvs.saveStakesCsv(S0, csv_dir, CHAINID)
     csvs.savePoolvolsCsv(V0, csv_dir, CHAINID)
     S0 = V0 = None  # ensure not used later

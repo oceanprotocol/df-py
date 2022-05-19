@@ -1,5 +1,6 @@
+from typing import Dict
+
 from enforce_typing import enforce_types
-from typing import Dict, Set, Tuple
 from numpy import log10
 
 from util import cleancase
@@ -158,9 +159,9 @@ def _calcRewardsUsd(
     }  # [chainID][LP_addr]:basetoken_float
     tot_rewards = 0.0
     for chainID in chainIDs:
-        for i, LP_addr in enumerate(LP_addrs):
+        for _, LP_addr in enumerate(LP_addrs):
             reward_i = 0.0
-            for j, pool_addr in enumerate(pool_addrs):
+            for _, pool_addr in enumerate(pool_addrs):
                 if pool_addr not in stakes_USD[chainID]:
                     continue
                 Sij = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)

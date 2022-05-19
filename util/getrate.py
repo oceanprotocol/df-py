@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from enforce_typing import enforce_types
 import numpy
 from pycoingecko import CoinGeckoAPI
 

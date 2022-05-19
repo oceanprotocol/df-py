@@ -1,4 +1,3 @@
-from enforce_typing import enforce_types
 import requests
 
 from util import chainlist

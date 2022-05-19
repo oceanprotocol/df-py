@@ -132,7 +132,7 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFil
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
-    (Pi, Si, Vi) = query.query(rng, CHAINID)
+    (Pi, Si, Vi) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)

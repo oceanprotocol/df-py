@@ -141,7 +141,7 @@ def _test_getPoolVolumes(CO2_SYM: str):
 def _test_query(CO2_SYM: str):
     st, fin, n = QUERY_ST, len(chain), 500
     rng = BlockRange(st, fin, n)
-    (_, S0, V0) = query.query(rng, CHAINID)
+    (_, S0, V0) = query.query_all(rng, CHAINID)
 
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_SYM in S0

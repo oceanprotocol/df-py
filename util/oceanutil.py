@@ -28,7 +28,7 @@ def recordDeployedContracts(address_file: str, chainID: int):
         return
 
     network = chainlist.chainIdToNetwork(chainID)
-    with open(address_file, "r", encoding="UTF-8") as json_file:
+    with open(address_file, "r") as json_file:
         a = json.load(json_file)[network]  # dict of contract_name: address
 
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
