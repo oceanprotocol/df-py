@@ -20,18 +20,23 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
       rate -- float -- USD_per_token
     """
     # corner case
+    if token_symbol.lower() == "h2o":
+        return 1.618  # target peg. Update this when H2O is on coingecko
+
+    st_dt = datetime.strptime(st, "%Y-%m-%d")
+    fin_dt = datetime.strptime(fin, "%Y-%m-%d")
+    num_days = (fin_dt - st_dt).days
+    if num_days < 0:
+        raise ValueError("Start date is after end date")
+
     try:
-        if token_symbol.lower() == "h2o":
-            return 1.618  # target peg. Update this when H2O is on coingecko
+        return binanceRate(token_symbol, st_dt, fin_dt)
+    # pylint: disable=broad-except
+    except Exception as e:
+        print("An error occured while fetching price from Binance, trying CoinGecko", e)
 
-        st_dt = datetime.strptime(st, "%Y-%m-%d")
-        fin_dt = datetime.strptime(fin, "%Y-%m-%d")
-        num_days = (fin_dt - st_dt).days
-        if num_days < 0:
-            raise ValueError("Start date is after end date")
         if num_days > 40:
-            raise ValueError("max 40 days, since coingecko rate-limits")
-
+            raise ValueError("max 40 days, since coingecko rate-limits") from e
         rates = []
         for day_i in range(num_days + 1):
             dt = st_dt + timedelta(days=day_i)
@@ -41,10 +46,6 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
 
         rate = numpy.average(rates)
         return float(rate)
-    # pylint: disable=broad-except
-    except Exception as e:
-        print("An error occured while fetching price from CoinGecko, trying Binance", e)
-        return binanceRate(token_symbol, st_dt, fin_dt)
 
 
 def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
