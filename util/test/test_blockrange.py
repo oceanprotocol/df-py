@@ -45,9 +45,9 @@ def test_available1_samplesN():
 
 @enforce_types
 def test_available2_samples1():
-    for i in range(10):
+    for _ in range(10):
         r = BlockRange(st=10, fin=11, num_samples=1).getBlocks()
-        assert r == [10] or r == [11]
+        assert r in ([10], [11])
 
 
 @enforce_types
@@ -59,19 +59,19 @@ def test_available2_samplesN():
 @enforce_types
 def test_available3_samples1():
     r = BlockRange(st=10, fin=12, num_samples=1).getBlocks()
-    assert r == [10] or r == [11] or r == [12]
+    assert r in ([10], [11], [12])
 
 
 @enforce_types
 def test_available3_samplesN():
-    for i in range(10):
+    for _ in range(10):
         r = BlockRange(st=10, fin=12, num_samples=10).getBlocks()
         assert r == [10, 11, 12]  # should always be sorted
 
 
 @enforce_types
 def test_manyRandom():
-    for i in range(100):
+    for _ in range(100):
         r = BlockRange(st=10, fin=20, num_samples=3).getBlocks()
         assert len(r) == 3
         assert min(r) >= 10

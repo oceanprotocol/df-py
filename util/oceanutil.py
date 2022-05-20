@@ -1,16 +1,17 @@
 from collections import namedtuple
-from enforce_typing import enforce_types
+from typing import Any, List, Dict, Tuple
 import hashlib
 import json
-from typing import Any, List, Dict, Tuple
 
 import brownie
+from enforce_typing import enforce_types
+
 
 from util import chainlist
 from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
-CONTRACTS = {}
+CONTRACTS: dict = {}
 
 
 @enforce_types
@@ -80,7 +81,7 @@ def createDataNFT(name: str, symbol: str, from_account):
     transferable = True
     owner = from_account.address
     token_uri = "https://mystorage.com/mytoken.png"
-    
+
     tx = erc721_factory.deployERC721Contract(
         name,
         symbol,
@@ -98,9 +99,7 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 
 @enforce_types
-def createDatatokenFromDataNFT(
-    DT_name: str, DT_symbol: str, data_NFT, from_account
-):
+def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
 
     erc20_template_index = 1
     strings = [
@@ -138,7 +137,6 @@ def createBPoolFromDatatoken(
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
 ):
-    erc721_factory = ERC721Factory()
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
@@ -147,28 +145,28 @@ def createBPoolFromDatatoken(
         router.address, toBase18(init_TOKEN_liquidity), {"from": from_account}
     )
 
-    #dummy values since vestin is now turned off
+    # dummy values since vestin is now turned off
     DT_vest_amt: float = 1000.0
     DT_vest_num_blocks: int = 2426000
-    
+
     ss_params = [
-        toBase18(DT_TOKEN_rate), # rate (wei)
-        base_TOKEN.decimals(),        # baseToken (decimals)
-        toBase18(DT_vest_amt),   # vesting amount (wei)
-        DT_vest_num_blocks,      # vested blocks (int, *not* wei)
-        toBase18(init_TOKEN_liquidity), # initial liquidity (wei)
+        toBase18(DT_TOKEN_rate),  # rate (wei)
+        base_TOKEN.decimals(),  # baseToken (decimals)
+        toBase18(DT_vest_amt),  # vesting amount (wei)
+        DT_vest_num_blocks,  # vested blocks (int, *not* wei)
+        toBase18(init_TOKEN_liquidity),  # initial liquidity (wei)
     ]
     swap_fees = [
-        toBase18(LP_swap_fee),   # swap fee for LPs (wei)
+        toBase18(LP_swap_fee),  # swap fee for LPs (wei)
         toBase18(mkt_swap_fee),  # swap fee for marketplace runner (wei)
     ]
     addresses = [
-        ssbot.address,           # ssbot address
-        base_TOKEN.address,           # baseToken address
-        from_account.address,    # baseTokenSender, provides init baseToken liquidity
-        from_account.address,    # publisherAddress, will get the vested amt
-        from_account.address,    # marketFeeCollector address
-        pool_template.address,   # poolTemplate address
+        ssbot.address,  # ssbot address
+        base_TOKEN.address,  # baseToken address
+        from_account.address,  # baseTokenSender, provides init baseToken liquidity
+        from_account.address,  # publisherAddress, will get the vested amt
+        from_account.address,  # marketFeeCollector address
+        pool_template.address,  # poolTemplate address
     ]
 
     tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
@@ -251,7 +249,8 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
         "providerFeeToken": provider_fee_token,
         "providerFeeAmount": provider_fee_amount,
         "providerData": web3.toHex(web3.toBytes(text=provider_data)),
-        # make it compatible with last openzepellin https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
+        # make it compatible with last openzepellin
+        # https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
         "v": signature.v,
         "r": signature.r,
         "s": signature.s,
