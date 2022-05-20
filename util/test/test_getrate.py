@@ -23,10 +23,10 @@ def test_start_after_fin():
 
 
 def test_coingeckoRate_bitcoin():
-    r = getrate.coingeckoRate("bitcoin", "2022-01-31")
+    r = getrate.getrate("BTC", "2022-01-31", "2022-01-31")
     assert r == approx(37983.15, 0.1)
 
 
 def test_coingeckoRate_ocean():
-    r = getrate.coingeckoRate("ocean-protocol", "2022-01-31")
+    r = getrate.getrate("OCEAN", "2022-01-31", "2022-01-31")
     assert r == approx(0.58, 0.1)
