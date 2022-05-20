@@ -76,6 +76,33 @@ export PATH=$PATH:.
 dftool compile
 ```
 
+
+
+## Usage with Docker
+
+Build the docker image.
+```shell
+docker build . -t dfpy
+```
+
+Usage:
+`./dfpy_docker args`
+
+Docker will mount `/tmp/dfpy:/app/data`
+Example usage with docker:
+
+```shell
+./dfpy_docker help  # prints help 
+```
+
+```shell
+$ ./dfpy_docker getrate OCEAN 2022-01-01 2022-01-02 /app/data
+
+Arguments: ST=2022-01-01, FIN=2022-01-02, CSV_DIR=/app/data
+rate = $0.8774 / OCEAN
+Created /app/data/rate-OCEAN.csv
+```
+
 # Main Usage: CLI
 
 `dftool` is the main tool. In main terminal:
