@@ -1,6 +1,4 @@
-import pytest
 from pytest import approx
-
 from util import getrate
 
 
@@ -20,13 +18,8 @@ def test_getrate_h2o():
 
 
 def test_start_after_fin():
-    with pytest.raises(ValueError):
-        getrate.getrate("OCEAN", "2021-01-26", "2021-12-20")
-
-
-def test_ratelimit():
-    with pytest.raises(ValueError):
-        getrate.getrate("OCEAN", "2021-01-20", "2021-12-26")
+    p = getrate.getrate("OCEAN", "2021-01-26", "2021-12-20")
+    assert p == 0.8966604863221889
 
 
 def test_coingeckoRate_bitcoin():
