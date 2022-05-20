@@ -1,11 +1,8 @@
 import brownie
-from datetime import datetime
-from enforce_typing import enforce_types
 from pytest import approx
+from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
 
 chain = brownie.network.chain
-
-from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
 
 
 def test_timestrToBlock_1():
@@ -16,29 +13,29 @@ def test_timestrToBlock_1():
 
 def test_timestampToBlock_FarLeft():
     b = timestrToBlock(chain, "1970-01-01")
-    assert b == 0 and type(b) == int
+    assert b == 0 and isinstance(b, int)
 
     b = timestrToBlock(chain, "1970-01-01_0:00")
-    assert b == 0 and type(b) == int
+    assert b == 0 and isinstance(b, int)
 
 
 def test_timestampToBlock_FarRight():
     b = timestrToBlock(chain, "2030-01-01")
-    assert b == len(chain) and type(b) == int
+    assert b == len(chain) and isinstance(b, int)
 
     b = timestrToBlock(chain, "2030-01-01_0:00")
-    assert b == len(chain) and type(b) == int
+    assert b == len(chain) and isinstance(b, int)
 
 
 def test_timestrToTimestamp():
     t = timestrToTimestamp("1970-01-01_0:00")
-    assert t == 0.0 and type(t) == float
+    assert t == 0.0 and isinstance(t, float)
 
     t = timestrToTimestamp("2022-03-29_17:55")
-    assert t == 1648576500.0 and type(t) == float
+    assert t == 1648576500.0 and isinstance(t, float)
 
     t = timestrToTimestamp("2022-03-29")
-    assert t == 1648512000.0 and type(t) == float
+    assert t == 1648512000.0 and isinstance(t, float)
 
 
 def test_timestampToBlock():
