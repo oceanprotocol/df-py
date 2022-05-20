@@ -41,12 +41,14 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
 
         rate = numpy.average(rates)
         return float(rate)
+    # pylint: disable=broad-except
     except Exception as e:
         print("An error occured while fetching price from CoinGecko, trying Binance", e)
         return binanceRate(token_symbol, st_dt, fin_dt)
 
 
 def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
+    # pylint: disable=line-too-long
     res = requests.get(
         f"https://api.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"
     )
@@ -55,7 +57,7 @@ def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
     return avg
 
 
-def coingeckoRate(token_symbol: str, timestr: str, try_again: int = 5) -> float:
+def coingeckoRate(token_symbol: str, timestr: str) -> float:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"

@@ -1,7 +1,4 @@
-import os
-import pytest
 from pytest import approx
-
 from util import getrate
 
 
