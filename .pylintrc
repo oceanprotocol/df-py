@@ -20,7 +20,8 @@ ignore=
   requirements.txt,
   compile.sh,
   brownie-install.sh,
-  LICENSE
+  LICENSE,
+  docker-compose.yml
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
