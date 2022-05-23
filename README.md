@@ -80,27 +80,15 @@ dftool compile
 
 ## Usage with Docker
 
-Build the docker image.
+Start docker compose.
 ```shell
-docker build . -t dfpy
+docker compose up --build -d
 ```
 
-Usage:
-`./dfpy_docker args`
-
-Docker will mount `/tmp/dfpy:/app/data`
-Example usage with docker:
+Run `/bin/bash` to access the docker container.
 
 ```shell
-./dfpy_docker help  # prints help 
-```
-
-```shell
-$ ./dfpy_docker getrate OCEAN 2022-01-01 2022-01-02 /app/data
-
-Arguments: ST=2022-01-01, FIN=2022-01-02, CSV_DIR=/app/data
-rate = $0.8774 / OCEAN
-Created /app/data/rate-OCEAN.csv
+docker exec -it container_name /bin/bash
 ```
 
 # Main Usage: CLI
