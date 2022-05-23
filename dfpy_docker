@@ -1,2 +1,0 @@
-#!/bin/bash
-docker run -e .env -v /tmp/dfpy:/app/data --rm --network ocean_backend dfpy $@
