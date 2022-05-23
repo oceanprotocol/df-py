@@ -1,9 +1,9 @@
-from enforce_typing import enforce_types
 import requests
 
 from util import chainlist
 
-def submitQuery(query: str, chainID: int) -> str:
+
+def submitQuery(query: str, chainID: int) -> dict:
     subgraph_url = chainlist.chainIdToSubgraphUri(chainID)
     request = requests.post(subgraph_url, "", json={"query": query})
     if request.status_code != 200:

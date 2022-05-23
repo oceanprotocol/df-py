@@ -1,11 +1,10 @@
 import brownie
 from enforce_typing import enforce_types
-import os
 import pytest
 
 from util import dispense
 from util.oceanutil import recordDeployedContracts, OCEANtoken
-from util.base18 import fromBase18, toBase18
+from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 
 accounts = brownie.network.accounts
@@ -13,8 +12,9 @@ a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
 
 CHAINID = 0
 
+
 @enforce_types
-def test_small_batch(ADDRESS_FILE, tmp_path):
+def test_small_batch(ADDRESS_FILE):
     recordDeployedContracts(ADDRESS_FILE, CHAINID)
     OCEAN = OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
