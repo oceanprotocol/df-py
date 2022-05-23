@@ -1,4 +1,5 @@
 import brownie
+import pytest
 from enforce_typing import enforce_types
 from util.random_addresses import get_random_addresses
 from util.oceanutil import recordDeployedContracts, OCEANtoken
@@ -9,13 +10,19 @@ CHAINID = 0
 
 
 @enforce_types
-def batch_allocate(number: int) -> str:
+def _prep_batch_allocate(number: int) -> str:
     OCEAN = OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     addresses = get_random_addresses(number)
     rewards = [1 for i in range(number)]
     OCEAN.approve(df_rewards, sum(rewards), {"from": accounts[0]})
-    tx = df_rewards.allocate(addresses, rewards, OCEAN.address, {"from": accounts[0]})
+    return addresses, rewards, OCEAN.address, df_rewards
+
+
+@enforce_types
+def batch_allocate(number: int) -> str:
+    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(number)
+    tx = df_rewards.allocate(addresses, rewards, token_addr, {"from": accounts[0]})
     return tx
 
 
@@ -39,7 +46,21 @@ def test_allocate_gas(ADDRESS_FILE):
     )  # 23167 is the estimated gas for each iteration
     assert per_iteration1 * 1250 < 30_000_000  # mainnet gas limit
 
+
+def test_1250_addresses(ADDRESS_FILE):
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+
     big_batch = batch_allocate(1250)
     assert (
         big_batch.gas_used < 30_000_000
     )  # should be able to allocate 1250 addresses using less than 30,000,000 gas.
+
+
+def test_insufficient_gas_reverts(ADDRESS_FILE):
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(1250)
+    with pytest.raises(Exception) as e_info:
+        df_rewards.allocate(
+            addresses, rewards, token_addr, {"from": accounts[0], "gas_limit": 100000}
+        )
+    assert str(e_info.value) == "base fee exceeds gas limit"
