@@ -12,4 +12,4 @@ RUN brownie compile
 
 ENV PATH="/app/df-py:${PATH}"
 
-ENTRYPOINT [ "python3", "/app/df-py/dftool" ]
+CMD [ "tail","-f","/dev/null" ]
