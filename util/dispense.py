@@ -1,3 +1,4 @@
+# pylint: disable=logging-fstring-interpolation
 from typing import Dict
 
 from enforce_typing import enforce_types
@@ -52,6 +53,7 @@ def dispense(
         fin = st + batch_size
         for z in range(TRY_AGAIN):
             try:
+                # pylint: disable=line-too-long
                 logger.info(
                     f"Allocating rewards Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses {z}"
                 )
@@ -62,6 +64,7 @@ def dispense(
                     {"from": from_account},
                 )
                 break
+            # pylint: disable=broad-except
             except Exception as e:
                 logger.critical(
                     f'An error occured "{e}" while allocating funds, trying again {z}'
