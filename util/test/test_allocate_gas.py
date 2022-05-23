@@ -1,3 +1,5 @@
+from typing import Any
+
 import brownie
 import pytest
 from enforce_typing import enforce_types
@@ -10,7 +12,7 @@ CHAINID = 0
 
 
 @enforce_types
-def _prep_batch_allocate(number: int) -> str:
+def _prep_batch_allocate(number: int) -> Any:
     OCEAN = OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     addresses = get_random_addresses(number)
