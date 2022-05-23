@@ -612,3 +612,5 @@ min-public-methods=2
 # "BaseException, Exception".
 overgeneral-exceptions=BaseException,
                        Exception
+
+ignore=docker-compose.yml
