@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  dfpy:
+    container_name: dfpy
+    env_file:
+      - .env
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumes:
+      - /tmp/data:/app/data
