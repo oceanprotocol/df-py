@@ -4,8 +4,10 @@ from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
+from util.logger import logger
 
 MAX_BATCH_SIZE = 100
+TRY_AGAIN = 3
 
 
 @enforce_types
@@ -32,12 +34,12 @@ def dispense(
       <<nothing, but updates the dfrewards contract on-chain>>
     """
     rewards = rewards_at_chain
-    print("dispense: begin")
-    print(f"  # addresses: {len(rewards)}")
+    logger.info("dispense: begin")
+    logger.info(f"  # addresses: {len(rewards)}")
 
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
-    print(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
+    logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 
     to_addrs = list(rewards.keys())
     values = [toBase18(rewards[to_addr]) for to_addr in to_addrs]
@@ -48,8 +50,20 @@ def dispense(
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
     for i, st in enumerate(sts):
         fin = st + batch_size
-        print(f"  Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses")
-        df_rewards.allocate(
-            to_addrs[st:fin], values[st:fin], TOK.address, {"from": from_account}
-        )
-    print("dispense: done")
+        for z in range(TRY_AGAIN):
+            try:
+                logger.info(
+                    f"Allocating rewards Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses {z}"
+                )
+                df_rewards.allocate(
+                    to_addrs[st:fin],
+                    values[st:fin],
+                    TOK.address,
+                    {"from": from_account},
+                )
+                break
+            except Exception as e:
+                logger.critical(
+                    f'An error occured "{e}" while allocating funds, trying again {z}'
+                )
+    logger.info("dispense: done")
