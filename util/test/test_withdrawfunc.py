@@ -2,7 +2,7 @@ import brownie
 from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18, fromBase18
+from util.base18 import toBase18
 
 accounts = brownie.network.accounts
 a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address

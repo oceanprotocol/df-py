@@ -1,13 +1,15 @@
+from typing import Dict
+
 from enforce_typing import enforce_types
-from typing import Dict, Set, Tuple
 from numpy import log10
 
 from util import cleancase
 
+
 @enforce_types
 def calcRewards(
-    stakes: dict, poolvols: dict, rates: Dict[str, float], TOKEN_avail: float) \
-    -> Dict[str, float]:
+    stakes: dict, poolvols: dict, rates: Dict[str, float], TOKEN_avail: float
+) -> Dict[str, Dict[str, float]]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
@@ -25,12 +27,13 @@ def calcRewards(
     stakes = cleancase.modStakes(stakes)
     poolvols = cleancase.modPoolvols(poolvols)
     rates = cleancase.modRates(rates)
-    
+
     #
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
     rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
     return rewards
+
 
 def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
     """
@@ -46,12 +49,13 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
     """
     cleancase.assertStakes(stakes)
     cleancase.assertRates(rates)
-    
+
     stakes_USD = {}
     for chainID in stakes:
         stakes_USD[chainID] = _stakesToUsdAtChain(stakes[chainID], rates)
 
     return stakes_USD
+
 
 def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     """
@@ -67,8 +71,8 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     """
     cleancase.assertStakesAtChain(stakes_at_chain)
     cleancase.assertRates(rates)
-    
-    stakes_USD_at_chain = {}
+
+    stakes_USD_at_chain: Dict[str, Dict[str, float]] = {}
     for basetoken, rate in rates.items():
         if basetoken not in stakes_at_chain:
             continue
@@ -81,7 +85,9 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     return stakes_USD_at_chain
 
 
-def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float]) -> Dict[str, float]:
+def _poolvolsToUsd(
+    poolvols: dict, rates: Dict[str, float]
+) -> Dict[str, Dict[str, float]]:
     """
     @description
       For a given chain, converts volume values to be USD-denominated.
@@ -95,7 +101,7 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float]) -> Dict[str, float]:
     """
     cleancase.assertPoolvols(poolvols)
     cleancase.assertRates(rates)
-    
+
     poolvols_USD = {}
     for chainID in poolvols:
         poolvols_USD[chainID] = _poolvolsToUsdAtChain(poolvols[chainID], rates)
@@ -103,12 +109,14 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float]) -> Dict[str, float]:
     cleancase.assertPoolvolsUsd(poolvols_USD)
     return poolvols_USD
 
-def _poolvolsToUsdAtChain(poolvols_at_chain: dict, rates: Dict[str, float]) \
-    -> Dict[str, float]:
+
+def _poolvolsToUsdAtChain(
+    poolvols_at_chain: dict, rates: Dict[str, float]
+) -> Dict[str, float]:
     """Like _poolvolsToUsd, but at a given chainID"""
     cleancase.assertPoolvolsAtChain(poolvols_at_chain)
     cleancase.assertRates(rates)
-    
+
     poolvols_USD_at_chain = {}  # dict of [pool_addr] : vol_USD
     for basetoken, rate in rates.items():
         if basetoken not in poolvols_at_chain:
@@ -121,8 +129,8 @@ def _poolvolsToUsdAtChain(poolvols_at_chain: dict, rates: Dict[str, float]) \
 
 
 def _calcRewardsUsd(
-    stakes_USD: dict, poolvols_USD: Dict[str, float], TOKEN_avail: float) \
-    -> Dict[str, float]:
+    stakes_USD: dict, poolvols_USD: Dict[str, Dict[str, float]], TOKEN_avail: float
+) -> Dict[str, Dict[str, float]]:
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
@@ -134,23 +142,26 @@ def _calcRewardsUsd(
     """
     cleancase.assertStakesUsd(stakes_USD)
     cleancase.assertPoolvolsUsd(poolvols_USD)
-    
+
     # base data
     chainIDs = list(stakes_USD.keys())
     pool_addr_set, LP_addr_set = set(), set()
     for chainID in chainIDs:
         pool_addr_set |= set(poolvols_USD[chainID].keys())
-        LP_addr_set |= set({addr for addrs in stakes_USD[chainID].values()
-                            for addr in addrs})
+        LP_addr_set |= set(
+            {addr for addrs in stakes_USD[chainID].values() for addr in addrs}
+        )
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
 
     # fill in R
-    rewards = {cID:{} for cID in chainIDs} # [chainID][LP_addr]:basetoken_float
+    rewards: Dict[str, Dict[str, float]] = {
+        cID: {} for cID in chainIDs
+    }  # [chainID][LP_addr]:basetoken_float
     tot_rewards = 0.0
     for chainID in chainIDs:
-        for i, LP_addr in enumerate(LP_addrs):
+        for _, LP_addr in enumerate(LP_addrs):
             reward_i = 0.0
-            for j, pool_addr in enumerate(pool_addrs):
+            for _, pool_addr in enumerate(pool_addrs):
                 if pool_addr not in stakes_USD[chainID]:
                     continue
                 Sij = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
