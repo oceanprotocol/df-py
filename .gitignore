@@ -5,3 +5,4 @@ build/
 util/__pycache__/
 util/test/__pycache__/
 .pytest_cache/
+.env

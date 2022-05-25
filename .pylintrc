@@ -21,7 +21,10 @@ ignore=
   compile.sh,
   brownie-install.sh,
   LICENSE,
-  docker-compose.yml
+  docker-compose.yml,
+  brownie-config.yaml,
+  Dockerfile,
+  dfpy_docker
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
@@ -162,7 +165,15 @@ disable=D203, D204, D213, D215, D400, D401, D404, D406, D407, D408, D409, D413,
         deprecated-sys-function,
         exception-escape,
         comprehension-escape,
-	use-implicit-booleaness-not-comparison 
+	use-implicit-booleaness-not-comparison,
+        too-many-arguments,
+        consider-using-f-string,
+        consider-using-in,
+        global-variable-not-assigned,
+        global-statement,
+        too-many-branches,
+        too-many-function-args,
+        unspecified-encoding
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
