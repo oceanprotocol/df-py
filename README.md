@@ -101,14 +101,9 @@ dftool dispense
 ...
 ```
 
-**Then, simply follow the usage directions:)**
+Then, simply follow the usage directions:)
 
 # Other Usage
-
-## Setting up Tests
-
-Depending on the functionality and tests you need to run, you may have to update your envvars.
-Please read dftool to understand this further before beginning tests
 
 ## Running Tests
 
