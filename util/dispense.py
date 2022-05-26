@@ -85,6 +85,6 @@ def dispense(
                 logger.critical(
                     f'An error occured "{e}" while allocating funds, trying again {z}'
                 )
-            if done == False:
-                logger.critical(f"Could not allocate funds for batch {i+1}")
+        if done is False:
+            logger.critical(f"Could not allocate funds for batch {i+1}")
     logger.info("dispense: done")
