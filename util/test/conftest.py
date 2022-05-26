@@ -6,9 +6,7 @@ from enforce_typing import enforce_types
 from util import chainlist, constants, oceanutil
 from util.base18 import toBase18, fromBase18
 
-brownie.network.connect("development")  # ie ganache / barge, CHAINID = 0
-
-accounts = brownie.network.accounts
+network = brownie.network
 
 # pool constants
 NUM_STAKERS_PER_POOL = 2  # 3
@@ -22,6 +20,14 @@ AVG_TOKEN_STAKE = 10.0
 MAX_TOKEN_IN_BUY = 10000.0  # e.g. max OCEAN
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
+@pytest.fixture
+def CHAIN0():
+    if network.is_connected():
+        if network == "development":
+            return network.chain
+        network.disconnect()
+    network.connect("development")
+
 
 @pytest.fixture
 @enforce_types
@@ -31,6 +37,7 @@ def ADDRESS_FILE() -> str:
 
 @enforce_types
 def fillAccountsWithToken(token):
+    accounts = network.accounts
     for i in range(1, 10):
         bal_before: int = fromBase18(token.balanceOf(accounts[i]))
         if bal_before < 1000:
@@ -51,6 +58,8 @@ def fillAccountsWithOCEAN():
 
 @enforce_types
 def randomDeployTokensAndPoolsThenConsume(num_pools: int, base_token):
+    accounts = network.accounts
+    
     # create random NUM_POOLS. Randomly add stake.
     tups = []  # (pub_account_i, DT, pool)
     for pool_i in range(num_pools):
@@ -103,7 +112,7 @@ def randomAddStake(pool, pub_account_i: int, token):
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
         TOKEN_stake = AVG_TOKEN_STAKE * (1 + 0.1 * random.random())
-        addStake(pool, TOKEN_stake, accounts[account_i], token)
+        addStake(pool, TOKEN_stake, network.accounts[account_i], token)
 
 
 @enforce_types
