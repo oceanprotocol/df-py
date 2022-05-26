@@ -29,6 +29,7 @@ Ensure prerequisites:
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
+- nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`. [[Details](https://github.com/tokenspice/tokenspice/issues/165)]
 
 #### Install & Run Barge
 
@@ -111,8 +112,8 @@ Please read dftool to understand this further before beginning tests
 
 In terminal:
 ```console
-#run tests for one method, with print statements to console. "-s" is same as "--capture=no"
-brownie test util/test/test_calcrewards.py::test_calcRewards1 -s
+#run tests for one method, with print statements to console. "-s" is to show output
+brownie test util/test/test_calcrewards.py::test_calcRewards1_onechain -s
 
 #run tests for one module
 brownie test util/test/test_calcrewards.py
