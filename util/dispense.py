@@ -50,7 +50,7 @@ def dispense(
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
 
-    if batch_number != None:
+    if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
         TOK.approve(
             df_rewards,
@@ -62,7 +62,7 @@ def dispense(
 
     logger.info(f"Total {len(sts)} batches")
     for i, st in enumerate(sts):
-        if batch_number != None and batch_number != i + 1:
+        if batch_number is not None and batch_number != i + 1:
             continue
         fin = st + batch_size
         done = False
