@@ -18,6 +18,7 @@ Usage: dftool query|calc|dispense|..
   dftool query - query chain for stakes & volumes
   dftool calc - calculate rewards
   dftool dispense - dispense funds
+  ...
 ```
 
 # Installation
@@ -97,6 +98,7 @@ dftool
 #see help for key functions
 dftool calc
 dftool dispense
+...
 ```
 
 **Then, simply follow the usage directions:)**
