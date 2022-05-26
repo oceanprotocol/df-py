@@ -49,7 +49,9 @@ def deployOceanContracts(address_file: str, chainID: int):
         C["ERC20Template"].address,  # _template
         C["Router"].address,         # _router
         {'from': account0})
-
+    C["FixedPrice"] = B.FixedRateExchange.deploy(
+        C["Router"].address,         # _router
+        {'from': account0})
 
 
 @enforce_types
@@ -76,6 +78,7 @@ def recordDeployedContracts(address_file: str, chainID: int):
     C["Router"] = B.FactoryRouter.at(a["Router"])
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
+    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
 
 def OCEANtoken():
