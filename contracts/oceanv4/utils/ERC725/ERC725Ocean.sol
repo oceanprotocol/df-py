@@ -6,7 +6,7 @@ import "../../interfaces/IERC725Y.sol";
 import "../ERC721/ERC165.sol";
 
 // libraries
-import "@openzeppelin/contracts/utils/Create2.sol";
+import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/Create2.sol";
 import "solidity-bytes-utils/contracts/BytesLib.sol";
 
 
