@@ -10,7 +10,7 @@ import "../interfaces/IFixedRateExchange.sol";
 import "../interfaces/IPool.sol";
 import "../interfaces/IDispenser.sol";
 import "../utils/SafeERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 contract FactoryRouter is BFactory, IFactoryRouter {
     using SafeERC20 for IERC20;
@@ -74,6 +74,8 @@ contract FactoryRouter is BFactory, IFactoryRouter {
         require(routerOwner == msg.sender, "OceanRouter: NOT OWNER");
         _;
     }
+
+    event OPCCollectorChanged(address indexed caller, address indexed _newOpcCollector);
 
     constructor(
         address _routerOwner,
@@ -743,5 +745,24 @@ contract FactoryRouter is BFactory, IFactoryRouter {
     function isPoolTemplate(address poolTemplate) public view override(BFactory, IFactoryRouter)
         returns (bool) {
         return BFactory.isPoolTemplate(poolTemplate);
+    }
+
+
+    /*
+     * @dev updateOPCCollector
+     *      Set new opcCollector
+     * @param opcCollector
+     */
+    function updateOPCCollector(address _opcCollector) external onlyRouterOwner {
+        require(_opcCollector != address(0), "New opcCollector cannot be ZERO_ADDR");
+        opcCollector = _opcCollector;
+        emit OPCCollectorChanged(msg.sender, _opcCollector);
+    }
+    /*
+      * @dev getOPCCollector
+      * getter for opcCollector
+    */
+    function getOPCCollector() view public returns (address) {
+        return opcCollector;
     }
 }

@@ -8,9 +8,9 @@ import "../../interfaces/IERC20.sol";
 import "../../interfaces/IERC20Template.sol";
 import "../../interfaces/IERC721Template.sol";
 import "../../interfaces/IPool.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 import "../../utils/SafeERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 /**@title SideStaking
  *
@@ -495,7 +495,7 @@ contract SideStaking is ReentrancyGuard, ISideStaking {
      */
     function getAvailableVesting(address)
         public
-        view
+        pure
         returns (uint256)
     {
         // see https://github.com/oceanprotocol/contracts/issues/603

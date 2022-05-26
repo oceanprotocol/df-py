@@ -3,7 +3,7 @@ pragma solidity 0.8.12;
 // SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
 // Code is Apache-2.0 and docs are CC-BY-4.0
 import '../interfaces/IERC20.sol';
-import 'OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol';
+import '@openzeppelin/contracts/access/Ownable.sol';
 import '../utils/SafeERC20.sol';
 
 

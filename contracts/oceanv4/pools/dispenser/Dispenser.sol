@@ -7,10 +7,10 @@ import "../../interfaces/IDispenser.sol";
 import "../../interfaces/IERC20.sol";
 import "../../interfaces/IERC20Template.sol";
 import "../../interfaces/IERC721Template.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
+import "@openzeppelin/contracts/utils/math/SafeMath.sol";
 
 import "../../utils/SafeERC20.sol";
-import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract Dispenser is ReentrancyGuard, IDispenser{
     using SafeMath for uint256;
@@ -75,6 +75,23 @@ contract Dispenser is ReentrancyGuard, IDispenser{
         require(
             dt.isERC20Deployer(msg.sender) || 
             IERC721Template(dt.getERC721Address()).ownerOf(1) == msg.sender
+            ,
+            "Invalid owner"
+        );
+        _;
+    }
+
+    modifier onlyOwnerAndTemplate(address datatoken) {
+        // allow only ERC20 Deployers or NFT Owner
+        require(
+            datatoken != address(0),
+            'Invalid token contract address'
+        );
+        IERC20Template dt = IERC20Template(datatoken);
+        require(
+            dt.isERC20Deployer(msg.sender) || 
+            IERC721Template(dt.getERC721Address()).ownerOf(1) == msg.sender ||
+            datatoken == msg.sender
             ,
             "Invalid owner"
         );
@@ -250,7 +267,7 @@ contract Dispenser is ReentrancyGuard, IDispenser{
      *      Withdraw all datatokens in this dispenser balance to ERC20.getPaymentCollector()
      * @param datatoken refers to datatoken address.
      */
-    function ownerWithdraw(address datatoken) external nonReentrant {
+    function ownerWithdraw(address datatoken) external onlyOwnerAndTemplate(datatoken) nonReentrant {
         require(
             datatoken != address(0),
             'Invalid token contract address'

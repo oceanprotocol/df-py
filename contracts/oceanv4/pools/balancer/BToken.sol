@@ -17,7 +17,7 @@ pragma solidity 0.8.12;
 // Code is Apache-2.0 and docs are CC-BY-4.0
 
 import './BNum.sol';
-// import 'OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/IERC20.sol';
+// import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '../../interfaces/IERC20.sol';
 // Highly opinionated token implementation
 
@@ -79,20 +79,16 @@ contract BTokenBase is BNum {
 
 contract BToken is BTokenBase {
 
-    string  private _name     = 'Balancer Pool Token';
-    string  private _symbol   = 'BPT';
-    uint8   private _decimals = 18;
-
     function name() external view returns (string memory) {
-        return _name;
+        return 'Ocean Pool Token';
     }
 
     function symbol() external view returns (string memory) {
-        return _symbol;
+        return 'OPT';
     }
 
     function decimals() external view returns(uint8) {
-        return _decimals;
+        return 18;
     }
 
     function allowance(address src, address dst) external view returns (uint256) {
