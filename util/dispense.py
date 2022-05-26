@@ -31,7 +31,7 @@ def dispense(
       token_addr -- address of token we're allocating rewards with (eg OCEAN)
       from_account -- account doing the spending
       batch_size -- largest # LPs allocated per tx (due to EVM limits)
-      batch_number -- Optional, specify the batch number to run dispense only for that batch.
+      batch_number -- specify the batch number to run dispense only for that batch.
 
     @return
       <<nothing, but updates the dfrewards contract on-chain>>
