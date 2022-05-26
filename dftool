@@ -242,6 +242,7 @@ Usage: dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR]
   CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
   DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
+  BATCH_NUMBER -- Optional, specify the batch number to run dispense only for that batch.
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -266,6 +267,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         TOKEN_ADDR = sys.argv[5]
     assert TOKEN_ADDR is not None
 
+    batch_number = -1
+    if len(sys.argv) == 7:
+        batch_number = sys.argv[6]
+
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
         f", DFREWARDS_ADDR={DFREWARDS_ADDR}"
@@ -277,7 +282,13 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol()
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
-    dispense.dispense(rewards[CHAINID], DFREWARDS_ADDR, TOKEN_ADDR, from_account)
+    dispense.dispense(
+        rewards[CHAINID],
+        DFREWARDS_ADDR,
+        TOKEN_ADDR,
+        from_account,
+        batch_number=batch_number,
+    )
 
     print("dftool dispense: Done")
 
