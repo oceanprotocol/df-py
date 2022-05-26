@@ -18,6 +18,7 @@ def dispense(
     token_addr: str,
     from_account,
     batch_size: int = MAX_BATCH_SIZE,
+    batch_number: int = -1,
 ):
     """
     @description
@@ -30,6 +31,7 @@ def dispense(
       token_addr -- address of token we're allocating rewards with (eg OCEAN)
       from_account -- account doing the spending
       batch_size -- largest # LPs allocated per tx (due to EVM limits)
+      batch_number -- Optional, specify the batch number to run dispense only for that batch.
 
     @return
       <<nothing, but updates the dfrewards contract on-chain>>
@@ -45,12 +47,25 @@ def dispense(
     to_addrs = list(rewards.keys())
     values = [toBase18(rewards[to_addr]) for to_addr in to_addrs]
 
-    TOK.approve(df_rewards, sum(values), {"from": from_account})
-
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
+
+    if batch_number != -1:
+        b_st = (batch_number - 1) * batch_size
+        TOK.approve(
+            df_rewards,
+            sum(values[b_st : b_st + batch_size]),
+            {"from": from_account},
+        )
+    else:
+        TOK.approve(df_rewards, sum(values), {"from": from_account})
+
+    logger.info(f"Total {len(sts)} batches")
     for i, st in enumerate(sts):
+        if batch_number != -1 and batch_number != i + 1:
+            continue
         fin = st + batch_size
+        done = False
         for z in range(TRY_AGAIN):
             try:
                 # pylint: disable=line-too-long
@@ -63,10 +78,13 @@ def dispense(
                     TOK.address,
                     {"from": from_account},
                 )
+                done = True
                 break
             # pylint: disable=broad-except
             except Exception as e:
                 logger.critical(
                     f'An error occured "{e}" while allocating funds, trying again {z}'
                 )
+            if done == False:
+                logger.critical(f"Could not allocate funds for batch {i+1}")
     logger.info("dispense: done")
