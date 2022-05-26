@@ -1,5 +1,5 @@
 # pylint: disable=logging-fstring-interpolation
-from typing import Dict
+from typing import Dict, Optional
 
 from enforce_typing import enforce_types
 
@@ -18,7 +18,7 @@ def dispense(
     token_addr: str,
     from_account,
     batch_size: int = MAX_BATCH_SIZE,
-    batch_number: int = -1,
+    batch_number: Optional[int] = None,
 ):
     """
     @description
@@ -50,7 +50,7 @@ def dispense(
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
 
-    if batch_number != -1:
+    if batch_number != None:
         b_st = (batch_number - 1) * batch_size
         TOK.approve(
             df_rewards,
@@ -62,7 +62,7 @@ def dispense(
 
     logger.info(f"Total {len(sts)} batches")
     for i, st in enumerate(sts):
-        if batch_number != -1 and batch_number != i + 1:
+        if batch_number != None and batch_number != i + 1:
             continue
         fin = st + batch_size
         done = False
