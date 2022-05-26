@@ -112,8 +112,8 @@ Please read dftool to understand this further before beginning tests
 
 In terminal:
 ```console
-#run tests for one method, with print statements to console. "-s" is same as "--capture=no"
-brownie test util/test/test_calcrewards.py::test_calcRewards1 -s
+#run tests for one method, with print statements to console. "-s" is to show output
+brownie test util/test/test_calcrewards.py::test_calcRewards1_onechain -s
 
 #run tests for one module
 brownie test util/test/test_calcrewards.py
