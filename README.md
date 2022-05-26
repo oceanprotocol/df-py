@@ -89,8 +89,38 @@ dftool compile
 ```
 
 
+# Main Usage: CLI
 
-## Usage with Docker
+`dftool` is the main tool. In main terminal:
+```console
+#top-level help, lists all tools
+dftool
+
+#see help for key functions
+dftool calc
+dftool dispense
+...
+```
+
+Then, simply follow the usage directions:)
+
+# Usage: Running Tests
+
+In terminal:
+```console
+#run tests for one method, with print statements to console. "-s" is to show output
+brownie test util/test/test_calcrewards.py::test_calcRewards1_onechain -s
+
+#run tests for one module
+brownie test util/test/test_calcrewards.py
+
+#run all tests. Note: util is the only directory _with_ tests
+brownie test util
+```
+
+Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
+
+# Usage: Via Docker
 
 Build the docker image.
 ```shell
@@ -115,40 +145,7 @@ rate = $0.8774 / OCEAN
 Created /app/data/rate-OCEAN.csv
 ```
 
-# Main Usage: CLI
-
-`dftool` is the main tool. In main terminal:
-```console
-#top-level help, lists all tools
-dftool
-
-#see help for key functions
-dftool calc
-dftool dispense
-...
-```
-
-Then, simply follow the usage directions:)
-
-# Other Usage
-
-## Running Tests
-
-In terminal:
-```console
-#run tests for one method, with print statements to console. "-s" is to show output
-brownie test util/test/test_calcrewards.py::test_calcRewards1_onechain -s
-
-#run tests for one module
-brownie test util/test/test_calcrewards.py
-
-#run all tests. Note: util is the only directory _with_ tests
-brownie test util
-```
-
-Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
-
-## Brownie Console
+# Usage: Brownie Console
 
 From terminal:
 ```console
