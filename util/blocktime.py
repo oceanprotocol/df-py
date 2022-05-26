@@ -1,6 +1,8 @@
 from datetime import datetime, timezone
-from enforce_typing import enforce_types
 from typing import Union
+
+from enforce_typing import enforce_types
+from scipy import optimize
 
 
 @enforce_types
@@ -32,16 +34,15 @@ def timestrToTimestamp(timestr: str) -> float:
     else:
         dt = datetime.strptime(timestr, "%Y-%m-%d")
 
-    #obtain POSIX timestamp. https://docs.python.org/3/library/datetime.html
+    # obtain POSIX timestamp. https://docs.python.org/3/library/datetime.html
     timestamp = dt.replace(tzinfo=timezone.utc).timestamp()
-    
+
     return timestamp
 
 
 @enforce_types
 def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
-    from scipy import optimize
 
     class C:
         def __init__(self, target_timestamp):
@@ -58,20 +59,23 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
         return 0
 
-    elif f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
+    if f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
         return len(chain)
 
+    # pylint: disable=unused-variable
     (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
-    if False:  # set to True to debug
-        print(f"iterations = {results.iterations}")
-        print(f"function calls = {results.function_calls}")
-        print(f"converged? {results.converged}")
-        print(f"cause of termination? {results.flag}")
-        print("")
 
-        print(f"target timestamp = {timestamp}")
-        print(f"distToTargetTimestamp(a=0) = {f(0)}")
-        print(f"distToTargetTimestamp(b={b}) = {f(b)}")
-        print(f"distToTargetTimestamp(result=block_i={block_i}) = {f(block_i)}")
+    # uncomment to debug
+    # ---
+    # print(f"iterations = {results.iterations}")
+    # print(f"function calls = {results.function_calls}")
+    # print(f"converged? {results.converged}")
+    # print(f"cause of termination? {results.flag}")
+    # print("")
+    # print(f"target timestamp = {timestamp}")
+    # print(f"distToTargetTimestamp(a=0) = {f(0)}")
+    # print(f"distToTargetTimestamp(b={b}) = {f(b)}")
+    # print(f"distToTargetTimestamp(result=block_i={block_i}) = {f(block_i)}")
+    # ---
 
     return int(block_i)
