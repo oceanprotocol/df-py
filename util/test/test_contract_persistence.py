@@ -1,3 +1,4 @@
+import brownie
 from util import oceanutil, networkutil
 
 
@@ -11,7 +12,7 @@ def test_2():
     assert OCEAN.symbol().lower() == "ocean"
 
 
-def setup_function():    
+def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     oceanutil.recordDevDeployedContracts()
 

@@ -64,14 +64,18 @@ def networkToChainId(network: str) -> int:
 def connect(chainID:int):
     network = brownie.network
     if network.is_connected():
-        if network.chain.id == chainID:
-            pass
-        else:
-            network.disconnect()
-            network.connect(chainIdToNetwork(chainID))
-    else:
-        network.connect(chainIdToNetwork(chainID))
+        network.disconnect()
+    network.connect(chainIdToNetwork(chainID))
 
 @enforce_types
 def disconnect():
-    brownie.network.disconnect()
+    network = brownie.network
+    if not network.is_connected():
+        return
+    
+    chainID = network.chain.id
+    from util import oceanutil
+    if chainID in oceanutil.CONTRACTS:
+        del oceanutil.CONTRACTS[chainID]
+
+    network.disconnect()
