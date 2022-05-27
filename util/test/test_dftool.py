@@ -1,17 +1,16 @@
 import time
 import types
 import os
+
 import brownie
+from enforce_typing import enforce_types
 
 from util import csvs, oceanutil, networkutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 from util import oceantestutil
 
-accounts = None
-
-PREV = None
-DISPENSE_ACCT = None
+accounts, PREV, DISPENSE_ACCT = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
 
@@ -120,13 +119,12 @@ def test_dispense(tmp_path):
 
 @enforce_types
 def setup_module():
+    global accounts, PREV, DISPENSE_ACCT
+    
     networkutil.connect(CHAINID)
-    global accounts
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
     
-    global PREV, DISPENSE_ACCT
-
     PREV = types.SimpleNamespace()
 
     PREV.DFTOOL_KEY = os.environ.get("DFTOOL_KEY")

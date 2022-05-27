@@ -3,10 +3,9 @@ from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
-from util import oceantestutil
+from util import networkutil, oceantestutil
 
 accounts = None
-CHAINID = networkutil.DEV_CHAINID
 
 
 @enforce_types
@@ -76,7 +75,7 @@ def _deployTOK(account):
 
 @enforce_types
 def setup_module():
-    oceantestutil.connect(CHAINID)
+    oceantestutil.connect(networkutil.DEV_CHAINID)
     global accounts
     accounts = brownie.network.accounts
 
