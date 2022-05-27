@@ -3,6 +3,5 @@ enforce_typing
 mypy
 numpy
 pandas
-pycoingecko
 scipy
 types-requests
