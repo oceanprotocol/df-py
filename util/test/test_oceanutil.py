@@ -10,7 +10,7 @@ from util.oceanutil import (
     calcDID,
 )
 from util import networkutil, oceantestutil, oceanutil
-from util.base18 import fromBase18, toBase18
+from util.base18 import toBase18
 
 account0, account3 = None, None
 
