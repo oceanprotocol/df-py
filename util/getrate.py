@@ -32,7 +32,14 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
     # pylint: disable=broad-except
     except Exception as e:
         print("An error occured while fetching price from Binance, trying CoinGecko", e)
-        return coingeckoRate(token_symbol, st_dt, fin_dt)
+        try:
+            return coingeckoRate(token_symbol, st_dt, fin_dt)
+        # pylint: disable=broad-except
+        except Exception as ee:
+            if token_symbol.lower() == "h2o":
+                print("An error occured while fetching price from CoinGecko", ee)
+                return 1.618
+            raise Exception(f"Could not get the rate for {token_symbol} {ee}")
 
 
 def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
