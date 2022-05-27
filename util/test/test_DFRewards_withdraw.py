@@ -1,9 +1,9 @@
 import brownie
 from enforce_typing import enforce_types
 
+from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
-from util import networkutil, oceantestutil
 
 accounts = None
 
