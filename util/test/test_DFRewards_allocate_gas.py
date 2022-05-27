@@ -20,14 +20,15 @@ def test_allocate_gas():
 
     per_iteration1 = two.gas_used - one.gas_used
     per_iteration2 = ten.gas_used - nine.gas_used
+    
+    # each iteration uses the same amount of gas
+    assert abs(per_iteration2 - per_iteration1) < 50
 
-    assert (
-        abs(per_iteration2 - per_iteration1) < 50
-    )  # each iteration uses the same amount of gas
-    assert (
-        abs(per_iteration1 - 23167) < 100
-    )  # 23167 is the estimated gas for each iteration
-    assert per_iteration1 * 1250 < 30_000_000  # mainnet gas limit
+    # 23167 is the estimated gas for each iteration
+    assert abs(per_iteration1 - 23167) < 100
+
+    # mainnet gas limit
+    assert per_iteration1 * 1250 < 30_000_000  
 
 
 @enforce_types
@@ -52,7 +53,8 @@ def test_insufficient_gas_reverts():
 @enforce_types
 def _batch_allocate(number: int) -> str:
     addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(number)
-    tx = df_rewards.allocate(addresses, rewards, token_addr, {"from": accounts[0]})
+    tx = df_rewards.allocate(
+        addresses, rewards, token_addr, {"from": accounts[0]})
     return tx
 
 
