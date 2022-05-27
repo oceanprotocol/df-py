@@ -1,9 +1,10 @@
-import brownie
 from collections import namedtuple
-from enforce_typing import enforce_types
 import hashlib
 import json
 from typing import Any, Dict, List, Tuple
+
+import brownie
+from enforce_typing import enforce_types
 
 from util import chainlist
 from util.base18 import toBase18
@@ -13,7 +14,7 @@ CONTRACTS: dict = {}
 
 
 @enforce_types
-def deployOceanContracts(address_file: str, chainID: int):
+def deployOceanContracts(address_file: str, chainID: int): # pylint: disable=unused-argument
     """Rather than using contracts in Barge, deploy new ones"""
     global CONTRACTS
     C = CONTRACTS
@@ -21,10 +22,10 @@ def deployOceanContracts(address_file: str, chainID: int):
     account0 = network.accounts[0]
 
     assert chainID == 0 # development / ganache
-    
+
     assert network.is_connected()
     assert network.chain.id == 8996 #development / ganache according to brownie
-    
+
     #deploy Ocean contracts: OCEAN
     C["Ocean"] = B.Simpletoken.deploy(
         "OCEAN", "OCEAN", 18, toBase18(1.41e9), {'from': account0})
