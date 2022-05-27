@@ -72,6 +72,7 @@ def test_calcDID():
     assert len(did) == 71
 
 
+@enforce_types
 def setup_function():
     networkutil.connect(CHAINID)
     global account0, account3
