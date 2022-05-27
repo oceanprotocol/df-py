@@ -9,8 +9,8 @@ from util.oceanutil import (
     createBPoolFromDatatoken,
     calcDID,
 )
-from util import networkutil, oceanutil
-from util import oceantestutil
+from util import networkutil, oceantestutil, oceanutil
+from util.base18 import fromBase18, toBase18
 
 account0, account3 = None, None
 
@@ -60,8 +60,9 @@ def test_createBPoolFromDatatoken():
     recordDeployedContracts(ADDRESS_FILE)
     data_NFT = createDataNFT("foo", "foo", account0)
     DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account0)
+    DT.mint(account0.address, toBase18(1000.0), {"from": account0})
     base_TOKEN = oceanutil.OCEANtoken()
-    _ = createBPoolFromDatatoken(DT, account0, base_TOKEN)
+    _ = createBPoolFromDatatoken(DT, base_TOKEN, account0)
 
 
 @enforce_types

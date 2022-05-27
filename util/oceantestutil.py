@@ -153,8 +153,8 @@ def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account, toke
 
     pool = oceanutil.createBPoolFromDatatoken(
         DT,
-        from_account,
         token,
+        from_account,
         init_TOKEN_liquidity=init_TOKEN_stake,
         DT_TOKEN_rate=DT_TOKEN_rate,
     )

@@ -7,7 +7,7 @@ import brownie
 from enforce_typing import enforce_types
 
 from util import networkutil
-from util.base18 import toBase18
+from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
 CONTRACTS: dict = {} # [chainID][contract_label] : contract_object
@@ -147,13 +147,17 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 @enforce_types
 def createBPoolFromDatatoken(
     datatoken,
-    from_account,
     base_TOKEN,
+    from_account,
     init_TOKEN_liquidity: float = 2000.0,
     DT_TOKEN_rate: float = 0.1,
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
 ):
+    TOK_have = fromBase18(base_TOKEN.balanceOf(from_account))
+    TOK_need = init_TOKEN_liquidity
+    assert TOK_have >= TOK_need, f"have {TOK_have} TOK, need {TOK_need}"
+    
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
