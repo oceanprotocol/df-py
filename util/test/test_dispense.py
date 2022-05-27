@@ -7,13 +7,11 @@ from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util import oceantestutil
 
-accounts = None
-a1, a2, a3 = None, None, None
+accounts, a1, a2, a3 = None, None, None, None
 
 
 @enforce_types
-def test_small_batch(DEV_ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(DEV_ADDRESS_FILE)
+def test_small_batch():
     OCEAN = oceanutil.OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
@@ -39,8 +37,7 @@ def test_small_batch(DEV_ADDRESS_FILE):
 
 
 @enforce_types
-def test_batching(DEV_ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(DEV_ADDRESS_FILE)
+def test_batching():
     OCEAN = oceanutil.OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
@@ -63,8 +60,7 @@ def test_batching(DEV_ADDRESS_FILE):
 
 
 @enforce_types
-def test_batch_number(DEV_ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(DEV_ADDRESS_FILE)
+def test_batch_number():
     TOK = B.Simpletoken.deploy("TOK", "TOK", 18, 100e18, {"from": accounts[0]})
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})

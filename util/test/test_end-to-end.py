@@ -3,11 +3,9 @@ import brownie
 from enforce_typing import enforce_types
 import pytest
 
-from util import calcrewards, csvs, dispense, oceanutil, networkutil, query
-from util.blockrange import BlockRange
+from util import blockrange, calcrewards, csvs, dispense, \
+    oceanutil, oceantestutil, networkutil, query
 from util.constants import BROWNIE_PROJECT as B
-from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
-from util import oceantestutil
 
 accounts = None
 
@@ -15,8 +13,8 @@ accounts = None
 def test_without_csvs():
     chainID = networkutil.DEV_CHAINID
 
-    st, fin, n = 1, len(chain), 25
-    rng = BlockRange(st, fin, n)
+    st, fin, n = 1, len(brownie.network.chain), 25
+    rng = blockrange.BlockRange(st, fin, n)
     OCEAN_avail = 10000.0
 
     (_, S0, V0) = query.query_all(rng, chainID)
@@ -29,7 +27,7 @@ def test_without_csvs():
 
 
 @enforce_types
-def test_with_csvs(DEV_ADDRESS_FILE, tmp_path):
+def test_with_csvs(tmp_path):
     """
     Simulate these steps, with csvs in between
     1. dftool query
@@ -40,9 +38,9 @@ def test_with_csvs(DEV_ADDRESS_FILE, tmp_path):
     chainID = networkutil.DEV_CHAINID
     csv_dir = str(tmp_path)
 
-    st, fin, n = 1, len(chain), 25
-    rng = BlockRange(st, fin, n)
-    token_addr = OCEAN_address()
+    st, fin, n = 1, len(brownie.network.chain), 25
+    rng = blockrange.BlockRange(st, fin, n)
+    token_addr = oceanutil.OCEAN_address()
 
     # 1. simulate "dftool query"
     (_, S0, V0) = query.query_all(rng, chainID)
@@ -78,12 +76,13 @@ def setup_module():
 
     global accounts
     accounts = brownie.network.accounts
-    address_file = networkutil.chainIdToAddressFile(chainID)
-    oceanutil.recordDeployedContracts(address_file)
+
+    oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
     num_pools = 1
-    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
+    OCEAN = oceanutil.OCEANtoken()
+    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEAN)
     time.sleep(2)
 
 

@@ -22,6 +22,14 @@ def _contracts(key: str):
 
 
 @enforce_types
+def recordDevDeployedContracts():
+    assert brownie.network.is_connected()
+    assert brownie.network.chain.id == networkutil.DEV_CHAINID
+    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    recordDeployedContracts(address_file)
+
+    
+@enforce_types
 def recordDeployedContracts(address_file: str):
     """Records deployed Ocean contracts at currently connected network"""
     assert brownie.network.is_connected()

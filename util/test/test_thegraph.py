@@ -92,8 +92,7 @@ def setup_module():
     networkutil.connect(CHAINID)
     global accounts
     accounts = brownie.network.accounts
-    address_file = networkutil.chainIdToAddressFile(CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
+    oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
 

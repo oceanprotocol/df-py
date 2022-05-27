@@ -4,27 +4,20 @@ import time
 import brownie
 from enforce_typing import enforce_types
 
-from util import networkutil, query
+from util import oceanutil, oceantestutil, networkutil, query
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
-from util.oceanutil import OCEANtoken, recordDeployedContracts
-from util import oceantestutil
 
-account0 = brownie.network.accounts[0]
-chain = brownie.network.chain
+account0, chain, QUERY_ST = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
-QUERY_ST = max(0, len(chain) - 200)
 
 
 def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    address_file = networkutil.chainIdToAddressFile(CHAINID)
-    recordDeployedContracts(address_file)
-
-    OCEAN = OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     oceantestutil.fillAccountsWithToken(OCEAN)
 
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
@@ -146,3 +139,18 @@ def _test_query(CO2_SYM: str):
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_SYM in S0
     assert CO2_SYM in V0
+
+
+@enforce_types
+def setup_module():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global account0, chain, QUERY_ST
+    account0 = brownie.network.accounts[0]
+    chain = brownie.network.chain
+    QUERY_ST = max(0, len(chain) - 200)
+    oceanutil.recordDevDeployedContracts()
+
+@enforce_types
+def teardown_module():
+    networkutil.disconnect()
+
