@@ -19,7 +19,7 @@ def test_getrate_h2o():
 
 def test_start_after_fin():
     p = getrate.getrate("OCEAN", "2021-01-26", "2021-12-20")
-    assert p == 0.8966604863221889
+    assert p == approx(0.89, 0.1) #coingecko numbers
 
 
 def test_coingeckoRate_bitcoin():

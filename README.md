@@ -88,6 +88,7 @@ export PATH=$PATH:.
 dftool compile
 ```
 
+
 # Main Usage: CLI
 
 `dftool` is the main tool. In main terminal:
@@ -103,9 +104,7 @@ dftool dispense
 
 Then, simply follow the usage directions:)
 
-# Other Usage
-
-## Running Tests
+# Usage: Running Tests
 
 In terminal:
 ```console
@@ -117,11 +116,45 @@ brownie test util/test/test_calcrewards.py
 
 #run all tests. Note: util is the only directory _with_ tests
 brownie test util
+
+#run static type-checking. By default, uses config mypy.ini. Note: pytest does dynamic type-checking.
+mypy ./
+
+#run linting on code style. Uses .pylintrc
+pylint *
+
+#auto-fix some pylint complaints
+black ./
 ```
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
-## Brownie Console
+# Usage: Via Docker
+
+Build the docker image.
+```shell
+docker build . -t dfpy
+```
+
+Usage:
+`./dfpy_docker args`
+
+Docker will mount `/tmp/dfpy:/app/data`
+Example usage with docker:
+
+```shell
+./dfpy_docker help  # prints help 
+```
+
+```shell
+$ ./dfpy_docker getrate OCEAN 2022-01-01 2022-01-02 /app/data
+
+Arguments: ST=2022-01-01, FIN=2022-01-02, CSV_DIR=/app/data
+rate = $0.8774 / OCEAN
+Created /app/data/rate-OCEAN.csv
+```
+
+# Usage: Brownie Console
 
 From terminal:
 ```console
