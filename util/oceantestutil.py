@@ -1,9 +1,8 @@
 import random
 import brownie
-import pytest
 
 from enforce_typing import enforce_types
-from util import networkutil, constants, oceanutil
+from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
 
 network = brownie.network

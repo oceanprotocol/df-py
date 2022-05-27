@@ -1,5 +1,6 @@
-import brownie
 import os
+
+import brownie
 
 from enforce_typing import enforce_types
 
@@ -75,7 +76,7 @@ def disconnect():
         return
 
     chainID = network.chain.id
-    from util import oceanutil
+    from util import oceanutil # pylint: disable=import-outside-toplevel
 
     if chainID in oceanutil.CONTRACTS:
         del oceanutil.CONTRACTS[chainID]
