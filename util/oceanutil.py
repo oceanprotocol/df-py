@@ -1,17 +1,63 @@
 from collections import namedtuple
-from typing import Any, List, Dict, Tuple
 import hashlib
 import json
+from typing import Any, Dict, List, Tuple
 
 import brownie
 from enforce_typing import enforce_types
-
 
 from util import chainlist
 from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
 CONTRACTS: dict = {}
+
+
+@enforce_types
+def deployOceanContracts(
+    address_file: str, chainID: int
+):  # pylint: disable=unused-argument
+    """Rather than using contracts in Barge, deploy new ones"""
+    global CONTRACTS
+    C = CONTRACTS
+    network = brownie.network
+    account0 = network.accounts[0]
+
+    assert chainID == 0  # development / ganache
+
+    assert network.is_connected()
+    assert network.chain.id == 8996  # development / ganache according to brownie
+
+    # deploy Ocean contracts: OCEAN
+    C["Ocean"] = B.Simpletoken.deploy(
+        "OCEAN", "OCEAN", 18, toBase18(1.41e9), {"from": account0}
+    )
+    assert OCEANtoken() is not None  # will use C["Ocean"]
+
+    # deploy Ocean contracts: the rest
+    C["ERC721Template"] = B.ERC721Template.deploy({"from": account0})
+    C["ERC20Template"] = B.ERC20Template.deploy({"from": account0})
+    C["PoolTemplate"] = B.BPool.deploy({"from": account0})
+    C["Router"] = B.FactoryRouter.deploy(
+        account0.address,  # _routerOwner
+        C["Ocean"].address,  # _oceanToken
+        C["PoolTemplate"].address,  # _bpoolTemplate
+        account0.address,  # _opcCollector
+        [],  # _preCreatedPools
+        {"from": account0},
+    )
+    C["Staking"] = B.SideStaking.deploy(
+        C["Router"].address, {"from": account0}  # _router
+    )
+    C["ERC721Factory"] = B.ERC721Factory.deploy(
+        C["ERC721Template"].address,  # _template721
+        C["ERC20Template"].address,  # _template
+        C["Router"].address,  # _router
+        {"from": account0},
+    )
+    C["FixedPrice"] = B.FixedRateExchange.deploy(
+        C["Router"].address, {"from": account0}  # _router
+    )
 
 
 @enforce_types
@@ -38,6 +84,7 @@ def recordDeployedContracts(address_file: str, chainID: int):
     C["Router"] = B.FactoryRouter.at(a["Router"])
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
+    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
 
 def OCEANtoken():

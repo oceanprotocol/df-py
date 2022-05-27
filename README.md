@@ -116,6 +116,15 @@ brownie test util/test/test_calcrewards.py
 
 #run all tests. Note: util is the only directory _with_ tests
 brownie test util
+
+#run static type-checking. By default, uses config mypy.ini. Note: pytest does dynamic type-checking.
+mypy ./
+
+#run linting on code style. Uses .pylintrc
+pylint *
+
+#auto-fix some pylint complaints
+black ./
 ```
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).

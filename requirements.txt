@@ -1,6 +1,8 @@
 eth-brownie
 enforce_typing
+mypy
 numpy
 pandas
-scipy
 pycoingecko
+scipy
+types-requests
