@@ -18,7 +18,6 @@ CHAINID = networkutil.DEV_CHAINID
 @enforce_types
 def test_query(tmp_path):
     # insert fake inputs: info onto the chain
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     oceantestutil.fillAccountsWithOCEAN()
     num_pools = 1
     OCEAN = oceanutil.OCEANtoken()
@@ -85,6 +84,7 @@ def test_calc(tmp_path):
 @enforce_types
 def test_dispense(tmp_path):
     # values used for inputs or main cmd
+    global accounts
     accounts = brownie.network.accounts
     account1 = accounts[1]
     address1 = account1.address.lower()
@@ -94,7 +94,6 @@ def test_dispense(tmp_path):
 
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
