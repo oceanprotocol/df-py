@@ -2,10 +2,11 @@ import brownie
 from enforce_typing import enforce_types
 import pandas as pd
 
+from util import csvs, networkutil
 from util.query import SimplePool
-from util import csvs
 
-accounts = brownie.network.accounts
+
+accounts = None
 
 # for shorter lines
 C1, C2 = 1, 137
@@ -185,3 +186,16 @@ def test_rewards_main(tmp_path):
     for innerdict in rewards.values():  # ensures we don't deal in weis
         for value in innerdict.values():
             assert isinstance(value, float)
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global accounts
+    accounts = brownie.network.accounts
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
+
