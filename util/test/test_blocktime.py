@@ -3,10 +3,10 @@ from pytest import approx
 import brownie
 from enforce_typing import enforce_types
 
+from util import networkutil, oceanutil
 from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
 
-chain = brownie.network.chain
-
+chain = None
 
 @enforce_types
 def test_timestrToBlock_1():
@@ -81,3 +81,16 @@ def test_timestampToBlock():
     assert timestampToBlock(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
 
     assert timestampToBlock(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    oceanutil.recordDevDeployedContracts()
+    global chain
+    chain = brownie.network.chain
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
