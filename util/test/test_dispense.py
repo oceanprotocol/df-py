@@ -59,3 +59,34 @@ def test_batching(ADDRESS_FILE):
         from_account=accounts[0],
         batch_size=batch_size,
     )
+
+    for i in range(N):
+        assert df_rewards.claimable(accounts[i], OCEAN.address) > 0
+
+
+@enforce_types
+def test_batch_number(ADDRESS_FILE):
+    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    TOK = B.Simpletoken.deploy("TOK", "TOK", 18, 100e18, {"from": accounts[0]})
+
+    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    batch_size = 3
+    N = batch_size * 3 + 1  # enough accounts to ensure batching
+    assert len(accounts) >= N
+
+    rewards_at_chain = {accounts[i]: (i + 1.0) for i in range(N)}
+
+    dispense.dispense(
+        rewards_at_chain,
+        dfrewards_addr=df_rewards.address,
+        token_addr=TOK.address,
+        from_account=accounts[0],
+        batch_size=batch_size,
+        batch_number=2,
+    )
+
+    assert df_rewards.claimable(accounts[batch_size - 1], TOK.address) == 0
+    assert df_rewards.claimable(accounts[batch_size], TOK.address) > 0
+    assert df_rewards.claimable(accounts[batch_size + 1], TOK.address) > 0
+    assert df_rewards.claimable(accounts[batch_size + 2], TOK.address) > 0
+    assert df_rewards.claimable(accounts[batch_size + 3], TOK.address) == 0

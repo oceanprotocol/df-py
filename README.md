@@ -18,6 +18,7 @@ Usage: dftool query|calc|dispense|..
   dftool query - query chain for stakes & volumes
   dftool calc - calculate rewards
   dftool dispense - dispense funds
+  ...
 ```
 
 # Installation
@@ -29,6 +30,7 @@ Ensure prerequisites:
 - Python 3.8.5+
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
+- nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`. [[Details](https://github.com/tokenspice/tokenspice/issues/165)]
 
 #### Install & Run Barge
 
@@ -86,6 +88,7 @@ export PATH=$PATH:.
 dftool compile
 ```
 
+
 # Main Usage: CLI
 
 `dftool` is the main tool. In main terminal:
@@ -96,34 +99,62 @@ dftool
 #see help for key functions
 dftool calc
 dftool dispense
+...
 ```
 
-**Then, simply follow the usage directions:)**
+Then, simply follow the usage directions:)
 
-# Other Usage
-
-## Setting up Tests
-
-Depending on the functionality and tests you need to run, you may have to update your envvars.
-Please read dftool to understand this further before beginning tests
-
-## Running Tests
+# Usage: Running Tests
 
 In terminal:
 ```console
-#run tests for one method, with print statements to console. "-s" is same as "--capture=no"
-brownie test util/test/test_calcrewards.py::test_calcRewards1 -s
+#run tests for one method, with print statements to console. "-s" is to show output
+brownie test util/test/test_calcrewards.py::test_calcRewards1_onechain -s
 
 #run tests for one module
 brownie test util/test/test_calcrewards.py
 
 #run all tests. Note: util is the only directory _with_ tests
 brownie test util
+
+#run static type-checking. By default, uses config mypy.ini. Note: pytest does dynamic type-checking.
+mypy ./
+
+#run linting on code style. Uses .pylintrc
+pylint *
+
+#auto-fix some pylint complaints
+black ./
 ```
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
-## Brownie Console
+# Usage: Via Docker
+
+Build the docker image.
+```shell
+docker build . -t dfpy
+```
+
+Usage:
+`./dfpy_docker args`
+
+Docker will mount `/tmp/dfpy:/app/data`
+Example usage with docker:
+
+```shell
+./dfpy_docker help  # prints help 
+```
+
+```shell
+$ ./dfpy_docker getrate OCEAN 2022-01-01 2022-01-02 /app/data
+
+Arguments: ST=2022-01-01, FIN=2022-01-02, CSV_DIR=/app/data
+rate = $0.8774 / OCEAN
+Created /app/data/rate-OCEAN.csv
+```
+
+# Usage: Brownie Console
 
 From terminal:
 ```console

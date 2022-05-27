@@ -1,11 +1,10 @@
 from collections import namedtuple
-from typing import Any, List, Dict, Tuple
 import hashlib
 import json
+from typing import Any, Dict, List, Tuple
 
 import brownie
 from enforce_typing import enforce_types
-
 
 from util import chainlist
 from util.base18 import toBase18
@@ -38,6 +37,7 @@ def recordDeployedContracts(address_file: str, chainID: int):
     C["Router"] = B.FactoryRouter.at(a["Router"])
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
+    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
 
 def OCEANtoken():
