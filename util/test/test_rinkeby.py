@@ -32,7 +32,7 @@ def accounts():
 
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()
     
     

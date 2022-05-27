@@ -72,7 +72,7 @@ def test_calcDID():
     assert len(did) == 71
 
 
-def setup_module():
+def setup_function():
     networkutil.connect(CHAINID)
     global account0, account3
     account0 = brownie.network.accounts[0]
@@ -82,5 +82,5 @@ def setup_module():
 
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()

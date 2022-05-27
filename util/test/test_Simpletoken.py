@@ -45,12 +45,12 @@ def _deployToken():
 
 
 @enforce_types
-def setup_module():
+def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     global accounts
     accounts = brownie.network.accounts
 
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()

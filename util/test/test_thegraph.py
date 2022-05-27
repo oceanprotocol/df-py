@@ -88,7 +88,7 @@ def test_poolShares():
 
 
 @enforce_types
-def setup_module():
+def setup_function():
     networkutil.connect(CHAINID)
     global accounts
     accounts = brownie.network.accounts
@@ -97,5 +97,5 @@ def setup_module():
 
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()

@@ -87,7 +87,7 @@ def test_batch_number():
 
 
 @enforce_types
-def setup_module():
+def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     global accounts, a1, a2, a3
     accounts = brownie.network.accounts
@@ -98,6 +98,6 @@ def setup_module():
 
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()
 

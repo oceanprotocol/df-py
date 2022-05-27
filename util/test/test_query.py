@@ -142,7 +142,7 @@ def _test_query(CO2_SYM: str):
 
 
 @enforce_types
-def setup_module():
+def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     global account0, chain, QUERY_ST
     account0 = brownie.network.accounts[0]
@@ -151,6 +151,6 @@ def setup_module():
     oceanutil.recordDevDeployedContracts()
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()
 

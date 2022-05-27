@@ -118,7 +118,7 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def setup_module():
+def setup_function():
     global accounts, PREV, DISPENSE_ACCT
     
     networkutil.connect(CHAINID)
@@ -139,7 +139,7 @@ def setup_module():
 
 
 @enforce_types
-def teardown_module():
+def teardown_function():
     networkutil.disconnect()
     
     global PREV
