@@ -19,7 +19,7 @@ def test_calcDID():
     data = [x.split(",") for x in golden_data.split("\n")]
     for [did, chainID, address] in data:
         chainID = int(chainID)
-        
+
         assert calcDID(address, chainID) == did
 
         # address is not case sensitive

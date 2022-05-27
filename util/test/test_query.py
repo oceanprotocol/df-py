@@ -150,7 +150,7 @@ def setup_function():
     QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
 
+
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-

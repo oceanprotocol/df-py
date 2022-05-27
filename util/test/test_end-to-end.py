@@ -3,11 +3,20 @@ import brownie
 from enforce_typing import enforce_types
 import pytest
 
-from util import blockrange, calcrewards, csvs, dispense, \
-    oceanutil, oceantestutil, networkutil, query
+from util import (
+    blockrange,
+    calcrewards,
+    csvs,
+    dispense,
+    oceanutil,
+    oceantestutil,
+    networkutil,
+    query,
+)
 from util.constants import BROWNIE_PROJECT as B
 
 accounts = None
+
 
 @enforce_types
 def test_without_csvs():
@@ -89,4 +98,3 @@ def setup_function():
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-

@@ -5,13 +5,13 @@ import pytest
 
 from util import networkutil, oceanutil, oceantestutil
 from util.graphutil import submitQuery
-    
+
 
 @enforce_types
 @pytest.mark.skip(reason="need to implement")
 def test_query_approvedTokens():
     print("hello")
-    
+
     OCEAN = oceanutil.OCEANtoken()
 
     oceantestutil.randomDeployPool(accounts[0], OCEAN)
@@ -22,11 +22,11 @@ def test_query_approvedTokens():
     pprint(result)
 
 
-@enforce_types 
+@enforce_types
 def setup_function():
     chainID = networkutil.networkToChainId("rinkeby")
     networkutil.connect(chainID)
-    
+
     address_file = networkutil.chainIdToAddressFile(chainID)
     oceanutil.recordDeployedContracts(address_file)
     oceantestutil.fillAccountsWithOCEAN()
@@ -35,5 +35,3 @@ def setup_function():
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-    
-    

@@ -11,6 +11,7 @@ CHAINID = networkutil.DEV_CHAINID
 
 accounts = None
 
+
 @enforce_types
 def test_approvedTokens():
     OCEAN = oceanutil.OCEANtoken()
@@ -56,7 +57,9 @@ def test_orders():
 def test_poolShares():
     OCEAN = oceanutil.OCEANtoken()
 
-    _ = oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEAN)
+    _ = oceantestutil.randomDeployTokensAndPoolsThenConsume(
+        num_pools=1, base_token=OCEAN
+    )
     # (_, DT, pool) = tups[0]
 
     skip = 0

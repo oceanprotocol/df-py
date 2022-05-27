@@ -45,7 +45,7 @@ def fillAccountsWithOCEAN():
 @enforce_types
 def randomDeployTokensAndPoolsThenConsume(num_pools: int, base_token):
     accounts = network.accounts
-    
+
     # create random NUM_POOLS. Randomly add stake.
     tups = []  # (pub_account_i, DT, pool)
     for pool_i in range(num_pools):

@@ -9,25 +9,26 @@ _BARGE_SUBGRAPH_URI = (
 )
 
 
-#Chainid values & names are from brownie, where possible.
+# Chainid values & names are from brownie, where possible.
 # https://eth-brownie.readthedocs.io/en/stable/network-management.html
 # Otherwise, values & names are from networkutil.org.
 _CHAINID_TO_NETWORK = {
-    8996 : "development", #ganache
-    1 : "mainnet", #eth mainnet
-    3 : "ropsten",
-    4 : "rinkeby",
-    56 : "Binance Smart Chain",
-    137 : "Polygon Mainnet",
-    246 : "Energy Web Chain",
-    1284 : "Moonbeam",
-    1285 : "Moonriver"
-    }
+    8996: "development",  # ganache
+    1: "mainnet",  # eth mainnet
+    3: "ropsten",
+    4: "rinkeby",
+    56: "Binance Smart Chain",
+    137: "Polygon Mainnet",
+    246: "Energy Web Chain",
+    1284: "Moonbeam",
+    1285: "Moonriver",
+}
 _NETWORK_TO_CHAINID = {
     network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
 }
 
 DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
+
 
 @enforce_types
 def chainIdToAddressFile(chainID: int) -> str:
@@ -59,22 +60,23 @@ def networkToChainId(network: str) -> int:
     return _NETWORK_TO_CHAINID[network]
 
 
-
 @enforce_types
-def connect(chainID:int):
+def connect(chainID: int):
     network = brownie.network
     if network.is_connected():
         network.disconnect()
     network.connect(chainIdToNetwork(chainID))
+
 
 @enforce_types
 def disconnect():
     network = brownie.network
     if not network.is_connected():
         return
-    
+
     chainID = network.chain.id
     from util import oceanutil
+
     if chainID in oceanutil.CONTRACTS:
         del oceanutil.CONTRACTS[chainID]
 

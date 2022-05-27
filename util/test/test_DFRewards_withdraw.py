@@ -69,8 +69,7 @@ def test_erc20_withdraw_main():
 
 @enforce_types
 def _deployTOK(account):
-    return B.Simpletoken.deploy(
-        "TOK", "TOK", 18, toBase18(100.0), {"from": account})
+    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
 
 
 @enforce_types

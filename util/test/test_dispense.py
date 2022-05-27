@@ -100,4 +100,3 @@ def setup_function():
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-

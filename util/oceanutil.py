@@ -10,7 +10,7 @@ from util import networkutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
-CONTRACTS: dict = {} # [chainID][contract_label] : contract_object
+CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 
 @enforce_types
@@ -28,15 +28,15 @@ def recordDevDeployedContracts():
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     recordDeployedContracts(address_file)
 
-    
+
 @enforce_types
 def recordDeployedContracts(address_file: str):
     """Records deployed Ocean contracts at currently connected network"""
     assert brownie.network.is_connected()
     chainID = brownie.network.chain.id
-    
+
     global CONTRACTS
-    if chainID in CONTRACTS: #already filled
+    if chainID in CONTRACTS:  # already filled
         return
 
     network = networkutil.chainIdToNetwork(chainID)
@@ -135,8 +135,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     _bytes: List[Any] = []
 
     tx = data_NFT.createERC20(
-        erc20_template_index, strings, addresses, uints, _bytes,
-        {"from": from_account}
+        erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
     DT_address = tx.events["TokenCreated"]["newTokenAddress"]
     DT = B.ERC20Template.at(DT_address)
@@ -157,7 +156,7 @@ def createBPoolFromDatatoken(
     TOK_have = fromBase18(base_TOKEN.balanceOf(from_account))
     TOK_need = init_TOKEN_liquidity
     assert TOK_have >= TOK_need, f"have {TOK_have} TOK, need {TOK_need}"
-    
+
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
@@ -190,8 +189,7 @@ def createBPoolFromDatatoken(
         pool_template.address,  # poolTemplate address
     ]
 
-    tx = datatoken.deployPool(
-        ss_params, swap_fees, addresses, {"from": from_account})
+    tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
     pool_address = _poolAddressFromNewBPoolTx(tx)
     pool = B.BPool.at(pool_address)
 

@@ -7,6 +7,7 @@ from util import networkutil, oceanutil
 
 accounts, a1, a2, a3 = None, None, None, None
 
+
 @enforce_types
 def test_basic():
     TOK = _deployTOK(accounts[0])

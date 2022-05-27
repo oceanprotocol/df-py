@@ -120,11 +120,11 @@ def test_dispense(tmp_path):
 @enforce_types
 def setup_function():
     global accounts, PREV, DISPENSE_ACCT
-    
+
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
-    
+
     PREV = types.SimpleNamespace()
 
     PREV.DFTOOL_KEY = os.environ.get("DFTOOL_KEY")
@@ -141,7 +141,7 @@ def setup_function():
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-    
+
     global PREV
 
     if PREV.DFTOOL_KEY is None:
@@ -158,6 +158,3 @@ def teardown_function():
         del os.environ["SUBGRAPH_URI"]
     else:
         os.environ["SUBGRAPH_URI"] = PREV.SUBGRAPH_URI
-
-
-

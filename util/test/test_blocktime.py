@@ -8,6 +8,7 @@ from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
 
 chain = None
 
+
 @enforce_types
 def test_timestrToBlock_1():
     # tests here are light, the real tests are in test_*() below
