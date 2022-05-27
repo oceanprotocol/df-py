@@ -1,17 +1,14 @@
 import brownie
+import pytest
 
-from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT as B
-from util.oceanutil import CONTRACTS as C
 from util import oceanutil
 
-def test1():
-    address_file = "foo" #FIXMe
+@pytest.mark.skip(reason="reinstate when in ropsten PR")
+def test1(tmp_dir):
+    address_file = os.path.join(tmp_dir, "address.json")
     chainID = 0
     oceanutil.deployOceanContracts(address_file, chainID)
-    
-    #ensure ADDRESS_FILE (address.json path) is set to what we expect
-    
-    #update the values in ADDRESS_FILE
 
+    #does address_file hold appropriate values?
 
+    #can I access things like I normally do?
