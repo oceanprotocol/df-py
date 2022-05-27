@@ -10,7 +10,7 @@ from util import (
     blockrange,
     blocktime,
     calcrewards,
-    chainlist,
+    networkutil,
     csvs,
     dispense,
     getrate,
@@ -18,15 +18,16 @@ from util import (
 )
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
+from util.networkutil import DEV_CHAINID
 from util.oceanutil import recordDeployedContracts, OCEANtoken
 
-CHAINID_EXAMPLES = "0 for development, 1 for ethereum, 137 for polygon"
+CHAINID_EXAMPLES = f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
 
 # ========================================================================
-HELP_MAIN = """Data Farming tool, for use by OPF.
+HELP_MAIN = f"""Data Farming tool, for use by OPF.
 
 OPF steps:
-1. query - run per CHAINID (0, 1, 137, ..)
+1. query - run per CHAINID ({DEV_CHAINID}, 1, 137, ..)
 2. getrate - run per basetoken (OCEAN, H2O)
 3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
 4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
@@ -76,7 +77,7 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
-ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFile(chainID=0)}
+ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 """
     if len(sys.argv) not in [2 + 5]:
         print(HELP)
@@ -130,7 +131,7 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={chainlist.chainIdToAddressFil
         fin_block = int(FIN)
 
     # main work
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     (Pi, Si, Vi) = query.query_all(rng, CHAINID)
@@ -372,12 +373,12 @@ Usage: dftool manyrandom
         print(HELP)
         sys.exit(0)
 
-    from util.test import conftest  # pylint: disable=import-outside-toplevel
+    from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
-    recordDeployedContracts(conftest._ADDRESS_FILE, "development")
-    conftest.fillAccountsWithOCEAN()
+    recordDeployedContracts(oceantestutil._ADDRESS_FILE)
+    oceantestutil.fillAccountsWithOCEAN()
     num_pools = 10  # magic number
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
+    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
 
     os.system("brownie compile")
 
@@ -406,7 +407,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
     print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
 
     # main work
-    _connectToChain(0)  # hardcoded bc it's the only one we can force
+    _connectToChain(DEV_CHAINID)  # hardcoded bc it's the only one we can force
     chain = brownie.network.chain
     if TIMEDELTA is None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
@@ -431,7 +432,7 @@ Usage: dftool newacct
     assert sys.argv[1] == "newacct"
 
     # main work
-    _connectToChain(0)  # hardcoded bc it's the only one we can force
+    _connectToChain(DEV_CHAINID)  # hardcoded bc it's the only one we can force
     account = brownie.network.accounts.add()
     print("Generated new account:")
     print(f" private_key = {account.private_key}")
@@ -500,7 +501,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     # Give balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
-        network = chainlist.chainIdToNetwork(CHAINID)
+        network = networkutil.chainIdToNetwork(CHAINID)
         recordDeployedContracts(ADDRESS_FILE, network)
         OCEAN = OCEANtoken()
         if OCEAN.address != TOKEN_ADDR:
@@ -554,7 +555,7 @@ def _getPrivateAccount():
 
 @enforce_types
 def _connectToChain(chainID: int):
-    network = chainlist.chainIdToNetwork(chainID)
+    network = networkutil.chainIdToNetwork(chainID)
     brownie.network.connect(network)
 
 

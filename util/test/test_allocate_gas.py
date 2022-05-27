@@ -8,7 +8,7 @@ from util.oceanutil import recordDeployedContracts, OCEANtoken
 from util.constants import BROWNIE_PROJECT as B
 
 accounts = brownie.network.accounts
-CHAINID = 0
+CHAINID = networkutil.DEV_CHAINID
 
 
 @enforce_types
@@ -30,7 +30,7 @@ def batch_allocate(number: int) -> str:
 
 @enforce_types
 def test_allocate_gas(ADDRESS_FILE):
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
 
     one = batch_allocate(1)
     two = batch_allocate(2)
@@ -50,7 +50,7 @@ def test_allocate_gas(ADDRESS_FILE):
 
 
 def test_1250_addresses(ADDRESS_FILE):
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
 
     big_batch = batch_allocate(1250)
     assert (
@@ -59,7 +59,7 @@ def test_1250_addresses(ADDRESS_FILE):
 
 
 def test_insufficient_gas_reverts(ADDRESS_FILE):
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(1250)
     with pytest.raises(Exception) as e_info:
         df_rewards.allocate(

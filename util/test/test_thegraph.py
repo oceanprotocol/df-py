@@ -1,19 +1,21 @@
 from pprint import pprint
 from enforce_typing import enforce_types
 
-from util import chainlist, oceanutil
+import brownie
+
+from util import networkutil, oceanutil
 from util.graphutil import submitQuery
-from util.test import conftest
+from util import oceantestutil
 
-CHAINID = 0
-ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
+CHAINID = networkutil.DEV_CHAINID
 
+accounts = None
 
 @enforce_types
-def test_thegraph_approvedTokens(accounts):
+def test_approvedTokens():
     OCEAN = oceanutil.OCEANtoken()
 
-    conftest.randomDeployPool(accounts[0], OCEAN)
+    oceantestutil.randomDeployPool(accounts[0], OCEAN)
 
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, CHAINID)
@@ -22,10 +24,10 @@ def test_thegraph_approvedTokens(accounts):
 
 
 @enforce_types
-def test_thegraph_orders():
+def test_orders():
     OCEAN = oceanutil.OCEANtoken()
 
-    (_, DT, _) = conftest.randomDeployTokensAndPoolsThenConsume(
+    (_, DT, _) = oceantestutil.randomDeployTokensAndPoolsThenConsume(
         num_pools=1, base_token=OCEAN
     )[0]
 
@@ -51,10 +53,10 @@ def test_thegraph_orders():
 
 
 @enforce_types
-def test_thegraph_poolShares():
+def test_poolShares():
     OCEAN = oceanutil.OCEANtoken()
 
-    _ = conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEAN)
+    _ = oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEAN)
     # (_, DT, pool) = tups[0]
 
     skip = 0
@@ -85,7 +87,16 @@ def test_thegraph_poolShares():
     pprint(result)
 
 
+@enforce_types
 def setup_module():
-    """This automatically gets called at the beginning of each test."""
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    conftest.fillAccountsWithOCEAN()
+    networkutil.connect(CHAINID)
+    global accounts
+    accounts = brownie.network.accounts
+    address_file = networkutil.chainIdToAddressFile(CHAINID)
+    oceanutil.recordDeployedContracts(address_file)
+    oceantestutil.fillAccountsWithOCEAN()
+
+
+@enforce_types
+def teardown_module():
+    networkutil.disconnect()

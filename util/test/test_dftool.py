@@ -3,24 +3,24 @@ import types
 import os
 import brownie
 
-from util import chainlist, csvs
+from util import networkutil, csvs
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
-from util.test import conftest
+from util import oceantestutil
 
 PREV = None
 DISPENSE_ACCT = None
 
-CHAINID = 0
+CHAINID = networkutil.DEV_CHAINID
 
 
 def test_query(tmp_path):
     # insert fake inputs: info onto the chain
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    conftest.fillAccountsWithOCEAN()
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEANtoken())
+    recordDeployedContracts(ADDRESS_FILE)
+    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEANtoken())
     time.sleep(2)
 
     # main cmd
@@ -90,7 +90,7 @@ def test_dispense(tmp_path):
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     OCEAN = OCEANtoken()
     OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
@@ -125,10 +125,10 @@ def setup_module():
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
     PREV.ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    os.environ["ADDRESS_FILE"] = chainlist.chainIdToAddressFile(CHAINID)
+    os.environ["ADDRESS_FILE"] = networkutil.chainIdToAddressFile(CHAINID)
 
     PREV.SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
-    os.environ["SUBGRAPH_URI"] = chainlist.chainIdToSubgraphUri(CHAINID)
+    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
 
 
 def teardown_module():

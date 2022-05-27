@@ -2,9 +2,9 @@ import brownie
 from enforce_typing import enforce_types
 from pprint import pprint
 
-from util import chainlist, oceanutil
+from util import networkutil, oceanutil
 from util.graphutil import submitQuery
-from util.test import conftest
+from util import oceantestutil
 
 network = brownie.network
     
@@ -14,14 +14,14 @@ def test_query_approvedTokens(accounts):
     print("hello")
     
     CHAINID = 4 #rinkeby
-    ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
+    ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
     
-    # oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    # conftest.fillAccountsWithOCEAN()
+    # oceanutil.recordDeployedContracts(ADDRESS_FILE)
+    # oceantestutil.fillAccountsWithOCEAN()
 
     # OCEAN = oceanutil.OCEANtoken()
 
-    # conftest.randomDeployPool(accounts[0], OCEAN)
+    # oceantestutil.randomDeployPool(accounts[0], OCEAN)
 
     # query = "{ opcs{approvedTokens} }"
     # result = submitQuery(query, CHAINID)

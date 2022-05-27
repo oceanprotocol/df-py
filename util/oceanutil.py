@@ -6,30 +6,36 @@ from typing import Any, Dict, List, Tuple
 import brownie
 from enforce_typing import enforce_types
 
-from util import chainlist
+from util import networkutil
 from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
 
-CONTRACTS: dict = {}
+CONTRACTS: dict = {} # [chainID][contract_label] : contract_object
 
 
 @enforce_types
 def _contracts(key: str):
+    """Returns the contract object at the currently connected network"""
     global CONTRACTS
-    return CONTRACTS[key]
+    chainID = brownie.network.chain.id
+    return CONTRACTS[chainID][key]
 
 
 @enforce_types
-def recordDeployedContracts(address_file: str, chainID: int):
+def recordDeployedContracts(address_file: str):
+    """Records deployed Ocean contracts at currently connected network"""
+    assert brownie.network.is_connected()
+    chainID = brownie.network.chain.id
+    
     global CONTRACTS
-    C = CONTRACTS
-    if C != {}:  # already filled
+    if chainID in CONTRACTS: #already filled
         return
 
-    network = chainlist.chainIdToNetwork(chainID)
+    network = networkutil.chainIdToNetwork(chainID)
     with open(address_file, "r") as json_file:
         a = json.load(json_file)[network]  # dict of contract_name: address
 
+    C = {}
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
@@ -38,6 +44,8 @@ def recordDeployedContracts(address_file: str, chainID: int):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+
+    CONTRACTS[chainID] = C
 
 
 def OCEANtoken():
@@ -119,7 +127,8 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     _bytes: List[Any] = []
 
     tx = data_NFT.createERC20(
-        erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
+        erc20_template_index, strings, addresses, uints, _bytes,
+        {"from": from_account}
     )
     DT_address = tx.events["TokenCreated"]["newTokenAddress"]
     DT = B.ERC20Template.at(DT_address)

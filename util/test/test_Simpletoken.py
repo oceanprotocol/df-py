@@ -1,9 +1,10 @@
 import brownie
 from enforce_typing import enforce_types
 
+from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
 
-accounts = brownie.network.accounts
+accounts = None
 
 
 @enforce_types
@@ -41,3 +42,15 @@ def test_transferFrom():
 @enforce_types
 def _deployToken():
     return B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": accounts[0]})
+
+
+@enforce_types
+def setup_module():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global accounts
+    accounts = brownie.network.accounts
+
+
+@enforce_types
+def teardown_module():
+    networkutil.disconnect()

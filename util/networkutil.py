@@ -1,9 +1,5 @@
-import ast
+import brownie
 import os
-import re
-from typing import Dict
-
-import requests
 
 from enforce_typing import enforce_types
 
@@ -13,27 +9,30 @@ _BARGE_SUBGRAPH_URI = (
 )
 
 
-#Chainid values are from from chainlist.org. Except we set chainid=0.
+#Chainid values & names are from brownie, where possible.
+# https://eth-brownie.readthedocs.io/en/stable/network-management.html
+# Otherwise, values & names are from networkutil.org.
 _CHAINID_TO_NETWORK = {
-    0 : "development",
-    1 : "ethereum",
+    8996 : "development", #ganache
+    1 : "mainnet", #eth mainnet
     3 : "ropsten",
     4 : "rinkeby",
-    56 : "bsc",
-    137 : "polygon",
-    246 : "ewc",
-    1284 : "moonbeam",
-    1285 : "moonriver"
+    56 : "Binance Smart Chain",
+    137 : "Polygon Mainnet",
+    246 : "Energy Web Chain",
+    1284 : "Moonbeam",
+    1285 : "Moonriver"
     }
 _NETWORK_TO_CHAINID = {
     network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
 }
 
+DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
 
 @enforce_types
 def chainIdToAddressFile(chainID: int) -> str:
     """Returns the address file for a given chainID"""
-    if chainID == 0:
+    if chainID == DEV_CHAINID:
         return os.path.expanduser(_BARGE_ADDRESS_FILE)
 
     raise NotImplementedError()
@@ -42,7 +41,7 @@ def chainIdToAddressFile(chainID: int) -> str:
 @enforce_types
 def chainIdToSubgraphUri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
-    if chainID == 0:
+    if chainID == DEV_CHAINID:
         return _BARGE_SUBGRAPH_URI
 
     raise NotImplementedError()
@@ -58,3 +57,21 @@ def chainIdToNetwork(chainID: int) -> str:
 def networkToChainId(network: str) -> int:
     """Returns the chainID for a given network name"""
     return _NETWORK_TO_CHAINID[network]
+
+
+
+@enforce_types
+def connect(chainID:int):
+    network = brownie.network
+    if network.is_connected():
+        if network.chain.id == chainID:
+            pass
+        else:
+            network.disconnect()
+            network.connect(chainIdToNetwork(chainID))
+    else:
+        network.connect(chainIdToNetwork(chainID))
+
+@enforce_types
+def disconnect():
+    brownie.network.disconnect()

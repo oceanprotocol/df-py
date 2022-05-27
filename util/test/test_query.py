@@ -4,16 +4,16 @@ import time
 import brownie
 from enforce_typing import enforce_types
 
-from util import chainlist, query
+from util import networkutil, query
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
 from util.oceanutil import OCEANtoken, recordDeployedContracts
-from util.test import conftest
+from util import oceantestutil
 
 account0 = brownie.network.accounts[0]
 chain = brownie.network.chain
 
-CHAINID = 0
+CHAINID = networkutil.DEV_CHAINID
 QUERY_ST = max(0, len(chain) - 200)
 
 
@@ -21,15 +21,15 @@ def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    address_file = chainlist.chainIdToAddressFile(CHAINID)
-    recordDeployedContracts(address_file, CHAINID)
+    address_file = networkutil.chainIdToAddressFile(CHAINID)
+    recordDeployedContracts(address_file)
 
     OCEAN = OCEANtoken()
-    conftest.fillAccountsWithToken(OCEAN)
+    oceantestutil.fillAccountsWithToken(OCEAN)
 
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
-    conftest.fillAccountsWithToken(CO2)
+    oceantestutil.fillAccountsWithToken(CO2)
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
@@ -38,8 +38,8 @@ def test_all():
         assert loop_i < 5, "timeout"
         if _foundStakeAndConsume(CO2_SYM):
             break
-        conftest.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
-        conftest.randomDeployTokensAndPoolsThenConsume(2, CO2)
+        oceantestutil.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
+        oceantestutil.randomDeployTokensAndPoolsThenConsume(2, CO2)
         print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
 
