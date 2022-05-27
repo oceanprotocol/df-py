@@ -154,6 +154,18 @@ rate = $0.8774 / OCEAN
 Created /app/data/rate-OCEAN.csv
 ```
 
+# Usage: Hardware Wallets
+
+Here are the steps:
+- Install geth - this will also install clef.
+- Launch clef in terminal 1
+- Connect hw wallet to pc
+- Call brownie.network.accounts.connect_to_clef() function in terminal 2
+- Accept the connection request from terminal 1
+- To access the accounts in hw use: brownie.network.accounts
+
+(Discussion in [this issue](https://github.com/oceanprotocol/df-issues/issues/66).)
+
 # Usage: Brownie Console
 
 From terminal:
