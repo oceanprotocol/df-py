@@ -36,7 +36,7 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
             if token_symbol.lower() == "h2o":
                 print("An error occured while fetching price from CoinGecko", ee)
                 return 1.618
-            raise Exception(f"Could not get the rate for {token_symbol} {ee}")
+            raise Exception(f"Could not get the rate for {token_symbol}") from ee
 
 
 def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
