@@ -186,7 +186,8 @@ def createBPoolFromDatatoken(
         pool_template.address,  # poolTemplate address
     ]
 
-    tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
+    tx = datatoken.deployPool(
+        ss_params, swap_fees, addresses, {"from": from_account})
     pool_address = _poolAddressFromNewBPoolTx(tx)
     pool = B.BPool.at(pool_address)
 
