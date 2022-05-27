@@ -17,9 +17,6 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
     @return
       rate -- float -- USD_per_token
     """
-    # corner case
-    # if token_symbol.lower() == "h2o":
-    #     return 1.618  # target peg. Update this when H2O is on coingecko
 
     st_dt = datetime.strptime(st, "%Y-%m-%d")
     fin_dt = datetime.strptime(fin, "%Y-%m-%d")
