@@ -8,6 +8,7 @@ from util.graphutil import submitQuery
     
 
 @enforce_types
+@pytest.mark.skip(reason="not doing yet")
 def test_query_approvedTokens(accounts):
     print("hello")
     
