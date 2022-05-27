@@ -8,8 +8,6 @@ from util import oceanutil, oceantestutil, networkutil
 from util.random_addresses import get_random_addresses
 from util.constants import BROWNIE_PROJECT as B
 
-accounts = None
-
 
 @enforce_types
 def test_allocate_gas():
@@ -41,38 +39,38 @@ def test_1250_addresses():
 
 @enforce_types
 def test_insufficient_gas_reverts():
+    account0 = brownie.network.accounts[0]
     addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(1250)
     with pytest.raises(Exception) as e_info:
         df_rewards.allocate(
             addresses, rewards, token_addr,
-            {"from": accounts[0], "gas_limit": 100000}
+            {"from": account0, "gas_limit": 100000}
         )
     assert str(e_info.value) == "base fee exceeds gas limit"
 
 
 @enforce_types
 def _batch_allocate(number: int) -> str:
+    account0 = brownie.network.accounts[0]
     addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(number)
-    tx = df_rewards.allocate(
-        addresses, rewards, token_addr, {"from": accounts[0]})
+    tx = df_rewards.allocate(addresses, rewards, token_addr, {"from": account0})
     return tx
 
 
 @enforce_types
 def _prep_batch_allocate(number: int) -> Any:
+    account0 = brownie.network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    df_rewards = B.DFRewards.deploy({"from": account0})
     addresses = get_random_addresses(number)
     rewards = [1 for i in range(number)]
-    OCEAN.approve(df_rewards, sum(rewards), {"from": accounts[0]})
+    OCEAN.approve(df_rewards, sum(rewards), {"from": account0})
     return addresses, rewards, OCEAN.address, df_rewards
 
 
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
-    global accounts
-    accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
