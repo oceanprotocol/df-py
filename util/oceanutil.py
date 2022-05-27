@@ -14,45 +14,50 @@ CONTRACTS: dict = {}
 
 
 @enforce_types
-def deployOceanContracts(address_file: str, chainID: int): # pylint: disable=unused-argument
+def deployOceanContracts(
+    address_file: str, chainID: int
+):  # pylint: disable=unused-argument
     """Rather than using contracts in Barge, deploy new ones"""
     global CONTRACTS
     C = CONTRACTS
     network = brownie.network
     account0 = network.accounts[0]
 
-    assert chainID == 0 # development / ganache
+    assert chainID == 0  # development / ganache
 
     assert network.is_connected()
-    assert network.chain.id == 8996 #development / ganache according to brownie
+    assert network.chain.id == 8996  # development / ganache according to brownie
 
-    #deploy Ocean contracts: OCEAN
+    # deploy Ocean contracts: OCEAN
     C["Ocean"] = B.Simpletoken.deploy(
-        "OCEAN", "OCEAN", 18, toBase18(1.41e9), {'from': account0})
-    assert OCEANtoken() is not None #will use C["Ocean"]
+        "OCEAN", "OCEAN", 18, toBase18(1.41e9), {"from": account0}
+    )
+    assert OCEANtoken() is not None  # will use C["Ocean"]
 
-    #deploy Ocean contracts: the rest
-    C["ERC721Template"] = B.ERC721Template.deploy({'from': account0})
-    C["ERC20Template"] = B.ERC20Template.deploy({'from': account0})
-    C["PoolTemplate"] = B.BPool.deploy({'from': account0})
+    # deploy Ocean contracts: the rest
+    C["ERC721Template"] = B.ERC721Template.deploy({"from": account0})
+    C["ERC20Template"] = B.ERC20Template.deploy({"from": account0})
+    C["PoolTemplate"] = B.BPool.deploy({"from": account0})
     C["Router"] = B.FactoryRouter.deploy(
-        account0.address,            # _routerOwner
-        C["Ocean"].address,          # _oceanToken
-        C["PoolTemplate"].address,   # _bpoolTemplate
-        account0.address,            # _opcCollector
-        [],                          # _preCreatedPools
-        {'from': account0})
+        account0.address,  # _routerOwner
+        C["Ocean"].address,  # _oceanToken
+        C["PoolTemplate"].address,  # _bpoolTemplate
+        account0.address,  # _opcCollector
+        [],  # _preCreatedPools
+        {"from": account0},
+    )
     C["Staking"] = B.SideStaking.deploy(
-        C["Router"].address,         # _router
-        {'from': account0})
+        C["Router"].address, {"from": account0}  # _router
+    )
     C["ERC721Factory"] = B.ERC721Factory.deploy(
-        C["ERC721Template"].address, # _template721
+        C["ERC721Template"].address,  # _template721
         C["ERC20Template"].address,  # _template
-        C["Router"].address,         # _router
-        {'from': account0})
+        C["Router"].address,  # _router
+        {"from": account0},
+    )
     C["FixedPrice"] = B.FixedRateExchange.deploy(
-        C["Router"].address,         # _router
-        {'from': account0})
+        C["Router"].address, {"from": account0}  # _router
+    )
 
 
 @enforce_types
