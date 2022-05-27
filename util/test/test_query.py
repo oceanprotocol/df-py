@@ -144,9 +144,8 @@ def _test_query(CO2_SYM: str):
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
-    global account0, chain, QUERY_ST
+    global account0, QUERY_ST
     account0 = brownie.network.accounts[0]
-    chain = brownie.network.chain
     QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
 
