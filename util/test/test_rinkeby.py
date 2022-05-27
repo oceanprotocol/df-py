@@ -8,8 +8,8 @@ from util.graphutil import submitQuery
     
 
 @enforce_types
-@pytest.mark.skip(reason="not doing yet")
-def test_query_approvedTokens(accounts):
+@pytest.mark.skip(reason="need to implement")
+def test_query_approvedTokens():
     print("hello")
     
     OCEAN = oceanutil.OCEANtoken()
@@ -23,7 +23,7 @@ def test_query_approvedTokens(accounts):
 
 
 @enforce_types 
-def accounts():
+def setup_function():
     chainID = networkutil.networkToChainId("rinkeby")
     networkutil.connect(chainID)
     
