@@ -1,7 +1,5 @@
-from datetime import datetime, timedelta
-import numpy
+from datetime import datetime
 import requests
-from pycoingecko import CoinGeckoAPI
 
 
 def getrate(token_symbol: str, st: str, fin: str) -> float:
@@ -20,8 +18,8 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
       rate -- float -- USD_per_token
     """
     # corner case
-    if token_symbol.lower() == "h2o":
-        return 1.618  # target peg. Update this when H2O is on coingecko
+    # if token_symbol.lower() == "h2o":
+    #     return 1.618  # target peg. Update this when H2O is on coingecko
 
     st_dt = datetime.strptime(st, "%Y-%m-%d")
     fin_dt = datetime.strptime(fin, "%Y-%m-%d")
@@ -34,18 +32,7 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
     # pylint: disable=broad-except
     except Exception as e:
         print("An error occured while fetching price from Binance, trying CoinGecko", e)
-
-        if num_days > 40:
-            raise ValueError("max 40 days, since coingecko rate-limits") from e
-        rates = []
-        for day_i in range(num_days + 1):
-            dt = st_dt + timedelta(days=day_i)
-            timestr = f"{dt.year:04d}-{dt.month:02d}-{dt.day:02d}"
-            rate_day = coingeckoRate(token_symbol, timestr)
-            rates.append(rate_day)
-
-        rate = numpy.average(rates)
-        return float(rate)
+        return coingeckoRate(token_symbol, st_dt, fin_dt)
 
 
 def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
@@ -58,7 +45,7 @@ def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
     return avg
 
 
-def coingeckoRate(token_symbol: str, timestr: str) -> float:
+def coingeckoRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -67,12 +54,13 @@ def coingeckoRate(token_symbol: str, timestr: str) -> float:
       rate -- float -- USD_per_token
     """
     cg_id = _coingeckoId(token_symbol)
-    cg_date = _coingeckoDate(timestr)
-
-    cg = CoinGeckoAPI()
-    result = cg.get_coin_history_by_id(id=cg_id, date=cg_date)
-    rate = result["market_data"]["current_price"]["usd"]
-    return rate
+    # pylint: disable=line-too-long
+    res = requests.get(
+        f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"
+    )
+    data = res.json()["prices"]
+    avg = sum([float(x[1]) for x in data]) / len(data)
+    return avg
 
 
 def _coingeckoId(token_symbol: str) -> str:
@@ -85,12 +73,23 @@ def _coingeckoId(token_symbol: str) -> str:
     return id_
 
 
-def _coingeckoDate(timestr: str) -> str:
-    """
-    @arguments
-      timestr -- str in format "YYYY-MM-DD"
-    @return
-      coingecko_date -- str in format "DD-MM-YYYY"
-    """
-    dt = datetime.strptime(timestr, "%Y-%m-%d")
-    return f"{dt.day:02d}-{dt.month:02d}-{dt.year:04d}"
+## NOT USED
+# def getUniswapRate(pool_addr: str, twap_interval_seconds: int):
+#     infura_url = os.getenv("ETH_RPC_URL")
+#     web3 = Web3(Web3.HTTPProvider(infura_url))
+#     abi = '[{"inputs":[{"internalType":"uint32[]","name":"secondsAgos","type":"uint32[]"}],"name":"observe","outputs":[{"internalType":"int56[]","name":"tickCumulatives","type":"int56[]"},{"internalType":"uint160[]","name":"secondsPerLiquidityCumulativeX128s","type":"uint160[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"slot0","outputs":[{"internalType":"uint160","name":"sqrtPriceX96","type":"uint160"},{"internalType":"int24","name":"tick","type":"int24"},{"internalType":"uint16","name":"observationIndex","type":"uint16"},{"internalType":"uint16","name":"observationCardinality","type":"uint16"},{"internalType":"uint16","name":"observationCardinalityNext","type":"uint16"},{"internalType":"uint8","name":"feeProtocol","type":"uint8"},{"internalType":"bool","name":"unlocked","type":"bool"}],"stateMutability":"view","type":"function"}]'
+#     contract = web3.eth.contract(address=pool_addr, abi=abi)
+
+#     if twap_interval_seconds == 0:
+#         raise Exception("Interval cannot be 0 seconds")
+
+#     # twap interval - before
+#     # 0 - after (now)
+#     before_after = [twap_interval_seconds, 0]
+
+#     tick_cumulatives, _ = contract.functions.observe(before_after).call()
+#     print(tick_cumulatives)
+
+#     avg_tick = abs((tick_cumulatives[1] - tick_cumulatives[0]) / twap_interval_seconds)
+#     price = 1.0001**avg_tick
+#     return price
