@@ -75,7 +75,7 @@ def _deployTOK(account):
 
 @enforce_types
 def setup_module():
-    oceantestutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connect(networkutil.DEV_CHAINID)
     global accounts
     accounts = brownie.network.accounts
 
