@@ -1,42 +1,38 @@
 import brownie
 from enforce_typing import enforce_types
 from pprint import pprint
+import pytest
 
-from util import networkutil, oceanutil
+from util import networkutil, oceanutil, oceantestutil
 from util.graphutil import submitQuery
-from util import oceantestutil
-
-network = brownie.network
     
 
 @enforce_types
 def test_query_approvedTokens(accounts):
     print("hello")
     
-    CHAINID = 4 #rinkeby
-    ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+    OCEAN = oceanutil.OCEANtoken()
+
+    oceantestutil.randomDeployPool(accounts[0], OCEAN)
+
+    query = "{ opcs{approvedTokens} }"
+    result = submitQuery(query, chainID)
+
+    pprint(result)
+
+
+@enforce_types 
+def accounts():
+    chainID = networkutil.networkToChainId("rinkeby")
+    networkutil.connect(chainID)
     
-    # oceanutil.recordDeployedContracts(ADDRESS_FILE)
-    # oceantestutil.fillAccountsWithOCEAN()
+    address_file = networkutil.chainIdToAddressFile(chainID)
+    oceanutil.recordDeployedContracts(address_file)
+    oceantestutil.fillAccountsWithOCEAN()
 
-    # OCEAN = oceanutil.OCEANtoken()
 
-    # oceantestutil.randomDeployPool(accounts[0], OCEAN)
-
-    # query = "{ opcs{approvedTokens} }"
-    # result = submitQuery(query, CHAINID)
-
-    # pprint(result)
-
-def setup_module():
-    #development -> rinkeby
-    if network.is_connected():
-        network.disconnect()
-    network.connect("rinkeby")
-
+@enforce_types
 def teardown_module():
-    #rinkeby -> development
-    network.disconnect()
-    network.connect("development")
+    networkutil.disconnect()
     
     
