@@ -75,25 +75,3 @@ def _coingeckoId(token_symbol: str) -> str:
     if "ocean" in id_:
         return "ocean-protocol"
     return id_
-
-
-## NOT USED
-# def getUniswapRate(pool_addr: str, twap_interval_seconds: int):
-#     infura_url = os.getenv("ETH_RPC_URL")
-#     web3 = Web3(Web3.HTTPProvider(infura_url))
-#     abi = '[{"inputs":[{"internalType":"uint32[]","name":"secondsAgos","type":"uint32[]"}],"name":"observe","outputs":[{"internalType":"int56[]","name":"tickCumulatives","type":"int56[]"},{"internalType":"uint160[]","name":"secondsPerLiquidityCumulativeX128s","type":"uint160[]"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"slot0","outputs":[{"internalType":"uint160","name":"sqrtPriceX96","type":"uint160"},{"internalType":"int24","name":"tick","type":"int24"},{"internalType":"uint16","name":"observationIndex","type":"uint16"},{"internalType":"uint16","name":"observationCardinality","type":"uint16"},{"internalType":"uint16","name":"observationCardinalityNext","type":"uint16"},{"internalType":"uint8","name":"feeProtocol","type":"uint8"},{"internalType":"bool","name":"unlocked","type":"bool"}],"stateMutability":"view","type":"function"}]'
-#     contract = web3.eth.contract(address=pool_addr, abi=abi)
-
-#     if twap_interval_seconds == 0:
-#         raise Exception("Interval cannot be 0 seconds")
-
-#     # twap interval - before
-#     # 0 - after (now)
-#     before_after = [twap_interval_seconds, 0]
-
-#     tick_cumulatives, _ = contract.functions.observe(before_after).call()
-#     print(tick_cumulatives)
-
-#     avg_tick = abs((tick_cumulatives[1] - tick_cumulatives[0]) / twap_interval_seconds)
-#     price = 1.0001**avg_tick
-#     return price
