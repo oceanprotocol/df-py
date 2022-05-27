@@ -13,11 +13,21 @@ _BARGE_SUBGRAPH_URI = (
 )
 
 
-_CHAINID_TO_NETWORK: Dict[int, str] = None  # type: ignore  # dict of [chainID_int] : network_str
-_NETWORK_TO_CHAINID: Dict[str, int] = None  # type: ignore  # dict of [network_str] : chainID_int
-_CHAINIDS_JS_URL = (
-    "https://raw.githubusercontent.com/DefiLlama/chainlist/main/constants/chainIds.js"
-)
+#Chainid values are from from chainlist.org. Except we set chainid=0.
+_CHAINID_TO_NETWORK = {
+    0 : "development",
+    1 : "ethereum",
+    3 : "ropsten",
+    4 : "rinkeby",
+    56 : "bsc",
+    137 : "polygon",
+    246 : "ewc",
+    1284 : "moonbeam",
+    1285 : "moonriver"
+    }
+_NETWORK_TO_CHAINID = {
+    network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
+}
 
 
 @enforce_types
@@ -41,63 +51,10 @@ def chainIdToSubgraphUri(chainID: int) -> str:
 @enforce_types
 def chainIdToNetwork(chainID: int) -> str:
     """Returns the network name for a given chainID"""
-    # corner case
-    if chainID == 0:
-        return "development"
-
-    # main case
-    global _CHAINID_TO_NETWORK
-    if _CHAINID_TO_NETWORK is None:
-        _cacheDataFromChainlist()
     return _CHAINID_TO_NETWORK[chainID]
 
 
+@enforce_types
 def networkToChainId(network: str) -> int:
     """Returns the chainID for a given network name"""
-    # corner case
-    if network == "development":
-        return 0
-
-    # main case
-    global _NETWORK_TO_CHAINID
-    if _NETWORK_TO_CHAINID is None:
-        _cacheDataFromChainlist()
     return _NETWORK_TO_CHAINID[network]
-
-
-def _cacheDataFromChainlist():
-    """
-    @description
-      chainlist.org is a site that gives full info about each EVM chain.
-      Its core data is found at the github url given below.
-      This function grabs that core data and stores it as a global.
-    """
-    global _CHAINID_TO_NETWORK, _NETWORK_TO_CHAINID
-    if _CHAINID_TO_NETWORK is not None:
-        assert _NETWORK_TO_CHAINID is not None, "should set both globals at once"
-        return
-
-    url = _CHAINIDS_JS_URL
-    resp = requests.get(url)
-
-    text = resp.text
-    # text looks like:
-    # const chainIds = {
-    # 0: "kardia",
-    # 1: "ethereum",
-    # ...
-
-    text = text.replace("\n", "")  # remove whitespace
-    text = re.sub(".*{", "{", text)  # remove all before the "{"
-    text = re.sub(",}.*", "}", text)  # remove all after the "}"
-
-    _CHAINID_TO_NETWORK = ast.literal_eval(text)
-
-    dev_chains = {3: "ropsten", 4: "rinkeby"}
-
-    # inject eth development chains
-    _CHAINID_TO_NETWORK = {**_CHAINID_TO_NETWORK, **dev_chains}
-
-    _NETWORK_TO_CHAINID = {
-        network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
-    }
