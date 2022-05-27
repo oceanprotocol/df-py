@@ -76,7 +76,7 @@ def disconnect():
         return
 
     chainID = network.chain.id
-    from util import oceanutil # pylint: disable=import-outside-toplevel
+    from util import oceanutil  # pylint: disable=import-outside-toplevel
 
     if chainID in oceanutil.CONTRACTS:
         del oceanutil.CONTRACTS[chainID]
