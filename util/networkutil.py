@@ -6,10 +6,6 @@ from enforce_typing import enforce_types
 from util.constants import CONTRACTS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
-_BARGE_SUBGRAPH_URI = (
-    "http://127.0.0.1:9000/subgraphs/name/oceanprotocol/ocean-subgraph"
-)
-
 
 # Chainid values & names are from brownie, where possible.
 # https://eth-brownie.readthedocs.io/en/stable/network-management.html
@@ -35,20 +31,20 @@ DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
 @enforce_types
 def chainIdToAddressFile(chainID: int) -> str:
     """Returns the address file for a given chainID"""
-    if chainID == DEV_CHAINID:
-        return os.path.expanduser(_BARGE_ADDRESS_FILE)
-
-    raise NotImplementedError()
+    return os.path.expanduser(_BARGE_ADDRESS_FILE)
 
 
 @enforce_types
 def chainIdToSubgraphUri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
+    sg = "/subgraphs/name/oceanprotocol/ocean-subgraph"
+    network_str = chainIdToNetwork(chainID)
     if chainID == DEV_CHAINID:
-        return _BARGE_SUBGRAPH_URI
-
-    raise NotImplementedError()
-
+        return "http://127.0.0.1:9000" + sg
+    elif " " not in network_str:
+        return f"https://v4.subgraph.{network_str.lower()}.oceanprotocol.com"+sg
+    else:
+        raise NotImplementedError("Don't yet support {network_str}")
 
 @enforce_types
 def chainIdToNetwork(chainID: int) -> str:
@@ -70,12 +66,12 @@ def connect(chainID: int):
     network.connect(chainIdToNetwork(chainID))
 
 
-@enforce_types
+#@enforce_types
 def disconnect():
     network = brownie.network
     if not network.is_connected():
         return
-
+    
     chainID = network.chain.id
     if chainID in CONTRACTS:
         del CONTRACTS[chainID]

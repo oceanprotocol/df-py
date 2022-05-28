@@ -6,32 +6,34 @@ import pytest
 from util import networkutil, oceanutil, oceantestutil
 from util.graphutil import submitQuery
 
+CHAINID = networkutil.networkToChainId("rinkeby")
 
 @enforce_types
-@pytest.mark.skip(reason="need to implement")
-def test_query_approvedTokens():
-    print("hello")
-
-    OCEAN = oceanutil.OCEANtoken()
-
-    oceantestutil.randomDeployPool(accounts[0], OCEAN)
-
-    query = "{ opcs{approvedTokens} }"
-    result = submitQuery(query, chainID)
-
-    pprint(result)
-
-
+def test_chainIdToNetwork():
+    network_str = networkutil.chainIdToNetwork(CHAINID)
+    assert network_str == "rinkeby"
+    
 @enforce_types
-def setup_function():
-    chainID = networkutil.networkToChainId("rinkeby")
-    networkutil.connect(chainID)
-
-    address_file = networkutil.chainIdToAddressFile(chainID)
+def test_chainIdToSubgraphUri():
+    uri = networkutil.chainIdToSubgraphUri(CHAINID)
+    assert "subgraph.rinkeby.oceanprotocol.com" in uri
+    
+@enforce_types
+def test_main():
+    #setup_function
+    networkutil.connect(CHAINID)
+    address_file = networkutil.chainIdToAddressFile(CHAINID)
     oceanutil.recordDeployedContracts(address_file)
-    oceantestutil.fillAccountsWithOCEAN()
 
+    #main
+    assert brownie.network.chain.id == CHAINID
+    
+    query = "{ opcs{approvedTokens} }"
+    result = submitQuery(query, CHAINID)
+    
+    OCEAN = oceanutil.OCEANtoken()
+    assert OCEAN.symbol() == "OCEAN"
 
-@enforce_types
-def teardown_function():
+    #teardown_function
     networkutil.disconnect()
+
