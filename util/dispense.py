@@ -53,7 +53,9 @@ def dispense(
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
         TOK.approve(
-            df_rewards, sum(values[b_st : b_st + batch_size]), {"from": from_account},
+            df_rewards,
+            sum(values[b_st : b_st + batch_size]),
+            {"from": from_account},
         )
     else:
         TOK.approve(df_rewards, sum(values), {"from": from_account})
