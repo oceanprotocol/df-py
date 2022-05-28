@@ -1,5 +1,6 @@
 from datetime import datetime
 import requests
+from typing import Union
 
 
 def getrate(token_symbol: str, st: str, fin: str) -> float:
@@ -17,6 +18,9 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
     @return
       rate -- float -- USD_per_token
     """
+    #corner case
+    if token_symbol.lower() == "h2o":
+        return 1.618
 
     st_dt = datetime.strptime(st, "%Y-%m-%d")
     fin_dt = datetime.strptime(fin, "%Y-%m-%d")
@@ -24,45 +28,52 @@ def getrate(token_symbol: str, st: str, fin: str) -> float:
     if num_days < 0:
         raise ValueError("Start date is after end date")
 
-    try:
-        return binanceRate(token_symbol, st_dt, fin_dt)
-    # pylint: disable=broad-except
-    except Exception as e:
-        print("An error occured while fetching price from Binance, trying CoinGecko", e)
-        try:
-            return coingeckoRate(token_symbol, st_dt, fin_dt)
-        # pylint: disable=broad-except
-        except Exception as ee:
-            if token_symbol.lower() == "h2o":
-                print("An error occured while fetching price from CoinGecko", ee)
-                return 1.618
-            raise Exception(f"Could not get the rate for {token_symbol}") from ee
+    rate = binanceRate(token_symbol, st_dt, fin_dt)
+    if rate is not None:
+        return rate
+
+    print("Couldn't get Binance data; trying CoinGecko")
+    rate = coingeckoRate(token_symbol, st_dt, fin_dt)
+    if rate is not None:
+        return rate
+
+    print("Couldn't get CoinGecko data")
+    raise Exception(f"Couldn't get rate for {token_symbol}")
 
 
-def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
-    # pylint: disable=line-too-long
-    res = requests.get(
-        f"https://api.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"
-    )
-    data = res.json()
-    avg = sum([float(x[4]) for x in data]) / len(data)
-    return avg
-
-
-def coingeckoRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) -> float:
+def binanceRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) \
+    -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
       timestr -- str in format "YYYY-MM-DD"
     @return
-      rate -- float -- USD_per_token
+      rate -- float or None -- USD_per_token. None if failure
+    """
+    req_s = f"https://api.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}" # pylint: disable=line-too-long
+    res = requests.get(req_s)
+    data = res.json()
+    if data == []:
+        return None
+    avg = sum([float(x[4]) for x in data]) / len(data)
+    return avg
+
+
+def coingeckoRate(token_symbol: str, st_dt: datetime, fin_dt: datetime) \
+    -> Union[float, None]:
+    """
+    @arguments
+      token_symbol -- e.g. "OCEAN", "BTC"
+      timestr -- str in format "YYYY-MM-DD"
+    @return
+      rate -- float or None -- USD_per_token. None if failure
     """
     cg_id = _coingeckoId(token_symbol)
-    # pylint: disable=line-too-long
-    res = requests.get(
-        f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"
-    )
+    req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}" # pylint: disable=line-too-long
+    res = requests.get(req_s)
     data = res.json()["prices"]
+    if data == []:
+        return None
     avg = sum([float(x[1]) for x in data]) / len(data)
     return avg
 
