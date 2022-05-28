@@ -8,15 +8,13 @@ from enforce_typing import enforce_types
 
 from util import networkutil
 from util.base18 import fromBase18, toBase18
-from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
+from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
-CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 
 @enforce_types
 def _contracts(key: str):
     """Returns the contract object at the currently connected network"""
-    global CONTRACTS
     chainID = brownie.network.chain.id
     return CONTRACTS[chainID][key]
 
@@ -35,7 +33,6 @@ def recordDeployedContracts(address_file: str):
     assert brownie.network.is_connected()
     chainID = brownie.network.chain.id
 
-    global CONTRACTS
     if chainID in CONTRACTS:  # already filled
         return
 

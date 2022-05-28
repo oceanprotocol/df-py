@@ -1,8 +1,9 @@
 import os
 
 import brownie
-
 from enforce_typing import enforce_types
+
+from util.constants import CONTRACTS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 _BARGE_SUBGRAPH_URI = (
@@ -76,9 +77,7 @@ def disconnect():
         return
 
     chainID = network.chain.id
-    from util import oceanutil  # pylint: disable=import-outside-toplevel
-
-    if chainID in oceanutil.CONTRACTS:
-        del oceanutil.CONTRACTS[chainID]
+    if chainID in CONTRACTS:
+        del CONTRACTS[chainID]
 
     network.disconnect()
