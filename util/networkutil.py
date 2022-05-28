@@ -3,6 +3,7 @@ import os
 import brownie
 from enforce_typing import enforce_types
 
+from util.constants import BROWNIE_PROJECT as B
 from util.constants import CONTRACTS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
@@ -76,4 +77,15 @@ def disconnect():
     if chainID in CONTRACTS:
         del CONTRACTS[chainID]
 
+    #workaround for issue https://github.com/eth-brownie/brownie/issues/1144
+    #how: give _contract_map an entry for each contract in 
+    if chainID != DEV_CHAINID:
+        for c in [x for v in B._containers.values() for x in v._contracts]:
+            lower = c.address.lower()
+            checksum = brownie.web3.toChecksumAddress(lower)
+            network.state._contract_map[lower] = None
+            network.state._contract_map[checksum] = None
+
+    print("last time, had error on 0x8967BCF84170c91B0d24D4302C2376283b0B3a07")
+    import pdb; pdb.set_trace()
     network.disconnect()

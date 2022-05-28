@@ -3,8 +3,10 @@ from enforce_typing import enforce_types
 from pprint import pprint
 import pytest
 
+from util.query import submitQuery
+
 from util import networkutil, oceanutil, oceantestutil
-from util.graphutil import submitQuery
+#from util.graphutil import submitQuery
 
 CHAINID = networkutil.networkToChainId("rinkeby")
 

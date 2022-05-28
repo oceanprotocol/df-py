@@ -40,8 +40,9 @@ def dispense(
     logger.info("dispense: begin")
     logger.info(f"  # addresses: {len(rewards)}")
 
-    df_rewards = B.DFRewards.at(dfrewards_addr)
-    TOK = B.Simpletoken.at(token_addr)
+    at = brownie.Contract.from_abi
+    df_rewards = at("", dfrewards_addr. B.DFRewards.abi)
+    TOK = at("", token_addr, B.Simpletoken.abi)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 
     to_addrs = list(rewards.keys())

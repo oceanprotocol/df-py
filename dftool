@@ -115,7 +115,7 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressF
         os.mkdir(CSV_DIR)
 
     # brownie setup
-    _connectToChain(CHAINID)
+    networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
     if "-" in ST:
@@ -279,9 +279,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     assert DFREWARDS_ADDR is not None
 
     # main work
-    _connectToChain(CHAINID)
+    networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol()
+    at = brownie.Contract.from_abi
+    token_symbol = at("", TOKEN_ADDR, B.Simpletoken.abi).symbol()
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],
@@ -340,7 +341,7 @@ Usage: dftool newdfrewards CHAINID
     print(f"Arguments: CHAINID={CHAINID}")
 
     # main work
-    _connectToChain(CHAINID)
+    networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = B.DFRewards.deploy({"from": from_account})
     print(f"New dispense contract deployed at address: {df_rewards.address}")
@@ -407,7 +408,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
     print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
 
     # main work
-    _connectToChain(DEV_CHAINID)  # hardcoded bc it's the only one we can force
+    networkutil.connect(DEV_CHAINID)
     chain = brownie.network.chain
     if TIMEDELTA is None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
@@ -432,7 +433,7 @@ Usage: dftool newacct
     assert sys.argv[1] == "newacct"
 
     # main work
-    _connectToChain(DEV_CHAINID)  # hardcoded bc it's the only one we can force
+    networkutil.connect(DEV_CHAINID)
     account = brownie.network.accounts.add()
     print("Generated new account:")
     print(f" private_key = {account.private_key}")
@@ -457,7 +458,7 @@ Usage: dftool newtoken CHAINID
     print(f"Arguments:\n CHAINID={CHAINID}")
 
     # main work
-    _connectToChain(CHAINID)
+    networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
@@ -487,14 +488,15 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 
     # do work
     print("Account info:")
-    _connectToChain(CHAINID)
+    networkutil.connect(CHAINID)
     if len(str(ACCOUNT_ADDR)) == 1:
         addr_i = int(ACCOUNT_ADDR)
         ACCOUNT_ADDR = brownie.accounts[addr_i]
     print(f"  Address = {ACCOUNT_ADDR}")
 
     if TOKEN_ADDR is not None:
-        token = B.Simpletoken.at(TOKEN_ADDR)
+        at = brownie.Contract.from_abi
+        token = at("", TOKEN_ADDR, B.Simpletoken.abi)
         balance = token.balanceOf(ACCOUNT_ADDR)
         print(f"  {fromBase18(balance)} {token.symbol()}")
 
@@ -525,7 +527,7 @@ Usage: dftool chaininfo CHAINID
     CHAINID = int(sys.argv[2])
 
     # do work
-    _connectToChain(CHAINID)
+    networkutil.connect(CHAINID)
     # blocks = len(brownie.network.chain)
     print("\nChain info:")
     print(f"  # blocks: {len(brownie.network.chain)}")
@@ -551,12 +553,6 @@ def _getPrivateAccount():
     account = brownie.network.accounts.add(private_key=private_key)
     print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
-
-
-@enforce_types
-def _connectToChain(chainID: int):
-    network = networkutil.chainIdToNetwork(chainID)
-    brownie.network.connect(network)
 
 
 # ========================================================================
