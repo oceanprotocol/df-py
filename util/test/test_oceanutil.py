@@ -60,7 +60,6 @@ def test_createBPoolFromDatatoken():
     recordDeployedContracts(ADDRESS_FILE)
     data_NFT = createDataNFT("foo", "foo", account0)
     DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account0)
-    DT.mint(account0.address, toBase18(1000.0), {"from": account0})
     base_TOKEN = oceanutil.OCEANtoken()
     _ = createBPoolFromDatatoken(DT, base_TOKEN, account0)
 
