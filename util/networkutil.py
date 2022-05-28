@@ -86,8 +86,18 @@ def disconnect():
         #   code: del _contract_map[contract.address]
         #It calls that function from two separate places. First time it
         # deletes, second time it has nothing left to delete.
-        try:
-            network.disconnect()
-        except KeyError:
-            print("Found known issue. It's ok to skip.")
-         
+
+        #mimic brownie/network/main.py::disconnect()
+        rpc = network.rpc
+        web3 = brownie.web3
+        kill_rpc = True
+        #network.CONFIG.clear_active() #TURN OFF
+        if kill_rpc and rpc.is_active():
+            if rpc.is_child():
+                rpc.kill()
+        web3.disconnect()
+        #_notify_registry(0) #TURN OFF
+
+        #HACK: dummy addresses. BUT, it doesn't help, so comment out
+        # for contract in [x for v in B._containers.values() for x in v._contracts]:
+        #     network.state._contract_map[contract.address] = None
