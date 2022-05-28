@@ -17,11 +17,11 @@ did:op:8d797a40e75a73a9646e48cfb14d5c0f6afb3c897f53403d00787b00e736b9f3,4,0xf41e
 
 def test_calcDID():
     data = [x.split(",") for x in golden_data.split("\n")]
-    for [did, chain_id, address] in data:
-        assert calcDID(address, int(chain_id)) == did
-        assert (
-            calcDID(address.lower(), int(chain_id)) == did
-        )  # address is not case sensitive
-        assert (
-            calcDID(address.upper(), int(chain_id)) == did
-        )  # address is not case sensitive
+    for [did, chainID, address] in data:
+        chainID = int(chainID)
+
+        assert calcDID(address, chainID) == did
+
+        # address is not case sensitive
+        assert calcDID(address.lower(), chainID) == did
+        assert calcDID(address.upper(), chainID) == did

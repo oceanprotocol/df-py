@@ -1,26 +1,27 @@
 import time
 import types
 import os
-import brownie
 
-from util import chainlist, csvs
+import brownie
+from enforce_typing import enforce_types
+
+from util import csvs, oceanutil, networkutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
-from util.oceanutil import OCEAN_address, OCEANtoken, recordDeployedContracts
-from util.test import conftest
+from util import oceantestutil
 
-PREV = None
-DISPENSE_ACCT = None
+accounts, PREV, DISPENSE_ACCT = None, None, None
 
-CHAINID = 0
+CHAINID = networkutil.DEV_CHAINID
 
 
+@enforce_types
 def test_query(tmp_path):
     # insert fake inputs: info onto the chain
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    conftest.fillAccountsWithOCEAN()
-    conftest.randomDeployTokensAndPoolsThenConsume(num_pools=1, base_token=OCEANtoken())
+    oceantestutil.fillAccountsWithOCEAN()
+    num_pools = 1
+    OCEAN = oceanutil.OCEANtoken()
+    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEAN)
     time.sleep(2)
 
     # main cmd
@@ -37,6 +38,7 @@ def test_query(tmp_path):
     assert csvs.poolvolsCsvFilenames(CSV_DIR)
 
 
+@enforce_types
 def test_getrate(tmp_path):
     # insert fake inputs:
     # <nothing to insert>
@@ -54,6 +56,7 @@ def test_getrate(tmp_path):
     assert csvs.rateCsvFilenames(CSV_DIR)
 
 
+@enforce_types
 def test_calc(tmp_path):
     CSV_DIR = str(tmp_path)
 
@@ -78,8 +81,10 @@ def test_calc(tmp_path):
     assert os.path.exists(rewards_csv)
 
 
+@enforce_types
 def test_dispense(tmp_path):
     # values used for inputs or main cmd
+    global accounts
     accounts = brownie.network.accounts
     account1 = accounts[1]
     address1 = account1.address.lower()
@@ -89,9 +94,7 @@ def test_dispense(tmp_path):
 
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
-    OCEAN = OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
 
@@ -104,7 +107,7 @@ def test_dispense(tmp_path):
     # main command
     CSV_DIR = str(tmp_path)
     DFREWARDS_ADDR = df_rewards.address
-    TOKEN_ADDR = OCEAN_address()
+    TOKEN_ADDR = oceanutil.OCEAN_address()
 
     cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
     os.system(cmd)
@@ -113,10 +116,13 @@ def test_dispense(tmp_path):
     assert df_rewards.claimable(address1, OCEAN.address)
 
 
-def setup_module():
-    """This automatically gets called at the beginning of each test.
-    It sets envvars for use in the test."""
-    global PREV, DISPENSE_ACCT
+@enforce_types
+def setup_function():
+    global accounts, PREV, DISPENSE_ACCT
+
+    networkutil.connect(CHAINID)
+    accounts = brownie.network.accounts
+    oceanutil.recordDevDeployedContracts()
 
     PREV = types.SimpleNamespace()
 
@@ -125,15 +131,16 @@ def setup_module():
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
     PREV.ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    os.environ["ADDRESS_FILE"] = chainlist.chainIdToAddressFile(CHAINID)
+    os.environ["ADDRESS_FILE"] = networkutil.chainIdToAddressFile(CHAINID)
 
     PREV.SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
-    os.environ["SUBGRAPH_URI"] = chainlist.chainIdToSubgraphUri(CHAINID)
+    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
 
 
-def teardown_module():
-    """This automatically gets called at the end of each test.
-    It restores envvars that existed prior to the test."""
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
+
     global PREV
 
     if PREV.DFTOOL_KEY is None:

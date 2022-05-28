@@ -6,30 +6,40 @@ from typing import Any, Dict, List, Tuple
 import brownie
 from enforce_typing import enforce_types
 
-from util import chainlist
-from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT as B, ZERO_ADDRESS
-
-CONTRACTS: dict = {}
+from util import networkutil
+from util.base18 import fromBase18, toBase18
+from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
 
 @enforce_types
 def _contracts(key: str):
-    global CONTRACTS
-    return CONTRACTS[key]
+    """Returns the contract object at the currently connected network"""
+    chainID = brownie.network.chain.id
+    return CONTRACTS[chainID][key]
 
 
 @enforce_types
-def recordDeployedContracts(address_file: str, chainID: int):
-    global CONTRACTS
-    C = CONTRACTS
-    if C != {}:  # already filled
+def recordDevDeployedContracts():
+    assert brownie.network.is_connected()
+    assert brownie.network.chain.id == networkutil.DEV_CHAINID
+    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    recordDeployedContracts(address_file)
+
+
+@enforce_types
+def recordDeployedContracts(address_file: str):
+    """Records deployed Ocean contracts at currently connected network"""
+    assert brownie.network.is_connected()
+    chainID = brownie.network.chain.id
+
+    if chainID in CONTRACTS:  # already filled
         return
 
-    network = chainlist.chainIdToNetwork(chainID)
+    network = networkutil.chainIdToNetwork(chainID)
     with open(address_file, "r") as json_file:
         a = json.load(json_file)[network]  # dict of contract_name: address
 
+    C = {}
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
@@ -38,6 +48,8 @@ def recordDeployedContracts(address_file: str, chainID: int):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+
+    CONTRACTS[chainID] = C
 
 
 def OCEANtoken():
@@ -130,13 +142,17 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 @enforce_types
 def createBPoolFromDatatoken(
     datatoken,
-    from_account,
     base_TOKEN,
+    from_account,
     init_TOKEN_liquidity: float = 2000.0,
     DT_TOKEN_rate: float = 0.1,
     LP_swap_fee: float = 0.03,
     mkt_swap_fee: float = 0.01,
 ):
+    TOK_have = fromBase18(base_TOKEN.balanceOf(from_account))
+    TOK_need = init_TOKEN_liquidity
+    assert TOK_have >= TOK_need, f"have {TOK_have} TOK, need {TOK_need}"
+
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()

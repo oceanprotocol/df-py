@@ -3,12 +3,9 @@ from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
-from util import oceanutil
+from util import networkutil, oceanutil
 
-accounts = brownie.network.accounts
-a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
-
-CHAINID = 0
+accounts, a1, a2, a3 = None, None, None, None
 
 
 @enforce_types
@@ -65,8 +62,9 @@ def test_TOK():
 
 
 @enforce_types
-def test_OCEAN(ADDRESS_FILE):
-    oceanutil.recordDeployedContracts(ADDRESS_FILE, CHAINID)
+def test_OCEAN():
+    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
@@ -136,3 +134,16 @@ def test_multiple_TOK():
 @enforce_types
 def _deployTOK(account):
     return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global accounts, a1, a2, a3
+    accounts = brownie.network.accounts
+    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

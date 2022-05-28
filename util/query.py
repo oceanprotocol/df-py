@@ -165,7 +165,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
     # normalize stake based on # blocks sampled
     # (this may be lower than target # blocks, if we hit indexing errors)
     assert n_blocks_sampled > 0
-    for basesym in stakes:
+    for basesym in stakes:  # pylint: disable=consider-iterating-dictionary
         for pool_addr in stakes[basesym]:
             for LP_addr in stakes[basesym][pool_addr]:
                 stakes[basesym][pool_addr][LP_addr] /= n_blocks_sampled
@@ -186,7 +186,7 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
 
     # [basesym][pool_addr]:vol
     poolvols_at_chain: Dict[str, Dict[str, float]] = {}
-    for basesym in DTvols_at_chain:
+    for basesym in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
         if basesym not in poolvols_at_chain:
             poolvols_at_chain[basesym] = {}
 

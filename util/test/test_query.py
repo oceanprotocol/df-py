@@ -4,32 +4,25 @@ import time
 import brownie
 from enforce_typing import enforce_types
 
-from util import chainlist, query
+from util import oceanutil, oceantestutil, networkutil, query
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
-from util.oceanutil import OCEANtoken, recordDeployedContracts
-from util.test import conftest
 
-account0 = brownie.network.accounts[0]
-chain = brownie.network.chain
+account0, QUERY_ST = None, 0
 
-CHAINID = 0
-QUERY_ST = max(0, len(chain) - 200)
+CHAINID = networkutil.DEV_CHAINID
 
 
 def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    address_file = chainlist.chainIdToAddressFile(CHAINID)
-    recordDeployedContracts(address_file, CHAINID)
-
-    OCEAN = OCEANtoken()
-    conftest.fillAccountsWithToken(OCEAN)
+    OCEAN = oceanutil.OCEANtoken()
+    oceantestutil.fillAccountsWithToken(OCEAN)
 
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
-    conftest.fillAccountsWithToken(CO2)
+    oceantestutil.fillAccountsWithToken(CO2)
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
@@ -38,8 +31,8 @@ def test_all():
         assert loop_i < 5, "timeout"
         if _foundStakeAndConsume(CO2_SYM):
             break
-        conftest.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
-        conftest.randomDeployTokensAndPoolsThenConsume(2, CO2)
+        oceantestutil.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
+        oceantestutil.randomDeployTokensAndPoolsThenConsume(2, CO2)
         print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
 
@@ -56,7 +49,7 @@ def test_all():
 def _foundStakeAndConsume(CO2_SYM):
     # nonzero CO2 stake?
     pools = query.getPools(CHAINID)
-    st, fin, n = QUERY_ST, len(chain), 20
+    st, fin, n = QUERY_ST, len(brownie.network.chain), 20
     rng = BlockRange(st, fin, n)
     stakes_at_chain = query.getStakes(pools, rng, CHAINID)
     if CO2_SYM not in stakes_at_chain:
@@ -69,7 +62,7 @@ def _foundStakeAndConsume(CO2_SYM):
             return False
 
     # nonzero CO2 volume?
-    st, fin = QUERY_ST, len(chain)
+    st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_SYM not in DT_vols:
         return False
@@ -103,7 +96,7 @@ def _test_pools(CO2_SYM: str):
 @enforce_types
 def _test_stakes(CO2_SYM: str):
     pools = query.getPools(CHAINID)
-    st, fin, n = QUERY_ST, len(chain), 500
+    st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 
@@ -118,7 +111,7 @@ def _test_stakes(CO2_SYM: str):
 
 @enforce_types
 def _test_getDTVolumes(CO2_SYM: str):
-    st, fin = QUERY_ST, len(chain)
+    st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     assert "OCEAN" in DT_vols, DT_vols.keys()
     assert CO2_SYM in DT_vols, (CO2_SYM, DT_vols.keys())
@@ -129,7 +122,7 @@ def _test_getDTVolumes(CO2_SYM: str):
 @enforce_types
 def _test_getPoolVolumes(CO2_SYM: str):
     pools = query.getPools(CHAINID)
-    st, fin = QUERY_ST, len(chain)
+    st, fin = QUERY_ST, len(brownie.network.chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
     assert "OCEAN" in poolvols, poolvols.keys()
     assert CO2_SYM in poolvols, (CO2_SYM, poolvols.keys())
@@ -139,10 +132,24 @@ def _test_getPoolVolumes(CO2_SYM: str):
 
 @enforce_types
 def _test_query(CO2_SYM: str):
-    st, fin, n = QUERY_ST, len(chain), 500
+    st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
     (_, S0, V0) = query.query_all(rng, CHAINID)
 
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_SYM in S0
     assert CO2_SYM in V0
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global account0, QUERY_ST
+    account0 = brownie.network.accounts[0]
+    QUERY_ST = max(0, len(brownie.network.chain) - 200)
+    oceanutil.recordDevDeployedContracts()
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

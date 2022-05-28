@@ -9,18 +9,17 @@ from util.oceanutil import (
     createBPoolFromDatatoken,
     calcDID,
 )
-from util import chainlist, oceanutil
+from util import networkutil, oceantestutil, oceanutil
 
-accounts = brownie.network.accounts
-account0 = accounts[0]
+account0, account3 = None, None
 
-CHAINID = 0
-ADDRESS_FILE = chainlist.chainIdToAddressFile(CHAINID)
+CHAINID = networkutil.DEV_CHAINID
+ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 
 @enforce_types
 def test_recordDeployedContracts():
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     assert oceanutil.OCEANtoken()
     assert isinstance(oceanutil.OCEAN_address(), str)
     assert oceanutil.ERC721Template()
@@ -33,14 +32,14 @@ def test_recordDeployedContracts():
 
 @enforce_types
 def test_OCEANtoken():
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     OCEAN = OCEANtoken()
     assert OCEAN.symbol().lower() == "ocean"
 
 
 @enforce_types
 def test_createDataNFT():
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     data_NFT = createDataNFT("nft_name", "nft_symbol", account0)
     assert data_NFT.name() == "nft_name"
     assert data_NFT.symbol() == "nft_symbol"
@@ -48,7 +47,7 @@ def test_createDataNFT():
 
 @enforce_types
 def test_createDatatokenFromDataNFT():
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     data_NFT = createDataNFT("foo", "foo", account0)
     DT = createDatatokenFromDataNFT("dt_name", "dt_symbol", data_NFT, account0)
     assert DT.name() == "dt_name"
@@ -57,16 +56,31 @@ def test_createDatatokenFromDataNFT():
 
 @enforce_types
 def test_createBPoolFromDatatoken():
-    recordDeployedContracts(ADDRESS_FILE, CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
     data_NFT = createDataNFT("foo", "foo", account0)
     DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account0)
     base_TOKEN = oceanutil.OCEANtoken()
-    _ = createBPoolFromDatatoken(DT, account0, base_TOKEN)
+    _ = createBPoolFromDatatoken(DT, base_TOKEN, account0)
 
 
 @enforce_types
 def test_calcDID():
-    nft_addr = accounts[3].address  # use a random but valid eth address
+    nft_addr = account3.address  # use a random but valid eth address
     did = calcDID(nft_addr, CHAINID)
     assert did[:7] == "did:op:"
     assert len(did) == 71
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(CHAINID)
+    global account0, account3
+    account0 = brownie.network.accounts[0]
+    account3 = brownie.network.accounts[3]
+    oceanutil.recordDeployedContracts(ADDRESS_FILE)
+    oceantestutil.fillAccountsWithOCEAN()
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

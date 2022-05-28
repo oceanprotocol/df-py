@@ -1,16 +1,11 @@
 import brownie
 from enforce_typing import enforce_types
 
+from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
 
-accounts = brownie.network.accounts
-a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
-
-
-@enforce_types
-def _deployTOK(account):
-    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
+accounts = None
 
 
 @enforce_types
@@ -52,7 +47,7 @@ def test_erc20_withdraw_main():
 
     TOK.transfer(df_rewards, toBase18(40.0), {"from": accounts[0]})
 
-    tos = [a1]
+    tos = [accounts[1].address]
     values = [toBase18(10.0)]
     TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
@@ -70,3 +65,20 @@ def test_erc20_withdraw_main():
 
     TOK.transfer(df_rewards, 100, {"from": accounts[0]})
     df_rewards.withdrawERCToken(100, TOK.address, {"from": accounts[0]})
+
+
+@enforce_types
+def _deployTOK(account):
+    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global accounts
+    accounts = brownie.network.accounts
+
+
+@enforce_types
+def teardown_function():
+    brownie.network.disconnect()
