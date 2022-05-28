@@ -11,7 +11,6 @@ from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
 
-
 @enforce_types
 def _contracts(key: str):
     """Returns the contract object at the currently connected network"""
