@@ -4,7 +4,7 @@ import brownie
 import pytest
 from enforce_typing import enforce_types
 
-from util import oceanutil, oceantestutil, networkutil
+from util import networkutil, oceanutil, oceantestutil
 from util.random_addresses import get_random_addresses
 from util.constants import BROWNIE_PROJECT as B
 
