@@ -8,19 +8,19 @@ from util.constants import CONTRACTS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 
-# Chainid values & names are from brownie, where possible.
-# https://eth-brownie.readthedocs.io/en/stable/network-management.html
-# Otherwise, values & names are from networkutil.org.
+# Development chainid is from brownie, rest are from chainlist.org
+# Chain values to fit Ocean subgraph urls as given in
+# https://v3.docs.oceanprotocol.com/concepts/networks/
 _CHAINID_TO_NETWORK = {
     8996: "development",  # ganache
-    1: "mainnet",  # eth mainnet
+    1: "mainnet",
     3: "ropsten",
     4: "rinkeby",
-    56: "Binance Smart Chain",
-    137: "Polygon Mainnet",
-    246: "Energy Web Chain",
-    1284: "Moonbeam",
-    1285: "Moonriver",
+    56: "bsc",
+    137: "polygon",
+    246: "energyweb",
+    1284: "moonbeam",
+    1285: "moonriver",
 }
 _NETWORK_TO_CHAINID = {
     network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
@@ -39,13 +39,11 @@ def chainIdToAddressFile(chainID: int) -> str:
 def chainIdToSubgraphUri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
     sg = "/subgraphs/name/oceanprotocol/ocean-subgraph"
-    network_str = chainIdToNetwork(chainID)
     if chainID == DEV_CHAINID:
         return "http://127.0.0.1:9000" + sg
-    elif " " not in network_str:
-        return f"https://v4.subgraph.{network_str.lower()}.oceanprotocol.com"+sg
     else:
-        raise NotImplementedError("Don't yet support {network_str}")
+        network_str = chainIdToNetwork(chainID)
+        return f"https://v4.subgraph.{network_str}.oceanprotocol.com"+sg
 
 @enforce_types
 def chainIdToNetwork(chainID: int) -> str:

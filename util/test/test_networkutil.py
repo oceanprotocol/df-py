@@ -6,25 +6,22 @@ from util import networkutil
 
 @enforce_types
 def test_chainIdToSubgraphUri():
-    assert (
-        networkutil.chainIdToSubgraphUri(networkutil.DEV_CHAINID)[:21]
-        == "http://127.0.0.1:9000"
-    )
-
-    for chainID in [1, 137]:
-        with pytest.raises(NotImplementedError):
-            networkutil.chainIdToSubgraphUri(chainID)
-
+    for chainID, network_str in networkutil._CHAINID_TO_NETWORK.items():
+        uri = networkutil.chainIdToSubgraphUri(chainID) 
+        if chainID == networkutil.DEV_CHAINID:
+            assert uri[:21] == "http://127.0.0.1:9000"
+        else:
+            assert network_str in uri
 
 @enforce_types
 def test_chainIdToNetwork():
     assert networkutil.chainIdToNetwork(8996) == "development"
     assert networkutil.chainIdToNetwork(1) == "mainnet"
-    assert networkutil.chainIdToNetwork(137) == "Polygon Mainnet"
+    assert networkutil.chainIdToNetwork(137) == "polygon"
 
 
 @enforce_types
 def test_networkToChainId():
     assert networkutil.networkToChainId("development") == 8996
     assert networkutil.networkToChainId("mainnet") == 1
-    assert networkutil.networkToChainId("Polygon Mainnet") == 137
+    assert networkutil.networkToChainId("polygon") == 137
