@@ -84,20 +84,27 @@ def disconnect():
         #in file venv/lib/python3.8/site-packages/brownie/network/state.py
         #   function: _remove_contract()
         #   code: del _contract_map[contract.address]
-        #It calls that function from two separate places. First time it
-        # deletes, second time it has nothing left to delete.
+        #When it calls _remove_contract():
+        # - First time, it deletes _contract_map items
+        # - After that, it can't find them, so gives KeyError
 
-        #mimic brownie/network/main.py::disconnect()
+        #mimic brownie/network/main.py::disconnect(),
+        # except bypass _remove_contract() to avoid KeyError
         rpc = network.rpc
         web3 = brownie.web3
         kill_rpc = True
-        #network.CONFIG.clear_active() #TURN OFF
+        #network.CONFIG.clear_active() #bypass remove_contract()
         if kill_rpc and rpc.is_active():
             if rpc.is_child():
                 rpc.kill()
         web3.disconnect()
-        #_notify_registry(0) #TURN OFF
+        #_notify_registry(0) #bypass remove_contract()
 
-        #HACK: dummy addresses. BUT, it doesn't help, so comment out
-        # for contract in [x for v in B._containers.values() for x in v._contracts]:
-        #     network.state._contract_map[contract.address] = None
+        #Before brownie shuts down, it calls _remove_contract() again
+        #  But _contract_map items are already deleted. Solve by
+        #  reinserting 'None' items in to _contract_map        
+        for contract in [x for v in B._containers.values() for x in v._contracts]:
+            network.state._contract_map[contract.address] = None
+        for container in B._containers.values():
+            container._contracts.clear()
+        B._containers.clear()
