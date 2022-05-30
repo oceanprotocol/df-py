@@ -281,8 +281,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    at = brownie.Contract.from_abi
-    token_symbol = at("", TOKEN_ADDR, B.Simpletoken.abi).symbol()
+    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol()
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],
@@ -495,8 +494,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     print(f"  Address = {ACCOUNT_ADDR}")
 
     if TOKEN_ADDR is not None:
-        at = brownie.Contract.from_abi
-        token = at("", TOKEN_ADDR, B.Simpletoken.abi)
+        token = B.Simpletoken.at(TOKEN_ADDR)
         balance = token.balanceOf(ACCOUNT_ADDR)
         print(f"  {fromBase18(balance)} {token.symbol()}")
 
