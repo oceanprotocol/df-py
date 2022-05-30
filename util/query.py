@@ -304,9 +304,7 @@ def getApprovedTokens(chainID: int) -> Dict[str, str]:
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, chainID)
     addrs = result["data"]["opcs"][0]["approvedTokens"]
-    at = brownie.Contract.from_abi
-    d = {addr.lower(): at("", addr, B.Simpletoken.abi).symbol().upper()
-         for addr in addrs}
+    d = {addr.lower(): B.Simpletoken.at(addr).symbol().upper() for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
     for symbol in d.values():
         assert symbol == symbol.upper(), "symbols should be uppercase"
@@ -373,9 +371,7 @@ def _symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
     if addr not in _ADDR_TO_SYMBOL:
-        at = brownie.Contract.from_abi
-        token = at("", addr, B.Simpletoken.abi)
-        symbol = token.symbol()
+        symbol = B.Simpletoken.at(addr).symbol()
         symbol = symbol.upper()  # follow lower-upper rules
         _ADDR_TO_SYMBOL[addr] = symbol
     return _ADDR_TO_SYMBOL[addr]
