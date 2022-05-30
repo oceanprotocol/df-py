@@ -151,7 +151,8 @@ def createBPoolFromDatatoken(
 ):
     TOK_have = fromBase18(base_TOKEN.balanceOf(from_account))
     TOK_need = init_TOKEN_liquidity
-    assert TOK_have >= TOK_need, f"have {TOK_have} TOK, need {TOK_need}"
+    TOK_name = base_TOKEN.symbol()
+    assert TOK_have >= TOK_need, f"have {TOK_have} {TOK_name}, need {TOK_need}"
 
     pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
