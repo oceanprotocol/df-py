@@ -1,8 +1,11 @@
 import os
+import types
 
 from enforce_typing import enforce_types
 
 from util import networkutil
+
+PREV = None
 
 CHAINID = networkutil.networkToChainId("rinkeby")
 
@@ -40,3 +43,24 @@ def test_main(tmp_path):
     with open(fn, "r") as f:
         s = f.read()
     assert " ZRX" in s
+
+@enforce_types
+def setup_module():
+    global PREV
+    
+    PREV = types.SimpleNamespace()
+
+    PREV.WEB3_INFURA_PROJECT_ID = os.environ.get("WEB3_INFURA_PROJECT_ID")
+
+    #got this value from https://rpc.info/. We could also use our own
+    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
+
+
+@enforce_types
+def teardown_module():
+    global PREV
+
+    if PREV.WEB3_INFURA_PROJECT_ID is None:
+        del os.environ["WEB3_INFURA_PROJECT_ID"]
+    else:
+        os.environ["WEB3_INFURA_PROJECT_ID"] = PREV.WEB3_INFURA_PROJECT_ID
