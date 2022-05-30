@@ -3,7 +3,6 @@ import os
 import brownie
 from enforce_typing import enforce_types
 
-from util.constants import BROWNIE_PROJECT as B
 from util.constants import CONTRACTS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
@@ -30,7 +29,7 @@ DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
 
 
 @enforce_types
-def chainIdToAddressFile(chainID: int) -> str:
+def chainIdToAddressFile(chainID: int) -> str: # pylint: disable=unused-argument
     """Returns the address file for a given chainID"""
     return os.path.expanduser(_BARGE_ADDRESS_FILE)
 
@@ -41,9 +40,10 @@ def chainIdToSubgraphUri(chainID: int) -> str:
     sg = "/subgraphs/name/oceanprotocol/ocean-subgraph"
     if chainID == DEV_CHAINID:
         return "http://127.0.0.1:9000" + sg
-    else:
-        network_str = chainIdToNetwork(chainID)
-        return f"https://v4.subgraph.{network_str}.oceanprotocol.com"+sg
+
+    network_str = chainIdToNetwork(chainID)
+    return f"https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
+
 
 @enforce_types
 def chainIdToNetwork(chainID: int) -> str:
@@ -61,7 +61,7 @@ def networkToChainId(network: str) -> int:
 def connect(chainID: int):
     network = brownie.network
     if network.is_connected():
-        disconnect() #call networkutil.disconnect(), *NOT* brownie directly
+        disconnect()  # call networkutil.disconnect(), *NOT* brownie directly
     network.connect(chainIdToNetwork(chainID))
 
 
@@ -70,14 +70,14 @@ def disconnect():
     network = brownie.network
     if not network.is_connected():
         return
-    
+
     chainID = network.chain.id
     if chainID in CONTRACTS:
         del CONTRACTS[chainID]
 
     try:
         network.disconnect()
-    except:
-        #overcome brownie issue
-        #https://github.com/eth-brownie/brownie/issues/1144
+    except: # pylint: disable=bare-except
+        # overcome brownie issue
+        # https://github.com/eth-brownie/brownie/issues/1144
         pass

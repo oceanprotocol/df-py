@@ -1,5 +1,4 @@
 from enforce_typing import enforce_types
-import pytest
 
 from util import networkutil
 
@@ -7,11 +6,12 @@ from util import networkutil
 @enforce_types
 def test_chainIdToSubgraphUri():
     for chainID, network_str in networkutil._CHAINID_TO_NETWORK.items():
-        uri = networkutil.chainIdToSubgraphUri(chainID) 
+        uri = networkutil.chainIdToSubgraphUri(chainID)
         if chainID == networkutil.DEV_CHAINID:
             assert uri[:21] == "http://127.0.0.1:9000"
         else:
             assert network_str in uri
+
 
 @enforce_types
 def test_chainIdToNetwork():
