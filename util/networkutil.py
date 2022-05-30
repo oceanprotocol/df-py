@@ -61,11 +61,11 @@ def networkToChainId(network: str) -> int:
 def connect(chainID: int):
     network = brownie.network
     if network.is_connected():
-        network.disconnect()
+        disconnect() #call networkutil.disconnect(), *NOT* brownie directly
     network.connect(chainIdToNetwork(chainID))
 
 
-#@enforce_types
+@enforce_types
 def disconnect():
     network = brownie.network
     if not network.is_connected():
@@ -75,34 +75,9 @@ def disconnect():
     if chainID in CONTRACTS:
         del CONTRACTS[chainID]
 
-    if chainID == DEV_CHAINID:
+    try:
         network.disconnect()
-    else:
-        #workaround for https://github.com/eth-brownie/brownie/issues/1144
-        #in file venv/lib/python3.8/site-packages/brownie/network/state.py
-        #   function: _remove_contract()
-        #   code: del _contract_map[contract.address]
-        #When it calls _remove_contract():
-        # - First time, it deletes _contract_map items
-        # - After that, it can't find them, so gives KeyError
-
-        #mimic brownie/network/main.py::disconnect(),
-        # except bypass _remove_contract() to avoid KeyError
-        rpc = network.rpc
-        web3 = brownie.web3
-        kill_rpc = True
-        #network.CONFIG.clear_active() #bypass remove_contract()
-        if kill_rpc and rpc.is_active():
-            if rpc.is_child():
-                rpc.kill()
-        web3.disconnect()
-        #_notify_registry(0) #bypass remove_contract()
-
-        #Before brownie shuts down, it calls _remove_contract() again
-        #  But _contract_map items are already deleted. Solve by
-        #  reinserting 'None' items in to _contract_map        
-        for contract in [x for v in B._containers.values() for x in v._contracts]:
-            network.state._contract_map[contract.address] = None
-        for container in B._containers.values():
-            container._contracts.clear()
-        B._containers.clear()
+    except:
+        #overcome brownie issue
+        #https://github.com/eth-brownie/brownie/issues/1144
+        pass
