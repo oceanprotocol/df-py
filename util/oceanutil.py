@@ -40,7 +40,7 @@ def recordDeployedContracts(address_file: str):
         a = json.load(json_file)[network]  # dict of contract_name: address
 
     C = {}
-    #NEW
+    
     at = brownie.Contract.from_abi
     C["Ocean"] = at("", a["Ocean"], B.Simpletoken.abi)
     C["ERC721Template"] = at("", a["ERC721Template"]["1"], B.ERC721Template.abi)
@@ -50,16 +50,6 @@ def recordDeployedContracts(address_file: str):
     C["Staking"] = at("", a["Staking"], B.SideStaking.abi)
     C["ERC721Factory"] = at("", a["ERC721Factory"], B.ERC721Factory.abi)
     C["FixedPrice"] = at("", a["FixedPrice"], B.FixedRateExchange.abi)
-
-    #OLD
-    # C["Ocean"] = B.Simpletoken.at(a["Ocean"])
-    # C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
-    # C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
-    # C["PoolTemplate"] = B.BPool.at(a["poolTemplate"])
-    # C["Router"] = B.FactoryRouter.at(a["Router"])
-    # C["Staking"] = B.SideStaking.at(a["Staking"])
-    # C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
-    # C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
     CONTRACTS[chainID] = C
 
