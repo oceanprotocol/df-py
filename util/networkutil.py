@@ -29,7 +29,7 @@ DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
 
 
 @enforce_types
-def chainIdToAddressFile(chainID: int) -> str: # pylint: disable=unused-argument
+def chainIdToAddressFile(chainID: int) -> str:  # pylint: disable=unused-argument
     """Returns the address file for a given chainID"""
     return os.path.expanduser(_BARGE_ADDRESS_FILE)
 
@@ -77,7 +77,7 @@ def disconnect():
 
     try:
         network.disconnect()
-    except: # pylint: disable=bare-except
+    except:  # pylint: disable=bare-except
         # overcome brownie issue
         # https://github.com/eth-brownie/brownie/issues/1144
         pass
