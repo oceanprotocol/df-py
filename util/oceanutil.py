@@ -47,7 +47,7 @@ def recordDeployedContracts(address_file: str):
     C["Router"] = B.FactoryRouter.at(a["Router"])
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
-    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])    
+    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
     CONTRACTS[chainID] = C
 
