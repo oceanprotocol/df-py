@@ -44,15 +44,16 @@ def test_main(tmp_path):
         s = f.read()
     assert " ZRX" in s
 
+
 @enforce_types
 def setup_module():
     global PREV
-    
+
     PREV = types.SimpleNamespace()
 
     PREV.WEB3_INFURA_PROJECT_ID = os.environ.get("WEB3_INFURA_PROJECT_ID")
 
-    #got this value from https://rpc.info/. We could also use our own
+    # got this value from https://rpc.info/. We could also use our own
     os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
 
 
