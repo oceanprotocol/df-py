@@ -30,7 +30,7 @@ def test_without_csvs():
     rates = {"OCEAN": 0.5, "H2O": 1.618}
 
     stakes, poolvols = {chainID: S0}, {chainID: V0}
-    rewards = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
+    rewards, _ = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
     sum_ = sum(rewards[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
@@ -66,7 +66,7 @@ def test_with_csvs(tmp_path):
     V = csvs.loadPoolvolsCsvs(csv_dir)
     rates = csvs.loadRateCsvs(csv_dir)
     OCEAN_avail = 10000.0
-    rewards = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
+    rewards, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
     sum_ = sum(rewards[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
     csvs.saveRewardsCsv(rewards, csv_dir, "OCEAN")
