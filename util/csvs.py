@@ -437,7 +437,7 @@ def rewardsLPCsvFilename(csv_dir: str, token_symbol: str) -> str:
 
 @enforce_types
 def rewardsInfoCsvFilename(csv_dir: str, token_symbol: str) -> str:
-    return os.path.join(csv_dir, f"rewardinfo-{token_symbol.upper()}.csv")
+    return os.path.join(csv_dir, f"rewardsinfo-{token_symbol.upper()}.csv")
 
 
 # =======================================================================
