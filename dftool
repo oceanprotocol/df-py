@@ -21,7 +21,9 @@ from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
 from util.oceanutil import recordDeployedContracts, OCEANtoken
 
-CHAINID_EXAMPLES = f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
+CHAINID_EXAMPLES = (
+    f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
+)
 
 # ========================================================================
 HELP_MAIN = f"""Data Farming tool, for use by OPF.
@@ -184,7 +186,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
 # ========================================================================
 @enforce_types
 def do_calc():
-    HELP = """From stakes/vols/rates csvs, output rewards csv.
+    HELP = """From stakes/vols/rates csvs, output rewards csvs.
 
 Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
   CSV_DIR -- directory: input stakes & volumes csvs, output rewards.csv
@@ -218,17 +220,23 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
         sys.exit(0)
 
     # shouldn't already have the output file
-    c = csvs.rewardsCsvFilename(CSV_DIR, TOKEN_SYMBOL)
-    if os.path.exists(c):
-        print(f"\nFile {c} exists. Exiting.")
+    c1 = csvs.rewardsLPCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    if os.path.exists(c1):
+        print(f"\nFile {c1} exists. Exiting.")
         sys.exit(0)
-
+    c2 = csvs.rewardsInfoCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    if os.path.exists(c2):
+        print(f"\nFile {c2} exists. Exiting.")
+        sys.exit(0)
     # main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)
     rates = csvs.loadRateCsvs(CSV_DIR)
-    rewards = calcrewards.calcRewards(stakes, poolvols, rates, TOT_TOKEN)
-    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
+    rewardsPerLP, rewardsPerPool = calcrewards.calcRewards(
+        stakes, poolvols, rates, TOT_TOKEN
+    )
+    csvs.saveRewardsCsv(rewardsPerLP, CSV_DIR, TOKEN_SYMBOL)
+    csvs.saveRewardsInfo(rewardsPerPool, CSV_DIR, TOKEN_SYMBOL)
 
     print("dftool calc: Done")
 
