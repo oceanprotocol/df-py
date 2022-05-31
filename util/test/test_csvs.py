@@ -221,6 +221,7 @@ def test_rewards_info(tmp_path):
     csv_dir = str(tmp_path)
     csvs.saveRewardsInfo(rewards, csv_dir, "MYTOKEN")
 
+    # pylint: disable=consider-using-with
     loaded_rewards = open(csvs.rewardsInfoCsvFilename(csv_dir, "MYTOKEN"), "r")
     csv = loaded_rewards.read()
     assert csv == target_rewards

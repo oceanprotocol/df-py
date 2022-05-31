@@ -399,10 +399,10 @@ def saveRewardsInfo(
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "pool_addr", "LP_addr", f"amt", f"token"])
+        writer.writerow(["chainID", "pool_addr", "LP_addr", "amt", "token"])
         for chainID, innerdict in rewards.items():
-            for LP_addr, innerdict in innerdict.items():
-                for pool_addr, value in innerdict.items():
+            for LP_addr, innerdict2 in innerdict.items():
+                for pool_addr, value in innerdict2.items():
                     writer.writerow([chainID, LP_addr, pool_addr, value, token_symbol])
     print(f"Created {csv_file}")
 
