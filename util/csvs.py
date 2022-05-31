@@ -371,7 +371,7 @@ def saveRewardsCsv(
       ..
     """
     token_symbol = token_symbol.upper()
-    csv_file = rewardsLPCsvFilename(csv_dir, token_symbol)
+    csv_file = rewardsperlpCsvFilename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -411,7 +411,7 @@ def saveRewardsInfo(
 def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float]]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
     token_symbol = token_symbol.upper()
-    csv_file = rewardsLPCsvFilename(csv_dir, token_symbol)
+    csv_file = rewardsperlpCsvFilename(csv_dir, token_symbol)
     rewards: Dict[Any, Dict[str, float]] = {}
 
     with open(csv_file, "r") as f:
@@ -431,7 +431,7 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float
 
 
 @enforce_types
-def rewardsLPCsvFilename(csv_dir: str, token_symbol: str) -> str:
+def rewardsperlpCsvFilename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewardsPerLP-{token_symbol.upper()}.csv")
 
 

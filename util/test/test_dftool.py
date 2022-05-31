@@ -77,7 +77,7 @@ def test_calc(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.rewardsLPCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL)
     assert os.path.exists(rewards_csv)
 
 
