@@ -69,7 +69,7 @@ def test_with_csvs(tmp_path):
     rewards, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
     sum_ = sum(rewards[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
-    csvs.saveRewardsCsv(rewards, csv_dir, "OCEAN")
+    csvs.saveRewardsperlpCsv(rewards, csv_dir, "OCEAN")
     rewards = None  # ensure not used later
 
     # 4. simulate "dftool dispense"

@@ -100,7 +100,7 @@ def test_dispense(tmp_path):
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
     rewards = {CHAINID: {address1: TOT_TOKEN}}
-    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
+    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 

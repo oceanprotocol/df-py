@@ -359,7 +359,7 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 
 @enforce_types
-def saveRewardsCsv(
+def saveRewardsperlpCsv(
     rewards: Dict[str, Dict[str, float]], csv_dir: str, token_symbol: str
 ):
     """
@@ -383,7 +383,7 @@ def saveRewardsCsv(
 
 
 @enforce_types
-def saveRewardsInfo(
+def saveRewardsinfoCsv(
     rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
 ):
     """

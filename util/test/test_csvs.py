@@ -178,7 +178,7 @@ def test_rewards_main(tmp_path):
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsCsv(rewards, csv_dir, "MYTOKEN")
+    csvs.saveRewardsperlpCsv(rewards, csv_dir, "MYTOKEN")
 
     loaded_rewards = csvs.loadRewardsCsv(csv_dir, "MYTOKEN")
     assert loaded_rewards == target_rewards
@@ -219,7 +219,7 @@ def test_rewards_info(tmp_path):
 """
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsInfo(rewards, csv_dir, "MYTOKEN")
+    csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
 
     # pylint: disable=consider-using-with
     loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
