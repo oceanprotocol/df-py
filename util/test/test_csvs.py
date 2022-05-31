@@ -167,7 +167,7 @@ def test_rates(tmp_path):
 @enforce_types
 def test_rewards_filename(tmp_path):
     csv_dir = str(tmp_path)
-    fname = csvs.rewardsCsvFilename(csv_dir, "MYTOKEN")
+    fname = csvs.rewardsLPCsvFilename(csv_dir, "MYTOKEN")
     target_fname = csv_dir + "/" + "rewards-MYTOKEN.csv"
     assert fname == target_fname
 
