@@ -224,7 +224,7 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     if os.path.exists(c1):
         print(f"\nFile {c1} exists. Exiting.")
         sys.exit(0)
-    c2 = csvs.rewardsInfoCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    c2 = csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL)
     if os.path.exists(c2):
         print(f"\nFile {c2} exists. Exiting.")
         sys.exit(0)

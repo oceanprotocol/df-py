@@ -395,7 +395,7 @@ def saveRewardsInfo(
       ..
     """
     token_symbol = token_symbol.upper()
-    csv_file = rewardsInfoCsvFilename(csv_dir, token_symbol)
+    csv_file = rewardsinfoCsvFilename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -436,7 +436,7 @@ def rewardsLPCsvFilename(csv_dir: str, token_symbol: str) -> str:
 
 
 @enforce_types
-def rewardsInfoCsvFilename(csv_dir: str, token_symbol: str) -> str:
+def rewardsinfoCsvFilename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewardsinfo-{token_symbol.upper()}.csv")
 
 
