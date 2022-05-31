@@ -189,6 +189,44 @@ def test_rewards_main(tmp_path):
 
 
 @enforce_types
+def test_rewards_info(tmp_path):
+    rewards = {
+        1: {
+            PA: {LP1: 3.2, LP2: 5.4},
+            PB: {
+                LP2: 5.3,
+                LP3: 6.234262346,
+                LP3: 1.324824324234,
+            },
+            PC: {LP3: 1.324824324234, LP4: 1.23143252346354},
+        },
+        137: {
+            PD: {LP1: 1412341242, LP2: 23424},
+            PE: {LP1: 0.000000000000001, LP2: 12314552354},
+        },
+    }
+    target_rewards = """chainID,pool_addr,LP_addr,amt,token
+1,poola,lp1,3.2,MYTOKEN
+1,poola,lp2,5.4,MYTOKEN
+1,poolb,lp2,5.3,MYTOKEN
+1,poolb,lp3,1.324824324234,MYTOKEN
+1,poolc,lp3,1.324824324234,MYTOKEN
+1,poolc,lp4,1.23143252346354,MYTOKEN
+137,poold,lp1,1412341242,MYTOKEN
+137,poold,lp2,23424,MYTOKEN
+137,poole,lp1,1e-15,MYTOKEN
+137,poole,lp2,12314552354,MYTOKEN
+"""
+
+    csv_dir = str(tmp_path)
+    csvs.saveRewardsInfo(rewards, csv_dir, "MYTOKEN")
+
+    loaded_rewards = open(csvs.rewardsInfoCsvFilename(csv_dir, "MYTOKEN"), "r")
+    csv = loaded_rewards.read()
+    assert csv == target_rewards
+
+
+@enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     global accounts
