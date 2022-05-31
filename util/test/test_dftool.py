@@ -77,7 +77,7 @@ def test_calc(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.rewardsCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL)
     assert os.path.exists(rewards_csv)
 
 
@@ -100,7 +100,7 @@ def test_dispense(tmp_path):
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
     rewards = {CHAINID: {address1: TOT_TOKEN}}
-    csvs.saveRewardsCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
+    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 

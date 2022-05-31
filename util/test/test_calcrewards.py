@@ -17,45 +17,71 @@ OCN, H2O = "OCEAN", "H2O"
 def test_calcRewards1_onechain():
     stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}
-    target_rewards = {C1: {LP1: 10.0}}
+
+    target_rewardsperlp = {C1: {LP1: 10.0}}
+    target_rewardsinfo = {C1: {PA: {LP1: 10}}}
+
     TOKEN_avail = 10.0
-    assert target_rewards == calcRewards(stakes, poolvols, RATES, TOKEN_avail)
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail)
+
+    print(rewardsinfo)
+
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
 
 
 @enforce_types
 def test_calcRewards1_twochains():
     stakes = {C1: {OCN: {PA: {LP1: 1.0}}}, C2: {OCN: {PB: {LP1: 1.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}, C2: {OCN: {PB: 1.0}}}
-    rewards = calcRewards(stakes, poolvols, RATES, TOKEN_avail=20.0)
-    assert rewards == {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=20.0)
+    assert rewardsperlp == {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
+    assert rewardsinfo == {
+        C1: {
+            PA: {LP1: 10.0},
+        },
+        C2: {PB: {LP1: 10.0}},
+    }
 
 
 @enforce_types
 def test_calcRewards2():
     stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}
-    rewards = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
-    assert sum(rewards[C1].values()) == pytest.approx(10.0, 0.01)
-    assert rewards == {C1: {LP1: 5.0, LP2: 5.0}}
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
+    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp == {C1: {LP1: 5.0, LP2: 5.0}}
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0, LP2: 5.0}}}
 
 
 @enforce_types
 def test_calcRewards3():
     stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}, PB: {LP1: 1.0, LP3: 1.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}  # P1 has volume, but not P2
-    rewards = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
-    assert sum(rewards[C1].values()) == pytest.approx(10.0, 0.01)
-    assert min(rewards[C1].values()) > 0, "shouldn't have entries with 0 rewards"
-    assert rewards == {C1: {LP1: 5.0, LP2: 5.0}}
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
+    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
+    assert min(rewardsperlp[C1].values()) > 0, "shouldn't have entries with 0 rewards"
+    assert rewardsperlp == {C1: {LP1: 5.0, LP2: 5.0}}
+
+    assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
+    assert (
+        min(rewardsinfo[C1][PA].values()) > 0
+    ), "shouldn't have entries with 0 rewards"
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0, LP2: 5.0}}}
 
 
 @enforce_types
 def test_calcRewards4():
     stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}, PB: {LP1: 1.0, LP3: 1.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0, PB: 1.0}}}  # P1 & P2 both have volume
-    rewards = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
-    assert sum(rewards[C1].values()) == pytest.approx(10.0, 0.01)
-    assert rewards == {C1: {LP1: 5.0, LP2: 2.5, LP3: 2.5}}
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
+    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp == {C1: {LP1: 5.0, LP2: 2.5, LP3: 2.5}}
+
+    assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(5.0, 0.01)
+    assert sum(rewardsinfo[C1][PB].values()) == pytest.approx(5.0, 0.01)
+    assert rewardsinfo == {C1: {PA: {LP1: 2.5, LP2: 2.5}, PB: {LP1: 2.5, LP3: 2.5}}}
 
 
 @enforce_types
@@ -76,7 +102,8 @@ def test_calcRewards5_mix_upper_and_lower_case():
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
 
-    target_rewards = {C1: {LP1: 10.0}}
+    target_rewardsperlp = {C1: {LP1: 10.0}}
+    target_rewardsinfo = {C1: {PA: {LP1: 10.0}}}
     TOKEN_avail = 10.0
 
     # sanity check
@@ -85,14 +112,29 @@ def test_calcRewards5_mix_upper_and_lower_case():
     cleancase.assertRates(rates)
 
     # the real tests
-    assert target_rewards == calcRewards(stakes2a, poolvols, rates, TOKEN_avail)
-    assert target_rewards == calcRewards(stakes2b, poolvols, rates, TOKEN_avail)
-    assert target_rewards == calcRewards(stakes2c, poolvols, rates, TOKEN_avail)
+    rewardsperlp, rewardsinfo = calcRewards(stakes2a, poolvols, rates, TOKEN_avail)
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
 
-    assert target_rewards == calcRewards(stakes, poolvols2a, rates, TOKEN_avail)
-    assert target_rewards == calcRewards(stakes, poolvols2b, rates, TOKEN_avail)
+    rewardsperlp, _ = calcRewards(stakes2b, poolvols, rates, TOKEN_avail)
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
 
-    assert target_rewards == calcRewards(stakes, poolvols, rates2, TOKEN_avail)
+    rewardsperlp, _ = calcRewards(stakes2c, poolvols, rates, TOKEN_avail)
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
+
+    rewardsperlp, _ = calcRewards(stakes, poolvols2a, rates, TOKEN_avail)
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
+
+    rewardsperlp, _ = calcRewards(stakes, poolvols2b, rates, TOKEN_avail)
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
+
+    rewardsperlp, _ = calcRewards(stakes, poolvols, rates2, TOKEN_avail)
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
 
 
 @enforce_types

@@ -167,8 +167,8 @@ def test_rates(tmp_path):
 @enforce_types
 def test_rewards_filename(tmp_path):
     csv_dir = str(tmp_path)
-    fname = csvs.rewardsCsvFilename(csv_dir, "MYTOKEN")
-    target_fname = csv_dir + "/" + "rewards-MYTOKEN.csv"
+    fname = csvs.rewardsperlpCsvFilename(csv_dir, "MYTOKEN")
+    target_fname = csv_dir + "/" + "rewardsperlp-MYTOKEN.csv"
     assert fname == target_fname
 
 
@@ -178,7 +178,7 @@ def test_rewards_main(tmp_path):
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsCsv(rewards, csv_dir, "MYTOKEN")
+    csvs.saveRewardsperlpCsv(rewards, csv_dir, "MYTOKEN")
 
     loaded_rewards = csvs.loadRewardsCsv(csv_dir, "MYTOKEN")
     assert loaded_rewards == target_rewards
@@ -186,6 +186,45 @@ def test_rewards_main(tmp_path):
     for innerdict in rewards.values():  # ensures we don't deal in weis
         for value in innerdict.values():
             assert isinstance(value, float)
+
+
+@enforce_types
+def test_rewards_info(tmp_path):
+    rewards = {
+        1: {
+            PA: {LP1: 3.2, LP2: 5.4},
+            PB: {
+                LP2: 5.3,
+                LP3: 6.234262346,
+                LP3: 1.324824324234,
+            },
+            PC: {LP3: 1.324824324234, LP4: 1.23143252346354},
+        },
+        137: {
+            PD: {LP1: 1412341242, LP2: 23424},
+            PE: {LP1: 0.000000000000001, LP2: 12314552354},
+        },
+    }
+    target_rewards = """chainID,pool_addr,LP_addr,amt,token
+1,poola,lp1,3.2,MYTOKEN
+1,poola,lp2,5.4,MYTOKEN
+1,poolb,lp2,5.3,MYTOKEN
+1,poolb,lp3,1.324824324234,MYTOKEN
+1,poolc,lp3,1.324824324234,MYTOKEN
+1,poolc,lp4,1.23143252346354,MYTOKEN
+137,poold,lp1,1412341242,MYTOKEN
+137,poold,lp2,23424,MYTOKEN
+137,poole,lp1,1e-15,MYTOKEN
+137,poole,lp2,12314552354,MYTOKEN
+"""
+
+    csv_dir = str(tmp_path)
+    csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
+
+    # pylint: disable=consider-using-with
+    loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
+    csv = loaded_rewards.read()
+    assert csv == target_rewards
 
 
 @enforce_types
