@@ -19,7 +19,7 @@ def calcRewards(
 
     @return
       rewardsPerLP -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
-      rewardsPerPool -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
 
     @notes
       A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
@@ -32,10 +32,8 @@ def calcRewards(
     #
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
-    (rewardsPerLP, rewardsPerPool) = _calcRewardsUsd(
-        stakes_USD, poolvols_USD, TOKEN_avail
-    )
-    return rewardsPerLP, rewardsPerPool
+    (rewardsPerLP, rewardsinfo) = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
+    return rewardsPerLP, rewardsinfo
 
 
 def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
@@ -142,7 +140,7 @@ def _calcRewardsUsd(
 
     @return
       rewardsPerLP -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
-      rewardsPerPool -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
     cleancase.assertStakesUsd(stakes_USD)
     cleancase.assertPoolvolsUsd(poolvols_USD)
@@ -161,7 +159,7 @@ def _calcRewardsUsd(
     rewardsPerLP: Dict[str, Dict[str, float]] = {
         cID: {} for cID in chainIDs
     }  # [chainID][LP_addr]:basetoken_float
-    rewardsPerPool: Dict[
+    rewardsinfo: Dict[
         str, Dict[str, Dict[str, float]]
     ] = {}  # [chainID][pool_addr][LP_addr]:basetoken_float
 
@@ -179,12 +177,12 @@ def _calcRewardsUsd(
                 RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0)  # main formula!
                 reward_i += RF_ij
 
-                if not chainID in rewardsPerPool:
-                    rewardsPerPool[chainID] = {}
-                if not pool_addr in rewardsPerPool[chainID]:
-                    rewardsPerPool[chainID][pool_addr] = {}
+                if not chainID in rewardsinfo:
+                    rewardsinfo[chainID] = {}
+                if not pool_addr in rewardsinfo[chainID]:
+                    rewardsinfo[chainID][pool_addr] = {}
 
-                rewardsPerPool[chainID][pool_addr][LP_addr] = RF_ij
+                rewardsinfo[chainID][pool_addr][LP_addr] = RF_ij
             if reward_i > 0.0:
                 rewardsPerLP[chainID][LP_addr] = reward_i
                 tot_rewards += reward_i
@@ -195,4 +193,4 @@ def _calcRewardsUsd(
             rewardsPerLP[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
 
     # return dict
-    return rewardsPerLP, rewardsPerPool
+    return rewardsPerLP, rewardsinfo
