@@ -18,7 +18,7 @@ def calcRewards(
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
-      rewardsPerLP -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
       rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
 
     @notes
@@ -32,8 +32,8 @@ def calcRewards(
     #
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
-    (rewardsPerLP, rewardsinfo) = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
-    return rewardsPerLP, rewardsinfo
+    (rewardsperlp, rewardsinfo) = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
+    return rewardsperlp, rewardsinfo
 
 
 def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
@@ -139,7 +139,7 @@ def _calcRewardsUsd(
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
-      rewardsPerLP -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
       rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
     cleancase.assertStakesUsd(stakes_USD)
@@ -156,7 +156,7 @@ def _calcRewardsUsd(
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
 
     # fill in R
-    rewardsPerLP: Dict[str, Dict[str, float]] = {
+    rewardsperlp: Dict[str, Dict[str, float]] = {
         cID: {} for cID in chainIDs
     }  # [chainID][LP_addr]:basetoken_float
     rewardsinfo: Dict[
@@ -184,13 +184,13 @@ def _calcRewardsUsd(
 
                 rewardsinfo[chainID][pool_addr][LP_addr] = RF_ij
             if reward_i > 0.0:
-                rewardsPerLP[chainID][LP_addr] = reward_i
+                rewardsperlp[chainID][LP_addr] = reward_i
                 tot_rewards += reward_i
 
     # normalize and scale rewards
     for chainID in chainIDs:
-        for LP_addr, reward in rewardsPerLP[chainID].items():
-            rewardsPerLP[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
+        for LP_addr, reward in rewardsperlp[chainID].items():
+            rewardsperlp[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
 
     # return dict
-    return rewardsPerLP, rewardsinfo
+    return rewardsperlp, rewardsinfo

@@ -432,7 +432,7 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float
 
 @enforce_types
 def rewardsperlpCsvFilename(csv_dir: str, token_symbol: str) -> str:
-    return os.path.join(csv_dir, f"rewardsPerLP-{token_symbol.upper()}.csv")
+    return os.path.join(csv_dir, f"rewardsperlp-{token_symbol.upper()}.csv")
 
 
 @enforce_types
