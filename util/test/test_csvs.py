@@ -168,7 +168,7 @@ def test_rates(tmp_path):
 def test_rewards_filename(tmp_path):
     csv_dir = str(tmp_path)
     fname = csvs.rewardsLPCsvFilename(csv_dir, "MYTOKEN")
-    target_fname = csv_dir + "/" + "rewards-MYTOKEN.csv"
+    target_fname = csv_dir + "/" + "rewardsPerLP-MYTOKEN.csv"
     assert fname == target_fname
 
 
