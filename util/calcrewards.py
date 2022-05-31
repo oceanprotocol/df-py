@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Tuple
 
 from enforce_typing import enforce_types
 from numpy import log10
@@ -9,7 +9,7 @@ from util import cleancase
 @enforce_types
 def calcRewards(
     stakes: dict, poolvols: dict, rates: Dict[str, float], TOKEN_avail: float
-) -> Dict[str, Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
@@ -18,7 +18,8 @@ def calcRewards(
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
-      rewards -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsPerLP -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsPerPool -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
 
     @notes
       A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
@@ -31,8 +32,10 @@ def calcRewards(
     #
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
-    rewards = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
-    return rewards
+    (rewardsPerLP, rewardsPerPool) = _calcRewardsUsd(
+        stakes_USD, poolvols_USD, TOKEN_avail
+    )
+    return rewardsPerLP, rewardsPerPool
 
 
 def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
@@ -130,7 +133,7 @@ def _poolvolsToUsdAtChain(
 
 def _calcRewardsUsd(
     stakes_USD: dict, poolvols_USD: Dict[str, Dict[str, float]], TOKEN_avail: float
-) -> Dict[str, Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
@@ -138,7 +141,8 @@ def _calcRewardsUsd(
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
-      rewards -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsPerLP -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsPerPool -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
     cleancase.assertStakesUsd(stakes_USD)
     cleancase.assertPoolvolsUsd(poolvols_USD)
@@ -154,9 +158,13 @@ def _calcRewardsUsd(
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
 
     # fill in R
-    rewards: Dict[str, Dict[str, float]] = {
+    rewardsPerLP: Dict[str, Dict[str, float]] = {
         cID: {} for cID in chainIDs
     }  # [chainID][LP_addr]:basetoken_float
+    rewardsPerPool: Dict[
+        str, Dict[str, Dict[str, float]]
+    ] = {}  # [chainID][pool_addr][LP_addr]:basetoken_float
+
     tot_rewards = 0.0
     for chainID in chainIDs:
         for _, LP_addr in enumerate(LP_addrs):
@@ -170,14 +178,21 @@ def _calcRewardsUsd(
                     continue
                 RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0)  # main formula!
                 reward_i += RF_ij
+
+                if not chainID in rewardsPerPool:
+                    rewardsPerPool[chainID] = {}
+                if not pool_addr in rewardsPerPool[chainID]:
+                    rewardsPerPool[chainID][pool_addr] = {}
+
+                rewardsPerPool[chainID][pool_addr][LP_addr] = RF_ij
             if reward_i > 0.0:
-                rewards[chainID][LP_addr] = reward_i
+                rewardsPerLP[chainID][LP_addr] = reward_i
                 tot_rewards += reward_i
 
     # normalize and scale rewards
     for chainID in chainIDs:
-        for LP_addr, reward in rewards[chainID].items():
-            rewards[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
+        for LP_addr, reward in rewardsPerLP[chainID].items():
+            rewardsPerLP[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
 
     # return dict
-    return rewards
+    return rewardsPerLP, rewardsPerPool
