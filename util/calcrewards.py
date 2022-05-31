@@ -192,8 +192,8 @@ def _calcRewardsUsd(
         for LP_addr, reward in rewardsperlp[chainID].items():
             rewardsperlp[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
 
-    for chainID in rewardsinfo.keys():
-        for pool_addr in rewardsinfo[chainID].keys():
+    for chainID in rewardsinfo:
+        for pool_addr in rewardsinfo[chainID]:
             for LP_addr, reward in rewardsinfo[chainID][pool_addr].items():
                 rewardsinfo[chainID][pool_addr][LP_addr] = (
                     reward / tot_rewards * TOKEN_avail
