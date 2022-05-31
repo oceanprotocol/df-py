@@ -383,6 +383,31 @@ def saveRewardsCsv(
 
 
 @enforce_types
+def saveRewardsInfo(
+    rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
+):
+    """
+    @description
+      Save the rewards dict as a csv,
+
+    @arguments
+      rewards -- dict of [chainID][pool_addr][LP_addr] : value (float, *not* base 18)
+      ..
+    """
+    token_symbol = token_symbol.upper()
+    csv_file = rewardsPoolCsvFilename(csv_dir, token_symbol)
+    assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "pool_addr", "LP_addr", f"amt", f"token"])
+        for chainID, innerdict in rewards.items():
+            for LP_addr, innerdict in innerdict.items():
+                for pool_addr, value in innerdict.items():
+                    writer.writerow([chainID, LP_addr, pool_addr, value, token_symbol])
+    print(f"Created {csv_file}")
+
+
+@enforce_types
 def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float]]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
     token_symbol = token_symbol.upper()
