@@ -30,8 +30,8 @@ def test_without_csvs():
     rates = {"OCEAN": 0.5, "H2O": 1.618}
 
     stakes, poolvols = {chainID: S0}, {chainID: V0}
-    rewards, _ = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
-    sum_ = sum(rewards[chainID].values())
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
+    sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
 
@@ -66,16 +66,16 @@ def test_with_csvs(tmp_path):
     V = csvs.loadPoolvolsCsvs(csv_dir)
     rates = csvs.loadRateCsvs(csv_dir)
     OCEAN_avail = 10000.0
-    rewards, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
-    sum_ = sum(rewards[chainID].values())
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
+    sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
-    csvs.saveRewardsperlpCsv(rewards, csv_dir, "OCEAN")
-    rewards = None  # ensure not used later
+    csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
+    rewardsperlp = None  # ensure not used later
 
     # 4. simulate "dftool dispense"
-    rewards = csvs.loadRewardsCsv(csv_dir, "OCEAN")
+    rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
-    dispense.dispense(rewards[chainID], dfrewards_addr, token_addr, accounts[0])
+    dispense.dispense(rewardsperlp[chainID], dfrewards_addr, token_addr, accounts[0])
 
 
 @enforce_types
