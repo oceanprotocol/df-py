@@ -236,13 +236,15 @@ def getDTVolumes(
         result = submitQuery(query, chainID)
         new_orders = result["data"]["orders"]
         for order in new_orders:
+            lastPriceValue = float(order["lastPriceValue"])
+            if lastPriceValue == 0:
+                continue
             DT_addr = order["datatoken"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
             basesym = _symbol(basetoken_addr)
             if basesym not in DTvols:
                 DTvols[basesym] = {}
 
-            lastPriceValue = float(order["lastPriceValue"])
             if DT_addr not in DTvols[basesym]:
                 DTvols[basesym][DT_addr] = 0.0
             DTvols[basesym][DT_addr] += lastPriceValue
