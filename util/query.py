@@ -2,7 +2,6 @@ import json
 from typing import Dict, List, Tuple
 
 import requests
-import brownie
 from enforce_typing import enforce_types
 
 from util import oceanutil
@@ -323,7 +322,9 @@ def getAllPools(chainID: int) -> List[SimplePool]:
     pools = []
     offset = 0
     chunk_size = 1000  # max for subgraph = 1000
-    num_blocks = len(brownie.network.chain)
+    num_blocks = 99999999999  # to the infinity
+
+    # this is actually a while loop
     for offset in range(0, num_blocks, chunk_size):
         query = """
         {
@@ -348,6 +349,8 @@ def getAllPools(chainID: int) -> List[SimplePool]:
         )
         result = submitQuery(query, chainID)
         ds = result["data"]["pools"]
+        if ds == []:
+            break  # if there are no pools left, break
         for d in ds:
             tx_count = int(d["transactionCount"])
             if tx_count == 0:
