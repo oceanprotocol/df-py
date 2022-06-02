@@ -184,17 +184,17 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
 
     # [baseaddr][pool_addr]:vol
     poolvols_at_chain: Dict[str, Dict[str, float]] = {}
-    for basesym in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
-        if basesym not in poolvols_at_chain:
-            poolvols_at_chain[basesym] = {}
+    for baseaddr in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
+        if baseaddr not in poolvols_at_chain:
+            poolvols_at_chain[baseaddr] = {}
 
-        for DT_addr in DTvols_at_chain[basesym]:
+        for DT_addr in DTvols_at_chain[baseaddr]:
             # handle if >1 pool has the DT
             pools_with_DT = [p for p in pools if p.DT_addr == DT_addr]
-            vol = DTvols_at_chain[basesym][DT_addr]
+            vol = DTvols_at_chain[baseaddr][DT_addr]
             for pool in pools_with_DT:
                 # the "/" spreads vol evenly among pools holding the DT
-                poolvols_at_chain[basesym][pool.addr] = vol / len(pools_with_DT)
+                poolvols_at_chain[baseaddr][pool.addr] = vol / len(pools_with_DT)
 
     return poolvols_at_chain
 
