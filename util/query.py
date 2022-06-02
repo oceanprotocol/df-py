@@ -56,7 +56,7 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
 
     @return
       pools_at_chain -- list of SimplePool
-      stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
+      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
 
     @notes
@@ -90,7 +90,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
       Query the chain for stakes.
 
     @return
-      stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr]:stake
+      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr]:stake
     """
     print("getStakes(): begin")
     _ = pools  # little trick because pools isn't used
@@ -143,31 +143,30 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
 
             for d in new_pool_stake:
                 basetoken_addr = d["pool"]["baseToken"]["id"].lower()
-                basesym = _symbol(basetoken_addr)
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
                 if LP_addr == SSBOT_address:
                     continue  # skip ss bot
 
-                if basesym not in stakes:
-                    stakes[basesym] = {}
-                if pool_addr not in stakes[basesym]:
-                    stakes[basesym][pool_addr] = {}
-                if LP_addr not in stakes[basesym][pool_addr]:
-                    stakes[basesym][pool_addr][LP_addr] = 0.0
+                if basetoken_addr not in stakes:
+                    stakes[basetoken_addr] = {}
+                if pool_addr not in stakes[basetoken_addr]:
+                    stakes[basetoken_addr][pool_addr] = {}
+                if LP_addr not in stakes[basetoken_addr][pool_addr]:
+                    stakes[basetoken_addr][pool_addr][LP_addr] = 0.0
 
-                stakes[basesym][pool_addr][LP_addr] += shares
+                stakes[basetoken_addr][pool_addr][LP_addr] += shares
 
             LP_offset += chunk_size
 
     # normalize stake based on # blocks sampled
     # (this may be lower than target # blocks, if we hit indexing errors)
     assert n_blocks_sampled > 0
-    for basesym in stakes:  # pylint: disable=consider-iterating-dictionary
-        for pool_addr in stakes[basesym]:
-            for LP_addr in stakes[basesym][pool_addr]:
-                stakes[basesym][pool_addr][LP_addr] /= n_blocks_sampled
+    for basetoken_addr in stakes:  # pylint: disable=consider-iterating-dictionary
+        for pool_addr in stakes[basetoken_addr]:
+            for LP_addr in stakes[basetoken_addr][pool_addr]:
+                stakes[basetoken_addr][pool_addr][LP_addr] /= n_blocks_sampled
     return stakes  # ie stakes_at_chain
 
 
@@ -178,12 +177,12 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
       Query the chain for pool volumes within the given block range.
 
     @return
-      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr]:vol_amt
+      poolvols_at_chain -- dict of [basetoken_addr][pool_addr]:vol_amt
     """
-    # [basesym][DT_addr]:vol
+    # [baseaddr][DT_addr]:vol
     DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
 
-    # [basesym][pool_addr]:vol
+    # [baseaddr][pool_addr]:vol
     poolvols_at_chain: Dict[str, Dict[str, float]] = {}
     for basesym in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
         if basesym not in poolvols_at_chain:
