@@ -57,7 +57,7 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
     @return
       pools_at_chain -- list of SimplePool
       stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol
+      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
 
     @notes
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
@@ -208,7 +208,7 @@ def getDTVolumes(
       Query the chain for datatoken (DT) volumes within the given block range.
 
     @return
-      DTvols_at_chain -- dict of [basetoken_symbol][DT_addr]:vol_amt
+      DTvols_at_chain -- dict of [basetoken_addr][DT_addr]:vol_amt
     """
     print("getDTVolumes(): begin")
 
@@ -241,13 +241,13 @@ def getDTVolumes(
                 continue
             DT_addr = order["datatoken"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
-            basesym = _symbol(basetoken_addr)
-            if basesym not in DTvols:
-                DTvols[basesym] = {}
 
-            if DT_addr not in DTvols[basesym]:
-                DTvols[basesym][DT_addr] = 0.0
-            DTvols[basesym][DT_addr] += lastPriceValue
+            if basetoken_addr not in DTvols:
+                DTvols[basetoken_addr] = {}
+
+            if DT_addr not in DTvols[basetoken_addr]:
+                DTvols[basetoken_addr][DT_addr] = 0.0
+            DTvols[basetoken_addr][DT_addr] += lastPriceValue
 
     print("getDTVolumes(): done")
     return DTvols  # ie DTvols_at_chain
