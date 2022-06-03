@@ -140,15 +140,18 @@ contract DFRewards is Ownable, ReentrancyGuard {
         uint256 amt = balances[tokenAddress][msg.sender];
         require(amt >= amount, "Nothing to claim");
         balances[tokenAddress][_to] -= amount;
+        allocated[tokenAddress] = allocated[tokenAddress] - amount;
+        emit Claimed(msg.sender, amt);
+    
         address poolBaseTokenpoolContract=Pool(poolAddress);
-
         require(tokenAddress == Pool(poolAddress).getBaseTokenAddress(), 'Cannot stake');
         uint balanceBefore=IERC20(poolAddress).balanceOf(address(this));
+        IERC20(tokenAddress).safeApprove(poolAddress,amount);
         Pool(poolAddress).joinswapExternAmountIn(amount, 0);
         uint sharesBalance=IERC20(poolAddress).balanceOf(address(this))-balanceBefore;
         IERC20(poolAddress).safeTransfer(msg.sender, sharesBalance);
-        allocated[tokenAddress] = allocated[tokenAddress] - amount;
-        emit Claimed(msg.sender, amt);
         return true;
     }
+
+    
 }
