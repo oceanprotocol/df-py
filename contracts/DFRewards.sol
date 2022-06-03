@@ -154,7 +154,6 @@ contract DFRewards is Ownable, ReentrancyGuard {
     }
 
     function stake(address tokenAddress, address poolAddress, uint256 amount, address _to) internal returns(bool){
-        address poolBaseTokenpoolContract=Pool(poolAddress);
         require(tokenAddress == Pool(poolAddress).getBaseTokenAddress(), 'Cannot stake');
         uint balanceBefore=IERC20(poolAddress).balanceOf(address(this));
         IERC20(tokenAddress).approve(poolAddress,amount);
