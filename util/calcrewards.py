@@ -4,6 +4,7 @@ from enforce_typing import enforce_types
 from numpy import log10
 
 from util import cleancase
+from util import networkutil
 
 
 @enforce_types
@@ -53,6 +54,7 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
 
     stakes_USD = {}
     for chainID in stakes:
+        networkutil.connect(chainID)
         stakes_USD[chainID] = _stakesToUsdAtChain(stakes[chainID], rates)
 
     return stakes_USD
@@ -105,6 +107,7 @@ def _poolvolsToUsd(
 
     poolvols_USD = {}
     for chainID in poolvols:
+        networkutil.connect(chainID)
         poolvols_USD[chainID] = _poolvolsToUsdAtChain(poolvols[chainID], rates)
 
     cleancase.assertPoolvolsUsd(poolvols_USD)
