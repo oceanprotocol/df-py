@@ -139,11 +139,12 @@ contract DFRewards is Ownable, ReentrancyGuard {
     {
         require(poolAddress.length == amount.length, "Lengths must match");
         uint256 totalAmount=0;
-        for (uint256 i = 0; i < amount.length; i += 1) {
+        uint256 i;
+        for (i = 0; i < amount.length; i += 1) {
             totalAmount+=amount[i];
         }
         require(balances[tokenAddress][msg.sender] >= totalAmount, "Not enough rewards");
-        balances[tokenAddress][_to] -= totalAmount;
+        balances[tokenAddress][msg.sender] -= totalAmount;
         allocated[tokenAddress] = allocated[tokenAddress] - totalAmount;
         emit Claimed(msg.sender, totalAmount);
         for (i = 0; i < amount.length; i += 1) {
