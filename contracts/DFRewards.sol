@@ -132,26 +132,36 @@ contract DFRewards is Ownable, ReentrancyGuard {
      * @param poolAddress  Pool address to stake the rewards
      * @param amount Amount of tokens to claim & stake. Can be less then claimable amount
      */
-    function claimAndStake(address tokenAddress, address poolAddress, uint256 amount)
+    function claimAndStake(address tokenAddress, address[] calldata poolAddress, uint256[] calldata amount)
         public
         nonReentrant
         returns (bool)
     {
+        require(poolAddress.length == amount.length, "Lengths must match");
+        uint256 totalAmount=0;
+        for (uint256 i = 0; i < amount.length; i += 1) {
+            totalAmount+=amount[i];
+        }
         uint256 amt = balances[tokenAddress][msg.sender];
-        require(amt >= amount, "Nothing to claim");
-        balances[tokenAddress][_to] -= amount;
-        allocated[tokenAddress] = allocated[tokenAddress] - amount;
-        emit Claimed(msg.sender, amt);
-    
-        address poolBaseTokenpoolContract=Pool(poolAddress);
-        require(tokenAddress == Pool(poolAddress).getBaseTokenAddress(), 'Cannot stake');
-        uint balanceBefore=IERC20(poolAddress).balanceOf(address(this));
-        IERC20(tokenAddress).safeApprove(poolAddress,amount);
-        Pool(poolAddress).joinswapExternAmountIn(amount, 0);
-        uint sharesBalance=IERC20(poolAddress).balanceOf(address(this))-balanceBefore;
-        IERC20(poolAddress).safeTransfer(msg.sender, sharesBalance);
+        require(amt >= totalAmount, "Not enough rewards");
+        balances[tokenAddress][_to] -= totalAmount;
+        allocated[tokenAddress] = allocated[tokenAddress] - totalAmount;
+        emit Claimed(msg.sender, totalAmount);
+        for (uint256 i = 0; i < amount.length; i += 1) {
+            stake(tokenAddress, poolAddress[i], amount[i],msg.sender);
+        }
         return true;
     }
 
-    
+    function stake(address tokenAddress, address poolAddress, uint256 amount, address _to) internal returns(bool){
+        address poolBaseTokenpoolContract=Pool(poolAddress);
+        require(tokenAddress == Pool(poolAddress).getBaseTokenAddress(), 'Cannot stake');
+        uint balanceBefore=IERC20(poolAddress).balanceOf(address(this));
+        IERC20(tokenAddress).approve(poolAddress,amount);
+        Pool(poolAddress).joinswapExternAmountIn(amount, 0);
+        uint sharesBalance=IERC20(poolAddress).balanceOf(address(this))-balanceBefore;
+        IERC20(poolAddress).safeTransfer(_to, sharesBalance);
+        return true;
+    }
+
 }
