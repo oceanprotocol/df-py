@@ -83,7 +83,7 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
         symb_to_addr[symb] = addr
 
     for basetoken, rate in rates.items():
-        if basetoken not in symb_to_addr.keys():
+        if basetoken not in symb_to_addr:
             continue
 
         baseaddr = symb_to_addr[basetoken]
@@ -137,7 +137,7 @@ def _poolvolsToUsdAtChain(
         symb_to_addr[symb] = addr
 
     for basetoken, rate in rates.items():
-        if basetoken not in symb_to_addr.keys():
+        if basetoken not in symb_to_addr:
             continue
         baseaddr = symb_to_addr[basetoken]
         for pool_addr, vol in poolvols_at_chain[baseaddr].items():
