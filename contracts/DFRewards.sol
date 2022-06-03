@@ -9,8 +9,8 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 contract DFRewards is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
-    event Allocated(address[] tos, uint256[] values);
-    event Claimed(address to, uint256 value);
+    event Allocated(address[] tos, uint256[] values, address tokenAddress);
+    event Claimed(address to, uint256 value, address tokenAddress);
 
     // token address => user address => balance
     mapping(address => mapping(address => uint256)) balances;
@@ -41,7 +41,7 @@ contract DFRewards is Ownable, ReentrancyGuard {
 
         allocated[tokenAddress] = allocated[tokenAddress] + total_value;
 
-        emit Allocated(_tos, _values);
+        emit Allocated(_tos, _values, tokenAddress);
         return true;
     }
 
@@ -90,7 +90,7 @@ contract DFRewards is Ownable, ReentrancyGuard {
         balances[tokenAddress][_to] = 0;
         IERC20(tokenAddress).safeTransfer(_to, amt);
         allocated[tokenAddress] = allocated[tokenAddress] - amt;
-        emit Claimed(_to, amt);
+        emit Claimed(_to, amt, tokenAddress);
         return true;
     }
 
