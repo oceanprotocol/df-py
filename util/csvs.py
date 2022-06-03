@@ -19,7 +19,7 @@ def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
       Save the stakes csv for this chain
 
     @arguments
-      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
+      stakes_at_chain -- dict of [basetoken_address][pool_addr][LP_addr] : stake_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
@@ -46,7 +46,7 @@ def loadStakesCsvs(csv_dir: str):
       Load all stakes csvs (across all chains); return result as a single dict
 
     @return
-      stakes -- dict of [chainID][basetoken_sym][pool_addr][LP_addr] : stake_amt
+      stakes -- dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake_amt
     """
     csv_files = stakesCsvFilenames(csv_dir)
     stakes = {}
@@ -63,7 +63,7 @@ def loadStakesCsv(csv_dir: str, chainID: int):
       Load stakes csv for this chainID
 
     @return
-      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
+      stakes_at_chain -- dict of [basetoken_address][pool_addr][LP_addr] : stake_amt
     """
     csv_file = stakesCsvFilename(csv_dir, chainID)
     S: Dict[str, Dict[str, Dict[str, float]]] = {}  # ie stakes_at_chain
@@ -229,8 +229,8 @@ def savePoolinfoCsv(
 
     @arguments
       pools_at_chain -- list of SimplePool
-      stakes_at_chain -- dict of [basetoken_sym][pool_addr][LP_addr] : stake_amt
-      poolvols_at_chain -- dict of [basetoken_sym][pool_addr] : vol_amt
+      stakes_at_chain -- dict of [basetoken_address][pool_addr][LP_addr] : stake_amt
+      poolvols_at_chain -- dict of [basetoken_address][pool_addr] : vol_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
