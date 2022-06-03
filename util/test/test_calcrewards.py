@@ -100,12 +100,12 @@ def test_calcRewards5_mix_upper_and_lower_case():
     # OCN, H2O = "OCEAN", "H2O"
 
     stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
-    stakes2a = {C1: {"OcEaN": {PA: {LP1: 1.0}}}}
+    stakes2a = {C1: {OCN.upper(): {PA: {LP1: 1.0}}}}
     stakes2b = {C1: {OCN: {"pOoLa_aDDr": {LP1: 1.0}}}}
     stakes2c = {C1: {OCN: {PA: {"lP1_aDdR": 1.0}}}}
 
     poolvols = {C1: {OCN: {PA: 1.0}}}
-    poolvols2a = {C1: {"OceaN": {PA: 1.0}}}
+    poolvols2a = {C1: {OCN.upper(): {PA: 1.0}}}
     poolvols2b = {C1: {OCN: {"pOola_adDr": 1.0}}}
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
