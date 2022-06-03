@@ -147,7 +147,7 @@ contract DFRewards is Ownable, ReentrancyGuard {
         balances[tokenAddress][_to] -= totalAmount;
         allocated[tokenAddress] = allocated[tokenAddress] - totalAmount;
         emit Claimed(msg.sender, totalAmount);
-        for (uint256 i = 0; i < amount.length; i += 1) {
+        for (i = 0; i < amount.length; i += 1) {
             stake(tokenAddress, poolAddress[i], amount[i],msg.sender);
         }
         return true;
