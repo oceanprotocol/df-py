@@ -6,7 +6,7 @@ FAKE_TOKEN = "fake_token"
 
 
 def modStakes(stakes: dict) -> dict:
-    """stakes - dict of [chainID][basetoken_sym][pool_addr][LP_addr] : stake"""
+    """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     stakes2: dict = {}
     for chainID in stakes:
         chainID2 = chainID
@@ -26,7 +26,7 @@ def modStakes(stakes: dict) -> dict:
 
 
 def assertStakes(stakes: dict):
-    """stakes - dict of [chainID][basetoken_sym][pool_addr][LP_addr] : stake"""
+    """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     for chainID in stakes:
         for basetoken in stakes[chainID]:
             print("b", basetoken, basetoken.lower())
@@ -44,7 +44,7 @@ def assertStakesUsd(stakes_USD: dict):
 
 
 def assertStakesAtChain(stakes_at_chain: dict):
-    """stakes_at_chain - dict of [basetoken_sym][pool_addr][LP_addr] : stake"""
+    """stakes_at_chain - dict of [basetoken_address][pool_addr][LP_addr] : stake"""
     assertStakes({FAKE_CHAINID: stakes_at_chain})
 
 
@@ -54,7 +54,7 @@ def assertStakesUsdAtChain(stakes_at_chain: dict):
 
 
 def modPoolvols(poolvols: dict) -> dict:
-    """poolvols - dict of [chainID][basetoken_symbol][pool_addr] : vol"""
+    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
     poolvols2: dict = {}
     for chainID in poolvols:
         chainID2 = chainID
@@ -71,11 +71,9 @@ def modPoolvols(poolvols: dict) -> dict:
 
 
 def assertPoolvols(poolvols: dict):
-    """poolvols - dict of [chainID][basetoken_symbol][pool_addr] : vol"""
+    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
     for chainID in poolvols:
         for basetoken in poolvols[chainID]:
-            print(basetoken)
-            print(basetoken.lower())
             assert basetoken == basetoken.lower(), basetoken
             for pool_addr in poolvols[chainID][basetoken]:
                 assert pool_addr == pool_addr.lower(), pool_addr
