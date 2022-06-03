@@ -179,3 +179,20 @@ def test_poolvolsToUsd_twobasetokens():
             PC: 13.0 * 1.6,
         }
     }
+
+
+@enforce_types
+def _deployTOK(account):
+    return B.Simpletoken.deploy("H2O", "H2O", 18, 100e18, {"from": account})
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global accounts
+    accounts = brownie.network.accounts
+    recordDeployedContracts(ADDRESS_FILE)
+
+    global OCN, H2O
+    OCN = OCEAN_address().lower()
+    H2O = _deployTOK(accounts[0]).address.lower()
