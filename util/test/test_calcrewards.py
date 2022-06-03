@@ -5,12 +5,15 @@ from util.calcrewards import calcRewards, _stakesToUsd, _poolvolsToUsd
 from util import cleancase
 
 RATES = {"OCEAN": 0.5, "H2O": 1.6}
-
+accounts = None
 # for shorter lines
-C1, C2 = 7, 137
+C1, C2 = networkutil.DEV_CHAINID, None
 PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
 LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
-OCN, H2O = "OCEAN", "H2O"
+OCN, H2O = None, None
+
+CHAINID = networkutil.DEV_CHAINID
+ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 
 @enforce_types
