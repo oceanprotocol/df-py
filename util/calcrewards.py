@@ -14,8 +14,8 @@ def calcRewards(
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
     """
     @arguments
-      stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
-      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
+      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
+      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol
       rates -- dict of [basetoken_symbol] : USD_per_basetoken
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
@@ -44,8 +44,8 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
       Converts stake values to be USD-denominated.
 
     @arguments
-      stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
+      rates -- dict of [basetoken_address] : USD_per_basetoken
 
     @return
       stakes_USD -- dict of [chainID][pool_addr][LP_addr] : stake_USD
@@ -67,8 +67,8 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
       For a chain, converts stake values to be USD-denominated.
 
     @arguments
-      stakes_at_chain - dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      stakes_at_chain - dict of [basetoken_address][pool_addr][LP_addr] : stake
+      rates -- dict of [basetoken_address] : USD_per_basetoken
 
     @return
       stakes_USD_at_chain -- dict of [pool_addr][LP_addr] : stake_USD
@@ -104,8 +104,8 @@ def _poolvolsToUsd(
       For a given chain, converts volume values to be USD-denominated.
 
     @arguments
-      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol
+      rates -- dict of [basetoken_address] : USD_per_basetoken
 
     @return
       poolvols_USD -- dict of [chainID][pool_addr] : vol_USD

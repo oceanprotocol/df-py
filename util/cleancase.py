@@ -86,7 +86,7 @@ def assertPoolvolsUsd(poolvols_USD: dict):
 
 
 def assertPoolvolsAtChain(poolvols_at_chain: dict):
-    """poolvols_at_chain - dict of [basetoken_symbol][pool_addr] : vol"""
+    """poolvols_at_chain - dict of [basetoken_address][pool_addr] : vol"""
     assertPoolvols({FAKE_CHAINID: poolvols_at_chain})
 
 
