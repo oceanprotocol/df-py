@@ -127,10 +127,10 @@ contract DFRewards is Ownable, ReentrancyGuard {
 
 
     /*
-     * @dev Claims rewards and stakes them into a pool. 
+     * @dev Claims rewards and stakes them into multiple pools. 
      * @param tokenAddress  Token address to claim
-     * @param poolAddress  Pool address to stake the rewards
-     * @param amount Amount of tokens to claim & stake. Can be less then claimable amount
+     * @param poolAddress  Array of pool address to stake the rewards
+     * @param amount Array of amount to stake in each pool.
      */
     function claimAndStake(address tokenAddress, address[] calldata poolAddress, uint256[] calldata amount)
         public
