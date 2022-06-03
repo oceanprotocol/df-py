@@ -6,6 +6,14 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/Sa
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
 
+interface Pool {
+    function getBaseTokenAddress() external view returns (address);
+    function joinswapExternAmountIn(
+        uint256 tokenAmountIn,
+        uint256 minPoolAmountOut
+    ) external returns (uint256 poolAmountOut);
+}
+
 contract DFRewards is Ownable, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
@@ -114,5 +122,33 @@ contract DFRewards is Ownable, ReentrancyGuard {
     // Don't allow eth transfers
     fallback() external {
         revert("Invalid ether transfer");
+    }
+
+
+
+    /*
+     * @dev Claims rewards and stakes them into a pool. 
+     * @param tokenAddress  Token address to claim
+     * @param poolAddress  Pool address to stake the rewards
+     * @param amount Amount of tokens to claim & stake. Can be less then claimable amount
+     */
+    function claimAndStake(address tokenAddress, address poolAddress, uint256 amount)
+        public
+        nonReentrant
+        returns (bool)
+    {
+        uint256 amt = balances[tokenAddress][msg.sender];
+        require(amt >= amount, "Nothing to claim");
+        balances[tokenAddress][_to] -= amount;
+        address poolBaseTokenpoolContract=Pool(poolAddress);
+
+        require(tokenAddress == Pool(poolAddress).getBaseTokenAddress(), 'Cannot stake');
+        uint balanceBefore=IERC20(poolAddress).balanceOf(address(this));
+        Pool(poolAddress).joinswapExternAmountIn(amount, 0);
+        uint sharesBalance=IERC20(poolAddress).balanceOf(address(this))-balanceBefore;
+        IERC20(poolAddress).safeTransfer(msg.sender, sharesBalance);
+        allocated[tokenAddress] = allocated[tokenAddress] - amount;
+        emit Claimed(msg.sender, amt);
+        return true;
     }
 }
