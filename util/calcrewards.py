@@ -4,6 +4,7 @@ from enforce_typing import enforce_types
 from numpy import log10
 
 from util import cleancase
+from util.query import _symbol
 from util import networkutil
 
 
@@ -76,12 +77,19 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     cleancase.assertRates(rates)
 
     stakes_USD_at_chain: Dict[str, Dict[str, float]] = {}
+    symb_to_addr = {}
+    for addr in stakes_at_chain.keys():
+        symb = _symbol(addr)
+        symb_to_addr[symb] = addr
+
     for basetoken, rate in rates.items():
-        if basetoken not in stakes_at_chain:
+        if basetoken not in symb_to_addr.keys():
             continue
-        for pool_addr in stakes_at_chain[basetoken].keys():
+
+        baseaddr = symb_to_addr[basetoken]
+        for pool_addr in stakes_at_chain[baseaddr].keys():
             stakes_USD_at_chain[pool_addr] = {}
-            for LP_addr, stake in stakes_at_chain[basetoken][pool_addr].items():
+            for LP_addr, stake in stakes_at_chain[baseaddr][pool_addr].items():
                 stakes_USD_at_chain[pool_addr][LP_addr] = stake * rate
 
     cleancase.assertStakesUsdAtChain(stakes_USD_at_chain)
@@ -122,10 +130,17 @@ def _poolvolsToUsdAtChain(
     cleancase.assertRates(rates)
 
     poolvols_USD_at_chain = {}  # dict of [pool_addr] : vol_USD
+
+    symb_to_addr = {}
+    for addr in poolvols_at_chain.keys():
+        symb = _symbol(addr)
+        symb_to_addr[symb] = addr
+
     for basetoken, rate in rates.items():
-        if basetoken not in poolvols_at_chain:
+        if basetoken not in symb_to_addr.keys():
             continue
-        for pool_addr, vol in poolvols_at_chain[basetoken].items():
+        baseaddr = symb_to_addr[basetoken]
+        for pool_addr, vol in poolvols_at_chain[baseaddr].items():
             poolvols_USD_at_chain[pool_addr] = vol * rate
 
     cleancase.assertPoolvolsUsdAtChain(poolvols_USD_at_chain)
