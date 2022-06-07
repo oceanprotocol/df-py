@@ -1,6 +1,7 @@
 import random
 import time
 
+import pytest
 import brownie
 from enforce_typing import enforce_types
 
@@ -11,8 +12,10 @@ from util.constants import BROWNIE_PROJECT as B
 account0, QUERY_ST = None, 0
 
 CHAINID = networkutil.DEV_CHAINID
+OCEAN_ADDR = None
 
 
+@pytest.mark.timeout(300)
 def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
@@ -22,6 +25,7 @@ def test_all():
 
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
+    CO2_ADDR = CO2.address.lower()
     oceantestutil.fillAccountsWithToken(CO2)
 
     # keep deploying, until TheGraph node sees volume, or timeout
@@ -29,7 +33,7 @@ def test_all():
     for loop_i in range(100):
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
-        if _foundStakeAndConsume(CO2_SYM):
+        if _foundStakeAndConsume(CO2_ADDR):
             break
         oceantestutil.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
         oceantestutil.randomDeployTokensAndPoolsThenConsume(2, CO2)
@@ -38,12 +42,12 @@ def test_all():
 
     # run actual tests
     _test_SimplePool(CO2)
-    _test_getApprovedTokens(CO2_SYM)
-    _test_pools(CO2_SYM)
-    _test_stakes(CO2_SYM)
-    _test_getDTVolumes(CO2_SYM)
-    _test_getPoolVolumes(CO2_SYM)
-    _test_query(CO2_SYM)
+    _test_getApprovedTokens(CO2_ADDR)
+    _test_pools(CO2_ADDR)
+    _test_stakes(CO2_ADDR)
+    _test_getDTVolumes(CO2_ADDR)
+    _test_getPoolVolumes(CO2_ADDR)
+    _test_query(CO2_ADDR)
 
 
 def _foundStakeAndConsume(CO2_SYM):
@@ -89,8 +93,8 @@ def _test_getApprovedTokens(CO2_SYM: str):
 @enforce_types
 def _test_pools(CO2_SYM: str):
     pools = query.getPools(CHAINID)
-    assert [p for p in pools if p.basetoken_symbol == "OCEAN"]
-    assert [p for p in pools if p.basetoken_symbol == CO2_SYM]
+    assert [p for p in pools if p.basetoken_addr == OCEAN_ADDR]
+    assert [p for p in pools if p.basetoken_addr == CO2_SYM]
 
 
 @enforce_types
@@ -100,10 +104,10 @@ def _test_stakes(CO2_SYM: str):
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 
-    assert "OCEAN" in stakes, stakes.keys()
+    assert OCEAN_ADDR in stakes, stakes.keys()
     assert CO2_SYM in stakes, (CO2_SYM, stakes.keys())
 
-    for basetoken_address in ["OCEAN", CO2_SYM]:
+    for basetoken_address in [OCEAN_ADDR, CO2_SYM]:
         for stakes_at_pool in stakes[basetoken_address].values():
             assert len(stakes_at_pool) > 0
             assert min(stakes_at_pool.values()) > 0.0
@@ -113,9 +117,9 @@ def _test_stakes(CO2_SYM: str):
 def _test_getDTVolumes(CO2_SYM: str):
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
-    assert "OCEAN" in DT_vols, DT_vols.keys()
+    assert OCEAN_ADDR in DT_vols, DT_vols.keys()
     assert CO2_SYM in DT_vols, (CO2_SYM, DT_vols.keys())
-    assert sum(DT_vols["OCEAN"].values()) > 0.0
+    assert sum(DT_vols[OCEAN_ADDR].values()) > 0.0
     assert sum(DT_vols[CO2_SYM].values()) > 0.0
 
 
@@ -124,9 +128,9 @@ def _test_getPoolVolumes(CO2_SYM: str):
     pools = query.getPools(CHAINID)
     st, fin = QUERY_ST, len(brownie.network.chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
-    assert "OCEAN" in poolvols, poolvols.keys()
+    assert OCEAN_ADDR in poolvols, poolvols.keys()
     assert CO2_SYM in poolvols, (CO2_SYM, poolvols.keys())
-    assert sum(poolvols["OCEAN"].values()) > 0.0
+    assert sum(poolvols[OCEAN_ADDR].values()) > 0.0
     assert sum(poolvols[CO2_SYM].values()) > 0.0
 
 
@@ -157,11 +161,14 @@ def test_symbol():
 
 @enforce_types
 def setup_function():
+    global OCEAN_ADDR
+
     networkutil.connect(networkutil.DEV_CHAINID)
     global account0, QUERY_ST
     account0 = brownie.network.accounts[0]
     QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
+    OCEAN_ADDR = oceanutil.OCEAN_address().lower()
 
 
 @enforce_types
