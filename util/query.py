@@ -306,8 +306,8 @@ def getApprovedTokens(chainID: int) -> Dict[str, str]:
     addrs = result["data"]["opcs"][0]["approvedTokens"]
     d = {addr.lower(): B.Simpletoken.at(addr).symbol().upper() for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
-    for symbol in d.values():
-        assert symbol == symbol.upper(), "symbols should be uppercase"
+    for _symbol in d.values():
+        assert _symbol == _symbol.upper(), "symbols should be uppercase"
     return d
 
 
@@ -375,7 +375,7 @@ def symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
     if addr not in _ADDR_TO_SYMBOL:
-        symbol = B.Simpletoken.at(addr).symbol()
-        symbol = symbol.upper()  # follow lower-upper rules
-        _ADDR_TO_SYMBOL[addr] = symbol
+        _symbol = B.Simpletoken.at(addr).symbol()
+        _symbol = _symbol.upper()  # follow lower-upper rules
+        _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]
