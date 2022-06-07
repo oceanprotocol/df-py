@@ -213,6 +213,14 @@ def test_poolvolsToUsd_onebasetoken():
 
 
 @enforce_types
+def test_poolvolsToUsd_nonapprovedtoken():
+    nonApprovedToken = _deployTOK(accounts[0])
+    nonApprovedTokenAddr = nonApprovedToken.address.lower()
+    stakes = {C1: {nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}}}}
+    stakes_USD = _poolvolsToUsd(stakes, RATES)
+    assert stakes_USD == {C1: {}}
+
+@enforce_types
 def test_poolvolsToUsd_twobasetokens():
     poolvols = {C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}}}
     poolvols_USD = _poolvolsToUsd(poolvols, RATES)
