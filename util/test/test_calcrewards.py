@@ -215,7 +215,7 @@ def setup_function():
     approvedTokens = getApprovedTokens(networkutil.DEV_CHAINID)
     if H2O_addr not in approvedTokens.keys():
         oceanutil.factoryRouter().addApprovedToken(H2O_addr, {"from": accounts[0]})
-        time.sleep(3)
+        time.sleep(2)
 
     global RATES
     RATES = {"OCEAN": 0.5, H2O.symbol(): 1.6}
