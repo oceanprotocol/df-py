@@ -1,7 +1,6 @@
 from typing import Dict, Tuple
 
 from enforce_typing import enforce_types
-from numpy import log10
 
 from util import cleancase
 
@@ -174,7 +173,7 @@ def _calcRewardsUsd(
                 Cj = poolvols_USD[chainID].get(pool_addr, 0.0)
                 if Sij == 0 or Cj == 0:
                     continue
-                RF_ij = log10(Sij + 1.0) * log10(Cj + 2.0)  # main formula!
+                RF_ij = (Sij + 1.0) * (Cj + 2.0)  # main formula!
                 reward_i += RF_ij
 
                 if not chainID in rewardsinfo:
