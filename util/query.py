@@ -34,7 +34,7 @@ class SimplePool:
 
     @property
     def basetoken_symbol(self) -> str:
-        return _symbol(self.basetoken_addr)
+        return symbol(self.basetoken_addr)
 
     def __str__(self):
         s = ["SimplePool={"]
@@ -371,7 +371,7 @@ def getAllPools(chainID: int) -> List[SimplePool]:
 _ADDR_TO_SYMBOL = {}  # address : TOKEN_symbol
 
 
-def _symbol(addr: str):
+def symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
     if addr not in _ADDR_TO_SYMBOL:

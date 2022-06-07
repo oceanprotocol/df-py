@@ -4,7 +4,7 @@ from enforce_typing import enforce_types
 from numpy import log10
 
 from util import cleancase
-from util.query import _symbol
+from util.query import symbol
 from util import networkutil
 
 
@@ -79,7 +79,7 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     stakes_USD_at_chain: Dict[str, Dict[str, float]] = {}
     symb_to_addr = {}
     for addr in stakes_at_chain.keys():
-        symb = _symbol(addr)
+        symb = symbol(addr)
         symb_to_addr[symb] = addr
 
     for basetoken, rate in rates.items():
@@ -133,7 +133,7 @@ def _poolvolsToUsdAtChain(
 
     symb_to_addr = {}
     for addr in poolvols_at_chain.keys():
-        symb = _symbol(addr)
+        symb = symbol(addr)
         symb_to_addr[symb] = addr
 
     for basetoken, rate in rates.items():
