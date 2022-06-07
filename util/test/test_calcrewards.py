@@ -1,14 +1,19 @@
+import random
+import time
+
 from enforce_typing import enforce_types
 import pytest
 import brownie
 
+from util import oceanutil
 from util.calcrewards import calcRewards, _stakesToUsd, _poolvolsToUsd
 from util import cleancase
 from util.oceanutil import recordDeployedContracts, OCEAN_address
 from util.constants import BROWNIE_PROJECT as B
 from util import networkutil
+from util.query import getApprovedTokens
 
-RATES = {"OCEAN": 0.5, "H2O": 1.6}
+RATES = None
 accounts = None
 # for shorter lines
 C1, C2 = networkutil.DEV_CHAINID, None
@@ -204,4 +209,14 @@ def setup_function():
 
     global OCN, H2O
     OCN = OCEAN_address().lower()
-    H2O = _deployTOK(accounts[0]).address.lower()
+    H2O = _deployTOK(accounts[0])
+    H2O_addr = H2O.address.lower()
+
+    approvedTokens = getApprovedTokens(networkutil.DEV_CHAINID)
+    if H2O_addr not in approvedTokens.keys():
+        oceanutil.factoryRouter().addApprovedToken(H2O_addr, {"from": accounts[0]})
+        time.sleep(3)
+
+    global RATES
+    RATES = {"OCEAN": 0.5, H2O.symbol(): 1.6}
+    H2O = H2O_addr
