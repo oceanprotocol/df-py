@@ -33,11 +33,14 @@ contract DFRewards is Ownable, ReentrancyGuard {
             total_value += _values[i];
         }
 
+        uint256 _before = IERC20(tokenAddress).balanceOf(address(this));
         IERC20(tokenAddress).safeTransferFrom(
             msg.sender,
             address(this),
             total_value
         );
+        uint256 _after = IERC20(tokenAddress).balanceOf(address(this));
+        require(_after - _before == total_value, "Not enough tokens");
 
         allocated[tokenAddress] = allocated[tokenAddress] + total_value;
 
