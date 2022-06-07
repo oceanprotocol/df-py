@@ -12,7 +12,7 @@ from util.constants import BROWNIE_PROJECT as B
 account0, QUERY_ST = None, 0
 
 CHAINID = networkutil.DEV_CHAINID
-OCEAN_ADDR: str = None
+OCEAN_ADDR: str = ""
 
 
 @pytest.mark.timeout(300)
