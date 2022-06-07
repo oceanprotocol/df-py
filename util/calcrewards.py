@@ -1,7 +1,6 @@
 from typing import Dict, Tuple
 
 from enforce_typing import enforce_types
-from numpy import log10
 
 from util import cleancase
 
