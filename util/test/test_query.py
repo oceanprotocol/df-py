@@ -42,7 +42,7 @@ def test_all():
 
     # run actual tests
     _test_SimplePool(CO2)
-    _test_getApprovedTokens(CO2_ADDR)
+    _test_getApprovedTokens(CO2_SYM)
     _test_pools(CO2_ADDR)
     _test_stakes(CO2_ADDR)
     _test_getDTVolumes(CO2_ADDR)
@@ -50,15 +50,15 @@ def test_all():
     _test_query(CO2_ADDR)
 
 
-def _foundStakeAndConsume(CO2_SYM):
+def _foundStakeAndConsume(CO2_ADDR):
     # nonzero CO2 stake?
     pools = query.getPools(CHAINID)
     st, fin, n = QUERY_ST, len(brownie.network.chain), 20
     rng = BlockRange(st, fin, n)
     stakes_at_chain = query.getStakes(pools, rng, CHAINID)
-    if CO2_SYM not in stakes_at_chain:
+    if CO2_ADDR not in stakes_at_chain:
         return False
-    for stakes_at_pool in stakes_at_chain[CO2_SYM].values():
+    for stakes_at_pool in stakes_at_chain[CO2_ADDR].values():
         if not stakes_at_pool:
             return False
         lowest_stake = min(stakes_at_pool.values())
@@ -68,9 +68,9 @@ def _foundStakeAndConsume(CO2_SYM):
     # nonzero CO2 volume?
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
-    if CO2_SYM not in DT_vols:
+    if CO2_ADDR not in DT_vols:
         return False
-    if sum(DT_vols[CO2_SYM].values()) == 0:
+    if sum(DT_vols[CO2_ADDR].values()) == 0:
         return False
 
     # all good
@@ -91,58 +91,58 @@ def _test_getApprovedTokens(CO2_SYM: str):
 
 
 @enforce_types
-def _test_pools(CO2_SYM: str):
+def _test_pools(CO2_ADDR: str):
     pools = query.getPools(CHAINID)
     assert [p for p in pools if p.basetoken_addr == OCEAN_ADDR]
-    assert [p for p in pools if p.basetoken_addr == CO2_SYM]
+    assert [p for p in pools if p.basetoken_addr == CO2_ADDR]
 
 
 @enforce_types
-def _test_stakes(CO2_SYM: str):
+def _test_stakes(CO2_ADDR: str):
     pools = query.getPools(CHAINID)
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
     stakes = query.getStakes(pools, rng, CHAINID)
 
     assert OCEAN_ADDR in stakes, stakes.keys()
-    assert CO2_SYM in stakes, (CO2_SYM, stakes.keys())
+    assert CO2_ADDR in stakes, (CO2_ADDR, stakes.keys())
 
-    for basetoken_address in [OCEAN_ADDR, CO2_SYM]:
+    for basetoken_address in [OCEAN_ADDR, CO2_ADDR]:
         for stakes_at_pool in stakes[basetoken_address].values():
             assert len(stakes_at_pool) > 0
             assert min(stakes_at_pool.values()) > 0.0
 
 
 @enforce_types
-def _test_getDTVolumes(CO2_SYM: str):
+def _test_getDTVolumes(CO2_ADDR: str):
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     assert OCEAN_ADDR in DT_vols, DT_vols.keys()
-    assert CO2_SYM in DT_vols, (CO2_SYM, DT_vols.keys())
+    assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[OCEAN_ADDR].values()) > 0.0
-    assert sum(DT_vols[CO2_SYM].values()) > 0.0
+    assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
 
 @enforce_types
-def _test_getPoolVolumes(CO2_SYM: str):
+def _test_getPoolVolumes(CO2_ADDR: str):
     pools = query.getPools(CHAINID)
     st, fin = QUERY_ST, len(brownie.network.chain)
     poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
     assert OCEAN_ADDR in poolvols, poolvols.keys()
-    assert CO2_SYM in poolvols, (CO2_SYM, poolvols.keys())
+    assert CO2_ADDR in poolvols, (CO2_ADDR, poolvols.keys())
     assert sum(poolvols[OCEAN_ADDR].values()) > 0.0
-    assert sum(poolvols[CO2_SYM].values()) > 0.0
+    assert sum(poolvols[CO2_ADDR].values()) > 0.0
 
 
 @enforce_types
-def _test_query(CO2_SYM: str):
+def _test_query(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
     (_, S0, V0) = query.query_all(rng, CHAINID)
 
     # tests are light here, as we've tested piecewise elsewhere
-    assert CO2_SYM in S0
-    assert CO2_SYM in V0
+    assert CO2_ADDR in S0
+    assert CO2_ADDR in V0
 
 
 @enforce_types
