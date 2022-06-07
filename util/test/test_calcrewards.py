@@ -197,7 +197,9 @@ def test_poolvolsToUsd_twobasetokens():
 
 @enforce_types
 def _deployTOK(account):
-    return B.Simpletoken.deploy("H2O", "H2O", 18, 100e18, {"from": account})
+    return B.Simpletoken.deploy(
+        f"H2O_{random.randint(0,99999):05d}", "H2O", 18, 100e18, {"from": account}
+    )
 
 
 @enforce_types
