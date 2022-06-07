@@ -103,8 +103,8 @@ def _test_stakes(CO2_SYM: str):
     assert "OCEAN" in stakes, stakes.keys()
     assert CO2_SYM in stakes, (CO2_SYM, stakes.keys())
 
-    for basetoken_symbol in ["OCEAN", CO2_SYM]:
-        for stakes_at_pool in stakes[basetoken_symbol].values():
+    for basetoken_address in ["OCEAN", CO2_SYM]:
+        for stakes_at_pool in stakes[basetoken_address].values():
             assert len(stakes_at_pool) > 0
             assert min(stakes_at_pool.values()) > 0.0
 
@@ -139,6 +139,20 @@ def _test_query(CO2_SYM: str):
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_SYM in S0
     assert CO2_SYM in V0
+
+
+@enforce_types
+def test_symbol():
+    testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": account0})
+    assert query.symbol(testToken) == "CO2"
+
+    testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": account0})
+    assert query.symbol(testToken) == "ASDASDASD"
+
+    testToken = B.Simpletoken.deploy(
+        "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": account0}
+    )
+    assert query.symbol(testToken) == "!@#$@!%$#^%$&~!@"
 
 
 @enforce_types
