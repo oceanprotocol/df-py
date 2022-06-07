@@ -4,7 +4,7 @@ from enforce_typing import enforce_types
 from numpy import log10
 
 from util import cleancase
-from util.query import symbol
+from util.query import symbol, getApprovedTokens
 from util import networkutil
 
 
@@ -56,6 +56,14 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
     stakes_USD = {}
     for chainID in stakes:
         networkutil.connect(chainID)
+        approved_tokens = getApprovedTokens(chainID)
+        approved_tokens_lower = [i.lower() for i in approved_tokens.keys()]
+        tokens = list(stakes[chainID].keys())
+
+        for token in tokens:
+            if token not in approved_tokens_lower:
+                del stakes[chainID][token]
+
         stakes_USD[chainID] = _stakesToUsdAtChain(stakes[chainID], rates)
 
     return stakes_USD
@@ -116,6 +124,14 @@ def _poolvolsToUsd(
     poolvols_USD = {}
     for chainID in poolvols:
         networkutil.connect(chainID)
+        approved_tokens = getApprovedTokens(chainID)
+        approved_tokens_lower = [i.lower() for i in approved_tokens.keys()]
+        tokens = list(poolvols[chainID].keys())
+
+        for token in tokens:
+            if token not in approved_tokens_lower:
+                del poolvols[chainID][token]
+
         poolvols_USD[chainID] = _poolvolsToUsdAtChain(poolvols[chainID], rates)
 
     cleancase.assertPoolvolsUsd(poolvols_USD)
