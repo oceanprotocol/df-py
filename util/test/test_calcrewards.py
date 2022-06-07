@@ -166,6 +166,28 @@ def test_stakesToUsd_nonapprovedtoken():
     stakes_USD = _stakesToUsd(stakes, RATES)
     assert stakes_USD == {C1: {}}
 
+
+@enforce_types
+def test_stakesToUsd_two_approved_one_nonapproved():
+    nonApprovedToken = _deployTOK(accounts[0])
+    nonApprovedTokenAddr = nonApprovedToken.address.lower()
+
+    stakes = {
+        C1: {
+            nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}},
+            OCN: {PA: {LP1: 3.0, LP2: 4.0}},
+            H2O: {PC: {LP1: 5.0, LP4: 6.0}},
+        }
+    }
+    stakes_USD = _stakesToUsd(stakes, RATES)
+    assert stakes_USD == {
+        C1: {
+            PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
+            PC: {LP1: 5.0 * 1.6, LP4: 6.0 * 1.6},
+        }
+    }
+
+
 @enforce_types
 def test_stakesToUsd_twobasetokens():
     stakes = {
