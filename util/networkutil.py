@@ -20,6 +20,8 @@ _CHAINID_TO_NETWORK = {
     246: "energyweb",
     1284: "moonbeam",
     1285: "moonriver",
+    1287: "moonbase",
+    80001: "mumbai",
 }
 _NETWORK_TO_CHAINID = {
     network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
