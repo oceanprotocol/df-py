@@ -137,6 +137,24 @@ def test_calcRewards5_mix_upper_and_lower_case():
     assert target_rewardsinfo == rewardsinfo
 
 
+def test_calcrewards_math():
+    ## update this test when the reward function is changed
+
+    stakes = {C1: {OCN: {PA: {LP1: 20, LP2: 50}, PB: {LP1: 20, LP3: 10}}}}
+    poolvols = {C1: {OCN: {PA: 32.0, PB: 8.0}}}
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=100.0)
+
+    assert sum(rewardsperlp[C1].values()) == pytest.approx(100.0, 0.01)
+    assert rewardsperlp[C1][LP1] == pytest.approx(34.37, 0.01)
+    assert rewardsperlp[C1][LP2] == pytest.approx(60.93, 0.01)
+    assert rewardsperlp[C1][LP3] == pytest.approx(4.68, 0.01)
+
+    assert rewardsinfo[C1][PA][LP1] == pytest.approx(25.78, 0.01)
+    assert rewardsinfo[C1][PA][LP2] == pytest.approx(60.93, 0.01)
+    assert rewardsinfo[C1][PB][LP1] == pytest.approx(8.59, 0.01)
+    assert rewardsinfo[C1][PB][LP3] == pytest.approx(4.68, 0.01)
+
+
 @enforce_types
 def test_stakesToUsd_onebasetoken():
     stakes = {C1: {OCN: {PA: {LP1: 3.0, LP2: 4.0}}}}
