@@ -3,6 +3,8 @@ from typing import Dict, Tuple
 from enforce_typing import enforce_types
 
 from util import cleancase
+from util.query import symbol, getApprovedTokens
+from util import networkutil
 
 
 @enforce_types
@@ -11,8 +13,8 @@ def calcRewards(
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
     """
     @arguments
-      stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
-      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
+      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
+      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol
       rates -- dict of [basetoken_symbol] : USD_per_basetoken
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
@@ -41,8 +43,8 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
       Converts stake values to be USD-denominated.
 
     @arguments
-      stakes - dict of [chainID][basetoken_symbol][pool_addr][LP_addr] : stake
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
+      rates -- dict of [basetoken_address] : USD_per_basetoken
 
     @return
       stakes_USD -- dict of [chainID][pool_addr][LP_addr] : stake_USD
@@ -52,6 +54,15 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
 
     stakes_USD = {}
     for chainID in stakes:
+        networkutil.connect(chainID)
+        approved_tokens = getApprovedTokens(chainID)
+        approved_tokens_lower = [i.lower() for i in approved_tokens.keys()]
+        tokens = list(stakes[chainID].keys())
+
+        for token in tokens:
+            if token not in approved_tokens_lower:
+                del stakes[chainID][token]
+
         stakes_USD[chainID] = _stakesToUsdAtChain(stakes[chainID], rates)
 
     return stakes_USD
@@ -63,8 +74,8 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
       For a chain, converts stake values to be USD-denominated.
 
     @arguments
-      stakes_at_chain - dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      stakes_at_chain - dict of [basetoken_address][pool_addr][LP_addr] : stake
+      rates -- dict of [basetoken_address] : USD_per_basetoken
 
     @return
       stakes_USD_at_chain -- dict of [pool_addr][LP_addr] : stake_USD
@@ -73,12 +84,19 @@ def _stakesToUsdAtChain(stakes_at_chain: dict, rates: Dict[str, float]) -> dict:
     cleancase.assertRates(rates)
 
     stakes_USD_at_chain: Dict[str, Dict[str, float]] = {}
+    symb_to_addr = {}
+    for addr in stakes_at_chain.keys():
+        symb = symbol(addr)
+        symb_to_addr[symb] = addr
+
     for basetoken, rate in rates.items():
-        if basetoken not in stakes_at_chain:
+        if basetoken not in symb_to_addr:
             continue
-        for pool_addr in stakes_at_chain[basetoken].keys():
+
+        baseaddr = symb_to_addr[basetoken]
+        for pool_addr in stakes_at_chain[baseaddr].keys():
             stakes_USD_at_chain[pool_addr] = {}
-            for LP_addr, stake in stakes_at_chain[basetoken][pool_addr].items():
+            for LP_addr, stake in stakes_at_chain[baseaddr][pool_addr].items():
                 stakes_USD_at_chain[pool_addr][LP_addr] = stake * rate
 
     cleancase.assertStakesUsdAtChain(stakes_USD_at_chain)
@@ -93,8 +111,8 @@ def _poolvolsToUsd(
       For a given chain, converts volume values to be USD-denominated.
 
     @arguments
-      poolvols -- dict of [chainID][basetoken_symbol][pool_addr] : vol
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol
+      rates -- dict of [basetoken_address] : USD_per_basetoken
 
     @return
       poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
@@ -104,6 +122,15 @@ def _poolvolsToUsd(
 
     poolvols_USD = {}
     for chainID in poolvols:
+        networkutil.connect(chainID)
+        approved_tokens = getApprovedTokens(chainID)
+        approved_tokens_lower = [i.lower() for i in approved_tokens.keys()]
+        tokens = list(poolvols[chainID].keys())
+
+        for token in tokens:
+            if token not in approved_tokens_lower:
+                del poolvols[chainID][token]
+
         poolvols_USD[chainID] = _poolvolsToUsdAtChain(poolvols[chainID], rates)
 
     cleancase.assertPoolvolsUsd(poolvols_USD)
@@ -118,10 +145,17 @@ def _poolvolsToUsdAtChain(
     cleancase.assertRates(rates)
 
     poolvols_USD_at_chain = {}  # dict of [pool_addr] : vol_USD
+
+    symb_to_addr = {}
+    for addr in poolvols_at_chain.keys():
+        symb = symbol(addr)
+        symb_to_addr[symb] = addr
+
     for basetoken, rate in rates.items():
-        if basetoken not in poolvols_at_chain:
+        if basetoken not in symb_to_addr:
             continue
-        for pool_addr, vol in poolvols_at_chain[basetoken].items():
+        baseaddr = symb_to_addr[basetoken]
+        for pool_addr, vol in poolvols_at_chain[baseaddr].items():
             poolvols_USD_at_chain[pool_addr] = vol * rate
 
     cleancase.assertPoolvolsUsdAtChain(poolvols_USD_at_chain)

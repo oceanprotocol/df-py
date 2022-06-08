@@ -34,7 +34,7 @@ class SimplePool:
 
     @property
     def basetoken_symbol(self) -> str:
-        return _symbol(self.basetoken_addr)
+        return symbol(self.basetoken_addr)
 
     def __str__(self):
         s = ["SimplePool={"]
@@ -56,8 +56,8 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
 
     @return
       pools_at_chain -- list of SimplePool
-      stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr] : stake
-      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr] : vol
+      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
+      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
 
     @notes
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
@@ -90,7 +90,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
       Query the chain for stakes.
 
     @return
-      stakes_at_chain -- dict of [basetoken_symbol][pool_addr][LP_addr]:stake
+      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr]:stake
     """
     print("getStakes(): begin")
     _ = pools  # little trick because pools isn't used
@@ -143,31 +143,30 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
 
             for d in new_pool_stake:
                 basetoken_addr = d["pool"]["baseToken"]["id"].lower()
-                basesym = _symbol(basetoken_addr)
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
                 shares = float(d["shares"])
                 if LP_addr == SSBOT_address:
                     continue  # skip ss bot
 
-                if basesym not in stakes:
-                    stakes[basesym] = {}
-                if pool_addr not in stakes[basesym]:
-                    stakes[basesym][pool_addr] = {}
-                if LP_addr not in stakes[basesym][pool_addr]:
-                    stakes[basesym][pool_addr][LP_addr] = 0.0
+                if basetoken_addr not in stakes:
+                    stakes[basetoken_addr] = {}
+                if pool_addr not in stakes[basetoken_addr]:
+                    stakes[basetoken_addr][pool_addr] = {}
+                if LP_addr not in stakes[basetoken_addr][pool_addr]:
+                    stakes[basetoken_addr][pool_addr][LP_addr] = 0.0
 
-                stakes[basesym][pool_addr][LP_addr] += shares
+                stakes[basetoken_addr][pool_addr][LP_addr] += shares
 
             LP_offset += chunk_size
 
     # normalize stake based on # blocks sampled
     # (this may be lower than target # blocks, if we hit indexing errors)
     assert n_blocks_sampled > 0
-    for basesym in stakes:  # pylint: disable=consider-iterating-dictionary
-        for pool_addr in stakes[basesym]:
-            for LP_addr in stakes[basesym][pool_addr]:
-                stakes[basesym][pool_addr][LP_addr] /= n_blocks_sampled
+    for basetoken_addr in stakes:  # pylint: disable=consider-iterating-dictionary
+        for pool_addr in stakes[basetoken_addr]:
+            for LP_addr in stakes[basetoken_addr][pool_addr]:
+                stakes[basetoken_addr][pool_addr][LP_addr] /= n_blocks_sampled
     return stakes  # ie stakes_at_chain
 
 
@@ -178,24 +177,24 @@ def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> 
       Query the chain for pool volumes within the given block range.
 
     @return
-      poolvols_at_chain -- dict of [basetoken_symbol][pool_addr]:vol_amt
+      poolvols_at_chain -- dict of [basetoken_addr][pool_addr]:vol_amt
     """
-    # [basesym][DT_addr]:vol
+    # [baseaddr][DT_addr]:vol
     DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
 
-    # [basesym][pool_addr]:vol
+    # [baseaddr][pool_addr]:vol
     poolvols_at_chain: Dict[str, Dict[str, float]] = {}
-    for basesym in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
-        if basesym not in poolvols_at_chain:
-            poolvols_at_chain[basesym] = {}
+    for baseaddr in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
+        if baseaddr not in poolvols_at_chain:
+            poolvols_at_chain[baseaddr] = {}
 
-        for DT_addr in DTvols_at_chain[basesym]:
+        for DT_addr in DTvols_at_chain[baseaddr]:
             # handle if >1 pool has the DT
             pools_with_DT = [p for p in pools if p.DT_addr == DT_addr]
-            vol = DTvols_at_chain[basesym][DT_addr]
+            vol = DTvols_at_chain[baseaddr][DT_addr]
             for pool in pools_with_DT:
                 # the "/" spreads vol evenly among pools holding the DT
-                poolvols_at_chain[basesym][pool.addr] = vol / len(pools_with_DT)
+                poolvols_at_chain[baseaddr][pool.addr] = vol / len(pools_with_DT)
 
     return poolvols_at_chain
 
@@ -208,7 +207,7 @@ def getDTVolumes(
       Query the chain for datatoken (DT) volumes within the given block range.
 
     @return
-      DTvols_at_chain -- dict of [basetoken_symbol][DT_addr]:vol_amt
+      DTvols_at_chain -- dict of [basetoken_addr][DT_addr]:vol_amt
     """
     print("getDTVolumes(): begin")
 
@@ -241,13 +240,13 @@ def getDTVolumes(
                 continue
             DT_addr = order["datatoken"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
-            basesym = _symbol(basetoken_addr)
-            if basesym not in DTvols:
-                DTvols[basesym] = {}
 
-            if DT_addr not in DTvols[basesym]:
-                DTvols[basesym][DT_addr] = 0.0
-            DTvols[basesym][DT_addr] += lastPriceValue
+            if basetoken_addr not in DTvols:
+                DTvols[basetoken_addr] = {}
+
+            if DT_addr not in DTvols[basetoken_addr]:
+                DTvols[basetoken_addr][DT_addr] = 0.0
+            DTvols[basetoken_addr][DT_addr] += lastPriceValue
 
     print("getDTVolumes(): done")
     return DTvols  # ie DTvols_at_chain
@@ -307,8 +306,8 @@ def getApprovedTokens(chainID: int) -> Dict[str, str]:
     addrs = result["data"]["opcs"][0]["approvedTokens"]
     d = {addr.lower(): B.Simpletoken.at(addr).symbol().upper() for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
-    for symbol in d.values():
-        assert symbol == symbol.upper(), "symbols should be uppercase"
+    for _symbol in d.values():
+        assert _symbol == _symbol.upper(), "symbols should be uppercase"
     return d
 
 
@@ -372,11 +371,11 @@ def getAllPools(chainID: int) -> List[SimplePool]:
 _ADDR_TO_SYMBOL = {}  # address : TOKEN_symbol
 
 
-def _symbol(addr: str):
+def symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
     if addr not in _ADDR_TO_SYMBOL:
-        symbol = B.Simpletoken.at(addr).symbol()
-        symbol = symbol.upper()  # follow lower-upper rules
-        _ADDR_TO_SYMBOL[addr] = symbol
+        _symbol = B.Simpletoken.at(addr).symbol()
+        _symbol = _symbol.upper()  # follow lower-upper rules
+        _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]

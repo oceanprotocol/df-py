@@ -15,10 +15,10 @@ def test_stakes():
     }
     target_stakes = {
         1: {
-            "OCEAN": {"poola": {"lp1": 1.0, "lp2": 2.0}, "poolb": {"lp3": 3.0}},
-            "H2O": {"poolc": {"lp4": 4.0}},
+            "ocean": {"poola": {"lp1": 1.0, "lp2": 2.0}, "poolb": {"lp3": 3.0}},
+            "h2o": {"poolc": {"lp4": 4.0}},
         },
-        2: {"OCEAN": {"poold": {"lp5": 5.0}}},
+        2: {"ocean": {"poold": {"lp5": 5.0}}},
     }
 
     with pytest.raises(AssertionError):
@@ -37,8 +37,8 @@ def test_poolvols():
     }
 
     target_poolvols = {
-        1: {"OCEAN": {"poola": 1.0, "poolb": 2.0}, "H2O": {"poolc": 3.0}},
-        2: {"OCEAN": {"poold": 4.0}},
+        1: {"ocean": {"poola": 1.0, "poolb": 2.0}, "h2o": {"poolc": 3.0}},
+        2: {"ocean": {"poold": 4.0}},
     }
 
     with pytest.raises(AssertionError):
