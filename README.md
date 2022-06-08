@@ -140,6 +140,8 @@ Usage:
 `./dfpy_docker args`
 
 Docker will mount `/tmp/dfpy:/app/data`
+Which will be located inside of `/root/.dfcsv`
+
 Example usage with docker:
 
 ```shell
