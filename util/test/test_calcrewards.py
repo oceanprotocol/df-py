@@ -36,8 +36,6 @@ def test_calcRewards1_onechain():
     TOKEN_avail = 10.0
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail)
 
-    print(rewardsinfo)
-
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
 
