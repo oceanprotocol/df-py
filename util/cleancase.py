@@ -29,7 +29,6 @@ def assertStakes(stakes: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     for chainID in stakes:
         for basetoken in stakes[chainID]:
-            print("b", basetoken, basetoken.lower())
             assert basetoken == basetoken.lower(), basetoken
             for pool_addr in stakes[chainID][basetoken]:
                 assert pool_addr == pool_addr.lower(), pool_addr
