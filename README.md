@@ -156,6 +156,61 @@ rate = $0.8774 / OCEAN
 Created /app/data/rate-OCEAN.csv
 ```
 
+# Usage: Docker + Brownie Networks
+
+Since df-py uses brownie to execute a wide range of commands, you may want to install additional networks in brownie.
+You may want to expand brownie's configured networks in the Docker container by editing the `Dockerfile`
+```
+...
+RUN brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56  
+RUN brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137  
+RUN brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246  
+RUN brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285  
+...
+COPY . .
+RUN rm -rf build
+```
+
+# Usage: Docker + Contract Addresses
+
+Since df-py has to connect to a broad range of contracts, you may need to configure the docker container to access these. You can [find the latest deployed contracts here](https://github.com/oceanprotocol/contracts/blob/v4main/addresses/address.json).  
+You will then have to copy them to your local directory, and configure `dfpy_docker` like so.
+```
+docker run --env-file ./.env -v /tmp/dfpy:/app/data -v /app/df-py/address.json:/address.json --rm dfpy $@
+```
+
+# Usage: Configuring Data Farming Data Flows + dfpy-sql-backend + df-web
+
+`dfpy-sql-backend` consumes data that is generated from `df-py` in order to feed it via an API to `df-web`
+You can [find a very high level diagram for this here](https://github.com/oceanprotocol/dfpy-sql-backend).
+
+In order to set this up, we create a new bash script called `getAllRecords-dfpy-sql` and add it to our local crontab. Please note the folders you will have to created, such as `/tmp/dfpy/` and `~/.dfcsv/
+
+###getAllRecords-dfpy-sql.sh
+```
+cd /app/df-py/
+date=`date -dlast-wednesday '+%Y-%m-%d'`
+now=`date '+%Y-%m-%d'`
+
+
+/app/df-py/dfpy_docker query $date latest 1 /app/data 1 && 
+/app/df-py/dfpy_docker query $date latest 1 /app/data 56 && 
+/app/df-py/dfpy_docker query $date latest 1 /app/data 137 && 
+/app/df-py/dfpy_docker query $date latest 1 /app/data 246 && 
+/app/df-py/dfpy_docker query $date latest 1 /app/data 1285 && 
+/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data && 
+/app/df-py/dfpy_docker calc /app/data 10000 OCEAN && 
+mv /tmp/dfpy/* ~/.dfcsv/
+```
+
+We then add this to our crontab
+```
+*/10 * * * * /app/df-py/getAllRecords-dfpy-sql.sh
+```
+
+`dfpy-sql-backend` attempts to read all csv files inside of `~/.dfcsv/`.
+You can adjust this by changing this path in both repositories and redeploying.
+
 # Usage: Hardware Wallets
 
 Here are the steps:
