@@ -27,7 +27,7 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 @enforce_types
 def test_calcRewards1_onechain():
-    stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
+    stakes = {C1: {OCN: {PA: {LP1: 10000.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}
 
     target_rewardsperlp = {C1: {LP1: 10.0}}
@@ -44,7 +44,7 @@ def test_calcRewards1_onechain():
 def test_calcRewards1_twochains():
     # Cannot test two chains because ganache is the only local chain.
     pytest.skip("Cannot test two chains")
-    stakes = {C1: {OCN: {PA: {LP1: 1.0}}}, C2: {OCN: {PB: {LP1: 1.0}}}}
+    stakes = {C1: {OCN: {PA: {LP1: 10000.0}}}, C2: {OCN: {PB: {LP1: 10000.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}, C2: {OCN: {PB: 1.0}}}
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=20.0)
     assert rewardsperlp == {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
@@ -58,7 +58,7 @@ def test_calcRewards1_twochains():
 
 @enforce_types
 def test_calcRewards2():
-    stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}}}}
+    stakes = {C1: {OCN: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
@@ -69,7 +69,9 @@ def test_calcRewards2():
 
 @enforce_types
 def test_calcRewards3():
-    stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}, PB: {LP1: 1.0, LP3: 1.0}}}}
+    stakes = {
+        C1: {OCN: {PA: {LP1: 10000.0, LP2: 10000.0}, PB: {LP1: 10000.0, LP3: 10000.0}}}
+    }
     poolvols = {C1: {OCN: {PA: 1.0}}}  # P1 has volume, but not P2
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
@@ -85,7 +87,9 @@ def test_calcRewards3():
 
 @enforce_types
 def test_calcRewards4():
-    stakes = {C1: {OCN: {PA: {LP1: 1.0, LP2: 1.0}, PB: {LP1: 1.0, LP3: 1.0}}}}
+    stakes = {
+        C1: {OCN: {PA: {LP1: 10000.0, LP2: 10000.0}, PB: {LP1: 10000.0, LP3: 10000.0}}}
+    }
     poolvols = {C1: {OCN: {PA: 1.0, PB: 1.0}}}  # P1 & P2 both have volume
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=10.0)
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
@@ -102,14 +106,14 @@ def test_calcRewards5_mix_upper_and_lower_case():
     # LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
     # OCN, H2O = "OCEAN", "H2O"
 
-    stakes = {C1: {OCN: {PA: {LP1: 1.0}}}}
-    stakes2a = {C1: {OCN.upper(): {PA: {LP1: 1.0}}}}
-    stakes2b = {C1: {OCN: {"pOoLa_aDDr": {LP1: 1.0}}}}
-    stakes2c = {C1: {OCN: {PA: {"lP1_aDdR": 1.0}}}}
+    stakes = {C1: {OCN: {PA: {LP1: 10000.0}}}}
+    stakes2a = {C1: {OCN.upper(): {PA: {LP1: 10000.0}}}}
+    stakes2b = {C1: {OCN: {"pOoLa_aDDr": {LP1: 10000.0}}}}
+    stakes2c = {C1: {OCN: {PA: {"lP1_aDdR": 10000.0}}}}
 
-    poolvols = {C1: {OCN: {PA: 1.0}}}
-    poolvols2a = {C1: {OCN.upper(): {PA: 1.0}}}
-    poolvols2b = {C1: {OCN: {"pOola_adDr": 1.0}}}
+    poolvols = {C1: {OCN: {PA: 10000.0}}}
+    poolvols2a = {C1: {OCN.upper(): {PA: 10000.0}}}
+    poolvols2b = {C1: {OCN: {"pOola_adDr": 10000.0}}}
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
@@ -152,19 +156,19 @@ def test_calcRewards5_mix_upper_and_lower_case():
 def test_calcrewards_math():
     ## update this test when the reward function is changed
 
-    stakes = {C1: {OCN: {PA: {LP1: 20, LP2: 50}, PB: {LP1: 20, LP3: 10}}}}
+    stakes = {C1: {OCN: {PA: {LP1: 20000, LP2: 50000}, PB: {LP1: 20000, LP3: 10000}}}}
     poolvols = {C1: {OCN: {PA: 32.0, PB: 8.0}}}
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=100.0)
 
     assert sum(rewardsperlp[C1].values()) == pytest.approx(100.0, 0.01)
-    assert rewardsperlp[C1][LP1] == pytest.approx(34.37, 0.01)
-    assert rewardsperlp[C1][LP2] == pytest.approx(60.93, 0.01)
-    assert rewardsperlp[C1][LP3] == pytest.approx(4.68, 0.01)
+    assert rewardsperlp[C1][LP1] == pytest.approx(33.37, 0.01)
+    assert rewardsperlp[C1][LP2] == pytest.approx(62.49, 0.01)
+    assert rewardsperlp[C1][LP3] == pytest.approx(4.16, 0.01)
 
-    assert rewardsinfo[C1][PA][LP1] == pytest.approx(25.78, 0.01)
-    assert rewardsinfo[C1][PA][LP2] == pytest.approx(60.93, 0.01)
-    assert rewardsinfo[C1][PB][LP1] == pytest.approx(8.59, 0.01)
-    assert rewardsinfo[C1][PB][LP3] == pytest.approx(4.68, 0.01)
+    assert rewardsinfo[C1][PA][LP1] == pytest.approx(25.0, 0.01)
+    assert rewardsinfo[C1][PA][LP2] == pytest.approx(62.49, 0.01)
+    assert rewardsinfo[C1][PB][LP1] == pytest.approx(8.33, 0.01)
+    assert rewardsinfo[C1][PB][LP3] == pytest.approx(4.16, 0.01)
 
 
 @enforce_types
