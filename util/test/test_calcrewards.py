@@ -161,14 +161,14 @@ def test_calcrewards_math():
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=100.0)
 
     assert sum(rewardsperlp[C1].values()) == pytest.approx(100.0, 0.01)
-    assert rewardsperlp[C1][LP1] == pytest.approx(33.37, 0.01)
-    assert rewardsperlp[C1][LP2] == pytest.approx(62.49, 0.01)
-    assert rewardsperlp[C1][LP3] == pytest.approx(4.16, 0.01)
+    assert rewardsperlp[C1][LP1] == pytest.approx(32.25, 0.01)
+    assert rewardsperlp[C1][LP2] == pytest.approx(64.51, 0.01)
+    assert rewardsperlp[C1][LP3] == pytest.approx(3.22, 0.01)
 
-    assert rewardsinfo[C1][PA][LP1] == pytest.approx(25.0, 0.01)
-    assert rewardsinfo[C1][PA][LP2] == pytest.approx(62.49, 0.01)
-    assert rewardsinfo[C1][PB][LP1] == pytest.approx(8.33, 0.01)
-    assert rewardsinfo[C1][PB][LP3] == pytest.approx(4.16, 0.01)
+    assert rewardsinfo[C1][PA][LP1] == pytest.approx(25.86, 0.01)
+    assert rewardsinfo[C1][PA][LP2] == pytest.approx(64.51, 0.01)
+    assert rewardsinfo[C1][PB][LP1] == pytest.approx(6.45, 0.01)
+    assert rewardsinfo[C1][PB][LP3] == pytest.approx(3.22, 0.01)
 
 
 def test_apy_cap():
