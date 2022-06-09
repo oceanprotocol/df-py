@@ -171,6 +171,20 @@ def test_calcrewards_math():
     assert rewardsinfo[C1][PB][LP3] == pytest.approx(4.16, 0.01)
 
 
+def test_apy_cap():
+    stakes = {C1: {OCN: {PA: {LP1: 1000 / 0.0015717}}}}
+    poolvols = {C1: {OCN: {PA: 1.0}}}
+
+    target_rewardsperlp = {C1: {LP1: 1000.0}}
+    target_rewardsinfo = {C1: {PA: {LP1: 1000}}}
+
+    TOKEN_avail = 700_000.0
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail)
+
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
+
+
 @enforce_types
 def test_stakesToUsd_onebasetoken():
     stakes = {C1: {OCN: {PA: {LP1: 3.0, LP2: 4.0}}}}
