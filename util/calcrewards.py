@@ -30,11 +30,27 @@ def calcRewards(
     poolvols = cleancase.modPoolvols(poolvols)
     rates = cleancase.modRates(rates)
 
+    TARGET_WPY = 0.0015717  # (Weekly Percent Yield) needs to be 1.5717%.
+    TARGET_REWARD_AMT = _sumStakes(stakes) * TARGET_WPY
+    TOKEN_avail = min(TOKEN_avail, TARGET_REWARD_AMT)  # Max apy is 125%
+
     #
     stakes_USD = _stakesToUsd(stakes, rates)
     poolvols_USD = _poolvolsToUsd(poolvols, rates)
     (rewardsperlp, rewardsinfo) = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
     return rewardsperlp, rewardsinfo
+
+
+def _sumStakes(stakes: dict) -> float:
+    total_stakes = 0
+    for chainID in stakes:
+        for basetoken_address in stakes[chainID]:
+            for pool_addr in stakes[chainID][basetoken_address]:
+                for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
+                    total_stakes += stakes[chainID][basetoken_address][pool_addr][
+                        LP_addr
+                    ]
+    return total_stakes
 
 
 def _stakesToUsd(stakes: dict, rates: Dict[str, float]) -> dict:
@@ -207,7 +223,7 @@ def _calcRewardsUsd(
                 Cj = poolvols_USD[chainID].get(pool_addr, 0.0)
                 if Sij == 0 or Cj == 0:
                     continue
-                RF_ij = (Sij + 1.0) * (Cj + 2.0)  # main formula!
+                RF_ij = Sij * Cj  # main formula!
                 reward_i += RF_ij
 
                 if not chainID in rewardsinfo:

@@ -24,12 +24,19 @@ def test_without_csvs():
 
     st, fin, n = 1, len(brownie.network.chain), 25
     rng = blockrange.BlockRange(st, fin, n)
-    OCEAN_avail = 10000.0
 
     (_, S0, V0) = query.query_all(rng, chainID)
     rates = {"OCEAN": 0.5, "H2O": 1.618}
 
     stakes, poolvols = {chainID: S0}, {chainID: V0}
+
+    total_stakes = 0
+    for basetoken_address in stakes[chainID]:
+        for pool_addr in stakes[chainID][basetoken_address]:
+            for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
+                total_stakes += stakes[chainID][basetoken_address][pool_addr][LP_addr]
+    OCEAN_avail = total_stakes * 0.0015717
+
     rewardsperlp, _ = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
@@ -65,7 +72,14 @@ def test_with_csvs(tmp_path):
     S = csvs.loadStakesCsvs(csv_dir)
     V = csvs.loadPoolvolsCsvs(csv_dir)
     rates = csvs.loadRateCsvs(csv_dir)
-    OCEAN_avail = 10000.0
+    total_stakes = 0
+
+    for basetoken_address in S[chainID]:
+        for pool_addr in S[chainID][basetoken_address]:
+            for LP_addr in S[chainID][basetoken_address][pool_addr]:
+                total_stakes += S[chainID][basetoken_address][pool_addr][LP_addr]
+    OCEAN_avail = total_stakes * 0.0015717
+
     rewardsperlp, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
