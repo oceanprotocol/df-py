@@ -18,9 +18,8 @@ _CHAINID_TO_NETWORK = {
     56: "bsc",
     137: "polygon",
     246: "energyweb",
-    1284: "moonbeam",
-    1285: "moonriver",
     1287: "moonbase",
+    1285: "moonriver",
     80001: "mumbai",
 }
 _NETWORK_TO_CHAINID = {
@@ -44,7 +43,7 @@ def chainIdToSubgraphUri(chainID: int) -> str:
         return "http://127.0.0.1:9000" + sg
 
     network_str = chainIdToNetwork(chainID)
-    return f"https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
+    return "https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
 
 
 @enforce_types
