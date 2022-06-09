@@ -43,7 +43,7 @@ def chainIdToSubgraphUri(chainID: int) -> str:
         return "http://127.0.0.1:9000" + sg
 
     network_str = chainIdToNetwork(chainID)
-    return "https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
+    return f"https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
 
 
 @enforce_types
