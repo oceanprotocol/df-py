@@ -360,7 +360,7 @@ def getAllPools(chainID: int) -> List[SimplePool]:
                 addr=d["id"].lower(),
                 nft_addr=d["datatoken"]["nft"]["id"].lower(),
                 DT_addr=d["datatoken"]["id"].lower(),
-                DT_symbol=d["datatoken"]["id"].upper(),
+                DT_symbol=d["datatoken"]["symbol"].upper(),
                 basetoken_addr=d["baseToken"]["id"].lower(),
             )
             pools.append(pool)
