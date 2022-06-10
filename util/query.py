@@ -233,7 +233,7 @@ def getDTVolumes(
             offset,
             chunk_size,
         )
-        offset += 1000
+        offset += chunk_size
         result = submitQuery(query, chainID)
         new_orders = result["data"]["orders"]
         if new_orders == []:
