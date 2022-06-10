@@ -213,7 +213,8 @@ def getDTVolumes(
 
     DTvols: Dict[str, Dict[str, float]] = {}
     chunk_size = 1000  # max for subgraph = 1000
-    for offset in range(0, end_block - st_block, chunk_size):
+    offset = 0
+    while True:
         query = """
         {
           orders(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
@@ -232,8 +233,11 @@ def getDTVolumes(
             offset,
             chunk_size,
         )
+        offset += chunk_size
         result = submitQuery(query, chainID)
         new_orders = result["data"]["orders"]
+        if new_orders == []:
+            break
         for order in new_orders:
             lastPriceValue = float(order["lastPriceValue"])
             if lastPriceValue == 0:
@@ -323,10 +327,8 @@ def getAllPools(chainID: int) -> List[SimplePool]:
     pools = []
     offset = 0
     chunk_size = 1000  # max for subgraph = 1000
-    num_blocks = 99999999999  # to the infinity
 
-    # this is actually a while loop
-    for offset in range(0, num_blocks, chunk_size):
+    while True:
         query = """
         {
           pools(skip:%s, first:%s){
@@ -348,6 +350,7 @@ def getAllPools(chainID: int) -> List[SimplePool]:
             offset,
             chunk_size,
         )
+        offset += chunk_size
         result = submitQuery(query, chainID)
         ds = result["data"]["pools"]
         if ds == []:
