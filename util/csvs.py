@@ -267,7 +267,6 @@ def savePoolinfoCsv(
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
 
-                stake_amt = 0
                 stake_amt = sum(stakes_at_chain[basetoken][pool_addr].values())
 
                 vol = 0
