@@ -327,10 +327,8 @@ def getAllPools(chainID: int) -> List[SimplePool]:
     pools = []
     offset = 0
     chunk_size = 1000  # max for subgraph = 1000
-    num_blocks = 99999999999  # to the infinity
 
-    # this is actually a while loop
-    for offset in range(0, num_blocks, chunk_size):
+    while True:
         query = """
         {
           pools(skip:%s, first:%s){
@@ -352,6 +350,7 @@ def getAllPools(chainID: int) -> List[SimplePool]:
             offset,
             chunk_size,
         )
+        offset += chunk_size
         result = submitQuery(query, chainID)
         ds = result["data"]["pools"]
         if ds == []:
