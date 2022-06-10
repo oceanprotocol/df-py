@@ -213,7 +213,8 @@ def getDTVolumes(
 
     DTvols: Dict[str, Dict[str, float]] = {}
     chunk_size = 1000  # max for subgraph = 1000
-    for offset in range(0, end_block - st_block, chunk_size):
+    offset = 0
+    while True:
         query = """
         {
           orders(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
@@ -232,8 +233,11 @@ def getDTVolumes(
             offset,
             chunk_size,
         )
+        offset += 1000
         result = submitQuery(query, chainID)
         new_orders = result["data"]["orders"]
+        if new_orders == []:
+            break
         for order in new_orders:
             lastPriceValue = float(order["lastPriceValue"])
             if lastPriceValue == 0:
