@@ -18,9 +18,8 @@ _CHAINID_TO_NETWORK = {
     56: "bsc",
     137: "polygon",
     246: "energyweb",
-    1284: "moonbeam",
-    1285: "moonriver",
     1287: "moonbase",
+    1285: "moonriver",
     80001: "mumbai",
 }
 _NETWORK_TO_CHAINID = {
