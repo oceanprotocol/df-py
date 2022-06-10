@@ -356,9 +356,9 @@ def getAllPools(chainID: int) -> List[SimplePool]:
         if ds == []:
             break  # if there are no pools left, break
         for d in ds:
-            tx_count = int(d["transactionCount"])
-            if tx_count == 0:
-                continue
+            ## tx_count = int(d["transactionCount"])
+            ## if tx_count == 0:
+            ##     continue
             pool = SimplePool(
                 addr=d["id"].lower(),
                 nft_addr=d["datatoken"]["nft"]["id"].lower(),

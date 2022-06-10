@@ -258,26 +258,34 @@ def savePoolinfoCsv(
             ]
         )
 
-        for basetoken in poolvols_at_chain:
-            if basetoken not in stakes_at_chain:
-                continue
-            for pool_addr, vol in poolvols_at_chain[basetoken].items():
-                row = []
-
-                row += [chainID, basetoken, pool_addr, vol]
-
+        for basetoken in stakes_at_chain:
+            for pool_addr in pools_by_addr:
                 if pool_addr not in stakes_at_chain[basetoken]:
                     continue
-                stake_amt = sum(stakes_at_chain[basetoken][pool_addr].values())
-                row += [stake_amt]
 
                 p = pools_by_addr[pool_addr]
-                row += [p.nft_addr, p.DT_addr, p.DT_symbol, p.basetoken_addr]
-
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
-                row += [did, url]
 
+                stake_amt = sum(stakes_at_chain[basetoken][pool_addr].values())
+
+                vol = 0
+                if pool_addr in poolvols_at_chain[basetoken]:
+                    vol = poolvols_at_chain[basetoken][pool_addr]
+
+                row = [
+                    chainID,
+                    basetoken,
+                    pool_addr,
+                    vol,
+                    stake_amt,
+                    p.nft_addr,
+                    p.DT_addr,
+                    p.DT_symbol,
+                    p.basetoken_addr,
+                    did,
+                    url,
+                ]
                 writer.writerow(row)
 
     print(f"Created {csv_file}")
