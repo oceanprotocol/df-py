@@ -298,8 +298,7 @@ def savePoolinfoCsv(
                 stake_amt = 0
                 stake_amt = sum(stakes_at_chain[basetoken][pool_addr].values())
 
-                row = []
-                row += [
+                row = [
                     chainID,
                     basetoken,
                     pool_addr,
