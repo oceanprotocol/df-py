@@ -278,7 +278,7 @@ def savePoolinfoCsv(
                     chainID,
                     basetoken,
                     pool_addr,
-                    0,
+                    vol,
                     stake_amt,
                     p.nft_addr,
                     p.DT_addr,
