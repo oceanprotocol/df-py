@@ -13,7 +13,7 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
     // token address => user address => balance
     mapping(address => mapping(address => uint256)) balances;
     mapping(address => uint256) allocated;
-    mapping(address => bool) strategies;
+    mapping(address => bool) live_strategies;
 
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
@@ -87,7 +87,7 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
         returns (uint256)
     {
         require(tx.origin == _to);
-        require(strategies[msg.sender], "Caller must be a strategy");
+        require(live_strategies[msg.sender], "Caller must be a strategy");
 
         return _claim(_to, tokenAddress, msg.sender);
     }
@@ -111,11 +111,11 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
 
     function addStrategy(address _strategy) external onlyOwner {
         // maybe add a timeout here
-        strategies[_strategy] = true;
+        live_strategies[_strategy] = true;
     }
 
     function retireStrategy(address _strategy) external onlyOwner {
-        strategies[_strategy] = false;
+        live_strategies[_strategy] = false;
     }
 
     // Don't allow eth transfers
