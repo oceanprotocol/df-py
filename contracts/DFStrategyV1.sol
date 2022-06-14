@@ -63,12 +63,9 @@ contract DFStrategyV1 is ReentrancyGuard {
             "Not enough rewards"
         );
         uint256 balanceBefore = IERC20(tokenAddress).balanceOf(address(this));
-        dfrewards.claimForStrat(msg.sender, tokenAddress); // claim rewards for strategy
+        uint256 claimed = dfrewards.claimForStrat(msg.sender, tokenAddress); // claim rewards for strategy
         uint256 balanceAfter = IERC20(tokenAddress).balanceOf(address(this));
-        require(
-            balanceAfter - balanceBefore == totalAmount,
-            "Not enough rewards"
-        );
+        require(balanceAfter - balanceBefore == claimed, "Not enough rewards");
 
         for (i = 0; i < amount.length; i += 1) {
             stake(tokenAddress, poolAddress[i], amount[i], msg.sender);
