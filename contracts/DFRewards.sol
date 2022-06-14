@@ -89,7 +89,7 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
         require(tx.origin == _to);
         require(strategies[msg.sender], "Caller must be a strategy");
 
-        return _claim(_to, tokenAddress, _to);
+        return _claim(_to, tokenAddress, msg.sender);
     }
 
     /*
