@@ -17,7 +17,6 @@ class HiddenPrints:
         sys.stdout = self._original_stdout
 
 
-# this looks ugly
 currentdir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
 parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
@@ -44,7 +43,7 @@ w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
 
 def main():
-    networkutil.connect(networkutil.DEV_CHAINID)  # Connect to ganache
+    networkutil.connect(CHAINID)  # Connect to ganache
     oceanutil.recordDevDeployedContracts()  # Record deployed contract addresses on ganache
     OCEAN = oceanutil.OCEANtoken()
 
@@ -92,11 +91,11 @@ def main():
             oceantestutil.consumeDT(DT, accounts[0], acc)
 
     # give some time for subgraph to index
-    print("Sleeping 10 secs")
-    time.sleep(5)  # sleep little script
+    print("Sleeping 30 secs")
+    time.sleep(15)  # sleep little script
 
-    print("5 secs left")  # extra print for impatient people
-    time.sleep(5)  # sleep little script
+    print("15 secs left")  # extra print for impatient people
+    time.sleep(15)  # sleep little script
 
     # %%
 
