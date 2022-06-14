@@ -35,7 +35,7 @@ def test_TOK():
     TOK.transfer(accounts[0].address, toBase18(100.0), {"from": accounts[9]})
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategy.deploy(df_rewards.address, {"from": accounts[0]})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
@@ -70,7 +70,7 @@ def test_OCEAN():
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategy.deploy(df_rewards.address, {"from": accounts[0]})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     OCEAN.approve(df_rewards, 10, {"from": accounts[0]})
     df_rewards.allocate([a1], [10], OCEAN.address, {"from": accounts[0]})
@@ -89,7 +89,7 @@ def test_multiple_TOK():
     TOK2 = _deployTOK(accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategy.deploy(df_rewards.address, {"from": accounts[0]})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
