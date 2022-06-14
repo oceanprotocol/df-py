@@ -7,7 +7,7 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyG
 import "./interfaces/IDFRewards.sol";
 import "./interfaces/IPool.sol";
 
-contract DFStrategy is ReentrancyGuard {
+contract DFStrategyV1 is ReentrancyGuard {
     using SafeERC20 for IERC20;
     IDFRewards dfrewards;
 
