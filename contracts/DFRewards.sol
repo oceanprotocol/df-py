@@ -110,7 +110,6 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
     }
 
     function addStrategy(address _strategy) external onlyOwner {
-        // maybe add a timeout here
         live_strategies[_strategy] = true;
     }
 
