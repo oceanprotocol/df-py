@@ -152,6 +152,59 @@ def test_bad_token():
         df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
 
 
+def test_strategies():
+    TOK = _deployTOK(accounts[0])
+
+    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    df_strategy = B.DummyStrategy.deploy(df_rewards.address, {"from": accounts[0]})
+
+    # allocate rewards
+    tos = [a1, a2, a3]
+    values = [10, 20, 30]
+    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
+    df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
+
+    assert TOK.balanceOf(df_strategy) == 0
+    with brownie.reverts("Caller doesn't match"):
+        # tx origin must be a1
+        df_strategy.claim(TOK.address, a1, {"from": accounts[2]})
+
+    with brownie.reverts("Caller must be a strategy"):
+        # non strategy addresses cannot claim
+        df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
+
+    # add strategy
+    df_rewards.addStrategy(df_strategy.address)
+
+    # should claim since it's a strategy
+    df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
+
+    # strategy balance increases
+    assert TOK.balanceOf(df_strategy) == 10
+
+    # should claim since it's a strategy
+    df_strategy.claim(TOK.address, a2, {"from": accounts[2]})
+
+    # strategy balance increases
+    assert TOK.balanceOf(df_strategy) == 30
+
+    # retire strategy
+    df_rewards.retireStrategy(df_strategy.address)
+
+    with brownie.reverts("Caller must be a strategy"):
+        # non strategy addresses cannot claim
+        df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
+
+    # add strategy
+    df_rewards.addStrategy(df_strategy.address)
+
+    # should claim since it's a strategy
+    df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
+
+    # strategy balance increases
+    assert TOK.balanceOf(df_strategy) == 60
+
+
 @enforce_types
 def _deployTOK(account):
     return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
