@@ -111,10 +111,12 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
 
     function addStrategy(address _strategy) external onlyOwner {
         live_strategies[_strategy] = true;
+        emit StrategyAdded(_strategy);
     }
 
     function retireStrategy(address _strategy) external onlyOwner {
         live_strategies[_strategy] = false;
+        emit StrategyRetired(_strategy);
     }
 
     // Don't allow eth transfers
