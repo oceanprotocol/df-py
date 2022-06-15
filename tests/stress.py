@@ -32,6 +32,7 @@ from enforce_typing import enforce_types
 from util import oceanutil, oceantestutil, networkutil, query
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
+from util.query import getApprovedTokens
 from tqdm import tqdm
 
 
@@ -45,7 +46,6 @@ w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 def main():
     networkutil.connect(CHAINID)  # Connect to ganache
     oceanutil.recordDevDeployedContracts()  # Record deployed contract addresses on ganache
-    OCEAN = oceanutil.OCEANtoken()
 
     test_accounts = []
 
@@ -61,13 +61,22 @@ def main():
     accounts = brownie.network.accounts
     assert len(test_accounts) == NUMBER_OF_ACCOUNTS
 
+    OCEAN = oceanutil.OCEANtoken()
+
+    approvedTokens = getApprovedTokens(networkutil.DEV_CHAINID)
+    if OCEAN.address not in approvedTokens.keys():
+        oceanutil.factoryRouter().addApprovedToken(OCEAN.address, {"from": accounts[0]})
+        time.sleep(2)
+
     ## Deploy pool
     print("Deploying pool")
     (DT, pool) = oceantestutil.deployPool(5000.0, 1.0, accounts[0], OCEAN)
 
     ## Fund all addresses
     total_balance = OCEAN.balanceOf(accounts[0])
-    funding_for_each_addr = 150e18
+    STAKE_AMT = 200.0
+    DT_buy_amt = 1.0
+    funding_for_each_addr = (STAKE_AMT + DT_buy_amt + 50) * 1e18
 
     assert total_balance > funding_for_each_addr
 
@@ -81,20 +90,19 @@ def main():
     print("Adding stake")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
-            oceantestutil.addStake(pool, 100.0, acc, OCEAN)
+            oceantestutil.addStake(pool, STAKE_AMT, acc, OCEAN)
 
     print("Buying and consuming DT")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
-            DT_buy_amt = 10.0
             oceantestutil.buyDT(pool, DT, DT_buy_amt, funding_for_each_addr, acc, OCEAN)
             oceantestutil.consumeDT(DT, accounts[0], acc)
 
     # give some time for subgraph to index
-    print("Sleeping 30 secs")
+    print("Sleeping 60 secs")
     time.sleep(30)  # sleep little script
 
-    print("15 secs left")  # extra print for impatient people
+    print("30 secs left")  # extra print for impatient people
     time.sleep(30)  # sleep little script
 
     # %%
