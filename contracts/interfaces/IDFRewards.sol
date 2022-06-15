@@ -4,6 +4,8 @@ pragma solidity 0.8.12;
 interface IDFRewards {
     event Allocated(address[] tos, uint256[] values, address tokenAddress);
     event Claimed(address to, uint256 value, address tokenAddress);
+    event StrategyAdded(address strategy);
+    event StrategyRetired(address strategy);
 
     function claimable(address _to, address tokenAddress)
         external
