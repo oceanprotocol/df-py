@@ -63,11 +63,11 @@ def main():
 
     ## Deploy pool
     print("Deploying pool")
-    (DT, pool) = oceantestutil.deployPool(500.0, 1.0, accounts[0], OCEAN)
+    (DT, pool) = oceantestutil.deployPool(5000.0, 1.0, accounts[0], OCEAN)
 
     ## Fund all addresses
     total_balance = OCEAN.balanceOf(accounts[0])
-    funding_for_each_addr = 15e18
+    funding_for_each_addr = 150e18
 
     assert total_balance > funding_for_each_addr
 
@@ -81,21 +81,21 @@ def main():
     print("Adding stake")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
-            oceantestutil.addStake(pool, 10.0, acc, OCEAN)
+            oceantestutil.addStake(pool, 100.0, acc, OCEAN)
 
     print("Buying and consuming DT")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
-            DT_buy_amt = 1.0
+            DT_buy_amt = 10.0
             oceantestutil.buyDT(pool, DT, DT_buy_amt, funding_for_each_addr, acc, OCEAN)
             oceantestutil.consumeDT(DT, accounts[0], acc)
 
     # give some time for subgraph to index
     print("Sleeping 30 secs")
-    time.sleep(15)  # sleep little script
+    time.sleep(30)  # sleep little script
 
     print("15 secs left")  # extra print for impatient people
-    time.sleep(15)  # sleep little script
+    time.sleep(30)  # sleep little script
 
     # %%
 
@@ -120,7 +120,7 @@ def main():
 
     print("Running dftool calc")
     TOKEN_SYMBOL = "OCEAN"
-    TOT_TOKEN = 1000.0
+    TOT_TOKEN = 10000.0
     cmd = f"./dftool calc {CSV_DIR} {TOT_TOKEN} {TOKEN_SYMBOL}"
     os.system(cmd)
 
@@ -138,11 +138,13 @@ def main():
     for acc in test_accounts:
         claimable_amounts.append(df_rewards.claimable(acc.address, OCEAN.address))
 
+    print(claimable_amounts)
+
     avg_amt = sum(claimable_amounts) / len(claimable_amounts)
     print("Checking reward amount for each addresss, expected is", avg_amt)
     for amt in claimable_amounts:
-        # print("Expected:", avg_amt)
-        # print("Actual:", amt)
+        print("Expected:", avg_amt)
+        print("Actual:", amt)
         assert abs(avg_amt - amt) < 1e18
 
     print(f"Checked {len(claimable_amounts)} addresses!")
