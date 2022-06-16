@@ -43,9 +43,6 @@ Let's get Barge going. Open a new terminal and:
 git clone git@github.com:oceanprotocol/barge.git
 cd barge
 
-#ensure v4 repo
-git checkout v4
-
 #clean up old containers (to be sure)
 docker system prune -a --volumes
 
