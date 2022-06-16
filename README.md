@@ -49,10 +49,7 @@ docker system prune -a --volumes
 #run barge
 #-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
 #-sends stdout & stderr to out.txt
-./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > out.txt 2>&1 &
-
-#monitor output
-tail -f out.txt
+./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph
 ```
 
 ### Install df-py
