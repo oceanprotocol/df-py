@@ -305,9 +305,10 @@ def getApprovedTokens(chainID: int) -> Dict[str, str]:
     @return
       d - dict of [token_addr] : token_symbol
     """
-    query = "{ opcs{approvedTokens} }"
+    query = "{ opcs { approvedTokens { id } } }"
     result = submitQuery(query, chainID)
-    addrs = result["data"]["opcs"][0]["approvedTokens"]
+    # subgraph data: "approvedTokens": [ { "id": "address" } ]
+    addrs = [x["id"] for x in result["data"]["opcs"][0]["approvedTokens"]]
     d = {addr.lower(): B.Simpletoken.at(addr).symbol().upper() for addr in addrs}
     assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
     for _symbol in d.values():
