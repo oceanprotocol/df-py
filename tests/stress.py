@@ -38,7 +38,7 @@ from tqdm import tqdm
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-NUMBER_OF_ACCOUNTS = 10
+NUMBER_OF_ACCOUNTS = 1_000
 
 w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
@@ -47,6 +47,10 @@ def main():
     networkutil.connect(CHAINID)  # Connect to ganache
     oceanutil.recordDevDeployedContracts()  # Record deployed contract addresses on ganache
 
+    CSV_DIR = str("/tmp/df_stress_test")
+    ST = len(brownie.network.chain)
+    FIN = "latest"
+    NSAMP = 50
     test_accounts = []
 
     # store 10k private keys
@@ -70,18 +74,19 @@ def main():
 
     ## Deploy pool
     print("Deploying pool")
-    (DT, pool) = oceantestutil.deployPool(5000.0, 1.0, accounts[0], OCEAN)
+    (DT, pool) = oceantestutil.deployPool(1000.0, 1.0, accounts[0], OCEAN)
 
     ## Fund all addresses
     total_balance = OCEAN.balanceOf(accounts[0])
-    STAKE_AMT = 200.0
+    STAKE_AMT = 10.0
     DT_buy_amt = 1.0
-    funding_for_each_addr = (STAKE_AMT + DT_buy_amt + 50) * 1e18
+    DT_buy_times = 1
+    funding_for_each_addr = (STAKE_AMT + DT_buy_amt * DT_buy_times + 50) * 1e18
 
     assert total_balance > funding_for_each_addr
 
     print(
-        "Funding accounts and consuming...",
+        "Funding accounts",
     )
     for acc in tqdm(test_accounts):
         with HiddenPrints():
@@ -92,11 +97,18 @@ def main():
         with HiddenPrints():
             oceantestutil.addStake(pool, STAKE_AMT, acc, OCEAN)
 
+    # give some time for subgraph to index
+    print("Sleeping 30 secs")
+    time.sleep(30)  # sleep little script
+
     print("Buying and consuming DT")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
-            oceantestutil.buyDT(pool, DT, DT_buy_amt, funding_for_each_addr, acc, OCEAN)
-            oceantestutil.consumeDT(DT, accounts[0], acc)
+            for _ in range(DT_buy_times):
+                oceantestutil.buyDT(
+                    pool, DT, DT_buy_amt, funding_for_each_addr, acc, OCEAN
+                )
+                oceantestutil.consumeDT(DT, accounts[0], acc)
 
     # give some time for subgraph to index
     print("Sleeping 60 secs")
@@ -112,10 +124,6 @@ def main():
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
     print("Running dftool query")
-    CSV_DIR = str("/tmp/df_stress_test")
-    ST = 0
-    FIN = "latest"
-    NSAMP = 1
     cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
 
@@ -150,12 +158,14 @@ def main():
 
     avg_amt = sum(claimable_amounts) / len(claimable_amounts)
     print("Checking reward amount for each addresss, expected is", avg_amt)
+    errors = 0
     for amt in claimable_amounts:
-        print("Expected:", avg_amt)
-        print("Actual:", amt)
-        assert abs(avg_amt - amt) < 1e18
 
-    print(f"Checked {len(claimable_amounts)} addresses!")
+        if abs(avg_amt - amt) < 1e18:
+            errors += 1
+            print("Found an error --- Expected:", avg_amt, "Actual:", amt)
+
+    print(f"Checked {len(claimable_amounts)} addresses! Found {errors} errors")
 
 
 main()
