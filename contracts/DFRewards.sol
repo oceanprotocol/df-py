@@ -110,27 +110,26 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
         IERC20(_token).transfer(msg.sender, amount);
     }
 
-
     /**
      * @dev isStrategy
      *      Returns true if strategy exists in the list
      *  @param _strategy address Strategy address to be checked
      */
-    function isStrategy(address _strategy) public view returns(bool) {
+    function isStrategy(address _strategy) public view returns (bool) {
         for (uint256 i = 0; i < live_strategies.length; i++) {
-            if(live_strategies[i] == _strategy) return true;
+            if (live_strategies[i] == _strategy) return true;
         }
         return false;
     }
-    
+
     /**
      * @dev addStrategy
      *      Adds a new strategy
      *  @param _strategy address Strategy address to be added
      */
     function addStrategy(address _strategy) external onlyOwner {
-        if(!isStrategy(_strategy)){
-            live_strategies.push(tokenAddress);
+        if (!isStrategy(_strategy)) {
+            live_strategies.push(_strategy);
             emit StrategyAdded(_strategy);
         }
     }
@@ -141,16 +140,13 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
      *  @param _strategy address Strategy address to be removed
      */
     function retireStrategy(address _strategy) external onlyOwner {
-        require(
-            _strategy != address(0),
-            "Invalid strategy address"
-        );
+        require(_strategy != address(0), "Invalid strategy address");
         uint256 i;
         for (i = 0; i < live_strategies.length; i++) {
-            if(live_strategies[i] == _strategy) break;
+            if (live_strategies[i] == _strategy) break;
         }
-        if(i < live_strategies.length){
-            _strategy[i] = _strategy[_strategy.length -1];
+        if (i < live_strategies.length) {
+            _strategy[i] = _strategy[_strategy.length - 1];
             _strategy.pop();
             emit StrategyRetired(_strategy);
         }
