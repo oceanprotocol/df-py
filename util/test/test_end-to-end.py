@@ -35,7 +35,7 @@ def test_without_csvs():
         for pool_addr in stakes[chainID][basetoken_address]:
             for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
                 total_stakes += stakes[chainID][basetoken_address][pool_addr][LP_addr]
-    OCEAN_avail = total_stakes * 0.0015717
+    OCEAN_avail = total_stakes * 0.015717
 
     rewardsperlp, _ = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
@@ -78,7 +78,7 @@ def test_with_csvs(tmp_path):
         for pool_addr in S[chainID][basetoken_address]:
             for LP_addr in S[chainID][basetoken_address][pool_addr]:
                 total_stakes += S[chainID][basetoken_address][pool_addr][LP_addr]
-    OCEAN_avail = total_stakes * 0.0015717
+    OCEAN_avail = total_stakes * 0.015717
 
     rewardsperlp, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
