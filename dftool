@@ -678,6 +678,12 @@ def do_main():
         do_manyrandom()
     elif sys.argv[1] == "newdfrewards":
         do_newdfrewards()
+    elif sys.argv[1] == "newdfstrategy":
+        do_newdfstrategy()
+    elif sys.argv[1] == "addstrategy":
+        do_addstrategy()
+    elif sys.argv[1] == "retirestrategy":
+        do_retirestrategy()
     elif sys.argv[1] == "mine":
         do_mine()
     elif sys.argv[1] == "newacct":
