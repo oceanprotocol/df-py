@@ -146,8 +146,8 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
             if (live_strategies[i] == _strategy) break;
         }
         if (i < live_strategies.length) {
-            _strategy[i] = _strategy[_strategy.length - 1];
-            _strategy.pop();
+            live_strategies[i] = live_strategies[live_strategies.length - 1];
+            live_strategies.pop();
             emit StrategyRetired(_strategy);
         }
     }
