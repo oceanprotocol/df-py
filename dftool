@@ -358,6 +358,35 @@ Usage: dftool newdfrewards CHAINID
 
 # ========================================================================
 @enforce_types
+def do_newdfstrategy():
+    HELP = f"""Deploy new DFStrategy contract.
+
+Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
+  CHAINID -- {CHAINID_EXAMPLES}
+  DFREWARDS_ADDR -- DFRewards contract address
+  DFSTRATEGY_NAME -- DFStrategy contract name
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    assert sys.argv[1] == "newdfstrategy"
+    CHAINID = int(sys.argv[2])
+    DFREWARDS_ADDR = sys.argv[3]
+    DFSTRATEGY_NAME = sys.argv[4]
+
+    print(f"Arguments: CHAINID={CHAINID}")
+
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+    df_strategy = B[DFSTRATEGY_NAME].deploy(DFREWARDS_ADDR, {"from": from_account})
+    print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
+
+    print("dftool newdfstrategy: Done")
+
+
+# ========================================================================
+@enforce_types
 def do_compile():
     HELP = """Compile contracts
 
