@@ -30,7 +30,7 @@ def calcRewards(
     poolvols = cleancase.modPoolvols(poolvols)
     rates = cleancase.modRates(rates)
 
-    TARGET_WPY = 0.0015717  # (Weekly Percent Yield) needs to be 1.5717%.
+    TARGET_WPY = 0.015717  # (Weekly Percent Yield) needs to be 1.5717%.
     TARGET_REWARD_AMT = _sumStakes(stakes) * TARGET_WPY
     TOKEN_avail = min(TOKEN_avail, TARGET_REWARD_AMT)  # Max apy is 125%
 

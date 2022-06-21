@@ -172,7 +172,7 @@ def test_calcrewards_math():
 
 
 def test_apy_cap():
-    stakes = {C1: {OCN: {PA: {LP1: 1000 / 0.0015717}}}}
+    stakes = {C1: {OCN: {PA: {LP1: 1000 / 0.015717}}}}
     poolvols = {C1: {OCN: {PA: 1.0}}}
 
     target_rewardsperlp = {C1: {LP1: 1000.0}}
