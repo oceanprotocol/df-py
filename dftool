@@ -48,6 +48,10 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool compile - compile contracts
   dftool manyrandom - deploy many random tokens & pools then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
+  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
+  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
+
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
@@ -388,7 +392,7 @@ Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
 # ========================================================================
 @enforce_types
 def do_addstrategy():
-    HELP = f"""Add strategy to DFRewards contract.
+    HELP = f"""Add a strategy to DFRewards contract.
 
 Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
   CHAINID -- {CHAINID_EXAMPLES}
@@ -420,7 +424,7 @@ Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 # ========================================================================
 @enforce_types
 def do_retirestrategy():
-    HELP = f"""Retire strategy from DFRewards contract.
+    HELP = f"""Retire a strategy from DFRewards contract.
 
 Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
   CHAINID -- {CHAINID_EXAMPLES}
