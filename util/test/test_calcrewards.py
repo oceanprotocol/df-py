@@ -294,6 +294,9 @@ def _deployTOK(account):
 
 @enforce_types
 def setup_function():
+    """Setup any state tied to the execution of the given function.
+    Invoked for every test function in the module.
+    """
     networkutil.connect(networkutil.DEV_CHAINID)
     global accounts
     accounts = brownie.network.accounts
