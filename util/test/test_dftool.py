@@ -121,7 +121,7 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def test_help_commands(tmp_path):
+def test_help_commands():
     argv1s = ["",
               "query", "getrate", "calc", "dispense",
               "querymany", "compile", "manyrandom", "newdfrewards",
@@ -129,14 +129,13 @@ def test_help_commands(tmp_path):
               "acctinfo", "chaininfo"]
     for argv1 in argv1s:
         cmd = f"./dftool {argv1}"
-        
-        proc = subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        output_s = []
-        while proc.poll() is None:
-            output_s += [proc.stdout.readline().decode("ascii")]
-        output_s = ''.join(output_s)
-        
+
+        output_s = ""
+        with subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE,
+                              stderr=subprocess.STDOUT) as proc:
+            while proc.poll() is None:
+                output_s += proc.stdout.readline().decode("ascii")
+
         return_code = proc.wait()
         assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
 
