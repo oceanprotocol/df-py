@@ -4,22 +4,13 @@
 FAKE_CHAINID = 99
 FAKE_TOKEN = "fake_token"
 
-
-def modApprovedTokens(approved_tokens: dict) -> dict:
-    """approved_tokens - dict of [basetoken_address] : symbol_str"""
-    approved_tokens2: dict = {}
-    for baseaddr, symbol in approved_tokens.items():
-        approved_tokens2[baseaddr.lower()] = symbol.upper()
-    return approved_tokens2
+def modTuple(stakes, poolvols, approved_tokens, rates) -> tuple:
+    return (modStakes(stakes),
+            modPoolvols(poolvols),
+            modApprovedTokens(approved_tokens),
+            modRates(rates)
 
 
-def assertApprovedTokens(approved_tokens: dict):
-    """approved_tokens - dict of [basetoken_address] : symbol_str"""
-    for baseaddr, symbol in approved_tokens.items():
-        assert baseaddr == baseaddr.lower()
-        assert symbol == symbol.upper()
-
-    
 def modStakes(stakes: dict) -> dict:
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     stakes2: dict = {}
@@ -107,6 +98,21 @@ def assertPoolvolsAtChain(poolvols_at_chain: dict):
 def assertPoolvolsUsdAtChain(poolvols_USD_at_chain: dict):
     """poolvols - dict of [pool_addr] : vol"""
     assertPoolvols({FAKE_CHAINID: {FAKE_TOKEN: poolvols_USD_at_chain}})
+
+
+def modApprovedTokens(approved_tokens: dict) -> dict:
+    """approved_tokens - dict of [basetoken_address] : symbol_str"""
+    approved_tokens2: dict = {}
+    for baseaddr, symbol in approved_tokens.items():
+        approved_tokens2[baseaddr.lower()] = symbol.upper()
+    return approved_tokens2
+
+
+def assertApprovedTokens(approved_tokens: dict):
+    """approved_tokens - dict of [basetoken_address] : symbol_str"""
+    for baseaddr, symbol in approved_tokens.items():
+        assert baseaddr == baseaddr.lower()
+        assert symbol == symbol.upper()
 
 
 def modRates(rates: dict) -> dict:
