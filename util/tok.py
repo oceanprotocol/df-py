@@ -29,6 +29,13 @@ class TokSet:
         assert not self.hasSymbol(tok.chainID, tok.symbol)
         self.toks.add(tok)
 
+    def hasChain(self, chainID: int) -> bool:
+        """Are there any tokens at this chainID?"""
+        for tok in self.toks:
+            if tok.chainID == chainID:
+                return True
+        return False                
+
     def hasAddress(self, chainID: int, address: str) -> bool:
         """Is there a token at this chainID & address?"""
         tok = self.tokAtAddress(chainID, address)

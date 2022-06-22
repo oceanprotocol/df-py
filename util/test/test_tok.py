@@ -38,6 +38,10 @@ def test_TokSet():
     tok_set.add(Tok(1, "0x123", "OCEAN"))
     tok_set.add(Tok(1, "0x456", "H2O"))
     tok_set.add(Tok(2, "0x78b", "OCEAN"))
+
+    assert tok_set.hasChain(1)
+    assert tok_set.hasChain(2)
+    assert not tok_set.hasChain(9)
     
     assert tok_set.hasAddress(1, "0x123")
     assert tok_set.hasAddress(2, "0x78b")
