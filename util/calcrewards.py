@@ -81,6 +81,8 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float], tok_set : TokSet) -> dic
         stakes_USD[chainID] = {}
         for base_symb, rate in rates.items():
             base_addr = tok_set.getAddress(chainID, base_symb)
+            if base_addr not in stakes[chainID]:
+                continue
             for pool_addr in stakes[chainID][base_addr].keys():
                 stakes_USD[chainID][pool_addr] = {}
                 for LP_addr, stake in stakes[chainID][base_addr][pool_addr].items():
@@ -110,8 +112,9 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float], tok_set : TokSet) ->
     for chainID in poolvols:
         poolvols_USD[chainID] = {}
         for base_symb, rate in rates.items():
-            assert base_symb[:2] != "0x", base_symb
             base_addr = tok_set.getAddress(chainID, base_symb)
+            if base_addr not in poolvols[chainID]:
+                continue
             for pool_addr, vol in poolvols_at_chain[base_addr].items():
                 poolvols_USD[chainID][pool_addr] = vol * rate
 
