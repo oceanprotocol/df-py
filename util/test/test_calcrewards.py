@@ -12,15 +12,20 @@ from util.oceanutil import recordDeployedContracts, OCEAN_address
 from util.constants import BROWNIE_PROJECT as B
 from util import networkutil
 from util.query import getApprovedTokens
+from util.tok import Tok, TokSet
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6}
 C1, C2 = 7, 137
 PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
 LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
-OCN, H2O = "OCEAN", "H2O"
-OCN_ADDR, H2O_ADDR = "OCEAN_addr", "H2O_addr"
-APPROVED_TOKENS = {OCN_ADDR : OCN, H2O_ADDR : H2O}
+OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
+OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
+
+APPROVED_TOKENS = TokSet()
+for chainID in [C1, C2]:
+    APPROVED_TOKENS.add(Tok(chainID, OCN_ADDR, OCN_SYMB))
+    APPROVED_TOKENS.add(Tok(chainID, H2O_ADDR, H2O_SYMB))
 
 
 @enforce_types
