@@ -2,9 +2,7 @@ from typing import Dict, Tuple
 
 from enforce_typing import enforce_types
 
-from util import cleancase
-from util.query import symbol, getApprovedTokens
-from util import networkutil
+from util import approvedFilter, cleancase
 
 
 @enforce_types
@@ -30,9 +28,10 @@ def calcRewards(
     @notes
       A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
-    # get cases happy
-    (stakes, poolvols, approved_tokens, rates) = cleancase.modTuple(
-        stakes, poolvols, approved_tokens, rates)
+    (approved_tokens, stakes, poolvols, rates) = cleancase.modTuple(
+        approved_tokens, stakes, poolvols, rates)
+    (stakes, poolvols) = approvedfilter.modTuple(
+        approved_tokens, stakes, poolvols)
 
     TARGET_WPY = 0.015717  # (Weekly Percent Yield) needs to be 1.5717%.
     TARGET_REWARD_AMT = _sumStakes(stakes) * TARGET_WPY
