@@ -48,6 +48,10 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool compile - compile contracts
   dftool manyrandom CHAINID - deploy many random tokens & pools then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
+  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
+  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
+
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
@@ -351,9 +355,101 @@ Usage: dftool newdfrewards CHAINID
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = B.DFRewards.deploy({"from": from_account})
-    print(f"New dispense contract deployed at address: {df_rewards.address}")
+    print(f"New DFRewards contract deployed at address: {df_rewards.address}")
 
     print("dftool newdfrewards: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_newdfstrategy():
+    HELP = f"""Deploy new DFStrategy contract.
+
+Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
+  CHAINID -- {CHAINID_EXAMPLES}
+  DFREWARDS_ADDR -- DFRewards contract address
+  DFSTRATEGY_NAME -- DFStrategy contract name
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    assert sys.argv[1] == "newdfstrategy"
+    CHAINID = int(sys.argv[2])
+    DFREWARDS_ADDR = sys.argv[3]
+    DFSTRATEGY_NAME = sys.argv[4]
+
+    print(f"Arguments: CHAINID={CHAINID}")
+
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+    df_strategy = B[DFSTRATEGY_NAME].deploy(DFREWARDS_ADDR, {"from": from_account})
+    print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
+
+    print("dftool newdfstrategy: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_addstrategy():
+    HELP = f"""Add a strategy to DFRewards contract.
+
+Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
+  CHAINID -- {CHAINID_EXAMPLES}
+  DFREWARDS_ADDR -- DFRewards contract address
+  DFSTRATEGY_ADDR -- DFStrategy contract address
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    assert sys.argv[1] == "addstrategy"
+    CHAINID = int(sys.argv[2])
+    DFREWARDS_ADDR = sys.argv[3]
+    DFSTRATEGY_ADDR = sys.argv[4]
+
+    print(f"Arguments: CHAINID={CHAINID}")
+
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+    df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
+    tx = df_rewards.addStrategy(DFSTRATEGY_ADDR, {"from": from_account})
+    assert tx.events.keys()[0] == "StrategyAdded"
+
+    print(f"Strategy {DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}")
+
+    print("dftool addstrategy: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_retirestrategy():
+    HELP = f"""Retire a strategy from DFRewards contract.
+
+Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
+  CHAINID -- {CHAINID_EXAMPLES}
+  DFREWARDS_ADDR -- DFRewards contract address
+  DFSTRATEGY_ADDR -- DFStrategy contract address
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    assert sys.argv[1] == "retirestrategy"
+    CHAINID = int(sys.argv[2])
+    DFREWARDS_ADDR = sys.argv[3]
+    DFSTRATEGY_ADDR = sys.argv[4]
+
+    print(f"Arguments: CHAINID={CHAINID}")
+
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+    df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
+    tx = df_rewards.retireStrategy(DFSTRATEGY_ADDR, {"from": from_account})
+    assert tx.events.keys()[0] == "StrategyRetired"
+    print(f"Strategy {DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}")
+
+    print("dftool addstrategy: Done")
 
 
 # ========================================================================
@@ -609,6 +705,12 @@ def do_main():
         do_manyrandom()
     elif sys.argv[1] == "newdfrewards":
         do_newdfrewards()
+    elif sys.argv[1] == "newdfstrategy":
+        do_newdfstrategy()
+    elif sys.argv[1] == "addstrategy":
+        do_addstrategy()
+    elif sys.argv[1] == "retirestrategy":
+        do_retirestrategy()
     elif sys.argv[1] == "mine":
         do_mine()
     elif sys.argv[1] == "newacct":
