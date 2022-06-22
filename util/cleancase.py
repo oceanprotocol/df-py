@@ -9,30 +9,10 @@ FAKE_TOKEN = "fake_token"
 
 
 @enforce_types
-def modTuple(approved_tokens, stakes, poolvols, rates) -> tuple:
-    return (modApprovedTokens(approved_tokens),
-            modStakes(stakes),
+def modTuple(stakes, poolvols, rates) -> tuple:
+    return (modStakes(stakes),
             modPoolvols(poolvols),
             modRates(rates))
-
-
-@enforce_types
-def modApprovedTokens(approved_tokens: dict) -> dict:
-    """approved_tokens - dict of [chainID] : baseaddr_list"""
-    approved_tokens2: dict = {}
-    for chainID, baseaddr_list in approved_tokens.items():
-        approved_tokens2[chainID] = [addr.lower() for addr in baseaddr_list]
-    assertApprovedTokens(approved_tokens2)
-    return approved_tokens2
-
-
-@enforce_types
-def assertApprovedTokens(approved_tokens: dict):
-    """approved_tokens - dict of [chainID] : baseaddr_list"""
-    for chainID, baseaddr_list in approved_tokens.items():
-        for baseaddr in baseaddr_list:
-            assert baseaddr == baseaddr.lower()
-            assert baseaddr[:2] == "0x"
 
 
 @enforce_types
