@@ -34,10 +34,9 @@ def test_0x():
 
 @enforce_types
 def test_TokSet():
-    tok_set = TokSet()
-    tok_set.add(Tok(1, "0x123", "OCEAN"))
-    tok_set.add(Tok(1, "0x456", "H2O"))
-    tok_set.add(Tok(2, "0x78b", "OCEAN"))
+    tok_set = TokSet([(1, "0x123", "OCEAN"),
+                      (1, "0x456", "H2O")])
+    tok_set.add(2, "0x78b", "OCEAN")
 
     assert tok_set.hasChain(1)
     assert tok_set.hasChain(2)

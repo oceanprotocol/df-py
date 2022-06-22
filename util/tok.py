@@ -17,16 +17,19 @@ class Tok:
         self.symbol = symbol
         
 class TokSet:
-    def __init__(self):
+    def __init__(self, tups : list):
         self.toks = set()
+        for (chainID, address, symbol) in tups:
+            self.add(chainID, address, symbol)
 
-    def add(self, tok: Tok):
+    def add(self, chainID: int, address: str, symbol: str):
         """
         Add another Tok to this set. 
         For a given chain: both address & symbol must be unique.
         """
-        assert not self.hasAddress(tok.chainID, tok.address)
-        assert not self.hasSymbol(tok.chainID, tok.symbol)
+        assert not self.hasAddress(chainID, address)
+        assert not self.hasSymbol(chainID, symbol)
+        tok = Tok(chainID, address, symbol)
         self.toks.add(tok)
 
     def hasChain(self, chainID: int) -> bool:
