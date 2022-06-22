@@ -1,15 +1,14 @@
+import os
 import time
 import types
-import os
 
 import brownie
 from enforce_typing import enforce_types
 
-from util import csvs, oceanutil, networkutil
+from util import csvs, networkutil, oceanutil, oceantestutil
 from util.base18 import fromBase18, toBase18
-from util.oceanutil import OCEAN_address
 from util.constants import BROWNIE_PROJECT as B
-from util import oceantestutil
+from util.oceanutil import OCEAN_address
 
 accounts, PREV, DISPENSE_ACCT = None, None, None
 
