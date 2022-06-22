@@ -5,6 +5,15 @@ from enforce_typing import enforce_types
 from scipy import optimize
 
 
+
+@enforce_types
+def getNextThursdayTimestamp() -> int:
+    d = date.today()
+    while d.strftime("%a") != "Thu":
+        d += timedelta(1)
+    return int(d.strftime("%s"))
+
+
 @enforce_types
 def timestrToBlock(chain, timestr: str) -> int:
     """

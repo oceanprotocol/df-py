@@ -1,10 +1,16 @@
+from datetime import datetime
 from pytest import approx
 
 import brownie
 from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
-from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
+from util.blocktime import (
+    getNextThursdayTimestamp,
+    timestrToBlock,
+    timestrToTimestamp,
+    timestampToBlock,
+)
 
 chain = None
 
@@ -82,6 +88,14 @@ def test_timestampToBlock():
     assert timestampToBlock(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
 
     assert timestampToBlock(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
+
+
+@enforce_types
+def test_get_next_thursday():
+    next_thursday = getNextThursdayTimestamp()
+    date = datetime.fromtimestamp(next_thursday)
+
+    assert date.isoweekday() == 4
 
 
 @enforce_types
