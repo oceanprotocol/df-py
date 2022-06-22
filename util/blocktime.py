@@ -53,6 +53,31 @@ def timestrToTimestamp(timestr: str) -> float:
 
 
 @enforce_types
+def timestampToBlockFuture(chain, timestamp: Union[float, int]) -> int:
+    def timeSinceTimestamp(block_i):
+        return chain[int(block_i)].timestamp
+
+    block_last_number = len(chain) - 1
+    block_old_number = block_last_number - 10_000
+
+    block_last_time = timeSinceTimestamp(block_last_number)
+    block_old_time = timeSinceTimestamp(block_old_number)
+
+    assert block_last_time < timestamp
+
+    m = (block_last_number - block_old_number) / (block_last_time - block_old_time)
+    b = block_last_number - block_last_time * m
+
+    # y = mx + b
+    # y block number
+    # x block time
+
+    # thus
+    estimated_block_number = m * timestamp + b
+    return int(estimated_block_number)
+
+
+@enforce_types
 def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
 
