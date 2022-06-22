@@ -13,16 +13,12 @@ from util.constants import BROWNIE_PROJECT as B
 from util import networkutil
 from util.query import getApprovedTokens
 
-RATES = None
-accounts = None
 # for shorter lines
-C1, C2 = networkutil.DEV_CHAINID, None
+RATES = None
+C1, C2 = networkutil.DEV_CHAINID, 2
 PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
 LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
 OCN, H2O = None, None
-
-CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 
 @enforce_types
@@ -193,36 +189,6 @@ def test_stakesToUsd_onebasetoken():
 
 
 @enforce_types
-def test_stakesToUsd_nonapprovedtoken():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
-    stakes = {C1: {nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = _stakesToUsd(stakes, RATES)
-    assert stakes_USD == {C1: {}}
-
-
-@enforce_types
-def test_stakesToUsd_two_approved_one_nonapproved():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
-
-    stakes = {
-        C1: {
-            nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}},
-            OCN: {PA: {LP1: 3.0, LP2: 4.0}},
-            H2O: {PC: {LP1: 5.0, LP4: 6.0}},
-        }
-    }
-    stakes_USD = _stakesToUsd(stakes, RATES)
-    assert stakes_USD == {
-        C1: {
-            PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
-            PC: {LP1: 5.0 * 1.6, LP4: 6.0 * 1.6},
-        }
-    }
-
-
-@enforce_types
 def test_stakesToUsd_twobasetokens():
     stakes = {
         C1: {
@@ -247,32 +213,6 @@ def test_poolvolsToUsd_onebasetoken():
 
 
 @enforce_types
-def test_poolvolsToUsd_nonapprovedtoken():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
-    stakes = {C1: {nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = _poolvolsToUsd(stakes, RATES)
-    assert stakes_USD == {C1: {}}
-
-
-@enforce_types
-def test_poolvolsToUsd_two_approved_one_nonapproved():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
-    poolvols = {
-        C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}, nonApprovedTokenAddr: {PC: 100}}
-    }
-    poolvols_USD = _poolvolsToUsd(poolvols, RATES)
-    assert poolvols_USD == {
-        C1: {
-            PA: 9.0 * 0.5,
-            PB: 11.0 * 0.5,
-            PC: 13.0 * 1.6,
-        }
-    }
-
-
-@enforce_types
 def test_poolvolsToUsd_twobasetokens():
     poolvols = {C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}}}
     poolvols_USD = _poolvolsToUsd(poolvols, RATES)
@@ -285,33 +225,3 @@ def test_poolvolsToUsd_twobasetokens():
     }
 
 
-@enforce_types
-def _deployTOK(account):
-    return B.Simpletoken.deploy(
-        f"H2O_{random.randint(0,99999):05d}", "H2O", 18, 100e18, {"from": account}
-    )
-
-
-@enforce_types
-def setup_function():
-    """Setup any state tied to the execution of the given function.
-    Invoked for every test function in the module.
-    """
-    networkutil.connect(networkutil.DEV_CHAINID)
-    global accounts
-    accounts = brownie.network.accounts
-    recordDeployedContracts(ADDRESS_FILE)
-
-    global OCN, H2O
-    OCN = OCEAN_address().lower()
-    H2O = _deployTOK(accounts[0])
-    H2O_addr = H2O.address.lower()
-
-    approvedTokens = getApprovedTokens(networkutil.DEV_CHAINID)
-    if H2O_addr not in approvedTokens.keys():
-        oceanutil.factoryRouter().addApprovedToken(H2O_addr, {"from": accounts[0]})
-        time.sleep(2)
-
-    global RATES
-    RATES = {"OCEAN": 0.5, H2O.symbol(): 1.6}
-    H2O = H2O_addr
