@@ -22,11 +22,10 @@ LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
 
-APPROVED_TOKENS = TokSet()
-for chainID in [C1, C2]:
-    APPROVED_TOKENS.add(Tok(chainID, OCN_ADDR, OCN_SYMB))
-    APPROVED_TOKENS.add(Tok(chainID, H2O_ADDR, H2O_SYMB))
-
+APPROVED_TOKENS = TokSet([(C1, OCN_ADDR, OCN_SYMB),
+                          (C1, H2O_ADDR, H2O_SYMB),
+                          (C2, OCN_ADDR, OCN_SYMB),
+                          (C2, H2O_ADDR, H2O_SYMB)])
 
 @enforce_types
 def test_calcRewards1_onechain():

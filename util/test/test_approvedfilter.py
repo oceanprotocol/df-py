@@ -4,10 +4,9 @@ import pytest
 from util import cleancase, approvedfilter
 from util.tok import Tok, TokSet
 
-APPROVED_TOKENS = TokSet()
-APPROVED_TOKENS.add(Tok(1, "0xocean", "OCEAN"))
-APPROVED_TOKENS.add(Tok(1, "0xh2o", "H2O"))
-APPROVED_TOKENS.add(Tok(2, "0xocean", "OCEAN"))
+APPROVED_TOKENS = TokSet([(1, "0xocean", "OCEAN"),
+                          (1, "0xh2o", "H2O"),
+                          (2, "0xocean", "OCEAN")])
 
 @enforce_types
 def test_stakes_fail_cleancase():
