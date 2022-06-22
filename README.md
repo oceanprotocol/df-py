@@ -23,7 +23,7 @@ Usage: dftool query|calc|dispense|..
 
 Data flow ([source](https://docs.google.com/presentation/d/11Nu_emSgw3iYZKDcmnvZC_aOM00MDyYTtTWQP4PYox4/edit#slide=id.p)): 
 
-<div><a href="url"><img src="images/data-flow.png" align="left" height="100" width="100" ></a></div><br/><br/><br/><br/>
+<div><img src="images/data-flow.png" align="left" height="100" width="100"></div><br/><br/><br/><br/>
 
 
 # Installation
