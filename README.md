@@ -21,6 +21,11 @@ Usage: dftool query|calc|dispense|..
   ...
 ```
 
+Data flow ([source](https://docs.google.com/presentation/d/11Nu_emSgw3iYZKDcmnvZC_aOM00MDyYTtTWQP4PYox4/edit#slide=id.p)): 
+
+<div><img src="images/data-flow.png" align="left" height="100" width="100"></div><br/><br/><br/><br/>
+
+
 # Installation
 
 ### Prerequisites
@@ -28,6 +33,7 @@ Usage: dftool query|calc|dispense|..
 Ensure prerequisites:
 - Linux/MacOS
 - Python 3.8.5+
+- mypy, pylint, black. `sudo apt install mypy pylint black`
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`. [[Details](https://github.com/tokenspice/tokenspice/issues/165)]
