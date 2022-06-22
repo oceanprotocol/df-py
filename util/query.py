@@ -147,8 +147,8 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 basetoken_addr = d["pool"]["baseToken"]["id"].lower()
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
-                total_shares = d["pool"]["totalShares"]
-                base_token_liq = d["pool"]["baseTokenLiquidity"]
+                total_shares = float(d["pool"]["totalShares"])
+                base_token_liq = float(d["pool"]["baseTokenLiquidity"])
                 shares = float(d["shares"])
                 value = shares / total_shares * base_token_liq
 
