@@ -107,18 +107,18 @@ def test_calcRewards4():
 
 @enforce_types
 def test_calcRewards5_mix_upper_and_lower_case():
-    # PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
-    # LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
-    # OCN_ADDR, H2O = "OCEAN", "H2O"
+    # PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
+    # LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "lp4_addr"
+    # OCN_ADDR, H2O = "0xocean", "0xh2o"
 
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
     stakes2a = {C1: {OCN_ADDR.upper(): {PA: {LP1: 10000.0}}}}
-    stakes2b = {C1: {OCN_ADDR: {"pOoLa_aDDr": {LP1: 10000.0}}}}
-    stakes2c = {C1: {OCN_ADDR: {PA: {"lP1_aDdR": 10000.0}}}}
+    stakes2b = {C1: {OCN_ADDR: {"0xpOoLa_aDDr": {LP1: 10000.0}}}}
+    stakes2c = {C1: {OCN_ADDR: {PA: {"0xlP1_aDdR": 10000.0}}}}
 
     poolvols = {C1: {OCN_ADDR: {PA: 10000.0}}}
     poolvols2a = {C1: {OCN_ADDR.upper(): {PA: 10000.0}}}
-    poolvols2b = {C1: {OCN_ADDR: {"pOola_adDr": 10000.0}}}
+    poolvols2b = {C1: {OCN_ADDR: {"0xpOola_adDr": 10000.0}}}
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
