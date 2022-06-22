@@ -9,13 +9,18 @@ from util import networkutil
 
 @enforce_types
 def calcRewards(
-    stakes: dict, poolvols: dict, rates: Dict[str, float], TOKEN_avail: float
+        stakes: dict,
+        poolvols: dict,
+        approved_tokens: Dict[str, str],
+        rates: Dict[str, float],
+        TOKEN_avail: float
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
       poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      approved_tokens -- dict of [approved_basetoken_address] : symbol_str
+      rates -- dict of [basetoken_address] : USD_per_basetoken
       TOKEN_avail -- float, e.g. amount of OCEAN available
 
     @return
@@ -26,9 +31,8 @@ def calcRewards(
       A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
     # get cases happy
-    stakes = cleancase.modStakes(stakes)
-    poolvols = cleancase.modPoolvols(poolvols)
-    rates = cleancase.modRates(rates)
+    (stakes, poolvols, approved_tokens, rates) = cleancase.modTuple(
+        stakes, poolvols, approved_tokens, rates)
 
     TARGET_WPY = 0.015717  # (Weekly Percent Yield) needs to be 1.5717%.
     TARGET_REWARD_AMT = _sumStakes(stakes) * TARGET_WPY

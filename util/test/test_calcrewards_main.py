@@ -14,11 +14,13 @@ from util import networkutil
 from util.query import getApprovedTokens
 
 # for shorter lines
-RATES = None
-C1, C2 = networkutil.DEV_CHAINID, 2
+RATES = {"OCEAN": 0.5, "H2O": 1.6}
+C1, C2 = 7, 137
 PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
 LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
-OCN, H2O = None, None
+OCN, H2O = "OCEAN", "H2O"
+OCN_ADDR, H2O_ADDR = "OCEAN_addr", "H2O_addr"
+APPROVED_TOKENS = {OCN_ADDR : OCN, H2O_ADDR : H2O}
 
 
 @enforce_types
@@ -30,7 +32,7 @@ def test_calcRewards1_onechain():
     target_rewardsinfo = {C1: {PA: {LP1: 10}}}
 
     TOKEN_avail = 10.0
-    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail)
+    rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail)
 
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
