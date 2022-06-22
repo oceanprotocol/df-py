@@ -56,9 +56,9 @@ def test_poolvols():
 
 
 @enforce_types
-def test_rates():
-    rates = {"0x12aBcD3": 0.25, "0xaBc": 1.61}
-    target_rates = {"0x12abcd3": 0.25, "0xabc": 1.61}
+def test_rates_main():
+    rates = {"oCeAn": 0.25, "h2o": 1.61}
+    target_rates = {"OCEAN": 0.25, "H2O": 1.61}
 
     with pytest.raises(AssertionError):
         cleancase.assertRates(rates)
@@ -66,3 +66,11 @@ def test_rates():
     mod_rates = cleancase.modRates(rates)
     cleancase.assertRates(mod_rates)
     assert mod_rates == target_rates
+
+@enforce_types
+def test_rates_0x():
+    rates = {"0xOCEAN": 0.1}
+    with pytest.raises(AssertionError):
+        cleancase.assertRates(rates)
+
+

@@ -121,11 +121,11 @@ def assertPoolvolsUsdAtChain(poolvols_USD_at_chain: dict):
 
 @enforce_types
 def modRates(rates: dict) -> dict:
-    """rates - dict of [basetoken_address] : USD_per_basetoken"""
+    """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
     rates2 = {}
-    for baseaddr, rate in rates.items():
-        baseaddr2 = baseaddr.lower()
-        rates2[baseaddr2] = rate
+    for symbol, rate in rates.items():
+        symbol2 = symbol.upper()
+        rates2[symbol2] = rate
 
     assertRates(rates2)
     return rates2
@@ -133,7 +133,7 @@ def modRates(rates: dict) -> dict:
 
 @enforce_types
 def assertRates(rates: dict):
-    """rates - dict of [basetoken_address] : USD_per_basetoken"""
+    """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
     for baseaddr in rates:
-        assert baseaddr == baseaddr.lower(), baseaddr
-        assert baseaddr[:2] == "0x"
+        assert baseaddr == baseaddr.upper(), baseaddr
+        assert baseaddr[:2] != "0x"
