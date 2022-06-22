@@ -86,8 +86,7 @@ def _test_SimplePool(CO2):
 @enforce_types
 def _test_getApprovedTokens(CO2_SYM: str):
     approved_tokens = query.getApprovedTokens(CHAINID)
-    assert "OCEAN" in approved_tokens.values()
-    assert CO2_SYM not in approved_tokens.values()
+    assert approved_tokens.hasSymbol(CHAINID, "OCEAN")
 
 
 @enforce_types

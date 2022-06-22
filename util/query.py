@@ -8,6 +8,7 @@ from util import oceanutil
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
 from util.graphutil import submitQuery
+from util.tok import Tok, TokSet
 
 
 @enforce_types
@@ -297,25 +298,28 @@ def _didsInPurgatory() -> List[str]:
 
 
 @enforce_types
-def getApprovedTokens(chainID: int) -> Dict[str, str]:
+def getApprovedTokens(chainID: int) -> TokSet:
     """
     @description
       Return basetokens that are 'approved', ie eligible for data farming
 
     @return
-      d - dict of [token_addr] : token_symbol
+      approved_tokens -- TokSet
     """
     query = "{ opcs { approvedTokens { id } } }"
     result = submitQuery(query, chainID)
     if len(result["data"]["opcs"][0]["approvedTokens"]) == 0:
         raise Exception(f"No approved tokens found in the chain {chainID}")
     # subgraph data: "approvedTokens": [ { "id": "address" } ]
-    addrs = [x["id"] for x in result["data"]["opcs"][0]["approvedTokens"]]
-    d = {addr.lower(): B.Simpletoken.at(addr).symbol().upper() for addr in addrs}
-    assert len(addrs) == len(set(d.values())), "symbols not unique, eek"
-    for _symbol in d.values():
-        assert _symbol == _symbol.upper(), "symbols should be uppercase"
-    return d
+
+    approved_tokens = TokSet()
+    for x in result["data"]["opcs"][0]["approvedTokens"]:
+        addr = x["id"].lower()
+        symb = B.Simpletoken.at(addr).symbol().upper()
+        tok = Tok(chainID, addr, symb)
+        approved_tokens.add(tok)
+
+    return approved_tokens
 
 
 @enforce_types
