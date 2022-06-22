@@ -134,7 +134,6 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
             ):
                 LP_offset += chunk_size
                 break
-            n_blocks_sampled += 1
 
             new_pool_stake = result["data"]["poolShares"]
 
@@ -159,7 +158,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 stakes[basetoken_addr][pool_addr][LP_addr] += shares
 
             LP_offset += chunk_size
-
+        n_blocks_sampled += 1
     # normalize stake based on # blocks sampled
     # (this may be lower than target # blocks, if we hit indexing errors)
     assert n_blocks_sampled > 0
