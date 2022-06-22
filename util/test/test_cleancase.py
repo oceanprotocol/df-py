@@ -5,32 +5,20 @@ from util import cleancase
 
 
 @enforce_types
-def test_approvedTokens():
-    approved_tokens = {"0x98aBcD3" : "OcEaN", "0xaa2BBcc": "h2O"}
-    target_approved_tokens = {"0x98abcd3" : "OCEAN", "0xaa2bbcc" : "H2O"}
-    with pytest.raises(AssertionError):
-        cleancase.assertApprovedTokens(approved_tokens)
-
-    mod_approved_tokens = cleancase.modApprovedTokens(approved_tokens)
-    cleancase.assertApprovedTokens(mod_approved_tokens)
-    assert mod_approved_tokens == target_approved_tokens
-
-
-@enforce_types
 def test_stakes():
     stakes = {
         1: {
-            "oCeAn": {"pOolA": {"Lp1": 1.0, "LP2": 2.0}, "POOLB": {"LP3": 3.0}},
-            "H2o": {"POoLC": {"lP4": 4.0}},
+            "0xoCeAn": {"0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0}, "0xPOOLB": {"0xLP3": 3.0}},
+            "0xH2o": {"0xPOoLC": {"0xlP4": 4.0}},
         },
-        2: {"ocean": {"POOLD": {"LP5": 5.0}}},
+        2: {"0xocean": {"0xPOOLD": {"0xLP5": 5.0}}},
     }
     target_stakes = {
         1: {
-            "ocean": {"poola": {"lp1": 1.0, "lp2": 2.0}, "poolb": {"lp3": 3.0}},
-            "h2o": {"poolc": {"lp4": 4.0}},
+            "0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}, "0xpoolb": {"0xlp3": 3.0}},
+            "0xh2o": {"0xpoolc": {"0xlp4": 4.0}},
         },
-        2: {"ocean": {"poold": {"lp5": 5.0}}},
+        2: {"0xocean": {"0xpoold": {"0xlp5": 5.0}}},
     }
 
     with pytest.raises(AssertionError):
@@ -44,13 +32,13 @@ def test_stakes():
 @enforce_types
 def test_poolvols():
     poolvols = {
-        1: {"oCeAn": {"pOolA": 1.0, "POOLB": 2.0}, "H2o": {"POoLC": 3.0}},
-        2: {"ocean": {"POOLD": 4.0}},
+        1: {"0xoCeAn": {"0xpOolA": 1.0, "0xPOOLB": 2.0}, "0xH2o": {"0xPOoLC": 3.0}},
+        2: {"0xocean": {"0xPOOLD": 4.0}},
     }
 
     target_poolvols = {
-        1: {"ocean": {"poola": 1.0, "poolb": 2.0}, "h2o": {"poolc": 3.0}},
-        2: {"ocean": {"poold": 4.0}},
+        1: {"0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0}, "0xh2o": {"0xpoolc": 3.0}},
+        2: {"0xocean": {"0xpoold": 4.0}},
     }
 
     with pytest.raises(AssertionError):
@@ -62,9 +50,21 @@ def test_poolvols():
 
 
 @enforce_types
+def test_approvedTokens():
+    approved_tokens = {"0xOcEaN" : "oCeAN", "0xH2o" : "h2o"}
+    target_approved_tokens = {"0xocean" : "OCEAN", "0xh2o" : "H2O"}
+    with pytest.raises(AssertionError):
+        cleancase.assertApprovedTokens(approved_tokens)
+
+    mod_approved_tokens = cleancase.modApprovedTokens(approved_tokens)
+    cleancase.assertApprovedTokens(mod_approved_tokens)
+    assert mod_approved_tokens == target_approved_tokens
+
+
+@enforce_types
 def test_rates():
-    rates = {"oCeAn": 0.25, "H2o": 1.61}
-    target_rates = {"OCEAN": 0.25, "H2O": 1.61}
+    rates = {"0x12aBcD3": 0.25, "0xaBc": 1.61}
+    target_rates = {"0x12abcd3": 0.25, "0xabc": 1.61}
 
     with pytest.raises(AssertionError):
         cleancase.assertRates(rates)

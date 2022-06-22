@@ -8,7 +8,7 @@ def modTuple(stakes, poolvols, approved_tokens, rates) -> tuple:
     return (modStakes(stakes),
             modPoolvols(poolvols),
             modApprovedTokens(approved_tokens),
-            modRates(rates)
+            modRates(rates))
 
 
 def modStakes(stakes: dict) -> dict:
@@ -34,11 +34,12 @@ def modStakes(stakes: dict) -> dict:
 def assertStakes(stakes: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     for chainID in stakes:
-        for basetoken in stakes[chainID]:
-            assert basetoken == basetoken.lower(), basetoken
-            for pool_addr in stakes[chainID][basetoken]:
+        for baseaddr in stakes[chainID]:
+            assert baseaddr == baseaddr.lower(), baseaddr
+            assert baseaddr[:2] == "0x"
+            for pool_addr in stakes[chainID][baseaddr]:
                 assert pool_addr == pool_addr.lower(), pool_addr
-                for LP_addr in stakes[chainID][basetoken][pool_addr]:
+                for LP_addr in stakes[chainID][baseaddr][pool_addr]:
                     assert LP_addr == LP_addr.lower(), LP_addr
 
 
@@ -78,9 +79,10 @@ def modPoolvols(poolvols: dict) -> dict:
 def assertPoolvols(poolvols: dict):
     """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
     for chainID in poolvols:
-        for basetoken in poolvols[chainID]:
-            assert basetoken == basetoken.lower(), basetoken
-            for pool_addr in poolvols[chainID][basetoken]:
+        for baseaddr in poolvols[chainID]:
+            assert baseaddr == baseaddr.lower(), baseaddr
+            assert baseaddr[:2] == "0x"
+            for pool_addr in poolvols[chainID][baseaddr]:
                 assert pool_addr == pool_addr.lower(), pool_addr
 
 
@@ -112,21 +114,23 @@ def assertApprovedTokens(approved_tokens: dict):
     """approved_tokens - dict of [basetoken_address] : symbol_str"""
     for baseaddr, symbol in approved_tokens.items():
         assert baseaddr == baseaddr.lower()
+        assert baseaddr[:2] == "0x"
         assert symbol == symbol.upper()
 
 
 def modRates(rates: dict) -> dict:
-    """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
+    """rates - dict of [basetoken_address] : USD_per_basetoken"""
     rates2 = {}
-    for basetoken, rate in rates.items():
-        basetoken2 = basetoken.upper()
-        rates2[basetoken2] = rate
+    for baseaddr, rate in rates.items():
+        baseaddr2 = baseaddr.lower()
+        rates2[baseaddr2] = rate
 
     assertRates(rates2)
     return rates2
 
 
 def assertRates(rates: dict):
-    """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
-    for basetoken in rates:
-        assert basetoken == basetoken.upper(), basetoken
+    """rates - dict of [basetoken_address] : USD_per_basetoken"""
+    for baseaddr in rates:
+        assert baseaddr == baseaddr.lower(), baseaddr
+        assert baseaddr[:2] == "0x"
