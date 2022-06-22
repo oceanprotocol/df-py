@@ -1,4 +1,5 @@
 import os
+import subprocess
 import time
 import types
 
@@ -116,6 +117,54 @@ def test_dispense(tmp_path):
 
     # test result
     assert df_rewards.claimable(address1, OCEAN.address)
+
+
+@enforce_types
+def test_manyrandom():
+    cmd = f"./dftool manyrandom {networkutil.DEV_CHAINID}"
+    output_s = ""
+    with subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ) as proc:
+        while proc.poll() is None:
+            output_s += proc.stdout.readline().decode("ascii")
+    return_code = proc.wait()
+    assert return_code == 0, f"Error. \n{output_s}"
+
+
+@enforce_types
+def test_noarg_commands():
+    # Test commands that have no args. They're usually help commands;
+    # sometimes they do the main work (eg compile).
+    argv1s = [
+        "",
+        "query",
+        "getrate",
+        "calc",
+        "dispense",
+        "querymany",
+        "compile",
+        "manyrandom",
+        "newdfrewards",
+        "mine",
+        "newacct",
+        "newtoken",
+        "acctinfo",
+        "chaininfo",
+    ]
+    for argv1 in argv1s:
+        print(f"Test dftool {argv1}")
+        cmd = f"./dftool {argv1}"
+
+        output_s = ""
+        with subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ) as proc:
+            while proc.poll() is None:
+                output_s += proc.stdout.readline().decode("ascii")
+
+        return_code = proc.wait()
+        assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
 
 
 @enforce_types
