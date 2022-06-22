@@ -5,6 +5,18 @@ from util import cleancase
 
 
 @enforce_types
+def test_approvedTokens():
+    approved_tokens = {"0x98aBcD3" : "OcEaN", "0xaa2BBcc": "h2O"}
+    target_approved_tokens = {"0x98abcd3" : "OCEAN", "0xaa2bbcc" : "H2O"}
+    with pytest.raises(AssertionError):
+        cleancase.assertApprovedTokens(approved_tokens)
+
+    mod_approved_tokens = cleancase.modApprovedTokens(approved_tokens)
+    cleancase.assertApprovedTokens(mod_approved_tokens)
+    assert mod_approved_tokens == target_approved_tokens
+
+
+@enforce_types
 def test_stakes():
     stakes = {
         1: {

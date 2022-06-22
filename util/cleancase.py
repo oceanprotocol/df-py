@@ -5,6 +5,21 @@ FAKE_CHAINID = 99
 FAKE_TOKEN = "fake_token"
 
 
+def modApprovedTokens(approved_tokens: dict) -> dict:
+    """approved_tokens - dict of [basetoken_address] : symbol_str"""
+    approved_tokens2: dict = {}
+    for baseaddr, symbol in approved_tokens.items():
+        approved_tokens2[baseaddr.lower()] = symbol.upper()
+    return approved_tokens2
+
+
+def assertApprovedTokens(approved_tokens: dict):
+    """approved_tokens - dict of [basetoken_address] : symbol_str"""
+    for baseaddr, symbol in approved_tokens.items():
+        assert baseaddr == baseaddr.lower()
+        assert symbol == symbol.upper()
+
+    
 def modStakes(stakes: dict) -> dict:
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     stakes2: dict = {}
