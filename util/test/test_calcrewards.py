@@ -44,8 +44,6 @@ def test_calcRewards1_onechain():
 
 @enforce_types
 def test_calcRewards1_twochains():
-    # Cannot test two chains because ganache is the only local chain.
-    pytest.skip("Cannot test two chains")
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}, C2: {OCN_ADDR: {PB: {LP1: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {OCN_ADDR: {PB: 1.0}}}
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, RATES, TOKEN_avail=20.0)
