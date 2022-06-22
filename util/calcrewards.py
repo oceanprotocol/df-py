@@ -115,7 +115,7 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float], tok_set : TokSet) ->
             base_addr = tok_set.getAddress(chainID, base_symb)
             if base_addr not in poolvols[chainID]:
                 continue
-            for pool_addr, vol in poolvols_at_chain[base_addr].items():
+            for pool_addr, vol in poolvols[chainID][base_addr].items():
                 poolvols_USD[chainID][pool_addr] = vol * rate
 
     cleancase.assertPoolvolsUsd(poolvols_USD)
