@@ -46,7 +46,7 @@ Usage: dftool query|getrate|calc|dispense|..
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
-  dftool manyrandom - deploy many random tokens & pools then consume (for testing)
+  dftool manyrandom CHAINID - deploy many random tokens & pools then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
@@ -373,25 +373,44 @@ Usage: dftool compile
 # ========================================================================
 @enforce_types
 def do_manyrandom():
-    HELP = """Deploy many random tokens & pools then consume (for testing; currently ganache-only)
+    HELP = f"""Deploy many random tokens & pools then consume (for testing)
 
-Usage: dftool manyrandom
+Usage: dftool manyrandom CHAINID
+  CHAINID -- {CHAINID_EXAMPLES}
+
+Uses these envvars:
+ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 """
-    if len(sys.argv) not in [2]:
+    if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
-    chainID = DEV_CHAINID
-    networkutil.connect(chainID)
-    address_file = networkutil.chainIdToAddressFile(chainID)
-    recordDeployedContracts(address_file)
-    oceantestutil.fillAccountsWithOCEAN() #this is why currently ganache-only
+    # extract inputs
+    assert sys.argv[1] == "manyrandom"
+    CHAINID = int(sys.argv[2])
+    print("dftool manyrandom: Begin")
+    print(f"Arguments: CHAINID={CHAINID}")
+    
+    if CHAINID != DEV_CHAINID:
+        # To support other testnets, they need to fillAccountsWithOcean()
+        # Consider this a TODO:)
+        print("Only ganache is currently supported. Exiting.")
+        sys.exit(0)
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+
+    # main work
+    recordDeployedContracts(ADDRESS_FILE)
+    oceantestutil.fillAccountsWithOCEAN()
     num_pools = 10  # magic number
     oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
-
-    os.system("brownie compile")
+    print(f"dftool manyrandom: Done. {num_pools} new pools created.")
 
 
 # ========================================================================
@@ -550,7 +569,7 @@ def _getAddressEnvvarOrExit() -> tuple:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:
-        print("\nNeed to set envvar ADDRESS_FILE. Exiting.")
+        print(f"\nNeed to set envvar ADDRESS_FILE. Exiting. Eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}")
         sys.exit(0)
     return ADDRESS_FILE
 
