@@ -119,6 +119,18 @@ def test_dispense(tmp_path):
     assert df_rewards.claimable(address1, OCEAN.address)
 
 
+
+@enforce_types
+def test_help_commands(tmp_path):
+    argv1s = ["",
+              "query", "getrate", "calc", "dispense",
+              "querymany", "compile", "manyrandom", "newdfrewards",
+              "mine", "newacct", "newtoken",
+              "acctinfo", "chaininfo"]
+    for argv1 in argv1s:
+        cmd = f"./dftool {argv1}"
+        os.system(cmd)
+
 @enforce_types
 def setup_function():
     global accounts, PREV, DISPENSE_ACCT
