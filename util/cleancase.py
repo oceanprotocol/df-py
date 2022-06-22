@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 
 
 FAKE_CHAINID = 99
-FAKE_TOKEN = "fake_token"
+FAKE_TOKEN_ADDR = "0xfake_token"
 
 
 @enforce_types
@@ -67,7 +67,7 @@ def assertStakesAtChain(stakes_at_chain: dict):
 @enforce_types
 def assertStakesUsdAtChain(stakes_at_chain: dict):
     """stakes_USD_at_chain - dict of [pool_addr][LP_addr] : stake"""
-    assertStakes({FAKE_CHAINID: {FAKE_TOKEN: stakes_at_chain}})
+    assertStakes({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
 
 
 @enforce_types
@@ -116,7 +116,7 @@ def assertPoolvolsAtChain(poolvols_at_chain: dict):
 @enforce_types
 def assertPoolvolsUsdAtChain(poolvols_USD_at_chain: dict):
     """poolvols - dict of [pool_addr] : vol"""
-    assertPoolvols({FAKE_CHAINID: {FAKE_TOKEN: poolvols_USD_at_chain}})
+    assertPoolvols({FAKE_CHAINID: {FAKE_TOKEN_ADDR: poolvols_USD_at_chain}})
 
 
 @enforce_types
