@@ -114,6 +114,8 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                   baseToken {
                     id
                   },
+                  totalShares,
+                  baseTokenLiquidity
                 }, 
                 user {
                   id
@@ -145,7 +147,11 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 basetoken_addr = d["pool"]["baseToken"]["id"].lower()
                 pool_addr = d["pool"]["id"].lower()
                 LP_addr = d["user"]["id"].lower()
+                total_shares = d["pool"]["totalShares"]
+                base_token_liq = d["pool"]["baseTokenLiquidity"]
                 shares = float(d["shares"])
+                value = shares / total_shares * base_token_liq
+
                 if LP_addr == SSBOT_address:
                     continue  # skip ss bot
 
@@ -156,7 +162,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 if LP_addr not in stakes[basetoken_addr][pool_addr]:
                     stakes[basetoken_addr][pool_addr][LP_addr] = 0.0
 
-                stakes[basetoken_addr][pool_addr][LP_addr] += shares
+                stakes[basetoken_addr][pool_addr][LP_addr] += value
 
             LP_offset += chunk_size
 
