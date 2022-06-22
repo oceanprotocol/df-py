@@ -1,16 +1,41 @@
-# 'modX' functions modify 'X' to follow rules: lowercase address,uppercase token
+# 'modX' functions modify 'X' to follow rules: lowercase address,uppercase token,"0x" in address
 # 'assertX' functions asserts that 'X' follows the rules
+
+from enforce_typing import enforce_types
+
 
 FAKE_CHAINID = 99
 FAKE_TOKEN = "fake_token"
 
-def modTuple(stakes, poolvols, approved_tokens, rates) -> tuple:
-    return (modStakes(stakes),
+
+@enforce_types
+def modTuple(approved_tokens, stakes, poolvols, rates) -> tuple:
+    return (modApprovedTokens(approved_tokens),
+            modStakes(stakes),
             modPoolvols(poolvols),
-            modApprovedTokens(approved_tokens),
             modRates(rates))
 
 
+@enforce_types
+def modApprovedTokens(approved_tokens: dict) -> dict:
+    """approved_tokens - dict of [chainID] : baseaddr_list"""
+    approved_tokens2: dict = {}
+    for chainID, baseaddr_list in approved_tokens.items():
+        approved_tokens2[chainID] = [addr.lower() for addr in baseaddr_list]
+    assertApprovedTokens(approved_tokens2)
+    return approved_tokens2
+
+
+@enforce_types
+def assertApprovedTokens(approved_tokens: dict):
+    """approved_tokens - dict of [chainID] : baseaddr_list"""
+    for chainID, baseaddr_list in approved_tokens.items():
+        for baseaddr in baseaddr_list:
+            assert baseaddr == baseaddr.lower()
+            assert baseaddr[:2] == "0x"
+
+
+@enforce_types
 def modStakes(stakes: dict) -> dict:
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     stakes2: dict = {}
@@ -31,6 +56,7 @@ def modStakes(stakes: dict) -> dict:
     return stakes2
 
 
+@enforce_types
 def assertStakes(stakes: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     for chainID in stakes:
@@ -39,26 +65,32 @@ def assertStakes(stakes: dict):
             assert baseaddr[:2] == "0x"
             for pool_addr in stakes[chainID][baseaddr]:
                 assert pool_addr == pool_addr.lower(), pool_addr
+                assert pool_addr[:2] == "0x"
                 for LP_addr in stakes[chainID][baseaddr][pool_addr]:
                     assert LP_addr == LP_addr.lower(), LP_addr
+                    assert LP_addr[:2] == "0x"
 
 
+@enforce_types
 def assertStakesUsd(stakes_USD: dict):
     """stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake"""
     for chainID in stakes_USD:
         assertStakesUsdAtChain(stakes_USD[chainID])
 
 
+@enforce_types
 def assertStakesAtChain(stakes_at_chain: dict):
     """stakes_at_chain - dict of [basetoken_address][pool_addr][LP_addr] : stake"""
     assertStakes({FAKE_CHAINID: stakes_at_chain})
 
 
+@enforce_types
 def assertStakesUsdAtChain(stakes_at_chain: dict):
     """stakes_USD_at_chain - dict of [pool_addr][LP_addr] : stake"""
     assertStakes({FAKE_CHAINID: {FAKE_TOKEN: stakes_at_chain}})
 
 
+@enforce_types
 def modPoolvols(poolvols: dict) -> dict:
     """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
     poolvols2: dict = {}
@@ -76,6 +108,7 @@ def modPoolvols(poolvols: dict) -> dict:
     return poolvols2
 
 
+@enforce_types
 def assertPoolvols(poolvols: dict):
     """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
     for chainID in poolvols:
@@ -84,40 +117,29 @@ def assertPoolvols(poolvols: dict):
             assert baseaddr[:2] == "0x"
             for pool_addr in poolvols[chainID][baseaddr]:
                 assert pool_addr == pool_addr.lower(), pool_addr
+                assert pool_addr[:2] == "0x"
 
 
+@enforce_types
 def assertPoolvolsUsd(poolvols_USD: dict):
     """poolvols_USD - dict of [chainID][pool_addr] : vol"""
     for chainID in poolvols_USD:
         assertPoolvolsUsdAtChain(poolvols_USD[chainID])
 
 
+@enforce_types
 def assertPoolvolsAtChain(poolvols_at_chain: dict):
     """poolvols_at_chain - dict of [basetoken_address][pool_addr] : vol"""
     assertPoolvols({FAKE_CHAINID: poolvols_at_chain})
 
 
+@enforce_types
 def assertPoolvolsUsdAtChain(poolvols_USD_at_chain: dict):
     """poolvols - dict of [pool_addr] : vol"""
     assertPoolvols({FAKE_CHAINID: {FAKE_TOKEN: poolvols_USD_at_chain}})
 
 
-def modApprovedTokens(approved_tokens: dict) -> dict:
-    """approved_tokens - dict of [basetoken_address] : symbol_str"""
-    approved_tokens2: dict = {}
-    for baseaddr, symbol in approved_tokens.items():
-        approved_tokens2[baseaddr.lower()] = symbol.upper()
-    return approved_tokens2
-
-
-def assertApprovedTokens(approved_tokens: dict):
-    """approved_tokens - dict of [basetoken_address] : symbol_str"""
-    for baseaddr, symbol in approved_tokens.items():
-        assert baseaddr == baseaddr.lower()
-        assert baseaddr[:2] == "0x"
-        assert symbol == symbol.upper()
-
-
+@enforce_types
 def modRates(rates: dict) -> dict:
     """rates - dict of [basetoken_address] : USD_per_basetoken"""
     rates2 = {}
@@ -129,6 +151,7 @@ def modRates(rates: dict) -> dict:
     return rates2
 
 
+@enforce_types
 def assertRates(rates: dict):
     """rates - dict of [basetoken_address] : USD_per_basetoken"""
     for baseaddr in rates:
