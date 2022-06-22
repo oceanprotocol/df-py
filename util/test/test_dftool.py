@@ -1,4 +1,5 @@
 import os
+import subprocess
 import time
 import types
 
@@ -128,7 +129,17 @@ def test_help_commands(tmp_path):
               "acctinfo", "chaininfo"]
     for argv1 in argv1s:
         cmd = f"./dftool {argv1}"
-        os.system(cmd)
+        
+        proc = subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        output_s = []
+        while proc.poll() is None:
+            output_s += [proc.stdout.readline().decode("ascii")]
+        output_s = ''.join(output_s)
+        
+        return_code = proc.wait()
+        assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
+
 
 @enforce_types
 def setup_function():
