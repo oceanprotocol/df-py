@@ -1,9 +1,15 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
 from typing import Union
 
 from enforce_typing import enforce_types
 from scipy import optimize
 
+
+@enforce_types
+def getBlockNumberThursay(chainId) -> int:
+    timestamp = getNextThursdayTimestamp()
+    block_number = timestampToBlockFuture(chainId, timestamp)
+    return block_number
 
 
 @enforce_types
