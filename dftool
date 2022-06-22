@@ -373,7 +373,7 @@ Usage: dftool compile
 # ========================================================================
 @enforce_types
 def do_manyrandom():
-    HELP = """Deploy many random tokens & pools then consume (for testing)
+    HELP = """Deploy many random tokens & pools then consume (for testing; currently ganache-only)
 
 Usage: dftool manyrandom
 """
@@ -383,8 +383,11 @@ Usage: dftool manyrandom
 
     from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
-    recordDeployedContracts(oceantestutil._ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
+    chainID = DEV_CHAINID
+    networkutil.connect(chainID)
+    address_file = networkutil.chainIdToAddressFile(chainID)
+    recordDeployedContracts(address_file)
+    oceantestutil.fillAccountsWithOCEAN() #this is why currently ganache-only
     num_pools = 10  # magic number
     oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
 
