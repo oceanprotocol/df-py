@@ -17,8 +17,8 @@ from util.tok import Tok, TokSet
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6}
 C1, C2 = 7, 137
-PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
-LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
+PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
+LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
 
