@@ -1,66 +1,73 @@
 # 'modX' functions modify 'X' to follow rules: only keep entries with approved basetokens
 # 'assertX' functions asserts that 'X' follows the rules
+#
+# for all below: approved_tokens -- dict of [chainID] : list_of_approved_basetoken_addr
 
 from copy import deepcopy
 
+from enforce_typing import enforce_types
 
-def modTuple(approved_tokens, stakes, poolvols, rates) -> tuple:
+from util import cleancase
+
+@enforce_types
+def modTuple(approved_tokens, stakes, poolvols) -> tuple:
     return (modStakes(approved_tokens, stakes),
-            modPoolvols(approved_tokens, poolvols),
-            modRates(approved_tokens, rates))
+            modPoolvols(approved_tokens, poolvols))
 
 
-def modStakes(approved_tokens, stakes: dict) -> dict:
-    """
-    @arguments
-      approved_tokens -- list of (chainID, approved_basetoken_addr)
-      stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake
-    """
-    stakes2 = {}
-    for chainID in stakes:
-        stakes2[chainID] = {}
-        for baseaddr in stakes[chainID]:
-            if (chainID, baseaddr) in approved_tokens:
-                stakes2[chainID][baseaddr] = deepcopy(stakes[chainID][baseaddr])
+@enforce_types
+def modStakes(approved_tokens : dict, stakes: dict) -> dict:
+    """stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake"""
+    cleancase.assertApprovedTokens(approved_tokens)
+    cleancase.assertStakes(stakes)
+    return _modD(approved_tokens, stakes)
+
+
+@enforce_types
+def assertStakes(approved_tokens : dict, stakes: dict):
+    """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
+    cleancase.assertApprovedTokens(approved_tokens)
+    cleancase.assertStakes(stakes)
+    _assertD(approved_tokens, stakes)
+
+
+@enforce_types
+def modPoolvols(approved_tokens : dict, poolvols: dict) -> dict:
+    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
+    cleancase.assertApprovedTokens(approved_tokens)
+    cleancase.assertPoolvols(poolvols)
+    return _modD(approved_tokens, poolvols)
+
+
+@enforce_types
+def assertPoolvols(approved_tokens : dict, poolvols: dict):
+    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
+    cleancase.assertApprovedTokens(approved_tokens)
+    cleancase.assertPoolvols(poolvols)
+    return _assertD(approved_tokens, poolvols)
+
+
+@enforce_types
+def _modD(approved_tokens : dict, D: dict) -> dict:
+    """D - dict of [chainID][basetoken_addr] : abitrary_data_structure"""
+    D2 = {}
+    for chainID in D:
+        if chainID not in approved_tokens:
+            continue
+        D2[chainID] = {}
+        for baseaddr in D[chainID]:
+            if baseaddr not in approved_tokens[chainID]:
+                continue
+            D2[chainID][baseaddr] = deepcopy(D[chainID][baseaddr])
                 
-    assertStakes(approved_tokens, stakes2)
-    return stakes2
+    _assertD(approved_tokens, D2)
+    return D2
 
 
-def assertStakes(approved_tokens, stakes: dict):
-    """
-    @arguments
-      approved_tokens -- list of (chainID, approved_basetoken_addr)
-      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
-    """
-    for chainID in stakes:
-        for baseaddr in stakes[chainID]:
-            assert (chainID, baseaddr) in approved_tokens
-
-
-def modPoolvols(approved_tokens, poolvols: dict) -> dict:
-    """
-    @arguments
-      approved_tokens -- list of (chainID, approved_basetoken_addr)
-      poolvols - dict of [chainID][basetoken_address][pool_addr] : vol
-    """
-    poolvols2: dict = {}
-    for chainID in poolvols:
-        poolvols2[chainID] = {}
-        for baseaddr in poolvols[chainID]:
-            if (chainID, baseaddr) in approved_tokens:
-                poolvols2[chainID][baseaddr] = deepcopy(poolvols[chainID][baseaddr])
-
-    assertPoolvols(poolvols2)
-    return poolvols2
-
-
-def assertPoolvols(approved_tokens, poolvols: dict):
-    """
-    @arguments
-      approved_tokens -- list of (chainID, approved_basetoken_addr)
-      poolvols - dict of [chainID][basetoken_address][pool_addr] : vol
-    """
-    for chainID in poolvols:
-        for baseaddr in poolvols[chainID]:
-            assert (chainID, baseaddr) in approved_tokens
+@enforce_types
+def _assertD(approved_tokens : dict, D: dict):
+    """D - dict of [chainID][basetoken_addr] : abitrary_data_structure"""
+    for chainID in D:
+        assert chainID in approved_tokens
+        for baseaddr in D[chainID]:
+            assert baseaddr in approved_tokens[chainID]
