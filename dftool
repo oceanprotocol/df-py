@@ -79,7 +79,7 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
-ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 """
     if len(sys.argv) not in [2 + 5]:
         print(HELP)
@@ -379,7 +379,7 @@ Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
-ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 """
     if len(sys.argv) not in [3]:
         print(HELP)
@@ -392,7 +392,7 @@ ADDRESS_FILE -- eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressF
     CHAINID = int(sys.argv[2])
     print("dftool manyrandom: Begin")
     print(f"Arguments: CHAINID={CHAINID}")
-    
+
     if CHAINID != DEV_CHAINID:
         # To support other testnets, they need to fillAccountsWithOcean()
         # Consider this a TODO:)
@@ -569,7 +569,8 @@ def _getAddressEnvvarOrExit() -> tuple:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:
-        print(f"\nNeed to set envvar ADDRESS_FILE. Exiting. Eg for barge: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}")
+        print("\nNeed to set envvar ADDRESS_FILE. Exiting. "
+              f"\nEg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}")
         sys.exit(0)
     return ADDRESS_FILE
 
