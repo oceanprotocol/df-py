@@ -135,7 +135,7 @@ def test_stakes_shares_conversion():
     time.sleep(2)
     now = len(brownie.network.chain)
     rng = BlockRange(now - 1, now, 1)
-    for i in range(50):
+    for _ in range(50):
         try:
             stakes = query.getStakes([], rng, CHAINID)
             stakes = stakes[ocean.address.lower()][pool.address.lower()]
