@@ -32,7 +32,9 @@ def test_without_csvs():
 
     OCEAN_avail = 3.0
     total_stakes = calcrewards._sumStakes(S)
-    assert OCEAN_avail < total_stakes * 0.015717, "test needs OCEAN_avail as limiting factor"
+    assert (
+        OCEAN_avail < total_stakes * 0.015717
+    ), "test needs OCEAN_avail as limiting factor"
 
     rewardsperlp, _ = calcrewards.calcRewards(S, V, A, R, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
@@ -74,7 +76,9 @@ def test_with_csvs(tmp_path):
 
     OCEAN_avail = 3.0
     total_stakes = calcrewards._sumStakes(S)
-    assert OCEAN_avail < total_stakes * 0.015717, "test needs OCEAN_avail as limiting factor"
+    assert (
+        OCEAN_avail < total_stakes * 0.015717
+    ), "test needs OCEAN_avail as limiting factor"
 
     rewardsperlp, _ = calcrewards.calcRewards(S, V, A, R, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
