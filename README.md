@@ -279,3 +279,16 @@ export now=`date '+%Y-%m-%d'`
 ./dftool query $date $now 50 /tmp/dfpy 246 && 
 ./dftool query $date $now 50 /tmp/dfpy 1285
 ```
+
+### Details: dftool dispense - Polygon issue & workaround
+
+(From Berkay)
+
+We had a problem when dispensing and calculating rewards for polygon, because the symbols didn't match MOCEAN - OCEAN
+
+I changed the MOCEAN to OCEAN in the approved tokens csv file - `dftool calc` worked
+
+For dispensing I added the following line as a temproray fix:
+```python
+token_symbol = token_symbol.upper().replace("MOCEAN", "OCEAN")
+```
