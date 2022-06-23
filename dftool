@@ -611,7 +611,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
         network = networkutil.chainIdToNetwork(CHAINID)
-        recordDeployedContracts(ADDRESS_FILE, network)
+        recordDeployedContracts(ADDRESS_FILE)
         OCEAN = OCEANtoken()
         if OCEAN.address != TOKEN_ADDR:
             print(f"  {fromBase18(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
