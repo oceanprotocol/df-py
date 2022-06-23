@@ -48,6 +48,7 @@ Usage: dftool query|getrate|calc|dispense|..
   dftool compile - compile contracts
   dftool manyrandom CHAINID - deploy many random tokens & pools then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
+
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
