@@ -257,8 +257,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         DFREWARDS_ADDR = sys.argv[4]
 
     if len(sys.argv) == 5:
-        print("Set DFREWARDS_ADDR from envvar")
-        TOKEN_ADDR = os.getenv("DFREWARDS_ADDR")
+        print("Set TOKEN_ADDR from envvar")
+        TOKEN_ADDR = os.getenv("TOKEN_ADDR")
     else:
         TOKEN_ADDR = sys.argv[5]
     assert TOKEN_ADDR is not None
