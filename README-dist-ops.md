@@ -60,37 +60,31 @@ Steps: ([Ref](https://github.com/oceanprotocol/df-issues/issues/66#issuecomment-
    - have gas funds sent -> local account
    - from local account, on CLI: `dftool dispense` (details below)
 
-### dftool dispense parameters
+### end-to-end script
 
-(For step 2.3 above)
+Shown for chains 137=polygon and 246=energyweb.
 
-```text
-dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
+```console
 
-Param values picked:
-  CSV_DIR -- arbitrarily set to /tmp/dfpy
-  
-  CHAINID -- 
-    1: mainnet
-    56: bsc
-    137: polygon
-    246: energyweb
-    1285: moonriver
-    
-  DFREWARDS_ADDR -- 0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
-  
-  TOKEN_ADDR -- address of OCEAN token per network. https://docs.oceanprotocol.com/concepts/networks/
-    137: polygon   -- MOCEAN -- 0x282d8efce846a88b159800bd4130ad77443fa1a1
-    246: energyweb  -- OCEAN -- 0x593122aae80a6fc3183b2ac0c4ab3336debee528
-    1: mainnet      -- OCEAN -- 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
-    56: bsc         -- OCEAN -- 0xdce07662ca8ebc241316a15b611c89711414dd1a 
-    1285: moonriver -- OCEAN -- 0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE
-    
-  BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
-    - we can ignore this param to start, only use if we need
+export date=`date -d "last Thursday" '+%Y-%m-%d'`
+export now=`date '+%Y-%m-%d'`
 
-Transactions are signed with envvar 'DFTOOL_KEY`.
+export dfrewards_addr=0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
+export OCEAN_137_addr=0x282d8efce846a88b159800bd4130ad77443fa1a1
+export OCEAN_246_addr=0x593122aae80a6fc3183b2ac0c4ab3336debee528
+
+dftool query $date $now 50 mydata 137
+dftool query $date $now 50 mydata 246
+
+dftool getrate OCEAN $date $now mydata
+dftool getrate H2O $date $now mydata
+
+dftool calc mydata 10000 OCEAN
+
+dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr
+dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
 ```
+
 
 ### dftool dispense: Polygon issue & workaround:
 
