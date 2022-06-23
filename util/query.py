@@ -87,6 +87,7 @@ def getPools(chainID: int) -> list:
 def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: float):
     return shares / total_shares * base_token_liquidity
 
+
 @enforce_types
 def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
     """
