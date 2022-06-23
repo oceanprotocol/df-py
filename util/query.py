@@ -8,7 +8,7 @@ from util import oceanutil
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
 from util.graphutil import submitQuery
-from util.tok import Tok, TokSet
+from util.tok import TokSet
 
 
 @enforce_types
@@ -59,6 +59,7 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
       pools_at_chain -- list of SimplePool
       stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
+      approved_tokens -- TokSet
 
     @notes
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
@@ -67,7 +68,8 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
     Pi = getPools(chainID)
     Si = getStakes(Pi, rng, chainID)
     Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID)
-    return (Pi, Si, Vi)
+    Ai = getApprovedTokens(chainID)
+    return (Pi, Si, Vi, Ai)
 
 
 @enforce_types
@@ -315,8 +317,7 @@ def getApprovedTokens(chainID: int) -> TokSet:
     for x in result["data"]["opcs"][0]["approvedTokens"]:
         addr = x["id"].lower()
         symb = B.Simpletoken.at(addr).symbol().upper()
-        tok = Tok(chainID, addr, symb)
-        approved_tokens.add(tok)
+        approved_tokens.add(chainID, addr, symb)
 
     return approved_tokens
 
