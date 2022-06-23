@@ -42,7 +42,7 @@ def test_all():
 
     # run actual tests
     _test_SimplePool(CO2)
-    _test_getApprovedTokens(CO2_SYM)
+    _test_getApprovedTokens()
     _test_pools(CO2_ADDR)
     _test_stakes(CO2_ADDR)
     _test_getDTVolumes(CO2_ADDR)
@@ -84,10 +84,9 @@ def _test_SimplePool(CO2):
 
 
 @enforce_types
-def _test_getApprovedTokens(CO2_SYM: str):
+def _test_getApprovedTokens():
     approved_tokens = query.getApprovedTokens(CHAINID)
-    assert "OCEAN" in approved_tokens.values()
-    assert CO2_SYM not in approved_tokens.values()
+    assert approved_tokens.hasSymbol(CHAINID, "OCEAN")
 
 
 @enforce_types
@@ -138,11 +137,12 @@ def _test_getPoolVolumes(CO2_ADDR: str):
 def _test_query(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (_, S0, V0) = query.query_all(rng, CHAINID)
+    (__, S0, V0, Ai) = query.query_all(rng, CHAINID)
 
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_ADDR in S0
     assert CO2_ADDR in V0
+    assert Ai.hasChain(CHAINID)
 
 
 @enforce_types
