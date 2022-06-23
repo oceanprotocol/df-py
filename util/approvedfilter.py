@@ -52,7 +52,7 @@ def _modD(approved_tokens : TokSet, D: dict) -> dict:
       approved_tokens - TokSet 
       D - dict of [chainID][basetoken_addr] : abitrary_data_structure
     """
-    D2 = {}
+    D2: dict = {}
     for chainID in D:
         if not approved_tokens.hasChain(chainID):
             continue

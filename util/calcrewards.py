@@ -76,7 +76,7 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float], tok_set : TokSet) -> dic
     cleancase.assertStakes(stakes)
     cleancase.assertRates(rates)
 
-    stakes_USD = {}
+    stakes_USD: dict = {}
     for chainID in stakes:
         stakes_USD[chainID] = {}
         for base_symb, rate in rates.items():
@@ -110,7 +110,7 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float], tok_set : TokSet) ->
     cleancase.assertPoolvols(poolvols)
     cleancase.assertRates(rates)
 
-    poolvols_USD = {}
+    poolvols_USD: dict = {}
     for chainID in poolvols:
         poolvols_USD[chainID] = {}
         for base_symb, rate in rates.items():

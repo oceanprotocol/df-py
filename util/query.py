@@ -50,7 +50,7 @@ class SimplePool:
 
 
 @enforce_types
-def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict]:
+def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, TokSet]:
     """
     @description
       Return pool info, stakes & poolvols, for the input block range and chain.
