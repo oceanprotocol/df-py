@@ -19,8 +19,8 @@ RATES = {"OCEAN": 0.5, "H2O": 1.6}
 C1, C2 = 7, 137
 PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
-OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
-OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
+OCN_SYMB, H2O_SYMB, UNAPP_SYMB = "OCEAN",   "H2O",   "UNAPP"
+OCN_ADDR, H2O_ADDR, UNAPP_ADDR = "0xocean", "0xh2o", "0xunapp"
 
 APPROVED_TOKENS = TokSet([(C1, OCN_ADDR, OCN_SYMB),
                           (C1, H2O_ADDR, H2O_SYMB),
@@ -30,8 +30,8 @@ TOK_SET = APPROVED_TOKENS
 
 @enforce_types
 def test_calcRewards1_onechain():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
+    stakes   = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}, UNAPP_ADDR: {PC: {LP1: 20.0}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0},            UNAPP_ADDR: {PC: 2.0}}}
 
     target_rewardsperlp = {C1: {LP1: 10.0}}
     target_rewardsinfo = {C1: {PA: {LP1: 10}}}
@@ -45,22 +45,17 @@ def test_calcRewards1_onechain():
 
 @enforce_types
 def test_calcRewards1_twochains():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}, C2: {OCN_ADDR: {PB: {LP1: 10000.0}}}}
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {OCN_ADDR: {PB: 1.0}}}
+    stakes   = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}, C2: {OCN_ADDR: {PB: {LP1: 10000.0}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0}},            C2: {OCN_ADDR: {PB: 1.0}}}
     TOKEN_avail = 20.0
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail)
     assert rewardsperlp == {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
-    assert rewardsinfo == {
-        C1: {
-            PA: {LP1: 10.0},
-        },
-        C2: {PB: {LP1: 10.0}},
-    }
+    assert rewardsinfo  == {C1: {PA: {LP1: 10.0}}, C2: {PB: {LP1: 10.0}}}
 
 
 @enforce_types
 def test_calcRewards2():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
+    stakes   = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
     TOKEN_avail = 10.0
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail)
@@ -72,9 +67,7 @@ def test_calcRewards2():
 
 @enforce_types
 def test_calcRewards3():
-    stakes = {
-        C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}, PB: {LP1: 10000.0, LP3: 10000.0}}}
-    }
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}, PB: {LP1: 10000.0, LP3: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}  # P1 has volume, but not P2
     TOKEN_avail = 10.0
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail)
@@ -83,17 +76,13 @@ def test_calcRewards3():
     assert rewardsperlp == {C1: {LP1: 5.0, LP2: 5.0}}
 
     assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
-    assert (
-        min(rewardsinfo[C1][PA].values()) > 0
-    ), "shouldn't have entries with 0 rewards"
+    assert min(rewardsinfo[C1][PA].values()) > 0, "shouldn't have entries with 0 rewards"
     assert rewardsinfo == {C1: {PA: {LP1: 5.0, LP2: 5.0}}}
 
 
 @enforce_types
 def test_calcRewards4():
-    stakes = {
-        C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}, PB: {LP1: 10000.0, LP3: 10000.0}}}
-    }
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}, PB: {LP1: 10000.0, LP3: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}  # P1 & P2 both have volume
     TOKEN_avail = 10.0
     rewardsperlp, rewardsinfo = calcRewards(stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail)
@@ -111,7 +100,7 @@ def test_calcRewards5_mix_upper_and_lower_case():
     # LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "lp4_addr"
     # OCN_ADDR, H2O = "0xocean", "0xh2o"
 
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
+    stakes   = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
     stakes2a = {C1: {OCN_ADDR.upper(): {PA: {LP1: 10000.0}}}}
     stakes2b = {C1: {OCN_ADDR: {"0xpOoLa_aDDr": {LP1: 10000.0}}}}
     stakes2c = {C1: {OCN_ADDR: {PA: {"0xlP1_aDdR": 10000.0}}}}
@@ -120,7 +109,7 @@ def test_calcRewards5_mix_upper_and_lower_case():
     poolvols2a = {C1: {OCN_ADDR.upper(): {PA: 10000.0}}}
     poolvols2b = {C1: {OCN_ADDR: {"0xpOola_adDr": 10000.0}}}
 
-    rates = {"OCEAN": 0.5, "H2O": 1.6}
+    rates  = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
 
     target_rewardsperlp = {C1: {LP1: 10.0}}
@@ -178,7 +167,7 @@ def test_calcrewards_math():
 
 
 def test_apy_cap():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 1000 / 0.015717}}}}
+    stakes   = {C1: {OCN_ADDR: {PA: {LP1: 1000 / 0.015717}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
 
     target_rewardsperlp = {C1: {LP1: 1000.0}}
