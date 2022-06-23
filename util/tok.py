@@ -1,7 +1,7 @@
 # This is a class to help manage a token tuple (chainID, address, symbol)
 # E.g. for approved tokens
 
-from typing import Set, Union
+from typing import Union
 
 from enforce_typing import enforce_types
 
