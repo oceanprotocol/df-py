@@ -213,7 +213,7 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     # shouldn't already have the output file
     _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL))
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL))
-    
+
     # main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)

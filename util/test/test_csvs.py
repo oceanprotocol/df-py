@@ -1,6 +1,7 @@
+import os
+
 import brownie
 from enforce_typing import enforce_types
-import os
 import pandas as pd
 
 from util import csvs, networkutil
