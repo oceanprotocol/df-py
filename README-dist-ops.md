@@ -48,7 +48,7 @@ Steps: ([Ref](https://github.com/oceanprotocol/df-issues/issues/66#issuecomment-
 2. Generate local account via `dftool newacct`. Remember private key & address.
 3. For each chain:
    - have OCEAN sent -> local account
-   - have OCEAN sent -> local account
+   - have gas funds sent -> local account
    - from local account, on CLI: `dftool dispense` (details below)
 
 ### dftool dispense parameters
