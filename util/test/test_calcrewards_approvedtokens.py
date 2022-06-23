@@ -21,7 +21,7 @@ LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 RATES = {"OCEAN": 0.5, "H2O": 1.6}
 
 # these get filled on setup
-OCN_ADDR, H2O_ADDR, APPROVED_TOKENS = None, None, None
+OCN_ADDR, APPROVED_TOKENS = None, None
 
 
 @enforce_types
@@ -90,23 +90,8 @@ def setup_function():
     networkutil.connect(CHAINID)
     recordDeployedContracts(ADDRESS_FILE)
     
-    H2O = _deployTOK("H2O")
-    
     OCN_ADDR = OCEAN_address().lower()
-    H2O_ADDR = H2O.address.lower()
-
-    #add H2O as approved token
-    oceanutil.factoryRouter().addApprovedToken(H2O_ADDR, {"from": brownie.network.accounts[0]})
-
-    #only proceed once subgraph sees H2O as approved (or we run out of time)
-    APPROVED_TOKENS = TokSet()
-    time_slept, loop_time, max_time_slept = 0.0, 0.5, 5
-    while time_slept < max_time_slept and not APPROVED_TOKENS.hasAddress(CHAINID, H2O_ADDR):
-        time.sleep(loop_time)
-        time_slept += loop_time
-        APPROVED_TOKENS = query.getApprovedTokens(CHAINID)
-        print(f"time_slept = {time_slept}. # approved = {len(APPROVED_TOKENS.toks)}")
-    assert APPROVED_TOKENS.hasAddress(CHAINID, H2O_ADDR), "need H2O as approved token"
+    APPROVED_TOKENS = query.getApprovedTokens(CHAINID)
 
 @enforce_types
 def _deployTOK(symbol: str):
