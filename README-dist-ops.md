@@ -44,19 +44,12 @@ export now=`date '+%Y-%m-%d'`
 
 Steps: ([Ref](https://github.com/oceanprotocol/df-issues/issues/66#issuecomment-1164729816))
 
- 0. inspect rewardsperlp-OCEAN.csv to see how much OCEAN each network needs
- 
- 1. Generate local account via `dftool newacct`. Remember private key & address.
-
- 2. For each chain:
- 
-    2.1 tx: from multisig, send OCEAN -> local account
-        https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md
-        
-    2.2 check: does local account have funds for gas. If no:
-        tx: from multisig, send funds for gas-> local account
-        
-    2.3 tx: from local account: dftool dispense
+1. inspect rewardsperlp-OCEAN.csv to see how much OCEAN each network needs
+2. Generate local account via `dftool newacct`. Remember private key & address.
+3. For each chain:
+   - have OCEAN sent -> local account
+   - have OCEAN sent -> local account
+   - from local account, on CLI: `dftool dispense` (details below)
 
 ### dftool dispense parameters
 
