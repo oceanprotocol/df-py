@@ -15,8 +15,8 @@ from util.query import getApprovedTokens
 
 # for shorter lines
 C1, C2 = networkutil.DEV_CHAINID, None
-PA, PB, PC = "poola_addr", "poolb_addr", "poolc_addr"
-LP1, LP2, LP3, LP4 = "lp1_addr", "lp2_addr", "lp3_addr", "lp4_addr"
+PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
+LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 
 accounts = None
 OCN, H2O = None, None
