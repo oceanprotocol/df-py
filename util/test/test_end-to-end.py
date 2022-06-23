@@ -25,19 +25,15 @@ def test_without_csvs():
     st, fin, n = 1, len(brownie.network.chain), 25
     rng = blockrange.BlockRange(st, fin, n)
 
-    (_, S0, V0) = query.query_all(rng, chainID)
+    (_, S0, V0, A0) = query.query_all(rng, chainID)
     rates = {"OCEAN": 0.5, "H2O": 1.618}
 
-    stakes, poolvols = {chainID: S0}, {chainID: V0}
+    stakes, poolvols, approved_tokens = {chainID: S0}, {chainID: V0}, A0
 
-    total_stakes = 0
-    for basetoken_address in stakes[chainID]:
-        for pool_addr in stakes[chainID][basetoken_address]:
-            for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
-                total_stakes += stakes[chainID][basetoken_address][pool_addr][LP_addr]
+    total_stakes = _sumAcrossStakes(stakes, chainID)
     OCEAN_avail = total_stakes * 0.015717
 
-    rewardsperlp, _ = calcrewards.calcRewards(stakes, poolvols, rates, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, poolvols, approved_tokens, rates, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
@@ -59,10 +55,11 @@ def test_with_csvs(tmp_path):
     token_addr = oceanutil.OCEAN_address()
 
     # 1. simulate "dftool query"
-    (_, S0, V0) = query.query_all(rng, chainID)
+    (_, S0, V0, A0) = query.query_all(rng, chainID)
     csvs.saveStakesCsv(S0, csv_dir, chainID)
     csvs.savePoolvolsCsv(V0, csv_dir, chainID)
-    S0 = V0 = None  # ensure not used later
+    csvs.approvedCsv(A0, csv_dir, chainID)
+    S0 = V0 = A0 = None  # ensure not used later
 
     # 2. simulate "dftool getrate"
     csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
@@ -71,16 +68,13 @@ def test_with_csvs(tmp_path):
     # 3. simulate dftool calc"
     S = csvs.loadStakesCsvs(csv_dir)
     V = csvs.loadPoolvolsCsvs(csv_dir)
+    A = csvs.loadApprovedCsvs(csv_dir)
     rates = csvs.loadRateCsvs(csv_dir)
-    total_stakes = 0
 
-    for basetoken_address in S[chainID]:
-        for pool_addr in S[chainID][basetoken_address]:
-            for LP_addr in S[chainID][basetoken_address][pool_addr]:
-                total_stakes += S[chainID][basetoken_address][pool_addr][LP_addr]
+    total_stakes = _sumAcrossStakes(S, chainID)
     OCEAN_avail = total_stakes * 0.015717
 
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, rates, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, A, rates, OCEAN_avail)
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
@@ -90,6 +84,15 @@ def test_with_csvs(tmp_path):
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
     dispense.dispense(rewardsperlp[chainID], dfrewards_addr, token_addr, accounts[0])
+
+
+def _sumAcrossStakes(stakes: dict, chainID: int) -> float:
+    total_stakes = 0.0
+    for basetoken_address in stakes[chainID]:
+        for pool_addr in stakes[chainID][basetoken_address]:
+            for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
+                total_stakes += stakes[chainID][basetoken_address][pool_addr][LP_addr]
+    return total_stakes
 
 
 @enforce_types
