@@ -135,6 +135,10 @@ Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readth
 
 See [README-dist-ops.md](README-dist-ops.md)
 
+# Usage: DFRewards Owner Control Ops
+
+See [README-control-ops.md](README-control-ops.md)
+
 # Usage: Via Docker
 
 Build the docker image.
