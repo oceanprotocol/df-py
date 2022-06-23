@@ -21,6 +21,12 @@ DFStrategy: 0x0000000000cEAe464ae8a73EDDc0B482383490e7
 4. dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 ```
 
+### Env variables
+
+- `WEB3_INFURA_PROJECT_ID` - Infura project id
+- `DFTOOL_KEY` - The private key of the address to distribute the rewards
+- `ADDRESS_FILE` - path to `address.json` file
+
 ### dftool query
 
 Berkay's query script
