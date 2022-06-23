@@ -25,7 +25,7 @@ DFStrategy: 0x0000000000cEAe464ae8a73EDDc0B482383490e7
 
 - `WEB3_INFURA_PROJECT_ID` - Infura project id
 - `DFTOOL_KEY` - The private key of the address to distribute the rewards
-- `ADDRESS_FILE` - path to `address.json` file
+- `ADDRESS_FILE` - path to `address.json` file. Typically: `export ADDRESS_FILE=~/.ocean/ocean-contracts/artifacts/address.json`
 
 ### dftool query
 
