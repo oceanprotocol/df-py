@@ -94,6 +94,6 @@ We had a problem when dispensing and calculating rewards for polygon, because th
 
 To workaround:
 1. In file approved-137.csv, change `OCEAN` -> `MOCEAN`
-2. In dftool.py::do_calc, to the end of `TOKEN_SYMBOL = sys.argv[2]` add `.upper().replace("MOCEAN", "OCEAN")`
+2. In dftool.py::do_dispense(), to the end of `B.Simpletoken.at(TOKEN_ADDR).symbol()`, add `.upper().replace("MOCEAN", "OCEAN")`
 
 Related [github issue](https://github.com/oceanprotocol/df-py/issues/177).
