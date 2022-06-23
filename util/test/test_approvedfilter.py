@@ -2,7 +2,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util import cleancase, approvedfilter
-from util.tok import Tok, TokSet
+from util.tok import TokSet
 
 APPROVED_TOKENS = TokSet([(1, "0xocean", "OCEAN"),
                           (1, "0xh2o", "H2O"),
