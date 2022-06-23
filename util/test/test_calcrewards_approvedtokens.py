@@ -17,10 +17,11 @@ from util.query import getApprovedTokens
 C1, C2 = networkutil.DEV_CHAINID, None
 PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
+RATES = {"OCEAN": 0.5, "H2O": 1.6}
 
 accounts = None
 OCN, H2O = None, None
-RATES = None
+
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
@@ -102,8 +103,6 @@ def setup_function():
         oceanutil.factoryRouter().addApprovedToken(H2O_addr, {"from": accounts[0]})
         time.sleep(2)
 
-    global RATES
-    RATES = {"OCEAN": 0.5, H2O.symbol(): 1.6}
     H2O = H2O_addr
 
 @enforce_types
