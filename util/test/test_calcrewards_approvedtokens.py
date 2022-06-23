@@ -1,15 +1,12 @@
 import random
-import time
 
 from enforce_typing import enforce_types
-import pytest
 import brownie
 
-from util import cleancase, networkutil, oceanutil, query
-from util.calcrewards import calcRewards, _stakesToUsd, _poolvolsToUsd
+from util import networkutil, query
+from util.calcrewards import _stakesToUsd, _poolvolsToUsd
 from util.oceanutil import recordDeployedContracts, OCEAN_address
 from util.constants import BROWNIE_PROJECT as B
-from util.tok import TokSet
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
