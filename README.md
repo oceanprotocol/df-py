@@ -280,7 +280,39 @@ export now=`date '+%Y-%m-%d'`
 ./dftool query $date $now 50 /tmp/dfpy 1285
 ```
 
-### Details: dftool dispense - Polygon issue & workaround
+### Details: dftool dispense
+
+```text
+dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
+
+Param values picked:
+  CSV_DIR -- arbitrarily set to 'df1_data'
+  
+  CHAINID -- 
+    137: polygon
+    246: energyweb
+    1: mainnet
+    56: bsc
+    1285: moonriver
+    
+  DFREWARDS_ADDR -- 0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
+  
+  TOKEN_ADDR -- address of OCEAN token per network. https://docs.oceanprotocol.com/concepts/networks/
+    137: polygon   -- MOCEAN -- 0x282d8efce846a88b159800bd4130ad77443fa1a1
+    246: energyweb  -- OCEAN -- 0x593122aae80a6fc3183b2ac0c4ab3336debee528
+    1: mainnet      -- OCEAN -- 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
+    56: bsc         -- OCEAN -- 0xdce07662ca8ebc241316a15b611c89711414dd1a 
+    1285: moonriver -- OCEAN -- 0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE
+    
+  BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
+    - we can ignore this param to start, only use if we need
+
+Transactions are signed with envvar 'DFTOOL_KEY`.
+```
+
+
+
+**Polygon issue & workaround:**
 
 (From Berkay)
 
@@ -288,7 +320,7 @@ We had a problem when dispensing and calculating rewards for polygon, because th
 
 I changed the MOCEAN to OCEAN in the approved tokens csv file - `dftool calc` worked
 
-For dispensing I added the following line as a temproray fix:
+For dispensing I added the following line as a temporary fix: [github issue](https://github.com/oceanprotocol/df-py/issues/177)
 ```python
 token_symbol = token_symbol.upper().replace("MOCEAN", "OCEAN")
 ```
