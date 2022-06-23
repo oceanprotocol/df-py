@@ -21,7 +21,7 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 def test_recordDeployedContracts():
     recordDeployedContracts(ADDRESS_FILE)
     assert oceanutil.OCEANtoken()
-    assert isinstance(oceanutil.OCEAN_address(), str)
+    assert oceanutil.OCEAN_address() == oceanutil.OCEAN_address().lower()
     assert oceanutil.ERC721Template()
     assert oceanutil.ERC20Template()
     assert oceanutil.PoolTemplate()

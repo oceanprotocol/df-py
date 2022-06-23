@@ -57,7 +57,7 @@ def OCEANtoken():
 
 
 def OCEAN_address() -> str:
-    return OCEANtoken().address
+    return OCEANtoken().address.lower()
 
 
 def ERC721Template():
