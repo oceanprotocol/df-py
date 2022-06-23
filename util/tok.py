@@ -8,9 +8,9 @@ from enforce_typing import enforce_types
 @enforce_types
 class Tok:
     def __init__(self, chainID : int, address: str, symbol : str):
-        assert address[:2] == "0x"
-        assert address == address.lower()
-        assert symbol == symbol.upper()
+        assert address[:2] == "0x", address
+        assert address == address.lower(), address
+        assert symbol == symbol.upper(), symbol
         
         self.chainID = chainID
         self.address = address
@@ -29,8 +29,8 @@ class TokSet:
         Add another Tok to this set. 
         For a given chain: both address & symbol must be unique.
         """
-        assert not self.hasAddress(chainID, address)
-        assert not self.hasSymbol(chainID, symbol)
+        assert not self.hasAddress(chainID, address), (chainID, address)
+        assert not self.hasSymbol(chainID, symbol), (chainID, symbol)
         tok = Tok(chainID, address, symbol)
         self.toks.add(tok)
 
@@ -65,8 +65,8 @@ class TokSet:
 
     def tokAtAddress(self, chainID: int, address: str) -> Union[Tok, None]:
         """Returns Tok if there's a token, otherwise returns None"""
-        assert address == address.lower()
-        assert address[:2] == "0x"
+        assert address == address.lower(), address
+        assert address[:2] == "0x", address
         for tok in self.toks:
             if tok.chainID == chainID and tok.address == address:
                 return tok
@@ -74,7 +74,7 @@ class TokSet:
 
     def tokAtSymbol(self, chainID: int, symbol: str) -> Union[Tok, None]:
         """Returns Tok if there's a token, otherwise returns None"""
-        assert symbol == symbol.upper()
+        assert symbol == symbol.upper(), symbol
         for tok in self.toks:
             if tok.chainID == chainID and tok.symbol == symbol:
                 return tok
