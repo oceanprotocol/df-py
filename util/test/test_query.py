@@ -135,11 +135,12 @@ def test_stakes_shares_conversion():
     time.sleep(2)
     now = len(brownie.network.chain)
     rng = BlockRange(now - 1, now, 1)
-    while True:
+    for i in range(50):
         try:
             stakes = query.getStakes([], rng, CHAINID)
             stakes = stakes[ocean.address.lower()][pool.address.lower()]
             break
+        # pylint: disable=bare-except
         except:
             time.sleep(2)
             brownie.network.chain.mine(blocks=5)
