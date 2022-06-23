@@ -1,18 +1,8 @@
-import random
-import time
-
 from enforce_typing import enforce_types
 import pytest
-import brownie
 
-from util import oceanutil
+from util import cleancase, tok
 from util.calcrewards import calcRewards, _stakesToUsd, _poolvolsToUsd
-from util import cleancase
-from util.oceanutil import recordDeployedContracts, OCEAN_address
-from util.constants import BROWNIE_PROJECT as B
-from util import networkutil
-from util.query import getApprovedTokens
-from util.tok import Tok, TokSet
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}
@@ -22,7 +12,7 @@ LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB, UNAPP_SYMB = "OCEAN", "H2O", "UNAPP"
 OCN_ADDR, H2O_ADDR, UNAPP_ADDR = "0xocean", "0xh2o", "0xunapp"
 
-APPROVED_TOKENS = TokSet(
+APPROVED_TOKENS = tok.TokSet(
     [
         (C1, OCN_ADDR, OCN_SYMB),
         (C1, H2O_ADDR, H2O_SYMB),
