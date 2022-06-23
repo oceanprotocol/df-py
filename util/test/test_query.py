@@ -122,6 +122,35 @@ def test_shares_to_stakes():
 
 
 @enforce_types
+def test_stakes_shares():
+    ocean = oceanutil.OCEANtoken()
+    account1 = brownie.network.accounts[1]
+    (DT, pool) = oceantestutil.deployPool(100.0, 1.0, account0, ocean)
+    oceantestutil.addStake(pool, 10.0, account1, ocean)
+    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
+    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
+    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
+    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
+    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
+    time.sleep(2)
+    now = len(brownie.network.chain)
+    rng = BlockRange(now - 1, now, 1)
+    while True:
+        try:
+            stakes = query.getStakes([], rng, CHAINID)
+            stakes = stakes[ocean.address.lower()][pool.address.lower()]
+            break
+        except:
+            time.sleep(2)
+            brownie.network.chain.mine(blocks=5)
+    ocn_balance = ocean.balanceOf(pool.address)
+    tot_sup = pool.totalSupply()
+    final = pool.balanceOf(account1) / tot_sup * ocn_balance
+    assert pool.balanceOf(account1) / 1e18 == 5.0  # shares
+    assert stakes[account1.address.lower()] == pytest.approx(final / 1e18, 0.1)
+
+
+@enforce_types
 def _test_getDTVolumes(CO2_ADDR: str):
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
