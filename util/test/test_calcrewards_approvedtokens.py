@@ -99,9 +99,8 @@ def setup_function():
     oceanutil.factoryRouter().addApprovedToken(H2O_ADDR, {"from": brownie.network.accounts[0]})
 
     #only proceed once subgraph sees H2O as approved (or we run out of time)
-    time_slept = 0.0
     APPROVED_TOKENS = TokSet()
-    loop_time, max_time_slept = 0.5, 20 
+    time_slept, loop_time, max_time_slept = 0.0, 0.5, 5
     while time_slept < max_time_slept and not APPROVED_TOKENS.hasAddress(CHAINID, H2O_ADDR):
         time.sleep(loop_time)
         time_slept += loop_time
