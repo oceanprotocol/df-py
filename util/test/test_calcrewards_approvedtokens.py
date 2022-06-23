@@ -97,8 +97,8 @@ def setup_function():
     H2O = _deployTOK(accounts[0])
     H2O_addr = H2O.address.lower()
 
-    approvedTokens = getApprovedTokens(networkutil.DEV_CHAINID)
-    if H2O_addr not in approvedTokens.keys():
+    approved_tokens = getApprovedTokens(networkutil.DEV_CHAINID)
+    if H2O_addr not in approved_tokens.keys():
         oceanutil.factoryRouter().addApprovedToken(H2O_addr, {"from": accounts[0]})
         time.sleep(2)
 
