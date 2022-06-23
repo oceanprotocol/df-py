@@ -103,9 +103,9 @@ def setup_function():
     APPROVED_TOKENS = TokSet()
     loop_time, max_time_slept = 0.5, 20 
     while time_slept < max_time_slept and not APPROVED_TOKENS.hasAddress(CHAINID, H2O_ADDR):
-        APPROVED_TOKENS = query.getApprovedTokens(CHAINID)
         time.sleep(loop_time)
         time_slept += loop_time
+        APPROVED_TOKENS = query.getApprovedTokens(CHAINID)
         print(f"time_slept = {time_slept}. # approved = {len(APPROVED_TOKENS.toks)}")
     assert APPROVED_TOKENS.hasAddress(CHAINID, H2O_ADDR), "need H2O as approved token"
 
