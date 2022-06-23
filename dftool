@@ -274,7 +274,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     )
     assert DFREWARDS_ADDR is not None
     assert TOKEN_ADDR is not None
-    import pdb; pdb.set_trace()
 
     # main work
     networkutil.connect(CHAINID)
