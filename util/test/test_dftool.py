@@ -63,7 +63,7 @@ def test_getrate(tmp_path):
 def test_calc(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
-    
+
     # insert fake inputs: csvs for stakes, poolvols, and rewards
     stakes_at_chain = {OCEAN_addr: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
     csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)

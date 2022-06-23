@@ -8,11 +8,11 @@ from util.tok import TokSet
 
 @enforce_types
 def calcRewards(
-        stakes: dict,
-        poolvols: dict,
-        approved_tokens: TokSet,
-        rates: Dict[str, float],
-        TOKEN_avail: float
+    stakes: dict,
+    poolvols: dict,
+    approved_tokens: TokSet,
+    rates: Dict[str, float],
+    TOKEN_avail: float,
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
     """
     @arguments
@@ -29,19 +29,19 @@ def calcRewards(
     @notes
       A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
-    #ensure upper/lowercase is correct
+    # ensure upper/lowercase is correct
     (stakes, poolvols, rates) = cleancase.modTuple(stakes, poolvols, rates)
 
-    #remove non-approved tokens
+    # remove non-approved tokens
     (stakes, poolvols) = approvedfilter.modTuple(approved_tokens, stakes, poolvols)
 
-    #key params
+    # key params
     TARGET_WPY = 0.015717  # (Weekly Percent Yield) needs to be 1.5717%.
     TARGET_REWARD_AMT = _sumStakes(stakes) * TARGET_WPY
     TOKEN_avail = min(TOKEN_avail, TARGET_REWARD_AMT)  # Max apy is 125%
 
-    #main work
-    tok_set = approved_tokens # use its mapping here, not the 'whether approved' part
+    # main work
+    tok_set = approved_tokens  # use its mapping here, not the 'whether approved' part
     stakes_USD = _stakesToUsd(stakes, rates, tok_set)
     poolvols_USD = _poolvolsToUsd(poolvols, rates, tok_set)
     (rewardsperlp, rewardsinfo) = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
@@ -60,7 +60,7 @@ def _sumStakes(stakes: dict) -> float:
     return total_stakes
 
 
-def _stakesToUsd(stakes: dict, rates: Dict[str, float], tok_set : TokSet) -> dict:
+def _stakesToUsd(stakes: dict, rates: Dict[str, float], tok_set: TokSet) -> dict:
     """
     @description
       Converts stake values to be USD-denominated.
@@ -94,7 +94,7 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float], tok_set : TokSet) -> dic
     return stakes_USD
 
 
-def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float], tok_set : TokSet) -> dict:
+def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float], tok_set: TokSet) -> dict:
     """
     @description
       For a given chain, converts volume values to be USD-denominated.

@@ -5,17 +5,19 @@ from typing import Set, Union
 
 from enforce_typing import enforce_types
 
+
 @enforce_types
 class Tok:
-    def __init__(self, chainID : int, address: str, symbol : str):
+    def __init__(self, chainID: int, address: str, symbol: str):
         assert address[:2] == "0x", address
         assert address == address.lower(), address
         assert symbol == symbol.upper(), symbol
-        
+
         self.chainID = chainID
         self.address = address
         self.symbol = symbol
-        
+
+
 class TokSet:
     def __init__(self, tups=None):
         """tups - list of (chainID, address, symbol). Will set to [] if None"""
@@ -26,7 +28,7 @@ class TokSet:
 
     def add(self, chainID: int, address: str, symbol: str):
         """
-        Add another Tok to this set. 
+        Add another Tok to this set.
         For a given chain: both address & symbol must be unique.
         """
         assert not self.hasAddress(chainID, address), (chainID, address)
@@ -39,17 +41,17 @@ class TokSet:
         for tok in self.toks:
             if tok.chainID == chainID:
                 return True
-        return False                
+        return False
 
     def hasAddress(self, chainID: int, address: str) -> bool:
         """Is there a token at this chainID & address?"""
         tok = self.tokAtAddress(chainID, address)
-        return (tok is not None)
+        return tok is not None
 
     def hasSymbol(self, chainID: int, symbol: str) -> bool:
         """Is there a token at this chainID & address?"""
         tok = self.tokAtSymbol(chainID, symbol)
-        return (tok is not None)
+        return tok is not None
 
     def getSymbol(self, chainID: int, address: str) -> str:
         """Returns Tok's symbol if there's a token, otherwise raises an error"""
@@ -79,5 +81,3 @@ class TokSet:
             if tok.chainID == chainID and tok.symbol == symbol:
                 return tok
         return None
-        
-

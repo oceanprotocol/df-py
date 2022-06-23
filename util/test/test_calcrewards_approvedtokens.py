@@ -40,7 +40,7 @@ def test_stakesToUsd_one_approved_one_unapproved():
 
     stakes = {
         C1: {
-            OCN_ADDR:   {PA: {LP1: 1.1, LP2: 2.0}},
+            OCN_ADDR: {PA: {LP1: 1.1, LP2: 2.0}},
             UNAPP_ADDR: {PB: {LP1: 3.0, LP2: 4.0}},
         }
     }
@@ -86,10 +86,10 @@ def setup_function():
     Invoked for every test function in the module.
     """
     global OCN_ADDR, APPROVED_TOKENS
-    
+
     networkutil.connect(CHAINID)
     recordDeployedContracts(ADDRESS_FILE)
-    
+
     OCN_ADDR = OCEAN_address().lower()
     APPROVED_TOKENS = query.getApprovedTokens(CHAINID)
 
@@ -98,6 +98,9 @@ def setup_function():
 def _deployTOK(symbol: str):
     assert symbol == symbol.upper(), symbol
     return B.Simpletoken.deploy(
-        f"{symbol}_{random.randint(0,99999):05d}", symbol, 18, 100e18,
-        {"from": brownie.network.accounts[0]}
+        f"{symbol}_{random.randint(0,99999):05d}",
+        symbol,
+        18,
+        100e18,
+        {"from": brownie.network.accounts[0]},
     )

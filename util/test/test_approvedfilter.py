@@ -4,9 +4,10 @@ import pytest
 from util import cleancase, approvedfilter
 from util.tok import TokSet
 
-APPROVED_TOKENS = TokSet([(1, "0xocean", "OCEAN"),
-                          (1, "0xh2o", "H2O"),
-                          (2, "0xocean", "OCEAN")])
+APPROVED_TOKENS = TokSet(
+    [(1, "0xocean", "OCEAN"), (1, "0xh2o", "H2O"), (2, "0xocean", "OCEAN")]
+)
+
 
 @enforce_types
 def test_stakes_fail_cleancase():
@@ -20,12 +21,12 @@ def test_stakes_fail_cleancase():
 
 
 @enforce_types
-def test_stakes_main():    
+def test_stakes_main():
     stakes = {
         1: {
             "0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}},
             "0xh2o": {"0xpoolc": {"0xlp4": 4.0}},
-            "0xfoo": {"0xpoold": {"0xlp5": .0}}, #filter this
+            "0xfoo": {"0xpoold": {"0xlp5": 0.0}},  # filter this
         },
         2: {"0xocean": {"0xpoole": {"0xlp6": 5.0}}},
     }
@@ -61,7 +62,7 @@ def test_poolvols_fail_cleancase():
 
 
 @enforce_types
-def test_poolvols_main():    
+def test_poolvols_main():
     poolvols = {
         1: {
             "0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0},

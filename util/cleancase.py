@@ -10,9 +10,7 @@ FAKE_TOKEN_ADDR = "0xfake_token"
 
 @enforce_types
 def modTuple(stakes, poolvols, rates) -> tuple:
-    return (modStakes(stakes),
-            modPoolvols(poolvols),
-            modRates(rates))
+    return (modStakes(stakes), modPoolvols(poolvols), modRates(rates))
 
 
 @enforce_types

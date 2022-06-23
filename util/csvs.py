@@ -254,7 +254,7 @@ def loadApprovedCsvs(csv_dir: str):
         chainID = chainIDforApprovedCsv(csv_file)
         for tok in loadApprovedCsv(csv_dir, chainID).toks:
             assert tok.chainID == chainID
-            approved_tokens.add(tok.chainID, tok.address, tok.symbol) 
+            approved_tokens.add(tok.chainID, tok.address, tok.symbol)
     return approved_tokens
 
 
