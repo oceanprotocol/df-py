@@ -27,21 +27,21 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 @enforce_types
 def test_stakesToUsd_nonapprovedtoken():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
-    stakes = {C1: {nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}}}}
+    unapproved_token = _deployTOK(accounts[0])
+    unapproved_token_addr = unapproved_token.address.lower()
+    stakes = {C1: {unapproved_token_addr: {PA: {LP1: 3.0, LP2: 4.0}}}}
     stakes_USD = _stakesToUsd(stakes, RATES)
     assert stakes_USD == {C1: {}}
 
 
 @enforce_types
 def test_stakesToUsd_two_approved_one_nonapproved():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
+    unapproved_token = _deployTOK(accounts[0])
+    unapproved_token_addr = unapproved_token.address.lower()
 
     stakes = {
         C1: {
-            nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}},
+            unapproved_token_addr: {PA: {LP1: 3.0, LP2: 4.0}},
             OCN: {PA: {LP1: 3.0, LP2: 4.0}},
             H2O: {PC: {LP1: 5.0, LP4: 6.0}},
         }
@@ -58,19 +58,19 @@ def test_stakesToUsd_two_approved_one_nonapproved():
 
 @enforce_types
 def test_poolvolsToUsd_nonapprovedtoken():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
-    stakes = {C1: {nonApprovedTokenAddr: {PA: {LP1: 3.0, LP2: 4.0}}}}
+    unapproved_token = _deployTOK(accounts[0])
+    unapproved_token_addr = unapproved_token.address.lower()
+    stakes = {C1: {unapproved_token_addr: {PA: {LP1: 3.0, LP2: 4.0}}}}
     stakes_USD = _poolvolsToUsd(stakes, RATES)
     assert stakes_USD == {C1: {}}
 
 
 @enforce_types
 def test_poolvolsToUsd_two_approved_one_nonapproved():
-    nonApprovedToken = _deployTOK(accounts[0])
-    nonApprovedTokenAddr = nonApprovedToken.address.lower()
+    unapproved_token = _deployTOK(accounts[0])
+    unapproved_token_addr = unapproved_token.address.lower()
     poolvols = {
-        C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}, nonApprovedTokenAddr: {PC: 100}}
+        C1: {OCN: {PA: 9.0, PB: 11.0}, H2O: {PC: 13.0}, unapproved_token_addr: {PC: 100}}
     }
     poolvols_USD = _poolvolsToUsd(poolvols, RATES)
     assert poolvols_USD == {
