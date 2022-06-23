@@ -243,3 +243,24 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 >>> t.symbol()                                                                                                                                                                                              
 'TEST'
 ```
+
+# Usage: Rewards Distribution Ops
+
+## Overall OPF steps:
+1. query - run per CHAINID (8996, 1, 137, ..)
+2. getrate - run per basetoken (OCEAN, H2O)
+3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
+4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
+
+## query
+
+Berkay's query script
+```console
+export date=`date -d "last Thursday" '+%Y-%m-%d'`
+export now=`date '+%Y-%m-%d'`
+
+./dftool query $date $now 50 /tmp/dfpy 1 && 
+./dftool query $date $now 50 /tmp/dfpy 137 && 
+./dftool query $date $now 50 /tmp/dfpy 246 && 
+./dftool query $date $now 50 /tmp/dfpy 1285
+```
