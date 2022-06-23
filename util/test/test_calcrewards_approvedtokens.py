@@ -55,7 +55,6 @@ def test_stakesToUsd_two_approved_one_nonapproved():
     }
 
 
-
 @enforce_types
 def test_poolvolsToUsd_nonapprovedtoken():
     unapproved_token = _deployTOK(accounts[0])
