@@ -92,9 +92,8 @@ dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
 
 We had a problem when dispensing and calculating rewards for polygon, because the symbols didn't match MOCEAN - OCEAN
 
-I changed the MOCEAN to OCEAN in the approved tokens csv file - `dftool calc` worked
+To workaround:
+1. In file approved-137.csv, change `OCEAN` -> `MOCEAN`
+2. In dftool.py::do_calc, to the end of `TOKEN_SYMBOL = sys.argv[2]` add `.upper().replace("MOCEAN", "OCEAN")`
 
-For dispensing I added the following line as a temporary fix: [github issue](https://github.com/oceanprotocol/df-py/issues/177)
-```python
-token_symbol = token_symbol.upper().replace("MOCEAN", "OCEAN")
-```
+Related [github issue](https://github.com/oceanprotocol/df-py/issues/177).
