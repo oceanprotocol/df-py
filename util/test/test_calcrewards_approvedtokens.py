@@ -25,6 +25,7 @@ OCN, H2O = None, None
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
+
 @enforce_types
 def test_stakesToUsd_nonapprovedtoken():
     unapproved_token = _deployTOK(accounts[0])
