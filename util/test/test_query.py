@@ -122,7 +122,7 @@ def test_shares_to_stakes():
 
 
 @enforce_types
-def test_stakes_shares():
+def test_stakes_shares_conversion():
     ocean = oceanutil.OCEANtoken()
     account1 = brownie.network.accounts[1]
     (DT, pool) = oceantestutil.deployPool(100.0, 1.0, account0, ocean)
