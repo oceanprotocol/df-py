@@ -114,6 +114,14 @@ def _test_stakes(CO2_ADDR: str):
 
 
 @enforce_types
+def test_shares_to_stakes():
+    share = 10.0
+    pool_liq = 300.0
+    total_shares = 100.0
+    assert query.poolSharestoValue(share, total_shares, pool_liq) == 30.0
+
+
+@enforce_types
 def _test_getDTVolumes(CO2_ADDR: str):
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
