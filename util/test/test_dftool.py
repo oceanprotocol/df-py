@@ -72,7 +72,7 @@ def test_calc(tmp_path):
     csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
 
     approved_tokens = TokSet([(CHAINID, OCEAN_addr, "OCEAN")])
-    csvs.saveApprovedCsv(approved_tokens)
+    csvs.saveApprovedCsv(approved_tokens, CSV_DIR, CHAINID)
 
     csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
 
