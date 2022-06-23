@@ -80,6 +80,8 @@ def _stakesToUsd(stakes: dict, rates: Dict[str, float], tok_set : TokSet) -> dic
     for chainID in stakes:
         stakes_USD[chainID] = {}
         for base_symb, rate in rates.items():
+            if not tok_set.hasSymbol(chainID, base_symb):
+                continue
             base_addr = tok_set.getAddress(chainID, base_symb)
             if base_addr not in stakes[chainID]:
                 continue
@@ -112,6 +114,8 @@ def _poolvolsToUsd(poolvols: dict, rates: Dict[str, float], tok_set : TokSet) ->
     for chainID in poolvols:
         poolvols_USD[chainID] = {}
         for base_symb, rate in rates.items():
+            if not tok_set.hasSymbol(chainID, base_symb):
+                continue
             base_addr = tok_set.getAddress(chainID, base_symb)
             if base_addr not in poolvols[chainID]:
                 continue
