@@ -286,13 +286,13 @@ export now=`date '+%Y-%m-%d'`
 dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
 
 Param values picked:
-  CSV_DIR -- arbitrarily set to 'df1_data'
+  CSV_DIR -- arbitrarily set to /tmp/dfpy
   
   CHAINID -- 
-    137: polygon
-    246: energyweb
     1: mainnet
     56: bsc
+    137: polygon
+    246: energyweb
     1285: moonriver
     
   DFREWARDS_ADDR -- 0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
