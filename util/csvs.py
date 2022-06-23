@@ -249,7 +249,7 @@ def loadApprovedCsvs(csv_dir: str):
       approved_tokens -- TokSet
     """
     csv_files = approvedCsvFilenames(csv_dir)
-    approved_tokens = TokSet([])
+    approved_tokens = TokSet()
     for csv_file in csv_files:
         chainID = chainIDforApprovedCsv(csv_file)
         for tok in loadApprovedCsv(csv_dir, chainID).toks:
@@ -268,7 +268,7 @@ def loadApprovedCsv(csv_dir: str, chainID: int):
       approved_tokens -- TokSet
     """
     csv_file = approvedCsvFilename(csv_dir, chainID)
-    approved_tokens = TokSet([])
+    approved_tokens = TokSet()
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):

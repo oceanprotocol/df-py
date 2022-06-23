@@ -17,7 +17,9 @@ class Tok:
         self.symbol = symbol
         
 class TokSet:
-    def __init__(self, tups : list):
+    def __init__(self, tups=None):
+        """tups - list of (chainID, address, symbol). Will set to [] if None"""
+        tups = tups or []
         self.toks = set()
         for (chainID, address, symbol) in tups:
             self.add(chainID, address, symbol)

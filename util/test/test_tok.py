@@ -33,7 +33,15 @@ def test_0x():
 
 
 @enforce_types
-def test_TokSet():
+def test_TokSet_empty_init():
+    tok_set = TokSet()
+    assert len(tok_set.toks) == 0
+
+    tok_set = TokSet([])
+    assert len(tok_set.toks) == 0
+    
+@enforce_types
+def test_TokSet_main():
     tok_set = TokSet([(1, "0x123", "OCEAN"),
                       (1, "0x456", "H2O")])
     tok_set.add(2, "0x78b", "OCEAN")
