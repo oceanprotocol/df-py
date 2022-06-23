@@ -22,7 +22,6 @@ RATES = {"OCEAN": 0.5, "H2O": 1.6}
 accounts = None
 OCN, H2O = None, None
 
-
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
