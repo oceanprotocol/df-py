@@ -217,9 +217,10 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     # main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)
+    approved_tokens = csvs.loadApprovedCsvs(CSV_DIR)
     rates = csvs.loadRateCsvs(CSV_DIR)
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        stakes, poolvols, rates, TOT_TOKEN
+        stakes, poolvols, approved_tokens, rates, TOT_TOKEN
     )
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
