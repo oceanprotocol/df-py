@@ -153,7 +153,7 @@ def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
                 total_shares = float(d["pool"]["totalShares"])
                 base_token_liq = float(d["pool"]["baseTokenLiquidity"])
                 shares = float(d["shares"])
-                value = shares / total_shares * base_token_liq
+                value = poolSharestoValue(shares, total_shares, base_token_liq)
 
                 if LP_addr == SSBOT_address:
                     continue  # skip ss bot
