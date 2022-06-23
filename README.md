@@ -246,13 +246,19 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 
 # Usage: Rewards Distribution Ops
 
-### Overall OPF steps:
+Contract locations. Deployed to polygon, energyweb, FIXME
+```
+DFRewards: 0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
+DFStrategy: 0x0000000000cEAe464ae8a73EDDc0B482383490e7
+```
+
+### OPF steps: high-level
 1. query - run per CHAINID (8996, 1, 137, ..)
 2. getrate - run per basetoken (OCEAN, H2O)
 3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
 4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
 
-### Specific CLI for the steps
+### OPF steps: CLI
 
 ```text
 1. dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (pools, stakes, vols, approved)
@@ -261,7 +267,7 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
 4. dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 ```
 
-### dftool query
+### Details: dftool query
 
 Berkay's query script
 ```console
