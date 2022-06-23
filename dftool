@@ -39,9 +39,9 @@ Then LP steps:
 
 Usage: dftool query|getrate|calc|dispense|..
 
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get stakes & vols
+  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (pools, stakes, vols, approved)
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from stakes/vols/rates, calc rewards
+  dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (pools, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
@@ -73,13 +73,13 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_query():
-    HELP = f"""Query chain, output stakes & vols csvs
+    HELP = f"""Query chain, output (pools, stakes, vols, approved) csvs
 
 Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv and poolvols-CHAINID.csv
+  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
@@ -105,20 +105,12 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    # shouldn't already have the output files
-    c1 = csvs.stakesCsvFilename(CSV_DIR, CHAINID)
-    if os.path.exists(c1):
-        print(f"\nFile {c1} exists. Exiting.")
-        sys.exit(0)
-    c2 = csvs.poolvolsCsvFilename(CSV_DIR, CHAINID)
-    if os.path.exists(c2):
-        print(f"\nFile {c2} exists. Exiting.")
-        sys.exit(0)
-
-    # make directory if needed
-    if not os.path.exists(CSV_DIR):
-        print(f"Directory {CSV_DIR} did not exist, so created it")
-        os.mkdir(CSV_DIR)
+    # check files, prep dir
+    _exitIfFileExists(csvs.poolinfoCsvFilename(CSV_DIR, CHAINID))
+    _exitIfFileExists(csvs.stakesCsvFilename(CSV_DIR, CHAINID))
+    _exitIfFileExists(csvs.poolvolsCsvFilename(CSV_DIR, CHAINID))
+    _exitIfFileExists(csvs.approvedCsvFilename(CSV_DIR, CHAINID))
+    _createDirIfNeeded(CSV_DIR)
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -140,10 +132,11 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     recordDeployedContracts(ADDRESS_FILE)
     seed = fin_block
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
-    (Pi, Si, Vi) = query.query_all(rng, CHAINID)
+    (Pi, Si, Vi, Ai) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
+    csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
 
@@ -170,16 +163,9 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
     CSV_DIR = sys.argv[5]
     print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}")
 
-    # shouldn't already have the output file
-    c1 = csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR)
-    if os.path.exists(c1):
-        print(f"\nFile {c1} exists. Exiting.")
-        sys.exit(0)
-
-    # make directory if needed
-    if not os.path.exists(CSV_DIR):
-        print(f"Directory {CSV_DIR} did not exist, so created it")
-        os.mkdir(CSV_DIR)
+    # check files, prep dir
+    _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
+    _createDirIfNeeded(CSV_DIR)
 
     # main work
     rate = getrate.getrate(TOKEN_SYMBOL, ST, FIN)
@@ -193,7 +179,7 @@ def do_calc():
     HELP = """From stakes/vols/rates csvs, output rewards csvs.
 
 Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
-  CSV_DIR -- directory: input stakes & volumes csvs, output rewards.csv
+  CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_TOKEN -- total amount of TOKEN to distribute (decimal, not wei)
   TOKEN_SYMBOL -- e.g. OCEAN
 """
@@ -224,14 +210,9 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
         sys.exit(0)
 
     # shouldn't already have the output file
-    c1 = csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL)
-    if os.path.exists(c1):
-        print(f"\nFile {c1} exists. Exiting.")
-        sys.exit(0)
-    c2 = csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL)
-    if os.path.exists(c2):
-        print(f"\nFile {c2} exists. Exiting.")
-        sys.exit(0)
+    _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL))
+    _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL))
+    
     # main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)
@@ -659,6 +640,17 @@ Usage: dftool chaininfo CHAINID
 
 # ========================================================================
 # utilities
+
+def _exitIfFileExists(filename: str):
+    if os.path.exists(filename):
+        print(f"\nFile {filename} exists. Exiting.")
+        sys.exit(0)
+
+
+def _createDirIfNeeded(dir_: str):
+    if not os.path.exists(dir_):
+        print(f"Directory {dir_} did not exist, so created it")
+        os.mkdir(dir_)
 
 
 def _getAddressEnvvarOrExit() -> tuple:
