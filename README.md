@@ -133,9 +133,7 @@ Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readth
 
 # Usage: Configure Remote Networks
 
-Examples so far were on a local chain. 
-
-Let's do a one-time setup for some networks.
+Examples so far were on a local chain. Let's do a one-time setup for remote networks. In console:
 ```console
 brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56  
 brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137  
