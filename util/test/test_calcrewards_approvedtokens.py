@@ -17,39 +17,37 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 # for shorter lines
 C1, C2 = CHAINID, None
 PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
-LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
-RATES = {"OCEAN": 0.5, "H2O": 1.6}
+LP1, LP2 = "0xlp1_addr", "0xlp2_addr"
+RATES = {"OCEAN": 0.5, "UNAPP": 42.0}
 
-# these get filled on setup
+# these get filled via setup_function
 OCN_ADDR, APPROVED_TOKENS = None, None
 
 
 @enforce_types
 def test_stakesToUsd_unapprovedtoken():
     UNAPP = _deployTOK("UNAPP")
-    UNAPP_addr = UNAPP.address.lower()
-    stakes = {C1: {UNAPP_addr: {PA: {LP1: 3.0, LP2: 4.0}}}}
+    UNAPP_ADDR = UNAPP.address.lower()
+    stakes = {C1: {UNAPP_ADDR: {PA: {LP1: 3.0, LP2: 4.0}}}}
     stakes_USD = _stakesToUsd(stakes, RATES, APPROVED_TOKENS)
     assert stakes_USD == {C1: {}}
 
 
 @enforce_types
-def test_stakesToUsd_two_approved_one_unapproved():
+def test_stakesToUsd_one_approved_one_unapproved():
     UNAPP = _deployTOK("UNAPP")
-    UNAPP_addr = UNAPP.address.lower()
+    UNAPP_ADDR = UNAPP.address.lower()
 
     stakes = {
         C1: {
-            UNAPP_addr: {PA: {LP1: 3.0, LP2: 4.0}},
-            OCN_ADDR: {PA: {LP1: 3.0, LP2: 4.0}},
-            H2O_ADDR: {PC: {LP1: 5.0, LP4: 6.0}},
+            OCN_ADDR:   {PA: {LP1: 1.1, LP2: 2.0}},
+            UNAPP_ADDR: {PB: {LP1: 3.0, LP2: 4.0}},
         }
     }
-    stakes_USD = _stakesToUsd(stakes, RATES)
+    stakes_USD = _stakesToUsd(stakes, RATES, APPROVED_TOKENS)
     assert stakes_USD == {
         C1: {
-            PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
-            PC: {LP1: 5.0 * 1.6, LP4: 6.0 * 1.6},
+            PA: {LP1: 1.1 * 0.5, LP2: 2.0 * 0.5},
         }
     }
 
@@ -57,25 +55,27 @@ def test_stakesToUsd_two_approved_one_unapproved():
 @enforce_types
 def test_poolvolsToUsd_unapprovedtoken():
     UNAPP = _deployTOK("UNAPP")
-    UNAPP_addr = UNAPP.address.lower()
-    stakes = {C1: {UNAPP_addr: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = _poolvolsToUsd(stakes, RATES)
+    UNAPP_ADDR = UNAPP.address.lower()
+    stakes = {C1: {UNAPP_ADDR: {PA: {LP1: 3.0, LP2: 4.0}}}}
+    stakes_USD = _poolvolsToUsd(stakes, RATES, APPROVED_TOKENS)
     assert stakes_USD == {C1: {}}
 
 
 @enforce_types
-def test_poolvolsToUsd_two_approved_one_unapproved():
+def test_poolvolsToUsd_one_approved_one_unapproved():
     UNAPP = _deployTOK("UNAPP")
-    UNAPP_addr = UNAPP.address.lower()
+    UNAPP_ADDR = UNAPP.address.lower()
     poolvols = {
-        C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PC: 13.0}, UNAPP_addr: {PC: 100}}
+        C1: {
+            OCN_ADDR: {PA: 9.0, PB: 11.0},
+            UNAPP_ADDR: {PC: 15.0},
+        }
     }
-    poolvols_USD = _poolvolsToUsd(poolvols, RATES)
+    poolvols_USD = _poolvolsToUsd(poolvols, RATES, APPROVED_TOKENS)
     assert poolvols_USD == {
         C1: {
             PA: 9.0 * 0.5,
             PB: 11.0 * 0.5,
-            PC: 13.0 * 1.6,
         }
     }
 
@@ -85,13 +85,14 @@ def setup_function():
     """Setup any state tied to the execution of the given function.
     Invoked for every test function in the module.
     """
-    global OCN_ADDR, H2O_ADDR, APPROVED_TOKENS
+    global OCN_ADDR, APPROVED_TOKENS
     
     networkutil.connect(CHAINID)
     recordDeployedContracts(ADDRESS_FILE)
     
     OCN_ADDR = OCEAN_address().lower()
     APPROVED_TOKENS = query.getApprovedTokens(CHAINID)
+
 
 @enforce_types
 def _deployTOK(symbol: str):
