@@ -11,7 +11,6 @@
 
 CLI-based tool to administer Data Farming.
 
-
 ```text
 Usage: dftool query|calc|dispense|..
 
