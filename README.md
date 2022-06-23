@@ -131,6 +131,20 @@ black ./
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
+# Usage: Configure Remote Networks
+
+Examples so far were on a local chain. 
+
+Let's do a one-time setup for some networks.
+```console
+brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56  
+brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137  
+brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246  
+brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
+```
+
+Now, you can use those networks simply by specifying a different chainid in `dftool` calls.
+
 # Usage: Rewards Distribution Ops
 
 See [README-dist-ops.md](README-dist-ops.md)
