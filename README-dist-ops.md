@@ -1,11 +1,5 @@
 # Rewards Distribution Ops
 
-Contract locations. Deployed to polygon, energyweb, FIXME
-```
-DFRewards: 0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
-DFStrategy: 0x0000000000cEAe464ae8a73EDDc0B482383490e7
-```
-
 ### OPF steps: high-level
 1. query - run per CHAINID (8996, 1, 137, ..)
 2. getrate - run per basetoken (OCEAN, H2O)
@@ -21,11 +15,26 @@ DFStrategy: 0x0000000000cEAe464ae8a73EDDc0B482383490e7
 4. dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 ```
 
-### Env variables
+### Key parameters
 
+Contract locations. Same for each chain:
+- DFRewards: `0x0cea7DA063EA910D6904299b5A29A8b68DBC1947`
+- DFStrategy: `0x0000000000cEAe464ae8a73EDDc0B482383490e7`
+
+Envvars that you'll need to set for CLI:
 - `WEB3_INFURA_PROJECT_ID` - Infura project id
 - `DFTOOL_KEY` - The private key of the address to distribute the rewards
 - `ADDRESS_FILE` - path to `address.json` file. Typically: `export ADDRESS_FILE=~/.ocean/ocean-contracts/artifacts/address.json`
+
+Chain info: [details](https://docs.oceanprotocol.com/concepts/networks/)
+
+| chainid | chain name | OCEAN symbol | OCEAN address |
+| ------- | ---------- | ------------ | ------------- |
+| 137     | polygon    | MOCEAN       | 0x282d8efce846a88b159800bd4130ad77443fa1a1 |
+| 246     | energyweb  | OCEAN        | 0x593122aae80a6fc3183b2ac0c4ab3336debee528 |
+| 1       | mainnet    | OCEAN        | 0x967da4048cD07aB37855c090aAF366e4ce1b9F48 |
+| 56      | bsc        | OCEAN        | 0xdce07662ca8ebc241316a15b611c89711414dd1a  |
+| 1285    | moonriver  | OCEAN        | 0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE |
 
 ### dftool query
 
