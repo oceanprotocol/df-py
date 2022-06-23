@@ -267,7 +267,7 @@ DFStrategy: 0x0000000000cEAe464ae8a73EDDc0B482383490e7
 4. dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 ```
 
-### Details: dftool query
+### dftool query
 
 Berkay's query script
 ```console
@@ -280,7 +280,22 @@ export now=`date '+%Y-%m-%d'`
 ./dftool query $date $now 50 /tmp/dfpy 1285
 ```
 
-### Details: dftool dispense
+### dftool dispense top-level steps
+
+Steps: ([Ref](https://github.com/oceanprotocol/df-issues/issues/66#issuecomment-1164729816))
+
+ 0. inspect rewardsperlp-OCEAN.csv to see how much OCEAN each network needs
+ 1. Generate local account via `dftool newacct`. Remember private key & address.
+ 2. For each chain:
+    2.1 tx: from multisig, send OCEAN -> local account
+        https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md
+    2.2 check: does local account have funds for gas. If no:
+        tx: from multisig, send funds for gas-> local account
+    2.3 tx: from local account: dftool dispense
+
+### dftool dispense parameters
+
+(For step 2.3 above)
 
 ```text
 dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
@@ -310,9 +325,7 @@ Param values picked:
 Transactions are signed with envvar 'DFTOOL_KEY`.
 ```
 
-
-
-**Polygon issue & workaround:**
+### dftool dispense: Polygon issue & workaround:
 
 (From Berkay)
 
