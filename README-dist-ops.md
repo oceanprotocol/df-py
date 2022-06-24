@@ -70,13 +70,13 @@ dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr
 dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
 #then, confirm
 
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_1_addr
+dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr
 #then, confirm
 
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_56_addr
+dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr
 #then, confirm
 
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_1285_addr
+dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr
 #then, confirm
 ```
 
