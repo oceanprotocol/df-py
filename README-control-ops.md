@@ -16,6 +16,8 @@ OPF multisig wallets control this DFRewards.sol functionality:
 - withdrawERCToken (unallocated tokens only)
 - transfer control to another address
 
+`dftool` can do the above from the command line.
+
 ### Info about each multisig wallet, per chain
 
 | chainid | chain name | multisig info in wallets.md | multisig control via Gnosis Safe App | multisig wallet address |
