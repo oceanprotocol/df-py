@@ -44,7 +44,7 @@ dftool calc mydata 10000 OCEAN
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
 
 Now, we'll line up a local account. First, in console:
-```
+```console
 dftool newacct #create account
 ```
 
