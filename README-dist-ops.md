@@ -21,10 +21,10 @@ Contract locations. Same for each chain:
 - DFRewards: `0x0cea7DA063EA910D6904299b5A29A8b68DBC1947`
 - DFStrategy: `0x0000000000cEAe464ae8a73EDDc0B482383490e7`
 
-Envvars that you'll need to set for CLI:
-- `WEB3_INFURA_PROJECT_ID` - Infura project id
-- `DFTOOL_KEY` - The private key of the address to distribute the rewards
-- `ADDRESS_FILE` - path to `address.json` file. Typically: `export ADDRESS_FILE=~/.ocean/ocean-contracts/artifacts/address.json`
+Envvars that CLI needs:
+- `export ADDRESS_FILE=~/.ocean/ocean-contracts/artifacts/address.json #v4 and OCEAN addresses`
+- `export WEB3_INFURA_PROJECT_ID=____ #infura` 
+- `export DFTOOL_KEY=___ #private key for dftool dispense` 
 
 Chain info: [details](https://docs.oceanprotocol.com/concepts/networks/)
 
@@ -48,11 +48,18 @@ export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 
 export dfrewards_addr=0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
-export OCEAN_137_addr=0x282d8efce846a88b159800bd4130ad77443fa1a1
-export OCEAN_246_addr=0x593122aae80a6fc3183b2ac0c4ab3336debee528
+
+export OCEAN_137_addr=0x282d8efce846a88b159800bd4130ad77443fa1a1  polygon
+export OCEAN_246_addr=0x593122aae80a6fc3183b2ac0c4ab3336debee528  #energyweb
+export OCEAN_1_addr=0x967da4048cD07aB37855c090aAF366e4ce1b9F48    #mainnet
+export OCEAN_56_addr=0xdce07662ca8ebc241316a15b611c89711414dd1a   #bsc
+export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
 
 dftool query $date $now 50 mydata 137
 dftool query $date $now 50 mydata 246
+dftool query $date $now 50 mydata 1
+dftool query $date $now 50 mydata 56
+dftool query $date $now 50 mydata 1285
 
 dftool getrate OCEAN $date $now mydata
 dftool getrate H2O $date $now mydata
@@ -66,4 +73,7 @@ dftool calc mydata 10000 OCEAN
 
 dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr
 dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
+dftool dispense mydata 246 $dfrewards_addr $OCEAN_1_addr
+dftool dispense mydata 246 $dfrewards_addr $OCEAN_56_addr
+dftool dispense mydata 246 $dfrewards_addr $OCEAN_1285_addr
 ```
