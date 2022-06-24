@@ -21,9 +21,9 @@ export ADDRESS_FILE=~/.ocean/ocean-contracts/artifacts/address.json #v4 and OCEA
 export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 
-export dfrewards_addr=0x0cea7DA063EA910D6904299b5A29A8b68DBC1947
+export dfrewards_addr=0x0cea7DA063EA910D6904299b5A29A8b68DBC1947  #DFRewards.sol deployment is same per chain:)
 
-export OCEAN_137_addr=0x282d8efce846a88b159800bd4130ad77443fa1a1  polygon
+export OCEAN_137_addr=0x282d8efce846a88b159800bd4130ad77443fa1a1  #polygon
 export OCEAN_246_addr=0x593122aae80a6fc3183b2ac0c4ab3336debee528  #energyweb
 export OCEAN_1_addr=0x967da4048cD07aB37855c090aAF366e4ce1b9F48    #mainnet
 export OCEAN_56_addr=0xdce07662ca8ebc241316a15b611c89711414dd1a   #bsc
