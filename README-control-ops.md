@@ -16,10 +16,11 @@ OPF multisig wallets control this DFRewards.sol functionality:
 - withdrawERCToken (unallocated tokens only)
 - transfer control to another address
 
-### Wallet info, per chain
+### Info about each multisig wallet, per chain
 
-| chainid | chain name | wallets.md info | Gnosis Safe App | Gnosis Safe address |
-| ------- | ---------- | --------------- | --------------- | ------------------- |
+
+| chainid | chain name | multisig info in wallets.md | multisig control via Gnosis Safe App | multisig wallet address |
+| ------- | ---------- | --------------------------- | ------------------------------------ | ----------------------- |
 | 137     | polygon    | [Info](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#polygon-gnosis-safe-opf-wallet) | [App](https://gnosis-safe.io/app/matic:0x6272E00741C16b9A337E29DB672d51Af09eA87dD/home) | `0x6272E00741C16b9A337E29DB672d51Af09eA87dD` |
 | 246     | energyweb  | [Info](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#energyweb-gnosis-safe-opf-wallet)| [App](https://gnosis-safe.io/app/ewt:0xB98f46485e8b9206158D8127BAF81Dbfd6139Cef/home)| `0xB98f46485e8b9206158D8127BAF81Dbfd6139Cef` |
 | 1       | mainnet    | [Info]() | [App]() | `FOO` |
