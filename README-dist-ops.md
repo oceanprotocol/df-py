@@ -1,13 +1,6 @@
 # Rewards Distribution Ops
 
-### High-level steps
-
-1. query - run per CHAINID (8996, 1, 137, ..)
-2. getrate - run per basetoken (OCEAN, H2O)
-3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
-4. dispense - run per rewardtoken * CHAINID: OCEAN * 1, OCEAN * 137, EWT * 246..
-
-### Specific steps
+### Step 0: Set envvars
 
 First, find your own WEB3_INFURA_PROJECT_ID. Then in console:
 ```console
@@ -28,6 +21,12 @@ export OCEAN_246_addr=0x593122aae80a6fc3183b2ac0c4ab3336debee528  #energyweb
 export OCEAN_1_addr=0x967da4048cD07aB37855c090aAF366e4ce1b9F48    #mainnet
 export OCEAN_56_addr=0xdce07662ca8ebc241316a15b611c89711414dd1a   #bsc
 export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
+```
+
+### Step 1, 2, 3: Run query, getrate, calc
+
+In console, run the following: (can copy & paste):
+'''console
 
 dftool query $date $now 50 mydata 137
 dftool query $date $now 50 mydata 246
@@ -43,12 +42,14 @@ dftool calc mydata 10000 OCEAN
 
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
 
-Now, we'll line up a local account. First, in console:
+### Step 4: dispense
+
+Create a local account. In console:
 ```console
-dftool newacct #create account
+dftool newacct
 ```
 
-Write down its private key & address. And use its hint to set envvar:
+Write down its private key & address. And, in console:
 ```console
 export DFTOOL_KEY=((FILL THIS IN)) #private key used by dftool dispense
 ```
