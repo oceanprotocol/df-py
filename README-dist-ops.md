@@ -41,7 +41,7 @@ dftool getrate H2O $date $now mydata
 dftool calc mydata 10000 OCEAN
 ```
 
-Then, open file approved-137.csv, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
+Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
 
 Now, we'll line up a local account. First, in console:
 ```
