@@ -76,15 +76,3 @@ dftool dispense mydata 246 $dfrewards_addr $OCEAN_1285_addr
 ```
 
 We're now done!!
-
-### Appendix: More chain info
-
-From docs: https://docs.oceanprotocol.com/concepts/networks/
-
-| chainid | chain name | OCEAN symbol | OCEAN address |
-| ------- | ---------- | ------------ | ------------- |
-| 137     | polygon    | MOCEAN       | 0x282d8efce846a88b159800bd4130ad77443fa1a1 |
-| 246     | energyweb  | OCEAN        | 0x593122aae80a6fc3183b2ac0c4ab3336debee528 |
-| 1       | mainnet    | OCEAN        | 0x967da4048cD07aB37855c090aAF366e4ce1b9F48 |
-| 56      | bsc        | OCEAN        | 0xdce07662ca8ebc241316a15b611c89711414dd1a  |
-| 1285    | moonriver  | OCEAN        | 0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE |
