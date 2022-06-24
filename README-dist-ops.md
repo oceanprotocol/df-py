@@ -1,5 +1,10 @@
 # Rewards Distribution Ops
 
+Outline:
+- Step 0: Set envvar
+- Step 1, 2, 3: Run query, getrate, calc
+- Step 4: Run dispense
+
 ### Step 0: Set envvars
 
 First, find your own WEB3_INFURA_PROJECT_ID. Then in console:
@@ -42,7 +47,7 @@ dftool calc mydata 10000 OCEAN
 
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
 
-### Step 4: dispense
+### Step 4: Run dispense
 
 Create a local account. In console:
 ```console
