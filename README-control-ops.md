@@ -1,11 +1,15 @@
 # Usage: DFRewards Owner Control Ops
 
+### What's controlled?
+
 OPF multisig wallets control this DFRewards.sol functionality:
 
 - add strategy
 - remove strategy
 - withdrawERCToken (unallocated tokens only)
 - transfer control to another address
+
+### Wallet info, app
 
 Chain info: [details](https://docs.oceanprotocol.com/concepts/networks/)
 
