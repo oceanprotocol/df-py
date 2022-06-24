@@ -23,7 +23,7 @@ ignore=
   venv,
   *.sol,
   mypy.ini, pytest.ini, tokenspice.ini,
-  README.md, README-code-quality.md, README-tools.md,
+  README.md, README-code-quality.md, README-tools.md,README-control-ops, README-dist-ops.md
   logging.conf,
   requirements.txt,
   compile.sh,
