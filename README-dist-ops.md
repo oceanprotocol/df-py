@@ -9,7 +9,7 @@ Outline:
 
 First, find your own WEB3_INFURA_PROJECT_ID. Then in console:
 ```console
-export WEB3_INFURA_PROJECT_ID=((FILL THIS IN)) #infura
+export WEB3_INFURA_PROJECT_ID=FILLME #infura
 ```
 
 In console, run the following: (can copy & paste):
@@ -56,7 +56,7 @@ dftool newacct
 
 Write down its private key & address. And, in console:
 ```console
-export DFTOOL_KEY=((FILL THIS IN)) #private key used by dftool dispense
+export DFTOOL_KEY=FILLME #private key used by dftool dispense
 ```
 
 Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs
