@@ -16,9 +16,6 @@ In console, run the following: (can copy & paste):
 ```console
 export ADDRESS_FILE=~/.ocean/ocean-contracts/artifacts/address.json #v4 and OCEAN addresses
 
-export date=`date -d "last Thursday" '+%Y-%m-%d'`
-export now=`date '+%Y-%m-%d'`
-
 export dfrewards_addr=0x0cea7DA063EA910D6904299b5A29A8b68DBC1947  #DFRewards.sol deployment is same per chain:)
 
 export OCEAN_137_addr=0x282d8efce846a88b159800bd4130ad77443fa1a1  #polygon
@@ -32,6 +29,8 @@ export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
 
 In console, run the following: (can copy & paste):
 ```console
+export date=`date -d "last Thursday" '+%Y-%m-%d'`
+export now=`date '+%Y-%m-%d'`
 
 dftool query $date $now 50 mydata 137
 dftool query $date $now 50 mydata 246
