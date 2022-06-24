@@ -3,9 +3,9 @@
 
 ### Contract locations
 
-Contracts are deploed to the same location on each chain:
-- DFRewards: `0x0cea7DA063EA910D6904299b5A29A8b68DBC1947`
-- DFStrategy: `0x0000000000cEAe464ae8a73EDDc0B482383490e7`
+Contracts are deployed to the same address on each chain:
+- DFRewards address: `0x0cea7DA063EA910D6904299b5A29A8b68DBC1947`
+- DFStrategy adderss: `0x0000000000cEAe464ae8a73EDDc0B482383490e7`
 
 ### What's controlled?
 
