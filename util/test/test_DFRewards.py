@@ -175,6 +175,8 @@ def test_strategies():
 
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
+    assert df_rewards.isStrategy(df_strategy.address) == True
+    assert df_rewards.live_strategies(0) == df_strategy.address
 
     # should claim since it's a strategy
     df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
@@ -190,13 +192,20 @@ def test_strategies():
 
     # retire strategy
     df_rewards.retireStrategy(df_strategy.address)
+    assert df_rewards.isStrategy(df_strategy.address) == False
 
     with brownie.reverts("Caller must be a strategy"):
         # non strategy addresses cannot claim
         df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
 
+    with brownie.reverts("Ownable: caller is not the owner"):
+        # addresses other than the owner cannot add new strategy
+        df_rewards.addStrategy(df_strategy.address, {"from": accounts[3]})
+
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
+    assert df_rewards.isStrategy(df_strategy.address) == True
+    assert df_rewards.live_strategies(0) == df_strategy.address
 
     # should claim since it's a strategy
     df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
