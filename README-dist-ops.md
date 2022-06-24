@@ -26,7 +26,7 @@ export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
 ### Step 1, 2, 3: Run query, getrate, calc
 
 In console, run the following: (can copy & paste):
-'''console
+```console
 
 dftool query $date $now 50 mydata 137
 dftool query $date $now 50 mydata 246
