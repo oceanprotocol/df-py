@@ -36,33 +36,11 @@ Chain info: [details](https://docs.oceanprotocol.com/concepts/networks/)
 | 56      | bsc        | OCEAN        | 0xdce07662ca8ebc241316a15b611c89711414dd1a  |
 | 1285    | moonriver  | OCEAN        | 0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE |
 
-### dftool query
-
-Berkay's query script
-```console
-export date=`date -d "last Thursday" '+%Y-%m-%d'`
-export now=`date '+%Y-%m-%d'`
-
-./dftool query $date $now 50 /tmp/dfpy 1 && 
-./dftool query $date $now 50 /tmp/dfpy 137 && 
-./dftool query $date $now 50 /tmp/dfpy 246 && 
-./dftool query $date $now 50 /tmp/dfpy 1285
-```
-
-### dftool dispense top-level steps
-
-Steps: ([Ref](https://github.com/oceanprotocol/df-issues/issues/66#issuecomment-1164729816))
-
-1. inspect rewardsperlp-OCEAN.csv to see how much OCEAN each network needs
-2. Generate local account via `dftool newacct`. Remember private key & address.
-3. For each chain:
-   - have OCEAN sent -> local account
-   - have gas funds sent -> local account
-   - from local account, on CLI: `dftool dispense` (details below)
-
-### end-to-end script
+### End-to-end script
 
 Shown for chains 137=polygon and 246=energyweb.
+
+In console:
 
 ```console
 
@@ -81,19 +59,11 @@ dftool getrate H2O $date $now mydata
 
 dftool calc mydata 10000 OCEAN
 
+# manual: open file approved-137.csv, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
+# manual: inspect rewardsperlp-OCEAN.csv to see how much OCEAN each network needs
+# manual: generate local account via `dftool newacct`. Remember private key & address
+# manual: have OCEAN & gas sent to local account
+
 dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr
 dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
 ```
-
-
-### dftool dispense: Polygon issue & workaround:
-
-(From Berkay)
-
-We had a problem when dispensing and calculating rewards for polygon, because the symbols didn't match MOCEAN - OCEAN
-
-To workaround:
-1. In file approved-137.csv, change `OCEAN` -> `MOCEAN`
-2. In dftool.py::do_dispense(), to the end of `B.Simpletoken.at(TOKEN_ADDR).symbol()`, add `.upper().replace("MOCEAN", "OCEAN")`
-
-Related [github issue](https://github.com/oceanprotocol/df-py/issues/177).
