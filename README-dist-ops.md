@@ -1,7 +1,7 @@
 # Rewards Distribution Ops
 
 Outline:
-- Step 0: Set envvar
+- Step 0: Set envvars
 - Step 1, 2, 3: Run query, getrate, calc
 - Step 4: Run dispense
 
