@@ -175,7 +175,7 @@ def test_strategies():
 
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
-    assert df_rewards.isStrategy(df_strategy.address) == True
+    assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
 
     # should claim since it's a strategy
@@ -192,7 +192,7 @@ def test_strategies():
 
     # retire strategy
     df_rewards.retireStrategy(df_strategy.address)
-    assert df_rewards.isStrategy(df_strategy.address) == False
+    assert not df_rewards.isStrategy(df_strategy.address)
 
     with brownie.reverts("Caller must be a strategy"):
         # non strategy addresses cannot claim
@@ -204,7 +204,7 @@ def test_strategies():
 
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
-    assert df_rewards.isStrategy(df_strategy.address) == True
+    assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
 
     # should claim since it's a strategy
