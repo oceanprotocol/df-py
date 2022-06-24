@@ -9,9 +9,7 @@ OPF multisig wallets control this DFRewards.sol functionality:
 - withdrawERCToken (unallocated tokens only)
 - transfer control to another address
 
-### Wallet info, app
-
-Chain info: [details](https://docs.oceanprotocol.com/concepts/networks/)
+### Wallet info, per chain
 
 | chainid | chain name | wallets.md info | Gnosis Safe App |
 | ------- | ---------- | ------------ | ------------- |
@@ -21,4 +19,6 @@ Chain info: [details](https://docs.oceanprotocol.com/concepts/networks/)
 | 56      | bsc        | [Info]() | [App]() |
 | 1285    | moonriver  |  [Info]() | [App]() |
 
-Multisig page: https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md
+Further resources:
+- Multisig page: https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md
+- Ocean docs on networks: https://docs.oceanprotocol.com/concepts/networks/
