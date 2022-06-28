@@ -38,9 +38,6 @@ jobs:
             done
           ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
 
-      - name: Sleep
-        run: sleep 30
-
       - name: Install dependencies
         working-directory: ${{ github.workspace }}
         run: |
