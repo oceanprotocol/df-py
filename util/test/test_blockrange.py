@@ -88,7 +88,7 @@ def test_general():
 
 
 @enforce_types
-def test_filter_by_min():
+def test_filter_by_max():
     br = BlockRange(st=10, fin=5000, num_samples=100)
     before = br.getBlocks()
 
