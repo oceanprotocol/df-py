@@ -34,6 +34,18 @@ class BlockRange:
     def numBlocks(self) -> int:
         return len(self.getBlocks())
 
+    def filterByMaxBlock(self, max_block: int):
+        """
+        @arguments
+          max_block -- maximum block number to include in the range
+        """
+        new_blocks = []
+        for b in self.getBlocks():
+            if b <= max_block:
+                new_blocks.append(b)
+
+        self._blocks = new_blocks
+
     def __str__(self):
         return (
             f"BlockRange: st={self.st}, fin={self.fin}"
