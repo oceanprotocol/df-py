@@ -6,6 +6,7 @@ from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
 from util.blocktime import (
+    getBlockNumberThursay,
     getNextThursdayTimestamp,
     timestrToBlock,
     timestrToTimestamp,
@@ -96,6 +97,15 @@ def test_get_next_thursday():
     date = datetime.fromtimestamp(next_thursday)
 
     assert date.isoweekday() == 4
+
+
+@enforce_types
+def test_get_next_thursday_block_number():
+    networkutil.connect(1)
+    chain = brownie.network.chain
+    next_thursday_block = getBlockNumberThursay(chain)
+    assert next_thursday_block % 10 == 0
+    assert len(chain) < next_thursday_block
 
 
 @enforce_types
