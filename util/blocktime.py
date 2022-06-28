@@ -67,14 +67,19 @@ def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
         return chain[int(block_i)].timestamp
 
     block_last_number = len(chain) - 1
-    block_old_number = max(0, block_last_number - 10_000)
 
-    block_last_time = timeSinceTimestamp(block_last_number)
-    block_old_time = timeSinceTimestamp(block_old_number)
+    # 40,000 is the average number of blocks per week
+    block_old_number = max(0, block_last_number - 40_000)  # go back 40,000 blocks
+
+    block_last_time = timeSinceTimestamp(block_last_number)  # time of last block
+    block_old_time = timeSinceTimestamp(block_old_number)  # time of old block
 
     assert block_last_time < timestamp
 
+    # slope
     m = (block_last_number - block_old_number) / (block_last_time - block_old_time)
+
+    # y-intercept
     b = block_last_number - block_last_time * m
 
     # y = mx + b
