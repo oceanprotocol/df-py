@@ -2,16 +2,16 @@ name: Unit Testing and Code Coverage
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [ 3.8 ]
+        python-version: [3.8]
 
     steps:
       - uses: actions/checkout@v2
@@ -25,7 +25,7 @@ jobs:
         name: Checkout Barge
         with:
           repository: "oceanprotocol/barge"
-          path: 'barge'
+          path: "barge"
           ref: main
 
       - name: Run Barge
