@@ -101,7 +101,6 @@ def test_get_next_thursday():
 
 @enforce_types
 def test_get_next_thursday_block_number():
-    networkutil.connect(1)
     chain = brownie.network.chain
     next_thursday_block = getBlockNumberThursay(chain)
     assert next_thursday_block % 10 == 0
