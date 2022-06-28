@@ -1,4 +1,5 @@
 from datetime import datetime, timezone, date, timedelta
+from math import ceil
 from typing import Union
 
 from enforce_typing import enforce_types
@@ -10,8 +11,8 @@ def getBlockNumberThursay(chain) -> int:
     timestamp = getNextThursdayTimestamp()
     block_number = timestampToFutureBlock(chain, timestamp)
 
-    ## round block number to upper multiple of 10
-    block_number = int(block_number / 10) * 10
+    ## round to upper 100th
+    block_number = ceil(block_number / 100) * 100
     return block_number
 
 
