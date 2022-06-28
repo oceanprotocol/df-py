@@ -8,7 +8,8 @@ from scipy import optimize
 @enforce_types
 def getBlockNumberThursay(chainId) -> int:
     timestamp = getNextThursdayTimestamp()
-    block_number = timestampToBlockFuture(chainId, timestamp)
+    block_number = timestampToFutureBlock(chain, timestamp)
+
     return block_number
 
 
@@ -59,7 +60,7 @@ def timestrToTimestamp(timestr: str) -> float:
 
 
 @enforce_types
-def timestampToBlockFuture(chain, timestamp: Union[float, int]) -> int:
+def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
     def timeSinceTimestamp(block_i):
         return chain[int(block_i)].timestamp
 
