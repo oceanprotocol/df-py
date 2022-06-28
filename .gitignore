@@ -1,9 +1,8 @@
-*/__pycache__
+*~
 venv/
 build/
-*~
-util/__pycache__/
-util/test/__pycache__/
+*/__pycache__
+*/*/__pycache__/
 .pytest_cache/
 .env
 .idea/

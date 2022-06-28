@@ -1,15 +1,15 @@
+import os
+import subprocess
 import time
 import types
-import os
 
 import brownie
 from enforce_typing import enforce_types
 
-from util import csvs, oceanutil, networkutil
+from util import csvs, networkutil, oceanutil, oceantestutil
 from util.base18 import fromBase18, toBase18
-from util.oceanutil import OCEAN_address
 from util.constants import BROWNIE_PROJECT as B
-from util import oceantestutil
+from util.tok import TokSet
 
 accounts, PREV, DISPENSE_ACCT = None, None, None
 
@@ -38,6 +38,7 @@ def test_query(tmp_path):
     # test result
     assert csvs.stakesCsvFilenames(CSV_DIR)
     assert csvs.poolvolsCsvFilenames(CSV_DIR)
+    assert csvs.approvedCsvFilenames(CSV_DIR)
 
 
 @enforce_types
@@ -61,14 +62,17 @@ def test_getrate(tmp_path):
 @enforce_types
 def test_calc(tmp_path):
     CSV_DIR = str(tmp_path)
+    OCEAN_addr = oceanutil.OCEAN_address()
 
-    oceanAddr = OCEAN_address()
     # insert fake inputs: csvs for stakes, poolvols, and rewards
-    stakes_at_chain = {oceanAddr: {"pool_addra": {"lp_addr1": 1.0}}}
+    stakes_at_chain = {OCEAN_addr: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
     csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
 
-    poolvols_at_chain = {oceanAddr: {"pool_addra": 1.0}}
+    poolvols_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
     csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
+
+    approved_tokens = TokSet([(CHAINID, OCEAN_addr, "OCEAN")])
+    csvs.saveApprovedCsv(approved_tokens, CSV_DIR, CHAINID)
 
     csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
 
@@ -117,6 +121,54 @@ def test_dispense(tmp_path):
 
     # test result
     assert df_rewards.claimable(address1, OCEAN.address)
+
+
+@enforce_types
+def test_manyrandom():
+    cmd = f"./dftool manyrandom {networkutil.DEV_CHAINID}"
+    output_s = ""
+    with subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ) as proc:
+        while proc.poll() is None:
+            output_s += proc.stdout.readline().decode("ascii")
+    return_code = proc.wait()
+    assert return_code == 0, f"Error. \n{output_s}"
+
+
+@enforce_types
+def test_noarg_commands():
+    # Test commands that have no args. They're usually help commands;
+    # sometimes they do the main work (eg compile).
+    argv1s = [
+        "",
+        "query",
+        "getrate",
+        "calc",
+        "dispense",
+        "querymany",
+        "compile",
+        "manyrandom",
+        "newdfrewards",
+        "mine",
+        "newacct",
+        "newtoken",
+        "acctinfo",
+        "chaininfo",
+    ]
+    for argv1 in argv1s:
+        print(f"Test dftool {argv1}")
+        cmd = f"./dftool {argv1}"
+
+        output_s = ""
+        with subprocess.Popen(
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        ) as proc:
+            while proc.poll() is None:
+                output_s += proc.stdout.readline().decode("ascii")
+
+        return_code = proc.wait()
+        assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
 
 
 @enforce_types

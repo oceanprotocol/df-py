@@ -42,7 +42,7 @@ def test_main(tmp_path):
     s = None
     with open(fn, "r") as f:
         s = f.read()
-    assert " ZRX" in s
+    assert " ZRX" in s, cmd
 
 
 @enforce_types

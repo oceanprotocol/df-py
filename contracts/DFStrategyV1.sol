@@ -10,6 +10,7 @@ import "./interfaces/IPool.sol";
 contract DFStrategyV1 is ReentrancyGuard {
     using SafeERC20 for IERC20;
     IDFRewards dfrewards;
+    uint8 public id = 1;
 
     constructor(address _dfrewards) {
         dfrewards = IDFRewards(_dfrewards);

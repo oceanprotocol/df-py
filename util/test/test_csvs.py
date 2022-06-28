@@ -1,9 +1,12 @@
+import os
+
 import brownie
 from enforce_typing import enforce_types
 import pandas as pd
 
 from util import csvs, networkutil
 from util.query import SimplePool
+from util.tok import TokSet
 
 
 accounts = None
@@ -92,6 +95,61 @@ def test_poolvols_twochains(tmp_path):
     target_V = {C1: V1, C2: V2}
     loaded_V = csvs.loadPoolvolsCsvs(csv_dir)
     assert loaded_V == target_V
+
+
+# =================================================================
+# approved csvs
+
+
+@enforce_types
+def test_chainIDforApprovedCsv():
+    assert csvs.chainIDforApprovedCsv("approved-chain101.csv") == 101
+    assert csvs.chainIDforApprovedCsv("path1/32/approved-chain92.csv") == 92
+
+
+@enforce_types
+def test_approved(tmp_path):
+    csv_dir = str(tmp_path)
+
+    # set the data
+    l1 = [(C1, "0x123", "OCEAN"), (C1, "0x456", "H2O")]
+    l2 = [(C2, "0x789", "OCEAN")]
+    approved1 = TokSet(l1)
+    approved2 = TokSet(l2)
+    approved_all = TokSet(l1 + l2)
+
+    # test on just chain1
+    csvs.saveApprovedCsv(approved1, csv_dir, C1)
+    loaded1 = csvs.loadApprovedCsv(csv_dir, C1)
+    assert loaded1.hasChain(C1)
+    assert loaded1.hasAddress(C1, "0x123")
+    assert loaded1.hasAddress(C1, "0x456")
+
+    filename = csvs.approvedCsvFilename(csv_dir, C1)
+    os.remove(filename)
+
+    csvs.saveApprovedCsv(approved_all, csv_dir, C1)  # should only save C1
+    loaded_all = csvs.loadApprovedCsvs(csv_dir)
+    assert loaded_all.hasChain(C1)
+    assert not loaded_all.hasChain(C2)
+
+    # test on just chain2
+    csvs.saveApprovedCsv(approved2, csv_dir, C2)
+    loaded2 = csvs.loadApprovedCsv(csv_dir, C2)
+    assert loaded2.hasAddress(C2, "0x789")
+
+    # test on both chains
+    loaded1 = csvs.loadApprovedCsv(csv_dir, C1)
+    assert loaded1.hasChain(C1)
+    assert not loaded1.hasChain(C2)  # should have filtered out C2
+
+    loaded2 = csvs.loadApprovedCsv(csv_dir, C2)
+    assert loaded2.hasChain(C2)
+    assert not loaded2.hasChain(C1)  # should have filtered out C1
+
+    loaded_all = csvs.loadApprovedCsvs(csv_dir)
+    assert loaded_all.hasChain(C1)
+    assert loaded_all.hasChain(C2)
 
 
 # =================================================================

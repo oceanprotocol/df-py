@@ -13,7 +13,8 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
     // token address => user address => balance
     mapping(address => mapping(address => uint256)) balances;
     mapping(address => uint256) allocated;
-    mapping(address => bool) live_strategies;
+    //mapping(address => bool) live_strategies;
+    address[] public live_strategies;
 
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
@@ -87,7 +88,7 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
         returns (uint256)
     {
         require(tx.origin == _to, "Caller doesn't match");
-        require(live_strategies[msg.sender], "Caller must be a strategy");
+        require(isStrategy(msg.sender), "Caller must be a strategy");
 
         return _claim(_to, tokenAddress, msg.sender);
     }
@@ -109,14 +110,46 @@ contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
         IERC20(_token).transfer(msg.sender, amount);
     }
 
-    function addStrategy(address _strategy) external onlyOwner {
-        live_strategies[_strategy] = true;
-        emit StrategyAdded(_strategy);
+    /**
+     * @dev isStrategy
+     *      Returns true if strategy exists in the list
+     *  @param _strategy address Strategy address to be checked
+     */
+    function isStrategy(address _strategy) public view returns (bool) {
+        for (uint256 i = 0; i < live_strategies.length; i++) {
+            if (live_strategies[i] == _strategy) return true;
+        }
+        return false;
     }
 
+    /**
+     * @dev addStrategy
+     *      Adds a new strategy
+     *  @param _strategy address Strategy address to be added
+     */
+    function addStrategy(address _strategy) external onlyOwner {
+        if (!isStrategy(_strategy)) {
+            live_strategies.push(_strategy);
+            emit StrategyAdded(_strategy);
+        }
+    }
+
+    /**
+     * @dev retireStrategy
+     *      Removes an existng strategy
+     *  @param _strategy address Strategy address to be removed
+     */
     function retireStrategy(address _strategy) external onlyOwner {
-        live_strategies[_strategy] = false;
-        emit StrategyRetired(_strategy);
+        require(_strategy != address(0), "Invalid strategy address");
+        uint256 i;
+        for (i = 0; i < live_strategies.length; i++) {
+            if (live_strategies[i] == _strategy) break;
+        }
+        if (i < live_strategies.length) {
+            live_strategies[i] = live_strategies[live_strategies.length - 1];
+            live_strategies.pop();
+            emit StrategyRetired(_strategy);
+        }
     }
 
     // Don't allow eth transfers
