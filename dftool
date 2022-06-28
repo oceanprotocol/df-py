@@ -128,6 +128,8 @@ SECRET_SEED -- secret integer used to seed the rng
 
     if FIN == "latest":
         fin_block = len(chain)
+    elif FIN == "thu":
+        fin_block = blocktime.getBlockNumberThursay(chain)
     elif "-" in FIN:
         fin_block = blocktime.timestrToBlock(chain, FIN)
     else:
@@ -137,6 +139,7 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     seed = st_block + SECRET_SEED
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
+    rng.filterByMaxBlock(len(chain))
     (Pi, Si, Vi) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
