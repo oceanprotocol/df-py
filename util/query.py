@@ -257,7 +257,8 @@ def getDTVolumes(
                 continue
             DT_addr = order["datatoken"]["id"].lower()
             if not lastPriceToken in order:
-              continue
+                print("lastPriceToken not found in order object", order.id)
+                continue
             basetoken_addr = order["lastPriceToken"]
 
             if basetoken_addr not in DTvols:
