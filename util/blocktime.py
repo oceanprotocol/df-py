@@ -64,7 +64,7 @@ def timestampToBlockFuture(chain, timestamp: Union[float, int]) -> int:
         return chain[int(block_i)].timestamp
 
     block_last_number = len(chain) - 1
-    block_old_number = block_last_number - 10_000
+    block_old_number = max(0, block_last_number - 10_000)
 
     block_last_time = timeSinceTimestamp(block_last_number)
     block_old_time = timeSinceTimestamp(block_old_number)
