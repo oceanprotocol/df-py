@@ -60,7 +60,7 @@ export DFTOOL_KEY=FILLME #private key used by dftool dispense
 
 Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs
 
-Then, have the OCEAN & gas funds sent to that local account, for each network. (Eg ask Alex)
+Then, have the OCEAN & gas funds sent to that local account, for each network. From "DF Treasury" multisig 0xad0A852F968e19cbCB350AB9426276685651ce41
 
 Finally, the big step: dispense funds. In console:
 ```console
