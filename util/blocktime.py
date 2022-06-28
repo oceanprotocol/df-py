@@ -6,10 +6,12 @@ from scipy import optimize
 
 
 @enforce_types
-def getBlockNumberThursay(chainId) -> int:
+def getBlockNumberThursay(chain) -> int:
     timestamp = getNextThursdayTimestamp()
     block_number = timestampToFutureBlock(chain, timestamp)
 
+    ## round block number to upper multiple of 10
+    block_number = int(block_number / 10) * 10
     return block_number
 
 
