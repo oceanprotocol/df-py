@@ -106,6 +106,17 @@ def test_get_next_thursday_block_number():
     assert next_thursday_block % 10 == 0
     assert len(chain) < next_thursday_block
 
+    now = len(chain) - 1
+
+    t0 = chain[0].timestamp
+    t1 = chain[int(now)].timestamp
+
+    avgBlockTime = (t1 - t0) / now
+
+    next_thursday = getNextThursdayTimestamp()
+
+    assert next_thursday_block == approx((next_thursday - t0) / avgBlockTime, 1)
+
 
 @enforce_types
 def setup_function():
