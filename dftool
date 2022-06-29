@@ -141,7 +141,7 @@ SECRET_SEED -- secret integer used to seed the rng
     if FIN == "latest":
         fin_block = len(chain)
     elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursay(chain)
+        fin_block = blocktime.getBlockNumberThursday(chain)
     elif "-" in FIN:
         fin_block = blocktime.timestrToBlock(chain, FIN)
     else:

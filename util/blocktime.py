@@ -7,7 +7,7 @@ from scipy import optimize
 
 
 @enforce_types
-def getBlockNumberThursay(chain) -> int:
+def getBlockNumberThursday(chain) -> int:
     timestamp = getNextThursdayTimestamp()
     block_number = timestampToFutureBlock(chain, timestamp)
 
