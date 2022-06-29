@@ -11,7 +11,6 @@
 
 CLI-based tool to administer Data Farming.
 
-
 ```text
 Usage: dftool query|calc|dispense|..
 
@@ -21,6 +20,15 @@ Usage: dftool query|calc|dispense|..
   ...
 ```
 
+Data flow (left) and csvs (right) ([source](https://docs.google.com/presentation/d/11Nu_emSgw3iYZKDcmnvZC_aOM00MDyYTtTWQP4PYox4/edit#slide=id.p)): 
+
+<div>
+<img src="images/data-flow.png" align="left" height="100" width="130">&emsp;&emsp;
+<img src="images/csvs.png" height="100" width="130">
+</div>
+<br clear="left"/>
+
+
 # Installation
 
 ### Prerequisites
@@ -28,6 +36,7 @@ Usage: dftool query|calc|dispense|..
 Ensure prerequisites:
 - Linux/MacOS
 - Python 3.8.5+
+- mypy, pylint, black. `sudo apt install mypy pylint black`
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`. [[Details](https://github.com/tokenspice/tokenspice/issues/165)]
@@ -43,19 +52,12 @@ Let's get Barge going. Open a new terminal and:
 git clone git@github.com:oceanprotocol/barge.git
 cd barge
 
-#ensure v4 repo
-git checkout v4
-
 #clean up old containers (to be sure)
 docker system prune -a --volumes
 
 #run barge
 #-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
-#-sends stdout & stderr to out.txt
-./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > out.txt 2>&1 &
-
-#monitor output
-tail -f out.txt
+./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph
 ```
 
 ### Install df-py
@@ -129,6 +131,26 @@ black ./
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
+# Usage: Configure Remote Networks
+
+Examples so far were on a local chain. Let's do a one-time setup for remote networks. In console:
+```console
+brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56  
+brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137  
+brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246  
+brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
+```
+
+Now, you can use those networks simply by specifying a different chainid in `dftool` calls.
+
+# Usage: Rewards Distribution Ops
+
+See [README-dist-ops.md](README-dist-ops.md)
+
+# Usage: DFRewards Owner Control Ops
+
+See [README-control-ops.md](README-control-ops.md)
+
 # Usage: Via Docker
 
 Build the docker image.
@@ -186,7 +208,7 @@ You can [find a very high level diagram for this here](https://github.com/oceanp
 
 In order to set this up, we create a new bash script called `getAllRecords-dfpy-sql` and add it to our local crontab. Please note the folders you will have to created, such as `/tmp/dfpy/` and `~/.dfcsv/
 
-###getAllRecords-dfpy-sql.sh
+### getAllRecords-dfpy-sql.sh
 ```
 cd /app/df-py/
 date=`date -dlast-wednesday '+%Y-%m-%d'`

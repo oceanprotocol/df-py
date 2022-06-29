@@ -44,6 +44,7 @@ def test_erc20_withdraw_main():
     TOK = _deployTOK(accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     TOK.transfer(df_rewards, toBase18(40.0), {"from": accounts[0]})
 
@@ -61,7 +62,7 @@ def test_erc20_withdraw_main():
     df_rewards.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
     with brownie.reverts("Cannot withdraw allocated token"):
         df_rewards.withdrawERCToken(toBase18(1.0), TOK.address, {"from": accounts[0]})
-    df_rewards.claim([TOK.address], {"from": accounts[1]})
+    df_strategy.claim([TOK.address], {"from": accounts[1]})
 
     TOK.transfer(df_rewards, 100, {"from": accounts[0]})
     df_rewards.withdrawERCToken(100, TOK.address, {"from": accounts[0]})

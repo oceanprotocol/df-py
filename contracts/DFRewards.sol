@@ -1,20 +1,20 @@
-pragma solidity 0.8.12;
 // SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+pragma solidity 0.8.12;
 
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/IERC20.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/SafeERC20.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/access/Ownable.sol";
+import "./interfaces/IDFRewards.sol";
 
-contract DFRewards is Ownable, ReentrancyGuard {
+contract DFRewards is Ownable, ReentrancyGuard, IDFRewards {
     using SafeERC20 for IERC20;
-
-    event Allocated(address[] tos, uint256[] values, address tokenAddress);
-    event Claimed(address to, uint256 value, address tokenAddress);
 
     // token address => user address => balance
     mapping(address => mapping(address => uint256)) balances;
     mapping(address => uint256) allocated;
+    //mapping(address => bool) live_strategies;
+    address[] public live_strategies;
 
     // Caller calls token.safeApprove(contract_addr, sum(values)),
     // then it calls this function. Anyone can call this, if can they fund it!
@@ -48,18 +48,6 @@ contract DFRewards is Ownable, ReentrancyGuard {
         return true;
     }
 
-    function claimables(address _to, address[] calldata tokenAddresses)
-        external
-        view
-        returns (uint256[] memory result)
-    {
-        result = new uint256[](tokenAddresses.length);
-        for (uint256 i = 0; i < tokenAddresses.length; i += 1) {
-            result[i] = claimable(_to, tokenAddresses[i]);
-        }
-        return result;
-    }
-
     function claimable(address _to, address tokenAddress)
         public
         view
@@ -68,33 +56,41 @@ contract DFRewards is Ownable, ReentrancyGuard {
         return balances[tokenAddress][_to];
     }
 
-    function claimMultiple(address _to, address[] calldata tokenAddresses)
-        public
-    {
-        for (uint256 i = 0; i < tokenAddresses.length; i++) {
-            claimFor(_to, tokenAddresses[i]);
+    function _claim(
+        address _to,
+        address tokenAddress,
+        address _receiver
+    ) internal returns (uint256) {
+        uint256 amt = balances[tokenAddress][_to];
+        if (amt == 0) {
+            return 0;
         }
-    }
-
-    // Recipient claims for themselves
-    function claim(address[] calldata tokenAddresses) external returns (bool) {
-        claimMultiple(msg.sender, tokenAddresses);
-        return true;
+        balances[tokenAddress][_to] = 0;
+        IERC20(tokenAddress).safeTransfer(_receiver, amt);
+        allocated[tokenAddress] = allocated[tokenAddress] - amt;
+        emit Claimed(_to, amt, tokenAddress);
+        return amt;
     }
 
     // Others claim on behalf of recipient
     function claimFor(address _to, address tokenAddress)
         public
         nonReentrant
-        returns (bool)
+        returns (uint256)
     {
-        uint256 amt = balances[tokenAddress][_to];
-        require(amt > 0, "Nothing to claim");
-        balances[tokenAddress][_to] = 0;
-        IERC20(tokenAddress).safeTransfer(_to, amt);
-        allocated[tokenAddress] = allocated[tokenAddress] - amt;
-        emit Claimed(_to, amt, tokenAddress);
-        return true;
+        return _claim(_to, tokenAddress, _to);
+    }
+
+    // Strategies can claim on behalf of recipient
+    function claimForStrat(address _to, address tokenAddress)
+        public
+        nonReentrant
+        returns (uint256)
+    {
+        require(tx.origin == _to, "Caller doesn't match");
+        require(isStrategy(msg.sender), "Caller must be a strategy");
+
+        return _claim(_to, tokenAddress, msg.sender);
     }
 
     /*
@@ -112,6 +108,48 @@ contract DFRewards is Ownable, ReentrancyGuard {
             "Cannot withdraw allocated token"
         );
         IERC20(_token).transfer(msg.sender, amount);
+    }
+
+    /**
+     * @dev isStrategy
+     *      Returns true if strategy exists in the list
+     *  @param _strategy address Strategy address to be checked
+     */
+    function isStrategy(address _strategy) public view returns (bool) {
+        for (uint256 i = 0; i < live_strategies.length; i++) {
+            if (live_strategies[i] == _strategy) return true;
+        }
+        return false;
+    }
+
+    /**
+     * @dev addStrategy
+     *      Adds a new strategy
+     *  @param _strategy address Strategy address to be added
+     */
+    function addStrategy(address _strategy) external onlyOwner {
+        if (!isStrategy(_strategy)) {
+            live_strategies.push(_strategy);
+            emit StrategyAdded(_strategy);
+        }
+    }
+
+    /**
+     * @dev retireStrategy
+     *      Removes an existng strategy
+     *  @param _strategy address Strategy address to be removed
+     */
+    function retireStrategy(address _strategy) external onlyOwner {
+        require(_strategy != address(0), "Invalid strategy address");
+        uint256 i;
+        for (i = 0; i < live_strategies.length; i++) {
+            if (live_strategies[i] == _strategy) break;
+        }
+        if (i < live_strategies.length) {
+            live_strategies[i] = live_strategies[live_strategies.length - 1];
+            live_strategies.pop();
+            emit StrategyRetired(_strategy);
+        }
     }
 
     // Don't allow eth transfers

@@ -14,6 +14,7 @@ accounts, a1, a2, a3 = None, None, None, None
 def test_small_batch():
     OCEAN = oceanutil.OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     rewards_at_chain = {a1: 0.1, a2: 0.2, a3: 0.3}
     dispense.dispense(
@@ -25,7 +26,7 @@ def test_small_batch():
 
     # a1 claims for itself
     bal_before = fromBase18(OCEAN.balanceOf(a1))
-    df_rewards.claim([OCEAN.address], {"from": accounts[1]})
+    df_strategy.claim([OCEAN.address], {"from": accounts[1]})
     bal_after = fromBase18(OCEAN.balanceOf(a1))
     assert (bal_after - bal_before) == pytest.approx(0.1)
 

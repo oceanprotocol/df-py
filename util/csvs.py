@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 from enforce_typing import enforce_types
 
 from util import constants, oceanutil
+from util.tok import TokSet
 
 
 # ========================================================================
@@ -208,6 +209,97 @@ def poolvolsCsvFilename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chainIDforPoolvolsCsv(filename) -> int:
     """Returns chainID for a given poolvols csv filename"""
+    return _lastInt(filename)
+
+
+# ========================================================================
+# approved csvs
+
+
+@enforce_types
+def saveApprovedCsv(approved_tokens: TokSet, csv_dir: str, chainID: int):
+    """
+    @description
+      Save the approved csv for this chain. Info in 'approved_tokens' for other chains is ignored.
+
+    @arguments
+      approved_tokens -- TokSet
+      csv_dir -- directory that holds csv files
+      chainID -- which network
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = approvedCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), csv_file
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "token_symbol", "token_addr"])
+        for tok in approved_tokens.toks:
+            if tok.chainID == chainID:
+                writer.writerow([tok.chainID, tok.symbol, tok.address])
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def loadApprovedCsvs(csv_dir: str):
+    """
+    @description
+      Load all approved csvs (across all chains); return result as single TokSet
+
+    @return
+      approved_tokens -- TokSet
+    """
+    csv_files = approvedCsvFilenames(csv_dir)
+    approved_tokens = TokSet()
+    for csv_file in csv_files:
+        chainID = chainIDforApprovedCsv(csv_file)
+        for tok in loadApprovedCsv(csv_dir, chainID).toks:
+            assert tok.chainID == chainID
+            approved_tokens.add(tok.chainID, tok.address, tok.symbol)
+    return approved_tokens
+
+
+@enforce_types
+def loadApprovedCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load approved for this chainID
+
+    @return
+      approved_tokens -- TokSet
+    """
+    csv_file = approvedCsvFilename(csv_dir, chainID)
+    approved_tokens = TokSet()
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == ["chainID", "token_symbol", "token_addr"]
+                continue
+            chainID2 = int(row[0])
+            token_symbol = row[1].upper()
+            token_addr = row[2].lower()
+            assert chainID2 == chainID, "csv had data from different chain"
+            approved_tokens.add(chainID, token_addr, token_symbol)
+
+    print(f"Loaded {csv_file}")
+    return approved_tokens
+
+
+@enforce_types
+def approvedCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of approved filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "approved*.csv"))
+
+
+@enforce_types
+def approvedCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the approved filename for a given chainID"""
+    return os.path.join(csv_dir, f"approved-{chainID}.csv")
+
+
+@enforce_types
+def chainIDforApprovedCsv(filename) -> int:
+    """Returns chainID for a given approved csv filename"""
     return _lastInt(filename)
 
 
