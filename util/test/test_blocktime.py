@@ -1,4 +1,5 @@
 from datetime import datetime
+from math import ceil
 from pytest import approx
 
 import brownie
@@ -114,8 +115,10 @@ def test_get_next_thursday_block_number():
     avgBlockTime = (t1 - t0) / now
 
     next_thursday = getNextThursdayTimestamp()
+    apprx = (next_thursday - t0) / avgBlockTime
+    apprx = ceil(apprx / 100) * 100
 
-    assert next_thursday_block == approx((next_thursday - t0) / avgBlockTime, 1)
+    assert next_thursday_block == approx(apprx, 1)
 
 
 @enforce_types
