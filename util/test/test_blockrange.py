@@ -99,5 +99,6 @@ def test_filter_by_max():
 
     assert max(after) <= 2500  # max block should be <= 2500
 
+    # pylint: disable=consider-using-enumerate
     for i in range(len(after)):
         assert after[i] in before  # should be in before

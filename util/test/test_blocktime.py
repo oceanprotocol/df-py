@@ -102,7 +102,6 @@ def test_get_next_thursday():
 
 @enforce_types
 def test_get_next_thursday_block_number():
-    chain = brownie.network.chain
     next_thursday_block = getBlockNumberThursday(chain)
     assert next_thursday_block % 10 == 0
     assert len(chain) < next_thursday_block
