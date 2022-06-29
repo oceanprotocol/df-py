@@ -107,20 +107,6 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     SECRET_SEED = _getSecretSeedOrExit()
-    # shouldn't already have the output files
-    c1 = csvs.stakesCsvFilename(CSV_DIR, CHAINID)
-    if os.path.exists(c1):
-        print(f"\nFile {c1} exists. Exiting.")
-        sys.exit(0)
-    c2 = csvs.poolvolsCsvFilename(CSV_DIR, CHAINID)
-    if os.path.exists(c2):
-        print(f"\nFile {c2} exists. Exiting.")
-        sys.exit(0)
-
-    # make directory if needed
-    if not os.path.exists(CSV_DIR):
-        print(f"Directory {CSV_DIR} did not exist, so created it")
-        os.mkdir(CSV_DIR)
 
     # check files, prep dir
     _exitIfFileExists(csvs.poolinfoCsvFilename(CSV_DIR, CHAINID))
