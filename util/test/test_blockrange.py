@@ -85,3 +85,20 @@ def test_general():
     assert len(br.getBlocks()) == 3
     assert br.numBlocks() == 3
     assert "BlockRange" in str(br)
+
+
+@enforce_types
+def test_filter_by_max():
+    br = BlockRange(st=10, fin=5000, num_samples=100)
+    before = br.getBlocks()
+
+    br.filterByMaxBlock(max_block=2500)
+    after = br.getBlocks()
+
+    assert len(before) != len(after)  # should be different
+
+    assert max(after) <= 2500  # max block should be <= 2500
+
+    # pylint: disable=consider-using-enumerate
+    for i in range(len(after)):
+        assert after[i] in before  # should be in before

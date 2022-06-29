@@ -85,6 +85,7 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
 
 Uses these envvars:
 ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+SECRET_SEED -- secret integer used to seed the rng
 """
     if len(sys.argv) not in [2 + 5]:
         print(HELP)
@@ -105,6 +106,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()
 
     # check files, prep dir
     _exitIfFileExists(csvs.poolinfoCsvFilename(CSV_DIR, CHAINID))
@@ -124,6 +126,8 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     if FIN == "latest":
         fin_block = len(chain)
+    elif FIN == "thu":
+        fin_block = blocktime.getBlockNumberThursday(chain)
     elif "-" in FIN:
         fin_block = blocktime.timestrToBlock(chain, FIN)
     else:
@@ -131,8 +135,9 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    seed = fin_block
+    seed = st_block + SECRET_SEED
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
+    rng.filterByMaxBlock(len(chain))
     (Pi, Si, Vi, Ai) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
@@ -278,7 +283,9 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper().replace("MOCEAN", "OCEAN")
+    token_symbol = (
+        B.Simpletoken.at(TOKEN_ADDR).symbol().upper().replace("MOCEAN", "OCEAN")
+    )
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],
@@ -644,6 +651,7 @@ Usage: dftool chaininfo CHAINID
 # ========================================================================
 # utilities
 
+
 def _exitIfFileExists(filename: str):
     if os.path.exists(filename):
         print(f"\nFile {filename} exists. Exiting.")
@@ -660,10 +668,21 @@ def _getAddressEnvvarOrExit() -> tuple:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:
-        print("\nNeed to set envvar ADDRESS_FILE. Exiting. "
-              f"\nEg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}")
+        print(
+            "\nNeed to set envvar ADDRESS_FILE. Exiting. "
+            f"\nEg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}"
+        )
         sys.exit(0)
     return ADDRESS_FILE
+
+
+def _getSecretSeedOrExit() -> int:
+    SECRET_SEED = os.environ.get("SECRET_SEED")
+    print(f"Envvar:\n SECRET_SEED={SECRET_SEED}")
+    if SECRET_SEED is None:
+        print("\nNeed to set envvar SECRET_SEED. Exiting.")
+        sys.exit(0)
+    return int(SECRET_SEED)
 
 
 @enforce_types

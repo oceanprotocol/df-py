@@ -1,8 +1,30 @@
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date, timedelta
+from math import ceil
 from typing import Union
 
 from enforce_typing import enforce_types
 from scipy import optimize
+
+
+@enforce_types
+def getBlockNumberThursday(chain) -> int:
+    timestamp = getNextThursdayTimestamp()
+    block_number = timestampToFutureBlock(chain, timestamp)
+
+    ## round to upper 100th
+    block_number = ceil(block_number / 100) * 100
+    return block_number
+
+
+@enforce_types
+def getNextThursdayTimestamp() -> int:
+    d = date.today()
+    if d.strftime("%a") != "Thu":
+        d += timedelta(1)  # add a day so it doesn't return today
+
+    while d.strftime("%a") != "Thu":
+        d += timedelta(1)
+    return int(d.strftime("%s"))
 
 
 @enforce_types
@@ -38,6 +60,36 @@ def timestrToTimestamp(timestr: str) -> float:
     timestamp = dt.replace(tzinfo=timezone.utc).timestamp()
 
     return timestamp
+
+
+@enforce_types
+def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
+    def timeSinceTimestamp(block_i):
+        return chain[int(block_i)].timestamp
+
+    block_last_number = len(chain) - 1
+
+    # 40,000 is the average number of blocks per week
+    block_old_number = max(0, block_last_number - 40_000)  # go back 40,000 blocks
+
+    block_last_time = timeSinceTimestamp(block_last_number)  # time of last block
+    block_old_time = timeSinceTimestamp(block_old_number)  # time of old block
+
+    assert block_last_time < timestamp
+
+    # slope
+    m = (block_last_number - block_old_number) / (block_last_time - block_old_time)
+
+    # y-intercept
+    b = block_last_number - block_last_time * m
+
+    # y = mx + b
+    # y block number
+    # x block time
+
+    # thus
+    estimated_block_number = m * timestamp + b
+    return int(estimated_block_number)
 
 
 @enforce_types
