@@ -37,19 +37,23 @@ In console, run the following: (can copy & paste):
 export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 
-dftool query $date $now 50 mydata 137
+dftool query $date $now 50 mydata 137 #output approved-137.csv, poolvols-137.csv, stakes-chain137.csv
 dftool query $date $now 50 mydata 246
 dftool query $date $now 50 mydata 1
 dftool query $date $now 50 mydata 56
 dftool query $date $now 50 mydata 1285
 
-dftool getrate OCEAN $date $now mydata
+dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
 dftool getrate H2O $date $now mydata
-
-dftool calc mydata 10000 OCEAN
 ```
 
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
+
+Then, in console:
+```console
+dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
+```
+
 
 ### Step 4: Run dispense
 
