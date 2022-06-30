@@ -7,9 +7,14 @@ Outline:
 
 ### Step 0: Set envvars
 
-First, find your own WEB3_INFURA_PROJECT_ID. Then in console:
+First, find your own `WEB3_INFURA_PROJECT_ID`. Then in console:
 ```console
 export WEB3_INFURA_PROJECT_ID=FILLME #infura
+```
+
+Next, get `SECRET_SEED`. This can be anything you want. For DF core team, [use this](https://github.com/oceanprotocol/df-private/blob/main/README.md#secret_seed). Then in console:
+```console
+export SECRET_SEED=FILLME
 ```
 
 In console, run the following: (can copy & paste):
