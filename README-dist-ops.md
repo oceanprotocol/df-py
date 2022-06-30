@@ -67,12 +67,15 @@ Write down its private key & address. And, in console:
 export DFTOOL_KEY=FILLME #private key used by dftool dispense
 ```
 
-Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs
+Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs. Write it down.
 
-Then, have the OCEAN & gas funds sent to that local account, for each network. Send from DF Treasury multisigs.
-- [Chain 1 mainnet](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#mainnet-gnosis-safe-df-treasury)  0xad0A852F968e19cbCB350AB9426276685651ce41
-- Chain 137 polygon - FIXME
-- Chain 246 energyweb - FIXME
+Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local account for each network. How:
+1. In Metamask add-on, add new private key - the one just generated. Rename the account.
+2. Go to Mainnet Gnosis Safe [DF Treasury multisig](https://gnosis-safe.io/app/eth:0xad0A852F968e19cbCB350AB9426276685651ce41/home). [Wallet info](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#mainnet-gnosis-safe-df-treasury) 0xad0A852F968e19cbCB350AB9426276685651ce41
+3. From mainnet_1:multisig, (a) send 10K OCEAN to new_account, (b) send ETH for gas to new_account
+4. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to polygon_137:new_account, (b) if needed, _bridge_ MATIC to polygon:new_Account
+5. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to energyweb_246:new_account, (b) if needed, _bridge_ EWT to energyweb_246:new_Account
+6. (repeat for other networks as needed)
 
 Finally, the big step: dispense funds. In console:
 ```console
