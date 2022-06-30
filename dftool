@@ -268,14 +268,14 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         print("Set TOKEN_ADDR from envvar")
         TOKEN_ADDR = os.getenv("TOKEN_ADDR")
 
-    BATCH_NUMBER = None
+    BATCH_NBR = None
     if len(sys.argv) >= 7:
-        BATCH_NUMBER = sys.argv[6]
+        BATCH_NBR = sys.argv[6]
 
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
         f", DFREWARDS_ADDR={DFREWARDS_ADDR}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", BATCH_NUMBER={BATCH_NUMBER}"
+        f", BATCH_NBR={BATCH_NBR}"
     )
     assert DFREWARDS_ADDR is not None
     assert TOKEN_ADDR is not None
@@ -292,7 +292,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         DFREWARDS_ADDR,
         TOKEN_ADDR,
         from_account,
-        batch_number=BATCH_NUMBER,
+        batch_number=BATCH_NBR,
     )
 
     print("dftool dispense: Done")
