@@ -270,7 +270,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     BATCH_NBR = None
     if len(sys.argv) >= 7:
-        BATCH_NBR = sys.argv[6]
+        BATCH_NBR = int(sys.argv[6])
 
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
