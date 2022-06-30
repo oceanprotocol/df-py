@@ -72,7 +72,7 @@ Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs
 Then, have the OCEAN & gas funds sent to that local account, for each network. Send from DF Treasury multisigs.
 - [Chain 1 mainnet](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#mainnet-gnosis-safe-df-treasury)  0xad0A852F968e19cbCB350AB9426276685651ce41
 - Chain 137 polygon - FIXME
-- - Chain 137 energyweb - FIXME
+- Chain 137 energyweb - FIXME
 
 Finally, the big step: dispense funds. In console:
 ```console
