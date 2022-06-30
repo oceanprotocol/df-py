@@ -235,7 +235,9 @@ def getDTVolumes(
             datatoken {
               id
             },
-            lastPriceToken,
+            lastPriceToken {
+              id
+            },
             lastPriceValue,
             block
           }
@@ -256,7 +258,7 @@ def getDTVolumes(
             if lastPriceValue == 0:
                 continue
             DT_addr = order["datatoken"]["id"].lower()
-            basetoken_addr = order["lastPriceToken"]
+            basetoken_addr = order["lastPriceToken"]["id"]
 
             if basetoken_addr not in DTvols:
                 DTvols[basetoken_addr] = {}
