@@ -46,6 +46,7 @@ def dispense(
 
     to_addrs = list(rewards.keys())
     values = [toBase18(rewards[to_addr]) for to_addr in to_addrs]
+    values = [max(value, 1) for value in values] #avoid zero
 
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
