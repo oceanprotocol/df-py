@@ -19,7 +19,7 @@ def getBlockNumberThursday(chain) -> int:
 @enforce_types
 def getNextThursdayTimestamp() -> int:
     d = date.today()
-    if d.strftime("%a") != "Thu":
+    if d.strftime("%a") == "Thu":
         d += timedelta(1)  # add a day so it doesn't return today
 
     while d.strftime("%a") != "Thu":
