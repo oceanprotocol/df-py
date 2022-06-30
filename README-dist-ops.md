@@ -79,19 +79,28 @@ Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local accoun
 
 Finally, the big step: dispense funds. In console:
 ```console
-dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr
+dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr #polygon
+```
+
+Then, confirm:
+1. Randomly pick a row in rewardsperlp-OCEAN.csv. Note the address to, and the amount
+2. Go to the chain's block explorer -> DFrewards.sol contract -> read -> claimable. E.g. [here](https://polygonscan.com/address/0x0cea7DA063EA910D6904299b5A29A8b68DBC1947#readContract) for Polygon
+3. Enter "to (address)" = from the csv
+4. Enter "tokenAddress" = OCEAN address for the network. E.g. 0x282d8efce846a88b159800bd4130ad77443fa1a1 for Polygon
+5. Click "query". Review the result. It should have the same amount as the csv from step (1). If not, problems :(
+
+Now, dispense funds for remaining chains. In console:
+```console
+dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr #energyweb
 #then, confirm
 
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
+dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr #mainnet
 #then, confirm
 
-dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr
+dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr #bsc
 #then, confirm
 
-dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr
-#then, confirm
-
-dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr
+dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr #moonriver
 #then, confirm
 ```
 
