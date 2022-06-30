@@ -57,12 +57,12 @@ dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
 
 ### Step 4: Run dispense
 
-Create a local account. In console:
+Get a working account. We call it dftool_acct. Either use a previous one, or create a new one. For the latter::
 ```console
 dftool newacct
 ```
 
-Write down its private key & address. And, in console:
+Write down dftool_acct private key & address. And, in console:
 ```console
 export DFTOOL_KEY=FILLME #private key used by dftool dispense
 ```
@@ -70,11 +70,11 @@ export DFTOOL_KEY=FILLME #private key used by dftool dispense
 Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs. Write it down.
 
 Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local account for each network. How:
-1. In Metamask add-on, add new private key - the one just generated. Rename the account.
+1. In Metamask add-on, add new private key for dftool_acct
 2. Go to Mainnet Gnosis Safe [DF Treasury multisig](https://gnosis-safe.io/app/eth:0xad0A852F968e19cbCB350AB9426276685651ce41/home). [Wallet info](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#mainnet-gnosis-safe-df-treasury) 0xad0A852F968e19cbCB350AB9426276685651ce41
-3. From mainnet_1:multisig, (a) send 10K OCEAN to new_account, (b) send ETH for gas to new_account
-4. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to polygon_137:new_account, (b) if needed, _bridge_ MATIC to polygon:new_Account
-5. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to energyweb_246:new_account, (b) if needed, _bridge_ EWT to energyweb_246:new_Account
+3. From mainnet_1:multisig, (a) send 10K OCEAN to dftool_acct, (b) send ETH for gas to new_account
+4. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to polygon_137:dftool_acct, (b) if needed, _bridge_ MATIC to polygon:dftool_acct
+5. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to energyweb_246:dftool_acct, (b) if needed, _bridge_ EWT to energyweb_246:dftool_acct
 6. (repeat for other networks as needed)
 
 Finally, the big step: dispense funds. In console:
