@@ -7,9 +7,14 @@ Outline:
 
 ### Step 0: Set envvars
 
-First, find your own WEB3_INFURA_PROJECT_ID. Then in console:
+First, find your own `WEB3_INFURA_PROJECT_ID`. Then in console:
 ```console
 export WEB3_INFURA_PROJECT_ID=FILLME #infura
+```
+
+Next, get `SECRET_SEED`. This can be anything you want. For DF core team, [use this](https://github.com/oceanprotocol/df-private/blob/main/README.md#secret_seed). Then in console:
+```console
+export SECRET_SEED=FILLME
 ```
 
 In console, run the following: (can copy & paste):
@@ -32,35 +37,45 @@ In console, run the following: (can copy & paste):
 export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 
-dftool query $date $now 50 mydata 137
+dftool query $date $now 50 mydata 137 #output approved-137.csv, poolvols-137.csv, stakes-chain137.csv
 dftool query $date $now 50 mydata 246
 dftool query $date $now 50 mydata 1
 dftool query $date $now 50 mydata 56
 dftool query $date $now 50 mydata 1285
 
-dftool getrate OCEAN $date $now mydata
+dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
 dftool getrate H2O $date $now mydata
-
-dftool calc mydata 10000 OCEAN
 ```
 
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
 
+Then, in console:
+```console
+dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
+```
+
+
 ### Step 4: Run dispense
 
-Create a local account. In console:
+Get a working account. We call it dftool_acct. Either use a previous one, or create a new one. For the latter::
 ```console
 dftool newacct
 ```
 
-Write down its private key & address. And, in console:
+Write down dftool_acct private key & address. And, in console:
 ```console
 export DFTOOL_KEY=FILLME #private key used by dftool dispense
 ```
 
-Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs
+Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs. Write it down.
 
-Then, have the OCEAN & gas funds sent to that local account, for each network. From "DF Treasury" multisig 0xad0A852F968e19cbCB350AB9426276685651ce41
+Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local account for each network. How:
+1. In Metamask add-on, add new private key for dftool_acct
+2. Go to Mainnet Gnosis Safe [DF Treasury multisig](https://gnosis-safe.io/app/eth:0xad0A852F968e19cbCB350AB9426276685651ce41/home). Ensure it has enough OCEAN. [Wallet info](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#mainnet-gnosis-safe-df-treasury) 0xad0A852F968e19cbCB350AB9426276685651ce41
+3. From mainnet_1:multisig, (a) send 10K OCEAN to dftool_acct, (b) send ETH for gas to new_account
+4. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to polygon_137:dftool_acct, (b) if needed, _bridge_ MATIC to polygon:dftool_acct
+5. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to energyweb_246:dftool_acct, (b) if needed, _bridge_ EWT to energyweb_246:dftool_acct
+6. (repeat for other networks as needed)
 
 Finally, the big step: dispense funds. In console:
 ```console
