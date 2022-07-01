@@ -4,6 +4,7 @@ Outline:
 - Step 0: Set envvars
 - Step 1, 2, 3: Run query, getrate, calc
 - Step 4: Run dispense
+- Step 5, 6: Publish csvs, blog post, tweet
 
 ### Step 0: Set envvars
 
