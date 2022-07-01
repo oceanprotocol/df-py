@@ -104,4 +104,50 @@ dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr #moonriver
 #then, confirm
 ```
 
-We're now done!!
+We're now done dispensing!
+
+Next steps are to get the word out.
+
+### Step 5: Publish csvs into Ocean Market
+
+First, prep the data as a GFolder, as follows:
+- Go to [this higher-level Gfolder](https://drive.google.com/drive/folders/1yFj08QgNTuFPjxzzPRLBYVyaCmmqghJz)
+- Create a sub-folder, e.g. "DF3". Within that sub-folder is various comparisons. (It might have already been created for earlier analysis.)
+- Create a sub-folder of DF3, e.g. "DF3-final". 
+- Copy the csvs into that sub-sub-folder.
+- Update the sharing permissions such that _anyone with link_ can _view_.
+
+Now, publish into Ocean Market
+- Open your browser. 
+- Go to [https://market.oceanprotocol.com/](https://market.oceanprotocol.com/publish/1)
+- Connect wallet
+- From your wallet, select any chain. Ensure you have tokens for gas. Eth mainnet is approx $20, the rest are a few cents max.
+- Fill out info, based on previous examples, adapting to your DFx. Prev: [DF1](https://market-git-fix-1562-oceanprotocol.vercel.app/asset/did:op:dc1d8c161b641011614e4de03f5023bbba55fefcc91cc88d8074656ca91bf483), [DF2](https://market-git-fix-1562-oceanprotocol.vercel.app/asset/did:op:a3aa14de333ee1ecb3b8a842954033c1c0004f9e77020cacb861843478c1079c)
+
+### Step 6: Write blog post, tweet
+
+Write & publish blog post:
+- Go to medium.com, log in. If you're not yet an Editor in Ocean Protocol blog, ask Marcom to add you.
+- From medium, click on new story. 
+- Fill out info in new story, based on previous examples, adapting to your DFx. Prev: [DF1/2](https://medium.com/oceanprotocol/data-farming-df1-completed-df2-started-7a660ee84afe), [DF2/3](https://medium.com/oceanprotocol/data-farming-df2-completed-df3-started-cfedc32fa3c9)
+- Be sure to add stats to the story: use GDrive csvs
+- Be sure to link to the new data asset that you just published in Ocean Market
+- Be sure to update the image. Create the image from [these GSlides](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing) in [this Gfolder](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing)
+- Be sure to set tags: Homepage, Data Farming, Artificial Intelligence, Defi, Data
+- Publish!
+
+Write & publish tweet
+- Ideally tweet from [@OceanDAO_](https://twitter.com/OceanDAO_) account, otherwise from personal
+- Write tweet content. [DF2 example](https://twitter.com/trentmc0/status/1542595137511063555). 
+- Publish!
+
+Share to Marcom, and broader Ocean team
+- Goto slack, #general channel, copy the tweet link in, hit send
+- Then forward (share) that slack msg to #marcom_x_nile channel, and tag marcom folks. If you don't have access to that channel, ask for it.
+- FYI Marcom will likely RT from @oceanprotocol and elsewhere
+
+Share to community:
+- Share link to tweet in [TG Ocean official](https://t.me/oceanprotocol_community)
+- Share link to tweet in [TG DataFarm](https://t.me/Farm_Ocean)
+- Elsewhere?
+
