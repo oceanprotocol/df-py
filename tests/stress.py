@@ -40,7 +40,7 @@ from tqdm import tqdm
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-NUMBER_OF_ACCOUNTS = 10
+NUMBER_OF_ACCOUNTS = 1000
 
 w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
@@ -50,6 +50,7 @@ def main():
     oceanutil.recordDevDeployedContracts()  # Record deployed contract addresses on ganache
 
     CSV_DIR = str("/tmp/df_stress_test")
+    ST = len(brownie.network.chain)
 
     NSAMP = 50
     test_accounts = []
@@ -93,10 +94,6 @@ def main():
         with HiddenPrints():
             oceantestutil.addStake(pool, STAKE_AMT, acc, OCEAN)
 
-    # give some time for subgraph to index
-    print("Sleeping 30 secs")
-    time.sleep(30)  # sleep little script
-
     print("Buying and consuming DT")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
@@ -106,19 +103,18 @@ def main():
                 )
                 oceantestutil.consumeDT(DT, accounts[0], acc)
 
-    # give some time for subgraph to index
-    ST = len(brownie.network.chain)
-
-    brownie.network.chain.mine(blocks=500)  # mine 10 blocks
+    brownie.network.chain.mine(blocks=300)  # mine 300 blocks
     print("Mining blocks")
 
-    print("Sleeping 200 secs")
-    time.sleep(200)  # sleep little script
+    # give some time for subgraph to index
+    print("Sleeping 30 secs")
+    time.sleep(30)  # sleep little script
 
     FIN = len(brownie.network.chain) - 10
     # %%
 
     os.environ["ADDRESS_FILE"] = networkutil.chainIdToAddressFile(CHAINID)
+    os.environ["SECRET_SEED"] = "123123123"
     DISPENSE_ACCT = brownie.network.accounts.add()
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
