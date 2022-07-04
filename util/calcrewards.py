@@ -172,6 +172,8 @@ def _calcRewardsUsd(
                 if Sij == 0 or Cj == 0:
                     continue
                 RF_ij = Sij * Cj  # main formula!
+                if RF_ij < 0.001:
+                    continue
                 reward_i += RF_ij
 
                 if not chainID in rewardsinfo:
