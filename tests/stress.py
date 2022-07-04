@@ -38,7 +38,7 @@ from tqdm import tqdm
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-NUMBER_OF_ACCOUNTS = 1_000
+NUMBER_OF_ACCOUNTS = 10
 
 w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
@@ -66,11 +66,6 @@ def main():
     assert len(test_accounts) == NUMBER_OF_ACCOUNTS
 
     OCEAN = oceanutil.OCEANtoken()
-
-    approvedTokens = getApprovedTokens(networkutil.DEV_CHAINID)
-    if OCEAN.address not in approvedTokens.keys():
-        oceanutil.factoryRouter().addApprovedToken(OCEAN.address, {"from": accounts[0]})
-        time.sleep(2)
 
     ## Deploy pool
     print("Deploying pool")
