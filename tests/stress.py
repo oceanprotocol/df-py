@@ -1,4 +1,4 @@
-# %%
+#  type: ignore
 #######################################
 # this part is required to access "util"
 import os
