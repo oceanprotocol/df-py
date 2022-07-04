@@ -1,4 +1,6 @@
 #  type: ignore
+# pylint: skip-file
+
 #######################################
 # this part is required to access "util"
 import os
@@ -48,8 +50,7 @@ def main():
     oceanutil.recordDevDeployedContracts()  # Record deployed contract addresses on ganache
 
     CSV_DIR = str("/tmp/df_stress_test")
-    ST = len(brownie.network.chain)
-    FIN = "latest"
+
     NSAMP = 50
     test_accounts = []
 
@@ -106,12 +107,15 @@ def main():
                 oceantestutil.consumeDT(DT, accounts[0], acc)
 
     # give some time for subgraph to index
-    print("Sleeping 60 secs")
-    time.sleep(30)  # sleep little script
+    ST = len(brownie.network.chain)
 
-    print("30 secs left")  # extra print for impatient people
-    time.sleep(30)  # sleep little script
+    brownie.network.chain.mine(blocks=500)  # mine 10 blocks
+    print("Mining blocks")
 
+    print("Sleeping 200 secs")
+    time.sleep(200)  # sleep little script
+
+    FIN = len(brownie.network.chain) - 10
     # %%
 
     os.environ["ADDRESS_FILE"] = networkutil.chainIdToAddressFile(CHAINID)
@@ -150,17 +154,6 @@ def main():
         claimable_amounts.append(df_rewards.claimable(acc.address, OCEAN.address))
 
     print(claimable_amounts)
-
-    avg_amt = sum(claimable_amounts) / len(claimable_amounts)
-    print("Checking reward amount for each addresss, expected is", avg_amt)
-    errors = 0
-    for amt in claimable_amounts:
-
-        if abs(avg_amt - amt) < 1e18:
-            errors += 1
-            print("Found an error --- Expected:", avg_amt, "Actual:", amt)
-
-    print(f"Checked {len(claimable_amounts)} addresses! Found {errors} errors")
 
 
 main()
