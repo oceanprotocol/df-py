@@ -191,6 +191,8 @@ def setup_function():
     PREV.SUBGRAPH_URI = os.environ.get("SUBGRAPH_URI")
     os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
 
+    os.environ["SECRET_SEED"] = "1234"
+
 
 @enforce_types
 def teardown_function():

@@ -4,12 +4,18 @@ Outline:
 - Step 0: Set envvars
 - Step 1, 2, 3: Run query, getrate, calc
 - Step 4: Run dispense
+- Step 5, 6: Publish csvs, blog post, tweet
 
 ### Step 0: Set envvars
 
-First, find your own WEB3_INFURA_PROJECT_ID. Then in console:
+First, find your own `WEB3_INFURA_PROJECT_ID`. Then in console:
 ```console
 export WEB3_INFURA_PROJECT_ID=FILLME #infura
+```
+
+Next, get `SECRET_SEED`. This can be anything you want. For DF core team, [use this](https://github.com/oceanprotocol/df-private/blob/main/README.md#secret_seed). Then in console:
+```console
+export SECRET_SEED=FILLME
 ```
 
 In console, run the following: (can copy & paste):
@@ -32,52 +38,117 @@ In console, run the following: (can copy & paste):
 export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 
-dftool query $date $now 50 mydata 137
+dftool query $date $now 50 mydata 137 #output approved-137.csv, poolvols-137.csv, stakes-chain137.csv
 dftool query $date $now 50 mydata 246
 dftool query $date $now 50 mydata 1
 dftool query $date $now 50 mydata 56
 dftool query $date $now 50 mydata 1285
 
-dftool getrate OCEAN $date $now mydata
+dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
 dftool getrate H2O $date $now mydata
-
-dftool calc mydata 10000 OCEAN
 ```
 
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
 
+Then, in console:
+```console
+dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
+```
+
+
 ### Step 4: Run dispense
 
-Create a local account. In console:
+Get a working account. We call it dftool_acct. Either use a previous one, or create a new one. For the latter::
 ```console
 dftool newacct
 ```
 
-Write down its private key & address. And, in console:
+Write down dftool_acct private key & address. And, in console:
 ```console
 export DFTOOL_KEY=FILLME #private key used by dftool dispense
 ```
 
-Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs
+Then, inspect `rewardsperlp-OCEAN.csv` to see how much OCEAN each network needs. Write it down.
 
-Then, have the OCEAN & gas funds sent to that local account, for each network. From "DF Treasury" multisig 0xad0A852F968e19cbCB350AB9426276685651ce41
+Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local account for each network. How:
+1. In Metamask add-on, add new private key for dftool_acct
+2. Go to Mainnet Gnosis Safe [DF Treasury multisig](https://gnosis-safe.io/app/eth:0xad0A852F968e19cbCB350AB9426276685651ce41/home). Ensure it has enough OCEAN. [Wallet info](https://github.com/oceanprotocol/atlantic/blob/master/logs/wallets.md#mainnet-gnosis-safe-df-treasury) 0xad0A852F968e19cbCB350AB9426276685651ce41
+3. From mainnet_1:multisig, (a) send 10K OCEAN to dftool_acct, (b) send ETH for gas to new_account
+4. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to polygon_137:dftool_acct, (b) if needed, _bridge_ MATIC to polygon:dftool_acct
+5. From mainnet_1:new_account, (a) _bridge_ OCEAN rewards to energyweb_246:dftool_acct, (b) if needed, _bridge_ EWT to energyweb_246:dftool_acct
+6. (repeat for other networks as needed)
 
 Finally, the big step: dispense funds. In console:
 ```console
-dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr
+dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr #polygon
+```
+
+Then, confirm:
+1. Randomly pick a row in rewardsperlp-OCEAN.csv. Note the address to, and the amount
+2. Go to the chain's block explorer -> DFrewards.sol contract -> read -> claimable. E.g. [here](https://polygonscan.com/address/0x0cea7DA063EA910D6904299b5A29A8b68DBC1947#readContract) for Polygon
+3. Enter "to (address)" = from the csv
+4. Enter "tokenAddress" = OCEAN address for the network. E.g. 0x282d8efce846a88b159800bd4130ad77443fa1a1 for Polygon
+5. Click "query". Review the result. It should have the same amount as the csv from step (1). If not, problems :(
+
+Now, dispense funds for remaining chains. In console:
+```console
+dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr #energyweb
 #then, confirm
 
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr
+dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr #mainnet
 #then, confirm
 
-dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr
+dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr #bsc
 #then, confirm
 
-dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr
-#then, confirm
-
-dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr
+dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr #moonriver
 #then, confirm
 ```
 
-We're now done!!
+We're now done dispensing!
+
+Next steps are to get the word out.
+
+### Step 5: Publish csvs into Ocean Market
+
+First, prep the data as a GFolder, as follows:
+- Go to [this higher-level Gfolder](https://drive.google.com/drive/folders/1yFj08QgNTuFPjxzzPRLBYVyaCmmqghJz)
+- Create a sub-folder, e.g. "DF3". Within that sub-folder is various comparisons. (It might have already been created for earlier analysis.)
+- Create a sub-folder of DF3, e.g. "DF3-final". 
+- Copy the csvs into that sub-sub-folder.
+- Update the sharing permissions such that _anyone with link_ can _view_.
+
+Now, publish into Ocean Market
+- Open your browser. 
+- Go to [https://market.oceanprotocol.com/](https://market.oceanprotocol.com/publish/1)
+- Connect wallet
+- From your wallet, select any chain. Ensure you have tokens for gas. Eth mainnet is approx $20, the rest are a few cents max.
+- Fill out info, based on previous examples, adapting to your DFx. Prev: [DF1](https://market-git-fix-1562-oceanprotocol.vercel.app/asset/did:op:dc1d8c161b641011614e4de03f5023bbba55fefcc91cc88d8074656ca91bf483), [DF2](https://market-git-fix-1562-oceanprotocol.vercel.app/asset/did:op:a3aa14de333ee1ecb3b8a842954033c1c0004f9e77020cacb861843478c1079c)
+
+### Step 6: Write blog post, tweet
+
+Write & publish blog post:
+- Go to medium.com, log in. If you're not yet an Editor in Ocean Protocol blog, ask Marcom to add you.
+- From medium, click on new story. 
+- Fill out info in new story, based on previous examples, adapting to your DFx. Prev: [DF1/2](https://medium.com/oceanprotocol/data-farming-df1-completed-df2-started-7a660ee84afe), [DF2/3](https://medium.com/oceanprotocol/data-farming-df2-completed-df3-started-cfedc32fa3c9)
+- Be sure to add stats to the story: use GDrive csvs
+- Be sure to link to the new data asset that you just published in Ocean Market
+- Be sure to update the image. Create the image from [these GSlides](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing) in [this Gfolder](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing)
+- Be sure to set tags: Homepage, Data Farming, Artificial Intelligence, Defi, Data
+- Publish!
+
+Write & publish tweet
+- Ideally tweet from [@OceanDAO_](https://twitter.com/OceanDAO_) account, otherwise from personal
+- Write tweet content. [DF2 example](https://twitter.com/trentmc0/status/1542595137511063555). 
+- Publish!
+
+Share to Marcom, and broader Ocean team
+- Goto slack, #general channel, copy the tweet link in, hit send
+- Then forward (share) that slack msg to #marcom_x_nile channel, and tag marcom folks. If you don't have access to that channel, ask for it.
+- FYI Marcom will likely RT from @oceanprotocol and elsewhere
+
+Share to community:
+- Share link to tweet in [TG Ocean official](https://t.me/oceanprotocol_community)
+- Share link to tweet in [TG DataFarm](https://t.me/Farm_Ocean)
+- Elsewhere?
+

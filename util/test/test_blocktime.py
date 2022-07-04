@@ -1,10 +1,18 @@
+from datetime import datetime
+from math import ceil
 from pytest import approx
 
 import brownie
 from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
-from util.blocktime import timestrToBlock, timestrToTimestamp, timestampToBlock
+from util.blocktime import (
+    getBlockNumberThursday,
+    getNextThursdayTimestamp,
+    timestrToBlock,
+    timestrToTimestamp,
+    timestampToBlock,
+)
 
 chain = None
 
@@ -82,6 +90,34 @@ def test_timestampToBlock():
     assert timestampToBlock(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
 
     assert timestampToBlock(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
+
+
+@enforce_types
+def test_get_next_thursday():
+    next_thursday = getNextThursdayTimestamp()
+    date = datetime.fromtimestamp(next_thursday)
+
+    assert date.isoweekday() == 4
+
+
+@enforce_types
+def test_get_next_thursday_block_number():
+    next_thursday_block = getBlockNumberThursday(chain)
+    assert next_thursday_block % 10 == 0
+    assert len(chain) < next_thursday_block
+
+    now = len(chain) - 1
+
+    t0 = chain[0].timestamp
+    t1 = chain[int(now)].timestamp
+
+    avgBlockTime = (t1 - t0) / now
+
+    next_thursday = getNextThursdayTimestamp()
+    apprx = (next_thursday - t0) / avgBlockTime
+    apprx = ceil(apprx / 100) * 100
+
+    assert next_thursday_block == approx(apprx, 1)
 
 
 @enforce_types
