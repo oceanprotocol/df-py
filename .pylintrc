@@ -34,8 +34,7 @@ ignore=
   docker-compose.yml,
   brownie-config.yaml,
   Dockerfile,
-  dfpy_docker,
-  tests/stress.py
+  dfpy_docker
 
 # Add files or directories matching the regex patterns to the blacklist. The
 # regex matches against base names, not paths.
