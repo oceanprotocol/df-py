@@ -28,21 +28,16 @@ sys.path.insert(0, parentdir)
 ## Actual code starts here
 import brownie
 import time
-from web3 import Web3
-from enforce_typing import enforce_types
-
-from util import oceanutil, oceantestutil, networkutil, query
-from util.blockrange import BlockRange
+from util import oceanutil, oceantestutil, networkutil
 from util.constants import BROWNIE_PROJECT as B
 from util.query import getApprovedTokens
 from tqdm import tqdm
+import json
 
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
 NUMBER_OF_ACCOUNTS = 1000
-
-w3 = Web3(Web3.HTTPProvider("http://127.0.0.1:8545"))
 
 
 def main():
@@ -50,7 +45,6 @@ def main():
     oceanutil.recordDevDeployedContracts()  # Record deployed contract addresses on ganache
 
     CSV_DIR = str("/tmp/df_stress_test")
-    ST = len(brownie.network.chain)
 
     NSAMP = 50
     test_accounts = []
@@ -93,6 +87,8 @@ def main():
     for acc in tqdm(test_accounts):
         with HiddenPrints():
             oceantestutil.addStake(pool, STAKE_AMT, acc, OCEAN)
+
+    ST = len(brownie.network.chain)
 
     print("Buying and consuming DT")
     for acc in tqdm(test_accounts):
@@ -150,6 +146,8 @@ def main():
         claimable_amounts.append(df_rewards.claimable(acc.address, OCEAN.address))
 
     print(claimable_amounts)
+    f = open(f"{CSV_DIR}/claimable_amounts.json", "w")
+    f.write(json.dumps(claimable_amounts))
 
 
 main()
