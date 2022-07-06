@@ -87,12 +87,10 @@ def _calcRewardsUsd(
     pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
 
     # fill in R
-    rewardsperlp: Dict[str, Dict[str, float]] = {
+    rewardsperlp: dict = {
         cID: {} for cID in chainIDs
     }  # [chainID][LP_addr]:basetoken_float
-    rewardsinfo: Dict[
-        str, Dict[str, Dict[str, float]]
-    ] = {}  # [chainID][pool_addr][LP_addr]:basetoken_float
+    rewardsinfo: dict = {}  # [chainID][pool_addr][LP_addr]:basetoken_float
 
     tot_rewards = 0.0
     for chainID in chainIDs:
