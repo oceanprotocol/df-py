@@ -172,8 +172,6 @@ def _calcRewardsUsd(
                 if Sij == 0 or Cj == 0:
                     continue
                 RF_ij = Sij * Cj  # main formula!
-                if RF_ij < 0.001:
-                    continue
                 reward_i += RF_ij
 
                 if not chainID in rewardsinfo:
@@ -190,6 +188,13 @@ def _calcRewardsUsd(
     for chainID in chainIDs:
         for LP_addr, reward in rewardsperlp[chainID].items():
             rewardsperlp[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
+
+    # remove small amounts
+    for chainID in chainIDs:
+        for LP_addr, reward in rewardsperlp[chainID].items():
+            if rewardsperlp[chainID][LP_addr] < 0.0001:
+                tot_rewards -= rewardsperlp[chainID][LP_addr]
+                del rewardsperlp[chainID][LP_addr]
 
     for chainID in rewardsinfo:
         for pool_addr in rewardsinfo[chainID]:
