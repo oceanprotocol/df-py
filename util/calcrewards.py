@@ -184,16 +184,21 @@ def _calcRewardsUsd(
                 rewardsperlp[chainID][LP_addr] = reward_i
                 tot_rewards += reward_i
 
-    # normalize and scale rewards
+    # normalize rewards
     for chainID in chainIDs:
         for LP_addr, reward in rewardsperlp[chainID].items():
-            rewardsperlp[chainID][LP_addr] = reward / tot_rewards * TOKEN_avail
+            rewardsperlp[chainID][LP_addr] = reward / tot_rewards
 
     # remove small amounts
     for chainID in chainIDs:
         for LP_addr, reward in rewardsperlp[chainID].items():
             if rewardsperlp[chainID][LP_addr] < 0.0001:
                 del rewardsperlp[chainID][LP_addr]
+
+    # scale rewards
+    for chainID in chainIDs:
+        for LP_addr, reward in rewardsperlp[chainID].items():
+            rewardsperlp[chainID][LP_addr] = reward * TOKEN_avail
 
     for chainID in rewardsinfo:
         for pool_addr in rewardsinfo[chainID]:
