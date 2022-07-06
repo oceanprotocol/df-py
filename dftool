@@ -5,6 +5,7 @@ import sys
 
 import brownie
 from enforce_typing import enforce_types
+from dotenv import load_dotenv
 
 from util import (
     blockrange,
@@ -742,4 +743,5 @@ def do_main():
 
 
 if __name__ == "__main__":
+    load_dotenv()
     do_main()
