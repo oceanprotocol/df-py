@@ -24,7 +24,23 @@ TOK_SET = APPROVED_TOKENS
 
 
 @enforce_types
-def test1_onechain():
+def test_simple():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
+
+    target_rewardsperlp = {C1: {LP1: 10.0}}
+    target_rewardsinfo = {C1: {PA: {LP1: 10}}}
+
+    TOKEN_avail = 10.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+    )
+
+    assert target_rewardsperlp == rewardsperlp
+    assert target_rewardsinfo == rewardsinfo
+    
+@enforce_types
+def test_unapproved_addr():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}, UNAPP_ADDR: {PC: {LP1: 20.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}, UNAPP_ADDR: {PC: 2.0}}}
 
@@ -41,8 +57,7 @@ def test1_onechain():
 
 
 @enforce_types
-def test1_twochains():
-    # simple-as-possible rewards, on two chains
+def test_two_chains():
     stakes = {
         C1: {OCN_ADDR: {PA: {LP1: 10000.0}}},
         C2: {OCN_ADDR: {PB: {LP1: 10000.0}}},
@@ -57,7 +72,7 @@ def test1_twochains():
 
 
 @enforce_types
-def test2():
+def test_two_lps():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
     TOKEN_avail = 10.0
@@ -71,7 +86,7 @@ def test2():
 
 
 @enforce_types
-def test3():
+def test_two_pools_one_with_volume():
     stakes = {
         C1: {
             OCN_ADDR: {
@@ -97,7 +112,7 @@ def test3():
 
 
 @enforce_types
-def test4():
+def test_two_pools_both_with_volume():
     stakes = {
         C1: {
             OCN_ADDR: {
@@ -120,7 +135,7 @@ def test4():
 
 
 @enforce_types
-def test5_mix_upper_and_lower_case():
+def test_mix_upper_and_lower_case():
     # PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
     # LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "lp4_addr"
     # OCN_ADDR, H2O = "0xocean", "0xh2o"
