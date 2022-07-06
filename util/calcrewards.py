@@ -192,7 +192,7 @@ def _calcRewardsUsd(
     # remove small amounts
     for chainID in chainIDs:
         for LP_addr, reward in rewardsperlp[chainID].items():
-            if rewardsperlp[chainID][LP_addr] < 0.0001:
+            if rewardsperlp[chainID][LP_addr] < 0.00001:
                 del rewardsperlp[chainID][LP_addr]
 
     # scale rewards
