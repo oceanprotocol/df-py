@@ -2,7 +2,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util import cleancase, tok
-from util.calcrewards import calcRewards, _stakesToUsd, _poolvolsToUsd
+from util.calcrewards import calcRewards
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}
@@ -24,7 +24,7 @@ TOK_SET = APPROVED_TOKENS
 
 
 @enforce_types
-def test_calcRewards1_onechain():
+def test1_onechain():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}, UNAPP_ADDR: {PC: {LP1: 20.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}, UNAPP_ADDR: {PC: 2.0}}}
 
@@ -41,7 +41,8 @@ def test_calcRewards1_onechain():
 
 
 @enforce_types
-def test_calcRewards1_twochains():
+def test1_twochains():
+    # simple-as-possible rewards, on two chains
     stakes = {
         C1: {OCN_ADDR: {PA: {LP1: 10000.0}}},
         C2: {OCN_ADDR: {PB: {LP1: 10000.0}}},
@@ -56,7 +57,7 @@ def test_calcRewards1_twochains():
 
 
 @enforce_types
-def test_calcRewards2():
+def test2():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
     TOKEN_avail = 10.0
@@ -70,7 +71,7 @@ def test_calcRewards2():
 
 
 @enforce_types
-def test_calcRewards3():
+def test3():
     stakes = {
         C1: {
             OCN_ADDR: {
@@ -96,7 +97,7 @@ def test_calcRewards3():
 
 
 @enforce_types
-def test_calcRewards4():
+def test4():
     stakes = {
         C1: {
             OCN_ADDR: {
@@ -119,7 +120,7 @@ def test_calcRewards4():
 
 
 @enforce_types
-def test_calcRewards5_mix_upper_and_lower_case():
+def test5_mix_upper_and_lower_case():
     # PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
     # LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "lp4_addr"
     # OCN_ADDR, H2O = "0xocean", "0xh2o"
@@ -220,47 +221,3 @@ def test_apy_cap():
 
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
-
-
-@enforce_types
-def test_stakesToUsd_onebasetoken():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = _stakesToUsd(stakes, RATES, TOK_SET)
-    assert stakes_USD == {C1: {PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5}}}
-
-
-@enforce_types
-def test_stakesToUsd_twobasetokens():
-    stakes = {
-        C1: {
-            OCN_ADDR: {PA: {LP1: 3.0, LP2: 4.0}},
-            H2O_ADDR: {PC: {LP1: 5.0, LP4: 6.0}},
-        }
-    }
-    stakes_USD = _stakesToUsd(stakes, RATES, TOK_SET)
-    assert stakes_USD == {
-        C1: {
-            PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
-            PC: {LP1: 5.0 * 1.6, LP4: 6.0 * 1.6},
-        }
-    }
-
-
-@enforce_types
-def test_poolvolsToUsd_onebasetoken():
-    poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}}}
-    poolvols_USD = _poolvolsToUsd(poolvols, RATES, TOK_SET)
-    assert poolvols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
-
-
-@enforce_types
-def test_poolvolsToUsd_twobasetokens():
-    poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PC: 13.0}}}
-    poolvols_USD = _poolvolsToUsd(poolvols, RATES, TOK_SET)
-    assert poolvols_USD == {
-        C1: {
-            PA: 9.0 * 0.5,
-            PB: 11.0 * 0.5,
-            PC: 13.0 * 1.6,
-        }
-    }
