@@ -67,43 +67,42 @@ def _calcRewardsUsd(stakes_USD: dict, poolvols_USD: dict, rewards_avail_USD: flo
     pool_addrs = _getPoolAddrs(poolvols_USD)
     N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(pool_addrs)
 
-    # fill in RF[c,i,j]
-    RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    # convert stakes & poolvols to arrays S & P
+    S = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    P = numpy.zeros((N_c, N_j), dtype=float)
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
             for j, pool_addr in enumerate(pool_addrs):
                 if pool_addr not in stakes_USD[chainID]:
                     continue
-                stake_at_ij = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
-                vol_at_j = poolvols_USD[chainID].get(pool_addr, 0.0)
-                RF[c,i,j] = stake_at_ij * vol_at_j  # main formula!
+                S[c,i,j] = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
+                P[c,j] += poolvols_USD[chainID].get(pool_addr, 0.0)
+
+    # compute reward function, store in array RF[c,i,j]
+    RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    for c in range(N_c):
+        for i in range(N_i):
+            for j in range(N_j):
+                RF[c,i,j] = S[c,i,j] * V[c,j] # main formula!
 
     # normalize values
-    RF = RF / numpy.sum(RF)
+    RF_norm = RF / numpy.sum(RF)
 
-    # filter negligible values
-    RF[RF < 0.0001] = 0.0
-    RF = RF / numpy.sum(RF)
+    # filter negligible values (<0.001% of total RF)
+    RF_norm[RF_norm < 0.0001] = 0.0
+    RF_norm = RF_norm / numpy.sum(RF_norm)
 
-    # bound APY at the global level
-    rewards_max_allpools_USD = _sumStakes(stakes_USD) * TARGET_WPY
-    rewards_avail_USD = min(rewards_max_allpools_USD, rewards_avail_USD)
+    # bound APY globally - across all pools
+    rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S) * TARGET_WPY)
 
-    # first-cut compute reward per LP. 
-    RF_USD = RF * rewards_avail_USD
+    # first-cut compute reward per LP
+    RF_USD = RF_norm * rewards_avail_USD
 
-    # bound APY at pool level
-
-    rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
-    rewards_max_allpools_USD = _sumStakes(stakes_USD) * TARGET_WPY
-    rewards_avail_USD = min(rewards_max_allpools_USD, rewards_avail_USD)
-    
-    for c, chainID in enumerate(chainIDs):
+    # bound APY at pool level    
+    for c in range(N_c):
         for j in range(N_j):
-            stake_in_pool_USD = numpy.sum(RF_USD[c,:,j])
-            
-            
-            tot_pool_stake = 
+            pool_rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S[c,:,j]) * TARGET_WPY)
+            RF_USD[c,:,j]
 
     # bound APY at LP level
 
