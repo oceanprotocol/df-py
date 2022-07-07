@@ -29,8 +29,8 @@ CHAINID_EXAMPLES = (
 HELP_MAIN = f"""Data Farming tool, for use by OPF.
 
 OPF steps:
-1. query - run per CHAINID ({DEV_CHAINID}, 1, 137, ..)
-2. getrate - run per basetoken (OCEAN, H2O)
+1. getrate - run per basetoken (OCEAN, H2O)
+2. query - run per CHAINID ({DEV_CHAINID}, 1, 137, ..)
 3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
 4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
 
