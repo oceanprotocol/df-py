@@ -174,6 +174,11 @@ def test_poolinfo(tmp_path):
         H2O: {PC: {LP1: 3.1, LP4: 3.4}},
     }
     V1 = {OCN: {PA: 0.11, PB: 0.12}, H2O: {PC: 3.1}}
+
+    rates = {OCN: 0.66, H2O: 1.618}
+    for symbol, rate in rates.items():
+        csvs.saveRateCsv(symbol, rate, csv_dir)
+    
     csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
 
     csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
@@ -183,7 +188,9 @@ def test_poolinfo(tmp_path):
         "basetoken",
         "pool_addr",
         "vol_amt",
+        "vol_amt_USD",
         "stake_amt",
+        "stake_amt_USD",
         "nft_addr",
         "DT_addr",
         "DT_symbol",

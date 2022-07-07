@@ -37,10 +37,10 @@ OPF steps:
 Then LP steps:
 5. call DFRewards.claim(), or related
 
-Usage: dftool query|getrate|calc|dispense|..
+Usage: dftool getrate|query|calc|dispense|..
 
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (pools, stakes, vols, approved)
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
+  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (pools, stakes, vols, approved)
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (pools, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
@@ -109,11 +109,16 @@ SECRET_SEED -- secret integer used to seed the rng
     SECRET_SEED = _getSecretSeedOrExit()
 
     # check files, prep dir
+    if not os.path.exists(csv_dir):
+        print(f"\nDirectory {csv_dir} doesn't exist; nor do rates. Exiting.")
+        sys.exit(0)
+    if not rateCsvFilenames(csv_dir):
+        print(f"\nRates don't exist. Call 'dftool getrate' first. Exiting.")
+        sys.exit(0)
     _exitIfFileExists(csvs.poolinfoCsvFilename(CSV_DIR, CHAINID))
     _exitIfFileExists(csvs.stakesCsvFilename(CSV_DIR, CHAINID))
     _exitIfFileExists(csvs.poolvolsCsvFilename(CSV_DIR, CHAINID))
     _exitIfFileExists(csvs.approvedCsvFilename(CSV_DIR, CHAINID))
-    _createDirIfNeeded(CSV_DIR)
 
     # brownie setup
     networkutil.connect(CHAINID)

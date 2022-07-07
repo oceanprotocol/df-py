@@ -12,8 +12,9 @@
 CLI-based tool to administer Data Farming.
 
 ```text
-Usage: dftool query|calc|dispense|..
+Usage: dftool getrate|query|calc|dispense|..
 
+  dftool getrate - get exchange rate
   dftool query - query chain for stakes & volumes
   dftool calc - calculate rewards
   dftool dispense - dispense funds
@@ -214,13 +215,12 @@ cd /app/df-py/
 date=`date -dlast-wednesday '+%Y-%m-%d'`
 now=`date '+%Y-%m-%d'`
 
-
+/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 1 && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 56 && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 137 && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 246 && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 1285 && 
-/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data && 
 /app/df-py/dfpy_docker calc /app/data 10000 OCEAN && 
 mv /tmp/dfpy/* ~/.dfcsv/
 ```

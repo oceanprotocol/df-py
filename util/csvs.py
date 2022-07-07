@@ -325,8 +325,15 @@ def savePoolinfoCsv(
       poolvols_at_chain -- dict of [basetoken_address][pool_addr] : vol_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
+
+    @notes
+      This method also inputs rate*.csv files.
     """
     assert os.path.exists(csv_dir), f"{csv_dir} should exist"
+
+    assert rateCsvFilenames(csv_dir), "Should have rate csv files"
+    rates = loadRateCsvs(csv_dir)
+    
     csv_file = poolinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
 
@@ -340,7 +347,9 @@ def savePoolinfoCsv(
                 "basetoken",
                 "pool_addr",
                 "vol_amt",
+                "vol_amt_USD",
                 "stake_amt",
+                "stake_amt_USD",
                 "nft_addr",
                 "DT_addr",
                 "DT_symbol",
@@ -359,19 +368,23 @@ def savePoolinfoCsv(
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
 
-                stake_amt = sum(stakes_at_chain[basetoken][pool_addr].values())
+                stake_amt_BASE = sum(stakes_at_chain[basetoken][pool_addr].values())
+                stake_amt_USD = stake_amt_BASE * rates[basetoken]
 
-                vol = 0
-                if basetoken in poolvols_at_chain:
-                    if pool_addr in poolvols_at_chain[basetoken]:
-                        vol = poolvols_at_chain[basetoken][pool_addr]
+                vol_amt_BASE = 0.0
+                if (basetoken in poolvols_at_chain) and \
+                   (pool_addr in poolvols_at_chain[basetoken]):
+                    vol_amt_BASE = poolvols_at_chain[basetoken][pool_addr]
+                vol_amt_USD = vol_amt_BASE * rates[basetoken]
 
                 row = [
                     chainID,
                     basetoken,
                     pool_addr,
-                    vol,
-                    stake_amt,
+                    vol_amt_BASE,
+                    vol_amt_USD,
+                    stake_amt_BASE,
+                    stake_amt_USD,
                     p.nft_addr,
                     p.DT_addr,
                     p.DT_symbol,
