@@ -19,6 +19,8 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
 
 @enforce_types
 def test_query(tmp_path):
+    CSV_DIR = str(tmp_path)
+    
     # insert fake inputs: info onto the chain
     oceantestutil.fillAccountsWithOCEAN()
     num_pools = 1
@@ -26,11 +28,13 @@ def test_query(tmp_path):
     oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEAN)
     time.sleep(2)
 
+    # insert fake inputs: rate csv file
+    csvs.saveRateCsv("OCEAN", 0.5, CSV_DIR)
+
     # main cmd
     ST = 0
     FIN = "latest"
     NSAMP = 5
-    CSV_DIR = str(tmp_path)
 
     cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
@@ -39,6 +43,8 @@ def test_query(tmp_path):
     assert csvs.stakesCsvFilenames(CSV_DIR)
     assert csvs.poolvolsCsvFilenames(CSV_DIR)
     assert csvs.approvedCsvFilenames(CSV_DIR)
+    poolinfo_csv = csvs.poolinfoCsvFilename(CSV_DIR, CHAINID)
+    assert os.path.exists(poolinfo_csv)
 
 
 @enforce_types
