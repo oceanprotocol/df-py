@@ -15,7 +15,8 @@ accounts = None
 C1, C2 = 1, 137
 PA, PB, PC, PD, PE, PF = "poola", "poolb", "poolc", "poold", "poole", "poolf"
 LP1, LP2, LP3, LP4, LP5, LP6 = "lp1", "lp2", "lp3", "lp4", "lp5", "lp6"
-OCN, H2O = "OCEAN", "H2O"
+OCN_SYMB, H2O_SYMB = "OCN", "H2O"
+OCN_ADDR, H2O_ADDR = "0xOCN_addr", "0xH2O_addr"
 
 
 # =================================================================
@@ -32,8 +33,8 @@ def test_chainIDforStakeCsv():
 def test_stakes_onechain(tmp_path):
     csv_dir = str(tmp_path)
     S1 = {
-        OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O: {PC: {LP1: 3.1, LP4: 3.4}},
+        OCN_SYMB: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_SYMB: {PC: {LP1: 3.1, LP4: 3.4}},
     }
     csvs.saveStakesCsv(S1, csv_dir, C1)
     target_S1 = S1
@@ -45,10 +46,10 @@ def test_stakes_onechain(tmp_path):
 def test_stakes_twochains(tmp_path):
     csv_dir = str(tmp_path)
     S1 = {
-        OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O: {PC: {LP1: 3.1, LP4: 3.4}},
+        OCN_SYMB: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_SYMB: {PC: {LP1: 3.1, LP4: 3.4}},
     }
-    S2 = {OCN: {PD: {LP1: 4.1, LP5: 4.5}}, H2O: {PE: {LP6: 5.6}}}
+    S2 = {OCN_SYMB: {PD: {LP1: 4.1, LP5: 4.5}}, H2O_SYMB: {PE: {LP6: 5.6}}}
 
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
     csvs.saveStakesCsv(S1, csv_dir, C1)
@@ -73,7 +74,7 @@ def test_chainIDforPoolvolsCsv():
 @enforce_types
 def test_poolvols_onechain(tmp_path):
     csv_dir = str(tmp_path)
-    V1 = {OCN: {PA: 1.1, PB: 2.1}, H2O: {PC: 3.1}}
+    V1 = {OCN_SYMB: {PA: 1.1, PB: 2.1}, H2O_SYMB: {PC: 3.1}}
     csvs.savePoolvolsCsv(V1, csv_dir, C1)
 
     target_V1 = V1
@@ -84,8 +85,8 @@ def test_poolvols_onechain(tmp_path):
 @enforce_types
 def test_poolvols_twochains(tmp_path):
     csv_dir = str(tmp_path)
-    V1 = {OCN: {PA: 1.1, PB: 2.1}, H2O: {PC: 3.1}}
-    V2 = {OCN: {PD: 4.1, PE: 5.1}, H2O: {PF: 6.1}}
+    V1 = {OCN_SYMB: {PA: 1.1, PB: 2.1}, H2O_SYMB: {PC: 3.1}}
+    V2 = {OCN_SYMB: {PD: 4.1, PE: 5.1}, H2O_SYMB: {PF: 6.1}}
 
     assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 0
     csvs.savePoolvolsCsv(V1, csv_dir, C1)
@@ -112,7 +113,7 @@ def test_approved(tmp_path):
     csv_dir = str(tmp_path)
 
     # set the data
-    l1 = [(C1, "0x123", "OCEAN"), (C1, "0x456", "H2O")]
+    l1 = [(C1, "0x123", "OCEAN"), (C1, "0x456", "H2O_SYMB")]
     l2 = [(C2, "0x789", "OCEAN")]
     approved1 = TokSet(l1)
     approved2 = TokSet(l2)
@@ -165,17 +166,17 @@ def test_poolinfo(tmp_path):
         accounts[7].address,
     )
     P1 = [
-        SimplePool(PA, nft1_addr, "dt1_addr", "DT1_SYM", "ocn_addr"),
-        SimplePool(PB, nft2_addr, "dt2_addr", "DT2_SYM", "h2o_addr"),
-        SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", "ocn_addr"),
+        SimplePool(PA, nft1_addr, "dt1_addr", "DT1_SYM", OCN_ADDR),
+        SimplePool(PB, nft2_addr, "dt2_addr", "DT2_SYM", H2O_ADDR),
+        SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", OCN_ADDR),
     ]
     S1 = {
-        OCN: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O: {PC: {LP1: 3.1, LP4: 3.4}},
+        OCN_SYMB: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_SYMB: {PC: {LP1: 3.1, LP4: 3.4}},
     }
-    V1 = {OCN: {PA: 0.11, PB: 0.12}, H2O: {PC: 3.1}}
+    V1 = {OCN_SYMB: {PA: 0.11, PB: 0.12}, H2O_SYMB: {PC: 3.1}}
 
-    rates = {OCN: 0.66, H2O: 1.618}
+    rates = {OCN_SYMB: 0.66, H2O_SYMB: 1.618}
     for symbol, rate in rates.items():
         csvs.saveRateCsv(symbol, rate, csv_dir)
 
@@ -212,13 +213,13 @@ def test_poolinfo(tmp_path):
 
 @enforce_types
 def test_rates(tmp_path):
-    rates = {OCN: 0.66, H2O: 1.618}
+    rates = {OCN_SYMB: 0.66, H2O_SYMB: 1.618}
 
     csv_dir = str(tmp_path)
     assert len(csvs.rateCsvFilenames(csv_dir)) == 0
-    csvs.saveRateCsv(OCN, rates[OCN], csv_dir)
+    csvs.saveRateCsv(OCN_SYMB, rates[OCN_SYMB], csv_dir)
     assert len(csvs.rateCsvFilenames(csv_dir)) == 1
-    csvs.saveRateCsv(H2O, rates[H2O], csv_dir)
+    csvs.saveRateCsv(H2O_SYMB, rates[H2O_SYMB], csv_dir)
     assert len(csvs.rateCsvFilenames(csv_dir)) == 2
 
     loaded_rates = csvs.loadRateCsvs(csv_dir)
