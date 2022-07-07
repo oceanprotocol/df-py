@@ -237,8 +237,8 @@ def test_calcrewards_math():
 
 
 @enforce_types
-def test_bound_APY_globally():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5000.0}}}}
+def test_bound_APY_one_pool():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
 
     rewards_avail_TOKEN = 10000.0
@@ -246,5 +246,66 @@ def test_bound_APY_globally():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
 
-    assert rewardsperlp == {C1: {LP1: 5000 * TARGET_WPY}} # 5000 * TARGET_WPY < rewards avail
-    assert rewardsinfo == {C1: {PA: {LP1: 5000 * TARGET_WPY}}}
+    assert rewardsperlp == {C1: {LP1: 5.0 * TARGET_WPY}}
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0 * TARGET_WPY}}}
+
+
+@enforce_types
+def test_bound_APY_two_pools__pools_are_equal():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 5.0}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
+
+    rewards_avail_TOKEN = 10000.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
+    )
+
+    assert rewardsperlp == {C1: {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}}
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}}
+
+
+@enforce_types
+def test_bound_APY_two_pools__one_pool_dominates_stake():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 1000.0}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
+
+    rewards_avail_TOKEN = 10000.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
+    )
+
+    #LP2 gets way more
+    assert rewardsperlp == {C1: {LP1: 5.0*TARGET_WPY, LP2: 10000 - 5.0*TARGET_WPY}}
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: LP2: 10000 - 5.0*TARGET_WPY}}}
+
+
+@enforce_types
+def test_bound_APY_two_pools__low_stake__one_pool_dominates_DCV():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 5.0}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 10000.0}}}
+
+    rewards_avail_TOKEN = 10000.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
+    )
+
+    #LP1 and LP2 get same amount - they're both bounded because both have low stake
+    #Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher
+    assert rewardsperlp == {C1: {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}}
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}}
+
+
+@enforce_types
+def test_bound_APY_two_pools__high_stake__one_pool_dominates_DCV():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 1e6}, PB: {LP2: 1e6}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 9999.0}}}
+
+    rewards_avail_TOKEN = 10000.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
+    )
+    
+    #LP2 reward swamps LP1 because LP2's stake * DCV is way higher; it's *not* bounded by low stake
+    assert rewardsperlp == {C1: {LP1: 1.0, LP2: 9999.0}}
+    assert rewardsinfo == {C1: {PA: {LP1: 1.0}, PB: {LP2: 9999.0}}}
+
