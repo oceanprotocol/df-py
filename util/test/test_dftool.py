@@ -20,7 +20,7 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
 @enforce_types
 def test_query(tmp_path):
     CSV_DIR = str(tmp_path)
-    
+
     # insert fake inputs: info onto the chain
     oceantestutil.fillAccountsWithOCEAN()
     num_pools = 1
