@@ -296,6 +296,21 @@ def test_bound_APY_one_pool():
 
 
 @enforce_types
+def test_bound_APY_one_LP__high_stake__two_pools():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 1e6}, PB: {LP1: 1e6}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
+
+    rewards_avail_OCEAN = 1000.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
+    )
+
+    # ensure that total rewards given doesn't exceed rewards_avail
+    assert rewardsperlp[C1] == {LP1: 1000.0}
+    assert rewardsinfo[C1] == {PA: {LP1: 500.0}, PB: {LP1: 500.0}}
+
+
+@enforce_types
 def test_bound_APY_two_pools__equal_low_stake__equal_low_DCV():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 5.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}

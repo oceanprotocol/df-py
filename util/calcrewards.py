@@ -127,7 +127,11 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
 
     # done!
     assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
-    assert numpy.sum(RF_USD) <= rewards_avail_USD, (numpy.sum(RF_USD), rewards_avail_USD, RF_USD)
+    assert numpy.sum(RF_USD) <= rewards_avail_USD, (
+        numpy.sum(RF_USD),
+        rewards_avail_USD,
+        RF_USD,
+    )
     return RF_USD
 
 
