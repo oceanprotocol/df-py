@@ -251,7 +251,7 @@ def test_bound_APY_one_pool():
 
 
 @enforce_types
-def test_bound_APY_two_pools__pools_are_equal():
+def test_bound_APY_two_pools__equal_low_stake__equal_low_DCV():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 5.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
 
@@ -265,8 +265,8 @@ def test_bound_APY_two_pools__pools_are_equal():
 
 
 @enforce_types
-def test_bound_APY_two_pools__one_pool_dominates_stake():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 1000.0}}}}
+def test_bound_APY_two_pools__both_low_stake__one_pool_dominates_stake():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 5.0}, PB: {LP2: 20000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
 
     rewards_avail_TOKEN = 10000.0
@@ -274,8 +274,9 @@ def test_bound_APY_two_pools__one_pool_dominates_stake():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
 
-    #LP2 gets way more
-    assert rewardsperlp == {C1: {LP1: 5.0*TARGET_WPY, LP2: 10000 - 5.0*TARGET_WPY}}
+    #LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it. But, LP2 staked more
+    # so it earns more
+    assert rewardsperlp == {C1: {LP1: 5.0*TARGET_WPY, LP2: 20000.0*TARGET_WPY}}
     assert rewardsinfo == {C1: {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: LP2: 10000 - 5.0*TARGET_WPY}}}
 
 
