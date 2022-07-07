@@ -121,6 +121,8 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> tuple:
     # bound APY per pool
     for c in range(N_c):
         for j in range(N_j):
+            if numpy.sum(RF_USD[c,:,j]) == 0.0:
+                continue
             pool_rewards_avail_USD = min(
                 numpy.sum(RF_USD[c,:,j]), #baseline
                 numpy.sum(S_USD[c,:,j]) * TARGET_WPY) #this APY constraint
@@ -129,12 +131,15 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> tuple:
     # bound APY per LP
     for c in range(N_c):
         for i in range(N_i):
+            if numpy.sum(RF_USD[c,i,:]) == 0.0:
+                continue
             LP_rewards_avail_USD = min(
                 numpy.sum(RF_USD[c,i,:]), #baseline
                 numpy.sum(S_USD[c,i,:]) * TARGET_WPY) #this APY constraint
             RF_USD[c,i,:] = RF_USD[c,i,:] / numpy.sum(RF_USD[c,i,:]) * LP_rewards_avail_USD
 
-    # done! 
+    # done!
+    assert not numpy.isnan(numpy.min(RF_USD))
     return RF_USD
 
 
@@ -155,7 +160,7 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
             for j, pool_addr in enumerate(pool_addrs):
-                assert RF_TOKEN[c,i,j] >= 0.0
+                assert RF_TOKEN[c,i,j] >= 0.0, RF_TOKEN[c,i,j]
                 if RF_TOKEN[c,i,j] == 0.0:
                     continue
                 
