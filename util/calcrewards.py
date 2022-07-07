@@ -1,9 +1,14 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from enforce_typing import enforce_types
+import numpy
 
 from util import approvedfilter, cleancase, tousd
 from util.tok import TokSet
+
+TARGET_WPY = (
+    0.015717  # (Weekly Percent Yield) needs to be 1.5717%., for max APY of 125%
+)
 
 
 @enforce_types
@@ -12,133 +17,180 @@ def calcRewards(
     poolvols: dict,
     approved_tokens: TokSet,
     rates: Dict[str, float],
-    TOKEN_avail: float,
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
+    rewards_avail_TOKEN: float,
+    rewards_symbol: str,
+) -> tuple:
     """
     @arguments
-      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake
-      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol
+      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake_OCEAN_or_H2O
+      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol_OCEAN_or_H2O
       approved_tokens -- TokSet
       rates -- dict of [basetoken_symbol] : USD_per_basetoken
-      TOKEN_avail -- float, e.g. amount of OCEAN available
+      rewards_avail_TOKEN -- float -- amount of rewards avail, in units of OCEAN or PSDN
+      rewards_symbol -- e.g. "OCEAN" or "PSDN"
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
       rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
-
-    @notes
-      A stake or vol value is denominated in basetoken (eg OCEAN, H2O).
     """
-    # ensure upper/lowercase is correct
     (stakes, poolvols, rates) = cleancase.modTuple(stakes, poolvols, rates)
-
-    # remove non-approved tokens
     (stakes, poolvols) = approvedfilter.modTuple(approved_tokens, stakes, poolvols)
-
-    # key params
-    TARGET_WPY = 0.015717  # (Weekly Percent Yield) needs to be 1.5717%.
-    TARGET_REWARD_AMT = _sumStakes(stakes) * TARGET_WPY
-    TOKEN_avail = min(TOKEN_avail, TARGET_REWARD_AMT)  # Max apy is 125%
-
-    # main work
     tok_set = approved_tokens  # use its mapping here, not the 'whether approved' part
+
     stakes_USD = tousd.stakesToUsd(stakes, rates, tok_set)
     poolvols_USD = tousd.poolvolsToUsd(poolvols, rates, tok_set)
-    (rewardsperlp, rewardsinfo) = _calcRewardsUsd(stakes_USD, poolvols_USD, TOKEN_avail)
+
+    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(stakes_USD, poolvols_USD)
+
+    rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
+
+    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
+
+    RF_TOKEN = RF_USD / rates[rewards_symbol]
+
+    (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
+
     return rewardsperlp, rewardsinfo
 
 
-def _sumStakes(stakes: dict) -> float:
-    total_stakes = 0
-    for chainID in stakes:
-        for basetoken_address in stakes[chainID]:
-            for pool_addr in stakes[chainID][basetoken_address]:
-                for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
-                    total_stakes += stakes[chainID][basetoken_address][pool_addr][
-                        LP_addr
-                    ]
-    return total_stakes
-
-
-def _calcRewardsUsd(
-    stakes_USD: dict, poolvols_USD: Dict[str, Dict[str, float]], TOKEN_avail: float
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, Dict[str, float]]]]:
+def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
       poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
-      TOKEN_avail -- float, e.g. amount of OCEAN available
+
+    @return
+      S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
+      P_USD -- 2d array of [chain c, pool j] -- poolvol for each {c,j}, in USD
+      keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
+    """
+    # base data
+    cleancase.assertStakesUsd(stakes_USD)
+    cleancase.assertPoolvolsUsd(poolvols_USD)
+    chainIDs = list(stakes_USD.keys())
+    LP_addrs = _getLpAddrs(stakes_USD)
+    pool_addrs = _getPoolAddrs(poolvols_USD)
+    N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(pool_addrs)
+
+    # convert
+    S_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    P_USD = numpy.zeros((N_c, N_j), dtype=float)
+    for c, chainID in enumerate(chainIDs):
+        for i, LP_addr in enumerate(LP_addrs):
+            for j, pool_addr in enumerate(pool_addrs):
+                if pool_addr not in stakes_USD[chainID]:
+                    continue
+                S_USD[c, i, j] = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
+                P_USD[c, j] += poolvols_USD[chainID].get(pool_addr, 0.0)
+
+    # done!
+    keys_tup = (chainIDs, LP_addrs, pool_addrs)
+    return S_USD, P_USD, keys_tup
+
+
+@enforce_types
+def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
+    """
+    @arguments
+      S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
+      P_USD -- 2d array of [chain c, pool j] -- poolvol for each {c,j}, in USD
+      rewards_avail_USD -- float -- amount of rewards available, in units of USD
+
+    @return
+      RF_USD -- 3d array of [chain c, LP i, pool j] -- rewards denominated in USD
+    """
+    N_c, N_i, N_j = S_USD.shape
+
+    # compute reward function, store in array RF[c,i,j]
+    RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    for c in range(N_c):
+        for i in range(N_i):
+            for j in range(N_j):
+                RF[c, i, j] = S_USD[c, i, j] * P_USD[c, j]  # main formula!
+
+    # normalize values
+    RF_norm = RF / numpy.sum(RF)
+
+    # filter negligible values (<0.00001% of total RF), then re-normalize
+    RF_norm[RF_norm < 0.000001] = 0.0
+    RF_norm = RF_norm / numpy.sum(RF_norm)
+
+    # reward in USD
+    RF_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    for c in range(N_c):
+        for i in range(N_i):
+            for j in range(N_j):
+                RF_USD[c, i, j] = min(
+                    RF_norm[c, i, j] * rewards_avail_USD,  # baseline
+                    S_USD[c, i, j] * TARGET_WPY,  # APY constraint
+                )
+
+    # postcondition: nans
+    assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
+
+    # postcondition: sum is ok. First check within a tol; shrink slightly if needed
+    sum1 = numpy.sum(RF_USD)
+    tol = 1e-13
+    assert sum1 <= rewards_avail_USD * (1 + tol), (sum1, rewards_avail_USD, RF_USD)
+    if sum1 > rewards_avail_USD:
+        RF_USD /= 1 + tol
+    sum2 = numpy.sum(RF_USD)
+    assert sum1 <= rewards_avail_USD * (1 + tol), (sum2, rewards_avail_USD, RF_USD)
+
+    # done!
+    return RF_USD
+
+
+@enforce_types
+def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
+    """
+    @arguments
+      RF_TOKEN -- 3d array of [chain c, LP i, pool j]; each entry is denominated in OCEAN, PSDN, etc
+      keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
       rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
-    cleancase.assertStakesUsd(stakes_USD)
-    cleancase.assertPoolvolsUsd(poolvols_USD)
+    chainIDs, LP_addrs, pool_addrs = keys_tup
 
-    # base data
-    chainIDs = list(stakes_USD.keys())
-    pool_addr_set, LP_addr_set = set(), set()
-    for chainID in chainIDs:
+    rewardsperlp: dict = {}
+    rewardsinfo: dict = {}
+    for c, chainID in enumerate(chainIDs):
+        for i, LP_addr in enumerate(LP_addrs):
+            for j, pool_addr in enumerate(pool_addrs):
+                assert RF_TOKEN[c, i, j] >= 0.0, RF_TOKEN[c, i, j]
+                if RF_TOKEN[c, i, j] == 0.0:
+                    continue
+
+                if chainID not in rewardsperlp:
+                    rewardsperlp[chainID] = {}
+                if LP_addr not in rewardsperlp[chainID]:
+                    rewardsperlp[chainID][LP_addr] = 0.0
+                rewardsperlp[chainID][LP_addr] += RF_TOKEN[c, i, j]
+
+                if chainID not in rewardsinfo:
+                    rewardsinfo[chainID] = {}
+                if pool_addr not in rewardsinfo[chainID]:
+                    rewardsinfo[chainID][pool_addr] = {}
+                rewardsinfo[chainID][pool_addr][LP_addr] = RF_TOKEN[c, i, j]
+
+    return rewardsperlp, rewardsinfo
+
+
+@enforce_types
+def _getPoolAddrs(poolvols_USD: dict) -> List[str]:
+    pool_addr_set = set()
+    for chainID in poolvols_USD:
         pool_addr_set |= set(poolvols_USD[chainID].keys())
+    return list(pool_addr_set)
+
+
+@enforce_types
+def _getLpAddrs(stakes_USD: dict) -> List[str]:
+    LP_addr_set = set()
+    for chainID in stakes_USD:
         LP_addr_set |= set(
             {addr for addrs in stakes_USD[chainID].values() for addr in addrs}
         )
-    pool_addrs, LP_addrs = list(pool_addr_set), list(LP_addr_set)
-
-    # fill in R
-    rewardsperlp: Dict[str, Dict[str, float]] = {
-        cID: {} for cID in chainIDs
-    }  # [chainID][LP_addr]:basetoken_float
-    rewardsinfo: Dict[
-        str, Dict[str, Dict[str, float]]
-    ] = {}  # [chainID][pool_addr][LP_addr]:basetoken_float
-
-    tot_rewards = 0.0
-    for chainID in chainIDs:
-        for _, LP_addr in enumerate(LP_addrs):
-            reward_i = 0.0
-            for _, pool_addr in enumerate(pool_addrs):
-                if pool_addr not in stakes_USD[chainID]:
-                    continue
-                Sij = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
-                Cj = poolvols_USD[chainID].get(pool_addr, 0.0)
-                if Sij == 0 or Cj == 0:
-                    continue
-                RF_ij = Sij * Cj  # main formula!
-                reward_i += RF_ij
-
-                if not chainID in rewardsinfo:
-                    rewardsinfo[chainID] = {}
-                if not pool_addr in rewardsinfo[chainID]:
-                    rewardsinfo[chainID][pool_addr] = {}
-
-                rewardsinfo[chainID][pool_addr][LP_addr] = RF_ij
-            if reward_i > 0.0:
-                rewardsperlp[chainID][LP_addr] = reward_i
-                tot_rewards += reward_i
-
-    # normalize rewards
-    for chainID in chainIDs:
-        for LP_addr, reward in rewardsperlp[chainID].items():
-            rewardsperlp[chainID][LP_addr] = reward / tot_rewards
-
-    # remove small amounts
-    for chainID in chainIDs:
-        for LP_addr, reward in rewardsperlp[chainID].items():
-            if rewardsperlp[chainID][LP_addr] < 0.00001:
-                del rewardsperlp[chainID][LP_addr]
-
-    # scale rewards
-    for chainID in chainIDs:
-        for LP_addr, reward in rewardsperlp[chainID].items():
-            rewardsperlp[chainID][LP_addr] = reward * TOKEN_avail
-
-    for chainID in rewardsinfo:
-        for pool_addr in rewardsinfo[chainID]:
-            for LP_addr, reward in rewardsinfo[chainID][pool_addr].items():
-                rewardsinfo[chainID][pool_addr][LP_addr] = (
-                    reward / tot_rewards * TOKEN_avail
-                )
-    # return dict
-    return rewardsperlp, rewardsinfo
+    return list(LP_addr_set)

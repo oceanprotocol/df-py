@@ -30,13 +30,9 @@ def test_without_csvs():
 
     S, V, A = {chainID: S0}, {chainID: V0}, A0
 
-    OCEAN_avail = 3.0
-    total_stakes = calcrewards._sumStakes(S)
-    assert (
-        OCEAN_avail < total_stakes * 0.015717
-    ), "test needs OCEAN_avail as limiting factor"
+    OCEAN_avail = 0.3
 
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, A, R, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, A, R, OCEAN_avail, "OCEAN")
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
@@ -74,13 +70,8 @@ def test_with_csvs(tmp_path):
     A = csvs.loadApprovedCsvs(csv_dir)
     R = csvs.loadRateCsvs(csv_dir)
 
-    OCEAN_avail = 3.0
-    total_stakes = calcrewards._sumStakes(S)
-    assert (
-        OCEAN_avail < total_stakes * 0.015717
-    ), "test needs OCEAN_avail as limiting factor"
-
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, A, R, OCEAN_avail)
+    OCEAN_avail = 0.3
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, A, R, OCEAN_avail, "OCEAN")
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
