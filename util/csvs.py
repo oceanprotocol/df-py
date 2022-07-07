@@ -344,7 +344,7 @@ def savePoolinfoCsv(
         writer.writerow(
             [
                 "chainID",
-                "basetoken",
+                "basetoken", #basetoken_symbol; address is below
                 "pool_addr",
                 "vol_amt",
                 "vol_amt_USD",
@@ -359,28 +359,30 @@ def savePoolinfoCsv(
             ]
         )
 
-        for basetoken in stakes_at_chain:
+        for basetoken_addr in stakes_at_chain:
             for pool_addr in pools_by_addr:
-                if pool_addr not in stakes_at_chain[basetoken]:
+                if pool_addr not in stakes_at_chain[basetoken_addr]:
                     continue
 
                 p = pools_by_addr[pool_addr]
+                basetoken_symbol = p.basetoken_symbol()
+                
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
 
-                stake_amt_BASE = sum(stakes_at_chain[basetoken][pool_addr].values())
-                stake_amt_USD = stake_amt_BASE * rates[basetoken]
+                stake_amt_BASE = sum(stakes_at_chain[basetoken_addr][pool_addr].values())
+                stake_amt_USD = stake_amt_BASE * rates[basetoken_symbol]
 
                 vol_amt_BASE = 0.0
-                if (basetoken in poolvols_at_chain) and (
-                    pool_addr in poolvols_at_chain[basetoken]
-                ):
-                    vol_amt_BASE = poolvols_at_chain[basetoken][pool_addr]
-                vol_amt_USD = vol_amt_BASE * rates[basetoken]
+                if (basetoken_addr in poolvols_at_chain) and \
+                   (pool_addr in poolvols_at_chain[basetoken_addr]):
+                    vol_amt_BASE = poolvols_at_chain[basetoken_addr][pool_addr]
+                    
+                vol_amt_USD = vol_amt_BASE * rates[basetoken_symbol]
 
                 row = [
                     chainID,
-                    basetoken,
+                    basetoken_symbol,
                     pool_addr,
                     vol_amt_BASE,
                     vol_amt_USD,
@@ -389,7 +391,7 @@ def savePoolinfoCsv(
                     p.nft_addr,
                     p.DT_addr,
                     p.DT_symbol,
-                    p.basetoken_addr,
+                    basetoken_addr,
                     did,
                     url,
                 ]
