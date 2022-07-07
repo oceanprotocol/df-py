@@ -111,12 +111,19 @@ Next steps are to get the word out.
 
 ### Step 5: Publish csvs into Ocean Market
 
-First, prep the data as a GFolder, as follows:
+First, create a tarball of the data. In console:
+```console
+cd mydata
+tar -cvf df3-final.tar *.csv
+gzip df3-final.tar
+# result is df3-final.tar.gz
+```
+
+Then, make the data available in GDrive, as follows:
 - Go to [this higher-level Gfolder](https://drive.google.com/drive/folders/1yFj08QgNTuFPjxzzPRLBYVyaCmmqghJz)
 - Create a sub-folder, e.g. "DF3". Within that sub-folder is various comparisons. (It might have already been created for earlier analysis.)
-- Create a sub-folder of DF3, e.g. "DF3-final". 
-- Copy the csvs into that sub-sub-folder.
-- Update the sharing permissions such that _anyone with link_ can _view_.
+- within that sub-folder, right-click, "upload file", select the tarball, click ok
+- right-click the uploaded file, and change permissions so that anyone with link can view
 
 Now, publish into Ocean Market
 - Open your browser. 
