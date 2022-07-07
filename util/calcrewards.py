@@ -86,7 +86,7 @@ def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
 
 
 @enforce_types
-def _calcRewardsUsd(S, P, rewards_avail_USD: float) -> tuple:
+def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> tuple:
     """
     @arguments
       S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
