@@ -275,16 +275,16 @@ def test_rewards_info(tmp_path):
         },
     }
     target_rewards = """chainID,pool_addr,LP_addr,amt,token
-1,poola,lp1,3.2,MYTOKEN
-1,poola,lp2,5.4,MYTOKEN
-1,poolb,lp2,5.3,MYTOKEN
-1,poolb,lp3,1.324824324234,MYTOKEN
-1,poolc,lp3,1.324824324234,MYTOKEN
-1,poolc,lp4,1.23143252346354,MYTOKEN
-137,poold,lp1,1412341242,MYTOKEN
-137,poold,lp2,23424,MYTOKEN
-137,poole,lp1,1e-15,MYTOKEN
-137,poole,lp2,12314552354,MYTOKEN
+1,0xpoola,0xlp1,3.2,MYTOKEN
+1,0xpoola,0xlp2,5.4,MYTOKEN
+1,0xpoolb,0xlp2,5.3,MYTOKEN
+1,0xpoolb,0xlp3,1.324824324234,MYTOKEN
+1,0xpoolc,0xlp3,1.324824324234,MYTOKEN
+1,0xpoolc,0xlp4,1.23143252346354,MYTOKEN
+137,0xpoold,0xlp1,1412341242,MYTOKEN
+137,0xpoold,0xlp2,23424,MYTOKEN
+137,0xpoole,0xlp1,1e-15,MYTOKEN
+137,0xpoole,0xlp2,12314552354,MYTOKEN
 """
 
     csv_dir = str(tmp_path)
