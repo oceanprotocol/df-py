@@ -2,7 +2,7 @@
 
 Outline:
 - Step 0: Set envvars
-- Step 1, 2, 3: Run query, getrate, calc
+- Step 1, 2, 3: Run getrate, query, calc
 - Step 4: Run dispense
 - Step 5, 6: Publish csvs, blog post, tweet
 
@@ -31,21 +31,21 @@ export OCEAN_56_addr=0xdce07662ca8ebc241316a15b611c89711414dd1a   #bsc
 export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
 ```
 
-### Step 1, 2, 3: Run query, getrate, calc
+### Step 1, 2, 3: Run getrate, query, calc
 
 In console, run the following: (can copy & paste):
 ```console
 export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 
+dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
+dftool getrate H2O $date $now mydata
+
 dftool query $date $now 50 mydata 137 #output approved-137.csv, poolvols-137.csv, stakes-chain137.csv
 dftool query $date $now 50 mydata 246
 dftool query $date $now 50 mydata 1
 dftool query $date $now 50 mydata 56
 dftool query $date $now 50 mydata 1285
-
-dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
-dftool getrate H2O $date $now mydata
 ```
 
 Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
