@@ -284,8 +284,8 @@ def test_bound_APY_one_pool():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
 
-    assert rewardsperlp == {C1: {LP1: 5.0 * TARGET_WPY}}
-    assert rewardsinfo == {C1: {PA: {LP1: 5.0 * TARGET_WPY}}}
+    assert rewardsperlp[C1] == {LP1: 5.0 * TARGET_WPY}
+    assert rewardsinfo[C1] == {PA: {LP1: 5.0 * TARGET_WPY}}
 
 
 @enforce_types
@@ -298,8 +298,8 @@ def test_bound_APY_two_pools__equal_low_stake__equal_low_DCV():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
 
-    assert rewardsperlp == {C1: {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}}
-    assert rewardsinfo == {C1: {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}}
+    assert rewardsperlp[C1] == {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}
+    assert rewardsinfo[C1] == {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}
 
 
 @enforce_types
@@ -313,9 +313,9 @@ def test_bound_APY_two_pools__both_low_stake__one_pool_dominates_stake():
     )
 
     #LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it.
-    # But, LP2 staked more, so it earns more
-    assert rewardsperlp == {C1: {LP1: 5.0*TARGET_WPY, LP2: 20000.0*TARGET_WPY}}
-    assert rewardsinfo == {C1: {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: 10000 - 5.0*TARGET_WPY}}}
+    # But, LP2 staked more, so it earns more    
+    assert rewardsperlp[C1] == {LP1: 5.0*TARGET_WPY, LP2: 20000.0*TARGET_WPY}
+    assert rewardsinfo[C1] == {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: 10000 - 5.0*TARGET_WPY}}
 
 
 @enforce_types
@@ -329,9 +329,9 @@ def test_bound_APY_two_pools__low_stake__one_pool_dominates_DCV():
     )
 
     #LP1 and LP2 get same amount - they're both bounded because both have low stake
-    #Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher
-    assert rewardsperlp == {C1: {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}}
-    assert rewardsinfo == {C1: {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}}
+    #Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher    
+    assert rewardsperlp[C1] == {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}
+    assert rewardsinfo[C1] == {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}
 
 
 @enforce_types
@@ -345,6 +345,5 @@ def test_bound_APY_two_pools__high_stake__one_pool_dominates_DCV():
     )
     
     #LP2 reward swamps LP1 because LP2's stake * DCV is way higher; it's *not* bounded by low stake
-    assert rewardsperlp == {C1: {LP1: 1.0, LP2: 9999.0}}
-    assert rewardsinfo == {C1: {PA: {LP1: 1.0}, PB: {LP2: 9999.0}}}
-
+    assert rewardsperlp[C1] == {LP1: 1.0, LP2: 9999.0}
+    assert rewardsinfo[C1] == {PA: {LP1: 1.0}, PB: {LP2: 9999.0}}
