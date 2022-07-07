@@ -43,7 +43,7 @@ def calcRewards(
     
     RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
     
-    RF_TOKEN = RF_USD / rates[TOKEN_SYMBOL]
+    RF_TOKEN = RF_USD / rates[rewards_symbol]
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
     
