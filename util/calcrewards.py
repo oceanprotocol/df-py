@@ -36,27 +36,29 @@ def calcRewards(
     
     stakes_USD = tousd.stakesToUsd(stakes, rates, tok_set)
     poolvols_USD = tousd.poolvolsToUsd(poolvols, rates, tok_set)
-
+    
+    S_USD, P_USD, keys_tup = _stakesAndPoolvolsToArray(stakes_USD, poolvols_USD)
+    
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
     
-    RF_USD, keys_tup = _calcRewardsUsd(stakes_USD, poolvols_USD, rewards_avail_USD)
+    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
+    
     RF_TOKEN = RF_USD / rates[TOKEN_SYMBOL]
 
-    (rewardsperlp, rewardsinfo) = _RF_to_dicts(RF_USD, keys_tup)
+    (rewardsperlp, rewardsinfo) = _RF_to_dicts(RF_TOKEN, keys_tup)
     
     return rewardsperlp, rewardsinfo
 
 
-@enforce_types
-def _calcRewardsUsd(stakes_USD: dict, poolvols_USD: dict, rewards_avail_USD: float) -> tuple:
+def _stakesAndPoolvolsToArray(stakes_USD: dict, poolvols_USD: dict):
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
       poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
-      rewards_avail_USD -- float -- amount of rewards available, in units of USD
 
     @return
-      RF_USD -- 3d array of [chain c, LP i, pool j]; each entry is denominated in USD
+      S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
+      P_USD -- 2d array of [chain c, pool j] -- poolvol for each {c,j}, in USD
       keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
     """
     #base data
@@ -67,23 +69,39 @@ def _calcRewardsUsd(stakes_USD: dict, poolvols_USD: dict, rewards_avail_USD: flo
     pool_addrs = _getPoolAddrs(poolvols_USD)
     N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(pool_addrs)
 
-    # convert stakes & poolvols to arrays S & P
-    S = numpy.zeros((N_c, N_i, N_j), dtype=float)
-    P = numpy.zeros((N_c, N_j), dtype=float)
+    #convert
+    S_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    P_USD = numpy.zeros((N_c, N_j), dtype=float)
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
             for j, pool_addr in enumerate(pool_addrs):
                 if pool_addr not in stakes_USD[chainID]:
                     continue
-                S[c,i,j] = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
-                P[c,j] += poolvols_USD[chainID].get(pool_addr, 0.0)
+                S_USD[c,i,j] = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
+                P_USD[c,j] += poolvols_USD[chainID].get(pool_addr, 0.0)
+
+    #done!
+    keys_tup = (chainIDs, LP_addrs, pool_addrs)
+    return S_USD, P_USD, keys_tup
+
+
+@enforce_types
+def _calcRewardsUsd(S, P, rewards_avail_USD: float) -> tuple:
+    """
+    @arguments
+      S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
+      P_USD -- 2d array of [chain c, pool j] -- poolvol for each {c,j}, in USD
+      rewards_avail_USD -- float -- amount of rewards available, in units of USD
+
+    @return
+      RF_USD -- 3d array of [chain c, LP i, pool j]; each entry is denominated in USD
+    """
+    N_c, N_i, N_j = S_USD.shape
 
     # compute reward function, store in array RF[c,i,j]
     RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
-    for c in range(N_c):
-        for i in range(N_i):
-            for j in range(N_j):
-                RF[c,i,j] = S[c,i,j] * V[c,j] # main formula!
+    for i in range(N_i):
+        RF[:,i,:] = S_USD[:,i,:] * P_USD[:,:] # main formula! RF[c,i,j] = S_USD[c,i,j] * P_USD[c,j]
 
     # normalize values
     RF_norm = RF / numpy.sum(RF)
@@ -92,71 +110,26 @@ def _calcRewardsUsd(stakes_USD: dict, poolvols_USD: dict, rewards_avail_USD: flo
     RF_norm[RF_norm < 0.0001] = 0.0
     RF_norm = RF_norm / numpy.sum(RF_norm)
 
-    # bound APY globally - across all pools
+    # bound APY globally - across all pools & LPs
     rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S) * TARGET_WPY)
 
     # first-cut compute reward per LP
     RF_USD = RF_norm * rewards_avail_USD
 
-    # bound APY at pool level    
+    # bound APY per pool
     for c in range(N_c):
         for j in range(N_j):
-            pool_rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S[c,:,j]) * TARGET_WPY)
-            RF_USD[c,:,j]
+            pool_rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S_USD[c,:,j]) * TARGET_WPY)
+            RF_USD[c,:,j] = RF_USD[c,:,j] / numpy.sum(RF_USD[c,:,j]) * pool_rewards_avail_USD
 
-    # bound APY at LP level
+    # bound APY per LP
+    for c in range(N_c):
+        for i in range(N_i):
+            LP_rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S_USD[c,i,:]) * TARGET_WPY)
+            RF_USD[c,i,:] = RF_USD[c,i,:] / numpy.sum(RF_USD[c,i,:]) * LP_rewards_avail_USD
 
-    # compute rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
-
-    # compute rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
-    
-                
-
-
-    rewardsperlp: dict = {
-        cID: {} for cID in chainIDs
-    }  # [chainID][LP_addr]:basetoken_float
-
-                
-    # normalize rewards
-    for chainID in chainIDs:
-        for LP_addr, reward in rewardsperlp[chainID].items():
-            rewardsperlp[chainID][LP_addr] = reward / tot_rewards
-
-    # remove small amounts
-    for chainID in chainIDs:
-        LP_addrs = list(rewardsperlp[chainID].items())
-        for LP_addr in LP_addrs:
-            if rewardsperlp[chainID][LP_addr] < 0.00001:
-                del rewardsperlp[chainID][LP_addr]
-
-    # scale rewards
-    for chainID in chainIDs:
-        for LP_addr, reward in rewardsperlp[chainID].items():
-            rewardsperlp[chainID][LP_addr] = reward * TOKEN_avail
-
-    for chainID in rewardsinfo:
-        for pool_addr in rewardsinfo[chainID]:
-            for LP_addr, reward in rewardsinfo[chainID][pool_addr].items():
-                rewardsinfo[chainID][pool_addr][LP_addr] = (
-                    reward / tot_rewards * TOKEN_avail
-                )
-    # return dict
-    return rewardsperlp, rewardsinfo
-
-
-@enforce_types
-def _sumStakes(stakes: dict) -> float:
-    total_stakes = 0
-    for chainID in stakes:
-        for basetoken_address in stakes[chainID]:
-            for pool_addr in stakes[chainID][basetoken_address]:
-                for LP_addr in stakes[chainID][basetoken_address][pool_addr]:
-                    total_stakes += stakes[chainID][basetoken_address][pool_addr][
-                        LP_addr
-                    ]
-    return total_stakes
-
+    # done! 
+    return RF_USD
 
 
 def _RF_to_dicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
