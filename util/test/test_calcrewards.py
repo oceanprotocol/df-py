@@ -21,6 +21,7 @@ APPROVED_TOKENS = tok.TokSet(
     ]
 )
 TOK_SET = APPROVED_TOKENS
+REWARDS_SYMBOL = OCN_SYMB
 
 
 @enforce_types
@@ -31,9 +32,9 @@ def test_simple():
     target_rewardsperlp = {C1: {LP1: 10.0}}
     target_rewardsinfo = {C1: {PA: {LP1: 10}}}
 
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
 
     assert target_rewardsperlp == rewardsperlp
@@ -47,9 +48,9 @@ def test_unapproved_addr():
     target_rewardsperlp = {C1: {LP1: 10.0}}
     target_rewardsinfo = {C1: {PA: {LP1: 10}}}
 
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
 
     assert target_rewardsperlp == rewardsperlp
@@ -63,9 +64,9 @@ def test_two_chains():
         C2: {OCN_ADDR: {PB: {LP1: 10000.0}}},
     }
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {OCN_ADDR: {PB: 1.0}}}
-    TOKEN_avail = 20.0
+    rewards_avail_TOKEN = 20.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert rewardsperlp == {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
     assert rewardsinfo == {C1: {PA: {LP1: 10.0}}, C2: {PB: {LP1: 10.0}}}
@@ -75,9 +76,9 @@ def test_two_chains():
 def test_two_lps_simple():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
@@ -89,9 +90,9 @@ def test_two_lps_simple():
 def test_two_lps_one_with_negligible_stake():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 1e-10}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
@@ -110,9 +111,9 @@ def test_two_pools_one_with_volume():
         }
     }
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}  # P1 has volume, but not P2
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
     assert min(rewardsperlp[C1].values()) > 0, "shouldn't have entries with 0 rewards"
@@ -136,9 +137,9 @@ def test_two_pools_both_with_volume():
         }
     }
     poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}  # P1 & P2 both have volume
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
     assert rewardsperlp == {C1: {LP1: 5.0, LP2: 2.5, LP3: 2.5}}
@@ -168,7 +169,7 @@ def test_mix_upper_and_lower_case():
 
     target_rewardsperlp = {C1: {LP1: 10.0}}
     target_rewardsinfo = {C1: {PA: {LP1: 10.0}}}
-    TOKEN_avail = 10.0
+    rewards_avail_TOKEN = 10.0
 
     # sanity check
     cleancase.assertStakes(stakes)
@@ -177,37 +178,37 @@ def test_mix_upper_and_lower_case():
 
     # the real tests
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes2a, poolvols, APPROVED_TOKENS, rates, TOKEN_avail
+        stakes2a, poolvols, APPROVED_TOKENS, rates, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes2b, poolvols, APPROVED_TOKENS, rates, TOKEN_avail
+        stakes2b, poolvols, APPROVED_TOKENS, rates, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes2c, poolvols, APPROVED_TOKENS, rates, TOKEN_avail
+        stakes2c, poolvols, APPROVED_TOKENS, rates, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes, poolvols2a, APPROVED_TOKENS, rates, TOKEN_avail
+        stakes, poolvols2a, APPROVED_TOKENS, rates, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes, poolvols2b, APPROVED_TOKENS, rates, TOKEN_avail
+        stakes, poolvols2b, APPROVED_TOKENS, rates, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, rates2, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, rates2, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
     assert target_rewardsperlp == rewardsperlp
     assert target_rewardsinfo == rewardsinfo
@@ -220,9 +221,9 @@ def test_calcrewards_math():
         C1: {OCN_ADDR: {PA: {LP1: 20000, LP2: 50000}, PB: {LP1: 20000, LP3: 10000}}}
     }
     poolvols = {C1: {OCN_ADDR: {PA: 32.0, PB: 8.0}}}
-    TOKEN_avail = 100.0
+    rewards_avail_TOKEN = 100.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
 
     assert sum(rewardsperlp[C1].values()) == pytest.approx(100.0, 0.01)
@@ -243,9 +244,9 @@ def test_apy_cap():
     target_rewardsperlp = {C1: {LP1: 1000.0}}
     target_rewardsinfo = {C1: {PA: {LP1: 1000}}}
 
-    TOKEN_avail = 700_000.0
+    rewards_avail_TOKEN = 700_000.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+        stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_TOKEN, REWARDS_SYMBOL
     )
 
     assert target_rewardsperlp == rewardsperlp
