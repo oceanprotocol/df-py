@@ -365,6 +365,8 @@ def savePoolinfoCsv(
                     continue
 
                 p = pools_by_addr[pool_addr]
+                if p.basetoken_symbol not in rates:
+                    continue
 
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
