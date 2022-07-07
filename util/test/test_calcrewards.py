@@ -27,37 +27,42 @@ TOK_SET = APPROVED_TOKENS
 def test_simple():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
-    
+
     rewards_avail_OCEAN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
-    
-    assert rewardsperlp == {C1: {LP1: 10.0}} 
-    assert rewardsinfo == {C1: {PA: {LP1: 10}}} 
+
+    assert rewardsperlp == {C1: {LP1: 10.0}}
+    assert rewardsinfo == {C1: {PA: {LP1: 10}}}
 
 
 @enforce_types
 def test_unapproved_addr():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}, UNAPP_ADDR: {PC: {LP1: 20.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}, UNAPP_ADDR: {PC: 2.0}}}
-    
+
     rewards_avail_OCEAN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
 
-    assert rewardsperlp == {C1: {LP1: 10.0}} #ensure UNAPPR_ADDR doesn't show up
+    assert rewardsperlp == {C1: {LP1: 10.0}}  # ensure UNAPPR_ADDR doesn't show up
     assert rewardsinfo == {C1: {PA: {LP1: 10}}}
 
 
 @enforce_types
 @pytest.mark.skip(reason="not working yet, though it should work, need to fix")
 def test_two_basetokens_OCEAN_and_H2O():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 100000.0}},  # stake in units of OCEAN
-                   H2O_ADDR: {PB: {LP1: 20000.0}}}} # stake in units of H2O
-    poolvols = {C1: {OCN_ADDR: {PA: 3.0},  # vol in units of OCEAN
-                     H2O_ADDR: {PB: 4.0}}} # vol in units of H2O
+    stakes = {
+        C1: {
+            OCN_ADDR: {PA: {LP1: 100000.0}},  # stake in units of OCEAN
+            H2O_ADDR: {PB: {LP1: 20000.0}},
+        }
+    }  # stake in units of H2O
+    poolvols = {
+        C1: {OCN_ADDR: {PA: 3.0}, H2O_ADDR: {PB: 4.0}}  # vol in units of OCEAN
+    }  # vol in units of H2O
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rewards_avail_OCEAN = 10.0
@@ -65,7 +70,7 @@ def test_two_basetokens_OCEAN_and_H2O():
         stakes, poolvols, APPROVED_TOKENS, rates, rewards_avail_OCEAN, "OCEAN"
     )
 
-    PA_RF_USD = 10000.0 * 3.0 * 0.5 
+    PA_RF_USD = 10000.0 * 3.0 * 0.5
     PB_RF_USD = 20000.0 * 4.0 * 1.6
     PA_amt = PA_RF_USD / (PA_RF_USD + PB_RF_USD) * 10.0
     PB_amt = PB_RF_USD / (PA_RF_USD + PB_RF_USD) * 10.0
@@ -75,7 +80,9 @@ def test_two_basetokens_OCEAN_and_H2O():
 
 
 @enforce_types
-@pytest.mark.skip(reason="not done implementing. Eg need to only give rewards to LPs of H2O pool")
+@pytest.mark.skip(
+    reason="not done implementing. Eg need to only give rewards to LPs of H2O pool"
+)
 def test_PSDN_rewards():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}, H2O_ADDR: {PB: {LP1: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}, H2O_ADDR: {PB: 1.0}}}
@@ -85,8 +92,8 @@ def test_PSDN_rewards():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_PSDN, "PSDN"
     )
 
-    #only give rewards to LPs of H2O pool
-    assert rewardsperlp == {C1:  {LP1: 10.0}}
+    # only give rewards to LPs of H2O pool
+    assert rewardsperlp == {C1: {LP1: 10.0}}
     assert rewardsinfo == {C1: {PB: {LP1: 10.0}}}
 
 
@@ -97,7 +104,7 @@ def test_two_chains():
         C2: {OCN_ADDR: {PB: {LP1: 10000.0}}},
     }
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {OCN_ADDR: {PB: 1.0}}}
-    
+
     rewards_avail_OCEAN = 20.0
     rewardsperlp, rewardsinfo = calcRewards(
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
@@ -111,12 +118,12 @@ def test_two_chains():
 def test_two_lps_simple():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
-    
+
     rewards_avail_OCEAN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
-    
+
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
     assert rewardsperlp == {C1: {LP1: 5.0, LP2: 5.0}}
@@ -133,8 +140,8 @@ def test_two_lps_one_with_negligible_stake():
     )
     assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
-    assert rewardsperlp == {C1: {LP1: 10.0}} # no entry for LP2
-    assert rewardsinfo == {C1: {PA: {LP1: 10.0}}} # no entry for LP2
+    assert rewardsperlp == {C1: {LP1: 10.0}}  # no entry for LP2
+    assert rewardsinfo == {C1: {PA: {LP1: 10.0}}}  # no entry for LP2
 
 
 @enforce_types
@@ -312,10 +319,13 @@ def test_bound_APY_two_pools__both_low_stake__one_pool_dominates_stake():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
 
-    #LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it.
-    # But, LP2 staked more, so it earns more    
-    assert rewardsperlp[C1] == {LP1: 5.0*TARGET_WPY, LP2: 20000.0*TARGET_WPY}
-    assert rewardsinfo[C1] == {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: 20000*TARGET_WPY}}
+    # LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it.
+    # But, LP2 staked more, so it earns more
+    assert rewardsperlp[C1] == {LP1: 5.0 * TARGET_WPY, LP2: 20000.0 * TARGET_WPY}
+    assert rewardsinfo[C1] == {
+        PA: {LP1: 5.0 * TARGET_WPY},
+        PB: {LP2: 20000 * TARGET_WPY},
+    }
 
 
 @enforce_types
@@ -328,8 +338,8 @@ def test_bound_APY_two_pools__low_stake__one_pool_dominates_DCV():
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
 
-    #LP1 and LP2 get same amount - they're both bounded because both have low stake
-    #Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher    
+    # LP1 and LP2 get same amount - they're both bounded because both have low stake
+    # Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher
     assert rewardsperlp[C1] == {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}
     assert rewardsinfo[C1] == {PA: {LP1: 5.0 * TARGET_WPY}, PB: {LP2: 5.0 * TARGET_WPY}}
 
@@ -343,7 +353,7 @@ def test_bound_APY_two_pools__high_stake__one_pool_dominates_DCV():
     rewardsperlp, rewardsinfo = calcRewards(
         stakes, poolvols, APPROVED_TOKENS, RATES, rewards_avail_OCEAN, "OCEAN"
     )
-    
-    #LP2 reward swamps LP1 because LP2's stake * DCV is way higher; it's *not* bounded by low stake
+
+    # LP2 reward swamps LP1 because LP2's stake * DCV is way higher; it's *not* bounded by low stake
     assert rewardsperlp[C1] == {LP1: 1.0, LP2: 9999.0}
     assert rewardsinfo[C1] == {PA: {LP1: 1.0}, PB: {LP2: 9999.0}}
