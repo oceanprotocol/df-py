@@ -100,46 +100,29 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> tuple:
 
     # compute reward function, store in array RF[c,i,j]
     RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
-    for i in range(N_i):
-        RF[:,i,:] = S_USD[:,i,:] * P_USD[:,:] # main formula! RF[c,i,j] = S_USD[c,i,j] * P_USD[c,j]
+    for c in range(N_c):
+        for i in range(N_i):
+            for j in range(N_j):
+                RF[c,i,j] = S_USD[c,i,j] * P_USD[c,j] # main formula!
 
     # normalize values
     RF_norm = RF / numpy.sum(RF)
 
-    # filter negligible values (<0.001% of total RF)
+    # filter negligible values (<0.001% of total RF), then re-normalize
     RF_norm[RF_norm < 0.0001] = 0.0
     RF_norm = RF_norm / numpy.sum(RF_norm)
 
-    # bound APY globally - across all pools & LPs
-    rewards_avail_USD = min(
-        rewards_avail_USD, #baseline
-        numpy.sum(S_USD) * TARGET_WPY) #this APY constraint
-
-    # first-cut compute reward per LP
-    RF_USD = RF_norm * rewards_avail_USD
-
-    # bound APY per pool
-    for c in range(N_c):
-        for j in range(N_j):
-            if numpy.sum(RF_USD[c,:,j]) == 0.0:
-                continue
-            pool_rewards_avail_USD = min(
-                numpy.sum(RF_USD[c,:,j]), #baseline
-                numpy.sum(S_USD[c,:,j]) * TARGET_WPY) #this APY constraint
-            RF_USD[c,:,j] = RF_USD[c,:,j] / numpy.sum(RF_USD[c,:,j]) * pool_rewards_avail_USD
-
-    # bound APY per LP
+    # reward in USD
+    RF_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
     for c in range(N_c):
         for i in range(N_i):
-            if numpy.sum(RF_USD[c,i,:]) == 0.0:
-                continue
-            LP_rewards_avail_USD = min(
-                numpy.sum(RF_USD[c,i,:]), #baseline
-                numpy.sum(S_USD[c,i,:]) * TARGET_WPY) #this APY constraint
-            RF_USD[c,i,:] = RF_USD[c,i,:] / numpy.sum(RF_USD[c,i,:]) * LP_rewards_avail_USD
-
+            for j in range(N_j):
+                RF_USD[c,i,j] = min(RF_norm[c,i,j] * rewards_avail_USD, # baseline
+                                    S_USD[c,i,j] * TARGET_WPY)          # APY constraint
+                                    
     # done!
     assert not numpy.isnan(numpy.min(RF_USD))
+    assert numpy.sum(RF_USD) <= rewards_avail_USD
     return RF_USD
 
 
