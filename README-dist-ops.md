@@ -136,7 +136,7 @@ Now, publish into Ocean Market
 Write & publish blog post:
 - Go to medium.com, log in. If you're not yet an Editor in Ocean Protocol blog, ask Marcom to add you.
 - From medium, click on new story. 
-- Fill out info in new story, based on previous examples, adapting to your DFx. Prev: [DF1/2](https://medium.com/oceanprotocol/data-farming-df1-completed-df2-started-7a660ee84afe), [DF2/3](https://medium.com/oceanprotocol/data-farming-df2-completed-df3-started-cfedc32fa3c9)
+- Fill out info in new story, based on previous examples, adapting to your DFx. Prev: [DF1/2](https://medium.com/oceanprotocol/data-farming-df1-completed-df2-started-7a660ee84afe), [DF2/3](https://medium.com/oceanprotocol/data-farming-df2-completed-df3-started-cfedc32fa3c9), [DF3/4](https://blog.oceanprotocol.com/data-farming-df3-completed-df4-started-dc8958db5886)
 - Be sure to add stats to the story: use GDrive csvs
 - Be sure to link to the new data asset that you just published in Ocean Market
 - Be sure to update the image. Create the image from [these GSlides](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing) in [this Gfolder](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing)
@@ -149,7 +149,7 @@ Update link in DF Series post:
 
 Write & publish tweet
 - Ideally tweet from [@OceanDAO_](https://twitter.com/OceanDAO_) account, otherwise from personal
-- Write tweet content. Examples: [DF2](https://twitter.com/trentmc0/status/1542595137511063555), [DF3](https://twitter.com/trentmc0/status/1545153163627577344)
+- Write tweet content. Examples: [DF2/3](https://twitter.com/trentmc0/status/1542595137511063555), [DF3/4](https://twitter.com/trentmc0/status/1545153163627577344)
 - Publish!
 
 Share to Marcom, and broader Ocean team
