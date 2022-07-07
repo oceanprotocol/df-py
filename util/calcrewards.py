@@ -37,7 +37,7 @@ def calcRewards(
     stakes_USD = tousd.stakesToUsd(stakes, rates, tok_set)
     poolvols_USD = tousd.poolvolsToUsd(poolvols, rates, tok_set)
     
-    S_USD, P_USD, keys_tup = _stakesAndPoolvolsToArray(stakes_USD, poolvols_USD)
+    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(stakes_USD, poolvols_USD)
     
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
     
@@ -45,12 +45,12 @@ def calcRewards(
     
     RF_TOKEN = RF_USD / rates[TOKEN_SYMBOL]
 
-    (rewardsperlp, rewardsinfo) = _RF_to_dicts(RF_TOKEN, keys_tup)
+    (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
     
     return rewardsperlp, rewardsinfo
 
 
-def _stakesAndPoolvolsToArray(stakes_USD: dict, poolvols_USD: dict):
+def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
     """
     @arguments
       stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
@@ -138,7 +138,7 @@ def _calcRewardsUsd(S, P, rewards_avail_USD: float) -> tuple:
     return RF_USD
 
 
-def _RF_to_dicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
+def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
     """
     @arguments
       RF_TOKEN -- 3d array of [chain c, LP i, pool j]; each entry is denominated in OCEAN, PSDN, etc
