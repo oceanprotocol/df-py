@@ -125,13 +125,19 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
                     S_USD[c, i, j] * TARGET_WPY,  # APY constraint
                 )
 
-    # done!
+    # postcondition: nans
     assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
-    assert numpy.sum(RF_USD) <= rewards_avail_USD, (
-        numpy.sum(RF_USD),
-        rewards_avail_USD,
-        RF_USD,
-    )
+
+    # postcondition: sum is ok. First check within a tol; shrink slightly if needed
+    sum1 = numpy.sum(RF_USD)
+    tol = 1e-13 
+    assert sum1 <= rewards_avail_USD * (1+tol), (sum1, rewards_avail_USD, RF_USD)
+    if sum1 > rewards_avail_USD:
+        RF_USD /= (1+tol)
+    sum2 = numpy.sum(RF_USD)
+    assert sum1 <= rewards_avail_USD * (1+tol), (sum2, rewards_avail_USD, RF_USD)
+
+    # done!
     return RF_USD
 
 
