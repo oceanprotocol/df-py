@@ -1,4 +1,4 @@
-from typing import Dict, Tuple
+from typing import Dict, List, Tuple
 
 from enforce_typing import enforce_types
 import numpy
@@ -138,6 +138,7 @@ def _calcRewardsUsd(S, P, rewards_avail_USD: float) -> tuple:
     return RF_USD
 
 
+@enforce_types
 def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
     """
     @arguments
@@ -172,8 +173,6 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
 
     return rewardsperlp, rewardsinfo
                     
-
-        
 
 @enforce_types
 def _getPoolAddrs(poolvols_USD: dict) -> List[str]:
