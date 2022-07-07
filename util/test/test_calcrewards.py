@@ -313,7 +313,7 @@ def test_bound_APY_two_pools__both_low_stake__one_pool_dominates_stake():
     #LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it.
     # But, LP2 staked more, so it earns more
     assert rewardsperlp == {C1: {LP1: 5.0*TARGET_WPY, LP2: 20000.0*TARGET_WPY}}
-    assert rewardsinfo == {C1: {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: LP2: 10000 - 5.0*TARGET_WPY}}}
+    assert rewardsinfo == {C1: {PA: {LP1: 5.0*TARGET_WPY}, PB: {LP2: 10000 - 5.0*TARGET_WPY}}}
 
 
 @enforce_types
