@@ -365,24 +365,23 @@ def savePoolinfoCsv(
                     continue
 
                 p = pools_by_addr[pool_addr]
-                basetoken_symbol = p.basetoken_symbol()
                 
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
 
                 stake_amt_BASE = sum(stakes_at_chain[basetoken_addr][pool_addr].values())
-                stake_amt_USD = stake_amt_BASE * rates[basetoken_symbol]
+                stake_amt_USD = stake_amt_BASE * rates[p.basetoken_symbol]
 
                 vol_amt_BASE = 0.0
                 if (basetoken_addr in poolvols_at_chain) and \
                    (pool_addr in poolvols_at_chain[basetoken_addr]):
                     vol_amt_BASE = poolvols_at_chain[basetoken_addr][pool_addr]
                     
-                vol_amt_USD = vol_amt_BASE * rates[basetoken_symbol]
+                vol_amt_USD = vol_amt_BASE * rates[p.basetoken_symbol]
 
                 row = [
                     chainID,
-                    basetoken_symbol,
+                    p.basetoken_symbol,
                     pool_addr,
                     vol_amt_BASE,
                     vol_amt_USD,

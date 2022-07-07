@@ -4,7 +4,7 @@ import brownie
 from enforce_typing import enforce_types
 import pandas as pd
 
-from util import csvs, networkutil
+from util import csvs, networkutil, query
 from util.query import SimplePool
 from util.tok import TokSet
 
@@ -13,8 +13,8 @@ accounts = None
 
 # for shorter lines
 C1, C2 = 1, 137
-PA, PB, PC, PD, PE, PF = "poola", "poolb", "poolc", "poold", "poole", "poolf"
-LP1, LP2, LP3, LP4, LP5, LP6 = "lp1", "lp2", "lp3", "lp4", "lp5", "lp6"
+PA, PB, PC, PD, PE, PF = "0xpoola", "0xpoolb", "0xpoolc", "0xpoold", "0xpoole", "0xpoolf"
+LP1, LP2, LP3, LP4, LP5, LP6 = "0xlp1", "0xlp2", "0xlp3", "0xlp4", "0xlp5", "0xlp6"
 OCN_SYMB, H2O_SYMB = "OCN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xOCN_addr", "0xH2O_addr"
 
@@ -180,6 +180,9 @@ def test_poolinfo(tmp_path):
     for symbol, rate in rates.items():
         csvs.saveRateCsv(symbol, rate, csv_dir)
 
+    query._ADDR_TO_SYMBOL[OCN_ADDR] = OCN_SYMB # to make call to query.symbol(OCN_ADDR) happy
+    query._ADDR_TO_SYMBOL[H2O_ADDR] = H2O_SYMB # .. H2O_ADDR ..
+    
     csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
 
     csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
