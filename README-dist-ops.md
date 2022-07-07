@@ -143,6 +143,10 @@ Write & publish blog post:
 - Be sure to set tags: Homepage, Data Farming, Artificial Intelligence, Defi, Data
 - Publish!
 
+Update link in DF Series post:
+- Go to [the post](https://blog.oceanprotocol.com/ocean-data-farming-series-c7922f1d0e45)
+- Add the link to the article just published
+
 Write & publish tweet
 - Ideally tweet from [@OceanDAO_](https://twitter.com/OceanDAO_) account, otherwise from personal
 - Write tweet content. [DF2 example](https://twitter.com/trentmc0/status/1542595137511063555). 
