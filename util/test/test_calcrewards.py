@@ -72,7 +72,7 @@ def test_two_chains():
 
 
 @enforce_types
-def test_two_lps():
+def test_two_lps_simple():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
     TOKEN_avail = 10.0
@@ -83,6 +83,20 @@ def test_two_lps():
     assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
     assert rewardsperlp == {C1: {LP1: 5.0, LP2: 5.0}}
     assert rewardsinfo == {C1: {PA: {LP1: 5.0, LP2: 5.0}}}
+
+
+@enforce_types
+def test_two_lps_one_with_negligible_stake():
+    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 1e-10}}}}
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
+    TOKEN_avail = 10.0
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes, poolvols, APPROVED_TOKENS, RATES, TOKEN_avail
+    )
+    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[C1][PA].values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp == {C1: {LP1: 10.0}} # no entry for LP2
+    assert rewardsinfo == {C1: {PA: {LP1: 10.0}}} # no entry for LP2
 
 
 @enforce_types
