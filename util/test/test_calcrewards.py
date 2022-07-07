@@ -237,7 +237,7 @@ def test_calcrewards_math():
     assert rewardsinfo[C1][PB][LP3] == pytest.approx(3.22, 0.01)
 
 
-def test_apy_cap():
+def test_bound_APY_globally():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 1000 / 0.015717}}}}
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
 
