@@ -120,8 +120,7 @@ gzip df3-final.tar
 ```
 
 Then, make the data available in GDrive, as follows:
-- Go to [this higher-level Gfolder](https://drive.google.com/drive/folders/1yFj08QgNTuFPjxzzPRLBYVyaCmmqghJz)
-- Create a sub-folder, e.g. "DF3". Within that sub-folder is various comparisons. (It might have already been created for earlier analysis.)
+- Go to [this higher-level Gfolder]([https://drive.google.com/drive/folders/1yFj08QgNTuFPjxzzPRLBYVyaCmmqghJz](https://drive.google.com/drive/folders/12jvYl7c2kcHIVrbosFBCgoCYCWkE-Zkn))
 - within that sub-folder, right-click, "upload file", select the tarball, click ok
 - right-click the uploaded file, and change permissions so that anyone with link can view
 
