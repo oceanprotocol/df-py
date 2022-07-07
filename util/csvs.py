@@ -333,7 +333,7 @@ def savePoolinfoCsv(
 
     assert rateCsvFilenames(csv_dir), "Should have rate csv files"
     rates = loadRateCsvs(csv_dir)
-    
+
     csv_file = poolinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
 
@@ -372,8 +372,9 @@ def savePoolinfoCsv(
                 stake_amt_USD = stake_amt_BASE * rates[basetoken]
 
                 vol_amt_BASE = 0.0
-                if (basetoken in poolvols_at_chain) and \
-                   (pool_addr in poolvols_at_chain[basetoken]):
+                if (basetoken in poolvols_at_chain) and (
+                    pool_addr in poolvols_at_chain[basetoken]
+                ):
                     vol_amt_BASE = poolvols_at_chain[basetoken][pool_addr]
                 vol_amt_USD = vol_amt_BASE * rates[basetoken]
 

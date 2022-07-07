@@ -178,7 +178,7 @@ def test_poolinfo(tmp_path):
     rates = {OCN: 0.66, H2O: 1.618}
     for symbol, rate in rates.items():
         csvs.saveRateCsv(symbol, rate, csv_dir)
-    
+
     csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
 
     csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
