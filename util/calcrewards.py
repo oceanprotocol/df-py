@@ -108,8 +108,8 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> tuple:
     # normalize values
     RF_norm = RF / numpy.sum(RF)
 
-    # filter negligible values (<0.001% of total RF), then re-normalize
-    RF_norm[RF_norm < 0.0001] = 0.0
+    # filter negligible values (<0.00001% of total RF), then re-normalize
+    RF_norm[RF_norm < 0.000001] = 0.0
     RF_norm = RF_norm / numpy.sum(RF_norm)
 
     # reward in USD
