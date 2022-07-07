@@ -111,7 +111,9 @@ def _calcRewardsUsd(S, P, rewards_avail_USD: float) -> tuple:
     RF_norm = RF_norm / numpy.sum(RF_norm)
 
     # bound APY globally - across all pools & LPs
-    rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S) * TARGET_WPY)
+    rewards_avail_USD = min(
+        rewards_avail_USD, #baseline
+        numpy.sum(S) * TARGET_WPY) #this APY constraint
 
     # first-cut compute reward per LP
     RF_USD = RF_norm * rewards_avail_USD
@@ -119,13 +121,17 @@ def _calcRewardsUsd(S, P, rewards_avail_USD: float) -> tuple:
     # bound APY per pool
     for c in range(N_c):
         for j in range(N_j):
-            pool_rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S_USD[c,:,j]) * TARGET_WPY)
+            pool_rewards_avail_USD = min(
+                numpy.sum(RF_USD[c,:,j]), #baseline
+                numpy.sum(S_USD[c,:,j]) * TARGET_WPY) #this APY constraint
             RF_USD[c,:,j] = RF_USD[c,:,j] / numpy.sum(RF_USD[c,:,j]) * pool_rewards_avail_USD
 
     # bound APY per LP
     for c in range(N_c):
         for i in range(N_i):
-            LP_rewards_avail_USD = min(rewards_avail_USD, numpy.sum(S_USD[c,i,:]) * TARGET_WPY)
+            LP_rewards_avail_USD = min(
+                numpy.sum(RF_USD[c,i,:]), #baseline
+                numpy.sum(S_USD[c,i,:]) * TARGET_WPY) #this APY constraint
             RF_USD[c,i,:] = RF_USD[c,i,:] / numpy.sum(RF_USD[c,i,:]) * LP_rewards_avail_USD
 
     # done! 
