@@ -149,7 +149,7 @@ Update link in DF Series post:
 
 Write & publish tweet
 - Ideally tweet from [@OceanDAO_](https://twitter.com/OceanDAO_) account, otherwise from personal
-- Write tweet content. [DF2 example](https://twitter.com/trentmc0/status/1542595137511063555). 
+- Write tweet content. Examples: [DF2](https://twitter.com/trentmc0/status/1542595137511063555), [DF3](https://twitter.com/trentmc0/status/1545153163627577344)
 - Publish!
 
 Share to Marcom, and broader Ocean team
