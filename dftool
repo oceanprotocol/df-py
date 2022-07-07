@@ -109,10 +109,10 @@ SECRET_SEED -- secret integer used to seed the rng
     SECRET_SEED = _getSecretSeedOrExit()
 
     # check files, prep dir
-    if not os.path.exists(csv_dir):
-        print(f"\nDirectory {csv_dir} doesn't exist; nor do rates. Exiting.")
+    if not os.path.exists(CSV_DIR):
+        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
         sys.exit(0)
-    if not rateCsvFilenames(csv_dir):
+    if not rateCsvFilenames(CSV_DIR):
         print(f"\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(0)
     _exitIfFileExists(csvs.poolinfoCsvFilename(CSV_DIR, CHAINID))
