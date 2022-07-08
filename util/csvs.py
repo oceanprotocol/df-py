@@ -417,13 +417,13 @@ def savePoolinfoCsv(
                 vol_amt_USD = vol_amt_BASE * rates[p.basetoken_symbol]
 
                 row = [
-                    chainID,
+                    str(chainID),
                     p.basetoken_symbol,
                     pool_addr.lower(),
-                    vol_amt_BASE,
-                    vol_amt_USD,
-                    stake_amt_BASE,
-                    stake_amt_USD,
+                    str(vol_amt_BASE),
+                    str(vol_amt_USD),
+                    str(stake_amt_BASE),
+                    str(stake_amt_USD),
                     p.nft_addr.lower(),
                     p.DT_addr.lower(),
                     p.DT_symbol,

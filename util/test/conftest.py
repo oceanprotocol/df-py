@@ -1,5 +1,7 @@
 from enforce_typing import enforce_types
 
+import pytest
+
 from util import networkutil
 
 
