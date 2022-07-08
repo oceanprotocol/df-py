@@ -5,12 +5,10 @@ from enforce_typing import enforce_types
 import pandas as pd
 import pytest
 
-from util import csvs, networkutil, query
+from util import csvs, query
 from util.query import SimplePool
 from util.tok import TokSet
 
-
-accounts = None
 
 # for shorter lines
 C1, C2 = 1, 137
@@ -184,8 +182,9 @@ def test_approved(tmp_path):
 
 
 @enforce_types
-def test_poolinfo(tmp_path, network_setup_and_teardown):
+def test_poolinfo(tmp_path, network_setup_and_teardown): # pylint: disable=unused-argument
     csv_dir = str(tmp_path)
+    accounts = brownie.network.accounts
     nft1_addr, nft2_addr, nft3_addr = (
         accounts[5].address,
         accounts[6].address,
@@ -290,7 +289,7 @@ def test_rewardsperlp_main(tmp_path):
 
 
 @enforce_types
-def test_rewardsinfo(tmp_path, network_setup_and_teardown):
+def test_rewardsinfo(tmp_path, network_setup_and_teardown): # pylint: disable=unused-argument
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},
@@ -339,18 +338,3 @@ def test_assertIsEthAddr():
 
 
 # =================================================================
-
-
-@enforce_types
-@pytest.fixture
-def network_setup_and_teardown():
-    networkutil.connect(networkutil.DEV_CHAINID)
-    global accounts
-    accounts = brownie.network.accounts
-
-    # everyting before the yield is run before the test
-    # everything after the yield is run after the test
-    # https://stackoverflow.com/a/61647454
-    yield
-
-    networkutil.disconnect()
