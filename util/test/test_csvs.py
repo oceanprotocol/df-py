@@ -204,10 +204,10 @@ def test_poolinfo(tmp_path):
         SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", OCN_ADDR),
     ]
     S1 = {
-        OCN_SYMB: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_SYMB: {PC: {LP1: 3.1, LP4: 3.4}},
+        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
     }
-    V1 = {OCN_SYMB: {PA: 0.11, PB: 0.12}, H2O_SYMB: {PC: 3.1}}
+    V1 = {OCN_ADDR: {PA: 0.11, PB: 0.12}, H2O_ADDR: {PC: 3.1}}
 
     rates = {OCN_SYMB: 0.66, H2O_SYMB: 1.618}
     for symbol, rate in rates.items():
@@ -224,7 +224,7 @@ def test_poolinfo(tmp_path):
 
     target_header = [
         "chainID",
-        "basetoken",
+        "basetoken_symbol",
         "pool_addr",
         "vol_amt",
         "vol_amt_USD",

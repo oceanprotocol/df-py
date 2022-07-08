@@ -370,26 +370,28 @@ def savePoolinfoCsv(
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(
-            [
-                "chainID",
-                "basetoken",  # basetoken_symbol; address is below
-                "pool_addr",
-                "vol_amt",
-                "vol_amt_USD",
-                "stake_amt",
-                "stake_amt_USD",
-                "nft_addr",
-                "DT_addr",
-                "DT_symbol",
-                "basetoken_addr",
-                "did",
-                "url",
-            ]
-        )
+        row = ["chainID",
+               "basetoken_symbol",
+               "pool_addr",
+               "vol_amt",
+               "vol_amt_USD",
+               "stake_amt",
+               "stake_amt_USD",
+               "nft_addr",
+               "DT_addr",
+               "DT_symbol",
+               "basetoken_addr",
+               "did",
+               "url",
+               ]
+        writer.writerow(row)
 
         for basetoken_addr in stakes_at_chain:
+            assertIsEthAddr(basetoken_addr)
+            
             for pool_addr in pools_by_addr:
+                assertIsEthAddr(pool_addr)
+                
                 if pool_addr not in stakes_at_chain[basetoken_addr]:
                     continue
 
@@ -416,15 +418,15 @@ def savePoolinfoCsv(
                 row = [
                     chainID,
                     p.basetoken_symbol,
-                    pool_addr,
+                    pool_addr.lower(),
                     vol_amt_BASE,
                     vol_amt_USD,
                     stake_amt_BASE,
                     stake_amt_USD,
-                    p.nft_addr,
-                    p.DT_addr,
+                    p.nft_addr.lower(),
+                    p.DT_addr.lower(),
                     p.DT_symbol,
-                    basetoken_addr,
+                    basetoken_addr.lower(),
                     did,
                     url,
                 ]
