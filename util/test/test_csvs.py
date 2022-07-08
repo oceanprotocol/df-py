@@ -14,14 +14,7 @@ accounts = None
 
 # for shorter lines
 C1, C2 = 1, 137
-PA, PB, PC, PD, PE, PF = (
-    "0xpoola",
-    "0xpoolb",
-    "0xpoolc",
-    "0xpoold",
-    "0xpoole",
-    "0xpoolf",
-)
+PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf" #pools
 LP1, LP2, LP3, LP4, LP5, LP6 = "0xlp1", "0xlp2", "0xlp3", "0xlp4", "0xlp5", "0xlp6"
 OCN_SYMB, H2O_SYMB = "OCN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"   #all lowercase
@@ -313,16 +306,16 @@ def test_rewardsinfo(tmp_path):
         },
     }
     target_rewards = """chainID,pool_addr,LP_addr,amt,token
-1,0xpoola,0xlp1,3.2,MYTOKEN
-1,0xpoola,0xlp2,5.4,MYTOKEN
-1,0xpoolb,0xlp2,5.3,MYTOKEN
-1,0xpoolb,0xlp3,1.324824324234,MYTOKEN
-1,0xpoolc,0xlp3,1.324824324234,MYTOKEN
-1,0xpoolc,0xlp4,1.23143252346354,MYTOKEN
-137,0xpoold,0xlp1,1412341242,MYTOKEN
-137,0xpoold,0xlp2,23424,MYTOKEN
-137,0xpoole,0xlp1,1e-15,MYTOKEN
-137,0xpoole,0xlp2,12314552354,MYTOKEN
+1,0xpa,0xlp1,3.2,MYTOKEN
+1,0xpa,0xlp2,5.4,MYTOKEN
+1,0xpb,0xlp2,5.3,MYTOKEN
+1,0xpb,0xlp3,1.324824324234,MYTOKEN
+1,0xpc,0xlp3,1.324824324234,MYTOKEN
+1,0xpc,0xlp4,1.23143252346354,MYTOKEN
+137,0xpd,0xlp1,1412341242,MYTOKEN
+137,0xpd,0xlp2,23424,MYTOKEN
+137,0xpe,0xlp1,1e-15,MYTOKEN
+137,0xpe,0xlp2,12314552354,MYTOKEN
 """
 
     csv_dir = str(tmp_path)
@@ -344,6 +337,7 @@ def test_assertIsEthAddr():
         csvs.assertIsEthAddr("FOO")
 
 
+
 # =================================================================
 
 @enforce_types
@@ -352,8 +346,7 @@ def setup_function():
     global accounts
     accounts = brownie.network.accounts
 
-
+ 
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-
