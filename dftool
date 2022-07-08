@@ -288,9 +288,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    token_symbol = (
-        B.Simpletoken.at(TOKEN_ADDR).symbol().upper().replace("MOCEAN", "OCEAN")
-    )
+    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
+    token_symbol = token_symbol.replace("MOCEAN", "OCEAN") #workaround Polygon mOCEAN
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],
