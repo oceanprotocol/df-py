@@ -8,8 +8,7 @@
 </div>
 <br/>
 
-
-CLI-based tool to administer Data Farming.
+CLI-based Data Farming (DF) backend. It's used for weekly "dispense" ops and to create data for DF frontend. 
 
 ```text
 Usage: dftool getrate|query|calc|dispense|..
