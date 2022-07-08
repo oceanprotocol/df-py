@@ -97,21 +97,29 @@ def test_chainIDforPoolvolsCsv():
 
 
 @enforce_types
-def test_poolvols_onechain(tmp_path):
+def test_poolvols_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    V1 = {OCN_SYMB: {PA: 1.1, PB: 2.1}, H2O_SYMB: {PC: 3.1}}
+    V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     csvs.savePoolvolsCsv(V1, csv_dir, C1)
+    V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
+    assert V1_loaded == V1
 
-    target_V1 = V1
-    loaded_V1 = csvs.loadPoolvolsCsv(csv_dir, C1)
-    assert loaded_V1 == target_V1
+
+@enforce_types
+def test_poolvols_onechain_mixedcase(tmp_path):
+    csv_dir = str(tmp_path)
+    V1_lowercase = {OCN_ADDR:  {PA: 1.1, PB: 2.1}, H2O_ADDR:  {PC: 3.1}}
+    V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
+    csvs.savePoolvolsCsv(V1_mixedcase, csv_dir, C1)
+    V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
+    assert V1_loaded == V1_lowercase
 
 
 @enforce_types
 def test_poolvols_twochains(tmp_path):
     csv_dir = str(tmp_path)
-    V1 = {OCN_SYMB: {PA: 1.1, PB: 2.1}, H2O_SYMB: {PC: 3.1}}
-    V2 = {OCN_SYMB: {PD: 4.1, PE: 5.1}, H2O_SYMB: {PF: 6.1}}
+    V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
+    V2 = {OCN_ADDR: {PD: 4.1, PE: 5.1}, H2O_ADDR: {PF: 6.1}}
 
     assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 0
     csvs.savePoolvolsCsv(V1, csv_dir, C1)

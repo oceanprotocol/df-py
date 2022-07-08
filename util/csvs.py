@@ -149,10 +149,16 @@ def savePoolvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
     V = poolvols_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "basetoken", "pool_addr", "vol_amt"])
-        for basetoken in V.keys():
-            for pool_addr, vol in V[basetoken].items():
-                writer.writerow([chainID, basetoken, pool_addr, vol])
+        writer.writerow(["chainID", "basetoken_addr", "pool_addr", "vol_amt"])
+        for basetoken_addr in V.keys():
+            assertIsEthAddr(basetoken_addr)
+            for pool_addr, vol in V[basetoken_addr].items():
+                assertIsEthAddr(pool_addr)
+                row = [chainID,
+                       basetoken_addr.lower(),
+                       pool_addr.lower(),
+                       vol]
+                writer.writerow(row)
     print(f"Created {csv_file}")
 
 
@@ -188,18 +194,22 @@ def loadPoolvolsCsv(csv_dir: str, chainID: int):
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "basetoken", "pool_addr", "vol_amt"]
+                assert row == ["chainID", "basetoken_addr", "pool_addr", "vol_amt"]
                 continue
+            
             chainID2 = int(row[0])
-            basetoken = row[1].upper()
+            basetoken_addr = row[1].lower()
             pool_addr = row[2].lower()
             vol_amt = float(row[3])
+            
             assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(basetoken_addr)
+            assertIsEthAddr(pool_addr)
 
-            if basetoken not in V:
-                V[basetoken] = {}
-            assert pool_addr not in V[basetoken], "duplicate found"
-            V[basetoken][pool_addr] = vol_amt
+            if basetoken_addr not in V:
+                V[basetoken_addr] = {}
+            assert pool_addr not in V[basetoken_addr], "duplicate found"
+            V[basetoken_addr][pool_addr] = vol_amt
     print(f"Loaded {csv_file}")
 
     return V
