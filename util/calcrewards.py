@@ -20,7 +20,7 @@ def calcRewards(
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
     rewards_symbol: str,
-) -> tuple:
+) -> (dict, dict):
     """
     @arguments
       stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_OCEAN_or_H2O
