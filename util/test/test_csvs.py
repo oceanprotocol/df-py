@@ -182,9 +182,8 @@ def test_approved(tmp_path):
 # =================================================================
 # poolinfo csvs
 
-
 @enforce_types
-def test_poolinfo(tmp_path):
+def test_poolinfo(tmp_path, network_setup_and_teardown):
     csv_dir = str(tmp_path)
     nft1_addr, nft2_addr, nft3_addr = (
         accounts[5].address,
@@ -289,7 +288,7 @@ def test_rewardsperlp_main(tmp_path):
 # rewardsinfo csvs
 
 @enforce_types
-def test_rewardsinfo(tmp_path):
+def test_rewardsinfo(tmp_path, network_setup_and_teardown):
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},
@@ -341,12 +340,15 @@ def test_assertIsEthAddr():
 # =================================================================
 
 @enforce_types
-def setup_function():
+@pytest.fixture
+def network_setup_and_teardown():
     networkutil.connect(networkutil.DEV_CHAINID)
     global accounts
     accounts = brownie.network.accounts
 
+    # everyting before the yield is run before the test
+    # everything after the yield is run after the test
+    # https://stackoverflow.com/a/61647454
+    yield
  
-@enforce_types
-def teardown_function():
     networkutil.disconnect()
