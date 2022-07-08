@@ -2,6 +2,7 @@ from enforce_typing import enforce_types
 
 from util import networkutil
 
+
 @enforce_types
 @pytest.fixture
 def network_setup_and_teardown():
