@@ -98,3 +98,8 @@ def test_TokSet_main():
     assert tok_set.tokAtSymbol(1, "FOO") is None
     with pytest.raises(AssertionError):
         tok_set.tokAtSymbol(1, "oCeAn")  # unwanted lowercase in symbol
+
+    addrs = tok_set.exportTokenAddrs()
+    assert sorted(addrs.keys()) == [1, 2]
+    assert sorted(addrs[1]) == ["0x123", "0x456"]
+    assert sorted(addrs[2]) == ["0x78b"]
