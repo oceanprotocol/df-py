@@ -92,20 +92,40 @@ def test_PSDN_rewards():
 
 @enforce_types
 def test_two_chains():
+    #first cut: symbols are the same
     stakes = {
         C1: {OCN_ADDR: {PA: {LP1: 10000.0}}},
         C2: {"0xocean2": {PB: {LP1: 10000.0}}},
     }
     poolvols = {C1: {OCN_ADDR: {PA: 1.0}},
                 C2: {"0xocean2": {PB: 1.0}}}
+    symbols = {C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
+               C2: {"0xocean2": "OCEAN", "Oxh2o2": "H2O"}}
+    rates = {"OCEAN": 0.5, "H2O": 1.6}
+    
+    target_rewardsperlp = {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
+    target_rewardsinfo = {C1: {PA: {LP1: 10.0}}, C2: {PB: {LP1: 10.0}}}
     
     rewards_avail_OCEAN = 20.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes, poolvols, APPROVED_TOKEN_ADDRS, SYMBOLS, RATES, rewards_avail_OCEAN, "OCEAN"
+        stakes, poolvols, APPROVED_TOKEN_ADDRS, symbols, rates, rewards_avail_OCEAN, "OCEAN"
     )
+    assert rewardsperlp == target_rewardsperlp
+    assert rewardsinfo == target_rewardsinfo
 
-    assert rewardsperlp == {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
-    assert rewardsinfo == {C1: {PA: {LP1: 10.0}}, C2: {PB: {LP1: 10.0}}}
+    #now, change it up so that it's different symbols per chain. eg OCEAN <> MOCEAN
+    symbols[C2]["0xocean2"] = "MOCEAN"
+    with pytest.raises(KeyError):
+        _, _ = calcRewards(
+            stakes, poolvols, APPROVED_TOKEN_ADDRS, symbols, rates, rewards_avail_OCEAN, "OCEAN"
+        )
+
+    #here's the intervention needed
+    rates["MOCEAN"] = rates["OCEAN"]
+
+    #now the rewards should line up as expected
+    assert rewardsperlp == target_rewardsperlp
+    assert rewardsinfo == target_rewardsinfo    
 
 
 @enforce_types

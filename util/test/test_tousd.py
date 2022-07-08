@@ -50,14 +50,18 @@ def test_ratesToAddrRates_extraneous_symbol():
 
 @enforce_types
 def test_ratesToAddrRates_symbol_changes_between_chains():
+    #symbol on chain 2 is MOCEAN, not OCEAN!
     rates = {"OCEAN": 0.5}
-    symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "MOCEAN"}} # MOCEAN!
-    
+    symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "MOCEAN"}}
+
+    #the result: it simply won't have an entry for 0xOCEAN2
     addr_rates = ratesToAddrRates(rates, symbols)
-    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {}} #it simply won't have an entry for 0xOCEAN2
+    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {}} 
 
     #here's the intervention needed
     rates["MOCEAN"] = rates["OCEAN"]
+
+    #now it will work
     addr_rates = ratesToAddrRates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {"0xOCEAN2": 0.5}} #has entry for 0xOCEAN2
 
