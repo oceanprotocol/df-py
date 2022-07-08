@@ -143,11 +143,12 @@ SECRET_SEED -- secret integer used to seed the rng
     seed = st_block + SECRET_SEED
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     rng.filterByMaxBlock(len(chain))
-    (Pi, Si, Vi, Ai) = query.query_all(rng, CHAINID)
+    (Pi, Si, Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
+    csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
 
@@ -227,10 +228,13 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     # main work
     stakes = csvs.loadStakesCsvs(CSV_DIR)
     poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)
-    approved_tokens = csvs.loadApprovedCsvs(CSV_DIR)
+    approved_token_addrs = csvs.loadApprovedCsvs(CSV_DIR)
+    symbols = csvs.loadSymbolsCsvs(CSV_DIR)
     rates = csvs.loadRateCsvs(CSV_DIR)
+    if "OCEAN" in rates:
+        rates["MOCEAN"] = rates["OCEAN"]
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        stakes, poolvols, approved_tokens, rates, TOT_TOKEN, TOKEN_SYMBOL
+        stakes, poolvols, approved_token_addrs, symbols, rates, TOT_TOKEN, TOKEN_SYMBOL
     )
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
@@ -289,7 +293,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
-    token_symbol = token_symbol.replace("MOCEAN", "OCEAN") #workaround Polygon mOCEAN
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],

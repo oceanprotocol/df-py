@@ -50,7 +50,7 @@ class SimplePool:
 
 
 @enforce_types
-def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, TokSet]:
+def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, dict, dict]:
     """
     @description
       Return pool info, stakes & poolvols, for the input block range and chain.
@@ -59,7 +59,8 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, TokSet]:
       pools_at_chain -- list of SimplePool
       stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
-      approved_tokens -- TokSet
+      approved_token_addrs -- dict of [chainID] : list_of_addr
+      symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
 
     @notes
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
@@ -69,7 +70,8 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, TokSet]:
     Si = getStakes(Pi, rng, chainID)
     Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID)
     Ai = getApprovedTokens(chainID)
-    return (Pi, Si, Vi, Ai)
+    SYMi = getSymbols(Ai, chainID)
+    return (Pi, Si, Vi, Ai, SYMi)
 
 
 @enforce_types
@@ -334,6 +336,20 @@ def getApprovedTokens(chainID: int) -> TokSet:
         approved_tokens.add(chainID, addr, symb)
 
     return approved_tokens
+
+
+@enforce_types
+def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
+    """
+    @description
+      Return mapping of basetoken addr -> symbol for this chain
+
+    @return
+      symbols -- dict of [basetoken_addr] : basetoken_symbol
+    """
+    return {tok.address : tok.symbol
+            for tok in approved_tokens.toks
+            if tok.chainID == chainID}
 
 
 @enforce_types
