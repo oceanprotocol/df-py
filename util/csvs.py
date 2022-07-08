@@ -485,9 +485,9 @@ def loadRateCsvs(csv_dir: str):
                 if row_i == 0:  # header
                     assert row == ["token", "rate"]
                 elif row_i == 1:
-                    token = row[0].upper()
+                    token_symbol = row[0].upper()
                     rate = float(row[1])
-                    rates[token] = rate
+                    rates[token_symbol] = rate
                 else:
                     raise ValueError("csv should only have two rows")
         print(f"Loaded {csv_file}")
