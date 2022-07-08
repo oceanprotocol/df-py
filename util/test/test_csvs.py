@@ -14,11 +14,11 @@ accounts = None
 
 # for shorter lines
 C1, C2 = 1, 137
-PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf" #pools
+PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf"  # pools
 LP1, LP2, LP3, LP4, LP5, LP6 = "0xlp1", "0xlp2", "0xlp3", "0xlp4", "0xlp5", "0xlp6"
 OCN_SYMB, H2O_SYMB = "OCN", "H2O"
-OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"   #all lowercase
-OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR" #not all lowercase
+OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"  # all lowercase
+OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
 
 # =================================================================
@@ -45,7 +45,7 @@ def test_stakes_onechain_lowercase(tmp_path):
 
 @enforce_types
 def test_stakes_onechain_mixedcase(tmp_path):
-    #in this test, it needs to fix the case
+    # in this test, it needs to fix the case
     csv_dir = str(tmp_path)
     S1_lowercase = {
         OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
@@ -101,7 +101,7 @@ def test_poolvols_onechain_lowercase(tmp_path):
 @enforce_types
 def test_poolvols_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
-    V1_lowercase = {OCN_ADDR:  {PA: 1.1, PB: 2.1}, H2O_ADDR:  {PC: 3.1}}
+    V1_lowercase = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
     csvs.savePoolvolsCsv(V1_mixedcase, csv_dir, C1)
     V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
@@ -181,6 +181,7 @@ def test_approved(tmp_path):
 
 # =================================================================
 # poolinfo csvs
+
 
 @enforce_types
 def test_poolinfo(tmp_path, network_setup_and_teardown):
@@ -287,6 +288,7 @@ def test_rewardsperlp_main(tmp_path):
 # ========================================================================
 # rewardsinfo csvs
 
+
 @enforce_types
 def test_rewardsinfo(tmp_path, network_setup_and_teardown):
     rewards = {
@@ -336,8 +338,8 @@ def test_assertIsEthAddr():
         csvs.assertIsEthAddr("FOO")
 
 
-
 # =================================================================
+
 
 @enforce_types
 @pytest.fixture
@@ -350,5 +352,5 @@ def network_setup_and_teardown():
     # everything after the yield is run after the test
     # https://stackoverflow.com/a/61647454
     yield
- 
+
     networkutil.disconnect()
