@@ -265,11 +265,11 @@ def test_rates(tmp_path):
 
 
 # ========================================================================
-# rewards csvs
+# rewardsperlp csvs
 
 
 @enforce_types
-def test_rewards_filename(tmp_path):
+def test_rewardsperlp_filename(tmp_path):
     csv_dir = str(tmp_path)
     fname = csvs.rewardsperlpCsvFilename(csv_dir, "MYTOKEN")
     target_fname = csv_dir + "/" + "rewardsperlp-MYTOKEN.csv"
@@ -277,7 +277,7 @@ def test_rewards_filename(tmp_path):
 
 
 @enforce_types
-def test_rewards_main(tmp_path):
+def test_rewardsperlp_main(tmp_path):
     rewards = {1: {LP1: 1.1, LP2: 2.2, LP3: 3.3}, 137: {LP1: 137.1, LP3: 137.3}}
     target_rewards = rewards
 
@@ -292,8 +292,11 @@ def test_rewards_main(tmp_path):
             assert isinstance(value, float)
 
 
+# ========================================================================
+# rewardsinfo csvs
+
 @enforce_types
-def test_rewards_info(tmp_path):
+def test_rewardsinfo(tmp_path):
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},

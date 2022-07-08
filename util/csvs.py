@@ -17,7 +17,8 @@ from util.tok import TokSet
 def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
-      Save the stakes csv for this chain
+      Save the stakes csv for this chain. This csv is a key input for 
+      dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
       stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
@@ -97,7 +98,7 @@ def loadStakesCsv(csv_dir: str, chainID: int):
             assert chainID2 == chainID, "csv had data from different chain"
             assertIsEthAddr(basetoken_addr)
             assertIsEthAddr(pool_addr)
-            assertIsEthAddr(LP_addr)            
+            assertIsEthAddr(LP_addr)
 
             if basetoken_addr not in S:
                 S[basetoken_addr] = {}
@@ -136,7 +137,8 @@ def chainIDforStakeCsv(filename) -> int:
 def savePoolvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
-      Save the poolvols csv for this chain
+      Save the poolvols csv for this chain. This csv is a key input for 
+      dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
@@ -346,7 +348,8 @@ def savePoolinfoCsv(
 ):
     """
     @description
-      Save detailed info for this pool.
+      Save detailed info for this pool. This csv is for the DF webapp,
+      so it can have lots of columns, whatever's interesting for the user.
 
     @arguments
       pools_at_chain -- list of SimplePool
@@ -507,7 +510,7 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 
 # ========================================================================
-# rewards csvs
+# rewardsperlp csvs
 
 
 @enforce_types
@@ -516,10 +519,11 @@ def saveRewardsperlpCsv(
 ):
     """
     @description
-      Save the rewards dict as a csv,
+      Save the rewards dict as a "rewardsperlp" csv. This csv is the key input for 
+      dftool dispense, and contains just enough info for it to operate, and no more.
 
     @arguments
-      rewards -- dict of [chainID][LP_addr] : value (float, *not* base 18)
+      rewards -- dict of [chainID][LP_addr] : value (float, *not* integers / wei)
       ..
     """
     token_symbol = token_symbol.upper()
@@ -527,35 +531,17 @@ def saveRewardsperlpCsv(
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "LP_addr", f"{token_symbol}_amt"])
+        
+        header = ["chainID", "LP_addr", f"{token_symbol}_amt"]
+        writer.writerow(header)
+        
         for chainID, innerdict in rewards.items():
             for LP_addr, value in innerdict.items():
-                writer.writerow([chainID, LP_addr, value])
-    print(f"Created {csv_file}")
-
-
-@enforce_types
-def saveRewardsinfoCsv(
-    rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
-):
-    """
-    @description
-      Save the rewards dict as a csv,
-
-    @arguments
-      rewards -- dict of [chainID][pool_addr][LP_addr] : value (float, *not* base 18)
-      ..
-    """
-    token_symbol = token_symbol.upper()
-    csv_file = rewardsinfoCsvFilename(csv_dir, token_symbol)
-    assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
-    with open(csv_file, "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(["chainID", "pool_addr", "LP_addr", "amt", "token"])
-        for chainID, innerdict in rewards.items():
-            for LP_addr, innerdict2 in innerdict.items():
-                for pool_addr, value in innerdict2.items():
-                    writer.writerow([chainID, LP_addr, pool_addr, value, token_symbol])
+                assertIsEthAddr(LP_addr)
+                row = [chainID,
+                       LP_addr.lower(),
+                       value]
+                writer.writerow(row)
     print(f"Created {csv_file}")
 
 
@@ -572,11 +558,17 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float
             if row_i == 0:  # header
                 assert row == ["chainID", "LP_addr", f"{token_symbol}_amt"]
             else:
-                chainID, LP_addr, amt = int(row[0]), row[1], float(row[2])
+                chainID = int(row[0])
+                LP_addr = row[1].lower()
+                amt = float(row[2])
+                
+                assertIsEthAddr(LP_addr)
                 if chainID not in rewards:
                     rewards[chainID] = {}
                 assert LP_addr not in rewards[chainID], "duplicate found"
+                
                 rewards[chainID][LP_addr] = amt
+
     print(f"Loaded {csv_file}")
 
     return rewards
@@ -585,6 +577,45 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float
 @enforce_types
 def rewardsperlpCsvFilename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewardsperlp-{token_symbol.upper()}.csv")
+
+
+# ========================================================================
+# rewardsinfo csvs
+
+@enforce_types
+def saveRewardsinfoCsv(
+    rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
+):
+    """
+    @description
+      Save the rewards dict as a "rewardsinfo" csv. This csv is for the DF webapp,
+      so it can have lots of columns, whatever's interesting for the user.
+
+    @arguments
+      rewards -- dict of [chainID][pool_addr][LP_addr] : value (float, *not* base 18)
+      ..
+    """
+    token_symbol = token_symbol.upper()
+    csv_file = rewardsinfoCsvFilename(csv_dir, token_symbol)
+    assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        
+        header = ["chainID", "pool_addr", "LP_addr", "amt", "token"]
+        writer.writerow(header)
+        
+        for chainID, innerdict in rewards.items():
+            for LP_addr, innerdict2 in innerdict.items():
+                assertIsEthAddr(LP_addr)
+                for pool_addr, value in innerdict2.items():
+                    assertIsEthAddr(pool_addr)
+                    row = [chainID,
+                           LP_addr.lower(),
+                           pool_addr.lower(),
+                           value,
+                           token_symbol]
+                    writer.writerow(row)
+    print(f"Created {csv_file}")
 
 
 @enforce_types
