@@ -237,8 +237,6 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     A = csvs.loadApprovedCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
-    if "OCEAN" in R:
-        R["MOCEAN"] = R["OCEAN"]
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL)
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)

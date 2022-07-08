@@ -465,7 +465,6 @@ def savePoolinfoCsv(
 
     assert rateCsvFilenames(csv_dir), "Should have rate csv files"
     rates = loadRateCsvs(csv_dir)
-
     csv_file = poolinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
 
@@ -579,7 +578,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
 
 
 @enforce_types
-def loadRateCsvs(csv_dir: str):
+def loadRateCsvs(csv_dir: str) -> Dict[str,float]:
     """
     @description
       Load all exchange rate csvs, and return result as a single dict
@@ -602,6 +601,10 @@ def loadRateCsvs(csv_dir: str):
                 else:
                     raise ValueError("csv should only have two rows")
         print(f"Loaded {csv_file}")
+
+    #have rates for non-standard token names like MOCEAN
+    if "OCEAN" in rates:
+        rates["MOCEAN"] = rates["OCEAN"]
 
     return rates
 
