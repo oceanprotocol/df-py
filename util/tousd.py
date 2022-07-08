@@ -3,7 +3,6 @@ from typing import Dict
 from enforce_typing import enforce_types
 
 from util import cleancase
-from util.tok import TokSet
 
 
 @enforce_types
