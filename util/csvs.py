@@ -20,7 +20,7 @@ def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
       Save the stakes csv for this chain
 
     @arguments
-      stakes_at_chain -- dict of [basetoken_address][pool_addr][LP_addr] : stake_amt
+      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
@@ -30,12 +30,19 @@ def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
     S = stakes_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "basetoken", "pool_addr", "LP_addr", "stake_amt"]
+        row = ["chainID", "basetoken_addr", "pool_addr", "LP_addr", "stake_amt"]
         writer.writerow(row)
-        for basetoken in S.keys():
-            for pool_addr in S[basetoken].keys():
-                for LP_addr, stake in S[basetoken][pool_addr].items():
-                    row = [str(chainID), basetoken, pool_addr, LP_addr, stake]
+        for basetoken_addr in S.keys():
+            assertIsEthAddr(basetoken_addr)
+            for pool_addr in S[basetoken_addr].keys():
+                assertIsEthAddr(pool_addr)
+                for LP_addr, stake in S[basetoken_addr][pool_addr].items():
+                    assertIsEthAddr(pool_addr)
+                    row = [str(chainID),
+                           basetoken_addr.lower(),
+                           pool_addr.lower(),
+                           LP_addr.lower(),
+                           stake]
                     writer.writerow(row)
     print(f"Created {csv_file}")
 
@@ -47,7 +54,7 @@ def loadStakesCsvs(csv_dir: str):
       Load all stakes csvs (across all chains); return result as a single dict
 
     @return
-      stakes -- dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake_amt
+      stakes -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
     """
     csv_files = stakesCsvFilenames(csv_dir)
     stakes = {}
@@ -64,7 +71,7 @@ def loadStakesCsv(csv_dir: str, chainID: int):
       Load stakes csv for this chainID
 
     @return
-      stakes_at_chain -- dict of [basetoken_address][pool_addr][LP_addr] : stake_amt
+      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
     """
     csv_file = stakesCsvFilename(csv_dir, chainID)
     S: Dict[str, Dict[str, Dict[str, float]]] = {}  # ie stakes_at_chain
@@ -74,7 +81,7 @@ def loadStakesCsv(csv_dir: str, chainID: int):
             if row_i == 0:  # header
                 assert row == [
                     "chainID",
-                    "basetoken",
+                    "basetoken_addr",
                     "pool_addr",
                     "LP_addr",
                     "stake_amt",
@@ -82,18 +89,22 @@ def loadStakesCsv(csv_dir: str, chainID: int):
                 continue
 
             chainID2 = int(row[0])
-            basetoken = row[1].upper()
+            basetoken_addr = row[1].lower()
             pool_addr = row[2].lower()
             LP_addr = row[3].lower()
             stake_amt = float(row[4])
+            
             assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(basetoken_addr)
+            assertIsEthAddr(pool_addr)
+            assertIsEthAddr(LP_addr)            
 
-            if basetoken not in S:
-                S[basetoken] = {}
-            if pool_addr not in S[basetoken]:
-                S[basetoken][pool_addr] = {}
-            assert LP_addr not in S[basetoken][pool_addr], "duplicate found"
-            S[basetoken][pool_addr][LP_addr] = stake_amt
+            if basetoken_addr not in S:
+                S[basetoken_addr] = {}
+            if pool_addr not in S[basetoken_addr]:
+                S[basetoken_addr][pool_addr] = {}
+            assert LP_addr not in S[basetoken_addr][pool_addr], "duplicate found"
+            S[basetoken_addr][pool_addr][LP_addr] = stake_amt
     print(f"Loaded {csv_file}")
 
     return S
@@ -564,6 +575,10 @@ def rewardsinfoCsvFilename(csv_dir: str, token_symbol: str) -> str:
 # =======================================================================
 # helper funcs
 
+@enforce_types
+def assertIsEthAddr(s: str):
+    #just a basic check
+    assert s[:2] == "0x", s
 
 @enforce_types
 def _lastInt(s: str) -> int:

@@ -3,6 +3,7 @@ import os
 import brownie
 from enforce_typing import enforce_types
 import pandas as pd
+import pytest
 
 from util import csvs, networkutil, query
 from util.query import SimplePool
@@ -23,7 +24,8 @@ PA, PB, PC, PD, PE, PF = (
 )
 LP1, LP2, LP3, LP4, LP5, LP6 = "0xlp1", "0xlp2", "0xlp3", "0xlp4", "0xlp5", "0xlp6"
 OCN_SYMB, H2O_SYMB = "OCN", "H2O"
-OCN_ADDR, H2O_ADDR = "0xOCN_addr", "0xH2O_addr"
+OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"   #all lowercase
+OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR" #not all lowercase
 
 
 # =================================================================
@@ -37,26 +39,42 @@ def test_chainIDforStakeCsv():
 
 
 @enforce_types
-def test_stakes_onechain(tmp_path):
+def test_stakes_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
     S1 = {
-        OCN_SYMB: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_SYMB: {PC: {LP1: 3.1, LP4: 3.4}},
+        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
     }
     csvs.saveStakesCsv(S1, csv_dir, C1)
-    target_S1 = S1
-    loaded_S1 = csvs.loadStakesCsv(csv_dir, C1)
-    assert loaded_S1 == target_S1
+    S1_loaded = csvs.loadStakesCsv(csv_dir, C1)
+    assert S1_loaded == S1
+
+
+@enforce_types
+def test_stakes_onechain_mixedcase(tmp_path):
+    #in this test, it needs to fix the case
+    csv_dir = str(tmp_path)
+    S1_lowercase = {
+        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
+    }
+    S1_mixedcase = {
+        OCN_ADDR2: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_ADDR2: {PC: {LP1: 3.1, LP4: 3.4}},
+    }
+    csvs.saveStakesCsv(S1_mixedcase, csv_dir, C1)
+    S1_loaded = csvs.loadStakesCsv(csv_dir, C1)
+    assert S1_loaded == S1_lowercase
 
 
 @enforce_types
 def test_stakes_twochains(tmp_path):
     csv_dir = str(tmp_path)
     S1 = {
-        OCN_SYMB: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_SYMB: {PC: {LP1: 3.1, LP4: 3.4}},
+        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
+        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
     }
-    S2 = {OCN_SYMB: {PD: {LP1: 4.1, LP5: 4.5}}, H2O_SYMB: {PE: {LP6: 5.6}}}
+    S2 = {OCN_ADDR: {PD: {LP1: 4.1, LP5: 4.5}}, H2O_ADDR: {PE: {LP6: 5.6}}}
 
     assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
     csvs.saveStakesCsv(S1, csv_dir, C1)
@@ -305,6 +323,18 @@ def test_rewards_info(tmp_path):
     assert csv == target_rewards
 
 
+# =================================================================
+# helper funcs
+@enforce_types
+def test_assertIsEthAddr():
+    csvs.assertIsEthAddr("0xFOO")
+    csvs.assertIsEthAddr("0x967da4048cd07ab37855c090aaf366e4ce1b9f48")
+    with pytest.raises(ExceptionError):
+        csvs.assertIsEthAddr("FOO")
+
+
+# =================================================================
+
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
@@ -315,3 +345,4 @@ def setup_function():
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
+
