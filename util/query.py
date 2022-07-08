@@ -50,7 +50,15 @@ class SimplePool:
 
 
 @enforce_types
-def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, dict, dict]:
+def query_all(
+    rng: BlockRange, chainID: int
+) -> Tuple[
+    List[SimplePool],
+    Dict[str, Dict[str, Dict[str, float]]],
+    Dict[str, Dict[str, float]],
+    List[str],
+    Dict[str, str],
+]:
     """
     @description
       Return pool info, stakes & poolvols, for the input block range and chain.
@@ -59,8 +67,8 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, dict, di
       pools_at_chain -- list of SimplePool
       stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
-      approved_token_addrs -- dict of [chainID] : list_of_addr
-      symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
+      approved_token_addrs_at_chain -- list_of_addr
+      symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
 
     @notes
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
@@ -69,8 +77,9 @@ def query_all(rng: BlockRange, chainID: int) -> Tuple[list, dict, dict, dict, di
     Pi = getPools(chainID)
     Si = getStakes(Pi, rng, chainID)
     Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID)
-    Ai = getApprovedTokens(chainID)
-    SYMi = getSymbols(Ai, chainID)
+    ASETi: TokSet = getApprovedTokens(chainID)
+    Ai = ASETi.exportTokenAddrs()[chainID]
+    SYMi = getSymbols(ASETi, chainID)
     return (Pi, Si, Vi, Ai, SYMi)
 
 
@@ -312,6 +321,14 @@ def _didsInPurgatory() -> List[str]:
 
     dids = [item["did"] for item in data]
     return dids
+
+
+@enforce_types
+def getApprovedTokenAddrs(chainID: int) -> dict:
+    """@return - approved_token_addrs_at_chain -- dict of [chainID] : list_of_addr"""
+    tok_set = getApprovedTokens(chainID)
+    d = tok_set.exportTokenAddrs()
+    return d
 
 
 @enforce_types

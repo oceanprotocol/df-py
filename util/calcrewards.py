@@ -13,8 +13,8 @@ TARGET_WPY = (
 
 @enforce_types
 def calcRewards(
-    stakes: dict,
-    poolvols: dict,
+    stakes: Dict[int, Dict[str, Dict[str, Dict[str, float]]]],
+    poolvols: Dict[int, Dict[str, Dict[str, float]]],
     approved_token_addrs: Dict[int, List[str]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],

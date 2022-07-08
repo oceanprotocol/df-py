@@ -56,9 +56,15 @@ def stakesToUsd(
 
     stakes_USD: dict = {}
     for chainID in stakes:
+        if chainID not in addr_rates:
+            continue
+
         stakes_USD[chainID] = {}
         for basetoken_addr in stakes[chainID]:
+            if basetoken_addr not in addr_rates[chainID]:
+                continue
             rate = addr_rates[chainID][basetoken_addr]
+
             if basetoken_addr not in stakes[chainID]:
                 continue
             for pool_addr in stakes[chainID][basetoken_addr]:
@@ -99,9 +105,15 @@ def poolvolsToUsd(
 
     poolvols_USD: dict = {}
     for chainID in poolvols:
+        if chainID not in addr_rates:
+            continue
+
         poolvols_USD[chainID] = {}
         for basetoken_addr in poolvols[chainID]:
+            if basetoken_addr not in addr_rates[chainID]:
+                continue
             rate = addr_rates[chainID][basetoken_addr]
+
             if basetoken_addr not in poolvols[chainID]:
                 continue
             for pool_addr, vol in poolvols[chainID][basetoken_addr].items():

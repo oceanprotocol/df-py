@@ -146,21 +146,34 @@ def test_two_chains():
     assert rewardsperlp == target_rewardsperlp
     assert rewardsinfo == target_rewardsinfo
 
-    # now, change it up so that it's different symbols per chain. eg OCEAN <> MOCEAN
+    # now, make it so that Ocean token in C2 is MOCEAN
     symbols[C2]["0xocean2"] = "MOCEAN"
-    with pytest.raises(KeyError):
-        _, _ = calcRewards(
-            stakes,
-            poolvols,
-            APPROVED_TOKEN_ADDRS,
-            symbols,
-            rates,
-            rewards_avail_OCEAN,
-            "OCEAN",
-        )
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes,
+        poolvols,
+        APPROVED_TOKEN_ADDRS,
+        symbols,
+        rates,
+        rewards_avail_OCEAN,
+        "OCEAN",
+    )
+    assert rewardsperlp == {C1: {LP1: 20.0}}  # it completely ignores C2's MOCEAN ...
+    assert rewardsinfo == {
+        C1: {PA: {LP1: 20.0}}
+    }  # ...but of course we don't want that...
 
-    # here's the intervention needed
+    # ... so here's the intervention needed!
     rates["MOCEAN"] = rates["OCEAN"]
+
+    rewardsperlp, rewardsinfo = calcRewards(
+        stakes,
+        poolvols,
+        APPROVED_TOKEN_ADDRS,
+        symbols,
+        rates,
+        rewards_avail_OCEAN,
+        "OCEAN",
+    )
 
     # now the rewards should line up as expected
     assert rewardsperlp == target_rewardsperlp

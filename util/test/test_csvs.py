@@ -216,7 +216,7 @@ def test_poolinfo(
     query._ADDR_TO_SYMBOL[H2O_ADDR] = H2O_SYMB  # .. H2O_ADDR ..
 
     assert csvs.poolinfoCsvFilenames(csv_dir) == []
-    
+
     csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
 
     csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)

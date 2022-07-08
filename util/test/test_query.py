@@ -187,12 +187,13 @@ def _test_getPoolVolumes(CO2_ADDR: str):
 def _test_query(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (__, S0, V0, Ai, SYMi) = query.query_all(rng, CHAINID)
+    (__, S0, V0, A0, SYM0) = query.query_all(rng, CHAINID)
 
     # tests are light here, as we've tested piecewise elsewhere
     assert CO2_ADDR in S0
     assert CO2_ADDR in V0
-    assert Ai.hasChain(CHAINID)
+    assert A0
+    assert SYM0
 
 
 @enforce_types
