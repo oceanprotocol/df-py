@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 from enforce_typing import enforce_types
 
 from util import constants, oceanutil
-from util.tok import TokSet
 
 
 # ========================================================================
@@ -239,78 +238,82 @@ def chainIDforPoolvolsCsv(filename) -> int:
 
 
 @enforce_types
-def saveApprovedCsv(approved_tokens: TokSet, csv_dir: str, chainID: int):
+def saveApprovedCsv(
+    approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int
+):
     """
     @description
-      Save the approved csv for this chain. Info in 'approved_tokens' for other chains is ignored.
+      Save the approved tokens for this chain
 
     @arguments
-      approved_tokens -- TokSet
+      approved_token_addrs_at_chain --
       csv_dir -- directory that holds csv files
-      chainID -- which network
+      chainID -- which chain (network)
+
+    @note
+      We explicitly do *not* track symbols here, since (C1, addr) is enough, and tracking
+      symbols adds complexity and makes things error-prone. Eg. mOCEAN vs OCEAN.
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = approvedCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "token_symbol", "token_addr"])
-        for tok in approved_tokens.toks:
-            if tok.chainID == chainID:
-                assertIsEthAddr(tok.address)
-                row = [tok.chainID, tok.symbol, tok.address.lower()]
-                writer.writerow(row)
+        writer.writerow(["chainID", "token_addr"])
+        for token_addr in approved_token_addrs_at_chain:
+            assertIsEthAddr(token_addr)
+            row = [chainID, token_addr.lower()]
+            writer.writerow(row)
+
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadApprovedCsvs(csv_dir: str):
+def loadApprovedCsvs(csv_dir: str) -> Dict[int, List[str]]:
     """
     @description
-      Load all approved csvs (across all chains); return result as single TokSet
+      Load all approved tokens across all chains
 
     @return
-      approved_tokens -- TokSet
+      approved_token_addrs -- dict of [chainID] : list_of_addr
     """
     csv_files = approvedCsvFilenames(csv_dir)
-    approved_tokens = TokSet()
+    approved_token_addrs: dict = {}
     for csv_file in csv_files:
         chainID = chainIDforApprovedCsv(csv_file)
-        for tok in loadApprovedCsv(csv_dir, chainID).toks:
-            assert tok.chainID == chainID
-            assertIsEthAddr(tok.address)
-            approved_tokens.add(tok.chainID, tok.address, tok.symbol)
-    return approved_tokens
+        approved_token_addrs[chainID] = loadApprovedCsv(csv_dir, chainID)
+
+    return approved_token_addrs
 
 
 @enforce_types
-def loadApprovedCsv(csv_dir: str, chainID: int):
+def loadApprovedCsv(csv_dir: str, chainID: int) -> List[str]:
     """
     @description
-      Load approved for this chainID
+      Load approved tokens for this chainID
 
     @return
-      approved_tokens -- TokSet
+      approved_token_addrs_at_chain --
     """
     csv_file = approvedCsvFilename(csv_dir, chainID)
-    approved_tokens = TokSet()
+    approved_token_addrs_at_chain: List[str] = []
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "token_symbol", "token_addr"]
+                assert row == ["chainID", "token_addr"]
                 continue
+
             chainID2 = int(row[0])
-            token_symbol = row[1].upper()
-            token_addr = row[2].lower()
+            token_addr = row[1].lower()
 
             assert chainID2 == chainID, "csv had data from different chain"
             assertIsEthAddr(token_addr)
 
-            approved_tokens.add(chainID, token_addr, token_symbol)
+            approved_token_addrs_at_chain.append(token_addr)
 
     print(f"Loaded {csv_file}")
-    return approved_tokens
+    return approved_token_addrs_at_chain
 
 
 @enforce_types
@@ -328,6 +331,106 @@ def approvedCsvFilename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chainIDforApprovedCsv(filename) -> int:
     """Returns chainID for a given approved csv filename"""
+    return _lastInt(filename)
+
+
+# ========================================================================
+# symbols csvs
+
+
+@enforce_types
+def saveSymbolsCsv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: int):
+    """
+    @description
+      Save the symbols tokens for this chain
+
+    @arguments
+      symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
+      csv_dir -- directory that holds csv files
+      chainID -- which chain (network)
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = symbolsCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), csv_file
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "token_addr", "token_symbol"])
+        for token_addr, token_symbol in symbols_at_chain.items():
+            assertIsEthAddr(token_addr)
+            row = [
+                chainID,
+                token_addr.lower(),
+                token_symbol.upper(),
+            ]
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def loadSymbolsCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
+    """
+    @description
+      Load all symbols tokens across all chains
+
+    @return
+      symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
+    """
+    csv_files = symbolsCsvFilenames(csv_dir)
+    symbols: dict = {}
+    for csv_file in csv_files:
+        chainID = chainIDforSymbolsCsv(csv_file)
+        symbols[chainID] = loadSymbolsCsv(csv_dir, chainID)
+
+    return symbols
+
+
+@enforce_types
+def loadSymbolsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
+    """
+    @description
+      Load symbols for this chainID
+
+    @return
+      symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
+    """
+    csv_file = symbolsCsvFilename(csv_dir, chainID)
+    symbols_at_chain: dict = {}
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == ["chainID", "token_addr", "token_symbol"]
+                continue
+
+            chainID2 = int(row[0])
+            token_addr = row[1].lower()
+            token_symbol = row[2].upper()
+
+            assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(token_addr)
+
+            symbols_at_chain[token_addr] = token_symbol
+
+    print(f"Loaded {csv_file}")
+    return symbols_at_chain
+
+
+@enforce_types
+def symbolsCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of symbols filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "symbols*.csv"))
+
+
+@enforce_types
+def symbolsCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the symbols filename for a given chainID"""
+    return os.path.join(csv_dir, f"symbols-{chainID}.csv")
+
+
+@enforce_types
+def chainIDforSymbolsCsv(filename) -> int:
+    """Returns chainID for a given symbols csv filename"""
     return _lastInt(filename)
 
 
@@ -434,6 +537,12 @@ def savePoolinfoCsv(
                 writer.writerow(row)
 
     print(f"Created {csv_file}")
+
+
+@enforce_types
+def poolinfoCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of poolinfo filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "poolinfo*.csv"))
 
 
 @enforce_types

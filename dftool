@@ -143,11 +143,12 @@ SECRET_SEED -- secret integer used to seed the rng
     seed = st_block + SECRET_SEED
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
     rng.filterByMaxBlock(len(chain))
-    (Pi, Si, Vi, Ai) = query.query_all(rng, CHAINID)
+    (Pi, Si, Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
     csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
     csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
+    csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
 
@@ -219,19 +220,26 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     if not csvs.rateCsvFilenames(CSV_DIR):
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
+    if not csvs.approvedCsvFilenames(CSV_DIR):
+        print(f"\nNo 'approved*.csv' files in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
+    if not csvs.symbolsCsvFilenames(CSV_DIR):
+        print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
 
     # shouldn't already have the output file
     _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL))
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL))
 
     # main work
-    stakes = csvs.loadStakesCsvs(CSV_DIR)
-    poolvols = csvs.loadPoolvolsCsvs(CSV_DIR)
-    approved_tokens = csvs.loadApprovedCsvs(CSV_DIR)
-    rates = csvs.loadRateCsvs(CSV_DIR)
-    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        stakes, poolvols, approved_tokens, rates, TOT_TOKEN, TOKEN_SYMBOL
-    )
+    S = csvs.loadStakesCsvs(CSV_DIR)
+    V = csvs.loadPoolvolsCsvs(CSV_DIR)
+    A = csvs.loadApprovedCsvs(CSV_DIR)
+    SYM = csvs.loadSymbolsCsvs(CSV_DIR)
+    R = csvs.loadRateCsvs(CSV_DIR)
+    if "OCEAN" in R:
+        R["MOCEAN"] = R["OCEAN"]
+    rewardsperlp, rewardsinfo = calcrewards.calcRewards(S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL)
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
 
@@ -288,9 +296,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    token_symbol = (
-        B.Simpletoken.at(TOKEN_ADDR).symbol().upper().replace("MOCEAN", "OCEAN")
-    )
+    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],

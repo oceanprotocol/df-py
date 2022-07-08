@@ -1,5 +1,3 @@
-import os
-
 import brownie
 from enforce_typing import enforce_types
 import pandas as pd
@@ -7,7 +5,6 @@ import pytest
 
 from util import csvs, query
 from util.query import SimplePool
-from util.tok import TokSet
 
 
 # for shorter lines
@@ -136,45 +133,48 @@ def test_chainIDforApprovedCsv():
 def test_approved(tmp_path):
     csv_dir = str(tmp_path)
 
-    # set the data
-    l1 = [(C1, "0x123", "OCEAN"), (C1, "0x456", "H2O_SYMB")]
-    l2 = [(C2, "0x789", "OCEAN")]
-    approved1 = TokSet(l1)
-    approved2 = TokSet(l2)
-    approved_all = TokSet(l1 + l2)
+    approved_C1 = ["0x123", "0x456"]
+    approved_C2 = ["0x789"]
 
-    # test on just chain1
-    csvs.saveApprovedCsv(approved1, csv_dir, C1)
-    loaded1 = csvs.loadApprovedCsv(csv_dir, C1)
-    assert loaded1.hasChain(C1)
-    assert loaded1.hasAddress(C1, "0x123")
-    assert loaded1.hasAddress(C1, "0x456")
+    csvs.saveApprovedCsv(approved_C1, csv_dir, C1)
+    csvs.saveApprovedCsv(approved_C2, csv_dir, C2)
 
-    filename = csvs.approvedCsvFilename(csv_dir, C1)
-    os.remove(filename)
+    loaded_approved_C1 = csvs.loadApprovedCsv(csv_dir, C1)
+    loaded_approved_C2 = csvs.loadApprovedCsv(csv_dir, C2)
+    loaded_approved = csvs.loadApprovedCsvs(csv_dir)
 
-    csvs.saveApprovedCsv(approved_all, csv_dir, C1)  # should only save C1
-    loaded_all = csvs.loadApprovedCsvs(csv_dir)
-    assert loaded_all.hasChain(C1)
-    assert not loaded_all.hasChain(C2)
+    assert loaded_approved_C1 == approved_C1
+    assert loaded_approved_C2 == approved_C2
+    assert loaded_approved == {C1: approved_C1, C2: approved_C2}
 
-    # test on just chain2
-    csvs.saveApprovedCsv(approved2, csv_dir, C2)
-    loaded2 = csvs.loadApprovedCsv(csv_dir, C2)
-    assert loaded2.hasAddress(C2, "0x789")
 
-    # test on both chains
-    loaded1 = csvs.loadApprovedCsv(csv_dir, C1)
-    assert loaded1.hasChain(C1)
-    assert not loaded1.hasChain(C2)  # should have filtered out C2
+# =================================================================
+# symbols csvs
 
-    loaded2 = csvs.loadApprovedCsv(csv_dir, C2)
-    assert loaded2.hasChain(C2)
-    assert not loaded2.hasChain(C1)  # should have filtered out C1
 
-    loaded_all = csvs.loadApprovedCsvs(csv_dir)
-    assert loaded_all.hasChain(C1)
-    assert loaded_all.hasChain(C2)
+@enforce_types
+def test_chainIDforSymbolsCsv():
+    assert csvs.chainIDforSymbolsCsv("symbols-chain101.csv") == 101
+    assert csvs.chainIDforSymbolsCsv("path1/32/symbols-chain92.csv") == 92
+
+
+@enforce_types
+def test_symbols(tmp_path):
+    csv_dir = str(tmp_path)
+
+    symbols_C1 = {"0x123": "OCEAN", "0x456": "H2O"}
+    symbols_C2 = {"0x789": "MOCEAN", "0xabc": "H2O"}
+
+    csvs.saveSymbolsCsv(symbols_C1, csv_dir, C1)
+    csvs.saveSymbolsCsv(symbols_C2, csv_dir, C2)
+
+    loaded_symbols_C1 = csvs.loadSymbolsCsv(csv_dir, C1)
+    loaded_symbols_C2 = csvs.loadSymbolsCsv(csv_dir, C2)
+    loaded_symbols = csvs.loadSymbolsCsvs(csv_dir)
+
+    assert loaded_symbols_C1 == symbols_C1
+    assert loaded_symbols_C2 == symbols_C2
+    assert loaded_symbols == {C1: symbols_C1, C2: symbols_C2}
 
 
 # =================================================================
@@ -212,9 +212,12 @@ def test_poolinfo(
     ] = OCN_SYMB  # to make call to query.symbol(OCN_ADDR) happy
     query._ADDR_TO_SYMBOL[H2O_ADDR] = H2O_SYMB  # .. H2O_ADDR ..
 
+    assert csvs.poolinfoCsvFilenames(csv_dir) == []
+
     csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
 
     csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
+    assert csvs.poolinfoCsvFilenames(csv_dir) == [csv_file]
 
     target_header = [
         "chainID",

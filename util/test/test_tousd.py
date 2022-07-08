@@ -1,7 +1,6 @@
 from enforce_typing import enforce_types
 
-from util import tok
-from util.tousd import stakesToUsd, poolvolsToUsd
+from util.tousd import ratesToAddrRates, stakesToUsd, poolvolsToUsd
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}
@@ -10,22 +9,76 @@ PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB, UNAPP_SYMB = "OCEAN", "H2O", "UNAPP"
 OCN_ADDR, H2O_ADDR, UNAPP_ADDR = "0xocean", "0xh2o", "0xunapp"
+SYMBOLS = {C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB}}
 
-APPROVED_TOKENS = tok.TokSet(
-    [
-        (C1, OCN_ADDR, OCN_SYMB),
-        (C1, H2O_ADDR, H2O_SYMB),
-        (C2, OCN_ADDR, OCN_SYMB),
-        (C2, H2O_ADDR, H2O_SYMB),
-    ]
-)
-TOK_SET = APPROVED_TOKENS
+
+@enforce_types
+def test_ratesToAddrRates_onechain_onetoken():
+    rates = {"OCEAN": 0.5}
+    symbols = {C1: {"0xOCEAN": "OCEAN"}}
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {C1: {"0xOCEAN": 0.5}}
+
+
+@enforce_types
+def test_ratesToAddrRates_onechain_twotokens():
+    rates = {"OCEAN": 0.5, "H2O": 1.6}
+    symbols = {C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}}
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {C1: {"0xOCEAN": 0.5, "0xH2O": 1.6}}
+
+
+@enforce_types
+def test_ratesToAddrRates_twochains_twotokens():
+    rates = {"OCEAN": 0.5}
+    symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "OCEAN"}}
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {"0xOCEAN2": 0.5}}
+
+
+@enforce_types
+def test_ratesToAddrRates_extraneous_rate():
+    rates = {"OCEAN": 0.5, "H2O": 1.6}  # H2O's here but not in symbols, so extraneous
+    symbols = {C1: {"0xOCEAN": "OCEAN"}}
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {C1: {"0xOCEAN": 0.5}}
+
+
+@enforce_types
+def test_ratesToAddrRates_extraneous_symbol():
+    rates = {"OCEAN": 0.5}
+    symbols = {
+        C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}
+    }  # H2O's here but not in rates, so extraneous
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {C1: {"0xOCEAN": 0.5}}
+
+
+@enforce_types
+def test_ratesToAddrRates_symbol_changes_between_chains():
+    # symbol on chain 2 is MOCEAN, not OCEAN!
+    rates = {"OCEAN": 0.5}
+    symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "MOCEAN"}}
+
+    # the result: it simply won't have an entry for 0xOCEAN2
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {}}
+
+    # here's the intervention needed
+    rates["MOCEAN"] = rates["OCEAN"]
+
+    # now it will work
+    addr_rates = ratesToAddrRates(rates, symbols)
+    assert addr_rates == {
+        C1: {"0xOCEAN1": 0.5},
+        C2: {"0xOCEAN2": 0.5},
+    }  # has entry for 0xOCEAN2
 
 
 @enforce_types
 def test_stakesToUsd_onebasetoken():
     stakes = {C1: {OCN_ADDR: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = stakesToUsd(stakes, RATES, TOK_SET)
+    stakes_USD = stakesToUsd(stakes, SYMBOLS, RATES)
     assert stakes_USD == {C1: {PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5}}}
 
 
@@ -37,7 +90,7 @@ def test_stakesToUsd_twobasetokens():
             H2O_ADDR: {PC: {LP1: 5.0, LP4: 6.0}},
         }
     }
-    stakes_USD = stakesToUsd(stakes, RATES, TOK_SET)
+    stakes_USD = stakesToUsd(stakes, SYMBOLS, RATES)
     assert stakes_USD == {
         C1: {
             PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
@@ -49,14 +102,14 @@ def test_stakesToUsd_twobasetokens():
 @enforce_types
 def test_poolvolsToUsd_onebasetoken():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}}}
-    poolvols_USD = poolvolsToUsd(poolvols, RATES, TOK_SET)
+    poolvols_USD = poolvolsToUsd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
 
 
 @enforce_types
 def test_poolvolsToUsd_twobasetokens():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PC: 13.0}}}
-    poolvols_USD = poolvolsToUsd(poolvols, RATES, TOK_SET)
+    poolvols_USD = poolvolsToUsd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {
         C1: {
             PA: 9.0 * 0.5,

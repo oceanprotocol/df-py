@@ -9,7 +9,6 @@ from enforce_typing import enforce_types
 from util import csvs, networkutil, oceanutil, oceantestutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
-from util.tok import TokSet
 
 accounts, PREV, DISPENSE_ACCT = None, None, None
 
@@ -43,8 +42,8 @@ def test_query(tmp_path):
     assert csvs.stakesCsvFilenames(CSV_DIR)
     assert csvs.poolvolsCsvFilenames(CSV_DIR)
     assert csvs.approvedCsvFilenames(CSV_DIR)
-    poolinfo_csv = csvs.poolinfoCsvFilename(CSV_DIR, CHAINID)
-    assert os.path.exists(poolinfo_csv)
+    assert csvs.symbolsCsvFilenames(CSV_DIR)
+    assert csvs.poolinfoCsvFilenames(CSV_DIR)
 
 
 @enforce_types
@@ -70,15 +69,18 @@ def test_calc(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
 
-    # insert fake inputs: csvs for stakes, poolvols, and rewards
+    # insert fake csvs
     stakes_at_chain = {OCEAN_addr: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
     csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
 
     poolvols_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
     csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
 
-    approved_tokens = TokSet([(CHAINID, OCEAN_addr, "OCEAN")])
-    csvs.saveApprovedCsv(approved_tokens, CSV_DIR, CHAINID)
+    symbols_at_chain = {OCEAN_addr: "OCEAN"}
+    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+
+    approved_token_addrs_at_chain = [OCEAN_addr]
+    csvs.saveApprovedCsv(approved_token_addrs_at_chain, CSV_DIR, CHAINID)
 
     csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
 

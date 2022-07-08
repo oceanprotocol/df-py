@@ -81,3 +81,15 @@ class TokSet:
             if tok.chainID == chainID and tok.symbol == symbol:
                 return tok
         return None
+
+    def exportTokenAddrs(self) -> dict:
+        """
+        @description -- export in the format used for approved_token_addrs
+        @return -- dict of [chainID] : list_of_addr.
+        """
+        d: dict = {}
+        for tok in self.toks:
+            if tok.chainID not in d:
+                d[tok.chainID] = []
+            d[tok.chainID].append(tok.address)
+        return d

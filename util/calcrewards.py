@@ -4,7 +4,6 @@ from enforce_typing import enforce_types
 import numpy
 
 from util import approvedfilter, cleancase, tousd
-from util.tok import TokSet
 
 TARGET_WPY = (
     0.015717  # (Weekly Percent Yield) needs to be 1.5717%., for max APY of 125%
@@ -13,19 +12,21 @@ TARGET_WPY = (
 
 @enforce_types
 def calcRewards(
-    stakes: dict,
-    poolvols: dict,
-    approved_tokens: TokSet,
+    stakes: Dict[int, Dict[str, Dict[str, Dict[str, float]]]],
+    poolvols: Dict[int, Dict[str, Dict[str, float]]],
+    approved_token_addrs: Dict[int, List[str]],
+    symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
     rewards_symbol: str,
-) -> tuple:
+) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]],]:
     """
     @arguments
-      stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake_OCEAN_or_H2O
-      poolvols -- dict of [chainID][basetoken_address][pool_addr] : vol_OCEAN_or_H2O
-      approved_tokens -- TokSet
-      rates -- dict of [basetoken_symbol] : USD_per_basetoken
+      stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_OCEAN_or_H2O
+      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_OCEAN_or_H2O
+      approved_token_addrs -- dict of [chainID] : list_of_addr
+      symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
+      rates -- dict of [basetoken_symbol] : USD_price
       rewards_avail_TOKEN -- float -- amount of rewards avail, in units of OCEAN or PSDN
       rewards_symbol -- e.g. "OCEAN" or "PSDN"
 
@@ -34,11 +35,10 @@ def calcRewards(
       rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
     (stakes, poolvols, rates) = cleancase.modTuple(stakes, poolvols, rates)
-    (stakes, poolvols) = approvedfilter.modTuple(approved_tokens, stakes, poolvols)
-    tok_set = approved_tokens  # use its mapping here, not the 'whether approved' part
+    (stakes, poolvols) = approvedfilter.modTuple(approved_token_addrs, stakes, poolvols)
 
-    stakes_USD = tousd.stakesToUsd(stakes, rates, tok_set)
-    poolvols_USD = tousd.poolvolsToUsd(poolvols, rates, tok_set)
+    stakes_USD = tousd.stakesToUsd(stakes, symbols, rates)
+    poolvols_USD = tousd.poolvolsToUsd(poolvols, symbols, rates)
 
     S_USD, P_USD, keys_tup = _stakevolDictsToArrays(stakes_USD, poolvols_USD)
 
