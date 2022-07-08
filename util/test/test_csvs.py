@@ -340,7 +340,7 @@ def test_rewardsinfo(tmp_path):
 def test_assertIsEthAddr():
     csvs.assertIsEthAddr("0xFOO")
     csvs.assertIsEthAddr("0x967da4048cd07ab37855c090aaf366e4ce1b9f48")
-    with pytest.raises(ExceptionError):
+    with pytest.raises(AssertionError):
         csvs.assertIsEthAddr("FOO")
 
 
