@@ -1,5 +1,4 @@
 from enforce_typing import enforce_types
-import pytest
 
 from util.tousd import ratesToAddrRates, stakesToUsd, poolvolsToUsd
 
