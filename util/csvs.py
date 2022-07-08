@@ -578,7 +578,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
 
 
 @enforce_types
-def loadRateCsvs(csv_dir: str) -> Dict[str,float]:
+def loadRateCsvs(csv_dir: str) -> Dict[str, float]:
     """
     @description
       Load all exchange rate csvs, and return result as a single dict
@@ -602,7 +602,7 @@ def loadRateCsvs(csv_dir: str) -> Dict[str,float]:
                     raise ValueError("csv should only have two rows")
         print(f"Loaded {csv_file}")
 
-    #have rates for non-standard token names like MOCEAN
+    # have rates for non-standard token names like MOCEAN
     if "OCEAN" in rates:
         rates["MOCEAN"] = rates["OCEAN"]
 
