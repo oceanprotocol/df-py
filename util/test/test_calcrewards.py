@@ -12,7 +12,7 @@ LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB, UNAPP_SYMB = "OCEAN", "H2O", "UNAPP"
 OCN_ADDR, H2O_ADDR, UNAPP_ADDR = "0xocean", "0xh2o", "0xunapp"
 SYMBOLS = {C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
-           C2: {"0xocean2": "MOCEAN", "Oxh2o2": "H2O"}}
+           C2: {"0xocean2": "OCEAN", "Oxh2o2": "H2O"}}
 APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR],
                         C2: ["0xocean2", "Oxh2o2"]}
 
@@ -94,10 +94,11 @@ def test_PSDN_rewards():
 def test_two_chains():
     stakes = {
         C1: {OCN_ADDR: {PA: {LP1: 10000.0}}},
-        C2: {OCN_ADDR: {PB: {LP1: 10000.0}}},
+        C2: {"0xocean2": {PB: {LP1: 10000.0}}},
     }
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {OCN_ADDR: {PB: 1.0}}}
-
+    poolvols = {C1: {OCN_ADDR: {PA: 1.0}},
+                C2: {"0xocean2": {PB: 1.0}}}
+    
     rewards_avail_OCEAN = 20.0
     rewardsperlp, rewardsinfo = calcRewards(
         stakes, poolvols, APPROVED_TOKEN_ADDRS, SYMBOLS, RATES, rewards_avail_OCEAN, "OCEAN"
