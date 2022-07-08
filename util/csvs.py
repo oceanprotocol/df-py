@@ -540,6 +540,12 @@ def savePoolinfoCsv(
 
 
 @enforce_types
+def poolinfoCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of poolinfo filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "poolinfo*.csv"))
+
+
+@enforce_types
 def poolinfoCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the poolinfo filename for a given chainID"""
     return os.path.join(csv_dir, f"poolinfo-{chainID}.csv")
