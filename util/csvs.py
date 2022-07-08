@@ -256,7 +256,11 @@ def saveApprovedCsv(approved_tokens: TokSet, csv_dir: str, chainID: int):
         writer.writerow(["chainID", "token_symbol", "token_addr"])
         for tok in approved_tokens.toks:
             if tok.chainID == chainID:
-                writer.writerow([tok.chainID, tok.symbol, tok.address])
+                assertIsEthAddr(tok.address)
+                row = [tok.chainID,
+                       tok.symbol,
+                       tok.address.lower()]
+                writer.writerow(row)
     print(f"Created {csv_file}")
 
 
@@ -275,6 +279,7 @@ def loadApprovedCsvs(csv_dir: str):
         chainID = chainIDforApprovedCsv(csv_file)
         for tok in loadApprovedCsv(csv_dir, chainID).toks:
             assert tok.chainID == chainID
+            assertIsEthAddr(tok.address)
             approved_tokens.add(tok.chainID, tok.address, tok.symbol)
     return approved_tokens
 
@@ -299,7 +304,10 @@ def loadApprovedCsv(csv_dir: str, chainID: int):
             chainID2 = int(row[0])
             token_symbol = row[1].upper()
             token_addr = row[2].lower()
+            
             assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(token_addr)
+            
             approved_tokens.add(chainID, token_addr, token_symbol)
 
     print(f"Loaded {csv_file}")
