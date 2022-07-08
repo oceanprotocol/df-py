@@ -462,7 +462,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["token", "rate"])
+        writer.writerow(["token_symbol", "rate"])
         writer.writerow([token_symbol, str(rate)])
     print(f"Created {csv_file}")
 
@@ -483,7 +483,7 @@ def loadRateCsvs(csv_dir: str):
             reader = csv.reader(f)
             for row_i, row in enumerate(reader):
                 if row_i == 0:  # header
-                    assert row == ["token", "rate"]
+                    assert row == ["token_symbol", "rate"]
                 elif row_i == 1:
                     token_symbol = row[0].upper()
                     rate = float(row[1])
