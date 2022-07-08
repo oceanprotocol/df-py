@@ -345,7 +345,7 @@ def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
       Return mapping of basetoken addr -> symbol for this chain
 
     @return
-      symbols -- dict of [basetoken_addr] : basetoken_symbol
+      symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
     """
     return {tok.address : tok.symbol
             for tok in approved_tokens.toks
