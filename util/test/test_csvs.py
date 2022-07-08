@@ -136,45 +136,19 @@ def test_chainIDforApprovedCsv():
 def test_approved(tmp_path):
     csv_dir = str(tmp_path)
 
-    # set the data
-    l1 = [(C1, "0x123", "OCEAN"), (C1, "0x456", "H2O_SYMB")]
-    l2 = [(C2, "0x789", "OCEAN")]
-    approved1 = TokSet(l1)
-    approved2 = TokSet(l2)
-    approved_all = TokSet(l1 + l2)
+    approved_C1 = ["0x123", "0x456"]
+    approved_C2 = ["0x789"]
 
-    # test on just chain1
-    csvs.saveApprovedCsv(approved1, csv_dir, C1)
-    loaded1 = csvs.loadApprovedCsv(csv_dir, C1)
-    assert loaded1.hasChain(C1)
-    assert loaded1.hasAddress(C1, "0x123")
-    assert loaded1.hasAddress(C1, "0x456")
-
-    filename = csvs.approvedCsvFilename(csv_dir, C1)
-    os.remove(filename)
-
-    csvs.saveApprovedCsv(approved_all, csv_dir, C1)  # should only save C1
-    loaded_all = csvs.loadApprovedCsvs(csv_dir)
-    assert loaded_all.hasChain(C1)
-    assert not loaded_all.hasChain(C2)
-
-    # test on just chain2
-    csvs.saveApprovedCsv(approved2, csv_dir, C2)
-    loaded2 = csvs.loadApprovedCsv(csv_dir, C2)
-    assert loaded2.hasAddress(C2, "0x789")
-
-    # test on both chains
-    loaded1 = csvs.loadApprovedCsv(csv_dir, C1)
-    assert loaded1.hasChain(C1)
-    assert not loaded1.hasChain(C2)  # should have filtered out C2
-
-    loaded2 = csvs.loadApprovedCsv(csv_dir, C2)
-    assert loaded2.hasChain(C2)
-    assert not loaded2.hasChain(C1)  # should have filtered out C1
-
-    loaded_all = csvs.loadApprovedCsvs(csv_dir)
-    assert loaded_all.hasChain(C1)
-    assert loaded_all.hasChain(C2)
+    csvs.saveApprovedCsv(approved_C1, csv_dir, C1)
+    csvs.saveApprovedCsv(approved_C2, csv_dir, C2)
+    
+    loaded_approved_C1 = csvs.loadApprovedCsv(csv_dir, C1)
+    loaded_approved_C2 = csvs.loadApprovedCsv(csv_dir, C2)
+    loaded_approved = csvs.loadApprovedCsvs(csv_dir)
+    
+    assert loaded_approved_C1 == approved_C1
+    assert loaded_approved_C2 == approved_C2
+    assert loaded_approved == {C1: approved_C1, C2: approved_C2}
 
 
 # =================================================================
