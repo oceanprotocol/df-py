@@ -465,7 +465,6 @@ def savePoolinfoCsv(
 
     assert rateCsvFilenames(csv_dir), "Should have rate csv files"
     rates = loadRateCsvs(csv_dir)
-
     csv_file = poolinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
 
@@ -496,20 +495,20 @@ def savePoolinfoCsv(
             for pool_addr in pools_by_addr:
                 assertIsEthAddr(pool_addr)
 
-                if pool_addr not in stakes_at_chain[basetoken_addr]:
-                    continue
-
                 p = pools_by_addr[pool_addr]
-                if p.basetoken_symbol not in rates:
-                    continue
 
                 did = oceanutil.calcDID(p.nft_addr, chainID)
                 url = constants.MARKET_ASSET_BASE_URL + did
 
-                stake_amt_BASE = sum(
-                    stakes_at_chain[basetoken_addr][pool_addr].values()
-                )
-                stake_amt_USD = stake_amt_BASE * rates[p.basetoken_symbol]
+                stake_amt_BASE = 0.0
+                if pool_addr in stakes_at_chain[basetoken_addr]:
+                    stake_amt_BASE = sum(
+                        stakes_at_chain[basetoken_addr][pool_addr].values()
+                    )
+
+                stake_amt_USD = ""
+                if p.basetoken_symbol in rates:
+                    stake_amt_USD = stake_amt_BASE * rates[p.basetoken_symbol]
 
                 vol_amt_BASE = 0.0
                 if (basetoken_addr in poolvols_at_chain) and (
@@ -517,7 +516,9 @@ def savePoolinfoCsv(
                 ):
                     vol_amt_BASE = poolvols_at_chain[basetoken_addr][pool_addr]
 
-                vol_amt_USD = vol_amt_BASE * rates[p.basetoken_symbol]
+                vol_amt_USD = ""
+                if p.basetoken_symbol in rates:
+                    vol_amt_USD = vol_amt_BASE * rates[p.basetoken_symbol]
 
                 row = [
                     str(chainID),
@@ -577,7 +578,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
 
 
 @enforce_types
-def loadRateCsvs(csv_dir: str):
+def loadRateCsvs(csv_dir: str) -> Dict[str, float]:
     """
     @description
       Load all exchange rate csvs, and return result as a single dict
@@ -600,6 +601,10 @@ def loadRateCsvs(csv_dir: str):
                 else:
                     raise ValueError("csv should only have two rows")
         print(f"Loaded {csv_file}")
+
+    # have rates for non-standard token names like MOCEAN
+    if "OCEAN" in rates:
+        rates["MOCEAN"] = rates["OCEAN"]
 
     return rates
 
