@@ -1,5 +1,3 @@
-import os
-
 import brownie
 from enforce_typing import enforce_types
 import pandas as pd
@@ -7,7 +5,6 @@ import pytest
 
 from util import csvs, query
 from util.query import SimplePool
-from util.tok import TokSet
 
 
 # for shorter lines

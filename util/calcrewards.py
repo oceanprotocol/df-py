@@ -4,7 +4,6 @@ from enforce_typing import enforce_types
 import numpy
 
 from util import approvedfilter, cleancase, tousd
-from util.tok import TokSet
 
 TARGET_WPY = (
     0.015717  # (Weekly Percent Yield) needs to be 1.5717%., for max APY of 125%
@@ -20,7 +19,7 @@ def calcRewards(
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
     rewards_symbol: str,
-) -> (dict, dict):
+) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]],]:
     """
     @arguments
       stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_OCEAN_or_H2O
