@@ -239,13 +239,15 @@ def chainIDforPoolvolsCsv(filename) -> int:
 
 
 @enforce_types
-def saveApprovedCsv(approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int):
+def saveApprovedCsv(
+    approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int
+):
     """
     @description
       Save the approved tokens for this chain
 
     @arguments
-      approved_token_addrs_at_chain -- 
+      approved_token_addrs_at_chain --
       csv_dir -- directory that holds csv files
       chainID -- which chain (network)
 
@@ -261,10 +263,9 @@ def saveApprovedCsv(approved_token_addrs_at_chain: List[str], csv_dir: str, chai
         writer.writerow(["chainID", "token_addr"])
         for token_addr in approved_token_addrs_at_chain:
             assertIsEthAddr(token_addr)
-            row = [chainID, 
-                   token_addr.lower()]
+            row = [chainID, token_addr.lower()]
             writer.writerow(row)
-            
+
     print(f"Created {csv_file}")
 
 
@@ -278,11 +279,11 @@ def loadApprovedCsvs(csv_dir: str) -> Dict[int, List[str]]:
       approved_token_addrs -- dict of [chainID] : list_of_addr
     """
     csv_files = approvedCsvFilenames(csv_dir)
-    approved_token_addrs: dict = {} 
+    approved_token_addrs: dict = {}
     for csv_file in csv_files:
         chainID = chainIDforApprovedCsv(csv_file)
         approved_token_addrs[chainID] = loadApprovedCsv(csv_dir, chainID)
-        
+
     return approved_token_addrs
 
 
@@ -293,7 +294,7 @@ def loadApprovedCsv(csv_dir: str, chainID: int) -> List[str]:
       Load approved tokens for this chainID
 
     @return
-      approved_token_addrs_at_chain -- 
+      approved_token_addrs_at_chain --
     """
     csv_file = approvedCsvFilename(csv_dir, chainID)
     approved_token_addrs_at_chain: List[str] = []
@@ -303,7 +304,7 @@ def loadApprovedCsv(csv_dir: str, chainID: int) -> List[str]:
             if row_i == 0:  # header
                 assert row == ["chainID", "token_addr"]
                 continue
-            
+
             chainID2 = int(row[0])
             token_addr = row[1].lower()
 
@@ -334,15 +335,12 @@ def chainIDforApprovedCsv(filename) -> int:
     return _lastInt(filename)
 
 
-
-
-
 # ========================================================================
 # symbols csvs
 
 
 @enforce_types
-def saveSymbolsCsv(symbols_at_chain: Dict[str,str], csv_dir: str, chainID: int):
+def saveSymbolsCsv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: int):
     """
     @description
       Save the symbols tokens for this chain
@@ -360,17 +358,18 @@ def saveSymbolsCsv(symbols_at_chain: Dict[str,str], csv_dir: str, chainID: int):
         writer.writerow(["chainID", "token_addr", "token_symbol"])
         for token_addr, token_symbol in symbols_at_chain.items():
             assertIsEthAddr(token_addr)
-            row = [chainID, 
-                   token_addr.lower(),
-                   token_symbol.upper(),
-                   ]
+            row = [
+                chainID,
+                token_addr.lower(),
+                token_symbol.upper(),
+            ]
             writer.writerow(row)
-            
+
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadSymbolsCsvs(csv_dir: str) -> Dict[int, Dict[str,str]]:
+def loadSymbolsCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     """
     @description
       Load all symbols tokens across all chains
@@ -379,11 +378,11 @@ def loadSymbolsCsvs(csv_dir: str) -> Dict[int, Dict[str,str]]:
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
     """
     csv_files = symbolsCsvFilenames(csv_dir)
-    symbols: dict = {} 
+    symbols: dict = {}
     for csv_file in csv_files:
         chainID = chainIDforSymbolsCsv(csv_file)
         symbols[chainID] = loadSymbolsCsv(csv_dir, chainID)
-        
+
     return symbols
 
 
@@ -404,7 +403,7 @@ def loadSymbolsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
             if row_i == 0:  # header
                 assert row == ["chainID", "token_addr", "token_symbol"]
                 continue
-            
+
             chainID2 = int(row[0])
             token_addr = row[1].lower()
             token_symbol = row[2].upper()
@@ -434,7 +433,6 @@ def symbolsCsvFilename(csv_dir: str, chainID: int) -> str:
 def chainIDforSymbolsCsv(filename) -> int:
     """Returns chainID for a given symbols csv filename"""
     return _lastInt(filename)
-
 
 
 # ========================================================================

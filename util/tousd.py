@@ -8,8 +8,8 @@ from util.tok import TokSet
 
 @enforce_types
 def ratesToAddrRates(
-        rates: Dict[str, float],
-        symbols: Dict[int, Dict[str,str]],
+    rates: Dict[str, float],
+    symbols: Dict[int, Dict[str, str]],
 ) -> dict:
     """
     @description
@@ -29,12 +29,13 @@ def ratesToAddrRates(
             if token_symbol in rates:
                 addr_rates[chainID][token_addr] = rates[token_symbol]
     return addr_rates
-    
+
+
 @enforce_types
 def stakesToUsd(
-        stakes: dict,
-        symbols: Dict[int, Dict[str,str]],
-        rates: Dict[str, float],
+    stakes: dict,
+    symbols: Dict[int, Dict[str, str]],
+    rates: Dict[str, float],
 ) -> dict:
     """
     @description
@@ -50,7 +51,9 @@ def stakesToUsd(
     """
     cleancase.assertStakes(stakes)
     cleancase.assertRates(rates)
-    addr_rates = ratesToAddrRates(rates, symbols) # dict of [chainID][basetoken_addr] : USD_price
+    addr_rates = ratesToAddrRates(
+        rates, symbols
+    )  # dict of [chainID][basetoken_addr] : USD_price
 
     stakes_USD: dict = {}
     for chainID in stakes:
@@ -62,7 +65,9 @@ def stakesToUsd(
             for pool_addr in stakes[chainID][basetoken_addr]:
                 if pool_addr not in stakes_USD[chainID]:
                     stakes_USD[chainID][pool_addr] = {}
-                for LP_addr, stake in stakes[chainID][basetoken_addr][pool_addr].items():
+                for LP_addr, stake in stakes[chainID][basetoken_addr][
+                    pool_addr
+                ].items():
                     stakes_USD[chainID][pool_addr][LP_addr] = stake * rate
 
     cleancase.assertStakesUsd(stakes_USD)
@@ -71,9 +76,9 @@ def stakesToUsd(
 
 @enforce_types
 def poolvolsToUsd(
-        poolvols: dict,
-        symbols: Dict[int, Dict[str,str]],
-        rates: Dict[str, float],
+    poolvols: dict,
+    symbols: Dict[int, Dict[str, str]],
+    rates: Dict[str, float],
 ) -> dict:
     """
     @description
@@ -89,13 +94,15 @@ def poolvolsToUsd(
     """
     cleancase.assertPoolvols(poolvols)
     cleancase.assertRates(rates)
-    addr_rates = ratesToAddrRates(rates, symbols) # dict of [chainID][basetoken_addr] : USD_price
+    addr_rates = ratesToAddrRates(
+        rates, symbols
+    )  # dict of [chainID][basetoken_addr] : USD_price
 
     poolvols_USD: dict = {}
     for chainID in poolvols:
         poolvols_USD[chainID] = {}
         for basetoken_addr in poolvols[chainID]:
-            rate = addr_rates[chainID][basetoken_addr]        
+            rate = addr_rates[chainID][basetoken_addr]
             if basetoken_addr not in poolvols[chainID]:
                 continue
             for pool_addr, vol in poolvols[chainID][basetoken_addr].items():

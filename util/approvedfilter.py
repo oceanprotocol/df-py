@@ -11,8 +11,10 @@ from util import cleancase
 
 @enforce_types
 def modTuple(approved_token_addrs, stakes, poolvols) -> Tuple[dict, dict]:
-    return (modStakes(approved_token_addrs, stakes),
-            modPoolvols(approved_token_addrs, poolvols))
+    return (
+        modStakes(approved_token_addrs, stakes),
+        modPoolvols(approved_token_addrs, poolvols),
+    )
 
 
 @enforce_types

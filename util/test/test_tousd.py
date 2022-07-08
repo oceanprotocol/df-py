@@ -19,14 +19,16 @@ def test_ratesToAddrRates_onechain_onetoken():
     symbols = {C1: {"0xOCEAN": "OCEAN"}}
     addr_rates = ratesToAddrRates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5}}
-    
+
+
 @enforce_types
 def test_ratesToAddrRates_onechain_twotokens():
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     symbols = {C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}}
     addr_rates = ratesToAddrRates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5, "0xH2O": 1.6}}
-    
+
+
 @enforce_types
 def test_ratesToAddrRates_twochains_twotokens():
     rates = {"OCEAN": 0.5}
@@ -34,36 +36,44 @@ def test_ratesToAddrRates_twochains_twotokens():
     addr_rates = ratesToAddrRates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {"0xOCEAN2": 0.5}}
 
+
 @enforce_types
 def test_ratesToAddrRates_extraneous_rate():
-    rates = {"OCEAN": 0.5, "H2O": 1.6} #H2O's here but not in symbols, so extraneous
-    symbols = {C1: {"0xOCEAN": "OCEAN"}} 
+    rates = {"OCEAN": 0.5, "H2O": 1.6}  # H2O's here but not in symbols, so extraneous
+    symbols = {C1: {"0xOCEAN": "OCEAN"}}
     addr_rates = ratesToAddrRates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5}}
-    
+
+
 @enforce_types
 def test_ratesToAddrRates_extraneous_symbol():
     rates = {"OCEAN": 0.5}
-    symbols = {C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}} #H2O's here but not in rates, so extraneous
+    symbols = {
+        C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}
+    }  # H2O's here but not in rates, so extraneous
     addr_rates = ratesToAddrRates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5}}
 
+
 @enforce_types
 def test_ratesToAddrRates_symbol_changes_between_chains():
-    #symbol on chain 2 is MOCEAN, not OCEAN!
+    # symbol on chain 2 is MOCEAN, not OCEAN!
     rates = {"OCEAN": 0.5}
     symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "MOCEAN"}}
 
-    #the result: it simply won't have an entry for 0xOCEAN2
+    # the result: it simply won't have an entry for 0xOCEAN2
     addr_rates = ratesToAddrRates(rates, symbols)
-    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {}} 
+    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {}}
 
-    #here's the intervention needed
+    # here's the intervention needed
     rates["MOCEAN"] = rates["OCEAN"]
 
-    #now it will work
+    # now it will work
     addr_rates = ratesToAddrRates(rates, symbols)
-    assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {"0xOCEAN2": 0.5}} #has entry for 0xOCEAN2
+    assert addr_rates == {
+        C1: {"0xOCEAN1": 0.5},
+        C2: {"0xOCEAN2": 0.5},
+    }  # has entry for 0xOCEAN2
 
 
 @enforce_types

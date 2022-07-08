@@ -16,7 +16,7 @@ def calcRewards(
     stakes: dict,
     poolvols: dict,
     approved_token_addrs: Dict[int, List[str]],
-    symbols: Dict[int, Dict[str,str]],
+    symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
     rewards_symbol: str,

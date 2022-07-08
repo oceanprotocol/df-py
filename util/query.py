@@ -347,9 +347,11 @@ def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
     @return
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
     """
-    return {tok.address : tok.symbol
-            for tok in approved_tokens.toks
-            if tok.chainID == chainID}
+    return {
+        tok.address: tok.symbol
+        for tok in approved_tokens.toks
+        if tok.chainID == chainID
+    }
 
 
 @enforce_types

@@ -93,7 +93,9 @@ def _test_getApprovedTokens():
 @enforce_types
 def _test_getSymbols():
     approved_tokens = query.getApprovedTokens(CHAINID)
-    symbols_at_chain = query.getSymbols(approved_tokens, CHAINID) #dict of [basetoken_addr] : basetoken_symbol
+    symbols_at_chain = query.getSymbols(
+        approved_tokens, CHAINID
+    )  # dict of [basetoken_addr] : basetoken_symbol
 
     OCEAN_tok = approved_tokens.tokAtSymbol(CHAINID, "OCEAN")
     assert symbols_at_chain[OCEAN_tok.address] == "OCEAN"

@@ -141,14 +141,15 @@ def test_approved(tmp_path):
 
     csvs.saveApprovedCsv(approved_C1, csv_dir, C1)
     csvs.saveApprovedCsv(approved_C2, csv_dir, C2)
-    
+
     loaded_approved_C1 = csvs.loadApprovedCsv(csv_dir, C1)
     loaded_approved_C2 = csvs.loadApprovedCsv(csv_dir, C2)
     loaded_approved = csvs.loadApprovedCsvs(csv_dir)
-    
+
     assert loaded_approved_C1 == approved_C1
     assert loaded_approved_C2 == approved_C2
     assert loaded_approved == {C1: approved_C1, C2: approved_C2}
+
 
 # =================================================================
 # symbols csvs
@@ -163,17 +164,17 @@ def test_chainIDforSymbolsCsv():
 @enforce_types
 def test_symbols(tmp_path):
     csv_dir = str(tmp_path)
-    
+
     symbols_C1 = {"0x123": "OCEAN", "0x456": "H2O"}
     symbols_C2 = {"0x789": "MOCEAN", "0xabc": "H2O"}
 
     csvs.saveSymbolsCsv(symbols_C1, csv_dir, C1)
     csvs.saveSymbolsCsv(symbols_C2, csv_dir, C2)
-    
+
     loaded_symbols_C1 = csvs.loadSymbolsCsv(csv_dir, C1)
     loaded_symbols_C2 = csvs.loadSymbolsCsv(csv_dir, C2)
     loaded_symbols = csvs.loadSymbolsCsvs(csv_dir)
-    
+
     assert loaded_symbols_C1 == symbols_C1
     assert loaded_symbols_C2 == symbols_C2
     assert loaded_symbols == {C1: symbols_C1, C2: symbols_C2}

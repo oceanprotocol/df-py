@@ -4,8 +4,7 @@ import pytest
 from util import cleancase, approvedfilter
 
 
-APPROVED_TOKEN_ADDRS = {1: ["0xocean",  "0xh2o" ],
-                        2: ["0xocean2", "Oxh2o2"]}
+APPROVED_TOKEN_ADDRS = {1: ["0xocean", "0xh2o"], 2: ["0xocean2", "Oxh2o2"]}
 
 
 @enforce_types
