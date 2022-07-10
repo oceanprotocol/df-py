@@ -111,7 +111,7 @@ Then, simply follow the usage directions:)
 In terminal:
 ```console
 #run tests for one method, with print statements to console. "-s" is to show output
-brownie test util/test/test_calcrewards.py::test_calcRewards1_onechain -s
+brownie test util/test/test_calcrewards.py::test_simple -s
 
 #run tests for one module
 brownie test util/test/test_calcrewards.py
