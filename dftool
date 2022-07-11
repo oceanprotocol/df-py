@@ -140,8 +140,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    seed = st_block + SECRET_SEED
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, seed)
+    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
     rng.filterByMaxBlock(len(chain))
     (Pi, Si, Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
     csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
