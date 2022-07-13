@@ -15,17 +15,17 @@ contract veAllocate {
         return veAllocation[_address][_id];
     }
 
-    function allocate(uint256 perc, string calldata _id) external {
+    function allocate(uint256 amount, string calldata _id) external {
         if (veAllocation[msg.sender][_id] == 0) {
             allocationToId[msg.sender][allocationCounter[msg.sender]] = _id;
             allocationCounter[msg.sender]++;
         } else {
-            require(veAllocation[msg.sender][_id] + perc <= 1000, "SM");
+            require(veAllocation[msg.sender][_id] + amount <= 1000, "SM");
         }
-        veAllocation[msg.sender][_id] = perc;
+        veAllocation[msg.sender][_id] = amount;
     }
 
-    function removeAllocation(string calldata _id, uint256 amount) external {
+    function removeAllocation(uint256 amount, string calldata _id) external {
         require(veAllocation[msg.sender][_id] >= amount, "SM");
         veAllocation[msg.sender][_id] -= amount;
     }
