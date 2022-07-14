@@ -294,6 +294,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
+    token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
     dispense.dispense(
         rewards[CHAINID],
