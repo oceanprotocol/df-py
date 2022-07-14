@@ -8,7 +8,15 @@ Outline:
 
 ### Step 0: Set envvars
 
-First, find your own `WEB3_INFURA_PROJECT_ID`. Then in console:
+First, make sure you have gone through the steps to install df-py given in the main README. 
+
+Then, be in the df-py directory with proper env't:
+```console
+cd df-py
+source venv/bin/activate
+```
+
+Then, find your own `WEB3_INFURA_PROJECT_ID`. Then in console:
 ```console
 export WEB3_INFURA_PROJECT_ID=FILLME #infura
 ```
