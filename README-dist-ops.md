@@ -148,7 +148,7 @@ Write & publish blog post:
 - Fill out info in new story, based on previous examples, adapting to your DFx. Prev: [DF1/2](https://medium.com/oceanprotocol/data-farming-df1-completed-df2-started-7a660ee84afe), [DF2/3](https://medium.com/oceanprotocol/data-farming-df2-completed-df3-started-cfedc32fa3c9), [DF3/4](https://blog.oceanprotocol.com/data-farming-df3-completed-df4-started-dc8958db5886)
 - Be sure to add stats to the story: use GDrive csvs
 - Be sure to link to the new data asset that you just published in Ocean Market
-- Be sure to update the image. Create the image from [these GSlides](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing) in [this Gfolder](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing)
+- Be sure to update the image. Create the image from [these GSlides](https://docs.google.com/presentation/d/1auR_fm19RvpkkiNEMDYU7hR_qU7To1kI3tDBzxe92bk/edit?usp=sharing) in [this Gfolder](https://drive.google.com/drive/folders/1Lz2qODAJUySIIKaMIysp-dVCThgLTUwx)
 - Be sure to set tags: Homepage, Data Farming, Artificial Intelligence, Defi, Data
 - Publish!
 
