@@ -57,8 +57,6 @@ dftool query $date $now 50 mydata 56
 dftool query $date $now 50 mydata 1285
 ```
 
-Then, open file `approved-137.csv`, and change `OCEAN` -> `MOCEAN` (Polygon workaround)
-
 Then, in console:
 ```console
 dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
