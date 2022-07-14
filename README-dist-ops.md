@@ -14,6 +14,7 @@ Then, be in the df-py directory with proper env't:
 ```console
 cd df-py
 source venv/bin/activate
+export PATH=$PATH:.
 ```
 
 Then, find your own `WEB3_INFURA_PROJECT_ID`. Then in console:
