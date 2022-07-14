@@ -45,7 +45,9 @@ export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
 In console, run the following: (can copy & paste):
 ```console
 export date=`date -d "last Thursday" '+%Y-%m-%d'`
+
 export now=`date '+%Y-%m-%d'`
+#if DF4, counting ended early, so instead use: `export now=2022-07-12`
 
 dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
 dftool getrate H2O $date $now mydata
