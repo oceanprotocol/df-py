@@ -60,9 +60,8 @@ def test_alice_locks_tokens():
     chain.sleep(WEEK)
 
     assert feeDistributor.token_last_balance() == TA * 2
-    print("here")
+
     before = veOcean.balanceOf(alice)
-    ocean.transfer(feeDistributor.address, TA, {"from": accounts[0]})
     feeDistributor.claim({"from": alice})  # alice claims rewards
     after = veOcean.balanceOf(alice)
     assert after > before
