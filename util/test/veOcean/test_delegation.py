@@ -12,7 +12,7 @@ accounts = None
 alice = None
 bob = None
 veOcean = None
-veBoost = None
+veDelegation = None
 ocean = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
@@ -39,7 +39,7 @@ def test_alice_creates_boost():
 
     # return print(veOcean.locked__end(alice), t2, t1)
 
-    veBoost.create_boost(
+    veDelegation.create_boost(
         alice,
         bob,
         10_000,
@@ -50,25 +50,25 @@ def test_alice_creates_boost():
     )  # 10_000 is max percentage
 
     with brownie.multicall(block_identifier=chain.height):
-        alice_adj_balance = veBoost.adjusted_balance_of(alice)
-        bob_adj_balance = veBoost.adjusted_balance_of(bob)
+        alice_adj_balance = veDelegation.adjusted_balance_of(alice)
+        bob_adj_balance = veDelegation.adjusted_balance_of(bob)
 
-        alice_delegated_boost = veBoost.delegated_boost(alice)
-        bob_received_boost = veBoost.received_boost(bob)
+        alice_delegated_boost = veDelegation.delegated_boost(alice)
+        bob_received_boost = veDelegation.received_boost(bob)
 
         alice_vecrv_balance = veOcean.balanceOf(alice)
-        token_boost_value = veBoost.token_boost(token_id)
+        token_boost_value = veDelegation.token_boost(token_id)
 
     assert alice_adj_balance == 0
     assert bob_adj_balance == alice_vecrv_balance
     assert bob_received_boost == alice_delegated_boost
     assert token_boost_value == alice_delegated_boost
-    assert veBoost.token_expiry(token_id) == (t2 // WEEK) * WEEK
+    assert veDelegation.token_expiry(token_id) == (t2 // WEEK) * WEEK
 
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, veOcean, ocean, veBoost
+    global accounts, alice, bob, veOcean, ocean, veDelegation
     networkutil.connect(networkutil.DEV_CHAINID)
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
@@ -81,9 +81,9 @@ def setup_function():
         ocean.address, "veOcean", "veOcean", "0.1.0", {"from": alice}
     )
 
-    veBoost = B.veBoost.deploy(
+    veDelegation = B.veDelegation.deploy(
         "Voting Escrow Boost Delegation",
-        "veBoost",
+        "veDelegation",
         "",
         veOcean.address,
         {"from": alice},
