@@ -29,7 +29,7 @@ def sleep_chain_week():
 
 @enforce_types
 def test_alice_locks_tokens():
-    """sending native tokens to dfrewards contract should revert"""
+    """Claims before lock ends. User receives veOCEAN"""
 
     veOcean.checkpoint()
     ocean.approve(veOcean.address, TA, {"from": alice})
@@ -50,15 +50,16 @@ def test_alice_locks_tokens():
 
     assert feeDistributor.token_last_balance() == TA * 14
 
-    before = veOcean.balanceOf(alice)
+    alice_balance_ve_before = veOcean.balanceOf(alice)
     feeDistributor.claim({"from": alice})  # alice claims rewards
-    after = veOcean.balanceOf(alice)
-    assert after > before
+    alice_balance_ve_after = veOcean.balanceOf(alice)
+    
+    assert alice_balance_ve_after > alice_balance_ve_before
 
 
 @enforce_types
 def test_alice_locks_tokens_exact():
-    """sending native tokens to dfrewards contract should revert"""
+    """Claims before lock ends. User receives veOCEAN"""
 
     veOcean.checkpoint()
     ocean.approve(veOcean.address, TA, {"from": alice})
@@ -91,17 +92,20 @@ def test_alice_locks_tokens_exact():
     fee_distributor.checkpoint_token()
 
     before = ocean.balanceOf(fee_distributor)
-    alice_before = veOcean.balanceOf(alice)
+    alice_balance_ve_before = veOcean.balanceOf(alice)
+    alice_balance_ocean_before = ocean.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
-    alice_after = veOcean.balanceOf(alice)
+    alice_balance_ve_after = veOcean.balanceOf(alice)
+    alice_balance_ocean_after = ocean.balanceOf(alice)
 
     assert (before - TA) < 10
-    assert abs(alice_before * 2 - alice_after) < 1e18
+    assert abs(alice_balance_ve_before * 2 - alice_balance_ve_after) < 1e18
+    assert abs(alice_balance_ocean_before == alice_balance_ocean_after)
 
 
 @enforce_types
 def test_alice_claims_after_lock_ends():
-    """sending native tokens to dfrewards contract should revert"""
+    """Claims after lock ends. User receives Ocean"""
 
     veOcean.checkpoint()
     ocean.approve(veOcean.address, TA, {"from": alice})
@@ -138,12 +142,12 @@ def test_alice_claims_after_lock_ends():
     before = ocean.balanceOf(fee_distributor)
     alice_balance_ve_before = veOcean.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
-    alice_balance_ocean = ocean.balanceOf(alice)
+    alice_balance_ocean_after = ocean.balanceOf(alice)
     alice_balance_ve_after = veOcean.balanceOf(alice)
 
     assert (before - TA) < 10
     assert alice_balance_ve_after == alice_balance_ve_before
-    assert abs(alice_balance_ocean - TA * 2) < 10
+    assert abs(alice_balance_ocean_after - TA * 2) < 10
 
 
 @enforce_types
