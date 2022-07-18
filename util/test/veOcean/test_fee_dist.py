@@ -28,7 +28,7 @@ def sleep_chain_week():
 
 
 @enforce_types
-def test_alice_locks_tokens():
+def test_alice_locks_tokens_after():
     """sending native tokens to dfrewards contract should revert"""
 
     veOcean.checkpoint()
@@ -36,10 +36,6 @@ def test_alice_locks_tokens():
 
     t0 = chain.time()
     t1 = t0 + WEEK * 10
-
-    assert ocean.balanceOf(alice) != 0
-    veOcean.create_lock(TA, t1, {"from": alice})  # lock for 10 weeks
-    assert ocean.balanceOf(alice) == 0
 
     for _ in range(14):  # 2 weeks
         ocean.transfer(feeDistributor.address, TA, {"from": accounts[0]})
@@ -50,10 +46,14 @@ def test_alice_locks_tokens():
 
     assert feeDistributor.token_last_balance() == TA * 14
 
+    assert ocean.balanceOf(alice) != 0
+    veOcean.create_lock(TA, t1, {"from": alice})  # lock for 10 weeks
+    assert ocean.balanceOf(alice) == 0
+
     before = veOcean.balanceOf(alice)
     feeDistributor.claim({"from": alice})  # alice claims rewards
     after = veOcean.balanceOf(alice)
-    assert after > before
+    assert after == before
 
 
 @enforce_types
