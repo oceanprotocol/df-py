@@ -179,10 +179,10 @@ def _find_timestamp_user_epoch(ve: address, user: address, _timestamp: uint256, 
 @external
 def ve_for_at(_user: address, _timestamp: uint256) -> uint256:
     """
-    @notice Get the veCRV balance for `_user` at `_timestamp`
+    @notice Get the veOCEAN balance for `_user` at `_timestamp`
     @param _user Address to query balance for
     @param _timestamp Epoch time
-    @return uint256 veCRV balance
+    @return uint256 veOCEAN balance
     """
     ve: address = self.voting_escrow
     max_user_epoch: uint256 = VotingEscrow(ve).user_point_epoch(_user)
@@ -218,7 +218,7 @@ def _checkpoint_total_supply():
 @external
 def checkpoint_total_supply():
     """
-    @notice Update the veCRV total supply checkpoint
+    @notice Update the veOCEAN total supply checkpoint
     @dev The checkpoint is also updated by the first claimant each
          new epoch week. This function may be called independently
          of a claim, to reduce claiming gas costs.
@@ -300,8 +300,8 @@ def _claim(addr: address, ve: address, _last_token_time: uint256) -> uint256:
 def claim(_addr: address = msg.sender) -> uint256:
     """
     @notice Claim fees for `_addr`
-    @dev Each call to claim look at a maximum of 50 user veCRV points.
-         For accounts with many veCRV related actions, this function
+    @dev Each call to claim look at a maximum of 50 user veOCEAN points.
+         For accounts with many veOCEAN related actions, this function
          may need to be called more than once to claim all available
          fees. In the `Claimed` event that fires, if `claim_epoch` is
          less than `max_epoch`, the account may claim again.
@@ -344,7 +344,7 @@ def claim_many(_receivers: address[20]) -> bool:
     @notice Make multiple fee claims in a single call
     @dev Used to claim for many accounts at once, or to make
          multiple claims for the same address when that address
-         has significant veCRV history
+         has significant veOCEAN history
     @param _receivers List of addresses to claim for. Claiming
                       terminates at the first `ZERO_ADDRESS`.
     @return bool success

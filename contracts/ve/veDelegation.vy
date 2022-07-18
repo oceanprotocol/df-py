@@ -320,7 +320,7 @@ def _burn_boost(_token_id: uint256, _delegator: address, _receiver: address, _bi
         # expiries != 0, the cancelled boost token isn't the only one expiring at expire_time
         for i in range(513):  # ~10 years
             # we essentially allow for a boost token be expired for up to 6 years
-            # 10 yrs - 4 yrs (max vecRV lock time) = ~ 6 yrs
+            # 10 yrs - 4 yrs (max veOCEAN lock time) = ~ 6 yrs
             if i == 512:
                 raise "Failed to find next expiry"
             week_ts: uint256 = expire_time + WEEK * (i + 1)
@@ -584,10 +584,10 @@ def create_boost(
     """
     @notice Create a boost and delegate it to another account.
     @dev Delegated boost can become negative, and requires active management, else
-        the adjusted veCRV balance of the delegator's account will decrease until reaching 0
+        the adjusted veOCEAN balance of the delegator's account will decrease until reaching 0
     @param _delegator The account to delegate boost from
     @param _receiver The account to receive the delegated boost
-    @param _percentage Since veCRV is a constantly decreasing asset, we use percentage to determine
+    @param _percentage Since veOCEAN is a constantly decreasing asset, we use percentage to determine
         the amount of delegator's boost to delegate
     @param _cancel_time A point in time before _expire_time in which the delegator or their operator
         can cancel the delegated boost
@@ -661,7 +661,7 @@ def extend_boost(_token_id: uint256, _percentage: int256, _expire_time: uint256,
         AFTER burning the token's current boost
     @param _expire_time The new time at which the boost value will become
         0, and eventually negative. Must be greater than the previous expiry time,
-        and atleast a WEEK from now, and less than the veCRV lock expiry of the
+        and atleast a WEEK from now, and less than the veOCEAN lock expiry of the
         delegator's account. This value is rounded down to the nearest WEEK.
     """
     delegator: address = convert(shift(_token_id, -96), address)
@@ -708,7 +708,7 @@ def extend_boost(_token_id: uint256, _percentage: int256, _expire_time: uint256,
     # delegated slope and bias
     point = self._deconstruct_bias_slope(self.boost[delegator].delegated)
 
-    # verify delegated boost isn't negative, else it'll inflate out vecrv balance
+    # verify delegated boost isn't negative, else it'll inflate out veOCEAN balance
     delegated_boost: int256 = point.slope * time + point.bias
     y: int256 = _percentage * (VotingEscrow(self.veOcean).balanceOf(delegator) - delegated_boost) / MAX_PCT
     # a delegator can snipe the exact moment a token expires and create a boost
@@ -805,7 +805,7 @@ def batch_set_delegation_status(_receiver: address, _delegators: address[256], _
 @external
 def adjusted_balance_of(_account: address) -> uint256:
     """
-    @notice Adjusted veCRV balance after accounting for delegations and boosts
+    @notice Adjusted veOCEAN balance after accounting for delegations and boosts
     @dev If boosts/delegations have a negative value, they're effective value is 0
     @param _account The account to query the adjusted balance of
     """
@@ -827,9 +827,9 @@ def adjusted_balance_of(_account: address) -> uint256:
 
         # we take the absolute value, since delegated boost can be negative
         # if any outstanding negative boosts are in circulation
-        # this can inflate the vecrv balance of a user
+        # this can inflate the veOCEAN balance of a user
         # taking the absolute value has the effect that it costs
-        # a user to negatively impact another's vecrv balance
+        # a user to negatively impact another's veOCEAN balance
         adjusted_balance -= abs(dpoint.slope * time + dpoint.bias)
 
     if boost.received != 0:
@@ -846,7 +846,7 @@ def adjusted_balance_of(_account: address) -> uint256:
     # since we took the absolute value of our delegated boost, it now instead of
     # becoming negative is positive, and will continue to increase ...
     # meaning if we keep a negative outstanding delegated balance for long
-    # enought it will not only decrease our vecrv_balance but also our received
+    # enought it will not only decrease our veOCEAN_balance but also our received
     # boost, however we return the maximum between our adjusted balance and 0
     # when delegating boost, received boost isn't used for determining how
     # much we can delegate.
@@ -858,7 +858,7 @@ def adjusted_balance_of(_account: address) -> uint256:
 def delegated_boost(_account: address) -> uint256:
     """
     @notice Query the total effective delegated boost value of an account.
-    @dev This value can be greater than the veCRV balance of
+    @dev This value can be greater than the veOCEAN balance of
         an account if the account has outstanding negative
         value boosts.
     @param _account The account to query
@@ -933,7 +933,7 @@ def calc_boost_bias_slope(
     @notice Calculate the bias and slope for a boost.
     @param _delegator The account to delegate boost from
     @param _percentage The percentage of the _delegator's delegable
-        veCRV to delegate.
+        veOCEAN to delegate.
     @param _expire_time The time at which the boost value of the token
         will reach 0, and subsequently become negative
     @param _extend_token_id OPTIONAL token id, which if set will first nullify

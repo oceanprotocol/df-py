@@ -55,11 +55,11 @@ def test_alice_creates_boost():
         alice_delegated_boost = veDelegation.delegated_boost(alice)
         bob_received_boost = veDelegation.received_boost(bob)
 
-        alice_vecrv_balance = veOcean.balanceOf(alice)
+        alice_veOCEAN_balance = veOcean.balanceOf(alice)
         token_boost_value = veDelegation.token_boost(token_id)
 
     assert alice_adj_balance == 0
-    assert bob_adj_balance == alice_vecrv_balance
+    assert bob_adj_balance == alice_veOCEAN_balance
     assert bob_received_boost == alice_delegated_boost
     assert token_boost_value == alice_delegated_boost
     assert veDelegation.token_expiry(token_id) == (t2 // WEEK) * WEEK
