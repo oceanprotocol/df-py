@@ -13,25 +13,25 @@ veAllocate = None
 def test_allocate():
     """sending native tokens to dfrewards contract should revert"""
 
-    veAllocate.allocate(100, "test", {"from": accounts[0]})
+    veAllocate.setAllocation(100, "test", {"from": accounts[0]})
     allocation = veAllocate.totalAllocation(accounts[0].address)
     assert allocation[0] == 100
     assert allocation[1][0] == "test"
     assert allocation[2][0] == 100
 
-    veAllocate.allocate(25, "test2", {"from": accounts[0]})
+    veAllocate.setAllocation(25, "test2", {"from": accounts[0]})
     allocation = veAllocate.totalAllocation(accounts[0].address)
     assert allocation[0] == 125
     assert allocation[1][1] == "test2"
     assert allocation[2][1] == 25
 
-    veAllocate.allocate(50, "test3", {"from": accounts[0]})
+    veAllocate.setAllocation(50, "test3", {"from": accounts[0]})
     allocation = veAllocate.totalAllocation(accounts[0].address)
     assert allocation[0] == 175
     assert allocation[1][2] == "test3"
     assert allocation[2][2] == 50
 
-    veAllocate.removeAllocation(50, "test3", {"from": accounts[0]})
+    veAllocate.setAllocation(0, "test3", {"from": accounts[0]})
     allocation = veAllocate.totalAllocation(accounts[0].address)
     assert allocation[0] == 125
     assert allocation[1][2] == "test3"
