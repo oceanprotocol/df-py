@@ -14,28 +14,24 @@ def test_allocate():
     """sending native tokens to dfrewards contract should revert"""
 
     veAllocate.setAllocation(100, "test", {"from": accounts[0]})
-    allocation = veAllocate.totalAllocation(accounts[0].address)
-    assert allocation[0] == 100
-    assert allocation[1][0] == "test"
-    assert allocation[2][0] == 100
+    allocation = veAllocate.getTotalAllocation(accounts[0].address, 100, 0)
+    assert allocation[0][0] == "test"
+    assert allocation[1][0] == 100
 
     veAllocate.setAllocation(25, "test2", {"from": accounts[0]})
-    allocation = veAllocate.totalAllocation(accounts[0].address)
-    assert allocation[0] == 125
-    assert allocation[1][1] == "test2"
-    assert allocation[2][1] == 25
+    allocation = veAllocate.getTotalAllocation(accounts[0].address, 100, 0)
+    assert allocation[0][1] == "test2"
+    assert allocation[1][1] == 25
 
     veAllocate.setAllocation(50, "test3", {"from": accounts[0]})
-    allocation = veAllocate.totalAllocation(accounts[0].address)
-    assert allocation[0] == 175
-    assert allocation[1][2] == "test3"
-    assert allocation[2][2] == 50
+    allocation = veAllocate.getTotalAllocation(accounts[0].address, 100, 0)
+    assert allocation[0][2] == "test3"
+    assert allocation[1][2] == 50
 
-    veAllocate.setAllocation(0, "test3", {"from": accounts[0]})
-    allocation = veAllocate.totalAllocation(accounts[0].address)
-    assert allocation[0] == 125
-    assert allocation[1][2] == "test3"
-    assert allocation[2][2] == 0
+    veAllocate.setAllocation(0, "test", {"from": accounts[0]})
+    allocation = veAllocate.getTotalAllocation(accounts[0].address, 100, 0)
+    assert allocation[0][0] == "test3"
+    assert allocation[1][0] == 50
 
 
 @enforce_types

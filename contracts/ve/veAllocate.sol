@@ -5,6 +5,7 @@ contract veAllocate {
     mapping(address => uint256) allocationCounter;
     mapping(address => mapping(uint256 => string)) allocationToId;
     mapping(address => mapping(string => uint256)) idToAllocation;
+    mapping(address => uint256) _totalAllocation;
 
     event AllocationSet(
         address indexed sender,
@@ -26,13 +27,18 @@ contract veAllocate {
     function setAllocation(uint256 amount, string calldata _id) external {
         require(bytes(_id).length < 50, "Id too long");
         require(amount <= 1000, "BM");
-        require(amount > 0, "SM");
 
         if (veAllocation[msg.sender][_id] == 0) {
+            require(amount > 0, "SM");
             allocationToId[msg.sender][allocationCounter[msg.sender]] = _id;
             idToAllocation[msg.sender][_id] = allocationCounter[msg.sender];
             allocationCounter[msg.sender]++;
         }
+
+        _totalAllocation[msg.sender] =
+            _totalAllocation[msg.sender] +
+            amount -
+            veAllocation[msg.sender][_id];
 
         if (amount == 0) {
             _removeAllocation(_id);
@@ -62,19 +68,22 @@ contract veAllocate {
         emit AllocationRemoved(msg.sender, _id);
     }
 
-    function totalAllocation(
+    function getTotalAllocation(
         address _address,
         uint256 limit,
         uint256 skip
-    ) external view returns (string[] memory, uint256[] memory) {
+    )
+        external
+        view
+        returns (
+            string[] memory allocationIds,
+            uint256[] memory allocationAmounts
+        )
+    {
         // array of strings
-        string[] memory allocationIds = new string[](
-            allocationCounter[_address]
-        );
+        allocationIds = new string[](allocationCounter[_address]);
 
-        uint256[] memory allocationAmounts = new uint256[](
-            allocationCounter[_address]
-        );
+        allocationAmounts = new uint256[](allocationCounter[_address]);
 
         uint256 _limit = 0;
         if (allocationCounter[_address] > limit + skip) {
@@ -89,6 +98,5 @@ contract veAllocate {
                 allocationToId[_address][i]
             ];
         }
-        return (allocationIds, allocationAmounts);
     }
 }
