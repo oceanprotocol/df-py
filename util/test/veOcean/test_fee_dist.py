@@ -54,7 +54,7 @@ def test_alice_locks_tokens_after():
     before = veOCEAN.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
     after = veOCEAN.balanceOf(alice)
-    assert abs(after - before) < 1e12
+    assert after == before
 
 
 @enforce_types
