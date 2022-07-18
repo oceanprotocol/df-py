@@ -19,7 +19,7 @@ from util import (
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
-from util.oceanutil import recordDeployedContracts, OCEANtoken
+from util.oceanutil import OCEAN_address, recordDeployedContracts, OCEANtoken
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
@@ -56,6 +56,9 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
+
+  dftool newVeOcean CHAINID - deploy veOcean (for testing)
+  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
 
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
@@ -585,6 +588,56 @@ Usage: dftool newtoken CHAINID
     token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
 
+# ========================================================================
+@enforce_types
+def do_newVeOcean():
+    HELP = """Generate new veOcean (for testing).
+
+Usage: dftool newVeOcean CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "newVeOcean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+
+    # Give balance for OCEAN token too.
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        veOcean = B.veOcean.deploy(OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account})
+        print(f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}")
+
+
+# ========================================================================
+@enforce_types
+def do_newVeAllocate():
+    HELP = """Generate new veAllocate (for testing).
+
+Usage: dftool newVeAllocate CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "newVeAllocate"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+    veAllocate = B.veAllocate.deploy({"from": from_account})
+    print(f"veAllocate contract deployed at address: {veAllocate.address}")
+
 
 # ========================================================================
 @enforce_types
@@ -739,6 +792,10 @@ def do_main():
         do_newacct()
     elif sys.argv[1] == "newtoken":
         do_newtoken()
+    elif sys.argv[1] == "newVeOcean":
+        do_newVeOcean()
+    elif sys.argv[1] == "newVeAllocate":
+        do_newVeAllocate()
 
     # read actions
     elif sys.argv[1] == "acctinfo":
