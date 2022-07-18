@@ -612,6 +612,7 @@ Usage: dftool newVeOcean CHAINID
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
+        # pylint: disable=line-too-long
         veOcean = B.veOcean.deploy(OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account})
         print(f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}")
 
