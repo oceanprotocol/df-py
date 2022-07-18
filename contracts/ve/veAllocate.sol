@@ -24,6 +24,16 @@ contract veAllocate {
         return veAllocation[_address][_id];
     }
 
+    function getTotalAllocation(address _address)
+        public
+        view
+        returns (uint256)
+    {
+        // string is {DT Address}-{chain id}
+        // returns the allocation perc for given address
+        return _totalAllocation[_address];
+    }
+
     function setAllocation(uint256 amount, string calldata _id) external {
         require(bytes(_id).length < 50, "Id too long");
         require(amount <= 1000, "BM");
