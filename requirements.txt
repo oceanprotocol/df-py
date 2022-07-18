@@ -4,5 +4,4 @@ mypy
 numpy
 pandas
 scipy
-vyper
 types-requests
