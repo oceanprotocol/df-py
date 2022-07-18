@@ -12,7 +12,7 @@ accounts = None
 alice = None
 bob = None
 veOCEAN = None
-ocean = None
+OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
@@ -23,18 +23,18 @@ TA = 10e18
 def test_alice_locks_tokens():
     """sending native tokens to dfrewards contract should revert"""
     veOCEAN.checkpoint()
-    ocean.approve(veOCEAN.address, TA, {"from": alice})
+    OCEAN.approve(veOCEAN.address, TA, {"from": alice})
 
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK
     t2 = t1 + WEEK
     chain.sleep(t1 - t0)
 
-    assert ocean.balanceOf(alice) != 0
+    assert OCEAN.balanceOf(alice) != 0
 
     veOCEAN.create_lock(TA, t2, {"from": alice})
 
-    assert ocean.balanceOf(alice) == 0
+    assert OCEAN.balanceOf(alice) == 0
 
     epoch = veOCEAN.user_point_epoch(alice)
     assert epoch != 0
@@ -48,7 +48,7 @@ def test_alice_locks_tokens():
     chain.mine()
 
     veOCEAN.withdraw({"from": alice})
-    assert ocean.balanceOf(alice) == TA
+    assert OCEAN.balanceOf(alice) == TA
 
     assert veOCEAN.get_last_user_slope(alice) == 0
     assert veOCEAN.balanceOf(alice, chain.time()) == 0
@@ -58,16 +58,16 @@ def test_alice_locks_tokens():
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     oceanutil.recordDevDeployedContracts()
-    global accounts, alice, bob, veOCEAN, ocean
+    global accounts, alice, bob, veOCEAN, OCEAN
     accounts = brownie.network.accounts
 
     alice = accounts.add()
     bob = accounts.add()
 
-    ocean = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     veOCEAN = B.veOcean.deploy(
-        ocean.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
+        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
 
-    ocean.transfer(alice, TA, {"from": accounts[0]})
-    ocean.transfer(bob, TA, {"from": accounts[0]})
+    OCEAN.transfer(alice, TA, {"from": accounts[0]})
+    OCEAN.transfer(bob, TA, {"from": accounts[0]})
