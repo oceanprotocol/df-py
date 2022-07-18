@@ -12,7 +12,7 @@ alice = None
 bob = None
 veOCEAN = None
 veDelegation = None
-ocean = None
+OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
@@ -23,16 +23,16 @@ TA = 10e18
 def test_alice_creates_boost():
     """sending native tokens to dfrewards contract should revert"""
     veOCEAN.checkpoint()
-    ocean.approve(veOCEAN.address, TA, {"from": alice})
+    OCEAN.approve(veOCEAN.address, TA, {"from": alice})
 
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK
     t2 = t1 + WEEK * 5
     chain.sleep(t1 - t0)
 
-    assert ocean.balanceOf(alice) != 0
+    assert OCEAN.balanceOf(alice) != 0
     veOCEAN.create_lock(TA, t2, {"from": alice})
-    assert ocean.balanceOf(alice) == 0
+    assert OCEAN.balanceOf(alice) == 0
 
     token_id = convert.to_uint(alice.address) << 96
 
@@ -65,7 +65,7 @@ def test_alice_creates_boost():
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, veOCEAN, ocean, veDelegation
+    global accounts, alice, bob, veOCEAN, OCEAN, veDelegation
     networkutil.connect(networkutil.DEV_CHAINID)
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
@@ -73,9 +73,9 @@ def setup_function():
     alice = accounts.add()
     bob = accounts.add()
 
-    ocean = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEANtoken()
     veOCEAN = B.veOCEAN.deploy(
-        ocean.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
+        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
 
     veDelegation = B.veDelegation.deploy(
@@ -86,5 +86,5 @@ def setup_function():
         {"from": alice},
     )
 
-    ocean.transfer(alice, TA, {"from": accounts[0]})
-    ocean.transfer(bob, TA, {"from": accounts[0]})
+    OCEAN.transfer(alice, TA, {"from": accounts[0]})
+    OCEAN.transfer(bob, TA, {"from": accounts[0]})
