@@ -12,7 +12,6 @@ alice = None
 bob = None
 veOcean = None
 ocean = None
-feeDistributor = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
@@ -21,39 +20,42 @@ DAY = 86400
 
 
 @enforce_types
-def sleep_chain_week():
-    t0 = chain.time()
-    t1 = t0 // WEEK * WEEK
-    chain.sleep(t1 - t0)
-
-
-@enforce_types
-def test_alice_locks_tokens():
+def test_alice_locks_tokens_after():
     """sending native tokens to dfrewards contract should revert"""
 
-    veOcean.checkpoint()
+    fee_distributor = B.FeeDistributor.deploy(
+        veOcean.address,
+        chain.time(),
+        ocean.address,
+        accounts[0].address,
+        accounts[0].address,
+        {
+            "from": accounts[0],
+        },
+    )
+
     ocean.approve(veOcean.address, TA, {"from": alice})
 
     t0 = chain.time()
     t1 = t0 + WEEK * 10
 
+    for _ in range(14):  # 2 weeks
+        ocean.transfer(fee_distributor.address, TA, {"from": accounts[0]})
+        fee_distributor.checkpoint_token()
+        fee_distributor.checkpoint_total_supply()
+        chain.sleep(DAY)
+        chain.mine()
+
+    assert fee_distributor.token_last_balance() == TA * 14
+
     assert ocean.balanceOf(alice) != 0
     veOcean.create_lock(TA, t1, {"from": alice})  # lock for 10 weeks
     assert ocean.balanceOf(alice) == 0
 
-    for _ in range(14):  # 2 weeks
-        ocean.transfer(feeDistributor.address, TA, {"from": accounts[0]})
-        feeDistributor.checkpoint_token()
-        feeDistributor.checkpoint_total_supply()
-        chain.sleep(DAY)
-        chain.mine()
-
-    assert feeDistributor.token_last_balance() == TA * 14
-
     before = veOcean.balanceOf(alice)
-    feeDistributor.claim({"from": alice})  # alice claims rewards
+    fee_distributor.claim({"from": alice})  # alice claims rewards
     after = veOcean.balanceOf(alice)
-    assert after > before
+    assert after == before
 
 
 @enforce_types
@@ -163,15 +165,3 @@ def setup_function():
 
     ocean.transfer(alice, TA, {"from": accounts[0]})
     ocean.transfer(bob, TA, {"from": accounts[0]})
-
-    feeDistributor = B.FeeDistributor.deploy(
-        veOcean.address,
-        chain.time() // WEEK * WEEK,
-        ocean.address,
-        accounts[0].address,
-        accounts[0].address,
-        {
-            "from": accounts[0],
-        },
-    )
-    sleep_chain_week()

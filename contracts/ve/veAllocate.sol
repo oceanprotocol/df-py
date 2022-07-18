@@ -6,6 +6,17 @@ contract veAllocate {
     mapping(address => mapping(uint256 => string)) allocationToId;
     mapping(address => mapping(string => uint256)) idToAllocation;
 
+    event AllocationAdded(
+        address indexed sender,
+        string indexed id,
+        uint256 amount
+    );
+    event AllocationRemoved(
+        address indexed sender,
+        string indexed id,
+        uint256 amount
+    );
+
     function getveAllocation(address _address, string calldata _id)
         public
         view
@@ -25,6 +36,8 @@ contract veAllocate {
         }
         require(veAllocation[msg.sender][_id] + amount <= 1000, "SM");
         veAllocation[msg.sender][_id] = amount;
+
+        emit AllocationAdded(msg.sender, _id, amount);
     }
 
     function removeAllocation(uint256 amount, string calldata _id) external {
@@ -45,6 +58,7 @@ contract veAllocate {
             delete idToAllocation[msg.sender][_id];
             allocationCounter[msg.sender]--;
         }
+        emit AllocationRemoved(msg.sender, _id, amount);
     }
 
     function totalAllocation(
