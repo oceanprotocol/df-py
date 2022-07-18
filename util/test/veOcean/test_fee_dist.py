@@ -32,9 +32,6 @@ def test_alice_locks_tokens_after():
             "from": accounts[0],
         },
     )
-
-    OCEAN.approve(veOCEAN.address, TA, {"from": alice})
-
     t0 = chain.time()
     t1 = t0 + WEEK * 10
 
@@ -45,16 +42,25 @@ def test_alice_locks_tokens_after():
         chain.sleep(DAY)
         chain.mine()
 
+    chain.sleep(WEEK)
+    chain.mine()
+
     assert fee_distributor.token_last_balance() == TA * 14
 
     assert OCEAN.balanceOf(alice) != 0
+    OCEAN.approve(veOCEAN.address, TA, {"from": alice})
     veOCEAN.create_lock(TA, t1, {"from": alice})  # lock for 10 weeks
     assert OCEAN.balanceOf(alice) == 0
+    chain.sleep(2 * WEEK)
+    chain.mine()
 
-    before = veOCEAN.balanceOf(alice)
+    before_f = OCEAN.balanceOf(fee_distributor)
+    before_a = veOCEAN.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
-    after = veOCEAN.balanceOf(alice)
-    assert after == before
+    after_f = OCEAN.balanceOf(fee_distributor)
+    after_a = veOCEAN.balanceOf(alice)
+    assert after_f == before_f
+    assert abs(after_a - before_a) < toBase18(0.01)
 
 
 @enforce_types
