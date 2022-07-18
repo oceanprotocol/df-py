@@ -4,6 +4,7 @@ contract veAllocate {
     mapping(address => mapping(string => uint256)) veAllocation;
     mapping(address => uint256) allocationCounter;
     mapping(address => mapping(uint256 => string)) allocationToId;
+    mapping(address => mapping(string => uint256)) idToAllocation;
 
     function getveAllocation(address _address, string calldata _id)
         public
@@ -16,30 +17,41 @@ contract veAllocate {
     }
 
     function allocate(uint256 amount, string calldata _id) external {
+        require(bytes(_id).length < 50, "Id too long");
         if (veAllocation[msg.sender][_id] == 0) {
             allocationToId[msg.sender][allocationCounter[msg.sender]] = _id;
+            idToAllocation[msg.sender][_id] = allocationCounter[msg.sender];
             allocationCounter[msg.sender]++;
-        } else {
-            require(veAllocation[msg.sender][_id] + amount <= 1000, "SM");
         }
+        require(veAllocation[msg.sender][_id] + amount <= 1000, "SM");
         veAllocation[msg.sender][_id] = amount;
     }
 
     function removeAllocation(uint256 amount, string calldata _id) external {
         require(veAllocation[msg.sender][_id] >= amount, "SM");
+
         veAllocation[msg.sender][_id] -= amount;
+
+        if (veAllocation[msg.sender][_id] == 0) {
+            uint256 no = idToAllocation[msg.sender][_id];
+            allocationToId[msg.sender][no] = allocationToId[msg.sender][
+                allocationCounter[msg.sender] - 1
+            ]; // swap last with this one
+            idToAllocation[msg.sender][allocationToId[msg.sender][no]] = no; // swap last with this one
+
+            delete allocationToId[msg.sender][
+                allocationCounter[msg.sender] - 1
+            ];
+            delete idToAllocation[msg.sender][_id];
+            allocationCounter[msg.sender]--;
+        }
     }
 
-    function totalAllocation(address _address)
-        external
-        view
-        returns (
-            uint256,
-            string[] memory,
-            uint256[] memory
-        )
-    {
-        uint256 total = 0;
+    function totalAllocation(
+        address _address,
+        uint256 limit,
+        uint256 skip
+    ) external view returns (string[] memory, uint256[] memory) {
         // array of strings
         string[] memory allocationIds = new string[](
             allocationCounter[_address]
@@ -49,13 +61,19 @@ contract veAllocate {
             allocationCounter[_address]
         );
 
-        for (uint256 i = 0; i < allocationCounter[_address]; i++) {
-            total += veAllocation[_address][allocationToId[_address][i]];
+        uint256 _limit = 0;
+        if (allocationCounter[_address] > limit + skip) {
+            _limit = limit;
+        } else {
+            _limit = allocationCounter[_address] - skip;
+        }
+
+        for (uint256 i = skip; i < skip + _limit; i++) {
             allocationIds[i] = allocationToId[_address][i];
             allocationAmounts[i] = veAllocation[_address][
                 allocationToId[_address][i]
             ];
         }
-        return (total, allocationIds, allocationAmounts);
+        return (allocationIds, allocationAmounts);
     }
 }
