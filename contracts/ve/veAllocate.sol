@@ -54,8 +54,8 @@ contract veAllocate {
             _removeAllocation(_id);
         } else {
             veAllocation[msg.sender][_id] = amount;
-            emit AllocationSet(msg.sender, _id, amount);
         }
+        emit AllocationSet(msg.sender, _id, amount);
     }
 
     function _removeAllocation(string calldata _id) internal {
