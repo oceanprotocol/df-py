@@ -15,7 +15,7 @@ OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = 10e18
+TA = toBase18(10.0)
 DAY = 86400
 
 
@@ -98,7 +98,7 @@ def test_alice_locks_tokens_exact():
     alice_after = veOCEAN.balanceOf(alice)
 
     assert (before - TA) < 10
-    assert abs(alice_before * 2 - alice_after) < 1e18
+    assert abs(alice_before * 2 - alice_after) < toBase18(1.0)
 
 
 @enforce_types

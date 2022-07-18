@@ -16,7 +16,7 @@ OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = 10e18
+TA = toBase18(10.0)
 
 
 @enforce_types

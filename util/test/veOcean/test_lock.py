@@ -16,7 +16,7 @@ OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = 10e18
+TA = toBase18(10.0)
 
 
 @enforce_types
@@ -40,8 +40,8 @@ def test_alice_locks_tokens():
     assert epoch != 0
 
     assert veOCEAN.get_last_user_slope(alice) != 0
-    aliceVotingPower = (veOCEAN.balanceOf(alice, chain.time())) / 1e18
-    expectedVotingPower = (TA * WEEK / MAXTIME) / 1e18
+    aliceVotingPower = (veOCEAN.balanceOf(alice, chain.time())) / toBase18(1.0)
+    expectedVotingPower = (TA * WEEK / MAXTIME) / toBase18(1.0)
     assert aliceVotingPower == approx(expectedVotingPower, 0.5)
 
     brownie.network.chain.sleep(t2)
