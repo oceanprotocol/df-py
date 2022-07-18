@@ -26,7 +26,7 @@ def test_alice_locks_tokens():
     OCEAN.approve(veOCEAN.address, TA, {"from": alice})
 
     t0 = chain.time()
-    t1 = t0 // WEEK * WEEK
+    t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + WEEK
     chain.sleep(t1 - t0)
 
