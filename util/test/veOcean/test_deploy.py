@@ -13,11 +13,11 @@ def test_deploy_ve():
     """sending native tokens to dfrewards contract should revert"""
     ocean = oceanutil.OCEANtoken()
 
-    veOcean = B.veOcean.deploy(
-        ocean.address, "veOcean", "veOcean", "0.1.0", {"from": accounts[0]}
+    veOCEAN = B.veOCEAN.deploy(
+        ocean.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": accounts[0]}
     )
 
-    assert veOcean.admin() == accounts[0].address
+    assert veOCEAN.admin() == accounts[0].address
 
 
 @enforce_types

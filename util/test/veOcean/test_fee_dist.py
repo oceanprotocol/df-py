@@ -10,7 +10,7 @@ from util.base18 import toBase18
 accounts = None
 alice = None
 bob = None
-veOcean = None
+veOCEAN = None
 ocean = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
@@ -24,7 +24,7 @@ def test_alice_locks_tokens_after():
     """sending native tokens to dfrewards contract should revert"""
 
     fee_distributor = B.FeeDistributor.deploy(
-        veOcean.address,
+        veOCEAN.address,
         chain.time(),
         ocean.address,
         accounts[0].address,
@@ -34,7 +34,7 @@ def test_alice_locks_tokens_after():
         },
     )
 
-    ocean.approve(veOcean.address, TA, {"from": alice})
+    ocean.approve(veOCEAN.address, TA, {"from": alice})
 
     t0 = chain.time()
     t1 = t0 + WEEK * 10
@@ -49,12 +49,12 @@ def test_alice_locks_tokens_after():
     assert fee_distributor.token_last_balance() == TA * 14
 
     assert ocean.balanceOf(alice) != 0
-    veOcean.create_lock(TA, t1, {"from": alice})  # lock for 10 weeks
+    veOCEAN.create_lock(TA, t1, {"from": alice})  # lock for 10 weeks
     assert ocean.balanceOf(alice) == 0
 
-    before = veOcean.balanceOf(alice)
+    before = veOCEAN.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
-    after = veOcean.balanceOf(alice)
+    after = veOCEAN.balanceOf(alice)
     assert after == before
 
 
@@ -62,11 +62,11 @@ def test_alice_locks_tokens_after():
 def test_alice_locks_tokens_exact():
     """sending native tokens to dfrewards contract should revert"""
 
-    veOcean.checkpoint()
-    ocean.approve(veOcean.address, TA, {"from": alice})
+    veOCEAN.checkpoint()
+    ocean.approve(veOCEAN.address, TA, {"from": alice})
 
     assert ocean.balanceOf(alice) != 0
-    veOcean.create_lock(
+    veOCEAN.create_lock(
         TA, chain[-1].timestamp + 8 * WEEK, {"from": alice}
     )  # lock for 8 weeks
     assert ocean.balanceOf(alice) == 0
@@ -77,7 +77,7 @@ def test_alice_locks_tokens_exact():
     chain.sleep(WEEK * 5)
 
     fee_distributor = B.FeeDistributor.deploy(
-        veOcean.address,
+        veOCEAN.address,
         start_time,
         ocean.address,
         accounts[0].address,
@@ -93,9 +93,9 @@ def test_alice_locks_tokens_exact():
     fee_distributor.checkpoint_token()
 
     before = ocean.balanceOf(fee_distributor)
-    alice_before = veOcean.balanceOf(alice)
+    alice_before = veOCEAN.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
-    alice_after = veOcean.balanceOf(alice)
+    alice_after = veOCEAN.balanceOf(alice)
 
     assert (before - TA) < 10
     assert abs(alice_before * 2 - alice_after) < 1e18
@@ -105,11 +105,11 @@ def test_alice_locks_tokens_exact():
 def test_alice_claims_after_lock_ends():
     """sending native tokens to dfrewards contract should revert"""
 
-    veOcean.checkpoint()
-    ocean.approve(veOcean.address, TA, {"from": alice})
+    veOCEAN.checkpoint()
+    ocean.approve(veOCEAN.address, TA, {"from": alice})
 
     assert ocean.balanceOf(alice) != 0
-    veOcean.create_lock(
+    veOCEAN.create_lock(
         TA, chain[-1].timestamp + 5 * WEEK, {"from": alice}
     )  # lock for 8 weeks
     assert ocean.balanceOf(alice) == 0
@@ -120,7 +120,7 @@ def test_alice_claims_after_lock_ends():
     chain.sleep(WEEK * 1)
 
     fee_distributor = B.FeeDistributor.deploy(
-        veOcean.address,
+        veOCEAN.address,
         start_time,
         ocean.address,
         accounts[0].address,
@@ -135,13 +135,13 @@ def test_alice_claims_after_lock_ends():
     chain.sleep(WEEK)
     fee_distributor.checkpoint_token()
     chain.sleep(WEEK * 5)
-    veOcean.withdraw({"from": alice})
+    veOCEAN.withdraw({"from": alice})
 
     before = ocean.balanceOf(fee_distributor)
-    alice_balance_ve_before = veOcean.balanceOf(alice)
+    alice_balance_ve_before = veOCEAN.balanceOf(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
     alice_balance_ocean = ocean.balanceOf(alice)
-    alice_balance_ve_after = veOcean.balanceOf(alice)
+    alice_balance_ve_after = veOCEAN.balanceOf(alice)
 
     assert (before - TA) < 10
     assert alice_balance_ve_after == alice_balance_ve_before
@@ -150,7 +150,7 @@ def test_alice_claims_after_lock_ends():
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, veOcean, ocean, feeDistributor
+    global accounts, alice, bob, veOCEAN, ocean, feeDistributor
     networkutil.connect(networkutil.DEV_CHAINID)
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
@@ -159,8 +159,8 @@ def setup_function():
     bob = accounts.add()
 
     ocean = oceanutil.OCEANtoken()
-    veOcean = B.veOcean.deploy(
-        ocean.address, "veOcean", "veOcean", "0.1.0", {"from": alice}
+    veOCEAN = B.veOCEAN.deploy(
+        ocean.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
 
     ocean.transfer(alice, TA, {"from": accounts[0]})

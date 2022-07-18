@@ -10,7 +10,7 @@ from util.base18 import toBase18
 accounts = None
 alice = None
 bob = None
-veOcean = None
+veOCEAN = None
 veDelegation = None
 ocean = None
 WEEK = 7 * 86400
@@ -22,8 +22,8 @@ TA = 10e18
 @enforce_types
 def test_alice_creates_boost():
     """sending native tokens to dfrewards contract should revert"""
-    veOcean.checkpoint()
-    ocean.approve(veOcean.address, TA, {"from": alice})
+    veOCEAN.checkpoint()
+    ocean.approve(veOCEAN.address, TA, {"from": alice})
 
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK
@@ -31,19 +31,17 @@ def test_alice_creates_boost():
     chain.sleep(t1 - t0)
 
     assert ocean.balanceOf(alice) != 0
-    veOcean.create_lock(TA, t2, {"from": alice})
+    veOCEAN.create_lock(TA, t2, {"from": alice})
     assert ocean.balanceOf(alice) == 0
 
     token_id = convert.to_uint(alice.address) << 96
-
-    # return print(veOcean.locked__end(alice), t2, t1)
 
     veDelegation.create_boost(
         alice,
         bob,
         10_000,
         0,
-        veOcean.locked__end(alice),
+        veOCEAN.locked__end(alice),
         0,
         {"from": alice},
     )  # 10_000 is max percentage
@@ -55,7 +53,7 @@ def test_alice_creates_boost():
         alice_delegated_boost = veDelegation.delegated_boost(alice)
         bob_received_boost = veDelegation.received_boost(bob)
 
-        alice_veOCEAN_balance = veOcean.balanceOf(alice)
+        alice_veOCEAN_balance = veOCEAN.balanceOf(alice)
         token_boost_value = veDelegation.token_boost(token_id)
 
     assert alice_adj_balance == 0
@@ -67,7 +65,7 @@ def test_alice_creates_boost():
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, veOcean, ocean, veDelegation
+    global accounts, alice, bob, veOCEAN, ocean, veDelegation
     networkutil.connect(networkutil.DEV_CHAINID)
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
@@ -76,15 +74,15 @@ def setup_function():
     bob = accounts.add()
 
     ocean = oceanutil.OCEANtoken()
-    veOcean = B.veOcean.deploy(
-        ocean.address, "veOcean", "veOcean", "0.1.0", {"from": alice}
+    veOCEAN = B.veOCEAN.deploy(
+        ocean.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
 
     veDelegation = B.veDelegation.deploy(
         "Voting Escrow Boost Delegation",
         "veDelegation",
         "",
-        veOcean.address,
+        veOCEAN.address,
         {"from": alice},
     )
 
