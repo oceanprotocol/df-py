@@ -20,13 +20,6 @@ DAY = 86400
 
 
 @enforce_types
-def sleep_chain_week():
-    t0 = chain.time()
-    t1 = t0 // WEEK * WEEK
-    chain.sleep(t1 - t0)
-
-
-@enforce_types
 def test_alice_locks_tokens_after():
     """sending native tokens to dfrewards contract should revert"""
 
