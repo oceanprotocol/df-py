@@ -19,7 +19,7 @@ contract veAllocate {
         view
         returns (uint256)
     {
-        // string is {DT Address}-{chain id}
+        // string is {DataNFT Address}-{chain id}
         // returns the allocation perc for given address
         return veAllocation[_address][_id];
     }
@@ -29,7 +29,7 @@ contract veAllocate {
         view
         returns (uint256)
     {
-        // string is {DT Address}-{chain id}
+        // string is {DataNFT Address}-{chain id}
         // returns the allocation perc for given address
         return _totalAllocation[_address];
     }
