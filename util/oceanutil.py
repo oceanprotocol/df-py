@@ -4,6 +4,7 @@ import json
 from typing import Any, Dict, List, Tuple
 
 import brownie
+from brownie.convert.main import to_uint
 from enforce_typing import enforce_types
 
 from util import networkutil
@@ -84,6 +85,18 @@ def ERC721Factory():
     return _contracts("ERC721Factory")
 
 
+def veOCEAN():
+    return _contracts("veOCEAN")
+
+
+def veAllocate():
+    return _contracts("veOCEAN")
+
+
+def FixedPrice():
+    return _contracts("FixedPrice")
+
+
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
@@ -137,6 +150,38 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     DT = B.ERC20Template.at(DT_address)
 
     return DT
+
+
+@enforce_types
+def createFREFromDatatoken(
+    datatoken,
+    base_TOKEN,
+    from_account,
+):
+    addresses = [
+        base_TOKEN.address, # baseToken
+        from_account.address, # owner
+        from_account.address,  # marketFeeCollector address
+    ]
+
+    uints = [
+        base_TOKEN.decimals(), # baseTokenDecimals
+        datatoken.decimals(), # datatokenDecimals 
+        to_uint(1), # fixedRate
+        int(1e15), # marketFee 
+        0 # withMint
+    ]
+
+    tx = datatoken.createFixedRate(FixedPrice().address, addresses, uints, {"from": from_account})
+    
+    exchangeId = _FREAddressFromNewFRETx(tx)
+
+    return exchangeId
+
+
+@enforce_types
+def _FREAddressFromNewFRETx(tx) -> str:
+    return tx.events["NewFixedRate"]["exchangeId"]
 
 
 @enforce_types
