@@ -156,8 +156,11 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 def createFREFromDatatoken(
     datatoken,
     base_TOKEN,
+    amount,
     from_account,
 ):
+    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
+
     addresses = [
         base_TOKEN.address, # baseToken
         from_account.address, # owner
@@ -167,15 +170,14 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(), # baseTokenDecimals
         datatoken.decimals(), # datatokenDecimals 
-        to_uint(1), # fixedRate
-        int(1e15), # marketFee 
+        toBase18(1.0), # fixedRate
+        toBase18(1e15), # marketFee 
         0 # withMint
     ]
 
     tx = datatoken.createFixedRate(FixedPrice().address, addresses, uints, {"from": from_account})
-    
     exchangeId = _FREAddressFromNewFRETx(tx)
-
+    
     return exchangeId
 
 

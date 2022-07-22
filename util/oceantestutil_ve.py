@@ -1,7 +1,9 @@
 import random
-import brownie
 
+import brownie
+from brownie.convert.main import to_uint
 from enforce_typing import enforce_types
+
 from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
 
@@ -33,6 +35,7 @@ def deployDataNFTWithFRE(from_account, token):
     exchangeId = oceanutil.createFREFromDatatoken(
         DT,
         token,
+        10.0,
         from_account
     )
 
