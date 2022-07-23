@@ -3,10 +3,11 @@ import hashlib
 import json
 from typing import Any, Dict, List, Tuple
 
+import random
 import brownie
 from enforce_typing import enforce_types
 
-from util import networkutil
+from util import networkutil, oceanutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
@@ -84,6 +85,18 @@ def ERC721Factory():
     return _contracts("ERC721Factory")
 
 
+def veOCEAN():
+    return _contracts("veOCEAN")
+
+
+def veAllocate():
+    return _contracts("veOCEAN")
+
+
+def FixedPrice():
+    return _contracts("FixedPrice")
+
+
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
@@ -138,6 +151,70 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
     return DT
 
+@enforce_types
+def createFREFromDatatoken(
+    datatoken,
+    base_TOKEN,
+    amount,
+    from_account,
+):
+    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
+
+    addresses = [
+        base_TOKEN.address, # baseToken
+        from_account.address, # owner
+        from_account.address,  # marketFeeCollector address
+    ]
+
+    uints = [
+        base_TOKEN.decimals(), # baseTokenDecimals
+        datatoken.decimals(), # datatokenDecimals 
+        toBase18(1.0), # fixedRate
+        toBase18(1e15), # marketFee 
+        0 # withMint
+    ]
+
+    tx = datatoken.createFixedRate(FixedPrice().address, addresses, uints, {"from": from_account})
+    exchangeId = _FREAddressFromNewFRETx(tx)
+    
+    return exchangeId
+
+
+@enforce_types
+def _FREAddressFromNewFRETx(tx) -> str:
+    return tx.events["NewFixedRate"]["exchangeId"]
+
+
+@enforce_types
+def randomCreateFREs(num_FRE: int, base_token, accounts):
+    # create random num_FRE.
+    tups = []  # (pub_account_i, data_NFT, DT, exchangeId)
+    for fre_i in range(num_FRE):
+        if fre_i < len(accounts):
+            account_i = fre_i
+        else:
+            account_i = random.randint(0, len(accounts))
+        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(accounts[account_i], base_token)
+        tups.append((account_i, data_NFT, DT, exchangeId))
+
+    return tups
+
+
+@enforce_types
+def createDataNFTWithFRE(from_account, token):
+    data_NFT = oceanutil.createDataNFT("1", "1", from_account)
+    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+
+    exchangeId = oceanutil.createFREFromDatatoken(
+        DT,
+        token,
+        10.0,
+        from_account
+    )
+    toggleExchangeState
+
+    return (data_NFT, DT, exchangeId)
+    
 
 @enforce_types
 def createBPoolFromDatatoken(
