@@ -3,11 +3,11 @@ import hashlib
 import json
 from typing import Any, Dict, List, Tuple
 
+import random
 import brownie
-from brownie.convert.main import to_uint
 from enforce_typing import enforce_types
 
-from util import networkutil
+from util import networkutil, oceanutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
@@ -151,7 +151,6 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
     return DT
 
-
 @enforce_types
 def createFREFromDatatoken(
     datatoken,
@@ -185,6 +184,37 @@ def createFREFromDatatoken(
 def _FREAddressFromNewFRETx(tx) -> str:
     return tx.events["NewFixedRate"]["exchangeId"]
 
+
+@enforce_types
+def randomCreateFREs(num_FRE: int, base_token, accounts):
+    # create random num_FRE.
+    tups = []  # (pub_account_i, data_NFT, DT, exchangeId)
+    for fre_i in range(num_FRE):
+        if fre_i < len(accounts):
+            account_i = fre_i
+        else:
+            account_i = random.randint(0, len(accounts))
+        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(accounts[account_i], base_token)
+        tups.append((account_i, data_NFT, DT, exchangeId))
+
+    return tups
+
+
+@enforce_types
+def createDataNFTWithFRE(from_account, token):
+    data_NFT = oceanutil.createDataNFT("1", "1", from_account)
+    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+
+    exchangeId = oceanutil.createFREFromDatatoken(
+        DT,
+        token,
+        10.0,
+        from_account
+    )
+    toggleExchangeState
+
+    return (data_NFT, DT, exchangeId)
+    
 
 @enforce_types
 def createBPoolFromDatatoken(

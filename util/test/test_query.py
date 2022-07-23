@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 
 from util import oceanutil, oceantestutil, networkutil, query
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B
+from util.constants import BROWNIE_PROJECT as B, CONTRACTS
 
 account0, QUERY_ST = None, 0
 
@@ -30,13 +30,22 @@ def test_all():
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
-    for loop_i in range(100):
+    fre_tup = ()
+    for loop_i in range(1):
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
         if _foundStakeAndConsume(CO2_ADDR):
             break
-        oceantestutil.randomDeployTokensAndPoolsThenConsume(2, OCEAN)
-        oceantestutil.randomDeployTokensAndPoolsThenConsume(2, CO2)
+        
+        new_fre = oceantestutil.randomCreateDataNFTWithFREs(2, OCEAN)
+        
+        print("fre_tup before: ", fre_tup)
+        fre_tup = fre_tup + new_fre
+        print("fre_tup after: ", fre_tup)
+
+        oceantestutil.randomLockAndAllocate(fre_tup, 2)
+        oceantestutil.randomConsumeFREs(fre_tup, 2)
+        
         print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
 
@@ -220,6 +229,31 @@ def setup_function():
     QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
     OCEAN_ADDR = oceanutil.OCEAN_address().lower()
+
+        # Init contracts
+    ocean = B.Simpletoken.deploy("OCEAN", "test OCEAN", 18, 1e26, {"from": account0})
+    opfcommunityfeecollector = B.OPFCommunityFeeCollector.deploy(account0, account0, {"from": account0})
+    poolTemplate = B.BPool.deploy({"from": account0})
+    factoryRouter = B.FactoryRouter.deploy(account0, ocean.address, poolTemplate.address, opfcommunityfeecollector.address, [], {"from": account0})
+    templateERC20 = B.ERC20Template.deploy({"from": account0})
+    templateERC721 = B.ERC721Template.deploy({"from": account0})
+    factoryERC721 = B.ERC721Factory.deploy(templateERC721.address, templateERC20.address, factoryRouter.address, {"from": account0})
+    fixedRateExchange = B.FixedRateExchange.deploy(factoryRouter.address, {"from": account0})
+    ve_ocean = B.veOCEAN.deploy(ocean.address, "veOCEAN", "veOCEAN", "0.1", {"from": account0})
+    ve_allocate = B.veAllocate.deploy({"from": account0})
+    
+    # Init constants/globals
+    CONTRACTS[CHAINID] = {}
+    C = CONTRACTS[CHAINID]
+    C["Ocean"] = ocean
+    C["ERC721Template"] = templateERC721
+    C["ERC20Template"] = templateERC20
+    C["PoolTemplate"] = poolTemplate
+    C["Router"] = factoryRouter
+    C["ERC721Factory"] = factoryERC721
+    C["FixedPrice"] = fixedRateExchange
+    C["veOCEAN"] = ve_ocean
+    C["veAllocate"] = ve_allocate
 
 
 @enforce_types
