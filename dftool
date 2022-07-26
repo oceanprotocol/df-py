@@ -19,7 +19,7 @@ from util import (
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
-from util.oceanutil import OCEAN_address, recordDeployedContracts, OCEANtoken
+from util.oceanutil import recordDeployedContracts, OCEANtoken
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
