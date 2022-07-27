@@ -43,8 +43,8 @@ def test_all():
         fre_tup = fre_tup + new_fre
         print("fre_tup after: ", fre_tup)
 
-        oceantestutil.randomLockAndAllocate(fre_tup, 2)
-        oceantestutil.randomConsumeFREs(fre_tup, 2)
+        oceantestutil.randomLockAndAllocate(fre_tup)
+        oceantestutil.randomConsumeFREs(fre_tup, oceanutil.OCEANtoken())
 
         print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
