@@ -212,8 +212,6 @@ def createDataNFTWithFRE(from_account, token):
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
     exchangeId = oceanutil.createFREFromDatatoken(DT, token, 10.0, from_account)
-    toggleExchangeState
-
     return (data_NFT, DT, exchangeId)
 
 
