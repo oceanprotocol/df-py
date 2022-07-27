@@ -1,4 +1,3 @@
-from array import array
 import random
 import brownie
 
@@ -219,7 +218,7 @@ def randomConsumeFREs(FRE_tup: list, base_token):
     # consume data assets from FREs randomly
     for consume_i in range(NUM_CONSUMES):
         tup = random.choice(FRE_tup)
-        (pub_account_i, data_NFT, DT, exchangeId) = tup
+        (pub_account_i, _, DT, exchangeId) = tup
 
         # choose consume account
         cand_I = [i for i in range(10) if i != pub_account_i]
@@ -243,7 +242,7 @@ def randomLockAndAllocate(FRE_tup: list):
     for _ in range(NUM_LOCKS):
         # choose lock account
         tup = random.choice(FRE_tup)
-        (pub_account_i, data_NFT, DT, exchangeId) = tup
+        (pub_account_i, data_NFT, _, _) = tup
         cand_I = [i for i in range(10) if i != pub_account_i]
         lock_account_i = random.choice(cand_I)
         lock_account = accounts[lock_account_i]
