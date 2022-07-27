@@ -7,7 +7,7 @@ import random
 import brownie
 from enforce_typing import enforce_types
 
-from util import networkutil, oceanutil
+from util import networkutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
@@ -49,6 +49,8 @@ def recordDeployedContracts(address_file: str):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+    # C["veOCEAN"] = B.veOCEAN.at(a["veOCEAN"])
+    # C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
 
     CONTRACTS[chainID] = C
 
