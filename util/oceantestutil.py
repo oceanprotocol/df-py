@@ -242,6 +242,8 @@ def randomLockAndAllocate(FRE_tup: list):
     # Lock randomly
     for _ in range(NUM_LOCKS):
         # choose lock account
+        tup = random.choice(FRE_tup)
+        (pub_account_i, data_NFT, DT, exchangeId) = tup
         cand_I = [i for i in range(10) if i != pub_account_i]
         lock_account_i = random.choice(cand_I)
         lock_account = accounts[lock_account_i]
