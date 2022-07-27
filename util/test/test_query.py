@@ -231,47 +231,15 @@ def setup_function():
     OCEAN_ADDR = oceanutil.OCEAN_address().lower()
 
     # Init contracts
-    ocean = B.Simpletoken.deploy("OCEAN", "test OCEAN", 18, 1e26, {"from": account0})
-    opfcommunityfeecollector = B.OPFCommunityFeeCollector.deploy(
-        account0, account0, {"from": account0}
-    )
-    poolTemplate = B.BPool.deploy({"from": account0})
-    factoryRouter = B.FactoryRouter.deploy(
-        account0,
-        ocean.address,
-        poolTemplate.address,
-        opfcommunityfeecollector.address,
-        [],
-        {"from": account0},
-    )
-    templateERC20 = B.ERC20Template.deploy({"from": account0})
-    templateERC721 = B.ERC721Template.deploy({"from": account0})
-    factoryERC721 = B.ERC721Factory.deploy(
-        templateERC721.address,
-        templateERC20.address,
-        factoryRouter.address,
-        {"from": account0},
-    )
-    fixedRateExchange = B.FixedRateExchange.deploy(
-        factoryRouter.address, {"from": account0}
-    )
+
     ve_ocean = B.veOCEAN.deploy(
-        ocean.address, "veOCEAN", "veOCEAN", "0.1", {"from": account0}
+        OCEAN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": account0}
     )
     ve_allocate = B.veAllocate.deploy({"from": account0})
 
     # Init constants/globals
-    CONTRACTS[CHAINID] = {}
-    C = CONTRACTS[CHAINID]
-    C["Ocean"] = ocean
-    C["ERC721Template"] = templateERC721
-    C["ERC20Template"] = templateERC20
-    C["PoolTemplate"] = poolTemplate
-    C["Router"] = factoryRouter
-    C["ERC721Factory"] = factoryERC721
-    C["FixedPrice"] = fixedRateExchange
-    C["veOCEAN"] = ve_ocean
-    C["veAllocate"] = ve_allocate
+    CONTRACTS[CHAINID]["veOCEAN"] = ve_ocean
+    CONTRACTS[CHAINID]["veAllocate"] = ve_allocate
 
 
 @enforce_types
