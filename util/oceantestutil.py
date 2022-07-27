@@ -228,9 +228,7 @@ def randomConsumeFREs(FRE_tup: list, base_token):
 
         # buy asset
         DT_buy_amt = 1.0
-        buyDTFRE(
-            exchangeId, DT, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token
-        )
+        buyDTFRE(exchangeId, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token)
 
         # consume asset
         pub_account = accounts[pub_account_i]
