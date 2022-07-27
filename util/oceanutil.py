@@ -165,6 +165,7 @@ def createFREFromDatatoken(
         base_TOKEN.address,  # baseToken
         from_account.address,  # owner
         from_account.address,  # marketFeeCollector address
+        from_account.address,  # marketFeeCollector address
     ]
 
     uints = [
