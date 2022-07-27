@@ -213,7 +213,7 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
 
 
 @enforce_types
-def randomConsumeFREs(FRE_tup: tuple, base_token):
+def randomConsumeFREs(FRE_tup: list, base_token):
     accounts = network.accounts
 
     # consume data assets from FREs randomly
@@ -238,7 +238,7 @@ def randomConsumeFREs(FRE_tup: tuple, base_token):
 
 
 @enforce_types
-def randomLockAndAllocate(FRE_tup: tuple):
+def randomLockAndAllocate(FRE_tup: list):
     accounts = network.accounts
 
     # Lock randomly
