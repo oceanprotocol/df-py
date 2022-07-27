@@ -241,7 +241,7 @@ def randomLockAndAllocate(FRE_tup: tuple):
     accounts = network.accounts
 
     # Lock randomly
-    for lock_i in range(NUM_LOCKS):
+    for _ in range(NUM_LOCKS):
         # choose lock account
         cand_I = [i for i in range(10) if i != pub_account_i]
         lock_account_i = random.choice(cand_I)
