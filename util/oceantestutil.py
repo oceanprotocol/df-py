@@ -253,7 +253,6 @@ def randomLockAndAllocate(FRE_tup: list):
             oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account}
         )
 
-        # TODO - Do we still need to sleep?
         t0 = network.chain.time()
         t1 = (
             t0 // WEEK * WEEK + WEEK
@@ -267,7 +266,7 @@ def randomLockAndAllocate(FRE_tup: list):
     # Allocate to random data_NFTs
     for allocate_i in range(NUM_ALLOCATES):
         tup = random.choice(FRE_tup)
-        (pub_account_i, data_NFT, DT, exchangeId) = tup
+        (pub_account_i, data_NFT, _, _) = tup
 
         # choose allocate account
         cand_I = [i for i in range(10) if i != pub_account_i]

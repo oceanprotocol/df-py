@@ -210,10 +210,10 @@ def randomCreateFREs(num_FRE: int, base_token, accounts):
 
 @enforce_types
 def createDataNFTWithFRE(from_account, token):
-    data_NFT = oceanutil.createDataNFT("1", "1", from_account)
-    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+    data_NFT = createDataNFT("1", "1", from_account)
+    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
-    exchangeId = oceanutil.createFREFromDatatoken(DT, token, 10.0, from_account)
+    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
 
 
