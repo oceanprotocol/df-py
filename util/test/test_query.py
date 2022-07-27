@@ -30,7 +30,7 @@ def test_all():
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
-    fre_tup = ()
+    fre_tup = []
     for loop_i in range(1):
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
