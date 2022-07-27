@@ -5,7 +5,6 @@ import brownie
 from enforce_typing import enforce_types
 from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
-from util.test.test_query import CHAINID
 
 network = brownie.network
 
@@ -277,5 +276,5 @@ def randomLockAndAllocate(FRE_tup: tuple):
         # allocate amount
         veAllocate_amt = 1.0
         oceanutil.veAllocate().setAllocation(
-            veAllocate_amt, f"{data_NFT.address}-{CHAINID}", {"from": allocate_account}
+            veAllocate_amt, f"{data_NFT.address}-{8996}", {"from": allocate_account}
         )
