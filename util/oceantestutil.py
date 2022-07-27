@@ -186,7 +186,7 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token):
         )
 
         oceanutil.FixedPrice().toggleExchangeState(exchangeId)
-        tups.append((account_i, data_NFT, DT, FRE))
+        tups.append((account_i, data_NFT, DT, exchangeId))
 
     return tups
 
