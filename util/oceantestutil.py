@@ -206,8 +206,8 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
         exchangeId,
         toBase18(DT_buy_amt),
         toBase18(max_TOKEN),
-        feesInfo.marketFeeCollector,
-        feesInfo.marketFee,
+        feesInfo[0],
+        feesInfo[1],
         {"from": from_account},
     )
 
