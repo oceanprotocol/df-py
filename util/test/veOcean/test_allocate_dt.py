@@ -34,18 +34,18 @@ def test_allocate():
     assert allocation[1][2] == 50
 
     assert len(allocation[0]) == 3
-    assert functools.reduce(lambda a, b: a+b, allocation[1]) == 175
-    
+    assert functools.reduce(lambda a, b: a + b, allocation[1]) == 175
+
     # Set allocation to 0 on id "test"
-    # Drops it from array. 
+    # Drops it from array.
     # Triggers AllocationRemoved event
     veAllocate.setAllocation(0, "test", {"from": accounts[0]})
     allocation = veAllocate.getTotalAllocation(accounts[0].address, 100, 0)
-    
+
     assert allocation[0][0] == "test3"
     assert allocation[1][0] == 50
     assert len(allocation[0]) == 2
-    assert functools.reduce(lambda a, b: a+b, allocation[1]) == 75
+    assert functools.reduce(lambda a, b: a + b, allocation[1]) == 75
 
 
 @enforce_types

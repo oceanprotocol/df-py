@@ -181,24 +181,33 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token):
             account_i = FRE_i
         else:
             account_i = random.randint(0, len(accounts))
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(accounts[account_i], base_token)
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
+            accounts[account_i], base_token
+        )
 
         oceanutil.FixedPrice().toggleExchangeState(exchangeId)
         tups.append((account_i, data_NFT, DT, FRE))
-    
+
     return tups
 
 
 @enforce_types
 def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
-    base_token.approve(oceanutil.FixedPrice().address, toBase18(max_TOKEN), {"from": from_account})
+    base_token.approve(
+        oceanutil.FixedPrice().address, toBase18(max_TOKEN), {"from": from_account}
+    )
 
     spot_price = fromBase18(oceanutil.FixedPrice().getRate(exchangeId))
     assert AVG_DT_TOKEN_RATE / 5 <= spot_price <= AVG_DT_TOKEN_RATE * 5
 
     feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
     oceanutil.FixedPrice().buyDT(
-        exchangeId, toBase18(DT_buy_amt), toBase18(max_TOKEN), feesInfo.marketFeeCollector, feesInfo.marketFee, {"from": from_account}
+        exchangeId,
+        toBase18(DT_buy_amt),
+        toBase18(max_TOKEN),
+        feesInfo.marketFeeCollector,
+        feesInfo.marketFee,
+        {"from": from_account},
     )
 
 
@@ -210,7 +219,7 @@ def randomConsumeFREs(FRE_tup: tuple, base_token):
     for consume_i in range(NUM_CONSUMES):
         tup = random.choice(FRE_tup)
         (pub_account_i, data_NFT, DT, exchangeId) = tup
-        
+
         # choose consume account
         cand_I = [i for i in range(10) if i != pub_account_i]
         consume_i = random.choice(cand_I)
@@ -218,7 +227,9 @@ def randomConsumeFREs(FRE_tup: tuple, base_token):
 
         # buy asset
         DT_buy_amt = 1.0
-        buyDTFRE(exchangeId, DT, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token)
+        buyDTFRE(
+            exchangeId, DT, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token
+        )
 
         # consume asset
         pub_account = accounts[pub_account_i]
@@ -238,11 +249,15 @@ def randomLockAndAllocate(FRE_tup: tuple):
 
         # Approve locking OCEAN
         assert oceanutil.OCEANtoken().balanceOf(lock_account) != 0
-        oceanutil.OCEANtoken().approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
+        oceanutil.OCEANtoken().approve(
+            oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account}
+        )
 
         # TODO - Do we still need to sleep?
         t0 = network.chain.time()
-        t1 = t0 // WEEK * WEEK + WEEK # what's going on here? I need to break this down.
+        t1 = (
+            t0 // WEEK * WEEK + WEEK
+        )  # what's going on here? I need to break this down.
         t2 = t1 + WEEK
         network.chain.sleep(t1 - t0)
 
@@ -253,7 +268,7 @@ def randomLockAndAllocate(FRE_tup: tuple):
     for allocate_i in range(NUM_ALLOCATES):
         tup = random.choice(FRE_tup)
         (pub_account_i, data_NFT, DT, exchangeId) = tup
-        
+
         # choose allocate account
         cand_I = [i for i in range(10) if i != pub_account_i]
         allocate_i = random.choice(cand_I)
@@ -261,4 +276,6 @@ def randomLockAndAllocate(FRE_tup: tuple):
 
         # allocate amount
         veAllocate_amt = 1.0
-        oceanutil.veAllocate().setAllocation(veAllocate_amt, f"{data_NFT.address}-{CHAINID}", {"from": allocate_account})
+        oceanutil.veAllocate().setAllocation(
+            veAllocate_amt, f"{data_NFT.address}-{CHAINID}", {"from": allocate_account}
+        )

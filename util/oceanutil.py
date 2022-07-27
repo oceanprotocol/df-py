@@ -151,6 +151,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
     return DT
 
+
 @enforce_types
 def createFREFromDatatoken(
     datatoken,
@@ -161,22 +162,24 @@ def createFREFromDatatoken(
     datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
 
     addresses = [
-        base_TOKEN.address, # baseToken
-        from_account.address, # owner
+        base_TOKEN.address,  # baseToken
+        from_account.address,  # owner
         from_account.address,  # marketFeeCollector address
     ]
 
     uints = [
-        base_TOKEN.decimals(), # baseTokenDecimals
-        datatoken.decimals(), # datatokenDecimals 
-        toBase18(1.0), # fixedRate
-        toBase18(1e15), # marketFee 
-        0 # withMint
+        base_TOKEN.decimals(),  # baseTokenDecimals
+        datatoken.decimals(),  # datatokenDecimals
+        toBase18(1.0),  # fixedRate
+        toBase18(1e15),  # marketFee
+        0,  # withMint
     ]
 
-    tx = datatoken.createFixedRate(FixedPrice().address, addresses, uints, {"from": from_account})
+    tx = datatoken.createFixedRate(
+        FixedPrice().address, addresses, uints, {"from": from_account}
+    )
     exchangeId = _FREAddressFromNewFRETx(tx)
-    
+
     return exchangeId
 
 
@@ -194,7 +197,9 @@ def randomCreateFREs(num_FRE: int, base_token, accounts):
             account_i = fre_i
         else:
             account_i = random.randint(0, len(accounts))
-        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(accounts[account_i], base_token)
+        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(
+            accounts[account_i], base_token
+        )
         tups.append((account_i, data_NFT, DT, exchangeId))
 
     return tups
@@ -205,16 +210,11 @@ def createDataNFTWithFRE(from_account, token):
     data_NFT = oceanutil.createDataNFT("1", "1", from_account)
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
 
-    exchangeId = oceanutil.createFREFromDatatoken(
-        DT,
-        token,
-        10.0,
-        from_account
-    )
+    exchangeId = oceanutil.createFREFromDatatoken(DT, token, 10.0, from_account)
     toggleExchangeState
 
     return (data_NFT, DT, exchangeId)
-    
+
 
 @enforce_types
 def createBPoolFromDatatoken(
