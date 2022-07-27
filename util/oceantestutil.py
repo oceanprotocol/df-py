@@ -183,9 +183,7 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token):
             accounts[account_i], base_token
         )
 
-        oceanutil.FixedPrice().toggleExchangeState(
-            exchangeId, {"from": accounts[account_i]}
-        )
+        assert oceanutil.FixedPrice().isActive(exchangeId) == True
         tups.append((account_i, data_NFT, DT, exchangeId))
 
     return tups
@@ -261,6 +259,7 @@ def randomLockAndAllocate(FRE_tup: list):
         network.chain.sleep(t1 - t0)
 
         # Create lock
+        oceanutil.veOCEAN().withdraw({"from": lock_account})
         oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
     # Allocate to random data_NFTs
