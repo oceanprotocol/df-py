@@ -182,7 +182,11 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token):
         (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
             accounts[account_i], base_token
         )
-
+        oceanutil.FixedPrice().setAllowedSwapper(
+            exchangeId,
+            "0x0000000000000000000000000000000000000000",
+            {"from": accounts[account_i]},
+        )
         assert oceanutil.FixedPrice().isActive(exchangeId) == True
         tups.append((account_i, data_NFT, DT, exchangeId))
 
