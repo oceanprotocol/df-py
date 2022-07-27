@@ -90,7 +90,7 @@ def veOCEAN():
 
 
 def veAllocate():
-    return _contracts("veOCEAN")
+    return _contracts("veAllocate")
 
 
 def FixedPrice():
