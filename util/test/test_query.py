@@ -230,17 +230,6 @@ def setup_function():
     oceanutil.recordDevDeployedContracts()
     OCEAN_ADDR = oceanutil.OCEAN_address().lower()
 
-    # Init contracts
-
-    ve_ocean = B.veOCEAN.deploy(
-        OCEAN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": account0}
-    )
-    ve_allocate = B.veAllocate.deploy({"from": account0})
-
-    # Init constants/globals
-    CONTRACTS[CHAINID]["veOCEAN"] = ve_ocean
-    CONTRACTS[CHAINID]["veAllocate"] = ve_allocate
-
 
 @enforce_types
 def teardown_function():

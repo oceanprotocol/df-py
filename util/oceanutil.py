@@ -49,8 +49,8 @@ def recordDeployedContracts(address_file: str):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
-    # C["veOCEAN"] = B.veOCEAN.at(a["veOCEAN"])
-    # C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
+    C["veOCEAN"] = B.veOCEAN.at(a["veOCEAN"])
+    C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
 
     CONTRACTS[chainID] = C
 
