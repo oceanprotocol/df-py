@@ -24,8 +24,6 @@ contract veAllocate {
         view
         returns (uint256)
     {
-        // string is {DataNFT Address}-{chain id}
-        // returns the allocation perc for given address
         return _totalAllocation[_address];
     }
 
