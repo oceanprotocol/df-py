@@ -1,20 +1,21 @@
 pragma solidity ^0.8.12;
 
 contract veAllocate {
-    mapping(address => mapping(string => uint256)) veAllocation;
+    mapping(address => mapping(bytes32 => uint256)) veAllocation;
     mapping(address => uint256) allocationCounter;
-    mapping(address => mapping(uint256 => string)) allocationToId;
-    mapping(address => mapping(string => uint256)) idToAllocation;
+    mapping(address => mapping(uint256 => bytes32)) allocationToId;
+    mapping(address => mapping(bytes32 => uint256)) idToAllocation;
     mapping(address => uint256) _totalAllocation;
 
     event AllocationSet(
         address indexed sender,
-        string indexed id,
-        uint256 amount
+        address indexed addr,
+        uint256 chainId,
+        uint256 amount,
+        bytes32 id
     );
-    event AllocationRemoved(address indexed sender, string indexed id);
 
-    function getveAllocation(address _address, string calldata _id)
+    function getveAllocation(address _address, bytes32 _id)
         public
         view
         returns (uint256)
@@ -34,8 +35,13 @@ contract veAllocate {
         return _totalAllocation[_address];
     }
 
-    function setAllocation(uint256 amount, string calldata _id) external {
-        require(bytes(_id).length < 50, "Id too long");
+    function setAllocation(
+        uint256 amount,
+        address addr,
+        uint256 chainId
+    ) external {
+        bytes32 _id = keccak256(abi.encodePacked(addr, "-", chainId));
+
         require(amount <= 1000, "BM");
 
         if (veAllocation[msg.sender][_id] == 0) {
@@ -50,32 +56,8 @@ contract veAllocate {
             amount -
             veAllocation[msg.sender][_id];
 
-        if (amount == 0) {
-            _removeAllocation(_id);
-        } else {
-            veAllocation[msg.sender][_id] = amount;
-        }
-        emit AllocationSet(msg.sender, _id, amount);
-    }
-
-    function _removeAllocation(string calldata _id) internal {
-        require(veAllocation[msg.sender][_id] > 0, "SM");
-
-        veAllocation[msg.sender][_id] = 0;
-
-        uint256 no = idToAllocation[msg.sender][_id];
-
-        allocationToId[msg.sender][no] = allocationToId[msg.sender][
-            allocationCounter[msg.sender] - 1
-        ]; // swap last with this one
-        idToAllocation[msg.sender][allocationToId[msg.sender][no]] = no; // swap last with this one
-
-        delete allocationToId[msg.sender][allocationCounter[msg.sender] - 1];
-        delete idToAllocation[msg.sender][_id];
-
-        allocationCounter[msg.sender]--;
-
-        emit AllocationRemoved(msg.sender, _id);
+        veAllocation[msg.sender][_id] = amount;
+        emit AllocationSet(msg.sender, addr, chainId, amount, _id);
     }
 
     function getTotalAllocation(
@@ -86,12 +68,12 @@ contract veAllocate {
         external
         view
         returns (
-            string[] memory allocationIds,
+            bytes32[] memory allocationIds,
             uint256[] memory allocationAmounts
         )
     {
-        // array of strings
-        allocationIds = new string[](allocationCounter[_address]);
+        // array of bytes32
+        allocationIds = new bytes32[](allocationCounter[_address]);
 
         allocationAmounts = new uint256[](allocationCounter[_address]);
 
