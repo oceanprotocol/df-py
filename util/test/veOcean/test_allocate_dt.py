@@ -32,15 +32,12 @@ def test_get_total_allocation():
 def test_events():
     nftaddr1 = accounts[1].address
     tx = veAllocate.setAllocation(100, nftaddr1, 1, {"from": accounts[0]})
-    assert tx.events["AllocationSet"].values()[:4] == [
+    assert tx.events["AllocationSet"].values() == [
         accounts[0].address,
         accounts[1].address,
         1,
         100,
     ]
-    assert (tx.events["AllocationSet"].values()[4]).hex() == veAllocate.getId(
-        nftaddr1, 1
-    ).hex()
 
 
 @enforce_types
