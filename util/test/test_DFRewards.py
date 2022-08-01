@@ -219,58 +219,42 @@ def test_claim_and_restake():
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
+    account = accounts[0]
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
+    df_rewards = B.DFRewards.deploy({"from": account})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": account})
     df_rewards.addStrategy(df_strategy.address)
 
+    veOCEAN = B.veOCEAN.deploy(
+        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": account}
+    )
+
+    OCEAN.approve(veOCEAN.address, 100, {"from": account})
+    veOCEAN.create_lock(100, brownie.network.chain.time() + 1e5, {"from": account})
+
     tos = [a1]
-    values = [toBase18(50.0)]
-    OCEAN.approve(df_rewards, sum(values), {"from": accounts[0]})
-    df_rewards.allocate(tos, values, OCEAN.address, {"from": accounts[0]})
+    values = [50]
+    OCEAN.approve(df_rewards, sum(values), {"from": account})
+    df_rewards.allocate(tos, values, OCEAN.address, {"from": account})
 
-    assert df_rewards.claimable(a1, OCEAN.address) == toBase18(50.0)
-
-    pools = []
-    amounts = []
-    POOL_COUNT = 10
-
-    for _ in range(POOL_COUNT):
-        (_, pool) = oceantestutil.randomDeployPool(accounts[0], OCEAN)
-        pools.append(pool)
-        amounts.append(toBase18(50 / POOL_COUNT) - 1)
-
-    for pool in pools:
-        assert pool.balanceOf(accounts[1]) == 0
+    assert df_rewards.claimable(a1, OCEAN.address) == 50
 
     with brownie.reverts("Not enough rewards"):
         # Cannot claim what you don't have
         df_strategy.claimAndStake(
-            OCEAN.address,
-            [pools[0].address],
-            [toBase18(100.0)],
+            OCEAN,
+            100,
+            veOCEAN,
             {"from": accounts[1]},
         )
-    with brownie.reverts("Lengths must match"):
-        # Cannot claim what you don't have
-        df_strategy.claimAndStake(
-            OCEAN.address,
-            [pools[0].address],
-            [5, 5, 5],
-            {"from": accounts[1]},
-        )
-
-    print(amounts)
 
     df_strategy.claimAndStake(
-        OCEAN.address,
-        [pool.address for pool in pools],
-        amounts,
+        OCEAN,
+        50,
+        veOCEAN,
         {"from": accounts[1]},
     )
 
-    for pool in pools:
-        assert pool.balanceOf(accounts[1]) > 0
     assert df_rewards.claimable(a1, OCEAN.address) == 0
 
 
