@@ -228,7 +228,7 @@ def test_claim_and_restake():
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": deployer})
     df_rewards.addStrategy(df_strategy.address)
 
-    veOCEAN = B.veOCEAN.deploy(
+    veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
     )
 

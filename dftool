@@ -239,7 +239,9 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     A = csvs.loadApprovedCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
-    rewardsperlp, rewardsinfo = calcrewards.calcRewards(S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL)
+    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
+        S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
+    )
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
 
@@ -592,6 +594,7 @@ Usage: dftool newtoken CHAINID
     token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
 
+
 # ========================================================================
 @enforce_types
 def do_newVeOcean():
@@ -617,8 +620,12 @@ Usage: dftool newVeOcean CHAINID
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         # pylint: disable=line-too-long
-        veOcean = B.veOcean.deploy(OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account})
-        print(f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}")
+        veOcean = B.veOcean.deploy(
+            OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
+        )
+        print(
+            f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}"
+        )
 
 
 # ========================================================================
@@ -743,10 +750,7 @@ def _getSecretSeedOrExit() -> int:
     SECRET_SEED = os.environ.get("SECRET_SEED")
     print(f"Envvar:\n SECRET_SEED={SECRET_SEED}")
     if SECRET_SEED is None:
-        print(
-            "\nNeed to set envvar SECRET_SEED. Exiting."
-            "\nEg: export SECRET_SEED=1"
-        )
+        print("\nNeed to set envvar SECRET_SEED. Exiting." "\nEg: export SECRET_SEED=1")
         sys.exit(0)
     return int(SECRET_SEED)
 
