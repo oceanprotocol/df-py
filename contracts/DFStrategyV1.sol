@@ -46,35 +46,21 @@ contract DFStrategyV1 is ReentrancyGuard {
         return result;
     }
 
-    /*
-     * @dev Claims rewards and stakes them into multiple pools.
-     * @param tokenAddress  Token address to claim
-     * @param poolAddress  Array of pool address to stake the rewards
-     * @param amount Array of amount to stake in each pool.
-     */
-    function claimAndStake(
-        address tokenAddress,
-        address[] calldata poolAddress,
-        uint256[] calldata amount
-    ) public nonReentrant returns (bool) {
-        require(poolAddress.length == amount.length, "Lengths must match");
-        uint256 totalAmount = 0;
-        uint256 i;
-        for (i = 0; i < amount.length; i += 1) {
-            totalAmount += amount[i];
-        }
+    function claimAndStake(uint256 totalAmount, address _veOCEAN)
+        public
+        nonReentrant
+        returns (bool)
+    {
         require(
-            dfrewards.claimable(msg.sender, tokenAddress) > totalAmount,
+            dfrewards.claimable(msg.sender, tokenAddress) >= totalAmount,
             "Not enough rewards"
         );
         uint256 balanceBefore = IERC20(tokenAddress).balanceOf(address(this));
-        uint256 claimed = dfrewards.claimForStrat(msg.sender, tokenAddress); // claim rewards for strategy
+        uint256 claimed = dfrewards.claimForStrat(msg.sender, tokenAddress); // claim rewards for the strategy
         uint256 balanceAfter = IERC20(tokenAddress).balanceOf(address(this));
         require(balanceAfter - balanceBefore == claimed, "Not enough rewards");
 
-        for (i = 0; i < amount.length; i += 1) {
-            stake(tokenAddress, poolAddress[i], amount[i], msg.sender);
-        }
+        veOCEAN(_veOCEAN).deposit_for(msg.sender, totalAmount);
 
         if (claimed > totalAmount) {
             IERC20(tokenAddress).safeTransfer(
