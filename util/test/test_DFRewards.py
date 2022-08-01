@@ -219,23 +219,27 @@ def test_claim_and_restake():
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
-    account = accounts[0]
+    deployer = accounts[0]
+    bob = accounts[1]
 
-    df_rewards = B.DFRewards.deploy({"from": account})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": account})
+    OCEAN.transfer(bob, 100, {"from": deployer})
+
+    df_rewards = B.DFRewards.deploy({"from": deployer})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": deployer})
     df_rewards.addStrategy(df_strategy.address)
 
     veOCEAN = B.veOCEAN.deploy(
-        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": account}
+        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
     )
 
-    OCEAN.approve(veOCEAN.address, 100, {"from": account})
-    veOCEAN.create_lock(100, brownie.network.chain.time() + 1e5, {"from": account})
+    OCEAN.approve(veOCEAN.address, 100, {"from": bob})
+    unlock_time = brownie.network.chain.time() + 14 * 86400
+    veOCEAN.create_lock(100, unlock_time, {"from": bob})
 
     tos = [a1]
     values = [50]
-    OCEAN.approve(df_rewards, sum(values), {"from": account})
-    df_rewards.allocate(tos, values, OCEAN.address, {"from": account})
+    OCEAN.approve(df_rewards, sum(values), {"from": deployer})
+    df_rewards.allocate(tos, values, OCEAN.address, {"from": deployer})
 
     assert df_rewards.claimable(a1, OCEAN.address) == 50
 
@@ -245,14 +249,15 @@ def test_claim_and_restake():
             OCEAN,
             100,
             veOCEAN,
-            {"from": accounts[1]},
+            {"from": bob},
         )
 
+    # veBalBefore = veOCEAN.balanceOf(deployer)
     df_strategy.claimAndStake(
         OCEAN,
         50,
         veOCEAN,
-        {"from": accounts[1]},
+        {"from": bob},
     )
 
     assert df_rewards.claimable(a1, OCEAN.address) == 0
