@@ -59,7 +59,7 @@ contract DFStrategyV1 is ReentrancyGuard {
         uint256 claimed = dfrewards.claimForStrat(msg.sender, tokenAddress); // claim rewards for the strategy
         uint256 balanceAfter = IERC20(tokenAddress).balanceOf(address(this));
         require(balanceAfter - balanceBefore == claimed, "Not enough rewards");
-
+        IERC20(tokenAddress).safeApprove(_veOCEAN, totalAmount);
         veOCEAN(_veOCEAN).deposit_for(msg.sender, totalAmount);
 
         if (claimed > totalAmount) {
