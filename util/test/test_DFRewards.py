@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
-from util import networkutil, oceanutil, oceantestutil
+from util import networkutil, oceanutil
 
 accounts, a1, a2, a3 = None, None, None, None
 
