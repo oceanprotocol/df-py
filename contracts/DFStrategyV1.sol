@@ -46,11 +46,11 @@ contract DFStrategyV1 is ReentrancyGuard {
         return result;
     }
 
-    function claimAndStake(uint256 totalAmount, address _veOCEAN)
-        public
-        nonReentrant
-        returns (bool)
-    {
+    function claimAndStake(
+        address tokenAddress,
+        uint256 totalAmount,
+        address _veOCEAN
+    ) public nonReentrant returns (bool) {
         require(
             dfrewards.claimable(msg.sender, tokenAddress) >= totalAmount,
             "Not enough rewards"
