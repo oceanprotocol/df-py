@@ -85,23 +85,4 @@ contract DFStrategyV1 is ReentrancyGuard {
 
         return true;
     }
-
-    function stake(
-        address tokenAddress,
-        address poolAddress,
-        uint256 amount,
-        address _to
-    ) internal returns (bool) {
-        require(
-            tokenAddress == IPool(poolAddress).getBaseTokenAddress(),
-            "Cannot stake"
-        );
-        uint256 balanceBefore = IERC20(poolAddress).balanceOf(address(this));
-        IERC20(tokenAddress).approve(poolAddress, amount);
-        IPool(poolAddress).joinswapExternAmountIn(amount, 0);
-        uint256 sharesBalance = IERC20(poolAddress).balanceOf(address(this)) -
-            balanceBefore;
-        IERC20(poolAddress).safeTransfer(_to, sharesBalance);
-        return true;
-    }
 }
