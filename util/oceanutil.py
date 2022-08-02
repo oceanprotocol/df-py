@@ -407,5 +407,5 @@ def create_checksum(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def set_allocation(amount: int, nft_addr: str, chainID: int, from_account):
+def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
