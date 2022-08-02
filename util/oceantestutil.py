@@ -13,7 +13,7 @@ NUM_CONSUMES = 3  # 100
 
 # ve constants
 NUM_LOCKS = 3
-LOCK_AMOUNT = toBase18(10.0)
+LOCK_AMOUNT = toBase18(1.0)
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 NUM_ALLOCATES = 3
