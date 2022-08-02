@@ -103,6 +103,59 @@ def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: 
 
 
 @enforce_types
+def getAllocations() -> list:
+    """
+    @description
+      Return all allocations.
+
+    @return
+      allocations -- dict of [user_addr][nft_addr][chain_id]: percent
+    """
+
+    chunk_size = 1000
+    offset = 0
+    _allocations = {}
+    while True:
+        query = """
+      {
+        VeAllocateUsers(first: %d, skip: %d) {
+          id
+          veAllocation {
+            id
+            allocated
+            chainId
+            nftAddress
+          }
+          allocatedTotal
+        }
+      }
+      """ % (
+            chunk_size,
+            offset,
+        )
+        result = submitQuery(query, 1)
+        allocations = result["data"]["VeAllocateUsers"]
+        if len(allocations) == 0:
+            break
+        for allocation in allocations:
+            user_addr = allocation["id"]
+            allocated_total = allocation["allocatedTotal"]
+            if user_addr not in _allocations:
+                _allocations[user_addr] = {}
+            for ve_allocation in allocation["veAllocation"]:
+                nft_addr = ve_allocation["nftAddress"]
+                chain_id = ve_allocation["chainId"]
+                allocated = ve_allocation["allocated"]
+                if nft_addr not in _allocations[user_addr]:
+                    _allocations[user_addr][nft_addr] = {}
+                _allocations[user_addr][nft_addr][chain_id] = (
+                    allocated / allocated_total
+                )
+        offset += chunk_size
+    return _allocations
+
+
+@enforce_types
 def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
     """
     @description
