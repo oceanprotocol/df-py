@@ -278,6 +278,9 @@ def randomLockAndAllocate(FRE_tup: list):
 
         # allocate amount
         veAllocate_amt = 1.0
-        oceanutil.veAllocate().setAllocation(
-            veAllocate_amt, f"{data_NFT.address}-{8996}", {"from": allocate_account}
+        oceanutil.set_allocation(
+            veAllocate_amt,
+            data_NFT.address,
+            8996,
+            allocate_account,
         )
