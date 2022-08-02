@@ -109,7 +109,7 @@ def getAllocations() -> list:
       Return all allocations.
 
     @return
-      allocations -- dict of [user_addr][nft_addr][chain_id]: percent
+      allocations -- dict of [chain_id][nft_addr][user_addr]: percent
     """
 
     chunk_size = 1000
@@ -146,11 +146,14 @@ def getAllocations() -> list:
                 nft_addr = ve_allocation["nftAddress"]
                 chain_id = ve_allocation["chainId"]
                 allocated = ve_allocation["allocated"]
-                if nft_addr not in _allocations[user_addr]:
-                    _allocations[user_addr][nft_addr] = {}
-                _allocations[user_addr][nft_addr][chain_id] = (
+                if chain_id not in _allocations:
+                    _allocations[chain_id] = {}
+                if nft_addr not in _allocations[chain_id]:
+                    _allocations[chain_id][nft_addr] = {}
+                _allocations[chain_id][nft_addr][user_addr] = (
                     allocated / allocated_total
                 )
+
         offset += chunk_size
     return _allocations
 
