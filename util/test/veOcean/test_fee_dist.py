@@ -164,7 +164,7 @@ def setup_function():
     bob = accounts.add()
 
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = B.veOcean.deploy(
+    veOCEAN = B.veOCEAN.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
 
