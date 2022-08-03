@@ -620,7 +620,7 @@ Usage: dftool newVeOcean CHAINID
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         # pylint: disable=line-too-long
-        veOcean = B.veOCEAN.deploy(
+        veOcean = B.veOcean.deploy(
             OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
         )
         print(
