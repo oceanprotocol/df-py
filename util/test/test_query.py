@@ -34,8 +34,8 @@ def test_all():
     for loop_i in range(1):
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
-        if _foundStakeAndConsume(CO2_ADDR):
-            break
+        # if _foundStakeAndConsume(CO2_ADDR):
+        #     break
 
         new_fre = oceantestutil.randomCreateDataNFTWithFREs(2, OCEAN)
 
