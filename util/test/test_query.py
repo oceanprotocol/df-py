@@ -61,21 +61,6 @@ def test_all():
 
 
 def _foundStakeAndConsume(CO2_ADDR):
-    # nonzero CO2 stake?
-    pools = query.getPools(CHAINID)
-    st, fin, n = QUERY_ST, len(brownie.network.chain), 20
-    rng = BlockRange(st, fin, n)
-    stakes_at_chain = query.getStakes(pools, rng, CHAINID)
-    if CO2_ADDR not in stakes_at_chain:
-        return False
-    for stakes_at_pool in stakes_at_chain[CO2_ADDR].values():
-        if not stakes_at_pool:
-            return False
-        lowest_stake = min(stakes_at_pool.values())
-        if lowest_stake == 0:
-            return False
-
-    # nonzero CO2 volume?
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
