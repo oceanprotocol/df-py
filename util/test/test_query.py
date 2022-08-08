@@ -20,9 +20,6 @@ def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    OCEAN = oceanutil.OCEANtoken()
-    oceantestutil.fillAccountsWithToken(OCEAN)
-
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
     CO2_ADDR = CO2.address.lower()
@@ -31,20 +28,20 @@ def test_all():
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
     fre_tup = []
-    for loop_i in range(1):
+    for loop_i in range(50):
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
-        # if _foundStakeAndConsume(CO2_ADDR):
-        #     break
+        if _foundStakeAndConsume(CO2_ADDR):
+            break
 
-        new_fre = oceantestutil.randomCreateDataNFTWithFREs(2, OCEAN)
+        new_fre = oceantestutil.randomCreateDataNFTWithFREs(2, CO2)
 
         print("fre_tup before: ", fre_tup)
         fre_tup = fre_tup + new_fre
         print("fre_tup after: ", fre_tup)
 
         oceantestutil.randomLockAndAllocate(fre_tup)
-        oceantestutil.randomConsumeFREs(fre_tup, oceanutil.OCEANtoken())
+        oceantestutil.randomConsumeFREs(fre_tup, CO2)
 
         print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
