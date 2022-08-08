@@ -194,9 +194,6 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
         oceanutil.FixedPrice().address, toBase18(max_TOKEN), {"from": from_account}
     )
 
-    spot_price = fromBase18(oceanutil.FixedPrice().getRate(exchangeId))
-    assert AVG_DT_TOKEN_RATE / 5 <= spot_price <= AVG_DT_TOKEN_RATE * 5
-
     feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
     oceanutil.FixedPrice().buyDT(
         exchangeId,
