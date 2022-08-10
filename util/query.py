@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from typing import Dict, List, Tuple
 
@@ -100,6 +101,89 @@ def getPools(chainID: int) -> list:
 @enforce_types
 def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: float):
     return shares / total_shares * base_token_liquidity
+
+
+@enforce_types
+def getveBalances() -> list:
+    """
+    @description
+      Return all ve balances
+
+    @return
+      veBalances -- list of veBalances
+    """
+    MAX_TIME = 4 * 365 * 86400  # max lock time
+    chunk_size = 1000
+    offset = 0
+    veBalances = []
+    unixEpochTime = int(datetime.datetime.now().timestamp())
+
+    while True:
+        query = """
+          {
+            veOCEANs(first: %d, skip: %d) {
+              id
+              lockedAmount
+              unlockTime
+              delegation {
+                id
+                receiver {
+                  id
+                }
+                tokenId
+                amount
+              }
+              delegates {
+                id
+                amount
+              }
+            }
+          }
+        """ % (
+            chunk_size,
+            offset,
+        )
+
+        result = submitQuery(query)
+        veOCEANs = result["data"]["veOCEANs"]
+        if len(veBalances) == 0:
+            # means there are no records left
+            break
+
+        for user in veOCEANs:
+            timeLeft = user["unlockTime"] - unixEpochTime  # time left in seconds
+            if timeLeft < 0:  # check if the lock has expired
+                continue
+
+            # calculate the balance
+            balance = user["lockedAmount"] * timeLeft / MAX_TIME
+
+            # calculate delegations
+
+            ## calculate total amount going
+            totalAmountGoing = 0
+            for delegation in user["delegation"]:
+                totalAmountGoing += delegation["amount"]
+
+            ## calculate total amount coming
+            totalAmountComing = 0
+            for delegate in user["delegates"]:
+                totalAmountComing += delegate["amount"]
+
+            ## calculate total amount
+            totalAmount = totalAmountComing - totalAmountGoing
+
+            ## convert wei to OCEAN
+            totalAmount = totalAmount / 1e18
+
+            ## add to balance
+            balance += totalAmount
+
+            ## set user balance
+            veBalances[user["id"]] = balance
+
+        ## increase offset
+        offset += chunk_size
 
 
 @enforce_types
