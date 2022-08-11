@@ -169,9 +169,7 @@ def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account, toke
 
 
 @enforce_types
-def randomCreateDataNFTWithFREs(num_FRE: int, base_token):
-    accounts = network.accounts
-
+def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
     # create random num_FRE.
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
