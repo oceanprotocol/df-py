@@ -3,6 +3,7 @@ from enforce_typing import enforce_types
 from util import networkutil, oceanutil
 
 from util.constants import BROWNIE_PROJECT as B
+import functools
 
 accounts = None
 veAllocate = None
@@ -43,7 +44,6 @@ def test_events():
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
-    oceanutil.recordDevDeployedContracts()
     global accounts, veAllocate
     accounts = brownie.network.accounts
     veAllocate = B.veAllocate.deploy({"from": accounts[0]})

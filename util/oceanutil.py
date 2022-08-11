@@ -3,6 +3,7 @@ import hashlib
 import json
 from typing import Any, Dict, List, Tuple
 
+import random
 import brownie
 from enforce_typing import enforce_types
 
@@ -48,6 +49,8 @@ def recordDeployedContracts(address_file: str):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+    C["veOCEAN"] = B.veOCEAN.at(a["veOCEAN"])
+    C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
 
     CONTRACTS[chainID] = C
 
@@ -82,6 +85,18 @@ def Staking():
 
 def ERC721Factory():
     return _contracts("ERC721Factory")
+
+
+def veOCEAN():
+    return _contracts("veOCEAN")
+
+
+def veAllocate():
+    return _contracts("veAllocate")
+
+
+def FixedPrice():
+    return _contracts("FixedPrice")
 
 
 @enforce_types
@@ -137,6 +152,69 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     DT = B.ERC20Template.at(DT_address)
 
     return DT
+
+
+@enforce_types
+def createFREFromDatatoken(
+    datatoken,
+    base_TOKEN,
+    amount,
+    from_account,
+):
+    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
+
+    addresses = [
+        base_TOKEN.address,  # baseToken
+        from_account.address,  # owner
+        from_account.address,  # marketFeeCollector address
+        ZERO_ADDRESS,  # allowed swapper
+    ]
+
+    uints = [
+        base_TOKEN.decimals(),  # baseTokenDecimals
+        datatoken.decimals(),  # datatokenDecimals
+        toBase18(1.0),  # fixedRate
+        0,  # marketFee
+        0,  # withMint
+    ]
+
+    tx = datatoken.createFixedRate(
+        FixedPrice().address, addresses, uints, {"from": from_account}
+    )
+    exchangeId = _FREAddressFromNewFRETx(tx)
+
+    return exchangeId
+
+
+@enforce_types
+def _FREAddressFromNewFRETx(tx) -> str:
+    return tx.events["NewFixedRate"]["exchangeId"]
+
+
+@enforce_types
+def randomCreateFREs(num_FRE: int, base_token, accounts):
+    # create random num_FRE.
+    tups = []  # (pub_account_i, data_NFT, DT, exchangeId)
+    for fre_i in range(num_FRE):
+        if fre_i < len(accounts):
+            account_i = fre_i
+        else:
+            account_i = random.randint(0, len(accounts))
+        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(
+            accounts[account_i], base_token
+        )
+        tups.append((account_i, data_NFT, DT, exchangeId))
+
+    return tups
+
+
+@enforce_types
+def createDataNFTWithFRE(from_account, token):
+    data_NFT = createDataNFT("1", "1", from_account)
+    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+
+    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
+    return (data_NFT, DT, exchangeId)
 
 
 @enforce_types
@@ -327,3 +405,7 @@ def create_checksum(text: str) -> str:
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+    veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
