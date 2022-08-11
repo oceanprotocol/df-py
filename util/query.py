@@ -104,86 +104,101 @@ def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: 
 
 
 @enforce_types
-def getveBalances() -> list:
+def getveBalances(rng: BlockRange) -> list:
     """
     @description
       Return all ve balances
 
     @return
-      veBalances -- list of veBalances
+      veBalances -- dict of veBalances [user_addr] : veBalance
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
-    chunk_size = 1000
-    offset = 0
+
     veBalances = []
     unixEpochTime = int(datetime.datetime.now().timestamp())
+    n_blocks = rng.numBlocks()
+    n_blocks_sampled = 0
+    blocks = rng.getBlocks()
 
-    while True:
-        query = """
-          {
-            veOCEANs(first: %d, skip: %d) {
-              id
-              lockedAmount
-              unlockTime
-              delegation {
-                id
-                receiver {
+    for block_i, block in enumerate(blocks):
+        if (block_i % 50) == 0 or (block_i == n_blocks - 1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
+        chunk_size = 1000
+        offset = 0
+        while True:
+            query = """
+              {
+                veOCEANs(first: %d, skip: %d, where: {block: %d}) {
                   id
+                  lockedAmount
+                  unlockTime
+                  delegation {
+                    id
+                    receiver {
+                      id
+                    }
+                    tokenId
+                    amount
+                  }
+                  delegates {
+                    id
+                    amount
+                  }
                 }
-                tokenId
-                amount
               }
-              delegates {
-                id
-                amount
-              }
-            }
-          }
-        """ % (
-            chunk_size,
-            offset,
-        )
+            """ % (
+                chunk_size,
+                offset,
+                block,
+            )
 
-        result = submitQuery(query)
-        veOCEANs = result["data"]["veOCEANs"]
-        if len(veBalances) == 0:
-            # means there are no records left
-            break
+            result = submitQuery(query)
+            veOCEANs = result["data"]["veOCEANs"]
+            if len(veBalances) == 0:
+                # means there are no records left
+                break
 
-        for user in veOCEANs:
-            timeLeft = user["unlockTime"] - unixEpochTime  # time left in seconds
-            if timeLeft < 0:  # check if the lock has expired
-                continue
+            for user in veOCEANs:
+                timeLeft = user["unlockTime"] - unixEpochTime  # time left in seconds
+                if timeLeft < 0:  # check if the lock has expired
+                    continue
 
-            # calculate the balance
-            balance = user["lockedAmount"] * timeLeft / MAX_TIME
+                # calculate the balance
+                balance = user["lockedAmount"] * timeLeft / MAX_TIME
 
-            # calculate delegations
+                # calculate delegations
 
-            ## calculate total amount going
-            totalAmountGoing = 0
-            for delegation in user["delegation"]:
-                totalAmountGoing += delegation["amount"]
+                ## calculate total amount going
+                totalAmountGoing = 0
+                for delegation in user["delegation"]:
+                    totalAmountGoing += delegation["amount"]
 
-            ## calculate total amount coming
-            totalAmountComing = 0
-            for delegate in user["delegates"]:
-                totalAmountComing += delegate["amount"]
+                ## calculate total amount coming
+                totalAmountComing = 0
+                for delegate in user["delegates"]:
+                    totalAmountComing += delegate["amount"]
 
-            ## calculate total amount
-            totalAmount = totalAmountComing - totalAmountGoing
+                ## calculate total amount
+                totalAmount = totalAmountComing - totalAmountGoing
 
-            ## convert wei to OCEAN
-            totalAmount = totalAmount / 1e18
+                ## convert wei to OCEAN
+                totalAmount = totalAmount / 1e18
 
-            ## add to balance
-            balance += totalAmount
+                ## add to balance
+                balance += totalAmount
 
-            ## set user balance
-            veBalances[user["id"]] = balance
+                ## set user balance
+                veBalances[user["id"]] = balance
 
-        ## increase offset
-        offset += chunk_size
+            ## increase offset
+            offset += chunk_size
+        n_blocks_sampled += 1
+
+    assert n_blocks_sampled > 0
+
+    # normalize balances
+    for user in veBalances:
+        veBalances[user] = veBalances[user] / n_blocks_sampled
 
 
 @enforce_types
