@@ -152,7 +152,7 @@ def getveBalances(rng: BlockRange) -> list:
                 block,
             )
 
-            result = submitQuery(query)
+            result = submitQuery(query, 1)
             veOCEANs = result["data"]["veOCEANs"]
             if len(veBalances) == 0:
                 # means there are no records left
