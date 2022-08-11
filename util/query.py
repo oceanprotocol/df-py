@@ -114,7 +114,7 @@ def getveBalances(rng: BlockRange) -> dict:
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
-    veBalances = []
+    veBalances = {}
     unixEpochTime = int(datetime.now().timestamp())
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
