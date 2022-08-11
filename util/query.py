@@ -202,7 +202,7 @@ def getveBalances(rng: BlockRange) -> list:
 
 
 @enforce_types
-def getAllocations() -> list:
+def getAllocations(rng: BlockRange) -> list:
     """
     @description
       Return all allocations.
@@ -211,49 +211,69 @@ def getAllocations() -> list:
       allocations -- dict of [chain_id][nft_addr][user_addr]: percent
     """
 
-    chunk_size = 1000
-    offset = 0
     _allocations = {}
-    while True:
-        query = """
-      {
-        VeAllocateUsers(first: %d, skip: %d) {
-          id
-          veAllocation {
-            id
-            allocated
-            chainId
-            nftAddress
-          }
-          allocatedTotal
-        }
-      }
-      """ % (
-            chunk_size,
-            offset,
-        )
-        result = submitQuery(query, 1)
-        allocations = result["data"]["VeAllocateUsers"]
-        if len(allocations) == 0:
-            break
-        for allocation in allocations:
-            user_addr = allocation["id"]
-            allocated_total = allocation["allocatedTotal"]
-            if user_addr not in _allocations:
-                _allocations[user_addr] = {}
-            for ve_allocation in allocation["veAllocation"]:
-                nft_addr = ve_allocation["nftAddress"]
-                chain_id = ve_allocation["chainId"]
-                allocated = ve_allocation["allocated"]
-                if chain_id not in _allocations:
-                    _allocations[chain_id] = {}
-                if nft_addr not in _allocations[chain_id]:
-                    _allocations[chain_id][nft_addr] = {}
-                _allocations[chain_id][nft_addr][user_addr] = (
-                    allocated / allocated_total
-                )
+    n_blocks = rng.numBlocks()
+    n_blocks_sampled = 0
+    blocks = rng.getBlocks()
 
-        offset += chunk_size
+    for block_i, block in enumerate(blocks):
+
+        if (block_i % 50) == 0 or (block_i == n_blocks - 1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
+
+        offset = 0
+        chunk_size = 1000
+        while True:
+            query = """
+          {
+            VeAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
+              id
+              veAllocation {
+                id
+                allocated
+                chainId
+                nftAddress
+              }
+              allocatedTotal
+            }
+          }
+          """ % (
+                chunk_size,
+                offset,
+                block,
+            )
+            result = submitQuery(query, 1)
+            allocations = result["data"]["VeAllocateUsers"]
+            if len(allocations) == 0:
+                break
+            for allocation in allocations:
+                user_addr = allocation["id"]
+                allocated_total = allocation["allocatedTotal"]
+                if user_addr not in _allocations:
+                    _allocations[user_addr] = {}
+                for ve_allocation in allocation["veAllocation"]:
+                    nft_addr = ve_allocation["nftAddress"]
+                    chain_id = ve_allocation["chainId"]
+                    allocated = ve_allocation["allocated"]
+                    if chain_id not in _allocations:
+                        _allocations[chain_id] = {}
+                    if nft_addr not in _allocations[chain_id]:
+                        _allocations[chain_id][nft_addr] = {}
+                    _allocations[chain_id][nft_addr][user_addr] = (
+                        allocated / allocated_total
+                    )
+
+            offset += chunk_size
+        n_blocks_sampled += 1
+
+    assert n_blocks_sampled > 0
+
+    # normalize allocations based on number of blocks sampled
+    for chainid in _allocations:
+        for nft_addr in _allocations[chainid]:
+            for user_addr in _allocations[chainid][nft_addr]:
+                _allocations[chainid][nft_addr][user_addr] /= n_blocks_sampled
+
     return _allocations
 
 
