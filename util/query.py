@@ -104,7 +104,7 @@ def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: 
 
 
 @enforce_types
-def getveBalances(rng: BlockRange) -> list:
+def getveBalances(rng: BlockRange) -> dict:
     """
     @description
       Return all ve balances
@@ -199,6 +199,8 @@ def getveBalances(rng: BlockRange) -> list:
     # normalize balances
     for user in veBalances:
         veBalances[user] = veBalances[user] / n_blocks_sampled
+
+    return veBalances
 
 
 @enforce_types
