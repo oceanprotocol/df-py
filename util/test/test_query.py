@@ -45,7 +45,6 @@ def test_all():
         (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(accounts[i], CO2)
         dataNfts.append((data_NFT, DT, exchangeId))
 
-    locks = []
     # Lock veOCEAN
     t0 = brownie.network.chain.time()
     t1 = t0 // WEEK * WEEK + WEEK  # what's going on here? I need to break this down.
