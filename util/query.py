@@ -169,12 +169,12 @@ def getveBalances(rng: BlockRange) -> dict:
                 # calculate delegations
 
                 ## calculate total amount going
-                totalAmountGoing = 0
+                totalAmountGoing = 0.0
                 for delegation in user["delegation"]:
                     totalAmountGoing += delegation["amount"]
 
                 ## calculate total amount coming
-                totalAmountComing = 0
+                totalAmountComing = 0.0
                 for delegate in user["delegates"]:
                     totalAmountComing += delegate["amount"]
 
