@@ -202,7 +202,7 @@ def getveBalances(rng: BlockRange) -> list:
 
 
 @enforce_types
-def getAllocations(rng: BlockRange) -> list:
+def getAllocations(rng: BlockRange) -> dict:
     """
     @description
       Return all allocations.
