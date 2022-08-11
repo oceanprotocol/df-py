@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 
 from util import oceanutil, oceantestutil, networkutil, query
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B, CONTRACTS
+from util.constants import BROWNIE_PROJECT as B
 
 account0, QUERY_ST = None, 0
 
