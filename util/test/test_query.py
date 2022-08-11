@@ -15,6 +15,13 @@ CHAINID = networkutil.DEV_CHAINID
 OCEAN_ADDR: str = ""
 
 
+# Test flow.
+# Randomly create data NFTs and consume.
+# Randomly allocate veOCEAN for the data NFTs.
+# Query veOCEAN balances, allocations, and volumes.
+# Calculate and compare the rewards.
+
+
 @pytest.mark.timeout(300)
 def test_all():
     """Run this all as a single test, because we may have to
