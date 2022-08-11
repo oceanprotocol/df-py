@@ -54,14 +54,10 @@ def test_all():
         time.sleep(2)
 
     # run actual tests
-    # _test_SimplePool(CO2)
-    # _test_getApprovedTokens()
-    # _test_getSymbols()
-    # _test_pools(CO2_ADDR)
-    # _test_stakes(CO2_ADDR)
-    # _test_getDTVolumes(CO2_ADDR)
-    # _test_getPoolVolumes(CO2_ADDR)
-    # _test_query(CO2_ADDR)
+    _test_getApprovedTokens()
+    _test_getSymbols()
+    _test_getDTVolumes(CO2_ADDR)
+    _test_query(CO2_ADDR)
 
 
 def _foundStakeAndConsume(CO2_ADDR):
@@ -74,12 +70,6 @@ def _foundStakeAndConsume(CO2_ADDR):
 
     # all good
     return True
-
-
-@enforce_types
-def _test_SimplePool(CO2):
-    pool = query.SimplePool("0xpool_addr", "0xnft_addr", "0xdt_addr", "DT", CO2.address)
-    assert "SimplePool" in str(pool)
 
 
 @enforce_types
@@ -100,67 +90,6 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_pools(CO2_ADDR: str):
-    pools = query.getPools(CHAINID)
-    assert [p for p in pools if p.basetoken_addr == OCEAN_ADDR]
-    assert [p for p in pools if p.basetoken_addr == CO2_ADDR]
-
-
-@enforce_types
-def _test_stakes(CO2_ADDR: str):
-    pools = query.getPools(CHAINID)
-    st, fin, n = QUERY_ST, len(brownie.network.chain), 500
-    rng = BlockRange(st, fin, n)
-    stakes = query.getStakes(pools, rng, CHAINID)
-
-    assert OCEAN_ADDR in stakes, stakes.keys()
-    assert CO2_ADDR in stakes, (CO2_ADDR, stakes.keys())
-
-    for basetoken_address in [OCEAN_ADDR, CO2_ADDR]:
-        for stakes_at_pool in stakes[basetoken_address].values():
-            assert len(stakes_at_pool) > 0
-            assert min(stakes_at_pool.values()) > 0.0
-
-
-@enforce_types
-def test_shares_to_stakes():
-    share = 10.0
-    pool_liq = 300.0
-    total_shares = 100.0
-    assert query.poolSharestoValue(share, total_shares, pool_liq) == 30.0
-
-
-@enforce_types
-def test_stakes_shares_conversion():
-    ocean = oceanutil.OCEANtoken()
-    account1 = brownie.network.accounts[1]
-    (DT, pool) = oceantestutil.deployPool(100.0, 1.0, account0, ocean)
-    oceantestutil.addStake(pool, 10.0, account1, ocean)
-    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
-    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
-    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
-    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
-    oceantestutil.buyDT(pool, DT, 10.0, 100.0, account0, ocean)
-    time.sleep(2)
-    now = len(brownie.network.chain)
-    rng = BlockRange(now - 1, now, 1)
-    for _ in range(50):
-        try:
-            stakes = query.getStakes([], rng, CHAINID)
-            stakes = stakes[ocean.address.lower()][pool.address.lower()]
-            break
-        # pylint: disable=bare-except
-        except:
-            time.sleep(2)
-            brownie.network.chain.mine(blocks=5)
-    ocn_balance = ocean.balanceOf(pool.address)
-    tot_sup = pool.totalSupply()
-    final = pool.balanceOf(account1) / tot_sup * ocn_balance
-    assert pool.balanceOf(account1) / 1e18 == 5.0  # shares
-    assert stakes[account1.address.lower()] == pytest.approx(final / 1e18, 0.1)
-
-
-@enforce_types
 def _test_getDTVolumes(CO2_ADDR: str):
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
@@ -168,17 +97,6 @@ def _test_getDTVolumes(CO2_ADDR: str):
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[OCEAN_ADDR].values()) > 0.0
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
-
-
-@enforce_types
-def _test_getPoolVolumes(CO2_ADDR: str):
-    pools = query.getPools(CHAINID)
-    st, fin = QUERY_ST, len(brownie.network.chain)
-    poolvols = query.getPoolVolumes(pools, st, fin, CHAINID)
-    assert OCEAN_ADDR in poolvols, poolvols.keys()
-    assert CO2_ADDR in poolvols, (CO2_ADDR, poolvols.keys())
-    assert sum(poolvols[OCEAN_ADDR].values()) > 0.0
-    assert sum(poolvols[CO2_ADDR].values()) > 0.0
 
 
 @enforce_types
