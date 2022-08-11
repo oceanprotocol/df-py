@@ -231,6 +231,7 @@ def randomConsumeFREs(FRE_tup: list, base_token):
 @enforce_types
 def randomLockAndAllocate(FRE_tup: list):
     accounts = network.accounts
+    OCEAN = oceanutil.OCEANtoken()
 
     # Lock randomly
     for _ in range(NUM_LOCKS):
@@ -242,10 +243,8 @@ def randomLockAndAllocate(FRE_tup: list):
         lock_account = accounts[lock_account_i]
 
         # Approve locking OCEAN
-        assert oceanutil.OCEANtoken().balanceOf(lock_account) != 0
-        oceanutil.OCEANtoken().approve(
-            oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account}
-        )
+        assert OCEAN.balanceOf(lock_account) != 0
+        OCEAN.approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
 
         t0 = network.chain.time()
         t1 = (
