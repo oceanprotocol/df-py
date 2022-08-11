@@ -13,6 +13,7 @@ account0, QUERY_ST = None, 0
 
 CHAINID = networkutil.DEV_CHAINID
 OCEAN_ADDR: str = ""
+WEEK = 7 * 86400
 
 
 # Test flow.
@@ -30,7 +31,42 @@ def test_all():
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
     CO2_ADDR = CO2.address.lower()
+    OCEAN = oceanutil.OCEANtoken()
     oceantestutil.fillAccountsWithToken(CO2)
+    accounts = []
+    for i in range(5):
+        accounts.append(brownie.network.accounts.add())
+        CO2.transfer(accounts[i], 1000, {"from": account0})
+        OCEAN.transfer(accounts[i], 1000, {"from": account0})
+
+    # Create data nfts
+    dataNfts = []
+    for i in range(5):
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(accounts[i], CO2)
+        dataNfts.append((data_NFT, DT, exchangeId))
+
+    locks = []
+    # Lock veOCEAN
+    t0 = brownie.network.chain.time()
+    t1 = t0 // WEEK * WEEK + WEEK  # what's going on here? I need to break this down.
+    t2 = t1 + WEEK
+    brownie.network.chain.sleep(t1 - t0)
+    for i in range(5):
+        oceanutil.create_ve_lock(100, t2, accounts[i])
+
+    # Allocate to data NFTs
+    for i in range(5):
+        oceanutil.set_allocation(
+            100,
+            dataNfts[i][0],
+            8996,
+            accounts[i],
+        )
+
+    # Consume
+    for i in range(5):
+        oceantestutil.buyDTFRE(dataNfts[i][2], 1.0, 10.0, accounts[i], CO2)
+        oceantestutil.consumeDT(dataNfts[i][1], accounts[i], accounts[i])
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
@@ -38,19 +74,10 @@ def test_all():
     for loop_i in range(50):
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
-        if _foundStakeAndConsume(CO2_ADDR):
+        if _foundConsume(CO2_ADDR):
             break
 
-        new_fre = oceantestutil.randomCreateDataNFTWithFREs(2, CO2)
-
-        print("fre_tup before: ", fre_tup)
-        fre_tup = fre_tup + new_fre
-        print("fre_tup after: ", fre_tup)
-
-        oceantestutil.randomLockAndAllocate(fre_tup)
         oceantestutil.randomConsumeFREs(fre_tup, CO2)
-
-        print(f"loop {loop_i} not successful, so sleep and re-loop")
         time.sleep(2)
 
     # run actual tests
@@ -60,7 +87,7 @@ def test_all():
     _test_query(CO2_ADDR)
 
 
-def _foundStakeAndConsume(CO2_ADDR):
+def _foundConsume(CO2_ADDR):
     st, fin = QUERY_ST, len(brownie.network.chain)
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
