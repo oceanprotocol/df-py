@@ -213,7 +213,7 @@ def getAllocations(rng: BlockRange) -> dict:
       allocations -- dict of [chain_id][nft_addr][user_addr]: percent
     """
 
-    _allocations = {}
+    _allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
