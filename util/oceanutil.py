@@ -140,7 +140,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(1.0),  # cap. Note contract will hardcod this to max_int
+        toBase18(100000.0),  # cap. Note contract will hardcod this to max_int
         toBase18(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
