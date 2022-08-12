@@ -80,8 +80,6 @@ def test_all():
         assert loop_i < 5, "timeout"
         if _foundConsume(CO2_ADDR):
             break
-
-        oceantestutil.randomConsumeFREs(fre_tup, CO2)
         time.sleep(2)
 
     # run actual tests
