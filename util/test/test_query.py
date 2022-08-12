@@ -6,6 +6,7 @@ import brownie
 from enforce_typing import enforce_types
 
 from util import oceanutil, oceantestutil, networkutil, query
+from util.base18 import toBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
 
@@ -34,15 +35,19 @@ def test_all():
     OCEAN = oceanutil.OCEANtoken()
     oceantestutil.fillAccountsWithToken(CO2)
     accounts = []
+    publisher_account = account0
     for i in range(5):
         accounts.append(brownie.network.accounts.add())
-        CO2.transfer(accounts[i], 1000, {"from": account0})
+        CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
         OCEAN.transfer(accounts[i], 1000, {"from": account0})
 
     # Create data nfts
     dataNfts = []
     for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(accounts[i], CO2)
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
+            publisher_account, CO2
+        )
+        assert oceanutil.FixedPrice().isActive(exchangeId) is True
         dataNfts.append((data_NFT, DT, exchangeId))
 
     # Lock veOCEAN
@@ -64,8 +69,8 @@ def test_all():
 
     # Consume
     for i in range(5):
-        oceantestutil.buyDTFRE(dataNfts[i][2], 1.0, 10.0, accounts[i], CO2)
-        oceantestutil.consumeDT(dataNfts[i][1], accounts[i], accounts[i])
+        oceantestutil.buyDTFRE(dataNfts[i][2], 1.0, 10000.0, accounts[i], CO2)
+        oceantestutil.consumeDT(dataNfts[i][1], publisher_account, accounts[i])
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
