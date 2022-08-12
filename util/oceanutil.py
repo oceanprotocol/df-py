@@ -175,7 +175,7 @@ def createFREFromDatatoken(
         datatoken.decimals(),  # datatokenDecimals
         toBase18(1.0),  # fixedRate
         0,  # marketFee
-        0,  # withMint
+        1,  # withMint
     ]
 
     tx = datatoken.createFixedRate(
