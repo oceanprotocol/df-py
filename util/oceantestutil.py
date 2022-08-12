@@ -193,6 +193,7 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
     )
 
     feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
+    assert base_token.balanceOf(from_account) >= toBase18(max_TOKEN)
     oceanutil.FixedPrice().buyDT(
         exchangeId,
         toBase18(DT_buy_amt),
