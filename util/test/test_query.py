@@ -149,12 +149,9 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_getDTVolumes(CO2_ADDR: str):
-    st, fin = QUERY_ST, len(brownie.network.chain)
+def _test_getDTVolumes(CO2_ADDR: str, st, fin):
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
-    assert OCEAN_ADDR in DT_vols, DT_vols.keys()
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
-    assert sum(DT_vols[OCEAN_ADDR].values()) > 0.0
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
 
