@@ -102,6 +102,16 @@ def _foundConsume(CO2_ADDR):
 
 
 @enforce_types
+def _test_getveBalances(rng: BlockRange):
+    veBalances = query.getveBalances(rng, CHAINID)
+    assert len(veBalances) > 0
+    assert sum(veBalances.values()) > 0
+
+    for account in veBalances:
+        bal = oceanutil.get_ve_balance(account) / 1e18
+        assert veBalances[account] == approx(bal, 0.001)
+
+@enforce_types
 def _test_getApprovedTokens():
     approved_tokens = query.getApprovedTokens(CHAINID)
     assert approved_tokens.hasSymbol(CHAINID, "OCEAN")
