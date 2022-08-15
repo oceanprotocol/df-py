@@ -414,3 +414,7 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
 def create_ve_lock(amount: float, unlock_time: int, from_account):
     OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
     veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
+
+
+def get_ve_balance(account):
+    return veOCEAN().balanceOf(account, brownie.network.chain.time())
