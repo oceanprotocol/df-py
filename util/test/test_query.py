@@ -111,6 +111,26 @@ def _test_getveBalances(rng: BlockRange):
         bal = oceanutil.get_ve_balance(account) / 1e18
         assert veBalances[account] == approx(bal, 0.001)
 
+
+@enforce_types
+def _test_getAllocations(rng: BlockRange):
+    allocations = query.getAllocations(rng, CHAINID)
+
+    assert len(allocations) > 0
+
+    for chainId in allocations:
+        for nftAddr in allocations[chainId]:
+            for userAddr in allocations[chainId][nftAddr]:
+                totalAllocation = oceanutil.veAllocate().getTotalAllocation(userAddr)
+                allocation = oceanutil.veAllocate().getveAllocation(
+                    userAddr, nftAddr, chainId
+                )
+                assert (
+                    allocations[chainId][nftAddr][userAddr]
+                    == allocation / totalAllocation
+                )
+
+
 @enforce_types
 def _test_getApprovedTokens():
     approved_tokens = query.getApprovedTokens(CHAINID)
