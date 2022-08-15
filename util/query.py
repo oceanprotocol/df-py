@@ -3,6 +3,7 @@ import json
 from typing import Dict, List, Tuple
 
 import requests
+import brownie
 from enforce_typing import enforce_types
 
 from util import oceanutil
@@ -104,7 +105,7 @@ def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: 
 
 
 @enforce_types
-def getveBalances(rng: BlockRange) -> dict:
+def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
     """
     @description
       Return all ve balances
@@ -115,10 +116,11 @@ def getveBalances(rng: BlockRange) -> dict:
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
     veBalances: Dict[str, float] = {}
-    unixEpochTime = int(datetime.now().timestamp())
+    unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
+    print("getveBalances: begin")
 
     for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
@@ -128,7 +130,7 @@ def getveBalances(rng: BlockRange) -> dict:
         while True:
             query = """
               {
-                veOCEANs(first: %d, skip: %d, where: {block: %d}) {
+                veOCEANs(first: %d, skip: %d,block:{number: %d}) {
                   id
                   lockedAmount
                   unlockTime
@@ -152,31 +154,33 @@ def getveBalances(rng: BlockRange) -> dict:
                 block,
             )
 
-            result = submitQuery(query, 1)
+            result = submitQuery(query, CHAINID)
             veOCEANs = result["data"]["veOCEANs"]
-            if len(veBalances) == 0:
+
+            if len(veOCEANs) == 0:
                 # means there are no records left
                 break
 
             for user in veOCEANs:
-                timeLeft = user["unlockTime"] - unixEpochTime  # time left in seconds
+                timeLeft = (
+                    float(user["unlockTime"]) - unixEpochTime
+                )  # time left in seconds
                 if timeLeft < 0:  # check if the lock has expired
                     continue
 
                 # calculate the balance
-                balance = user["lockedAmount"] * timeLeft / MAX_TIME
+                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
 
                 # calculate delegations
-
                 ## calculate total amount going
                 totalAmountGoing = 0.0
                 for delegation in user["delegation"]:
-                    totalAmountGoing += delegation["amount"]
+                    totalAmountGoing += float(delegation["amount"])
 
                 ## calculate total amount coming
                 totalAmountComing = 0.0
                 for delegate in user["delegates"]:
-                    totalAmountComing += delegate["amount"]
+                    totalAmountComing += float(delegate["amount"])
 
                 ## calculate total amount
                 totalAmount = totalAmountComing - totalAmountGoing
@@ -188,7 +192,10 @@ def getveBalances(rng: BlockRange) -> dict:
                 balance += totalAmount
 
                 ## set user balance
-                veBalances[user["id"]] = balance
+                if user["id"] not in veBalances:
+                    veBalances[user["id"]] = 0.0
+
+                veBalances[user["id"]] = (balance + veBalances[user["id"]]) / 2
 
             ## increase offset
             offset += chunk_size
@@ -196,9 +203,7 @@ def getveBalances(rng: BlockRange) -> dict:
 
     assert n_blocks_sampled > 0
 
-    # normalize balances
-    for user in veBalances:
-        veBalances[user] = veBalances[user] / n_blocks_sampled
+    print("getveBalances: done")
 
     return veBalances
 
