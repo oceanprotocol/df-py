@@ -103,7 +103,7 @@ def test_all():
     _test_getDTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_getveBalances(blockRange)
     _test_getAllocations(blockRange)
-    # _test_query(CO2_ADDR)
+    _test_query(CO2_ADDR)
 
 
 def _foundConsume(CO2_ADDR, st, fin):
