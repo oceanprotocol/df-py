@@ -2,10 +2,10 @@
 
 import os
 import sys
+import functools
 
 import brownie
 from enforce_typing import enforce_types
-import functools
 
 from util import (
     blockrange,
@@ -20,7 +20,12 @@ from util import (
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
-from util.oceanutil import recordDeployedContracts, OCEANtoken, veAllocate
+from util.oceanutil import (
+    OCEAN_address,
+    recordDeployedContracts,
+    OCEANtoken,
+    veAllocate,
+)
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
@@ -241,7 +246,9 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     A = csvs.loadApprovedCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
-    rewardsperlp, rewardsinfo = calcrewards.calcRewards(S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL)
+    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
+        S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
+    )
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
 
@@ -594,6 +601,7 @@ Usage: dftool newtoken CHAINID
     token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
 
+
 # ========================================================================
 @enforce_types
 def do_newVeOcean():
@@ -619,8 +627,12 @@ Usage: dftool newVeOcean CHAINID
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         # pylint: disable=line-too-long
-        veOcean = B.veOcean.deploy(OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account})
-        print(f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}")
+        veOcean = B.veOcean.deploy(
+            OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
+        )
+        print(
+            f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}"
+        )
 
 
 # ========================================================================
@@ -642,14 +654,15 @@ Usage: dftool newVeAllocate CHAINID
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    veAllocate = B.veAllocate.deploy({"from": from_account})
-    print(f"veAllocate contract deployed at address: {veAllocate.address}")
+    contract = B.veAllocate.deploy({"from": from_account})
+    print(f"veAllocate contract deployed at: {contract.address}")
 
 
 # ========================================================================
 @enforce_types
 def do_veSetAllocation():
-    HELP = """Allocate weight to veAllocate contract (for testing). Set to 0 to trigger resetAllocation event.
+    HELP = """Allocate weight to veAllocate contract (for testing).
+    Set to 0 to trigger resetAllocation event.
 
 Usage: dftool veSetAllocation CHAINID amount exchangeId
 """
@@ -779,10 +792,7 @@ def _getSecretSeedOrExit() -> int:
     SECRET_SEED = os.environ.get("SECRET_SEED")
     print(f"Envvar:\n SECRET_SEED={SECRET_SEED}")
     if SECRET_SEED is None:
-        print(
-            "\nNeed to set envvar SECRET_SEED. Exiting."
-            "\nEg: export SECRET_SEED=1"
-        )
+        print("\nNeed to set envvar SECRET_SEED. Exiting." "\nEg: export SECRET_SEED=1")
         sys.exit(0)
     return int(SECRET_SEED)
 
