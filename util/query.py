@@ -193,7 +193,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
 
                 ## set user balance
                 if user["id"] not in veBalances:
-                    veBalances[user["id"]] = 0.0
+                    veBalances[user["id"]] = balance
 
                 veBalances[user["id"]] = (balance + veBalances[user["id"]]) / 2
 
