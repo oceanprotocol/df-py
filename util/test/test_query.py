@@ -4,6 +4,7 @@ import time
 import pytest
 import brownie
 from enforce_typing import enforce_types
+from pytest import approx
 
 from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18
@@ -29,6 +30,9 @@ def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
+    startBlockNumber = len(brownie.network.chain)
+    endBlockNumber = 0  # will be set later
+
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
     CO2_ADDR = CO2.address.lower()
@@ -36,10 +40,11 @@ def test_all():
     oceantestutil.fillAccountsWithToken(CO2)
     accounts = []
     publisher_account = account0
+    OCEAN_LOCK_AMT = toBase18(5.0)
     for i in range(5):
         accounts.append(brownie.network.accounts.add())
         CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
-        OCEAN.transfer(accounts[i], 1000, {"from": account0})
+        OCEAN.transfer(accounts[i], OCEAN_LOCK_AMT, {"from": account0})
 
     # Create data nfts
     dataNfts = []
@@ -52,11 +57,11 @@ def test_all():
 
     # Lock veOCEAN
     t0 = brownie.network.chain.time()
-    t1 = t0 // WEEK * WEEK + WEEK  # what's going on here? I need to break this down.
-    t2 = t1 + WEEK
+    t1 = t0 // WEEK * WEEK + WEEK
+    t2 = t1 + WEEK * 20  # lock for 20 weeks
     brownie.network.chain.sleep(t1 - t0)
     for i in range(5):
-        oceanutil.create_ve_lock(100, t2, accounts[i])
+        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, accounts[i])
 
     # Allocate to data NFTs
     for i in range(5):
@@ -74,23 +79,33 @@ def test_all():
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
-    fre_tup = []
     for loop_i in range(50):
+        endBlockNumber = len(brownie.network.chain)
         print(f"loop {loop_i} start")
         assert loop_i < 5, "timeout"
-        if _foundConsume(CO2_ADDR):
+        if _foundConsume(CO2_ADDR, startBlockNumber, endBlockNumber):
             break
+        brownie.network.chain.sleep(10)
+        brownie.network.chain.mine(10)
         time.sleep(2)
+
+    brownie.network.chain.sleep(10)
+    brownie.network.chain.mine(20)
+
+    time.sleep(2)
+
+    blockRange = BlockRange(startBlockNumber, endBlockNumber, 100, 42)
 
     # run actual tests
     _test_getApprovedTokens()
     _test_getSymbols()
-    _test_getDTVolumes(CO2_ADDR)
-    _test_query(CO2_ADDR)
+    _test_getDTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
+    _test_getveBalances(blockRange)
+    _test_getAllocations(blockRange)
+    # _test_query(CO2_ADDR)
 
 
-def _foundConsume(CO2_ADDR):
-    st, fin = QUERY_ST, len(brownie.network.chain)
+def _foundConsume(CO2_ADDR, st, fin):
     DT_vols = query.getDTVolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
         return False
