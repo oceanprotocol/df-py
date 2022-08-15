@@ -792,7 +792,7 @@ def _getSecretSeedOrExit() -> int:
     SECRET_SEED = os.environ.get("SECRET_SEED")
     print(f"Envvar:\n SECRET_SEED={SECRET_SEED}")
     if SECRET_SEED is None:
-        print("\nNeed to set envvar SECRET_SEED. Exiting." "\nEg: export SECRET_SEED=1")
+        print("\nNeed to set envvar SECRET_SEED. Exiting. \nEg: export SECRET_SEED=1")
         sys.exit(0)
     return int(SECRET_SEED)
 
