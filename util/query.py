@@ -209,7 +209,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
 
 
 @enforce_types
-def getAllocations(rng: BlockRange) -> dict:
+def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
     """
     @description
       Return all allocations.
@@ -233,7 +233,7 @@ def getAllocations(rng: BlockRange) -> dict:
         while True:
             query = """
           {
-            VeAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
+            veAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
               id
               veAllocation {
                 id
@@ -249,37 +249,39 @@ def getAllocations(rng: BlockRange) -> dict:
                 offset,
                 block,
             )
-            result = submitQuery(query, 1)
-            allocations = result["data"]["VeAllocateUsers"]
+            result = submitQuery(query, CHAINID)
+            allocations = result["data"]["veAllocateUsers"]
             if len(allocations) == 0:
+                # means there are no records left
                 break
+
             for allocation in allocations:
                 user_addr = allocation["id"]
-                allocated_total = allocation["allocatedTotal"]
+                allocated_total = float(allocation["allocatedTotal"])
                 if user_addr not in _allocations:
                     _allocations[user_addr] = {}
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
-                    allocated = ve_allocation["allocated"]
+                    allocated = float(ve_allocation["allocated"])
                     if chain_id not in _allocations:
                         _allocations[chain_id] = {}
                     if nft_addr not in _allocations[chain_id]:
                         _allocations[chain_id][nft_addr] = {}
+
+                    percentage = allocated / allocated_total
+
+                    if user_addr not in _allocations[chain_id][nft_addr]:
+                        _allocations[chain_id][nft_addr][user_addr] = percentage
+
                     _allocations[chain_id][nft_addr][user_addr] = (
-                        allocated / allocated_total
-                    )
+                        percentage + _allocations[chain_id][nft_addr][user_addr]
+                    ) / 2
 
             offset += chunk_size
         n_blocks_sampled += 1
 
     assert n_blocks_sampled > 0
-
-    # normalize allocations based on number of blocks sampled
-    for chainid in _allocations:
-        for nft_addr in _allocations[chainid]:
-            for user_addr in _allocations[chainid][nft_addr]:
-                _allocations[chainid][nft_addr][user_addr] /= n_blocks_sampled
 
     return _allocations
 
