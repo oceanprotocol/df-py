@@ -19,10 +19,11 @@ WEEK = 7 * 86400
 
 
 # Test flow.
-# Randomly create data NFTs and consume.
-# Randomly allocate veOCEAN for the data NFTs.
+# Create veOCEAN locks
+# Create data NFTs and consume.
+# Allocate veOCEAN for the data NFTs.
 # Query veOCEAN balances, allocations, and volumes.
-# Calculate and compare the rewards.
+# Calculate and compare the results with the expected values.
 
 
 @pytest.mark.timeout(300)
