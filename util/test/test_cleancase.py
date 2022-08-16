@@ -34,10 +34,10 @@ def test_stakes():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertStakes(stakes)
+        cleancase.asserAllocations(stakes)
 
-    mod_stakes = cleancase.modStakes(stakes)
-    cleancase.assertStakes(mod_stakes)
+    mod_stakes = cleancase.modAllocations(stakes)
+    cleancase.asserAllocations(mod_stakes)
     assert mod_stakes == target_stakes
 
 

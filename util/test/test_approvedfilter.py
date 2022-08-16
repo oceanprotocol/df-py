@@ -35,7 +35,7 @@ def test_stakes_main():
         },
         2: {"0xocean2": {"0xpoole": {"0xlp6": 5.0}}},
     }
-    cleancase.assertStakes(target_stakes)
+    cleancase.asserAllocations(target_stakes)
 
     mod_stakes = approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes)
     approvedfilter.assertStakes(APPROVED_TOKEN_ADDRS, mod_stakes)

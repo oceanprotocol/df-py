@@ -20,14 +20,14 @@ def modTuple(approved_token_addrs, stakes, poolvols) -> Tuple[dict, dict]:
 @enforce_types
 def modStakes(approved_token_addrs: dict, stakes: dict) -> dict:
     """stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake"""
-    cleancase.assertStakes(stakes)
+    cleancase.asserAllocations(stakes)
     return _modD(approved_token_addrs, stakes)
 
 
 @enforce_types
 def assertStakes(approved_token_addrs: dict, stakes: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
-    cleancase.assertStakes(stakes)
+    cleancase.asserAllocations(stakes)
     _assertD(approved_token_addrs, stakes)
 
 
