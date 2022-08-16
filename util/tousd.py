@@ -41,15 +41,16 @@ def nftvolsToUsd(
       For a given chain, converts volume values to be USD-denominated.
 
     @arguments
-      nftvols -- dict of [chainID][basetoken_address][pool_addr] : vol
+      nftvols -- dict of [chainID][basetoken_address][nft_addr] : vol
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
       rates - dict of [basetoken_symbol] : USD_price
 
     @return
-      nftvols_USD -- dict of [chainID][pool_addr] : vol_USD
+      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD
     """
     cleancase.assertNFTvols(nftvols)
     cleancase.assertRates(rates)
+
     addr_rates = ratesToAddrRates(
         rates, symbols
     )  # dict of [chainID][basetoken_addr] : USD_price
@@ -69,6 +70,4 @@ def nftvolsToUsd(
                 continue
             for nft_addr, vol in nftvols[chainID][basetoken_addr].items():
                 nftvols_USD[chainID][nft_addr] = vol * rate
-
-    cleancase.assertnftvolsUsd(nftvols_USD)
     return nftvols_USD
