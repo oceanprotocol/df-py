@@ -12,8 +12,9 @@ TARGET_WPY = (
 
 @enforce_types
 def calcRewards(
-    stakes: Dict[int, Dict[str, Dict[str, Dict[str, float]]]],
-    poolvols: Dict[int, Dict[str, Dict[str, float]]],
+    allocations: Dict[str, Dict[str, Dict[str, float]]],
+    veBalances: Dict[str, float],
+    nftvols: Dict[int, Dict[str, Dict[str, float]]],
     approved_token_addrs: Dict[int, List[str]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
@@ -22,8 +23,9 @@ def calcRewards(
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]],]:
     """
     @arguments
-      stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_OCEAN_or_H2O
-      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_OCEAN_or_H2O
+      allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
+      veBalances - dict of [LP_addr] : ve balance for the user
+      nftvols -- dict of [chainID][basetoken_addr][nft_addr] : data consume volume
       approved_token_addrs -- dict of [chainID] : list_of_addr
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
       rates -- dict of [basetoken_symbol] : USD_price
@@ -34,17 +36,18 @@ def calcRewards(
       rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
       rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
-    (stakes, poolvols, rates) = cleancase.modTuple(stakes, poolvols, rates)
-    (stakes, poolvols) = approvedfilter.modTuple(approved_token_addrs, stakes, poolvols)
+    (allocations, nftvols, rates) = cleancase.modTuple(allocations, nftvols, rates)
+    (allocations, nftvols) = approvedfilter.modTuple(
+        approved_token_addrs, allocations, nftvols
+    )
 
-    stakes_USD = tousd.stakesToUsd(stakes, symbols, rates)
-    poolvols_USD = tousd.poolvolsToUsd(poolvols, symbols, rates)
+    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
-    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(stakes_USD, poolvols_USD)
+    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(allocations, nftvols_USD)
 
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
 
-    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
+    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD, veBalances)
 
     RF_TOKEN = RF_USD / rates[rewards_symbol]
 
