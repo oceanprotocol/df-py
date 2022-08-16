@@ -56,6 +56,26 @@ def calcRewards(
     return rewardsperlp, rewardsinfo
 
 
+def _getveStakes(allocations: dict, veBalances: dict) -> dict:
+    """
+    @arguments
+      allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
+      veBalances - dict of [LP_addr] : ve balance for the user
+    """
+    VE_stakes = {}
+    for chainID in allocations:
+        if chainID not in VE_stakes:
+            VE_stakes[chainID] = {}
+        for nft_addr in allocations[chainID]:
+            if nft_addr not in VE_stakes[chainID]:
+                VE_stakes[chainID][nft_addr] = {}
+            for LP_addr in allocations[chainID][nft_addr]:
+                VE_stakes[chainID][nft_addr][LP_addr] = (
+                    allocations[chainID][nft_addr][LP_addr] * veBalances[LP_addr]
+                )
+    return VE_stakes
+
+
 def _stakevolDictsToArrays(allocations: dict, nftvols_USD: dict):
     """
     @arguments
