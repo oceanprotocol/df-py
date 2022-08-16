@@ -47,20 +47,36 @@ def saveAllocationCsv(allocations: dict, csv_dir: str):
 
 
 @enforce_types
-def loadAllocationCsvs(csv_dir: str):
+def loadAllocationCsvs(csv_dir: str) -> dict:
     """
     @description
-      Load all stakes csvs (across all chains); return result as a single dict
+      Load allocation csv; return result as a single dict
 
     @return
-      stakes -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
+      allocation -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
     """
-    csv_files = stakesCsvFilenames(csv_dir)
-    stakes = {}
-    for csv_file in csv_files:
-        chainID = chainIDforStakeCsv(csv_file)
-        stakes[chainID] = loadStakesCsv(csv_dir, chainID)
-    return stakes
+    csv_file = allocationCsvFilename(csv_dir)
+    V: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = {}
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:
+                assert row == ["chainID", "nft_addr", "LP_addr", "percent"]
+                continue
+            chainID, nft_addr, LP_addr, percent = row
+            assertIsEthAddr(nft_addr)
+            assertIsEthAddr(LP_addr)
+
+            if chainID not in V:
+                V[chainID] = {}
+
+            if nft_addr not in V[chainID]:
+                V[chainID][nft_addr] = {}
+
+            V[chainID][nft_addr][LP_addr] = percent
+    print(f"Loaded {csv_file}")
+
+    return V
 
 
 @enforce_types
