@@ -13,60 +13,14 @@ from util.tok import TokSet
 
 
 @enforce_types
-class SimplePool:
-    """
-    A simple object to store pools retrieved from chain.
-    Easier to retrieve info than using dicts keyed by strings, and
-      more lightweight than a full BPool object.
-    """
-
-    def __init__(
-        self,
-        addr: str,
-        nft_addr: str,
-        DT_addr: str,
-        DT_symbol: str,
-        basetoken_addr: str,
-    ):
-        self.addr = addr
-        self.nft_addr = nft_addr
-        self.DT_addr = DT_addr
-        self.DT_symbol = DT_symbol
-        self.basetoken_addr = basetoken_addr
-
-    @property
-    def basetoken_symbol(self) -> str:
-        return symbol(self.basetoken_addr)
-
-    def __str__(self):
-        s = ["SimplePool={"]
-        s += [f"addr={self.addr[:5]}"]
-        s += [f", nft_addr={self.nft_addr[:5]}"]
-        s += [f", DT_addr={self.DT_addr[:5]}"]
-        s += [f", DT_symbol={self.DT_symbol}"]
-        s += [f", basetoken_addr={self.basetoken_addr[:5]}"]
-        s += [f", basetoken_symbol={self.basetoken_symbol}"]
-        s += [" /SimplePool}"]
-        return "".join(s)
-
-
-@enforce_types
 def query_all(
     rng: BlockRange, chainID: int
-) -> Tuple[
-    List[SimplePool],
-    Dict[str, Dict[str, Dict[str, float]]],
-    Dict[str, Dict[str, float]],
-    List[str],
-    Dict[str, str],
-]:
+) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str],]:
     """
     @description
       Return pool info, stakes & poolvols, for the input block range and chain.
 
     @return
-      pools_at_chain -- list of SimplePool
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
       approved_token_addrs_at_chain -- list_of_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
@@ -75,32 +29,11 @@ def query_all(
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Pi = getPools(chainID)
-    Si = getStakes(Pi, rng, chainID)
-    Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID)
+    Vi = getDTVolumes(rng.st, rng.fin, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
-    return (Pi, Si, Vi, Ai, SYMi)
-
-
-@enforce_types
-def getPools(chainID: int) -> list:
-    """
-    @description
-      Return all pools eligible for DF.
-
-    @return
-      pools -- list of SimplePool
-    """
-    pools = getAllPools(chainID)
-    pools = _filterOutPurgatory(pools, chainID)
-    return pools
-
-
-@enforce_types
-def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: float):
-    return shares / total_shares * base_token_liquidity
+    return (Vi, Ai, SYMi)
 
 
 @enforce_types
@@ -281,130 +214,6 @@ def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
     return _allocations
 
 
-@enforce_types
-def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
-    """
-    @description
-      Query the chain for stakes.
-
-    @return
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr]:stake
-    """
-    print("getStakes(): begin")
-    _ = pools  # little trick because pools isn't used
-    SSBOT_address = oceanutil.Staking().address.lower()
-    stakes: Dict[str, Dict[str, Dict[str, float]]] = {}
-    n_blocks = rng.numBlocks()
-    n_blocks_sampled = 0
-    blocks = rng.getBlocks()
-    for block_i, block in enumerate(blocks):  # loop across block groups
-        if (block_i % 50) == 0 or (block_i == n_blocks - 1):
-            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
-        LP_offset = 0
-        chunk_size = 1000  # max for subgraph=1000
-
-        while True:  # loop across LP groups
-            query = """
-            { 
-              poolShares(skip:%s, first:%s, block:{number:%s}) {
-                pool {
-                  id,
-                  baseToken {
-                    id
-                  },
-                  totalShares,
-                  baseTokenLiquidity
-                }, 
-                user {
-                  id
-                },
-                shares
-              }
-            }
-            """ % (
-                LP_offset,
-                chunk_size,
-                block,
-            )
-            result = submitQuery(query, chainID)
-
-            if (
-                "errors" in result
-                and "indexed up to block number" in result["errors"][0]["message"]
-            ):
-                LP_offset += chunk_size
-                break
-
-            new_pool_stake = result["data"]["poolShares"]
-
-            if not new_pool_stake:
-                break
-
-            for d in new_pool_stake:
-                basetoken_addr = d["pool"]["baseToken"]["id"].lower()
-                pool_addr = d["pool"]["id"].lower()
-                LP_addr = d["user"]["id"].lower()
-                total_shares = float(d["pool"]["totalShares"])
-                base_token_liq = float(d["pool"]["baseTokenLiquidity"])
-                shares = float(d["shares"])
-                value = poolSharestoValue(shares, total_shares, base_token_liq)
-
-                if value == 0:
-                    continue
-
-                if LP_addr == SSBOT_address:
-                    continue  # skip ss bot
-
-                if basetoken_addr not in stakes:
-                    stakes[basetoken_addr] = {}
-                if pool_addr not in stakes[basetoken_addr]:
-                    stakes[basetoken_addr][pool_addr] = {}
-                if LP_addr not in stakes[basetoken_addr][pool_addr]:
-                    stakes[basetoken_addr][pool_addr][LP_addr] = 0.0
-
-                stakes[basetoken_addr][pool_addr][LP_addr] += value
-
-            LP_offset += chunk_size
-        n_blocks_sampled += 1
-    # normalize stake based on # blocks sampled
-    # (this may be lower than target # blocks, if we hit indexing errors)
-    assert n_blocks_sampled > 0
-    for basetoken_addr in stakes:  # pylint: disable=consider-iterating-dictionary
-        for pool_addr in stakes[basetoken_addr]:
-            for LP_addr in stakes[basetoken_addr][pool_addr]:
-                stakes[basetoken_addr][pool_addr][LP_addr] /= n_blocks_sampled
-    return stakes  # ie stakes_at_chain
-
-
-@enforce_types
-def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> dict:
-    """
-    @description
-      Query the chain for pool volumes within the given block range.
-
-    @return
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr]:vol_amt
-    """
-    # [baseaddr][DT_addr]:vol
-    DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
-
-    # [baseaddr][pool_addr]:vol
-    poolvols_at_chain: Dict[str, Dict[str, float]] = {}
-    for baseaddr in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
-        if baseaddr not in poolvols_at_chain:
-            poolvols_at_chain[baseaddr] = {}
-
-        for DT_addr in DTvols_at_chain[baseaddr]:
-            # handle if >1 pool has the DT
-            pools_with_DT = [p for p in pools if p.DT_addr == DT_addr]
-            vol = DTvols_at_chain[baseaddr][DT_addr]
-            for pool in pools_with_DT:
-                # the "/" spreads vol evenly among pools holding the DT
-                poolvols_at_chain[baseaddr][pool.addr] = vol / len(pools_with_DT)
-
-    return poolvols_at_chain
-
-
 def getDTVolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
@@ -463,7 +272,7 @@ def getDTVolumes(
 
 
 @enforce_types
-def _filterOutPurgatory(pools: List[SimplePool], chainID: int) -> List[SimplePool]:
+def _filterOutPurgatory(pools: List, chainID: int) -> List:
     """
     @description
       Return pools that aren't in purgatory
@@ -548,59 +357,6 @@ def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
         for tok in approved_tokens.toks
         if tok.chainID == chainID
     }
-
-
-@enforce_types
-def getAllPools(chainID: int) -> List[SimplePool]:
-    """
-    @description
-      Query the chain and return all pools
-
-    @return
-      pools - list of SimplePool
-    """
-    pools = []
-    offset = 0
-    chunk_size = 1000  # max for subgraph = 1000
-
-    while True:
-        query = """
-        {
-          pools(skip:%s, first:%s){
-            transactionCount,
-            id,
-            baseToken {
-              id
-            },
-            datatoken {
-                id,
-                symbol,
-                nft {
-                    id
-                }
-            }
-          }
-        }
-        """ % (
-            offset,
-            chunk_size,
-        )
-        offset += chunk_size
-        result = submitQuery(query, chainID)
-        ds = result["data"]["pools"]
-        if ds == []:
-            break  # if there are no pools left, break
-        for d in ds:
-            pool = SimplePool(
-                addr=d["id"].lower(),
-                nft_addr=d["datatoken"]["nft"]["id"].lower(),
-                DT_addr=d["datatoken"]["id"].lower(),
-                DT_symbol=d["datatoken"]["symbol"].upper(),
-                basetoken_addr=d["baseToken"]["id"].lower(),
-            )
-            pools.append(pool)
-
-    return pools
 
 
 _ADDR_TO_SYMBOL = {}  # address : TOKEN_symbol
