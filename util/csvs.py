@@ -9,48 +9,45 @@ from util import constants, oceanutil
 
 
 # ========================================================================
-# stakes csvs
+# allocation csvs
 
 
 @enforce_types
-def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
+def saveAllocationCsv(allocations: dict, csv_dir: str):
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
+      allocations -- dict of [chain_id][nft_addr][LP_addr] : percent
       csv_dir -- directory that holds csv files
-      chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = stakesCsvFilename(csv_dir, chainID)
+    csv_file = allocationCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
-    S = stakes_at_chain
+    S = allocations
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "basetoken_addr", "pool_addr", "LP_addr", "stake_amt"]
+        row = ["chainID", "nft_addr", "LP_addr", "percent"]
         writer.writerow(row)
-        for basetoken_addr in S.keys():
-            assertIsEthAddr(basetoken_addr)
-            for pool_addr in S[basetoken_addr].keys():
-                assertIsEthAddr(pool_addr)
-                for LP_addr, stake in S[basetoken_addr][pool_addr].items():
-                    assertIsEthAddr(pool_addr)
+        for chainID in S.keys():
+            for nft_addr in S[chainID].keys():
+                assertIsEthAddr(nft_addr)
+                for LP_addr, percent in S[chainID][nft_addr].items():
+                    assertIsEthAddr(nft_addr)
                     row = [
-                        str(chainID),
-                        basetoken_addr.lower(),
-                        pool_addr.lower(),
+                        chainID,
+                        nft_addr.lower(),
                         LP_addr.lower(),
-                        stake,
+                        percent,
                     ]
                     writer.writerow(row)
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadStakesCsvs(csv_dir: str):
+def loadAllocationCsvs(csv_dir: str):
     """
     @description
       Load all stakes csvs (across all chains); return result as a single dict
@@ -67,66 +64,20 @@ def loadStakesCsvs(csv_dir: str):
 
 
 @enforce_types
-def loadStakesCsv(csv_dir: str, chainID: int):
-    """
-    @description
-      Load stakes csv for this chainID
-
-    @return
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
-    """
-    csv_file = stakesCsvFilename(csv_dir, chainID)
-    S: Dict[str, Dict[str, Dict[str, float]]] = {}  # ie stakes_at_chain
-    with open(csv_file, "r") as f:
-        reader = csv.reader(f)
-        for row_i, row in enumerate(reader):
-            if row_i == 0:  # header
-                assert row == [
-                    "chainID",
-                    "basetoken_addr",
-                    "pool_addr",
-                    "LP_addr",
-                    "stake_amt",
-                ]
-                continue
-
-            chainID2 = int(row[0])
-            basetoken_addr = row[1].lower()
-            pool_addr = row[2].lower()
-            LP_addr = row[3].lower()
-            stake_amt = float(row[4])
-
-            assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(basetoken_addr)
-            assertIsEthAddr(pool_addr)
-            assertIsEthAddr(LP_addr)
-
-            if basetoken_addr not in S:
-                S[basetoken_addr] = {}
-            if pool_addr not in S[basetoken_addr]:
-                S[basetoken_addr][pool_addr] = {}
-            assert LP_addr not in S[basetoken_addr][pool_addr], "duplicate found"
-            S[basetoken_addr][pool_addr][LP_addr] = stake_amt
-    print(f"Loaded {csv_file}")
-
-    return S
+def allocationCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of allocation filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "allocation*.csv"))
 
 
 @enforce_types
-def stakesCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of stakes filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "stakes*.csv"))
-
-
-@enforce_types
-def stakesCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the stakes filename for a given chainID"""
-    return os.path.join(csv_dir, f"stakes-chain{chainID}.csv")
+def allocationCsvFilename(csv_dir: str) -> str:
+    """Returns the allocation filename for a given chainID"""
+    return os.path.join(csv_dir, f"allocations.csv")
 
 
 @enforce_types
 def chainIDforStakeCsv(filename) -> int:
-    """Returns chainID for a given stakes csv filename"""
+    """Returns chainID for a given allocation csv filename"""
     return _lastInt(filename)
 
 
