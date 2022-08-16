@@ -10,29 +10,29 @@ from util import cleancase
 
 
 @enforce_types
-def modTuple(approved_token_addrs, stakes, poolvols) -> Tuple[dict, dict]:
+def modTuple(approved_token_addrs, allocations, nftvols) -> Tuple[dict, dict]:
     return (
-        modStakes(approved_token_addrs, stakes),
-        modPoolvols(approved_token_addrs, poolvols),
+        modAllocations(allocations),
+        modNFTvols(approved_token_addrs, nftvols),
     )
 
 
 @enforce_types
-def modStakes(approved_token_addrs: dict, stakes: dict) -> dict:
-    """stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake"""
-    cleancase.asserAllocations(stakes)
-    return _modD(approved_token_addrs, stakes)
+def modAllocations(allocations: dict) -> dict:
+    """allocations - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : percentage"""
+    cleancase.assertAllocations(allocations)
+    return allocations
 
 
 @enforce_types
 def assertStakes(approved_token_addrs: dict, stakes: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
-    cleancase.asserAllocations(stakes)
+    cleancase.assertAllocations(stakes)
     _assertD(approved_token_addrs, stakes)
 
 
 @enforce_types
-def modPoolvols(approved_token_addrs: dict, poolvols: dict) -> dict:
+def modNFTvols(approved_token_addrs: dict, poolvols: dict) -> dict:
     """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
     cleancase.assertNFTvols(poolvols)
     return _modD(approved_token_addrs, poolvols)
@@ -62,6 +62,7 @@ def _modD(approved_token_addrs: Dict[int, List[str]], D: dict) -> dict:
         D2[chainID] = {}
         for basetoken_addr in D[chainID]:
             if basetoken_addr not in approved_token_addrs[chainID]:
+                print(basetoken_addr)
                 continue
             D2[chainID][basetoken_addr] = deepcopy(D[chainID][basetoken_addr])
 
