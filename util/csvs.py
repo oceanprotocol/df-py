@@ -186,6 +186,78 @@ def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
                 row = [chainID, basetoken_addr.lower(), pool_addr.lower(), vol]
                 writer.writerow(row)
     print(f"Created {csv_file}")
+
+@enforce_types
+def loadNFTvolsCsvs(csv_dir: str):
+    """
+    @description
+      Load all poolvols csvs (across all chains); return result as single dict
+
+    @return
+      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_amt
+    """
+    csv_files = nftvolsCsvFilenames(csv_dir)
+    poolvols = {}
+    for csv_file in csv_files:
+        chainID = chainIDforNFTvolsCsv(csv_file)
+        poolvols[chainID] = loadNFTvolsCsv(csv_dir, chainID)
+    return poolvols
+
+
+@enforce_types
+def loadNFTvolsCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load poolvols for this chainID
+
+    @return
+      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
+    """
+    csv_file = nftvolsCsvFilename(csv_dir, chainID)
+    V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == ["chainID", "basetoken_addr", "pool_addr", "vol_amt"]
+                continue
+
+            chainID2 = int(row[0])
+            basetoken_addr = row[1].lower()
+            pool_addr = row[2].lower()
+            vol_amt = float(row[3])
+
+            assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(basetoken_addr)
+            assertIsEthAddr(pool_addr)
+
+            if basetoken_addr not in V:
+                V[basetoken_addr] = {}
+            assert pool_addr not in V[basetoken_addr], "duplicate found"
+            V[basetoken_addr][pool_addr] = vol_amt
+    print(f"Loaded {csv_file}")
+
+    return V
+
+
+@enforce_types
+def nftvolsCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of poolvols filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "poolvols*.csv"))
+
+
+@enforce_types
+def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the poolvols filename for a given chainID"""
+    return os.path.join(csv_dir, f"poolvols-{chainID}.csv")
+
+
+@enforce_types
+def chainIDforNFTvolsCsv(filename) -> int:
+    """Returns chainID for a given poolvols csv filename"""
+    return _lastInt(filename)
+
+
 # ========================================================================
 # approved csvs
 
