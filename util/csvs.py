@@ -91,113 +91,69 @@ def allocationCsvFilename(csv_dir: str) -> str:
     return os.path.join(csv_dir, f"allocations.csv")
 
 
-@enforce_types
-def chainIDforStakeCsv(filename) -> int:
-    """Returns chainID for a given allocation csv filename"""
-    return _lastInt(filename)
-
-
 # ========================================================================
-# poolvols csvs
-
-
-@enforce_types
-def savePoolvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
+# veOCEAN csvs
+def saveVeOceanCsv(balances: dict, csv_dir: str):
     """
     @description
-      Save the poolvols csv for this chain. This csv is a key input for
+      Save the stakes csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
+      balances -- dict of [LP_addr] : balance
       csv_dir -- directory that holds csv files
-      chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = poolvolsCsvFilename(csv_dir, chainID)
+    csv_file = veOCEANCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
-    V = poolvols_at_chain
+    S = balances
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "basetoken_addr", "pool_addr", "vol_amt"])
-        for basetoken_addr in V.keys():
-            assertIsEthAddr(basetoken_addr)
-            for pool_addr, vol in V[basetoken_addr].items():
-                assertIsEthAddr(pool_addr)
-                row = [chainID, basetoken_addr.lower(), pool_addr.lower(), vol]
-                writer.writerow(row)
+        row = ["LP_addr", "balance"]
+        writer.writerow(row)
+        for LP_addr in S.keys():
+            assertIsEthAddr(LP_addr)
+            row = [
+                LP_addr.lower(),
+                S[LP_addr],
+            ]
+            writer.writerow(row)
+
     print(f"Created {csv_file}")
 
 
-@enforce_types
-def loadPoolvolsCsvs(csv_dir: str):
+def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
     """
     @description
-      Load all poolvols csvs (across all chains); return result as single dict
+      Load veOCEAN csv; return result as a single dict
 
     @return
-      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_amt
+      veOCEAN -- dict of [LP_addr] : balance
     """
-    csv_files = poolvolsCsvFilenames(csv_dir)
-    poolvols = {}
-    for csv_file in csv_files:
-        chainID = chainIDforPoolvolsCsv(csv_file)
-        poolvols[chainID] = loadPoolvolsCsv(csv_dir, chainID)
-    return poolvols
-
-
-@enforce_types
-def loadPoolvolsCsv(csv_dir: str, chainID: int):
-    """
-    @description
-      Load poolvols for this chainID
-
-    @return
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
-    """
-    csv_file = poolvolsCsvFilename(csv_dir, chainID)
-    V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
+    csv_file = veOCEANCsvFilename(csv_dir)
+    V: Dict[str, float] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
-            if row_i == 0:  # header
-                assert row == ["chainID", "basetoken_addr", "pool_addr", "vol_amt"]
+            if row_i == 0:
+                assert row == ["LP_addr", "balance"]
                 continue
+            LP_addr, balance = row
 
-            chainID2 = int(row[0])
-            basetoken_addr = row[1].lower()
-            pool_addr = row[2].lower()
-            vol_amt = float(row[3])
+            LP_addr = LP_addr.lower()
+            balance = float(balance)
 
-            assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(basetoken_addr)
-            assertIsEthAddr(pool_addr)
+            assertIsEthAddr(LP_addr)
 
-            if basetoken_addr not in V:
-                V[basetoken_addr] = {}
-            assert pool_addr not in V[basetoken_addr], "duplicate found"
-            V[basetoken_addr][pool_addr] = vol_amt
+            V[LP_addr] = balance
     print(f"Loaded {csv_file}")
-
     return V
 
 
 @enforce_types
-def poolvolsCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of poolvols filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "poolvols*.csv"))
-
-
-@enforce_types
-def poolvolsCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the poolvols filename for a given chainID"""
-    return os.path.join(csv_dir, f"poolvols-{chainID}.csv")
-
-
-@enforce_types
-def chainIDforPoolvolsCsv(filename) -> int:
-    """Returns chainID for a given poolvols csv filename"""
-    return _lastInt(filename)
+def veOCEANCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the veOCEAN filename"""
+    return os.path.join(csv_dir, f"veOCEAN-balances.csv")
 
 
 # ========================================================================
