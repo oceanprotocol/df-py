@@ -53,11 +53,11 @@ def calcRewards(
     return rewardsperlp, rewardsinfo
 
 
-def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
+def _stakevolDictsToArrays(allocations: dict, nftvols_USD: dict):
     """
     @arguments
-      stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
-      poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
+      allocations - dict of [chainID][nft_addr][LP_addr] : stake_USD
+      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD
 
     @return
       S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
@@ -65,11 +65,11 @@ def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
       keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
     """
     # base data
-    cleancase.assertStakesUsd(stakes_USD)
-    cleancase.assertPoolvolsUsd(poolvols_USD)
-    chainIDs = list(stakes_USD.keys())
-    LP_addrs = _getLpAddrs(stakes_USD)
-    pool_addrs = _getPoolAddrs(poolvols_USD)
+    cleancase.assertStakesUsd(allocations)
+    cleancase.assertPoolvolsUsd(nftvols_USD)
+    chainIDs = list(allocations.keys())
+    LP_addrs = _getLpAddrs(allocations)
+    pool_addrs = _getPoolAddrs(nftvols_USD)
     N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(pool_addrs)
 
     # convert
@@ -78,10 +78,10 @@ def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
             for j, pool_addr in enumerate(pool_addrs):
-                if pool_addr not in stakes_USD[chainID]:
+                if pool_addr not in allocations[chainID]:
                     continue
-                S_USD[c, i, j] = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
-                P_USD[c, j] += poolvols_USD[chainID].get(pool_addr, 0.0)
+                S_USD[c, i, j] = allocations[chainID][pool_addr].get(LP_addr, 0.0)
+                P_USD[c, j] += nftvols_USD[chainID].get(pool_addr, 0.0)
 
     # done!
     keys_tup = (chainIDs, LP_addrs, pool_addrs)
