@@ -140,7 +140,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(1.0),  # cap. Note contract will hardcod this to max_int
+        toBase18(100000.0),  # cap. Note contract will hardcod this to max_int
         toBase18(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
@@ -175,7 +175,7 @@ def createFREFromDatatoken(
         datatoken.decimals(),  # datatokenDecimals
         toBase18(1.0),  # fixedRate
         0,  # marketFee
-        0,  # withMint
+        1,  # withMint
     ]
 
     tx = datatoken.createFixedRate(
@@ -409,3 +409,12 @@ def create_checksum(text: str) -> str:
 
 def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+
+
+def create_ve_lock(amount: float, unlock_time: int, from_account):
+    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
+    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
+
+
+def get_ve_balance(account):
+    return veOCEAN().balanceOf(account, brownie.network.chain.time())

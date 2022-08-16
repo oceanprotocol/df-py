@@ -1,8 +1,8 @@
-from datetime import datetime
 import json
 from typing import Dict, List, Tuple
 
 import requests
+import brownie
 from enforce_typing import enforce_types
 
 from util import oceanutil
@@ -104,7 +104,7 @@ def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: 
 
 
 @enforce_types
-def getveBalances(rng: BlockRange) -> dict:
+def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
     """
     @description
       Return all ve balances
@@ -115,10 +115,11 @@ def getveBalances(rng: BlockRange) -> dict:
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
     veBalances: Dict[str, float] = {}
-    unixEpochTime = int(datetime.now().timestamp())
+    unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
+    print("getveBalances: begin")
 
     for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
@@ -128,16 +129,12 @@ def getveBalances(rng: BlockRange) -> dict:
         while True:
             query = """
               {
-                veOCEANs(first: %d, skip: %d, where: {block: %d}) {
+                veOCEANs(first: %d, skip: %d,block:{number: %d}) {
                   id
                   lockedAmount
                   unlockTime
                   delegation {
                     id
-                    receiver {
-                      id
-                    }
-                    tokenId
                     amount
                   }
                   delegates {
@@ -152,31 +149,33 @@ def getveBalances(rng: BlockRange) -> dict:
                 block,
             )
 
-            result = submitQuery(query, 1)
+            result = submitQuery(query, CHAINID)
             veOCEANs = result["data"]["veOCEANs"]
-            if len(veBalances) == 0:
+
+            if len(veOCEANs) == 0:
                 # means there are no records left
                 break
 
             for user in veOCEANs:
-                timeLeft = user["unlockTime"] - unixEpochTime  # time left in seconds
+                timeLeft = (
+                    float(user["unlockTime"]) - unixEpochTime
+                )  # time left in seconds
                 if timeLeft < 0:  # check if the lock has expired
                     continue
 
                 # calculate the balance
-                balance = user["lockedAmount"] * timeLeft / MAX_TIME
+                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
 
                 # calculate delegations
-
                 ## calculate total amount going
                 totalAmountGoing = 0.0
                 for delegation in user["delegation"]:
-                    totalAmountGoing += delegation["amount"]
+                    totalAmountGoing += float(delegation["amount"])
 
                 ## calculate total amount coming
                 totalAmountComing = 0.0
                 for delegate in user["delegates"]:
-                    totalAmountComing += delegate["amount"]
+                    totalAmountComing += float(delegate["amount"])
 
                 ## calculate total amount
                 totalAmount = totalAmountComing - totalAmountGoing
@@ -188,7 +187,10 @@ def getveBalances(rng: BlockRange) -> dict:
                 balance += totalAmount
 
                 ## set user balance
-                veBalances[user["id"]] = balance
+                if user["id"] not in veBalances:
+                    veBalances[user["id"]] = balance
+
+                veBalances[user["id"]] = (balance + veBalances[user["id"]]) / 2
 
             ## increase offset
             offset += chunk_size
@@ -196,15 +198,13 @@ def getveBalances(rng: BlockRange) -> dict:
 
     assert n_blocks_sampled > 0
 
-    # normalize balances
-    for user in veBalances:
-        veBalances[user] = veBalances[user] / n_blocks_sampled
+    print("getveBalances: done")
 
     return veBalances
 
 
 @enforce_types
-def getAllocations(rng: BlockRange) -> dict:
+def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
     """
     @description
       Return all allocations.
@@ -228,7 +228,7 @@ def getAllocations(rng: BlockRange) -> dict:
         while True:
             query = """
           {
-            VeAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
+            veAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
               id
               veAllocation {
                 id
@@ -244,37 +244,39 @@ def getAllocations(rng: BlockRange) -> dict:
                 offset,
                 block,
             )
-            result = submitQuery(query, 1)
-            allocations = result["data"]["VeAllocateUsers"]
+            result = submitQuery(query, CHAINID)
+            allocations = result["data"]["veAllocateUsers"]
             if len(allocations) == 0:
+                # means there are no records left
                 break
+
             for allocation in allocations:
                 user_addr = allocation["id"]
-                allocated_total = allocation["allocatedTotal"]
+                allocated_total = float(allocation["allocatedTotal"])
                 if user_addr not in _allocations:
                     _allocations[user_addr] = {}
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
-                    allocated = ve_allocation["allocated"]
+                    allocated = float(ve_allocation["allocated"])
                     if chain_id not in _allocations:
                         _allocations[chain_id] = {}
                     if nft_addr not in _allocations[chain_id]:
                         _allocations[chain_id][nft_addr] = {}
+
+                    percentage = allocated / allocated_total
+
+                    if user_addr not in _allocations[chain_id][nft_addr]:
+                        _allocations[chain_id][nft_addr][user_addr] = percentage
+
                     _allocations[chain_id][nft_addr][user_addr] = (
-                        allocated / allocated_total
-                    )
+                        percentage + _allocations[chain_id][nft_addr][user_addr]
+                    ) / 2
 
             offset += chunk_size
         n_blocks_sampled += 1
 
     assert n_blocks_sampled > 0
-
-    # normalize allocations based on number of blocks sampled
-    for chainid in _allocations:
-        for nft_addr in _allocations[chainid]:
-            for user_addr in _allocations[chainid][nft_addr]:
-                _allocations[chainid][nft_addr][user_addr] /= n_blocks_sampled
 
     return _allocations
 

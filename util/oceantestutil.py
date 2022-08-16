@@ -169,9 +169,7 @@ def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account, toke
 
 
 @enforce_types
-def randomCreateDataNFTWithFREs(num_FRE: int, base_token):
-    accounts = network.accounts
-
+def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
     # create random num_FRE.
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
@@ -195,6 +193,7 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
     )
 
     feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
+    assert base_token.balanceOf(from_account) >= toBase18(max_TOKEN)
     oceanutil.FixedPrice().buyDT(
         exchangeId,
         toBase18(DT_buy_amt),
