@@ -84,7 +84,7 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_query():
-    HELP = f"""Query chain, output (pools, stakes, vols, approved) csvs
+    HELP = f"""Query chain, output nft volume csv
 
 Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
@@ -125,9 +125,6 @@ SECRET_SEED -- secret integer used to seed the rng
     if not csvs.rateCsvFilenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(0)
-    _exitIfFileExists(csvs.poolinfoCsvFilename(CSV_DIR, CHAINID))
-    _exitIfFileExists(csvs.stakesCsvFilename(CSV_DIR, CHAINID))
-    _exitIfFileExists(csvs.poolvolsCsvFilename(CSV_DIR, CHAINID))
     _exitIfFileExists(csvs.approvedCsvFilename(CSV_DIR, CHAINID))
 
     # brownie setup
@@ -152,10 +149,8 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
     rng.filterByMaxBlock(len(chain))
-    (Pi, Si, Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
-    csvs.savePoolinfoCsv(Pi, Si, Vi, CSV_DIR, CHAINID)
-    csvs.saveStakesCsv(Si, CSV_DIR, CHAINID)
-    csvs.savePoolvolsCsv(Vi, CSV_DIR, CHAINID)
+    (Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
+    csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
@@ -944,6 +939,10 @@ def do_main():
     # write actions
     elif sys.argv[1] == "query":
         do_query()
+    elif sys.argv[1] == "allocations":
+        do_allocations()
+    elif sys.argv[1] == "vebals":
+        do_veBalances()
     elif sys.argv[1] == "getrate":
         do_getrate()
     elif sys.argv[1] == "calc":
