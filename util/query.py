@@ -135,10 +135,6 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
                   unlockTime
                   delegation {
                     id
-                    receiver {
-                      id
-                    }
-                    tokenId
                     amount
                   }
                   delegates {
