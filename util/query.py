@@ -29,7 +29,7 @@ def query_all(
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi = getDTVolumes(rng.st, rng.fin, chainID)
+    Vi = getNFTVolumes(rng.st, rng.fin, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
@@ -216,19 +216,19 @@ def getAllocations(
     return _allocations
 
 
-def getDTVolumes(
+def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
     """
     @description
-      Query the chain for datatoken (DT) volumes within the given block range.
+      Query the chain for datanft volumes within the given block range.
 
     @return
-      DTvols_at_chain -- dict of [basetoken_addr][DT_addr]:vol_amt
+      nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
     """
-    print("getDTVolumes(): begin")
+    print("getVolumes(): begin")
 
-    DTvols: Dict[str, Dict[str, float]] = {}
+    NFTvols: Dict[str, Dict[str, float]] = {}
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
     while True:
@@ -238,6 +238,9 @@ def getDTVolumes(
             id,
             datatoken {
               id
+              nft {
+                id
+              }
             },
             lastPriceToken,
             lastPriceValue,
@@ -259,18 +262,18 @@ def getDTVolumes(
             lastPriceValue = float(order["lastPriceValue"])
             if lastPriceValue == 0:
                 continue
-            DT_addr = order["datatoken"]["id"].lower()
+            nft_addr = order["datatoken"]["nft"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
 
-            if basetoken_addr not in DTvols:
-                DTvols[basetoken_addr] = {}
+            if basetoken_addr not in NFTvols:
+                NFTvols[basetoken_addr] = {}
 
-            if DT_addr not in DTvols[basetoken_addr]:
-                DTvols[basetoken_addr][DT_addr] = 0.0
-            DTvols[basetoken_addr][DT_addr] += lastPriceValue
+            if nft_addr not in NFTvols[basetoken_addr]:
+                NFTvols[basetoken_addr][nft_addr] = 0.0
+            NFTvols[basetoken_addr][nft_addr] += lastPriceValue
 
-    print("getDTVolumes(): done")
-    return DTvols  # ie DTvols_at_chain
+    print("getVolumes(): done")
+    return NFTvols
 
 
 @enforce_types
