@@ -151,7 +151,7 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
 
 
 @enforce_types
-def veOCEANCsvFilename(csv_dir: str, chainID: int) -> str:
+def veOCEANCsvFilename(csv_dir: str) -> str:
     """Returns the veOCEAN filename"""
     return os.path.join(csv_dir, f"veOCEAN-balances.csv")
 
@@ -186,6 +186,7 @@ def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
                 row = [chainID, basetoken_addr.lower(), pool_addr.lower(), vol]
                 writer.writerow(row)
     print(f"Created {csv_file}")
+
 
 @enforce_types
 def loadNFTvolsCsvs(csv_dir: str):
