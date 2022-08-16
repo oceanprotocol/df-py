@@ -76,7 +76,7 @@ def test_poolvols_main():
         },
         2: {"0xocean2": {"0xpoole": 5.0}},
     }
-    cleancase.assertPoolvols(target_poolvols)
+    cleancase.assertNFTvols(target_poolvols)
 
     mod_poolvols = approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols)
     approvedfilter.assertPoolvols(APPROVED_TOKEN_ADDRS, mod_poolvols)

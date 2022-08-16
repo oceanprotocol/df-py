@@ -307,7 +307,7 @@ def test_mix_upper_and_lower_case():
 
     # sanity check
     cleancase.assertStakes(stakes)
-    cleancase.assertPoolvols(poolvols)
+    cleancase.assertNFTvols(poolvols)
     cleancase.assertRates(rates)
 
     # the real tests

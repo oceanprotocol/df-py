@@ -34,14 +34,14 @@ def assertStakes(approved_token_addrs: dict, stakes: dict):
 @enforce_types
 def modPoolvols(approved_token_addrs: dict, poolvols: dict) -> dict:
     """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
-    cleancase.assertPoolvols(poolvols)
+    cleancase.assertNFTvols(poolvols)
     return _modD(approved_token_addrs, poolvols)
 
 
 @enforce_types
 def assertPoolvols(approved_token_addrs: dict, poolvols: dict):
     """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
-    cleancase.assertPoolvols(poolvols)
+    cleancase.assertNFTvols(poolvols)
     return _assertD(approved_token_addrs, poolvols)
 
 

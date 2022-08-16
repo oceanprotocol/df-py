@@ -82,20 +82,20 @@ def modPoolvols(poolvols: dict) -> dict:
                 pool_addr2 = pool_addr.lower()
                 poolvols2[chainID2][base_addr2][pool_addr2] = vol
 
-    assertPoolvols(poolvols2)
+    assertNFTvols(poolvols2)
     return poolvols2
 
 
 @enforce_types
-def assertPoolvols(poolvols: dict):
-    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
+def assertNFTvols(poolvols: dict):
+    """poolvols - dict of [chainID][basetoken_address][nft_addr] : vol"""
     for chainID in poolvols:
         for base_addr in poolvols[chainID]:
             assert base_addr == base_addr.lower(), base_addr
             assert base_addr[:2] == "0x", base_addr
-            for pool_addr in poolvols[chainID][base_addr]:
-                assert pool_addr == pool_addr.lower(), pool_addr
-                assert pool_addr[:2] == "0x", pool_addr
+            for nft_addr in poolvols[chainID][base_addr]:
+                assert nft_addr == nft_addr.lower(), nft_addr
+                assert nft_addr[:2] == "0x", nft_addr
 
 
 @enforce_types
@@ -108,13 +108,13 @@ def assertPoolvolsUsd(poolvols_USD: dict):
 @enforce_types
 def assertPoolvolsAtChain(poolvols_at_chain: dict):
     """poolvols_at_chain - dict of [basetoken_address][pool_addr] : vol"""
-    assertPoolvols({FAKE_CHAINID: poolvols_at_chain})
+    assertNFTvols({FAKE_CHAINID: poolvols_at_chain})
 
 
 @enforce_types
 def assertPoolvolsUsdAtChain(poolvols_USD_at_chain: dict):
     """poolvols - dict of [pool_addr] : vol"""
-    assertPoolvols({FAKE_CHAINID: {FAKE_TOKEN_ADDR: poolvols_USD_at_chain}})
+    assertNFTvols({FAKE_CHAINID: {FAKE_TOKEN_ADDR: poolvols_USD_at_chain}})
 
 
 @enforce_types

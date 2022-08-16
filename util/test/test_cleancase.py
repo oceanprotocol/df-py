@@ -54,10 +54,10 @@ def test_poolvols():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertPoolvols(poolvols)
+        cleancase.assertNFTvols(poolvols)
 
     mod_poolvols = cleancase.modPoolvols(poolvols)
-    cleancase.assertPoolvols(mod_poolvols)
+    cleancase.assertNFTvols(mod_poolvols)
     assert mod_poolvols == target_poolvols
 
 
