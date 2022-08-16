@@ -20,7 +20,7 @@ def calcRewards(
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
     rewards_symbol: str,
-) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]],]:
+) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
       allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
@@ -49,7 +49,7 @@ def calcRewards(
 
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
 
-    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD, veBalances)
+    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
 
     RF_TOKEN = RF_USD / rates[rewards_symbol]
 
