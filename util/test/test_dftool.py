@@ -40,7 +40,7 @@ def test_query(tmp_path):
 
     # test result
     assert csvs.stakesCsvFilenames(CSV_DIR)
-    assert csvs.poolvolsCsvFilenames(CSV_DIR)
+    assert csvs.nftvolsCsvFilenames(CSV_DIR)
     assert csvs.approvedCsvFilenames(CSV_DIR)
     assert csvs.symbolsCsvFilenames(CSV_DIR)
     assert csvs.poolinfoCsvFilenames(CSV_DIR)
@@ -74,7 +74,7 @@ def test_calc(tmp_path):
     csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
 
     poolvols_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
-    csvs.savePoolvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
+    csvs.saveNFTvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
     csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)

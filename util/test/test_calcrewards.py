@@ -306,7 +306,7 @@ def test_mix_upper_and_lower_case():
     rewards_avail_OCEAN = 10.0
 
     # sanity check
-    cleancase.asserAllocations(stakes)
+    cleancase.assertAllocations(stakes)
     cleancase.assertNFTvols(poolvols)
     cleancase.assertRates(rates)
 

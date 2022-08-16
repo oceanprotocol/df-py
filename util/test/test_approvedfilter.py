@@ -13,9 +13,9 @@ def test_stakes_fail_cleancase():
     stakes_clean = {1: {"0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}}}}
 
     with pytest.raises(AssertionError):
-        approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes_bad)
+        approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, stakes_bad)
 
-    approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes_clean)
+    approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, stakes_clean)
 
 
 @enforce_types
@@ -35,9 +35,9 @@ def test_stakes_main():
         },
         2: {"0xocean2": {"0xpoole": {"0xlp6": 5.0}}},
     }
-    cleancase.asserAllocations(target_stakes)
+    cleancase.assertAllocations(target_stakes)
 
-    mod_stakes = approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes)
+    mod_stakes = approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, stakes)
     approvedfilter.assertStakes(APPROVED_TOKEN_ADDRS, mod_stakes)
     assert mod_stakes == target_stakes
 
@@ -54,9 +54,9 @@ def test_poolvols_fail_cleancase():
     }
 
     with pytest.raises(AssertionError):
-        approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols_bad)
+        approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols_bad)
 
-    approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols_clean)
+    approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols_clean)
 
 
 @enforce_types
@@ -78,6 +78,6 @@ def test_poolvols_main():
     }
     cleancase.assertNFTvols(target_poolvols)
 
-    mod_poolvols = approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols)
+    mod_poolvols = approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols)
     approvedfilter.assertPoolvols(APPROVED_TOKEN_ADDRS, mod_poolvols)
     assert mod_poolvols == target_poolvols

@@ -34,10 +34,10 @@ def test_stakes():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.asserAllocations(stakes)
+        cleancase.assertAllocations(stakes)
 
     mod_stakes = cleancase.modAllocations(stakes)
-    cleancase.asserAllocations(mod_stakes)
+    cleancase.assertAllocations(mod_stakes)
     assert mod_stakes == target_stakes
 
 
@@ -56,7 +56,7 @@ def test_poolvols():
     with pytest.raises(AssertionError):
         cleancase.assertNFTvols(poolvols)
 
-    mod_poolvols = cleancase.modPoolvols(poolvols)
+    mod_poolvols = cleancase.modNFTvols(poolvols)
     cleancase.assertNFTvols(mod_poolvols)
     assert mod_poolvols == target_poolvols
 

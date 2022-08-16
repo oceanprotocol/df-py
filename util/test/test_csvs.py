@@ -80,16 +80,16 @@ def test_stakes_twochains(tmp_path):
 
 @enforce_types
 def test_chainIDforPoolvolsCsv():
-    assert csvs.chainIDforPoolvolsCsv("poolvols-chain101.csv") == 101
-    assert csvs.chainIDforPoolvolsCsv("path1/32/poolvols-chain92.csv") == 92
+    assert csvs.chainIDforNFTvolsCsv("poolvols-chain101.csv") == 101
+    assert csvs.chainIDforNFTvolsCsv("path1/32/poolvols-chain92.csv") == 92
 
 
 @enforce_types
 def test_poolvols_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
-    csvs.savePoolvolsCsv(V1, csv_dir, C1)
-    V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
+    csvs.saveNFTvolsCsv(V1, csv_dir, C1)
+    V1_loaded = csvs.loadNFTvolsCsv(csv_dir, C1)
     assert V1_loaded == V1
 
 
@@ -98,8 +98,8 @@ def test_poolvols_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
     V1_lowercase = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
-    csvs.savePoolvolsCsv(V1_mixedcase, csv_dir, C1)
-    V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
+    csvs.saveNFTvolsCsv(V1_mixedcase, csv_dir, C1)
+    V1_loaded = csvs.loadNFTvolsCsv(csv_dir, C1)
     assert V1_loaded == V1_lowercase
 
 
@@ -109,13 +109,13 @@ def test_poolvols_twochains(tmp_path):
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V2 = {OCN_ADDR: {PD: 4.1, PE: 5.1}, H2O_ADDR: {PF: 6.1}}
 
-    assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 0
-    csvs.savePoolvolsCsv(V1, csv_dir, C1)
-    csvs.savePoolvolsCsv(V2, csv_dir, C2)
-    assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 2
+    assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 0
+    csvs.saveNFTvolsCsv(V1, csv_dir, C1)
+    csvs.saveNFTvolsCsv(V2, csv_dir, C2)
+    assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 2
 
     target_V = {C1: V1, C2: V2}
-    loaded_V = csvs.loadPoolvolsCsvs(csv_dir)
+    loaded_V = csvs.loadNFTvolsCsvs(csv_dir)
     assert loaded_V == target_V
 
 
