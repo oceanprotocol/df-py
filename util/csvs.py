@@ -16,7 +16,7 @@ from util import constants, oceanutil
 def saveAllocationCsv(allocations: dict, csv_dir: str):
     """
     @description
-      Save the stakes csv for this chain. This csv is a key input for
+      Save the allocations csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
@@ -47,7 +47,7 @@ def saveAllocationCsv(allocations: dict, csv_dir: str):
 
 
 @enforce_types
-def loadAllocationCsvs(csv_dir: str) -> dict:
+def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
       Load allocation csv; return result as a single dict
@@ -64,6 +64,12 @@ def loadAllocationCsvs(csv_dir: str) -> dict:
                 assert row == ["chainID", "nft_addr", "LP_addr", "percent"]
                 continue
             chainID, nft_addr, LP_addr, percent = row
+
+            chainID = int(chainID)
+            nft_addr = nft_addr.lower()
+            LP_addr = LP_addr.lower()
+            percent = float(percent)
+
             assertIsEthAddr(nft_addr)
             assertIsEthAddr(LP_addr)
 
@@ -80,14 +86,8 @@ def loadAllocationCsvs(csv_dir: str) -> dict:
 
 
 @enforce_types
-def allocationCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of allocation filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "allocation*.csv"))
-
-
-@enforce_types
 def allocationCsvFilename(csv_dir: str) -> str:
-    """Returns the allocation filename for a given chainID"""
+    """Returns the allocations filename"""
     return os.path.join(csv_dir, f"allocations.csv")
 
 
