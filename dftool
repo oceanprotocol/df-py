@@ -224,6 +224,70 @@ SECRET_SEED -- secret integer used to seed the rng
 
     print("dftool allocations: Done")
 
+
+# ========================================================================
+
+
+@enforce_types
+def do_veBalances():
+    HELP = f"""Query chain, outputs veBalances csv
+
+Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID
+  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
+  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
+  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
+  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
+  CHAINID -- {CHAINID_EXAMPLES}
+
+Uses these envvars:
+SECRET_SEED -- secret integer used to seed the rng
+"""
+    if len(sys.argv) not in [7]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "vebals"
+    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
+    CSV_DIR = sys.argv[5]
+    CHAINID = int(sys.argv[6])
+
+    # extract envvars
+    SECRET_SEED = _getSecretSeedOrExit()
+
+    # check files, prep dir
+    if not os.path.exists(CSV_DIR):
+        # create dir
+        _createDirIfNeeded(CSV_DIR)
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain
+
+    if "-" in ST:
+        st_block = blocktime.timestrToBlock(chain, ST)
+    else:
+        st_block = int(ST)
+
+    if FIN == "latest":
+        fin_block = len(chain)
+    elif FIN == "thu":
+        fin_block = blocktime.getBlockNumberThursday(chain)
+    elif "-" in FIN:
+        fin_block = blocktime.timestrToBlock(chain, FIN)
+    else:
+        fin_block = int(FIN)
+
+    # main work
+    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
+    rng.filterByMaxBlock(len(chain) - 10)
+
+    balances = query.getveBalances(rng, CHAINID)
+    csvs.saveVeOceanCsv(balances, CSV_DIR)
+
+    print("dftool vebals: Done")
+
+
 # ========================================================================
 @enforce_types
 def do_getrate():
