@@ -37,7 +37,7 @@ def query_all(
 
 
 @enforce_types
-def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
+def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     """
     @description
       Return all ve balances
@@ -137,7 +137,9 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
 
 
 @enforce_types
-def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
+def getAllocations(
+    rng: BlockRange, CHAINID: int
+) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
       Return all allocations.
