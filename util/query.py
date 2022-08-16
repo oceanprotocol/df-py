@@ -43,7 +43,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
       Return all ve balances
 
     @return
-      veBalances -- dict of veBalances [user_addr] : veBalance
+      veBalances -- dict of veBalances [LP_addr] : veBalance
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
@@ -143,7 +143,7 @@ def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
       Return all allocations.
 
     @return
-      allocations -- dict of [chain_id][nft_addr][user_addr]: percent
+      allocations -- dict of [chain_id][nft_addr][LP_addr]: percent
     """
 
     _allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
@@ -184,10 +184,10 @@ def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
                 break
 
             for allocation in allocations:
-                user_addr = allocation["id"]
+                LP_addr = allocation["id"]
                 allocated_total = float(allocation["allocatedTotal"])
-                if user_addr not in _allocations:
-                    _allocations[user_addr] = {}
+                if LP_addr not in _allocations:
+                    _allocations[LP_addr] = {}
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
@@ -199,11 +199,11 @@ def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
 
                     percentage = allocated / allocated_total
 
-                    if user_addr not in _allocations[chain_id][nft_addr]:
-                        _allocations[chain_id][nft_addr][user_addr] = percentage
+                    if LP_addr not in _allocations[chain_id][nft_addr]:
+                        _allocations[chain_id][nft_addr][LP_addr] = percentage
 
-                    _allocations[chain_id][nft_addr][user_addr] = (
-                        percentage + _allocations[chain_id][nft_addr][user_addr]
+                    _allocations[chain_id][nft_addr][LP_addr] = (
+                        percentage + _allocations[chain_id][nft_addr][LP_addr]
                     ) / 2
 
             offset += chunk_size
