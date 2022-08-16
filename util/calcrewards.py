@@ -78,10 +78,10 @@ def _getveStakes(allocations: dict, veBalances: dict) -> dict:
     return VE_stakes
 
 
-def _stakevolDictsToArrays(allocations: dict, nftvols_USD: dict):
+def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
     """
     @arguments
-      allocations - dict of [chainID][nft_addr][LP_addr] : stake_USD
+      veStakes - dict of [chainID][nft_addr][LP_addr] : stake_USD
       nftvols_USD -- dict of [chainID][nft_addr] : vol_USD
 
     @return
@@ -90,26 +90,28 @@ def _stakevolDictsToArrays(allocations: dict, nftvols_USD: dict):
       keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
     """
     # base data
-    cleancase.assertStakesUsd(allocations)
+    cleancase.assertStakesUsd(veStakes)
     cleancase.assertPoolvolsUsd(nftvols_USD)
-    chainIDs = list(allocations.keys())
-    LP_addrs = _getLpAddrs(allocations)
-    pool_addrs = _getPoolAddrs(nftvols_USD)
-    N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(pool_addrs)
+    chainIDs = list(veStakes.keys())
+    LP_addrs = _getLpAddrs(veStakes)
+    nft_addrs = _getPoolAddrs(nftvols_USD)
+    N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(nft_addrs)
 
     # convert
     S_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
     P_USD = numpy.zeros((N_c, N_j), dtype=float)
+
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
-            for j, pool_addr in enumerate(pool_addrs):
-                if pool_addr not in allocations[chainID]:
+            for j, pool_addr in enumerate(nft_addrs):
+                if pool_addr not in veStakes[chainID]:
                     continue
-                S_USD[c, i, j] = allocations[chainID][pool_addr].get(LP_addr, 0.0)
+                S_USD[c, i, j] = veStakes[chainID][pool_addr].get(LP_addr, 0.0)
                 P_USD[c, j] += nftvols_USD[chainID].get(pool_addr, 0.0)
 
     # done!
-    keys_tup = (chainIDs, LP_addrs, pool_addrs)
+    keys_tup = (chainIDs, LP_addrs, nft_addrs)
+
     return S_USD, P_USD, keys_tup
 
 
@@ -149,7 +151,6 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
                     RF_norm[c, i, j] * rewards_avail_USD,  # baseline
                     S_USD[c, i, j] * TARGET_WPY,  # APY constraint
                 )
-
     # postcondition: nans
     assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
 
@@ -204,10 +205,10 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
 
 
 @enforce_types
-def _getPoolAddrs(poolvols_USD: dict) -> List[str]:
+def _getPoolAddrs(nftvols_USD: dict) -> List[str]:
     pool_addr_set = set()
-    for chainID in poolvols_USD:
-        pool_addr_set |= set(poolvols_USD[chainID].keys())
+    for chainID in nftvols_USD:
+        pool_addr_set |= set(nftvols_USD[chainID].keys())
     return list(pool_addr_set)
 
 
@@ -215,7 +216,6 @@ def _getPoolAddrs(poolvols_USD: dict) -> List[str]:
 def _getLpAddrs(stakes_USD: dict) -> List[str]:
     LP_addr_set = set()
     for chainID in stakes_USD:
-        LP_addr_set |= set(
-            {addr for addrs in stakes_USD[chainID].values() for addr in addrs}
-        )
+        for nft_addr in stakes_USD[chainID]:
+            LP_addr_set |= set(stakes_USD[chainID][nft_addr].keys())
     return list(LP_addr_set)
