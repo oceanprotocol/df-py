@@ -157,6 +157,36 @@ def veOCEANCsvFilename(csv_dir: str, chainID: int) -> str:
 
 
 # ========================================================================
+# nftvols csvs
+
+
+@enforce_types
+def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
+    """
+    @description
+      Save the poolvols csv for this chain. This csv is a key input for
+      dftool calcrewards, and contains just enough info for it to operate, and no more.
+
+    @arguments
+      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
+      csv_dir -- directory that holds csv files
+      chainID -- which network
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = nftvolsCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), csv_file
+    V = poolvols_at_chain
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "basetoken_addr", "pool_addr", "vol_amt"])
+        for basetoken_addr in V.keys():
+            assertIsEthAddr(basetoken_addr)
+            for pool_addr, vol in V[basetoken_addr].items():
+                assertIsEthAddr(pool_addr)
+                row = [chainID, basetoken_addr.lower(), pool_addr.lower(), vol]
+                writer.writerow(row)
+    print(f"Created {csv_file}")
+# ========================================================================
 # approved csvs
 
 
