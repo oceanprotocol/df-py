@@ -346,12 +346,6 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     )
 
     # do we have the input files?
-    if not csvs.stakesCsvFilenames(CSV_DIR):
-        print(f"\nNo 'stakes*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
-    if not csvs.poolvolsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'pool_vol*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
     if not csvs.rateCsvFilenames(CSV_DIR):
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
@@ -361,19 +355,27 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     if not csvs.symbolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
+    if not csvs.allocationCsvFilename(CSV_DIR):
+        print(f"\nNo 'allocation*.csv' file in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
+    if not csvs.veOCEANCsvFilename(CSV_DIR):
+        print(f"\nNo 'veocean*.csv' file in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
 
     # shouldn't already have the output file
     _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL))
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL))
 
     # main work
-    S = csvs.loadStakesCsvs(CSV_DIR)
-    V = csvs.loadPoolvolsCsvs(CSV_DIR)
+    Allc = csvs.loadAllocationCsvs(CSV_DIR)
+    vebals = csvs.loadVeOceanCsv(CSV_DIR)
+    nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)
     A = csvs.loadApprovedCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
+
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        S, V, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
+        Allc, vebals, nftvols, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
     )
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
