@@ -8,14 +8,14 @@ APPROVED_TOKEN_ADDRS = {1: ["0xocean", "0xh2o"], 2: ["0xocean2", "Oxh2o2"]}
 
 
 @enforce_types
-def test_stakes_fail_cleancase():
-    stakes_bad = {1: {"0xoCeAn": {"0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0}}}}
-    stakes_clean = {1: {"0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}}}}
+def test_allocation_fail_cleancase():
+    stakes_bad = {1: {"0xoCeAn": {"0xLp1": 1.0, "0xLP2": 2.0}}}
+    stakes_clean = {1: {"0xocean": {"0xlp1": 1.0, "0xlp2": 2.0}}}
 
     with pytest.raises(AssertionError):
-        approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, stakes_bad)
+        approvedfilter.modAllocations(stakes_bad)
 
-    approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, stakes_clean)
+    approvedfilter.modAllocations(stakes_clean)
 
 
 @enforce_types
