@@ -171,7 +171,6 @@ def getAllocations(
                 chainId
                 nftAddress
               }
-              allocatedTotal
             }
           }
           """ % (
@@ -187,7 +186,6 @@ def getAllocations(
 
             for allocation in allocations:
                 LP_addr = allocation["id"]
-                allocated_total = float(allocation["allocatedTotal"])
                 if LP_addr not in _allocations:
                     _allocations[LP_addr] = {}
                 for ve_allocation in allocation["veAllocation"]:
@@ -199,7 +197,7 @@ def getAllocations(
                     if nft_addr not in _allocations[chain_id]:
                         _allocations[chain_id][nft_addr] = {}
 
-                    percentage = allocated / allocated_total
+                    percentage = allocated / 1000.0
 
                     if LP_addr not in _allocations[chain_id][nft_addr]:
                         _allocations[chain_id][nft_addr][LP_addr] = percentage
