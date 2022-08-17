@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 from util import csvs, query
-from util.query import SimplePool
 
 
 # for shorter lines
@@ -175,71 +174,6 @@ def test_symbols(tmp_path):
     assert loaded_symbols_C1 == symbols_C1
     assert loaded_symbols_C2 == symbols_C2
     assert loaded_symbols == {C1: symbols_C1, C2: symbols_C2}
-
-
-# =================================================================
-# poolinfo csvs
-
-
-@enforce_types
-def test_poolinfo(
-    tmp_path, network_setup_and_teardown
-):  # pylint: disable=unused-argument
-    csv_dir = str(tmp_path)
-    accounts = brownie.network.accounts
-    nft1_addr, nft2_addr, nft3_addr = (
-        accounts[5].address,
-        accounts[6].address,
-        accounts[7].address,
-    )
-    P1 = [
-        SimplePool(PA, nft1_addr, "dt1_addr", "DT1_SYM", OCN_ADDR),
-        SimplePool(PB, nft2_addr, "dt2_addr", "DT2_SYM", H2O_ADDR),
-        SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", OCN_ADDR),
-    ]
-    S1 = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
-    }
-    V1 = {OCN_ADDR: {PA: 0.11, PB: 0.12}, H2O_ADDR: {PC: 3.1}}
-
-    rates = {OCN_SYMB: 0.66, H2O_SYMB: 1.618}
-    for symbol, rate in rates.items():
-        csvs.saveRateCsv(symbol, rate, csv_dir)
-
-    query._ADDR_TO_SYMBOL[
-        OCN_ADDR
-    ] = OCN_SYMB  # to make call to query.symbol(OCN_ADDR) happy
-    query._ADDR_TO_SYMBOL[H2O_ADDR] = H2O_SYMB  # .. H2O_ADDR ..
-
-    assert csvs.poolinfoCsvFilenames(csv_dir) == []
-
-    csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
-
-    csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
-    assert csvs.poolinfoCsvFilenames(csv_dir) == [csv_file]
-
-    target_header = [
-        "chainID",
-        "basetoken_symbol",
-        "pool_addr",
-        "vol_amt",
-        "vol_amt_USD",
-        "stake_amt",
-        "stake_amt_USD",
-        "nft_addr",
-        "DT_addr",
-        "DT_symbol",
-        "basetoken_addr",
-        "did",
-        "url",
-    ]
-
-    data = pd.read_csv(csv_file)
-    header = list(data.columns)
-    assert header == target_header
-
-    # (skip fancier tests)
 
 
 # =================================================================
