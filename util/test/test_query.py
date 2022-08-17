@@ -137,14 +137,11 @@ def _test_getAllocations(rng: BlockRange):
     for chainId in allocations:
         for nftAddr in allocations[chainId]:
             for userAddr in allocations[chainId][nftAddr]:
-                totalAllocation = oceanutil.veAllocate().getTotalAllocation(userAddr)
-                allocation = oceanutil.veAllocate().getveAllocation(
-                    userAddr, nftAddr, chainId
+                allocation = (
+                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
+                    / 1000
                 )
-                assert (
-                    allocations[chainId][nftAddr][userAddr]
-                    == allocation / totalAllocation
-                )
+                assert allocations[chainId][nftAddr][userAddr] == allocation
 
 
 @enforce_types
