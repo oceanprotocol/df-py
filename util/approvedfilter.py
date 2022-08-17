@@ -19,7 +19,7 @@ def modTuple(approved_token_addrs, allocations, nftvols) -> Tuple[dict, dict]:
 
 @enforce_types
 def modAllocations(allocations: dict) -> dict:
-    """allocations - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : percentage"""
+    """allocations - dict of [chainID][basetoken_addr][NFT_addr] : percentage"""
     cleancase.assertAllocations(allocations)
     return allocations
 
