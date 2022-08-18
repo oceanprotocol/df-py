@@ -191,13 +191,15 @@ def test_two_chains():
 
 @enforce_types
 def test_two_lps_simple():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0, LP2: 10000.0}}}}
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}
+    allocations = {C1: {PA: {LP1: 10000.0, LP2: 10000.0}}}
+    vebals = {LP1: 1.0, LP2: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 1.0}}}
 
     rewards_avail_OCEAN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         RATES,
