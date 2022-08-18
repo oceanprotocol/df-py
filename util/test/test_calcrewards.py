@@ -459,13 +459,15 @@ def test_bound_APY_one_pool():
 
 @enforce_types
 def test_bound_APY_one_LP__high_stake__two_pools():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 1e6}, PB: {LP1: 1e6}}}}
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
+    allocations = {C1: {PA: {LP1: 1e6}, PB: {LP1: 1e6}}}
+    vebals = {LP1: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
 
     rewards_avail_OCEAN = 1000.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         RATES,
