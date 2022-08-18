@@ -24,7 +24,8 @@ def modAllocations(allocations: dict) -> dict:
             nft_addr2 = nft_addr.lower()
             allocations2[chainID2][nft_addr2] = {}
             for LP_addr in allocations[chainID][nft_addr]:
-                allocations2[chainID2][nft_addr2][LP_addr] = allocations[chainID][
+                LP_addr2 = LP_addr.lower()
+                allocations2[chainID2][nft_addr2][LP_addr2] = allocations[chainID][
                     nft_addr
                 ][LP_addr]
     assertAllocations(allocations2)
