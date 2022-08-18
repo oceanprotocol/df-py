@@ -555,13 +555,15 @@ def test_bound_APY_two_pools__low_stake__one_pool_dominates_DCV():
 
 @enforce_types
 def test_bound_APY_two_pools__high_stake__one_pool_dominates_DCV():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 1e6}, PB: {LP2: 1e6}}}}
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 9999.0}}}
+    allocations = {C1: {PA: {LP1: 1e6}, PB: {LP2: 1e6}}}
+    vebals = {LP1: 1.0, LP2: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 9999.0}}}
 
     rewards_avail_OCEAN = 10000.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         RATES,
