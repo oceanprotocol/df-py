@@ -18,7 +18,7 @@ def modAllocations(allocations: dict) -> dict:
     """allocations - dict of [chainID][nft_addr][LP_addr] : percentage"""
     allocations2: dict = {}
     for chainID in allocations:
-        chainID2 = chainID
+        chainID2 = int(chainID)
         allocations2[chainID2] = {}
         for nft_addr in allocations[chainID]:
             nft_addr2 = nft_addr.lower()
