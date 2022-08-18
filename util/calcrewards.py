@@ -43,14 +43,13 @@ def calcRewards(
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
-    veStakes = _getveStakes(allocations, veBalances)
+    veBalances_USD = _veStakesUSD(veBalances, rates["OCEAN"])
+    veStakes = _getveStakes(allocations, veBalances_USD)
 
     S_USD, P_USD, keys_tup = _stakevolDictsToArrays(veStakes, nftvols_USD)
-
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
 
     RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
-
     RF_TOKEN = RF_USD / rates[rewards_symbol]
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
