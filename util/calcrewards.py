@@ -184,7 +184,7 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
     rewardsinfo: dict = {}
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
-            for j, pool_addr in enumerate(pool_addrs):
+            for j, nft_addr in enumerate(pool_addrs):
                 assert RF_TOKEN[c, i, j] >= 0.0, RF_TOKEN[c, i, j]
                 if RF_TOKEN[c, i, j] == 0.0:
                     continue
@@ -197,9 +197,9 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
 
                 if chainID not in rewardsinfo:
                     rewardsinfo[chainID] = {}
-                if pool_addr not in rewardsinfo[chainID]:
-                    rewardsinfo[chainID][pool_addr] = {}
-                rewardsinfo[chainID][pool_addr][LP_addr] = RF_TOKEN[c, i, j]
+                if nft_addr not in rewardsinfo[chainID]:
+                    rewardsinfo[chainID][nft_addr] = {}
+                rewardsinfo[chainID][nft_addr][LP_addr] = RF_TOKEN[c, i, j]
 
     return rewardsperlp, rewardsinfo
 
