@@ -21,20 +21,18 @@ OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
 @enforce_types
 def test_chainIDforStakeCsv():
-    assert csvs.chainIDforStakeCsv("stakes-chain101.csv") == 101
-    assert csvs.chainIDforStakeCsv("path1/32/stakes-chain92.csv") == 92
+    assert csvs.chainIDforNFTvolsCsv("stakes-chain101.csv") == 101
+    assert csvs.chainIDforNFTvolsCsv("path1/32/stakes-chain92.csv") == 92
 
 
 @enforce_types
-def test_stakes_onechain_lowercase(tmp_path):
+def test_allocations_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
-    }
-    csvs.saveStakesCsv(S1, csv_dir, C1)
-    S1_loaded = csvs.loadStakesCsv(csv_dir, C1)
-    assert S1_loaded == S1
+    S1 = {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}, PC: {LP1: 3.1, LP4: 3.4}}
+    A1 = {1: S1}
+    csvs.saveAllocationCsv(A1, csv_dir)
+    A1_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert A1_loaded == A1
 
 
 @enforce_types
