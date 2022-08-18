@@ -11,7 +11,7 @@ def test_tuple():  # super-basic test
 
 
 @enforce_types
-def test_stakes():
+def test_allocations():
     stakes = {
         1: {
             "0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0},
@@ -38,7 +38,7 @@ def test_stakes():
 
 
 @enforce_types
-def test_poolvols():
+def test_nftvols():
     poolvols = {
         1: {"0xoCeAn": {"0xpOolA": 1.0, "0xPOOLB": 2.0}, "0xH2o": {"0xPOoLC": 3.0}},
         2: {"0xocean": {"0xPOOLD": 4.0}},
