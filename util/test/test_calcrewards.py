@@ -237,19 +237,19 @@ def test_two_lps_one_with_negligible_stake():
 
 @enforce_types
 def test_two_pools_one_with_volume():
-    stakes = {
+    allocations = {
         C1: {
-            OCN_ADDR: {
-                PA: {LP1: 10000.0, LP2: 10000.0},
-                PB: {LP1: 10000.0, LP3: 10000.0},
-            }
+            PA: {LP1: 10000.0, LP2: 10000.0},
+            PB: {LP1: 10000.0, LP3: 10000.0},
         }
     }
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}}  # P1 has volume, but not P2
+    vebals = {LP1: 1.0, LP2: 1.0, LP3: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 1.0}}}  # P1 has volume, but not P2
     rewards_avail_OCEAN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         RATES,
