@@ -186,8 +186,6 @@ def getAllocations(
 
             for allocation in allocations:
                 LP_addr = allocation["id"]
-                if LP_addr not in _allocations:
-                    _allocations[LP_addr] = {}
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
