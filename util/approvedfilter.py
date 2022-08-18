@@ -25,7 +25,7 @@ def modAllocations(allocations: dict) -> dict:
 
 
 @enforce_types
-def assertStakes(approved_token_addrs: dict, stakes: dict):
+def assertAllocations(approved_token_addrs: dict, stakes: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
     cleancase.assertAllocations(stakes)
     _assertD(approved_token_addrs, stakes)
