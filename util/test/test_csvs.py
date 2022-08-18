@@ -56,22 +56,20 @@ def test_allocations_onechain_mixedcase(tmp_path):
 
 
 @enforce_types
-def test_stakes_twochains(tmp_path):
+def test_allocations_twochains(tmp_path):
     csv_dir = str(tmp_path)
     S1 = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
+        PA: {LP1: 1.1, LP2: 1.2},
+        PB: {LP1: 2.1, LP3: 2.3},
+        PC: {LP1: 3.1, LP4: 3.4},
     }
-    S2 = {OCN_ADDR: {PD: {LP1: 4.1, LP5: 4.5}}, H2O_ADDR: {PE: {LP6: 5.6}}}
+    S2 = {PD: {LP1: 4.1, LP5: 4.5}, PE: {LP6: 5.6}}
 
-    assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
-    csvs.saveStakesCsv(S1, csv_dir, C1)
-    csvs.saveStakesCsv(S2, csv_dir, C2)
-    assert len(csvs.stakesCsvFilenames(csv_dir)) == 2
+    allcs = {1: S1, 2: S2}
 
-    target_S = {C1: S1, C2: S2}
-    loaded_S = csvs.loadStakesCsvs(csv_dir)
-    assert loaded_S == target_S
+    csvs.saveAllocationCsv(allcs, csv_dir)
+    allcs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allcs_loaded == allcs
 
 
 # =================================================================
