@@ -408,14 +408,16 @@ def test_mix_upper_and_lower_case():
 def test_calcrewards_math():
     ## update this test when the reward function is changed
 
-    stakes = {
-        C1: {OCN_ADDR: {PA: {LP1: 20000, LP2: 50000}, PB: {LP1: 20000, LP3: 10000}}}
+    allocations = {
+        C1: {PA: {LP1: 20000.0, LP2: 50000.0}, PB: {LP1: 20000.0, LP3: 10000.0}}
     }
-    poolvols = {C1: {OCN_ADDR: {PA: 32.0, PB: 8.0}}}
+    vebals = {LP1: 1.0, LP2: 1.0, LP3: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 32.0, PB: 8.0}}}
     rewards_avail_OCEAN = 100.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         RATES,
