@@ -44,7 +44,7 @@ def test_events():
 def test_max_allocation():
     nftaddr = accounts[1].address
     with brownie.reverts("Max Allocation"):
-        veAllocate.setAllocation(1001, nftaddr, 1, {"from": accounts[0]})
+        veAllocate.setAllocation(10001, nftaddr, 1, {"from": accounts[0]})
 
 
 @enforce_types
