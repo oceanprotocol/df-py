@@ -39,11 +39,9 @@ def test_query(tmp_path):
     os.system(cmd)
 
     # test result
-    assert csvs.stakesCsvFilenames(CSV_DIR)
     assert csvs.nftvolsCsvFilenames(CSV_DIR)
     assert csvs.approvedCsvFilenames(CSV_DIR)
     assert csvs.symbolsCsvFilenames(CSV_DIR)
-    assert csvs.poolinfoCsvFilenames(CSV_DIR)
 
 
 @enforce_types
