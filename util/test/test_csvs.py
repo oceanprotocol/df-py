@@ -36,20 +36,23 @@ def test_allocations_onechain_lowercase(tmp_path):
 
 
 @enforce_types
-def test_stakes_onechain_mixedcase(tmp_path):
+def test_allocations_onechain_mixedcase(tmp_path):
     # in this test, it needs to fix the case
     csv_dir = str(tmp_path)
     S1_lowercase = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
+        PA: {LP1: 1.1, LP2: 1.2},
+        PB: {LP1: 2.1, LP3: 2.3},
+        PC: {LP1: 3.1, LP4: 3.4},
     }
     S1_mixedcase = {
-        OCN_ADDR2: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR2: {PC: {LP1: 3.1, LP4: 3.4}},
+        PA: {LP1: 1.1, LP2: 1.2},
+        PB: {LP1: 2.1, LP3: 2.3},
+        PC: {LP1: 3.1, LP4: 3.4},
     }
-    csvs.saveStakesCsv(S1_mixedcase, csv_dir, C1)
-    S1_loaded = csvs.loadStakesCsv(csv_dir, C1)
-    assert S1_loaded == S1_lowercase
+    A1 = {1: S1_mixedcase}
+    csvs.saveAllocationCsv(A1, csv_dir)
+    S1_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert S1_loaded[1] == S1_lowercase
 
 
 @enforce_types
