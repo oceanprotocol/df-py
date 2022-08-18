@@ -70,11 +70,14 @@ def test_calc(tmp_path):
     OCEAN_addr = oceanutil.OCEAN_address()
 
     # insert fake csvs
-    stakes_at_chain = {OCEAN_addr: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
-    csvs.saveStakesCsv(stakes_at_chain, CSV_DIR, CHAINID)
+    allocations = {CHAINID: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
+    csvs.saveAllocationCsv(allocations, CSV_DIR)
 
-    poolvols_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
-    csvs.saveNFTvolsCsv(poolvols_at_chain, CSV_DIR, CHAINID)
+    nftvolts_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
+    csvs.saveNFTvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
+
+    vebals = {"0xlp_addr1": 1.0}
+    csvs.saveVeOceanCsv(vebals, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
     csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
