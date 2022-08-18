@@ -302,31 +302,34 @@ def test_mix_upper_and_lower_case():
     # LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "lp4_addr"
     # OCN_ADDR, H2O = "0xocean", "0xh2o"
 
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}}}
-    stakes2a = {C1: {OCN_ADDR.upper(): {PA: {LP1: 10000.0}}}}
-    stakes2b = {C1: {OCN_ADDR: {"0xpOoLa_aDDr": {LP1: 10000.0}}}}
-    stakes2c = {C1: {OCN_ADDR: {PA: {"0xlP1_aDdR": 10000.0}}}}
+    allocations = {C1: {PA: {LP1: 10000.0}}}
+    allocations2a = {C1: {PA: {LP1: 10000.0}}}
+    allocations2b = {C1: {"0xpOoLa_aDDr": {LP1: 10000.0}}}
+    allocations2c = {C1: {PA: {"0xlP1_aDdR": 10000.0}}}
 
-    poolvols = {C1: {OCN_ADDR: {PA: 10000.0}}}
-    poolvols2a = {C1: {OCN_ADDR.upper(): {PA: 10000.0}}}
-    poolvols2b = {C1: {OCN_ADDR: {"0xpOola_adDr": 10000.0}}}
+    nftvols = {C1: {OCN_ADDR: {PA: 10000.0}}}
+    nftvols2a = {C1: {OCN_ADDR.upper(): {PA: 10000.0}}}
+    nftvols2b = {C1: {OCN_ADDR: {"0xpOola_adDr": 10000.0}}}
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
+
+    vebals = {LP1: 1.0, LP2: 1.0, LP3: 1.0}
 
     target_rewardsperlp = {C1: {LP1: 10.0}}
     target_rewardsinfo = {C1: {PA: {LP1: 10.0}}}
     rewards_avail_OCEAN = 10.0
 
     # sanity check
-    cleancase.assertAllocations(stakes)
-    cleancase.assertNFTvols(poolvols)
+    cleancase.assertAllocations(allocations)
+    cleancase.assertNFTvols(nftvols)
     cleancase.assertRates(rates)
 
     # the real tests
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes2a,
-        poolvols,
+        allocations2a,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates,
@@ -337,8 +340,9 @@ def test_mix_upper_and_lower_case():
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes2b,
-        poolvols,
+        allocations2b,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates,
@@ -349,8 +353,9 @@ def test_mix_upper_and_lower_case():
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes2c,
-        poolvols,
+        allocations2c,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates,
@@ -361,8 +366,9 @@ def test_mix_upper_and_lower_case():
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes,
-        poolvols2a,
+        allocations,
+        vebals,
+        nftvols2a,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates,
@@ -373,8 +379,9 @@ def test_mix_upper_and_lower_case():
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes,
-        poolvols2b,
+        allocations,
+        vebals,
+        nftvols2b,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates,
@@ -385,8 +392,9 @@ def test_mix_upper_and_lower_case():
     assert target_rewardsinfo == rewardsinfo
 
     rewardsperlp, _ = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates2,
