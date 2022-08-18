@@ -63,23 +63,24 @@ def test_unapproved_addr():
 
 
 @enforce_types
-@pytest.mark.skip(reason="not working yet, though it should work, need to fix")
 def test_two_basetokens_OCEAN_and_H2O():
-    stakes = {
+    allocations = {
         C1: {
-            OCN_ADDR: {PA: {LP1: 100000.0}},  # stake in units of OCEAN
-            H2O_ADDR: {PB: {LP1: 20000.0}},
+            PA: {LP1: 20000.0},  # stake in units of OCEAN
+            PB: {LP1: 20000.0},
         }
     }  # stake in units of H2O
-    poolvols = {
-        C1: {OCN_ADDR: {PA: 3.0}, H2O_ADDR: {PB: 4.0}}  # vol in units of OCEAN
+    vebals = {LP1: 1.0}
+    nftvols = {
+        C1: {OCN_ADDR: {PA: 40.0}, H2O_ADDR: {PB: 12.5}}  # vol in units of OCEAN
     }  # vol in units of H2O
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rewards_avail_OCEAN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         rates,
@@ -87,8 +88,8 @@ def test_two_basetokens_OCEAN_and_H2O():
         "OCEAN",
     )
 
-    PA_RF_USD = 10000.0 * 3.0 * 0.5
-    PB_RF_USD = 20000.0 * 4.0 * 1.6
+    PA_RF_USD = 20000.0 * 40.0 * 0.5
+    PB_RF_USD = 20000.0 * 12.5 * 1.6
     PA_amt = PA_RF_USD / (PA_RF_USD + PB_RF_USD) * 10.0
     PB_amt = PB_RF_USD / (PA_RF_USD + PB_RF_USD) * 10.0
 
