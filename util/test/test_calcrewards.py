@@ -124,11 +124,12 @@ def test_PSDN_rewards():
 @enforce_types
 def test_two_chains():
     # first cut: symbols are the same
-    stakes = {
-        C1: {OCN_ADDR: {PA: {LP1: 10000.0}}},
-        C2: {"0xocean2": {PB: {LP1: 10000.0}}},
+    allocations = {
+        C1: {PA: {LP1: 10000.0}},
+        C2: {PB: {LP1: 10000.0}},
     }
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {"0xocean2": {PB: 1.0}}}
+    vebals = {LP1: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 1.0}}, C2: {"0xocean2": {PB: 1.0}}}
     symbols = {
         C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
         C2: {"0xocean2": "OCEAN", "Oxh2o2": "H2O"},
@@ -140,8 +141,9 @@ def test_two_chains():
 
     rewards_avail_OCEAN = 20.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         symbols,
         rates,
@@ -154,8 +156,9 @@ def test_two_chains():
     # now, make it so that Ocean token in C2 is MOCEAN
     symbols[C2]["0xocean2"] = "MOCEAN"
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         symbols,
         rates,
@@ -171,8 +174,9 @@ def test_two_chains():
     rates["MOCEAN"] = rates["OCEAN"]
 
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         symbols,
         rates,
