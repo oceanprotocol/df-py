@@ -58,6 +58,17 @@ def calcRewards(
     return rewardsperlp, rewardsinfo
 
 
+def _veStakesUSD(veBalances: dict, rate: float) -> dict:
+    """
+    @arguments
+      veBalances - dict of [LP_addr] : ve balance for the user
+    """
+    veStakesUSD = {}
+    for LP_addr in veBalances:
+        veStakesUSD[LP_addr] = veBalances[LP_addr] * rate
+    return veStakesUSD
+
+
 def _getveStakes(allocations: dict, veBalances: dict) -> dict:
     """
     @arguments
