@@ -12,23 +12,22 @@ from util import cleancase
 @enforce_types
 def modTuple(approved_token_addrs, allocations, nftvols) -> Tuple[dict, dict]:
     return (
-        modAllocations(approved_token_addrs, allocations),
+        modAllocations(allocations),
         modNFTvols(approved_token_addrs, nftvols),
     )
 
 
 @enforce_types
-def modAllocations(approved_token_addrs: dict, allocations: dict) -> dict:
+def modAllocations(allocations: dict) -> dict:
     """allocations - dict of [chainID][basetoken_addr][NFT_addr] : percentage"""
     cleancase.assertAllocations(allocations)
-    return _modD(approved_token_addrs, allocations)
+    return allocations
 
 
 @enforce_types
-def assertAllocations(approved_token_addrs: dict, stakes: dict):
+def assertAllocations(allocations: dict):
     """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
-    cleancase.assertAllocations(stakes)
-    _assertD(approved_token_addrs, stakes)
+    cleancase.assertAllocations(allocations)
 
 
 @enforce_types
