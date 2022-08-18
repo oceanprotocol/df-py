@@ -5,7 +5,7 @@ from util import cleancase
 from util.calcrewards import calcRewards, TARGET_WPY
 
 # for shorter lines
-RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}
+RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0, "PSDN": 0.01}
 C1, C2 = 7, 137
 PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
