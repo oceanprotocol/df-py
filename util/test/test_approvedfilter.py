@@ -13,18 +13,18 @@ def test_allocation_fail_cleancase():
     allocations_clean = {1: {"0xocean": {"0xlp1": 1.0, "0xlp2": 2.0}}}
 
     with pytest.raises(AssertionError):
-        approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, allocations_bad)
+        approvedfilter.modAllocations(allocations_bad)
 
-    approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, allocations_clean)
+    approvedfilter.modAllocations(allocations_clean)
 
 
 @enforce_types
 def test_allocations_main():
     allocations = {
         1: {
-            "0xocean": {"0xlp1": 1.0, "0xlp2": 2.0},
-            "0xh2o": {"0xlp4": 4.0},
-            "0xfoo": {"0xlp5": 0.0},  # filter this
+            "0xOCEAN": {"0xlp1": 1.0, "0xlp2": 2.0},
+            "0xH2O": {"0xlp4": 4.0},
+            "0xfoo": {"0xlp5": 0.0},
         },
         2: {"0xocean2": {"0xlp6": 5.0}},
     }
@@ -32,13 +32,15 @@ def test_allocations_main():
         1: {
             "0xocean": {"0xlp1": 1.0, "0xlp2": 2.0},
             "0xh2o": {"0xlp4": 4.0},
+            "0xfoo": {"0xlp5": 0.0},
         },
         2: {"0xocean2": {"0xlp6": 5.0}},
     }
+    mod_allocations = cleancase.modAllocations(allocations)
     cleancase.assertAllocations(target_allocations)
 
-    mod_allocations = approvedfilter.modAllocations(APPROVED_TOKEN_ADDRS, allocations)
-    approvedfilter.assertAllocations(APPROVED_TOKEN_ADDRS, mod_allocations)
+    mod_allocations = approvedfilter.modAllocations(mod_allocations)
+    approvedfilter.assertAllocations(mod_allocations)
     assert mod_allocations == target_allocations
 
 
