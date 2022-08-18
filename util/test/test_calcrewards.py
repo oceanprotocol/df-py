@@ -98,17 +98,16 @@ def test_two_basetokens_OCEAN_and_H2O():
 
 
 @enforce_types
-@pytest.mark.skip(
-    reason="not done implementing. Eg need to only give rewards to LPs of H2O pool"
-)
 def test_PSDN_rewards():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 10000.0}}, H2O_ADDR: {PB: {LP1: 10000.0}}}}
-    poolvols = {C1: {OCN_ADDR: {PA: 1.0}, H2O_ADDR: {PB: 1.0}}}
+    allocations = {C1: {PA: {LP1: 1000.0 * 1.6 / 0.5}, PB: {LP1: 1000.0}}}
+    vebals = {LP1: 1.0}
+    nftvols = {C1: {OCN_ADDR: {PA: 1.0}, H2O_ADDR: {PB: 1.0}}}
 
     rewards_avail_PSDN = 10.0
     rewardsperlp, rewardsinfo = calcRewards(
-        stakes,
-        poolvols,
+        allocations,
+        vebals,
+        nftvols,
         APPROVED_TOKEN_ADDRS,
         SYMBOLS,
         RATES,
@@ -117,8 +116,9 @@ def test_PSDN_rewards():
     )
 
     # only give rewards to LPs of H2O pool
-    assert rewardsperlp == {C1: {LP1: 10.0}}
-    assert rewardsinfo == {C1: {PB: {LP1: 10.0}}}
+    assert rewardsperlp[C1][LP1] == pytest.approx(10.0, 0.0000001)
+    assert rewardsinfo[C1][PB][LP1] == pytest.approx(5.0, 0.0000001)
+    assert rewardsinfo[C1][PA][LP1] == pytest.approx(5.0, 0.0000001)
 
 
 @enforce_types
