@@ -14,23 +14,19 @@ def test_tuple():  # super-basic test
 def test_stakes():
     stakes = {
         1: {
-            "0xoCeAn": {
-                "0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0},
-                "0xPOOLB": {"0xLP3": 3.0},
-            },
-            "0xH2o": {"0xPOoLC": {"0xlP4": 4.0}},
+            "0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0},
+            "0xPOOLB": {"0xLP3": 3.0},
+            "0xPOoLC": {"0xlP4": 4.0},
         },
-        2: {"0xocean": {"0xPOOLD": {"0xLP5": 5.0}}},
+        2: {"0xPOOLD": {"0xLP5": 5.0}},
     }
     target_stakes = {
         1: {
-            "0xocean": {
-                "0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0},
-                "0xpoolb": {"0xlp3": 3.0},
-            },
-            "0xh2o": {"0xpoolc": {"0xlp4": 4.0}},
+            "0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0},
+            "0xpoolb": {"0xlp3": 3.0},
+            "0xpoolc": {"0xlp4": 4.0},
         },
-        2: {"0xocean": {"0xpoold": {"0xlp5": 5.0}}},
+        2: {"0xpoold": {"0xlp5": 5.0}},
     }
 
     with pytest.raises(AssertionError):
