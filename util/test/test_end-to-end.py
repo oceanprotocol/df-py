@@ -111,10 +111,10 @@ def setup_function():
     oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
-    num_pools = 1
     OCEAN = oceanutil.OCEANtoken()
-    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEAN)
-    oceantestutil.randomLockAndAllocate()
+    tups = oceantestutil.randomCreateDataNFTWithFREs(5, OCEAN, accounts)
+    oceantestutil.randomConsumeFREs(tups, OCEAN)
+    oceantestutil.randomLockAndAllocate(tups)
 
     brownie.network.chain.mine(20)
     brownie.network.chain.sleep(20)
