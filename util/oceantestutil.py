@@ -227,18 +227,24 @@ def randomConsumeFREs(FRE_tup: list, base_token):
 
 
 @enforce_types
-def randomLockAndAllocate():
+def randomLockAndAllocate(tups: list):
+    # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
+
     accounts = network.accounts
     OCEAN = oceanutil.OCEANtoken()
-    pub_account_i = accounts[0]
 
+    network.chain.sleep(WEEK * 20)
     t0 = network.chain.time()
-    t1 = t0 // WEEK * WEEK + WEEK  # what's going on here? I need to break this down.
+    t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + WEEK
     network.chain.sleep(t1 - t0)
+    network.chain.mine()
 
     # Lock randomly
-    for _ in range(NUM_LOCKS):
+    for tup in tups:
+        pub_account_i = tup[0]
+        data_nft = tup[1]
+
         # choose lock account
         cand_I = [i for i in range(10) if i != pub_account_i]
         lock_account_i = random.choice(cand_I)
@@ -248,13 +254,15 @@ def randomLockAndAllocate():
         assert OCEAN.balanceOf(lock_account) != 0
         OCEAN.approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
 
-        # Create lock
-        oceanutil.veOCEAN().withdraw({"from": lock_account})
-        oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+        # Check if there is an active lock
+        if oceanutil.veOCEAN().balanceOf(lock_account) == 0:
+            # Create lock
+            oceanutil.veOCEAN().withdraw({"from": lock_account})
+            oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
         oceanutil.set_allocation(
-            1.0,
-            lock_account,
+            constants.MAX_ALLOCATE,
+            data_nft,
             8996,
             lock_account,
         )
