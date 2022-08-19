@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
-from util import networkutil, oceanutil, oceantestutil
+from util import networkutil, oceanutil
 
 accounts, a1, a2, a3 = None, None, None, None
 
@@ -219,58 +219,47 @@ def test_claim_and_restake():
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
+    deployer = accounts[0]
+    bob = accounts[1]
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
+    OCEAN.transfer(bob, 100, {"from": deployer})
+
+    df_rewards = B.DFRewards.deploy({"from": deployer})
+    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": deployer})
     df_rewards.addStrategy(df_strategy.address)
 
+    veOCEAN = B.veOcean.deploy(
+        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
+    )
+
+    OCEAN.approve(veOCEAN.address, 100, {"from": bob})
+    unlock_time = brownie.network.chain.time() + 14 * 86400
+    veOCEAN.create_lock(100, unlock_time, {"from": bob})
+
     tos = [a1]
-    values = [toBase18(50.0)]
-    OCEAN.approve(df_rewards, sum(values), {"from": accounts[0]})
-    df_rewards.allocate(tos, values, OCEAN.address, {"from": accounts[0]})
+    values = [50]
+    OCEAN.approve(df_rewards, sum(values), {"from": deployer})
+    df_rewards.allocate(tos, values, OCEAN.address, {"from": deployer})
 
-    assert df_rewards.claimable(a1, OCEAN.address) == toBase18(50.0)
-
-    pools = []
-    amounts = []
-    POOL_COUNT = 10
-
-    for _ in range(POOL_COUNT):
-        (_, pool) = oceantestutil.randomDeployPool(accounts[0], OCEAN)
-        pools.append(pool)
-        amounts.append(toBase18(50 / POOL_COUNT) - 1)
-
-    for pool in pools:
-        assert pool.balanceOf(accounts[1]) == 0
+    assert df_rewards.claimable(a1, OCEAN.address) == 50
 
     with brownie.reverts("Not enough rewards"):
         # Cannot claim what you don't have
         df_strategy.claimAndStake(
-            OCEAN.address,
-            [pools[0].address],
-            [toBase18(100.0)],
-            {"from": accounts[1]},
-        )
-    with brownie.reverts("Lengths must match"):
-        # Cannot claim what you don't have
-        df_strategy.claimAndStake(
-            OCEAN.address,
-            [pools[0].address],
-            [5, 5, 5],
-            {"from": accounts[1]},
+            OCEAN,
+            100,
+            veOCEAN,
+            {"from": bob},
         )
 
-    print(amounts)
-
+    # veBalBefore = veOCEAN.balanceOf(deployer)
     df_strategy.claimAndStake(
-        OCEAN.address,
-        [pool.address for pool in pools],
-        amounts,
-        {"from": accounts[1]},
+        OCEAN,
+        50,
+        veOCEAN,
+        {"from": bob},
     )
 
-    for pool in pools:
-        assert pool.balanceOf(accounts[1]) > 0
     assert df_rewards.claimable(a1, OCEAN.address) == 0
 
 
