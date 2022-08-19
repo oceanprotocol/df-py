@@ -82,11 +82,14 @@ def _getveStakes(allocations: dict, veBalances: dict) -> dict:
             if nft_addr not in VE_stakes[chainID]:
                 VE_stakes[chainID][nft_addr] = {}
             for LP_addr in allocations[chainID][nft_addr]:
-                if LP_addr not in VE_stakes[chainID][nft_addr]:
-                    VE_stakes[chainID][nft_addr][LP_addr] = 0.0
-                VE_stakes[chainID][nft_addr][LP_addr] = (
-                    allocations[chainID][nft_addr][LP_addr] * veBalances[LP_addr]
-                )
+
+                if LP_addr not in veBalances:
+                    continue
+
+                allocation = allocations[chainID][nft_addr][LP_addr]
+                veBalance = veBalances[LP_addr]
+                VE_stakes[chainID][nft_addr][LP_addr] = allocation * veBalance
+
     return VE_stakes
 
 
