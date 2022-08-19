@@ -42,6 +42,13 @@ def test_events():
 
 
 @enforce_types
+def test_max_allocation():
+    nftaddr = accounts[1].address
+    with brownie.reverts("Max Allocation"):
+        veAllocate.setAllocation(10001, nftaddr, 1, {"from": accounts[0]})
+
+
+@enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
     global accounts, veAllocate
