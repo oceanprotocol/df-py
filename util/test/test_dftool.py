@@ -63,6 +63,21 @@ def test_getrate(tmp_path):
 
 
 @enforce_types
+def test_query_ve_balances(tmp_path):
+    CSV_DIR = str(tmp_path)
+    ST = 0
+    FIN = "latest"
+    NSAMP = 100
+
+    cmd = f"./dftool vebals {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    vebals_csv = csvs.veOCEANCsvFilename(CSV_DIR)
+    assert os.path.exists(vebals_csv)
+
+
+@enforce_types
 def test_calc(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
