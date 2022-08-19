@@ -19,7 +19,6 @@ accounts = None
 
 
 @enforce_types
-@pytest.mark.skip(reason="requires random allocation and lock function")
 def test_without_csvs():
     chainID = networkutil.DEV_CHAINID
 
@@ -37,7 +36,7 @@ def test_without_csvs():
         {chainID: SYM0},
     )
 
-    OCEAN_avail = 0.3
+    OCEAN_avail = 0.0001
 
     rewardsperlp, _ = calcrewards.calcRewards(
         allocations, vebals, V, A, SYM, R, OCEAN_avail, "OCEAN"
@@ -47,7 +46,6 @@ def test_without_csvs():
 
 
 @enforce_types
-@pytest.mark.skip(reason="requires random allocation and lock function")
 def test_with_csvs(tmp_path):
     """
     Simulate these steps, with csvs in between
@@ -87,7 +85,7 @@ def test_with_csvs(tmp_path):
     A = csvs.loadApprovedCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
-    OCEAN_avail = 0.3
+    OCEAN_avail = 0.0001
     rewardsperlp, _ = calcrewards.calcRewards(
         allcs, vebals, V, A, SYM, R, OCEAN_avail, "OCEAN"
     )
