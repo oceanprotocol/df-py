@@ -260,6 +260,7 @@ def randomLockAndAllocate(tups: list):
             oceanutil.veOCEAN().withdraw({"from": lock_account})
             oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
+        assert oceanutil.veOCEAN().balanceOf(lock_account) != 0
         oceanutil.set_allocation(
             constants.MAX_ALLOCATE,
             data_nft,
