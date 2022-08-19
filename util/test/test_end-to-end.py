@@ -16,13 +16,15 @@ from util import (
 from util.constants import BROWNIE_PROJECT as B
 
 accounts = None
+ST = 0
+FIN = 0
 
 
 @enforce_types
 def test_without_csvs():
     chainID = networkutil.DEV_CHAINID
 
-    st, fin, n = 1, len(brownie.network.chain), 25
+    st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
 
     (V0, A0, SYM0) = query.query_all(rng, chainID)
@@ -57,7 +59,7 @@ def test_with_csvs(tmp_path):
     chainID = networkutil.DEV_CHAINID
     csv_dir = str(tmp_path)
 
-    st, fin, n = 1, len(brownie.network.chain), 25
+    st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
     token_addr = oceanutil.OCEAN_address()
 
@@ -105,16 +107,18 @@ def setup_function():
     chainID = networkutil.DEV_CHAINID
     networkutil.connect(chainID)
 
-    global accounts
+    global accounts, ST, FIN
     accounts = brownie.network.accounts
 
     oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
     OCEAN = oceanutil.OCEANtoken()
+    ST = len(brownie.network.chain) - 1
     tups = oceantestutil.randomCreateDataNFTWithFREs(5, OCEAN, accounts)
     oceantestutil.randomConsumeFREs(tups, OCEAN)
     oceantestutil.randomLockAndAllocate(tups)
+    FIN = len(brownie.network.chain) - 1
 
     brownie.network.chain.mine(20)
     brownie.network.chain.sleep(20)
