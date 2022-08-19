@@ -78,6 +78,21 @@ def test_query_ve_balances(tmp_path):
 
 
 @enforce_types
+def test_query_allocations(tmp_path):
+    CSV_DIR = str(tmp_path)
+    ST = 0
+    FIN = "latest"
+    NSAMP = 100
+
+    cmd = f"./dftool allocations {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
+    assert os.path.exists(allocations_csv)
+
+
+@enforce_types
 def test_calc(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
