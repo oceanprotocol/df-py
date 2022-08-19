@@ -9,7 +9,7 @@ from pytest import approx
 from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B
+from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 
 account0, QUERY_ST = None, 0
 
@@ -139,7 +139,7 @@ def _test_getAllocations(rng: BlockRange):
             for userAddr in allocations[chainId][nftAddr]:
                 allocation = (
                     oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
-                    / 1000
+                    / MAX_ALLOCATE
                 )
                 assert allocations[chainId][nftAddr][userAddr] == allocation
 

@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 
 from util import oceanutil
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B
+from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.graphutil import submitQuery
 from util.tok import TokSet
 
@@ -195,7 +195,7 @@ def getAllocations(
                     if nft_addr not in _allocations[chain_id]:
                         _allocations[chain_id][nft_addr] = {}
 
-                    percentage = allocated / 1000.0
+                    percentage = allocated / MAX_ALLOCATE
 
                     if LP_addr not in _allocations[chain_id][nft_addr]:
                         _allocations[chain_id][nft_addr][LP_addr] = percentage
