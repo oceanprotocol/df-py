@@ -1,4 +1,7 @@
 pragma solidity ^0.8.12;
+// Copyright BigchainDB GmbH and Ocean Protocol contributors
+// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)
+// Code is Apache-2.0 and docs are CC-BY-4.0
 
 contract veAllocate {
     mapping(address => mapping(address => mapping(uint256 => uint256)))
@@ -13,19 +16,19 @@ contract veAllocate {
     );
 
     function getveAllocation(
-        address _address,
-        address _nft,
+        address user,
+        address nft,
         uint256 chainid
-    ) public view returns (uint256) {
-        return veAllocation[_address][_nft][chainid];
+    ) external view returns (uint256) {
+        return veAllocation[user][nft][chainid];
     }
 
-    function getTotalAllocation(address _address)
+    function getTotalAllocation(address user)
         public
         view
         returns (uint256)
     {
-        return _totalAllocation[_address];
+        return _totalAllocation[user];
     }
 
     function setAllocation(
