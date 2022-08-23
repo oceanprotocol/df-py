@@ -168,7 +168,7 @@ def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
+      poolvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
@@ -178,12 +178,12 @@ def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
     V = poolvols_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "basetoken_addr", "pool_addr", "vol_amt"])
+        writer.writerow(["chainID", "basetoken_addr", "nft_addr", "vol_amt"])
         for basetoken_addr in V.keys():
             assertIsEthAddr(basetoken_addr)
-            for pool_addr, vol in V[basetoken_addr].items():
-                assertIsEthAddr(pool_addr)
-                row = [chainID, basetoken_addr.lower(), pool_addr.lower(), vol]
+            for nft_addr, vol in V[basetoken_addr].items():
+                assertIsEthAddr(nft_addr)
+                row = [chainID, basetoken_addr.lower(), nft_addr.lower(), vol]
                 writer.writerow(row)
     print(f"Created {csv_file}")
 
@@ -195,7 +195,7 @@ def loadNFTvolsCsvs(csv_dir: str):
       Load all poolvols csvs (across all chains); return result as single dict
 
     @return
-      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_amt
+      poolvols -- dict of [chainID][basetoken_addr][nft_addr] : vol_amt
     """
     csv_files = nftvolsCsvFilenames(csv_dir)
     poolvols = {}
@@ -212,7 +212,7 @@ def loadNFTvolsCsv(csv_dir: str, chainID: int):
       Load poolvols for this chainID
 
     @return
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
+      poolvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
     """
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
     V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
@@ -220,22 +220,22 @@ def loadNFTvolsCsv(csv_dir: str, chainID: int):
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "basetoken_addr", "pool_addr", "vol_amt"]
+                assert row == ["chainID", "basetoken_addr", "nft_addr", "vol_amt"]
                 continue
 
             chainID2 = int(row[0])
             basetoken_addr = row[1].lower()
-            pool_addr = row[2].lower()
+            nft_addr = row[2].lower()
             vol_amt = float(row[3])
 
             assert chainID2 == chainID, "csv had data from different chain"
             assertIsEthAddr(basetoken_addr)
-            assertIsEthAddr(pool_addr)
+            assertIsEthAddr(nft_addr)
 
             if basetoken_addr not in V:
                 V[basetoken_addr] = {}
-            assert pool_addr not in V[basetoken_addr], "duplicate found"
-            V[basetoken_addr][pool_addr] = vol_amt
+            assert nft_addr not in V[basetoken_addr], "duplicate found"
+            V[basetoken_addr][nft_addr] = vol_amt
     print(f"Loaded {csv_file}")
 
     return V
