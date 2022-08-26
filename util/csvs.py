@@ -153,7 +153,7 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
 @enforce_types
 def veOCEANCsvFilename(csv_dir: str) -> str:
     """Returns the veOCEAN filename"""
-    return os.path.join(csv_dir, f"veOCEAN-balances.csv")
+    return os.path.join(csv_dir, f"vebals.csv")
 
 
 # ========================================================================
