@@ -83,6 +83,8 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
             )
 
             result = submitQuery(query, CHAINID)
+            if not "data" in result:
+                raise Exception(f"No data in veOCEANs result: {result}")
             veOCEANs = result["data"]["veOCEANs"]
 
             if len(veOCEANs) == 0:
