@@ -29,7 +29,8 @@ def query_all(
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
@@ -273,21 +274,23 @@ def getNFTVolumes(
 
 
 @enforce_types
-def _filterOutPurgatory(nfts: List, chainID: int) -> List:
+def _filterOutPurgatory(nftvols: dict, chainID: int) -> List:
     """
     @description
       Return pools that aren't in purgatory
 
     @arguments
-      pools -- list of SimplePool
+      nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
 
     @return
-      filtered_pools -- list of SimplePool
+      filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     bad_dids = _didsInPurgatory()
-    filtered_pools = [
-        nft for nft in nfts if oceanutil.calcDID(nft, chainID) not in bad_dids
-    ]
+    filtered_pools = {}
+    for basetoken_addr in nftvols:
+        for nft_addr in nftvols[basetoken_addr]:
+            if oceanutil.calcDID(nft_addr) not in bad_dids:
+                filtered_pools[basetoken_addr] = nftvols[basetoken_addr]
     return filtered_pools
 
 
