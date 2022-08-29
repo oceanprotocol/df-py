@@ -273,7 +273,7 @@ def getNFTVolumes(
 
 
 @enforce_types
-def _filterOutPurgatory(pools: List, chainID: int) -> List:
+def _filterOutPurgatory(nfts: List, chainID: int) -> List:
     """
     @description
       Return pools that aren't in purgatory
@@ -286,9 +286,7 @@ def _filterOutPurgatory(pools: List, chainID: int) -> List:
     """
     bad_dids = _didsInPurgatory()
     filtered_pools = [
-        pool
-        for pool in pools
-        if oceanutil.calcDID(pool.nft_addr, chainID) not in bad_dids
+        nft for nft in nfts if oceanutil.calcDID(nft, chainID) not in bad_dids
     ]
     return filtered_pools
 
