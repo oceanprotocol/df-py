@@ -7,7 +7,7 @@ from util.calcrewards import calcRewards, TARGET_WPY
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0, "PSDN": 0.01}
 C1, C2 = 7, 137
-PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
+PA, PB, PC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB, UNAPP_SYMB = "OCEAN", "H2O", "UNAPP"
 OCN_ADDR, H2O_ADDR, UNAPP_ADDR = "0xocean", "0xh2o", "0xunapp"
@@ -115,7 +115,7 @@ def test_PSDN_rewards():
         "PSDN",
     )
 
-    # only give rewards to LPs of H2O pool
+    # only give rewards to LPs of H2O nfts
     assert rewardsperlp[C1][LP1] == pytest.approx(10.0, 0.0000001)
     assert rewardsinfo[C1][PB][LP1] == pytest.approx(5.0, 0.0000001)
     assert rewardsinfo[C1][PA][LP1] == pytest.approx(5.0, 0.0000001)
@@ -236,7 +236,7 @@ def test_two_lps_one_with_negligible_stake():
 
 
 @enforce_types
-def test_two_pools_one_with_volume():
+def test_two_nfts_one_with_volume():
     allocations = {
         C1: {
             PA: {LP1: 10000.0, LP2: 10000.0},
@@ -268,7 +268,7 @@ def test_two_pools_one_with_volume():
 
 
 @enforce_types
-def test_two_pools_both_with_volume():
+def test_two_nfts_both_with_volume():
     allocations = {
         C1: {
             PA: {LP1: 10000.0, LP2: 10000.0},
@@ -298,7 +298,7 @@ def test_two_pools_both_with_volume():
 
 @enforce_types
 def test_mix_upper_and_lower_case():
-    # PA, PB, PC = "0xpoola_addr", "0xpoolb_addr", "0xpoolc_addr"
+    # PA, PB, PC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
     # LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "lp4_addr"
     # OCN_ADDR, H2O = "0xocean", "0xh2o"
 
@@ -437,7 +437,7 @@ def test_calcrewards_math():
 
 
 @enforce_types
-def test_bound_APY_one_pool():
+def test_bound_APY_one_nft():
     allocations = {C1: {PA: {LP1: 1.0}}}
     vebals = {LP1: 1.0}
     nftvols = {C1: {OCN_ADDR: {PA: 1.0}}}
@@ -458,7 +458,7 @@ def test_bound_APY_one_pool():
 
 
 @enforce_types
-def test_bound_APY_one_LP__high_stake__two_pools():
+def test_bound_APY_one_LP__high_stake__two_nfts():
     allocations = {C1: {PA: {LP1: 1e6}, PB: {LP1: 1e6}}}
     vebals = {LP1: 1.0}
     nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
@@ -481,7 +481,7 @@ def test_bound_APY_one_LP__high_stake__two_pools():
 
 
 @enforce_types
-def test_bound_APY_two_pools__equal_low_stake__equal_low_DCV():
+def test_bound_APY_two_nfts__equal_low_stake__equal_low_DCV():
     allocations = {C1: {PA: {LP1: 5.0}, PB: {LP2: 5.0}}}
     vebals = {LP1: 1.0, LP2: 1.0}
     nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
@@ -503,7 +503,7 @@ def test_bound_APY_two_pools__equal_low_stake__equal_low_DCV():
 
 
 @enforce_types
-def test_bound_APY_two_pools__both_low_stake__one_pool_dominates_stake():
+def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
     allocations = {C1: {PA: {LP1: 5.0}, PB: {LP2: 20000.0}}}
     vebals = {LP1: 1.0, LP2: 1.0}
     nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 1.0}}}
@@ -530,7 +530,7 @@ def test_bound_APY_two_pools__both_low_stake__one_pool_dominates_stake():
 
 
 @enforce_types
-def test_bound_APY_two_pools__low_stake__one_pool_dominates_DCV():
+def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
     allocations = {C1: {PA: {LP1: 5.0}, PB: {LP2: 5.0}}}
     vebals = {LP1: 1.0, LP2: 1.0}
     nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 10000.0}}}
@@ -554,7 +554,7 @@ def test_bound_APY_two_pools__low_stake__one_pool_dominates_DCV():
 
 
 @enforce_types
-def test_bound_APY_two_pools__high_stake__one_pool_dominates_DCV():
+def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     allocations = {C1: {PA: {LP1: 1e6}, PB: {LP2: 1e6}}}
     vebals = {LP1: 1.0, LP2: 1.0}
     nftvols = {C1: {OCN_ADDR: {PA: 1.0, PB: 9999.0}}}
