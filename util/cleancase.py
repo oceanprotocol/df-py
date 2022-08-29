@@ -95,7 +95,7 @@ def assertNFTvols(poolvols: dict):
 
 
 @enforce_types
-def assertPoolvolsUsd(poolvols_USD: dict):
+def assertNFTvolUsd(poolvols_USD: dict):
     """poolvols_USD - dict of [chainID][pool_addr] : vol"""
     for chainID in poolvols_USD:
         assertPoolvolsUsdAtChain(poolvols_USD[chainID])
