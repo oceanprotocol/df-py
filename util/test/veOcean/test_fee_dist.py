@@ -20,7 +20,7 @@ DAY = 86400
 
 @enforce_types
 def test_alice_locks_tokens_after():
-    """sending native tokens to dfrewards contract should revert"""
+    """Alice locks tokens after fee distribution checkpoint. There should be no reward."""
 
     fee_distributor = B.FeeDistributor.deploy(
         veOCEAN.address,
@@ -65,7 +65,7 @@ def test_alice_locks_tokens_after():
 
 @enforce_types
 def test_alice_locks_tokens_exact():
-    """sending native tokens to dfrewards contract should revert"""
+    """Alice locks tokens exactly at the time of fee distribution checkpoint. Alice then claim rewards."""
 
     veOCEAN.checkpoint()
     OCEAN.approve(veOCEAN.address, TA, {"from": alice})
@@ -108,7 +108,7 @@ def test_alice_locks_tokens_exact():
 
 @enforce_types
 def test_alice_claims_after_lock_ends():
-    """sending native tokens to dfrewards contract should revert"""
+    """Alice claim rewards after her lock is expired."""
 
     veOCEAN.checkpoint()
     OCEAN.approve(veOCEAN.address, TA, {"from": alice})

@@ -9,7 +9,7 @@ accounts = None
 
 @enforce_types
 def test_deploy_ve():
-    """sending native tokens to dfrewards contract should revert"""
+    """Test deploy veOCEAN contract."""
     OCEAN = oceanutil.OCEANtoken()
 
     veOCEAN = B.veOCEAN.deploy(

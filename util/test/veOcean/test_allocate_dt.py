@@ -10,8 +10,8 @@ veAllocate = None
 
 
 @enforce_types
-def test_get_total_allocation():
-    """sending native tokens to dfrewards contract should revert"""
+def test_getveAllocation():
+    """getveAllocation should return the correct allocation."""
     nftaddr1 = accounts[0].address
     nftaddr2 = accounts[1].address
     nftaddr3 = accounts[2].address
@@ -31,6 +31,7 @@ def test_get_total_allocation():
 
 @enforce_types
 def test_events():
+    """Test emitted events."""
     nftaddr1 = accounts[1].address
     tx = veAllocate.setAllocation(100, nftaddr1, 1, {"from": accounts[0]})
     assert tx.events["AllocationSet"].values() == [
@@ -43,6 +44,7 @@ def test_events():
 
 @enforce_types
 def test_max_allocation():
+    """Cannot set allocation above max."""
     nftaddr = accounts[1].address
     with brownie.reverts("Max Allocation"):
         veAllocate.setAllocation(10001, nftaddr, 1, {"from": accounts[0]})
