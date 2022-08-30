@@ -35,25 +35,26 @@ class DataNFT:
 @enforce_types
 def query_all(
     rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str],]:
+) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str], List[DataNFT]]:
     """
     @description
-      Return nftvols, for the input block range and chain.
+      Return nftvols, nftInfo for the input block range and chain.
 
     @return
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
       approved_token_addrs_at_chain -- list_of_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
+      nftinfo -- list of DataNFT objects
 
     @notes
-      A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
+      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi, _ = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
-    return (Vi, Ai, SYMi)
+    return (Vi, Ai, SYMi, nftInfo)
 
 
 @enforce_types
