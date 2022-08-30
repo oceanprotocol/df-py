@@ -22,7 +22,7 @@ class DataNFT:
         volume: float,
     ):
         self.nft_addr = nft_addr
-        self.did = oceanutil.calcDID(nft_addr)
+        self.did = oceanutil.calcDID(nft_addr, chainID)
         self.chain_id = chain_id
         self.symbol = symbol
         self.basetoken_addr = basetoken_addr
