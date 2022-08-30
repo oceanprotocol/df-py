@@ -12,7 +12,7 @@ def test_deploy_ve():
     """sending native tokens to dfrewards contract should revert"""
     OCEAN = oceanutil.OCEANtoken()
 
-    veOCEAN = B.veOCEAN.deploy(
+    veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": accounts[0]}
     )
 
