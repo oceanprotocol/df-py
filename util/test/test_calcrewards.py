@@ -304,12 +304,12 @@ def test_mix_upper_and_lower_case():
 
     allocations = {C1: {PA: {LP1: 10000.0}}}
     allocations2a = {C1: {PA: {LP1: 10000.0}}}
-    allocations2b = {C1: {"0xpOoLa_aDDr": {LP1: 10000.0}}}
+    allocations2b = {C1: {"0xnfta_aDDr": {LP1: 10000.0}}}
     allocations2c = {C1: {PA: {"0xlP1_aDdR": 10000.0}}}
 
     nftvols = {C1: {OCN_ADDR: {PA: 10000.0}}}
     nftvols2a = {C1: {OCN_ADDR.upper(): {PA: 10000.0}}}
-    nftvols2b = {C1: {OCN_ADDR: {"0xpOola_adDr": 10000.0}}}
+    nftvols2b = {C1: {OCN_ADDR: {"0xnfta_adDr": 10000.0}}}
 
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     rates2 = {"oceaN": 0.5, "h2O": 1.6}
