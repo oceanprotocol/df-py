@@ -214,6 +214,26 @@ def getAllocations(
     return _allocations
 
 
+class DataNFT:
+    def __init__(
+        self,
+        nft_addr: str,
+        chain_id: int,
+        symbol: str,
+        basetoken_addr: str,
+        volume: float,
+    ):
+        self.nft_addr = nft_addr
+        self.did = oceanutil.calcDID(nft_addr)
+        self.chain_id = chain_id
+        self.symbol = symbol
+        self.basetoken_addr = basetoken_addr
+        self.volume = volume
+
+    def __repr__(self):
+        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
+
+
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
