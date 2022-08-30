@@ -1,5 +1,5 @@
 import json
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import requests
 import brownie
@@ -18,7 +18,7 @@ def query_all(
 ) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str],]:
     """
     @description
-      Return pool info, stakes & poolvols, for the input block range and chain.
+      Return nftvols, for the input block range and chain.
 
     @return
       poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
@@ -29,7 +29,7 @@ def query_all(
       A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi, _ = getNFTVolumes(rng.st, rng.fin, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
@@ -227,6 +227,7 @@ def getNFTVolumes(
     print("getVolumes(): begin")
 
     NFTvols: Dict[str, Dict[str, float]] = {}
+    NFTinfo: Dict[str, Dict[str, Dict[str, Any]]] = {}
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
     while True:
@@ -236,6 +237,7 @@ def getNFTVolumes(
             id,
             datatoken {
               id
+              symbol
               nft {
                 id
               }
@@ -270,8 +272,18 @@ def getNFTVolumes(
                 NFTvols[basetoken_addr][nft_addr] = 0.0
             NFTvols[basetoken_addr][nft_addr] += lastPriceValue
 
+        if not basetoken_addr in NFTinfo:
+            NFTinfo[basetoken_addr] = {}
+
+        if not nft_addr in NFTinfo[basetoken_addr]:
+            NFTinfo[basetoken_addr][nft_addr] = {}
+
+        NFTinfo[basetoken_addr][nft_addr]["volume"] = lastPriceValue
+        NFTinfo[basetoken_addr][nft_addr]["symbol"] = order["datatoken"]["symbol"]
+        NFTinfo[basetoken_addr][nft_addr]["did"] = oceanutil.calcDID(nft_addr, chainID)
+
     print("getVolumes(): done")
-    return NFTvols
+    return NFTvols, NFTinfo
 
 
 @enforce_types
