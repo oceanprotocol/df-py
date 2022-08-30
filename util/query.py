@@ -243,11 +243,14 @@ def getNFTVolumes(
 
     @return
       nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
+      NFTinfo -- list of DataNFT objects
     """
     print("getVolumes(): begin")
 
     NFTvols: Dict[str, Dict[str, float]] = {}
-    NFTinfo: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    NFTinfo_tmp: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    NFTinfo = []
+
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
     while True:
@@ -292,15 +295,27 @@ def getNFTVolumes(
                 NFTvols[basetoken_addr][nft_addr] = 0.0
             NFTvols[basetoken_addr][nft_addr] += lastPriceValue
 
-        if not basetoken_addr in NFTinfo:
-            NFTinfo[basetoken_addr] = {}
+            ### Store nft symbol for later use
+            if not basetoken_addr in NFTinfo_tmp:
+                NFTinfo_tmp[basetoken_addr] = {}
 
-        if not nft_addr in NFTinfo[basetoken_addr]:
-            NFTinfo[basetoken_addr][nft_addr] = {}
+            if not nft_addr in NFTinfo_tmp[basetoken_addr]:
+                NFTinfo_tmp[basetoken_addr][nft_addr] = {}
 
-        NFTinfo[basetoken_addr][nft_addr]["volume"] = lastPriceValue
-        NFTinfo[basetoken_addr][nft_addr]["symbol"] = order["datatoken"]["symbol"]
-        NFTinfo[basetoken_addr][nft_addr]["did"] = oceanutil.calcDID(nft_addr, chainID)
+            NFTinfo_tmp[basetoken_addr][nft_addr]["did"] = oceanutil.calcDID(
+                nft_addr, chainID
+            )
+
+    for base_addr in NFTinfo_tmp:
+        for nft_addr in NFTinfo_tmp[base_addr]:
+            datanft = DataNFT(
+                nft_addr,
+                chainID,
+                NFTinfo_tmp[base_addr][nft_addr]["symbol"],
+                base_addr,
+                NFTvols[base_addr][nft_addr],
+            )
+            NFTinfo.append(datanft)
 
     print("getVolumes(): done")
     return NFTvols, NFTinfo
