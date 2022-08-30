@@ -161,21 +161,21 @@ def veOCEANCsvFilename(csv_dir: str) -> str:
 
 
 @enforce_types
-def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
+def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
-      Save the poolvols csv for this chain. This csv is a key input for
+      Save the nftvols csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      poolvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
-    V = poolvols_at_chain
+    V = nftvols_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["chainID", "basetoken_addr", "nft_addr", "vol_amt"])
