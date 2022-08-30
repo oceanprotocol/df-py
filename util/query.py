@@ -12,6 +12,26 @@ from util.graphutil import submitQuery
 from util.tok import TokSet
 
 
+class DataNFT:
+    def __init__(
+        self,
+        nft_addr: str,
+        chain_id: int,
+        symbol: str,
+        basetoken_addr: str,
+        volume: float,
+    ):
+        self.nft_addr = nft_addr
+        self.did = oceanutil.calcDID(nft_addr)
+        self.chain_id = chain_id
+        self.symbol = symbol
+        self.basetoken_addr = basetoken_addr
+        self.volume = volume
+
+    def __repr__(self):
+        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
+
+
 @enforce_types
 def query_all(
     rng: BlockRange, chainID: int
@@ -212,26 +232,6 @@ def getAllocations(
     assert n_blocks_sampled > 0
 
     return _allocations
-
-
-class DataNFT:
-    def __init__(
-        self,
-        nft_addr: str,
-        chain_id: int,
-        symbol: str,
-        basetoken_addr: str,
-        volume: float,
-    ):
-        self.nft_addr = nft_addr
-        self.did = oceanutil.calcDID(nft_addr)
-        self.chain_id = chain_id
-        self.symbol = symbol
-        self.basetoken_addr = basetoken_addr
-        self.volume = volume
-
-    def __repr__(self):
-        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
 
 
 def getNFTVolumes(
