@@ -303,9 +303,9 @@ def getNFTVolumes(
             if not nft_addr in NFTinfo_tmp[basetoken_addr]:
                 NFTinfo_tmp[basetoken_addr][nft_addr] = {}
 
-            NFTinfo_tmp[basetoken_addr][nft_addr]["did"] = oceanutil.calcDID(
-                nft_addr, chainID
-            )
+            NFTinfo_tmp[basetoken_addr][nft_addr]["symbol"] = order["datatoken"][
+                "symbol"
+            ]
 
     for base_addr in NFTinfo_tmp:
         for nft_addr in NFTinfo_tmp[base_addr]:
