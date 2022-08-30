@@ -103,7 +103,7 @@ def test_all():
     _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_getveBalances(blockRange)
     _test_getAllocations(blockRange)
-    # _test_query(CO2_ADDR)
+    _test_query(CO2_ADDR)
 
 
 def _foundConsume(CO2_ADDR, st, fin):
@@ -170,17 +170,13 @@ def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
 
 @enforce_types
 def _test_query(CO2_ADDR: str):
-    # st, fin, n = QUERY_ST, len(brownie.network.chain), 500
-    # rng = BlockRange(st, fin, n)
-    # (V0, A0, SYM0) = query.query_all(rng, CHAINID)
+    st, fin, n = QUERY_ST, len(brownie.network.chain), 500
+    rng = BlockRange(st, fin, n)
+    (V0, A0, SYM0, _) = query.query_all(rng, CHAINID)
 
-    # TODOO update this once we have a new query_all
-
-    # tests are light here, as we've tested piecewise elsewhere
-    # assert CO2_ADDR in V0
-    # assert A0
-    # assert SYM0
-    _ = CO2_ADDR
+    assert CO2_ADDR in V0
+    assert A0
+    assert SYM0
 
 
 @enforce_types
