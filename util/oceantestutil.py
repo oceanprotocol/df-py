@@ -4,6 +4,7 @@ import brownie
 from enforce_typing import enforce_types
 from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
+from util.random_addresses import get_random_addresses
 
 network = brownie.network
 
@@ -174,7 +175,10 @@ def randomLockAndAllocate(tups: list):
     acc1 = network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
 
-    accounts = [network.accounts.add() for i in range(10)]
+    accounts = [
+        network.accounts.at(addr, force=True)
+        for addr in get_random_addresses(len(tups))
+    ]
     for account in accounts:
         OCEAN.mint(account, toBase18(1000.0), {"from": acc1})
 
@@ -186,14 +190,11 @@ def randomLockAndAllocate(tups: list):
     network.chain.mine()
 
     # Lock randomly
-    for tup in tups:
-        pub_account_i = tup[0]
+    for (i, tup) in enumerate(tups):
         data_nft = tup[1]
 
         # choose lock account
-        cand_I = [i for i in range(len(accounts)) if i != pub_account_i]
-        lock_account_i = random.choice(cand_I)
-        lock_account = accounts[lock_account_i]
+        lock_account = accounts[i]
 
         # Approve locking OCEAN
         assert OCEAN.balanceOf(lock_account) != 0
@@ -206,8 +207,11 @@ def randomLockAndAllocate(tups: list):
             oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
         assert oceanutil.veOCEAN().balanceOf(lock_account) != 0
+        allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate().getTotalAllocation(
+            lock_account
+        )
         oceanutil.set_allocation(
-            constants.MAX_ALLOCATE,
+            allc_amt,
             data_nft,
             8996,
             lock_account,
