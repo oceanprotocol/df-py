@@ -99,7 +99,7 @@ def test_alice_locks_tokens_exact():
     alice_after = OCEAN.balanceOf(alice)
 
     assert (alice_before - TA) < 10
-    assert abs(alice_before * 2 - alice_after) < toBase18(1.0)
+    assert alice_after > alice_before
 
 
 @enforce_types
