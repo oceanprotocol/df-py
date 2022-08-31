@@ -54,43 +54,6 @@ def test_orders():
 
 
 @enforce_types
-def test_poolShares():
-    OCEAN = oceanutil.OCEANtoken()
-
-    _ = oceantestutil.randomDeployTokensAndPoolsThenConsume(
-        num_pools=1, base_token=OCEAN
-    )
-    # (_, DT, pool) = tups[0]
-
-    skip = 0
-    INC = 1000
-    # block = 0
-    # pool_addr = pool.address
-
-    # poolShares(skip:%s, first:%s, block:{number:%s}, where: {pool_in:"%s"}) {
-    query = """
-        {
-          poolShares(skip:%s, first:%s) {
-            pool {
-              id,
-              totalShares
-            }
-            shares,
-            user {
-              id
-            }
-          }
-        }
-        """ % (
-        skip,
-        INC,
-    )
-
-    result = submitQuery(query, CHAINID)
-    pprint(result)
-
-
-@enforce_types
 def setup_function():
     networkutil.connect(CHAINID)
     global accounts
