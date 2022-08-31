@@ -24,7 +24,6 @@ def test_recordDeployedContracts():
     assert oceanutil.OCEAN_address() == oceanutil.OCEAN_address().lower()
     assert oceanutil.ERC721Template()
     assert oceanutil.ERC20Template()
-    assert oceanutil.PoolTemplate()
     assert oceanutil.factoryRouter()
     assert oceanutil.Staking()
     assert oceanutil.ERC721Factory()

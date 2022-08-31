@@ -44,7 +44,6 @@ def recordDeployedContracts(address_file: str):
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
-    C["PoolTemplate"] = B.BPool.at(a["poolTemplate"])
     C["Router"] = B.FactoryRouter.at(a["Router"])
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
@@ -69,10 +68,6 @@ def ERC721Template():
 
 def ERC20Template():
     return _contracts("ERC20Template")
-
-
-def PoolTemplate():
-    return _contracts("PoolTemplate")
 
 
 def factoryRouter():
@@ -232,7 +227,6 @@ def createBPoolFromDatatoken(
     TOK_name = base_TOKEN.symbol()
     assert TOK_have >= TOK_need, f"have {TOK_have} {TOK_name}, need {TOK_need}"
 
-    pool_template = PoolTemplate()
     router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
     ssbot = Staking()
 
@@ -261,7 +255,6 @@ def createBPoolFromDatatoken(
         from_account.address,  # baseTokenSender, provides init baseToken liquidity
         from_account.address,  # publisherAddress, will get the vested amt
         from_account.address,  # marketFeeCollector address
-        pool_template.address,  # poolTemplate address
     ]
 
     tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
