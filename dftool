@@ -752,9 +752,13 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
     from_account = _getPrivateAccount()
 
     # deploy veOcean
-    veOcean = B.veOCEAN.deploy(TOKEN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": from_account})
+    veOcean = B.veOcean.deploy(
+        TOKEN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
+    )
     # pylint: disable=line-too-long
-    print(f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}")
+    print(
+        f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}"
+    )
 
 
 # ========================================================================
