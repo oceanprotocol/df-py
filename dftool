@@ -27,6 +27,7 @@ from util.oceanutil import (
     veAllocate,
 )
 
+
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
 )
@@ -63,7 +64,8 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
 
-  dftool newVeOcean CHAINID - deploy veOcean using Ocean (for testing)
+
+  dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
@@ -607,9 +609,9 @@ Usage: dftool newtoken CHAINID
 def do_newVeOcean():
     HELP = """Generate new veOcean (for testing).
 
-Usage: dftool newVeOcean CHAINID
+Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 """
-    if len(sys.argv) not in [3]:
+    if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
@@ -618,21 +620,17 @@ Usage: dftool newVeOcean CHAINID
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
+    TOKEN_ADDR = str(sys.argv[3])
+    print(f"Arguments:\n TOKEN_ADDR={TOKEN_ADDR}")
+
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
 
-    # Give balance for OCEAN token too.
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    if ADDRESS_FILE is not None:
-        recordDeployedContracts(ADDRESS_FILE)
-        # pylint: disable=line-too-long
-        veOcean = B.veOcean.deploy(
-            OCEAN_address(), "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
-        )
-        print(
-            f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}"
-        )
+    # deploy veOcean
+    veOcean = B.veOCEAN.deploy(TOKEN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": from_account})
+    # pylint: disable=line-too-long
+    print(f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}")
 
 
 # ========================================================================
