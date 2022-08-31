@@ -171,8 +171,12 @@ def randomConsumeFREs(FRE_tup: list, base_token):
 def randomLockAndAllocate(tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
-    accounts = network.accounts
+    acc1 = network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
+
+    accounts = [network.accounts.add() for i in range(10)]
+    for account in accounts:
+        OCEAN.mint(account, toBase18(1000.0), {"from": acc1})
 
     network.chain.sleep(WEEK * 20)
     t0 = network.chain.time()
@@ -187,7 +191,7 @@ def randomLockAndAllocate(tups: list):
         data_nft = tup[1]
 
         # choose lock account
-        cand_I = [i for i in range(10) if i != pub_account_i]
+        cand_I = [i for i in range(len(accounts)) if i != pub_account_i]
         lock_account_i = random.choice(cand_I)
         lock_account = accounts[lock_account_i]
 
