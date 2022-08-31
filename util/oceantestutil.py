@@ -11,6 +11,13 @@ network = brownie.network
 NUM_STAKERS_PER_POOL = 2  # 3
 NUM_CONSUMES = 3  # 100
 
+# ve constants
+NUM_LOCKS = 3
+LOCK_AMOUNT = toBase18(1.0)
+WEEK = 7 * 86400
+MAXTIME = 4 * 365 * 86400  # 4 years
+NUM_ALLOCATES = 3
+
 AMT_OCEAN_PER_ACCOUNT = 100000.0
 
 AVG_INIT_TOKEN_STAKE = 100.0
@@ -159,3 +166,111 @@ def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account, toke
     )
 
     return (DT, pool)
+
+
+@enforce_types
+def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
+    # create random num_FRE.
+    tups = []  # (pub_account_i, data_NFT, DT, FRE)
+    for FRE_i in range(num_FRE):
+        if FRE_i < len(accounts):
+            account_i = FRE_i
+        else:
+            account_i = random.randint(0, len(accounts))
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
+            accounts[account_i], base_token
+        )
+        assert oceanutil.FixedPrice().isActive(exchangeId) is True
+        tups.append((account_i, data_NFT, DT, exchangeId))
+
+    return tups
+
+
+@enforce_types
+def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
+    base_token.approve(
+        oceanutil.FixedPrice().address, toBase18(max_TOKEN), {"from": from_account}
+    )
+
+    feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
+    assert base_token.balanceOf(from_account) >= toBase18(max_TOKEN)
+    oceanutil.FixedPrice().buyDT(
+        exchangeId,
+        toBase18(DT_buy_amt),
+        toBase18(max_TOKEN),
+        feesInfo[1],
+        feesInfo[0],
+        {"from": from_account},
+    )
+
+
+@enforce_types
+def randomConsumeFREs(FRE_tup: list, base_token):
+    accounts = network.accounts
+
+    # consume data assets from FREs randomly
+    for consume_i in range(NUM_CONSUMES):
+        tup = random.choice(FRE_tup)
+        (pub_account_i, _, DT, exchangeId) = tup
+
+        # choose consume account
+        cand_I = [i for i in range(10) if i != pub_account_i]
+        consume_i = random.choice(cand_I)
+        consume_account = accounts[consume_i]
+
+        # buy asset
+        DT_buy_amt = 1.0
+        buyDTFRE(exchangeId, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token)
+
+        # consume asset
+        pub_account = accounts[pub_account_i]
+        consumeDT(DT, pub_account, consume_account)
+
+
+@enforce_types
+def randomLockAndAllocate(FRE_tup: list):
+    accounts = network.accounts
+    OCEAN = oceanutil.OCEANtoken()
+
+    # Lock randomly
+    for _ in range(NUM_LOCKS):
+        # choose lock account
+        tup = random.choice(FRE_tup)
+        (pub_account_i, data_NFT, _, _) = tup
+        cand_I = [i for i in range(10) if i != pub_account_i]
+        lock_account_i = random.choice(cand_I)
+        lock_account = accounts[lock_account_i]
+
+        # Approve locking OCEAN
+        assert OCEAN.balanceOf(lock_account) != 0
+        OCEAN.approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
+
+        t0 = network.chain.time()
+        t1 = (
+            t0 // WEEK * WEEK + WEEK
+        )  # what's going on here? I need to break this down.
+        t2 = t1 + WEEK
+        network.chain.sleep(t1 - t0)
+
+        # Create lock
+        oceanutil.veOCEAN().withdraw({"from": lock_account})
+        oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+
+    # Allocate to random data_NFTs
+    for allocate_i in range(NUM_ALLOCATES):
+        tup = random.choice(FRE_tup)
+        (pub_account_i, data_NFT, _, _) = tup
+
+        # choose allocate account
+        cand_I = [i for i in range(10) if i != pub_account_i]
+        allocate_i = random.choice(cand_I)
+        allocate_account = accounts[allocate_i]
+
+        # allocate amount
+        veAllocate_amt = 1.0
+        oceanutil.set_allocation(
+            veAllocate_amt,
+            data_NFT.address,
+            8996,
+            allocate_account,
+        )

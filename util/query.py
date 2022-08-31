@@ -2,6 +2,7 @@ import json
 from typing import Dict, List, Tuple
 
 import requests
+import brownie
 from enforce_typing import enforce_types
 
 from util import oceanutil
@@ -100,6 +101,184 @@ def getPools(chainID: int) -> list:
 @enforce_types
 def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: float):
     return shares / total_shares * base_token_liquidity
+
+
+@enforce_types
+def getveBalances(rng: BlockRange, CHAINID: int) -> dict:
+    """
+    @description
+      Return all ve balances
+
+    @return
+      veBalances -- dict of veBalances [user_addr] : veBalance
+    """
+    MAX_TIME = 4 * 365 * 86400  # max lock time
+
+    veBalances: Dict[str, float] = {}
+    unixEpochTime = brownie.network.chain.time()
+    n_blocks = rng.numBlocks()
+    n_blocks_sampled = 0
+    blocks = rng.getBlocks()
+    print("getveBalances: begin")
+
+    for block_i, block in enumerate(blocks):
+        if (block_i % 50) == 0 or (block_i == n_blocks - 1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
+        chunk_size = 1000
+        offset = 0
+        while True:
+            query = """
+              {
+                veOCEANs(first: %d, skip: %d,block:{number: %d}) {
+                  id
+                  lockedAmount
+                  unlockTime
+                  delegation {
+                    id
+                    amount
+                  }
+                  delegates {
+                    id
+                    amount
+                  }
+                }
+              }
+            """ % (
+                chunk_size,
+                offset,
+                block,
+            )
+
+            result = submitQuery(query, CHAINID)
+            veOCEANs = result["data"]["veOCEANs"]
+
+            if len(veOCEANs) == 0:
+                # means there are no records left
+                break
+
+            for user in veOCEANs:
+                timeLeft = (
+                    float(user["unlockTime"]) - unixEpochTime
+                )  # time left in seconds
+                if timeLeft < 0:  # check if the lock has expired
+                    continue
+
+                # calculate the balance
+                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
+
+                # calculate delegations
+                ## calculate total amount going
+                totalAmountGoing = 0.0
+                for delegation in user["delegation"]:
+                    totalAmountGoing += float(delegation["amount"])
+
+                ## calculate total amount coming
+                totalAmountComing = 0.0
+                for delegate in user["delegates"]:
+                    totalAmountComing += float(delegate["amount"])
+
+                ## calculate total amount
+                totalAmount = totalAmountComing - totalAmountGoing
+
+                ## convert wei to OCEAN
+                totalAmount = totalAmount / 1e18
+
+                ## add to balance
+                balance += totalAmount
+
+                ## set user balance
+                if user["id"] not in veBalances:
+                    veBalances[user["id"]] = balance
+
+                veBalances[user["id"]] = (balance + veBalances[user["id"]]) / 2
+
+            ## increase offset
+            offset += chunk_size
+        n_blocks_sampled += 1
+
+    assert n_blocks_sampled > 0
+
+    print("getveBalances: done")
+
+    return veBalances
+
+
+@enforce_types
+def getAllocations(rng: BlockRange, CHAINID: int) -> dict:
+    """
+    @description
+      Return all allocations.
+
+    @return
+      allocations -- dict of [chain_id][nft_addr][user_addr]: percent
+    """
+
+    _allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
+    n_blocks = rng.numBlocks()
+    n_blocks_sampled = 0
+    blocks = rng.getBlocks()
+
+    for block_i, block in enumerate(blocks):
+
+        if (block_i % 50) == 0 or (block_i == n_blocks - 1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
+
+        offset = 0
+        chunk_size = 1000
+        while True:
+            query = """
+          {
+            veAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
+              id
+              veAllocation {
+                id
+                allocated
+                chainId
+                nftAddress
+              }
+              allocatedTotal
+            }
+          }
+          """ % (
+                chunk_size,
+                offset,
+                block,
+            )
+            result = submitQuery(query, CHAINID)
+            allocations = result["data"]["veAllocateUsers"]
+            if len(allocations) == 0:
+                # means there are no records left
+                break
+
+            for allocation in allocations:
+                user_addr = allocation["id"]
+                allocated_total = float(allocation["allocatedTotal"])
+                if user_addr not in _allocations:
+                    _allocations[user_addr] = {}
+                for ve_allocation in allocation["veAllocation"]:
+                    nft_addr = ve_allocation["nftAddress"]
+                    chain_id = ve_allocation["chainId"]
+                    allocated = float(ve_allocation["allocated"])
+                    if chain_id not in _allocations:
+                        _allocations[chain_id] = {}
+                    if nft_addr not in _allocations[chain_id]:
+                        _allocations[chain_id][nft_addr] = {}
+
+                    percentage = allocated / allocated_total
+
+                    if user_addr not in _allocations[chain_id][nft_addr]:
+                        _allocations[chain_id][nft_addr][user_addr] = percentage
+
+                    _allocations[chain_id][nft_addr][user_addr] = (
+                        percentage + _allocations[chain_id][nft_addr][user_addr]
+                    ) / 2
+
+            offset += chunk_size
+        n_blocks_sampled += 1
+
+    assert n_blocks_sampled > 0
+
+    return _allocations
 
 
 @enforce_types
