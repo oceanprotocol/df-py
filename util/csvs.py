@@ -56,19 +56,19 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
       allocation -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
     """
     csv_file = allocationCsvFilename(csv_dir)
-    V: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = {}
+    V: Dict[int, Dict[str, Dict[str, float]]] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:
                 assert row == ["chainID", "nft_addr", "LP_addr", "percent"]
                 continue
-            chainID, nft_addr, LP_addr, percent = row
+            _chainID, nft_addr, LP_addr, _percent = row
 
-            chainID = int(chainID)
+            chainID = int(_chainID)
             nft_addr = nft_addr.lower()
             LP_addr = LP_addr.lower()
-            percent = float(percent)
+            percent = float(_percent)
 
             assertIsEthAddr(nft_addr)
             assertIsEthAddr(LP_addr)
@@ -138,10 +138,10 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
             if row_i == 0:
                 assert row == ["LP_addr", "balance"]
                 continue
-            LP_addr, balance = row
+            LP_addr, _balance = row
 
             LP_addr = LP_addr.lower()
-            balance = float(balance)
+            balance = float(_balance)
 
             assertIsEthAddr(LP_addr)
 
@@ -183,12 +183,12 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
 
         for nft in nftinfo:
             row = [
-                chainID,
+                str(chainID),
                 nft.nft_addr.lower(),
                 nft.did,
                 nft.symbol,
                 nft.basetoken_addr.lower(),
-                nft.volume,
+                str(nft.volume),
             ]
             writer.writerow(row)
 

@@ -74,7 +74,7 @@ def _getveStakes(allocations: dict, veBalances: dict) -> dict:
       allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
       veBalances - dict of [LP_addr] : ve balance for the user
     """
-    VE_stakes = {}
+    VE_stakes: dict = {}
     for chainID in allocations:
         if chainID not in VE_stakes:
             VE_stakes[chainID] = {}

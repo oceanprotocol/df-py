@@ -238,7 +238,7 @@ def getAllocations(
 
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
-) -> Dict[str, Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], List[DataNFT]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
@@ -324,7 +324,7 @@ def getNFTVolumes(
 
 
 @enforce_types
-def _filterOutPurgatory(nftvols: dict, chainID: int) -> List:
+def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
     """
     @description
       Return pools that aren't in purgatory
