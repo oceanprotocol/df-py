@@ -6,6 +6,7 @@ from typing import Any, Dict, List
 from enforce_typing import enforce_types
 
 from util import constants, oceanutil
+from util.query import DataNFT
 
 
 # ========================================================================
@@ -157,25 +158,68 @@ def veOCEANCsvFilename(csv_dir: str) -> str:
 
 
 # ========================================================================
+# nftinfo csv
+
+
+@enforce_types
+def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
+    """
+    @description
+      Save  the nftinfo for this chain. This csv is required for df-sql.
+
+    @arguments
+        nftinfo -- list of DataNFT
+        csv_dir -- directory that holds csv files
+        chainID -- chainID
+    """
+
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = nftInfoCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), csv_file
+
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["chainID", "nft_addr", "did", "symbol", "basetoken_addr", "volume"]
+        writer.writerow(row)
+
+        for nft in nftinfo:
+            row = [
+                chainID,
+                nft.nft_addr.lower(),
+                nft.did,
+                nft.symbol,
+                nft.basetoken_addr.lower(),
+                nft.volume,
+            ]
+            writer.writerow(row)
+
+
+@enforce_types
+def nftInfoCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the nftinfo filename"""
+    return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
+
+
+# ========================================================================
 # nftvols csvs
 
 
 @enforce_types
-def saveNFTvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
+def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
-      Save the poolvols csv for this chain. This csv is a key input for
+      Save the nftvols csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      poolvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
-    V = poolvols_at_chain
+    V = nftvols_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["chainID", "basetoken_addr", "nft_addr", "vol_amt"])

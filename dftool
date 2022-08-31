@@ -149,10 +149,11 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
     rng.filterByMaxBlock(len(chain))
-    (Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
+    (Vi, Ai, SYMi, nftInfo) = query.query_all(rng, CHAINID)
     csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
+    csvs.saveNftInfoCsv(nftInfo, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
 
