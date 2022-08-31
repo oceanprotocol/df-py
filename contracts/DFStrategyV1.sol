@@ -6,10 +6,9 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/Sa
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IDFRewards.sol";
 import "./interfaces/IPool.sol";
+import "./interfaces/IVeOCEAN.sol";
 
-interface IveOCEAN {
-    function deposit_for(address _address, uint256 _amount) external;
-}
+
 
 contract DFStrategyV1 is ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -45,4 +44,5 @@ contract DFStrategyV1 is ReentrancyGuard {
         }
         return result;
     }
+
 }
