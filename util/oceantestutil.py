@@ -14,7 +14,7 @@ NUM_CONSUMES = 3  # 100
 
 # ve constants
 NUM_LOCKS = 3
-LOCK_AMOUNT = toBase18(1.0)
+LOCK_AMOUNT = toBase18(1000.0)
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 NUM_ALLOCATES = 3
@@ -180,7 +180,7 @@ def randomLockAndAllocate(tups: list):
         for addr in get_random_addresses(len(tups))
     ]
     for account in accounts:
-        OCEAN.mint(account, toBase18(1000.0), {"from": acc1})
+        OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
 
     network.chain.sleep(WEEK * 20)
     t0 = network.chain.time()
