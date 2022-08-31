@@ -17,14 +17,14 @@ class DataNFT:
         self,
         nft_addr: str,
         chain_id: int,
-        symbol: str,
+        _symbol: str,
         basetoken_addr: str,
         volume: float,
     ):
         self.nft_addr = nft_addr
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
-        self.symbol = symbol
+        self.symbol = _symbol
         self.basetoken_addr = basetoken_addr
         self.volume = volume
 
@@ -50,7 +50,7 @@ def query_all(
       A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
     Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
@@ -339,7 +339,7 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> List:
     filtered_pools = {}
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
-            if oceanutil.calcDID(nft_addr) not in bad_dids:
+            if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
                 filtered_pools[basetoken_addr] = nftvols[basetoken_addr]
     return filtered_pools
 

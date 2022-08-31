@@ -5,7 +5,6 @@ import re
 from typing import Any, Dict, List
 from enforce_typing import enforce_types
 
-from util import constants, oceanutil
 from util.query import DataNFT
 
 
@@ -89,7 +88,7 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
 @enforce_types
 def allocationCsvFilename(csv_dir: str) -> str:
     """Returns the allocations filename"""
-    return os.path.join(csv_dir, f"allocations.csv")
+    return os.path.join(csv_dir, "allocations.csv")
 
 
 # ========================================================================
@@ -154,7 +153,7 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
 @enforce_types
 def veOCEANCsvFilename(csv_dir: str) -> str:
     """Returns the veOCEAN filename"""
-    return os.path.join(csv_dir, f"vebals.csv")
+    return os.path.join(csv_dir, "vebals.csv")
 
 
 # ========================================================================

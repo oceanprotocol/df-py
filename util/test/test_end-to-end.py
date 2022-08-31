@@ -72,7 +72,7 @@ def test_with_csvs(tmp_path):
     csvs.saveNFTvolsCsv(V0, csv_dir, chainID)
     csvs.saveApprovedCsv(A0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
-    S0 = V0 = A0 = SYM0 = None  # ensure not used later
+    V0 = A0 = SYM0 = None  # ensure not used later
 
     vebals = query.getveBalances(rng, chainID)
     allocations = query.getAllocations(rng, chainID)

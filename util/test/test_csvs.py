@@ -1,9 +1,7 @@
-import brownie
 from enforce_typing import enforce_types
-import pandas as pd
 import pytest
 
-from util import csvs, query
+from util import csvs
 
 
 # for shorter lines

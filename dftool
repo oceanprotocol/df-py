@@ -21,7 +21,6 @@ from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
 from util.oceanutil import (
-    OCEAN_address,
     recordDeployedContracts,
     OCEANtoken,
     veAllocate,
