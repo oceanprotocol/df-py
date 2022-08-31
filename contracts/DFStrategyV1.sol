@@ -6,10 +6,9 @@ import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/token/ERC20/utils/Sa
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/security/ReentrancyGuard.sol";
 import "./interfaces/IDFRewards.sol";
 import "./interfaces/IPool.sol";
+import "./interfaces/IVeOCEAN.sol";
 
-interface IveOCEAN {
-    function deposit_for(address _address, uint256 _amount) external;
-}
+
 
 contract DFStrategyV1 is ReentrancyGuard {
     using SafeERC20 for IERC20;
@@ -60,7 +59,7 @@ contract DFStrategyV1 is ReentrancyGuard {
         uint256 balanceAfter = IERC20(tokenAddress).balanceOf(address(this));
         require(balanceAfter - balanceBefore == claimed, "Not enough rewards");
         IERC20(tokenAddress).safeApprove(_veOCEAN, totalAmount);
-        IveOCEAN(_veOCEAN).deposit_for(msg.sender, totalAmount);
+        IVeOCEAN(_veOCEAN).deposit_for(msg.sender, totalAmount);
 
         if (claimed > totalAmount) {
             IERC20(tokenAddress).safeTransfer(
