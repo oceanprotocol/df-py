@@ -20,7 +20,7 @@ TA = toBase18(10.0)
 
 @enforce_types
 def test_alice_creates_boost():
-    """sending native tokens to dfrewards contract should revert"""
+    """Alice delegates to bob, then we check adjusted balances and delegation."""
     veOCEAN.checkpoint()
     OCEAN.approve(veOCEAN.address, TA, {"from": alice})
 

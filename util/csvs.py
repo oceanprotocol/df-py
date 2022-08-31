@@ -6,229 +6,299 @@ from typing import Any, Dict, List
 from enforce_typing import enforce_types
 
 from util import constants, oceanutil
+from util.query import DataNFT
 
 
 # ========================================================================
-# stakes csvs
+# allocation csvs
 
 
 @enforce_types
-def saveStakesCsv(stakes_at_chain: dict, csv_dir: str, chainID: int):
+def saveAllocationCsv(allocations: dict, csv_dir: str):
     """
     @description
-      Save the stakes csv for this chain. This csv is a key input for
+      Save the allocations csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
+      allocations -- dict of [chain_id][nft_addr][LP_addr] : percent
       csv_dir -- directory that holds csv files
-      chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = stakesCsvFilename(csv_dir, chainID)
+    csv_file = allocationCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
-    S = stakes_at_chain
+    S = allocations
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "basetoken_addr", "pool_addr", "LP_addr", "stake_amt"]
+        row = ["chainID", "nft_addr", "LP_addr", "percent"]
         writer.writerow(row)
-        for basetoken_addr in S.keys():
-            assertIsEthAddr(basetoken_addr)
-            for pool_addr in S[basetoken_addr].keys():
-                assertIsEthAddr(pool_addr)
-                for LP_addr, stake in S[basetoken_addr][pool_addr].items():
-                    assertIsEthAddr(pool_addr)
+        for chainID in S.keys():
+            for nft_addr in S[chainID].keys():
+                assertIsEthAddr(nft_addr)
+                for LP_addr, percent in S[chainID][nft_addr].items():
+                    assertIsEthAddr(nft_addr)
                     row = [
-                        str(chainID),
-                        basetoken_addr.lower(),
-                        pool_addr.lower(),
+                        chainID,
+                        nft_addr.lower(),
                         LP_addr.lower(),
-                        stake,
+                        percent,
                     ]
                     writer.writerow(row)
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadStakesCsvs(csv_dir: str):
+def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
-      Load all stakes csvs (across all chains); return result as a single dict
+      Load allocation csv; return result as a single dict
 
     @return
-      stakes -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
+      allocation -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
     """
-    csv_files = stakesCsvFilenames(csv_dir)
-    stakes = {}
-    for csv_file in csv_files:
-        chainID = chainIDforStakeCsv(csv_file)
-        stakes[chainID] = loadStakesCsv(csv_dir, chainID)
-    return stakes
-
-
-@enforce_types
-def loadStakesCsv(csv_dir: str, chainID: int):
-    """
-    @description
-      Load stakes csv for this chainID
-
-    @return
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
-    """
-    csv_file = stakesCsvFilename(csv_dir, chainID)
-    S: Dict[str, Dict[str, Dict[str, float]]] = {}  # ie stakes_at_chain
+    csv_file = allocationCsvFilename(csv_dir)
+    V: Dict[str, Dict[str, Dict[str, Dict[str, float]]]] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
-            if row_i == 0:  # header
-                assert row == [
-                    "chainID",
-                    "basetoken_addr",
-                    "pool_addr",
-                    "LP_addr",
-                    "stake_amt",
-                ]
+            if row_i == 0:
+                assert row == ["chainID", "nft_addr", "LP_addr", "percent"]
                 continue
+            chainID, nft_addr, LP_addr, percent = row
 
-            chainID2 = int(row[0])
-            basetoken_addr = row[1].lower()
-            pool_addr = row[2].lower()
-            LP_addr = row[3].lower()
-            stake_amt = float(row[4])
+            chainID = int(chainID)
+            nft_addr = nft_addr.lower()
+            LP_addr = LP_addr.lower()
+            percent = float(percent)
 
-            assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(basetoken_addr)
-            assertIsEthAddr(pool_addr)
+            assertIsEthAddr(nft_addr)
             assertIsEthAddr(LP_addr)
 
-            if basetoken_addr not in S:
-                S[basetoken_addr] = {}
-            if pool_addr not in S[basetoken_addr]:
-                S[basetoken_addr][pool_addr] = {}
-            assert LP_addr not in S[basetoken_addr][pool_addr], "duplicate found"
-            S[basetoken_addr][pool_addr][LP_addr] = stake_amt
-    print(f"Loaded {csv_file}")
+            if chainID not in V:
+                V[chainID] = {}
 
-    return S
+            if nft_addr not in V[chainID]:
+                V[chainID][nft_addr] = {}
 
-
-@enforce_types
-def stakesCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of stakes filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "stakes*.csv"))
-
-
-@enforce_types
-def stakesCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the stakes filename for a given chainID"""
-    return os.path.join(csv_dir, f"stakes-chain{chainID}.csv")
-
-
-@enforce_types
-def chainIDforStakeCsv(filename) -> int:
-    """Returns chainID for a given stakes csv filename"""
-    return _lastInt(filename)
-
-
-# ========================================================================
-# poolvols csvs
-
-
-@enforce_types
-def savePoolvolsCsv(poolvols_at_chain: dict, csv_dir: str, chainID: int):
-    """
-    @description
-      Save the poolvols csv for this chain. This csv is a key input for
-      dftool calcrewards, and contains just enough info for it to operate, and no more.
-
-    @arguments
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
-      csv_dir -- directory that holds csv files
-      chainID -- which network
-    """
-    assert os.path.exists(csv_dir), csv_dir
-    csv_file = poolvolsCsvFilename(csv_dir, chainID)
-    assert not os.path.exists(csv_file), csv_file
-    V = poolvols_at_chain
-    with open(csv_file, "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(["chainID", "basetoken_addr", "pool_addr", "vol_amt"])
-        for basetoken_addr in V.keys():
-            assertIsEthAddr(basetoken_addr)
-            for pool_addr, vol in V[basetoken_addr].items():
-                assertIsEthAddr(pool_addr)
-                row = [chainID, basetoken_addr.lower(), pool_addr.lower(), vol]
-                writer.writerow(row)
-    print(f"Created {csv_file}")
-
-
-@enforce_types
-def loadPoolvolsCsvs(csv_dir: str):
-    """
-    @description
-      Load all poolvols csvs (across all chains); return result as single dict
-
-    @return
-      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_amt
-    """
-    csv_files = poolvolsCsvFilenames(csv_dir)
-    poolvols = {}
-    for csv_file in csv_files:
-        chainID = chainIDforPoolvolsCsv(csv_file)
-        poolvols[chainID] = loadPoolvolsCsv(csv_dir, chainID)
-    return poolvols
-
-
-@enforce_types
-def loadPoolvolsCsv(csv_dir: str, chainID: int):
-    """
-    @description
-      Load poolvols for this chainID
-
-    @return
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
-    """
-    csv_file = poolvolsCsvFilename(csv_dir, chainID)
-    V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
-    with open(csv_file, "r") as f:
-        reader = csv.reader(f)
-        for row_i, row in enumerate(reader):
-            if row_i == 0:  # header
-                assert row == ["chainID", "basetoken_addr", "pool_addr", "vol_amt"]
-                continue
-
-            chainID2 = int(row[0])
-            basetoken_addr = row[1].lower()
-            pool_addr = row[2].lower()
-            vol_amt = float(row[3])
-
-            assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(basetoken_addr)
-            assertIsEthAddr(pool_addr)
-
-            if basetoken_addr not in V:
-                V[basetoken_addr] = {}
-            assert pool_addr not in V[basetoken_addr], "duplicate found"
-            V[basetoken_addr][pool_addr] = vol_amt
+            V[chainID][nft_addr][LP_addr] = percent
     print(f"Loaded {csv_file}")
 
     return V
 
 
 @enforce_types
-def poolvolsCsvFilenames(csv_dir: str) -> List[str]:
+def allocationCsvFilename(csv_dir: str) -> str:
+    """Returns the allocations filename"""
+    return os.path.join(csv_dir, f"allocations.csv")
+
+
+# ========================================================================
+# veOCEAN csvs
+def saveVeOceanCsv(balances: dict, csv_dir: str):
+    """
+    @description
+      Save the stakes csv for this chain. This csv is a key input for
+      dftool calcrewards, and contains just enough info for it to operate, and no more.
+
+    @arguments
+      balances -- dict of [LP_addr] : balance
+      csv_dir -- directory that holds csv files
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = veOCEANCsvFilename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+    S = balances
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["LP_addr", "balance"]
+        writer.writerow(row)
+        for LP_addr in S.keys():
+            assertIsEthAddr(LP_addr)
+            row = [
+                LP_addr.lower(),
+                S[LP_addr],
+            ]
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+
+def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
+    """
+    @description
+      Load veOCEAN csv; return result as a single dict
+
+    @return
+      veOCEAN -- dict of [LP_addr] : balance
+    """
+    csv_file = veOCEANCsvFilename(csv_dir)
+    V: Dict[str, float] = {}
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:
+                assert row == ["LP_addr", "balance"]
+                continue
+            LP_addr, balance = row
+
+            LP_addr = LP_addr.lower()
+            balance = float(balance)
+
+            assertIsEthAddr(LP_addr)
+
+            V[LP_addr] = balance
+    print(f"Loaded {csv_file}")
+    return V
+
+
+@enforce_types
+def veOCEANCsvFilename(csv_dir: str) -> str:
+    """Returns the veOCEAN filename"""
+    return os.path.join(csv_dir, f"vebals.csv")
+
+
+# ========================================================================
+# nftinfo csv
+
+
+@enforce_types
+def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
+    """
+    @description
+      Save  the nftinfo for this chain. This csv is required for df-sql.
+
+    @arguments
+        nftinfo -- list of DataNFT
+        csv_dir -- directory that holds csv files
+        chainID -- chainID
+    """
+
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = nftInfoCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), csv_file
+
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["chainID", "nft_addr", "did", "symbol", "basetoken_addr", "volume"]
+        writer.writerow(row)
+
+        for nft in nftinfo:
+            row = [
+                chainID,
+                nft.nft_addr.lower(),
+                nft.did,
+                nft.symbol,
+                nft.basetoken_addr.lower(),
+                nft.volume,
+            ]
+            writer.writerow(row)
+
+
+@enforce_types
+def nftInfoCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the nftinfo filename"""
+    return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
+
+
+# ========================================================================
+# nftvols csvs
+
+
+@enforce_types
+def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
+    """
+    @description
+      Save the nftvols csv for this chain. This csv is a key input for
+      dftool calcrewards, and contains just enough info for it to operate, and no more.
+
+    @arguments
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
+      csv_dir -- directory that holds csv files
+      chainID -- which network
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = nftvolsCsvFilename(csv_dir, chainID)
+    assert not os.path.exists(csv_file), csv_file
+    V = nftvols_at_chain
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        writer.writerow(["chainID", "basetoken_addr", "nft_addr", "vol_amt"])
+        for basetoken_addr in V.keys():
+            assertIsEthAddr(basetoken_addr)
+            for nft_addr, vol in V[basetoken_addr].items():
+                assertIsEthAddr(nft_addr)
+                row = [chainID, basetoken_addr.lower(), nft_addr.lower(), vol]
+                writer.writerow(row)
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def loadNFTvolsCsvs(csv_dir: str):
+    """
+    @description
+      Load all poolvols csvs (across all chains); return result as single dict
+
+    @return
+      poolvols -- dict of [chainID][basetoken_addr][nft_addr] : vol_amt
+    """
+    csv_files = nftvolsCsvFilenames(csv_dir)
+    poolvols = {}
+    for csv_file in csv_files:
+        chainID = chainIDforNFTvolsCsv(csv_file)
+        poolvols[chainID] = loadNFTvolsCsv(csv_dir, chainID)
+    return poolvols
+
+
+@enforce_types
+def loadNFTvolsCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load poolvols for this chainID
+
+    @return
+      poolvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
+    """
+    csv_file = nftvolsCsvFilename(csv_dir, chainID)
+    V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == ["chainID", "basetoken_addr", "nft_addr", "vol_amt"]
+                continue
+
+            chainID2 = int(row[0])
+            basetoken_addr = row[1].lower()
+            nft_addr = row[2].lower()
+            vol_amt = float(row[3])
+
+            assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(basetoken_addr)
+            assertIsEthAddr(nft_addr)
+
+            if basetoken_addr not in V:
+                V[basetoken_addr] = {}
+            assert nft_addr not in V[basetoken_addr], "duplicate found"
+            V[basetoken_addr][nft_addr] = vol_amt
+    print(f"Loaded {csv_file}")
+
+    return V
+
+
+@enforce_types
+def nftvolsCsvFilenames(csv_dir: str) -> List[str]:
     """Returns a list of poolvols filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "poolvols*.csv"))
 
 
 @enforce_types
-def poolvolsCsvFilename(csv_dir: str, chainID: int) -> str:
+def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the poolvols filename for a given chainID"""
     return os.path.join(csv_dir, f"poolvols-{chainID}.csv")
 
 
 @enforce_types
-def chainIDforPoolvolsCsv(filename) -> int:
+def chainIDforNFTvolsCsv(filename) -> int:
     """Returns chainID for a given poolvols csv filename"""
     return _lastInt(filename)
 
@@ -432,124 +502,6 @@ def symbolsCsvFilename(csv_dir: str, chainID: int) -> str:
 def chainIDforSymbolsCsv(filename) -> int:
     """Returns chainID for a given symbols csv filename"""
     return _lastInt(filename)
-
-
-# ========================================================================
-# poolinfo csvs
-
-
-@enforce_types
-def savePoolinfoCsv(
-    pools_at_chain: list,
-    stakes_at_chain: dict,
-    poolvols_at_chain: dict,
-    csv_dir: str,
-    chainID: int,
-):
-    """
-    @description
-      Save detailed info for this pool. This csv is for the DF webapp,
-      so it can have lots of columns, whatever's interesting for the user.
-
-    @arguments
-      pools_at_chain -- list of SimplePool
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake_amt
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol_amt
-      csv_dir -- directory that holds csv files
-      chainID -- which network
-
-    @notes
-      This method also inputs rate*.csv files.
-    """
-    assert os.path.exists(csv_dir), f"{csv_dir} should exist"
-
-    assert rateCsvFilenames(csv_dir), "Should have rate csv files"
-    rates = loadRateCsvs(csv_dir)
-    csv_file = poolinfoCsvFilename(csv_dir, chainID)
-    assert not os.path.exists(csv_file), f"{csv_file} shouldn't exist"
-
-    pools_by_addr = {pool.addr: pool for pool in pools_at_chain}
-
-    with open(csv_file, "w") as f:
-        writer = csv.writer(f)
-        row = [
-            "chainID",
-            "basetoken_symbol",
-            "pool_addr",
-            "vol_amt",
-            "vol_amt_USD",
-            "stake_amt",
-            "stake_amt_USD",
-            "nft_addr",
-            "DT_addr",
-            "DT_symbol",
-            "basetoken_addr",
-            "did",
-            "url",
-        ]
-        writer.writerow(row)
-
-        for basetoken_addr in stakes_at_chain:
-            assertIsEthAddr(basetoken_addr)
-
-            for pool_addr in pools_by_addr:
-                assertIsEthAddr(pool_addr)
-
-                p = pools_by_addr[pool_addr]
-
-                did = oceanutil.calcDID(p.nft_addr, chainID)
-                url = constants.MARKET_ASSET_BASE_URL + did
-
-                stake_amt_BASE = 0.0
-                if pool_addr in stakes_at_chain[basetoken_addr]:
-                    stake_amt_BASE = sum(
-                        stakes_at_chain[basetoken_addr][pool_addr].values()
-                    )
-
-                stake_amt_USD = ""
-                if p.basetoken_symbol in rates:
-                    stake_amt_USD = stake_amt_BASE * rates[p.basetoken_symbol]
-
-                vol_amt_BASE = 0.0
-                if (basetoken_addr in poolvols_at_chain) and (
-                    pool_addr in poolvols_at_chain[basetoken_addr]
-                ):
-                    vol_amt_BASE = poolvols_at_chain[basetoken_addr][pool_addr]
-
-                vol_amt_USD = ""
-                if p.basetoken_symbol in rates:
-                    vol_amt_USD = vol_amt_BASE * rates[p.basetoken_symbol]
-
-                row = [
-                    str(chainID),
-                    p.basetoken_symbol,
-                    pool_addr.lower(),
-                    str(vol_amt_BASE),
-                    str(vol_amt_USD),
-                    str(stake_amt_BASE),
-                    str(stake_amt_USD),
-                    p.nft_addr.lower(),
-                    p.DT_addr.lower(),
-                    p.DT_symbol,
-                    basetoken_addr.lower(),
-                    did,
-                    url,
-                ]
-                writer.writerow(row)
-
-    print(f"Created {csv_file}")
-
-
-@enforce_types
-def poolinfoCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of poolinfo filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "poolinfo*.csv"))
-
-
-@enforce_types
-def poolinfoCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the poolinfo filename for a given chainID"""
-    return os.path.join(csv_dir, f"poolinfo-{chainID}.csv")
 
 
 # ========================================================================

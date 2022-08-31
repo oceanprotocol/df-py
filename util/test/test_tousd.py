@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 
-from util.tousd import ratesToAddrRates, stakesToUsd, poolvolsToUsd
+from util.tousd import ratesToAddrRates, nftvolsToUsd
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}
@@ -76,40 +76,16 @@ def test_ratesToAddrRates_symbol_changes_between_chains():
 
 
 @enforce_types
-def test_stakesToUsd_onebasetoken():
-    stakes = {C1: {OCN_ADDR: {PA: {LP1: 3.0, LP2: 4.0}}}}
-    stakes_USD = stakesToUsd(stakes, SYMBOLS, RATES)
-    assert stakes_USD == {C1: {PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5}}}
-
-
-@enforce_types
-def test_stakesToUsd_twobasetokens():
-    stakes = {
-        C1: {
-            OCN_ADDR: {PA: {LP1: 3.0, LP2: 4.0}},
-            H2O_ADDR: {PC: {LP1: 5.0, LP4: 6.0}},
-        }
-    }
-    stakes_USD = stakesToUsd(stakes, SYMBOLS, RATES)
-    assert stakes_USD == {
-        C1: {
-            PA: {LP1: 3.0 * 0.5, LP2: 4.0 * 0.5},
-            PC: {LP1: 5.0 * 1.6, LP4: 6.0 * 1.6},
-        }
-    }
-
-
-@enforce_types
-def test_poolvolsToUsd_onebasetoken():
+def test_nftvolsToUsd_onebasetoken():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}}}
-    poolvols_USD = poolvolsToUsd(poolvols, SYMBOLS, RATES)
+    poolvols_USD = nftvolsToUsd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
 
 
 @enforce_types
-def test_poolvolsToUsd_twobasetokens():
+def test_nftvolsToUsd_twobasetokens():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PC: 13.0}}}
-    poolvols_USD = poolvolsToUsd(poolvols, SYMBOLS, RATES)
+    poolvols_USD = nftvolsToUsd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {
         C1: {
             PA: 9.0 * 0.5,

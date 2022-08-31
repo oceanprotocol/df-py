@@ -193,7 +193,6 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
     )
 
     feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
-    assert base_token.balanceOf(from_account) >= toBase18(max_TOKEN)
     oceanutil.FixedPrice().buyDT(
         exchangeId,
         toBase18(DT_buy_amt),
@@ -228,15 +227,25 @@ def randomConsumeFREs(FRE_tup: list, base_token):
 
 
 @enforce_types
-def randomLockAndAllocate(FRE_tup: list):
+def randomLockAndAllocate(tups: list):
+    # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
+
     accounts = network.accounts
     OCEAN = oceanutil.OCEANtoken()
 
+    network.chain.sleep(WEEK * 20)
+    t0 = network.chain.time()
+    t1 = t0 // WEEK * WEEK + WEEK
+    t2 = t1 + WEEK
+    network.chain.sleep(t1 - t0)
+    network.chain.mine()
+
     # Lock randomly
-    for _ in range(NUM_LOCKS):
+    for tup in tups:
+        pub_account_i = tup[0]
+        data_nft = tup[1]
+
         # choose lock account
-        tup = random.choice(FRE_tup)
-        (pub_account_i, data_NFT, _, _) = tup
         cand_I = [i for i in range(10) if i != pub_account_i]
         lock_account_i = random.choice(cand_I)
         lock_account = accounts[lock_account_i]
@@ -245,32 +254,16 @@ def randomLockAndAllocate(FRE_tup: list):
         assert OCEAN.balanceOf(lock_account) != 0
         OCEAN.approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
 
-        t0 = network.chain.time()
-        t1 = (
-            t0 // WEEK * WEEK + WEEK
-        )  # what's going on here? I need to break this down.
-        t2 = t1 + WEEK
-        network.chain.sleep(t1 - t0)
+        # Check if there is an active lock
+        if oceanutil.veOCEAN().balanceOf(lock_account) == 0:
+            # Create lock
+            oceanutil.veOCEAN().withdraw({"from": lock_account})
+            oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
-        # Create lock
-        oceanutil.veOCEAN().withdraw({"from": lock_account})
-        oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
-
-    # Allocate to random data_NFTs
-    for allocate_i in range(NUM_ALLOCATES):
-        tup = random.choice(FRE_tup)
-        (pub_account_i, data_NFT, _, _) = tup
-
-        # choose allocate account
-        cand_I = [i for i in range(10) if i != pub_account_i]
-        allocate_i = random.choice(cand_I)
-        allocate_account = accounts[allocate_i]
-
-        # allocate amount
-        veAllocate_amt = 1.0
+        assert oceanutil.veOCEAN().balanceOf(lock_account) != 0
         oceanutil.set_allocation(
-            veAllocate_amt,
-            data_NFT.address,
+            constants.MAX_ALLOCATE,
+            data_nft,
             8996,
-            allocate_account,
+            lock_account,
         )

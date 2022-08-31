@@ -9,7 +9,7 @@ from pytest import approx
 from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B
+from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 
 account0, QUERY_ST = None, 0
 
@@ -100,14 +100,14 @@ def test_all():
     # run actual tests
     _test_getApprovedTokens()
     _test_getSymbols()
-    _test_getDTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
+    _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_getveBalances(blockRange)
     _test_getAllocations(blockRange)
-    # _test_query(CO2_ADDR)
+    _test_query(CO2_ADDR)
 
 
 def _foundConsume(CO2_ADDR, st, fin):
-    DT_vols = query.getDTVolumes(st, fin, CHAINID)
+    DT_vols, _ = query.getNFTVolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
         return False
     if sum(DT_vols[CO2_ADDR].values()) == 0:
@@ -137,14 +137,11 @@ def _test_getAllocations(rng: BlockRange):
     for chainId in allocations:
         for nftAddr in allocations[chainId]:
             for userAddr in allocations[chainId][nftAddr]:
-                totalAllocation = oceanutil.veAllocate().getTotalAllocation(userAddr)
-                allocation = oceanutil.veAllocate().getveAllocation(
-                    userAddr, nftAddr, chainId
+                allocation = (
+                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
+                    / MAX_ALLOCATE
                 )
-                assert (
-                    allocations[chainId][nftAddr][userAddr]
-                    == allocation / totalAllocation
-                )
+                assert allocations[chainId][nftAddr][userAddr] == allocation
 
 
 @enforce_types
@@ -165,25 +162,21 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_getDTVolumes(CO2_ADDR: str, st, fin):
-    DT_vols = query.getDTVolumes(st, fin, CHAINID)
+def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
+    DT_vols, _ = query.getNFTVolumes(st, fin, CHAINID)
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
 
 @enforce_types
 def _test_query(CO2_ADDR: str):
-    # st, fin, n = QUERY_ST, len(brownie.network.chain), 500
-    # rng = BlockRange(st, fin, n)
-    # (V0, A0, SYM0) = query.query_all(rng, CHAINID)
+    st, fin, n = QUERY_ST, len(brownie.network.chain), 500
+    rng = BlockRange(st, fin, n)
+    (V0, A0, SYM0, _) = query.query_all(rng, CHAINID)
 
-    # TODOO update this once we have a new query_all
-
-    # tests are light here, as we've tested piecewise elsewhere
-    # assert CO2_ADDR in V0
-    # assert A0
-    # assert SYM0
-    _ = CO2_ADDR
+    assert CO2_ADDR in V0
+    assert A0
+    assert SYM0
 
 
 @enforce_types
