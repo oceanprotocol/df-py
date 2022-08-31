@@ -48,8 +48,6 @@ def fillAccountsWithOCEAN():
     fillAccountsWithToken(OCEAN)
 
 
-
-
 @enforce_types
 def consumeDT(DT, pub_account, consume_account):
     service_index = 0
