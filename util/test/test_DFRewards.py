@@ -215,7 +215,7 @@ def test_strategies():
 
 
 @enforce_types
-def test_claim_and_restake():
+def _test_claim_and_restake():
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
