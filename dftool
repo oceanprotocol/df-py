@@ -606,7 +606,7 @@ Usage: dftool compile
 # ========================================================================
 @enforce_types
 def do_manyrandom():
-    # TODO UPADATE THIS
+    # UPADATE THIS
     HELP = f"""Deploy many random tokens & pools then consume (for testing)
 
 Usage: dftool manyrandom CHAINID

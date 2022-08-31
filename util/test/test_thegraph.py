@@ -14,8 +14,6 @@ accounts = None
 
 @enforce_types
 def test_approvedTokens():
-    OCEAN = oceanutil.OCEANtoken()
-
     query = "{ opcs{approvedTokens} }"
     result = submitQuery(query, CHAINID)
 

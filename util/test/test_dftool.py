@@ -22,8 +22,6 @@ def test_query(tmp_path):
 
     # insert fake inputs: info onto the chain
     oceantestutil.fillAccountsWithOCEAN()
-    num_pools = 1
-    OCEAN = oceanutil.OCEANtoken()
     time.sleep(2)
 
     # insert fake inputs: rate csv file
