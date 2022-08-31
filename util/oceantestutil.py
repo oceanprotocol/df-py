@@ -48,40 +48,6 @@ def fillAccountsWithOCEAN():
     fillAccountsWithToken(OCEAN)
 
 
-@enforce_types
-def randomDeployTokensAndPoolsThenConsume(num_pools: int, base_token):
-    accounts = network.accounts
-
-    # create random NUM_POOLS. Randomly add stake.
-    tups = []  # (pub_account_i, DT, pool)
-    for pool_i in range(num_pools):
-        if pool_i < len(accounts):
-            account_i = pool_i
-        else:
-            account_i = random.randint(0, len(accounts))
-        (DT, pool) = randomDeployPool(accounts[account_i], base_token)
-        randomAddStake(pool, account_i, base_token)
-        tups.append((account_i, DT, pool))
-
-    # consume data assets randomly
-    for consume_i in range(NUM_CONSUMES):
-        tup = random.choice(tups)
-        (pub_account_i, DT, pool) = tup
-
-        # choose consume account
-        cand_I = [i for i in range(10) if i != pub_account_i]
-        consume_i = random.choice(cand_I)
-        consume_account = accounts[consume_i]
-
-        # buy asset
-        DT_buy_amt = 1.0
-        buyDT(pool, DT, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token)
-
-        # consume asset
-        pub_account = accounts[pub_account_i]
-        consumeDT(DT, pub_account, consume_account)
-
-    return tups
 
 
 @enforce_types
@@ -143,29 +109,6 @@ def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_toke
     pool.swapExactAmountOut(
         tokenInOutMarket, amountsInOutMaxFee, {"from": from_account}
     )
-
-
-@enforce_types
-def randomDeployPool(pub_account, token):
-    init_TOKEN_stake = AVG_INIT_TOKEN_STAKE * (1 + 0.1 * random.random())
-    DT_TOKEN_rate = AVG_DT_TOKEN_RATE * (1 + 0.1 * random.random())
-    return deployPool(init_TOKEN_stake, DT_TOKEN_rate, pub_account, token)
-
-
-@enforce_types
-def deployPool(init_TOKEN_stake: float, DT_TOKEN_rate: float, from_account, token):
-    data_NFT = oceanutil.createDataNFT("1", "1", from_account)
-    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
-
-    pool = oceanutil.createBPoolFromDatatoken(
-        DT,
-        token,
-        from_account,
-        init_TOKEN_liquidity=init_TOKEN_stake,
-        DT_TOKEN_rate=DT_TOKEN_rate,
-    )
-
-    return (DT, pool)
 
 
 @enforce_types

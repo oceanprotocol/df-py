@@ -607,6 +607,7 @@ Usage: dftool compile
 # ========================================================================
 @enforce_types
 def do_manyrandom():
+    # TODO UPADATE THIS
     HELP = f"""Deploy many random tokens & pools then consume (for testing)
 
 Usage: dftool manyrandom CHAINID
@@ -643,7 +644,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     recordDeployedContracts(ADDRESS_FILE)
     oceantestutil.fillAccountsWithOCEAN()
     num_pools = 10  # magic number
-    oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
+    # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
     print(f"dftool manyrandom: Done. {num_pools} new pools created.")
 
 

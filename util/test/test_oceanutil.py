@@ -6,7 +6,6 @@ from util.oceanutil import (
     OCEANtoken,
     createDataNFT,
     createDatatokenFromDataNFT,
-    createBPoolFromDatatoken,
     calcDID,
 )
 from util import networkutil, oceantestutil, oceanutil
@@ -51,15 +50,6 @@ def test_createDatatokenFromDataNFT():
     DT = createDatatokenFromDataNFT("dt_name", "dt_symbol", data_NFT, account0)
     assert DT.name() == "dt_name"
     assert DT.symbol() == "dt_symbol"
-
-
-@enforce_types
-def test_createBPoolFromDatatoken():
-    recordDeployedContracts(ADDRESS_FILE)
-    data_NFT = createDataNFT("foo", "foo", account0)
-    DT = createDatatokenFromDataNFT("foo", "foo", data_NFT, account0)
-    base_TOKEN = oceanutil.OCEANtoken()
-    _ = createBPoolFromDatatoken(DT, base_TOKEN, account0)
 
 
 @enforce_types

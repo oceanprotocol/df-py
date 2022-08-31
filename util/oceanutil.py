@@ -213,58 +213,6 @@ def createDataNFTWithFRE(from_account, token):
 
 
 @enforce_types
-def createBPoolFromDatatoken(
-    datatoken,
-    base_TOKEN,
-    from_account,
-    init_TOKEN_liquidity: float = 2000.0,
-    DT_TOKEN_rate: float = 0.1,
-    LP_swap_fee: float = 0.03,
-    mkt_swap_fee: float = 0.01,
-):
-    TOK_have = fromBase18(base_TOKEN.balanceOf(from_account))
-    TOK_need = init_TOKEN_liquidity
-    TOK_name = base_TOKEN.symbol()
-    assert TOK_have >= TOK_need, f"have {TOK_have} {TOK_name}, need {TOK_need}"
-
-    router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
-    ssbot = Staking()
-
-    base_TOKEN.approve(
-        router.address, toBase18(init_TOKEN_liquidity), {"from": from_account}
-    )
-
-    # dummy values since vestin is now turned off
-    DT_vest_amt: float = 1000.0
-    DT_vest_num_blocks: int = 2426000
-
-    ss_params = [
-        toBase18(DT_TOKEN_rate),  # rate (wei)
-        base_TOKEN.decimals(),  # baseToken (decimals)
-        toBase18(DT_vest_amt),  # vesting amount (wei)
-        DT_vest_num_blocks,  # vested blocks (int, *not* wei)
-        toBase18(init_TOKEN_liquidity),  # initial liquidity (wei)
-    ]
-    swap_fees = [
-        toBase18(LP_swap_fee),  # swap fee for LPs (wei)
-        toBase18(mkt_swap_fee),  # swap fee for marketplace runner (wei)
-    ]
-    addresses = [
-        ssbot.address,  # ssbot address
-        base_TOKEN.address,  # baseToken address
-        from_account.address,  # baseTokenSender, provides init baseToken liquidity
-        from_account.address,  # publisherAddress, will get the vested amt
-        from_account.address,  # marketFeeCollector address
-    ]
-
-    tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
-    pool_address = _poolAddressFromNewBPoolTx(tx)
-    pool = B.BPool.at(pool_address)
-
-    return pool
-
-
-@enforce_types
 def _poolAddressFromNewBPoolTx(tx) -> str:
     return tx.events["NewPool"]["poolAddress"]
 
