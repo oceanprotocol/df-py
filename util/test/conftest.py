@@ -20,8 +20,7 @@ def network_setup_and_teardown():
     networkutil.disconnect()
 
 
-@pytest.fixture(autouse=True)
-def pytest_configure():
+def pytest_sessionstart():
     networkutil.connect(networkutil.DEV_CHAINID)
     recordDevDeployedContracts()
     accs = brownie.network.accounts
