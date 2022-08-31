@@ -1,8 +1,10 @@
 from enforce_typing import enforce_types
 
 import pytest
+import brownie
 
 from util import networkutil
+from util.oceanutil import OCEANtoken, recordDevDeployedContracts
 
 
 @enforce_types
@@ -16,3 +18,11 @@ def network_setup_and_teardown():
     yield
 
     networkutil.disconnect()
+
+
+@pytest.fixture(autouse=True)
+def pytest_configure():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    recordDevDeployedContracts()
+    accs = brownie.network.accounts
+    OCEANtoken().mint(accs[0], 1e24, {"from": accs[0]})
