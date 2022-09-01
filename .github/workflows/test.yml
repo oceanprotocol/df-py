@@ -38,7 +38,7 @@ jobs:
             done
           ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
         env:
-          CONTRACTS_VERSION: v1.1.1
+          CONTRACTS_VERSION: v1.1.2
           SUBGRAPH_VERSION: veAllocate
           
       - name: Install dependencies
