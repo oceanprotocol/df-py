@@ -8,38 +8,40 @@ APPROVED_TOKEN_ADDRS = {1: ["0xocean", "0xh2o"], 2: ["0xocean2", "Oxh2o2"]}
 
 
 @enforce_types
-def test_stakes_fail_cleancase():
-    stakes_bad = {1: {"0xoCeAn": {"0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0}}}}
-    stakes_clean = {1: {"0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}}}}
+def test_allocation_fail_cleancase():
+    allocations_bad = {1: {"0xoCeAn": {"0xLp1": 1.0, "0xLP2": 2.0}}}
+    allocations_clean = {1: {"0xocean": {"0xlp1": 1.0, "0xlp2": 2.0}}}
 
     with pytest.raises(AssertionError):
-        approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes_bad)
+        approvedfilter.modAllocations(allocations_bad)
 
-    approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes_clean)
+    approvedfilter.modAllocations(allocations_clean)
 
 
 @enforce_types
-def test_stakes_main():
-    stakes = {
+def test_allocations_main():
+    allocations = {
         1: {
-            "0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}},
-            "0xh2o": {"0xpoolc": {"0xlp4": 4.0}},
-            "0xfoo": {"0xpoold": {"0xlp5": 0.0}},  # filter this
+            "0xOCEAN": {"0xlp1": 1.0, "0xlp2": 2.0},
+            "0xH2O": {"0xlp4": 4.0},
+            "0xfoo": {"0xlp5": 0.0},
         },
-        2: {"0xocean2": {"0xpoole": {"0xlp6": 5.0}}},
+        2: {"0xocean2": {"0xlp6": 5.0}},
     }
-    target_stakes = {
+    target_allocations = {
         1: {
-            "0xocean": {"0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0}},
-            "0xh2o": {"0xpoolc": {"0xlp4": 4.0}},
+            "0xocean": {"0xlp1": 1.0, "0xlp2": 2.0},
+            "0xh2o": {"0xlp4": 4.0},
+            "0xfoo": {"0xlp5": 0.0},
         },
-        2: {"0xocean2": {"0xpoole": {"0xlp6": 5.0}}},
+        2: {"0xocean2": {"0xlp6": 5.0}},
     }
-    cleancase.assertStakes(target_stakes)
+    mod_allocations = cleancase.modAllocations(allocations)
+    cleancase.assertAllocations(target_allocations)
 
-    mod_stakes = approvedfilter.modStakes(APPROVED_TOKEN_ADDRS, stakes)
-    approvedfilter.assertStakes(APPROVED_TOKEN_ADDRS, mod_stakes)
-    assert mod_stakes == target_stakes
+    mod_allocations = approvedfilter.modAllocations(mod_allocations)
+    approvedfilter.assertAllocations(mod_allocations)
+    assert mod_allocations == target_allocations
 
 
 @enforce_types
@@ -54,9 +56,9 @@ def test_poolvols_fail_cleancase():
     }
 
     with pytest.raises(AssertionError):
-        approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols_bad)
+        approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols_bad)
 
-    approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols_clean)
+    approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols_clean)
 
 
 @enforce_types
@@ -76,8 +78,8 @@ def test_poolvols_main():
         },
         2: {"0xocean2": {"0xpoole": 5.0}},
     }
-    cleancase.assertPoolvols(target_poolvols)
+    cleancase.assertNFTvols(target_poolvols)
 
-    mod_poolvols = approvedfilter.modPoolvols(APPROVED_TOKEN_ADDRS, poolvols)
+    mod_poolvols = approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols)
     approvedfilter.assertPoolvols(APPROVED_TOKEN_ADDRS, mod_poolvols)
     assert mod_poolvols == target_poolvols

@@ -1,244 +1,258 @@
 import json
-from typing import Dict, List, Tuple
+from typing import Any, Dict, List, Tuple
 
 import requests
+import brownie
 from enforce_typing import enforce_types
 
 from util import oceanutil
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B
+from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.graphutil import submitQuery
 from util.tok import TokSet
 
 
-@enforce_types
-class SimplePool:
-    """
-    A simple object to store pools retrieved from chain.
-    Easier to retrieve info than using dicts keyed by strings, and
-      more lightweight than a full BPool object.
-    """
-
+class DataNFT:
     def __init__(
         self,
-        addr: str,
         nft_addr: str,
-        DT_addr: str,
-        DT_symbol: str,
+        chain_id: int,
+        _symbol: str,
         basetoken_addr: str,
+        volume: float,
     ):
-        self.addr = addr
         self.nft_addr = nft_addr
-        self.DT_addr = DT_addr
-        self.DT_symbol = DT_symbol
+        self.did = oceanutil.calcDID(nft_addr, chain_id)
+        self.chain_id = chain_id
+        self.symbol = _symbol
         self.basetoken_addr = basetoken_addr
+        self.volume = volume
 
-    @property
-    def basetoken_symbol(self) -> str:
-        return symbol(self.basetoken_addr)
-
-    def __str__(self):
-        s = ["SimplePool={"]
-        s += [f"addr={self.addr[:5]}"]
-        s += [f", nft_addr={self.nft_addr[:5]}"]
-        s += [f", DT_addr={self.DT_addr[:5]}"]
-        s += [f", DT_symbol={self.DT_symbol}"]
-        s += [f", basetoken_addr={self.basetoken_addr[:5]}"]
-        s += [f", basetoken_symbol={self.basetoken_symbol}"]
-        s += [" /SimplePool}"]
-        return "".join(s)
+    def __repr__(self):
+        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
 
 
 @enforce_types
 def query_all(
     rng: BlockRange, chainID: int
-) -> Tuple[
-    List[SimplePool],
-    Dict[str, Dict[str, Dict[str, float]]],
-    Dict[str, Dict[str, float]],
-    List[str],
-    Dict[str, str],
-]:
+) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str], List[DataNFT]]:
     """
     @description
-      Return pool info, stakes & poolvols, for the input block range and chain.
+      Return nftvols, nftInfo for the input block range and chain.
 
     @return
-      pools_at_chain -- list of SimplePool
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr] : stake
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr] : vol
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
       approved_token_addrs_at_chain -- list_of_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
+      nftinfo -- list of DataNFT objects
 
     @notes
-      A stake or poolvol value is in terms of basetoken (eg OCEAN, H2O).
+      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Pi = getPools(chainID)
-    Si = getStakes(Pi, rng, chainID)
-    Vi = getPoolVolumes(Pi, rng.st, rng.fin, chainID)
+    Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
-    return (Pi, Si, Vi, Ai, SYMi)
+    return (Vi, Ai, SYMi, nftInfo)
 
 
 @enforce_types
-def getPools(chainID: int) -> list:
+def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     """
     @description
-      Return all pools eligible for DF.
+      Return all ve balances
 
     @return
-      pools -- list of SimplePool
+      veBalances -- dict of veBalances [LP_addr] : veBalance
     """
-    pools = getAllPools(chainID)
-    pools = _filterOutPurgatory(pools, chainID)
-    return pools
+    MAX_TIME = 4 * 365 * 86400  # max lock time
 
-
-@enforce_types
-def poolSharestoValue(shares: float, total_shares: float, base_token_liquidity: float):
-    return shares / total_shares * base_token_liquidity
-
-
-@enforce_types
-def getStakes(pools: list, rng: BlockRange, chainID: int) -> dict:
-    """
-    @description
-      Query the chain for stakes.
-
-    @return
-      stakes_at_chain -- dict of [basetoken_addr][pool_addr][LP_addr]:stake
-    """
-    print("getStakes(): begin")
-    _ = pools  # little trick because pools isn't used
-    SSBOT_address = oceanutil.Staking().address.lower()
-    stakes: Dict[str, Dict[str, Dict[str, float]]] = {}
+    veBalances: Dict[str, float] = {}
+    unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
-    for block_i, block in enumerate(blocks):  # loop across block groups
+    print("getveBalances: begin")
+
+    for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
-        LP_offset = 0
-        chunk_size = 1000  # max for subgraph=1000
-
-        while True:  # loop across LP groups
+        chunk_size = 1000
+        offset = 0
+        while True:
             query = """
-            { 
-              poolShares(skip:%s, first:%s, block:{number:%s}) {
-                pool {
-                  id,
-                  baseToken {
-                    id
-                  },
-                  totalShares,
-                  baseTokenLiquidity
-                }, 
-                user {
+              {
+                veOCEANs(first: %d, skip: %d,block:{number: %d}) {
                   id
-                },
-                shares
+                  lockedAmount
+                  unlockTime
+                  delegation {
+                    id
+                    amount
+                  }
+                  delegates {
+                    id
+                    amount
+                  }
+                }
               }
-            }
             """ % (
-                LP_offset,
                 chunk_size,
+                offset,
                 block,
             )
-            result = submitQuery(query, chainID)
 
-            if (
-                "errors" in result
-                and "indexed up to block number" in result["errors"][0]["message"]
-            ):
-                LP_offset += chunk_size
+            result = submitQuery(query, CHAINID)
+            if not "data" in result:
+                raise Exception(f"No data in veOCEANs result: {result}")
+            veOCEANs = result["data"]["veOCEANs"]
+
+            if len(veOCEANs) == 0:
+                # means there are no records left
                 break
 
-            new_pool_stake = result["data"]["poolShares"]
-
-            if not new_pool_stake:
-                break
-
-            for d in new_pool_stake:
-                basetoken_addr = d["pool"]["baseToken"]["id"].lower()
-                pool_addr = d["pool"]["id"].lower()
-                LP_addr = d["user"]["id"].lower()
-                total_shares = float(d["pool"]["totalShares"])
-                base_token_liq = float(d["pool"]["baseTokenLiquidity"])
-                shares = float(d["shares"])
-                value = poolSharestoValue(shares, total_shares, base_token_liq)
-
-                if value == 0:
+            for user in veOCEANs:
+                timeLeft = (
+                    float(user["unlockTime"]) - unixEpochTime
+                )  # time left in seconds
+                if timeLeft < 0:  # check if the lock has expired
                     continue
 
-                if LP_addr == SSBOT_address:
-                    continue  # skip ss bot
+                # calculate the balance
+                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
 
-                if basetoken_addr not in stakes:
-                    stakes[basetoken_addr] = {}
-                if pool_addr not in stakes[basetoken_addr]:
-                    stakes[basetoken_addr][pool_addr] = {}
-                if LP_addr not in stakes[basetoken_addr][pool_addr]:
-                    stakes[basetoken_addr][pool_addr][LP_addr] = 0.0
+                # calculate delegations
+                ## calculate total amount going
+                totalAmountGoing = 0.0
+                for delegation in user["delegation"]:
+                    totalAmountGoing += float(delegation["amount"])
 
-                stakes[basetoken_addr][pool_addr][LP_addr] += value
+                ## calculate total amount coming
+                totalAmountComing = 0.0
+                for delegate in user["delegates"]:
+                    totalAmountComing += float(delegate["amount"])
 
-            LP_offset += chunk_size
+                ## calculate total amount
+                totalAmount = totalAmountComing - totalAmountGoing
+
+                ## convert wei to OCEAN
+                totalAmount = totalAmount / 1e18
+
+                ## add to balance
+                balance += totalAmount
+
+                ## set user balance
+                if user["id"] not in veBalances:
+                    veBalances[user["id"]] = balance
+
+                veBalances[user["id"]] = (balance + veBalances[user["id"]]) / 2
+
+            ## increase offset
+            offset += chunk_size
         n_blocks_sampled += 1
-    # normalize stake based on # blocks sampled
-    # (this may be lower than target # blocks, if we hit indexing errors)
+
     assert n_blocks_sampled > 0
-    for basetoken_addr in stakes:  # pylint: disable=consider-iterating-dictionary
-        for pool_addr in stakes[basetoken_addr]:
-            for LP_addr in stakes[basetoken_addr][pool_addr]:
-                stakes[basetoken_addr][pool_addr][LP_addr] /= n_blocks_sampled
-    return stakes  # ie stakes_at_chain
+
+    print("getveBalances: done")
+
+    return veBalances
 
 
 @enforce_types
-def getPoolVolumes(pools: list, st_block: int, end_block: int, chainID: int) -> dict:
+def getAllocations(
+    rng: BlockRange, CHAINID: int
+) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
-      Query the chain for pool volumes within the given block range.
+      Return all allocations.
 
     @return
-      poolvols_at_chain -- dict of [basetoken_addr][pool_addr]:vol_amt
+      allocations -- dict of [chain_id][nft_addr][LP_addr]: percent
     """
-    # [baseaddr][DT_addr]:vol
-    DTvols_at_chain = getDTVolumes(st_block, end_block, chainID)
 
-    # [baseaddr][pool_addr]:vol
-    poolvols_at_chain: Dict[str, Dict[str, float]] = {}
-    for baseaddr in DTvols_at_chain:  # pylint: disable=consider-iterating-dictionary
-        if baseaddr not in poolvols_at_chain:
-            poolvols_at_chain[baseaddr] = {}
+    _allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
+    n_blocks = rng.numBlocks()
+    n_blocks_sampled = 0
+    blocks = rng.getBlocks()
 
-        for DT_addr in DTvols_at_chain[baseaddr]:
-            # handle if >1 pool has the DT
-            pools_with_DT = [p for p in pools if p.DT_addr == DT_addr]
-            vol = DTvols_at_chain[baseaddr][DT_addr]
-            for pool in pools_with_DT:
-                # the "/" spreads vol evenly among pools holding the DT
-                poolvols_at_chain[baseaddr][pool.addr] = vol / len(pools_with_DT)
+    for block_i, block in enumerate(blocks):
 
-    return poolvols_at_chain
+        if (block_i % 50) == 0 or (block_i == n_blocks - 1):
+            print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
+
+        offset = 0
+        chunk_size = 1000
+        while True:
+            query = """
+          {
+            veAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
+              id
+              veAllocation {
+                id
+                allocated
+                chainId
+                nftAddress
+              }
+            }
+          }
+          """ % (
+                chunk_size,
+                offset,
+                block,
+            )
+            result = submitQuery(query, CHAINID)
+            allocations = result["data"]["veAllocateUsers"]
+            if len(allocations) == 0:
+                # means there are no records left
+                break
+
+            for allocation in allocations:
+                LP_addr = allocation["id"]
+                for ve_allocation in allocation["veAllocation"]:
+                    nft_addr = ve_allocation["nftAddress"]
+                    chain_id = ve_allocation["chainId"]
+                    allocated = float(ve_allocation["allocated"])
+                    if chain_id not in _allocations:
+                        _allocations[chain_id] = {}
+                    if nft_addr not in _allocations[chain_id]:
+                        _allocations[chain_id][nft_addr] = {}
+
+                    percentage = allocated / MAX_ALLOCATE
+
+                    if LP_addr not in _allocations[chain_id][nft_addr]:
+                        _allocations[chain_id][nft_addr][LP_addr] = percentage
+
+                    _allocations[chain_id][nft_addr][LP_addr] = (
+                        percentage + _allocations[chain_id][nft_addr][LP_addr]
+                    ) / 2
+
+            offset += chunk_size
+        n_blocks_sampled += 1
+
+    assert n_blocks_sampled > 0
+
+    return _allocations
 
 
-def getDTVolumes(
+def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
-) -> Dict[str, Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], List[DataNFT]]:
     """
     @description
-      Query the chain for datatoken (DT) volumes within the given block range.
+      Query the chain for datanft volumes within the given block range.
 
     @return
-      DTvols_at_chain -- dict of [basetoken_addr][DT_addr]:vol_amt
+      nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
+      NFTinfo -- list of DataNFT objects
     """
-    print("getDTVolumes(): begin")
+    print("getVolumes(): begin")
 
-    DTvols: Dict[str, Dict[str, float]] = {}
+    NFTvols: Dict[str, Dict[str, float]] = {}
+    NFTinfo_tmp: Dict[str, Dict[str, Dict[str, Any]]] = {}
+    NFTinfo = []
+
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
     while True:
@@ -248,6 +262,10 @@ def getDTVolumes(
             id,
             datatoken {
               id
+              symbol
+              nft {
+                id
+              }
             },
             lastPriceToken,
             lastPriceValue,
@@ -269,38 +287,60 @@ def getDTVolumes(
             lastPriceValue = float(order["lastPriceValue"])
             if lastPriceValue == 0:
                 continue
-            DT_addr = order["datatoken"]["id"].lower()
+            nft_addr = order["datatoken"]["nft"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
 
-            if basetoken_addr not in DTvols:
-                DTvols[basetoken_addr] = {}
+            if basetoken_addr not in NFTvols:
+                NFTvols[basetoken_addr] = {}
 
-            if DT_addr not in DTvols[basetoken_addr]:
-                DTvols[basetoken_addr][DT_addr] = 0.0
-            DTvols[basetoken_addr][DT_addr] += lastPriceValue
+            if nft_addr not in NFTvols[basetoken_addr]:
+                NFTvols[basetoken_addr][nft_addr] = 0.0
+            NFTvols[basetoken_addr][nft_addr] += lastPriceValue
 
-    print("getDTVolumes(): done")
-    return DTvols  # ie DTvols_at_chain
+            ### Store nft symbol for later use
+            if not basetoken_addr in NFTinfo_tmp:
+                NFTinfo_tmp[basetoken_addr] = {}
+
+            if not nft_addr in NFTinfo_tmp[basetoken_addr]:
+                NFTinfo_tmp[basetoken_addr][nft_addr] = {}
+
+            NFTinfo_tmp[basetoken_addr][nft_addr]["symbol"] = order["datatoken"][
+                "symbol"
+            ]
+
+    for base_addr in NFTinfo_tmp:
+        for nft_addr in NFTinfo_tmp[base_addr]:
+            datanft = DataNFT(
+                nft_addr,
+                chainID,
+                NFTinfo_tmp[base_addr][nft_addr]["symbol"],
+                base_addr,
+                NFTvols[base_addr][nft_addr],
+            )
+            NFTinfo.append(datanft)
+
+    print("getVolumes(): done")
+    return NFTvols, NFTinfo
 
 
 @enforce_types
-def _filterOutPurgatory(pools: List[SimplePool], chainID: int) -> List[SimplePool]:
+def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
     """
     @description
       Return pools that aren't in purgatory
 
     @arguments
-      pools -- list of SimplePool
+      nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
 
     @return
-      filtered_pools -- list of SimplePool
+      filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     bad_dids = _didsInPurgatory()
-    filtered_pools = [
-        pool
-        for pool in pools
-        if oceanutil.calcDID(pool.nft_addr, chainID) not in bad_dids
-    ]
+    filtered_pools = {}
+    for basetoken_addr in nftvols:
+        for nft_addr in nftvols[basetoken_addr]:
+            if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
+                filtered_pools[basetoken_addr] = nftvols[basetoken_addr]
     return filtered_pools
 
 
@@ -369,59 +409,6 @@ def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
         for tok in approved_tokens.toks
         if tok.chainID == chainID
     }
-
-
-@enforce_types
-def getAllPools(chainID: int) -> List[SimplePool]:
-    """
-    @description
-      Query the chain and return all pools
-
-    @return
-      pools - list of SimplePool
-    """
-    pools = []
-    offset = 0
-    chunk_size = 1000  # max for subgraph = 1000
-
-    while True:
-        query = """
-        {
-          pools(skip:%s, first:%s){
-            transactionCount,
-            id,
-            baseToken {
-              id
-            },
-            datatoken {
-                id,
-                symbol,
-                nft {
-                    id
-                }
-            }
-          }
-        }
-        """ % (
-            offset,
-            chunk_size,
-        )
-        offset += chunk_size
-        result = submitQuery(query, chainID)
-        ds = result["data"]["pools"]
-        if ds == []:
-            break  # if there are no pools left, break
-        for d in ds:
-            pool = SimplePool(
-                addr=d["id"].lower(),
-                nft_addr=d["datatoken"]["nft"]["id"].lower(),
-                DT_addr=d["datatoken"]["id"].lower(),
-                DT_symbol=d["datatoken"]["symbol"].upper(),
-                basetoken_addr=d["baseToken"]["id"].lower(),
-            )
-            pools.append(pool)
-
-    return pools
 
 
 _ADDR_TO_SYMBOL = {}  # address : TOKEN_symbol

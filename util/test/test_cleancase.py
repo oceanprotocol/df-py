@@ -11,38 +11,34 @@ def test_tuple():  # super-basic test
 
 
 @enforce_types
-def test_stakes():
+def test_allocations():
     stakes = {
         1: {
-            "0xoCeAn": {
-                "0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0},
-                "0xPOOLB": {"0xLP3": 3.0},
-            },
-            "0xH2o": {"0xPOoLC": {"0xlP4": 4.0}},
+            "0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0},
+            "0xPOOLB": {"0xLP3": 3.0},
+            "0xPOoLC": {"0xlP4": 4.0},
         },
-        2: {"0xocean": {"0xPOOLD": {"0xLP5": 5.0}}},
+        2: {"0xPOOLD": {"0xLP5": 5.0}},
     }
     target_stakes = {
         1: {
-            "0xocean": {
-                "0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0},
-                "0xpoolb": {"0xlp3": 3.0},
-            },
-            "0xh2o": {"0xpoolc": {"0xlp4": 4.0}},
+            "0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0},
+            "0xpoolb": {"0xlp3": 3.0},
+            "0xpoolc": {"0xlp4": 4.0},
         },
-        2: {"0xocean": {"0xpoold": {"0xlp5": 5.0}}},
+        2: {"0xpoold": {"0xlp5": 5.0}},
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertStakes(stakes)
+        cleancase.assertAllocations(stakes)
 
-    mod_stakes = cleancase.modStakes(stakes)
-    cleancase.assertStakes(mod_stakes)
+    mod_stakes = cleancase.modAllocations(stakes)
+    cleancase.assertAllocations(mod_stakes)
     assert mod_stakes == target_stakes
 
 
 @enforce_types
-def test_poolvols():
+def test_nftvols():
     poolvols = {
         1: {"0xoCeAn": {"0xpOolA": 1.0, "0xPOOLB": 2.0}, "0xH2o": {"0xPOoLC": 3.0}},
         2: {"0xocean": {"0xPOOLD": 4.0}},
@@ -54,10 +50,10 @@ def test_poolvols():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertPoolvols(poolvols)
+        cleancase.assertNFTvols(poolvols)
 
-    mod_poolvols = cleancase.modPoolvols(poolvols)
-    cleancase.assertPoolvols(mod_poolvols)
+    mod_poolvols = cleancase.modNFTvols(poolvols)
+    cleancase.assertNFTvols(mod_poolvols)
     assert mod_poolvols == target_poolvols
 
 

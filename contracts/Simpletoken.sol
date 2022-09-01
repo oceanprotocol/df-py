@@ -44,6 +44,11 @@ contract Simpletoken {
         return balances[_owner];
     }
 
+    function mint(address _to, uint256 _value) public {
+        balances[_to] += _value;
+        emit Transfer(msg.sender, _to, _value);
+    }
+
     function allowance(
         address _owner,
         address _spender

@@ -12,18 +12,20 @@ TARGET_WPY = (
 
 @enforce_types
 def calcRewards(
-    stakes: Dict[int, Dict[str, Dict[str, Dict[str, float]]]],
-    poolvols: Dict[int, Dict[str, Dict[str, float]]],
+    allocations: Dict[str, Dict[str, Dict[str, float]]],
+    veBalances: Dict[str, float],
+    nftvols: Dict[int, Dict[str, Dict[str, float]]],
     approved_token_addrs: Dict[int, List[str]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
     rewards_symbol: str,
-) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]],]:
+) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
-      stakes - dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_OCEAN_or_H2O
-      poolvols -- dict of [chainID][basetoken_addr][pool_addr] : vol_OCEAN_or_H2O
+      allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
+      veBalances - dict of [LP_addr] : ve balance for the user
+      nftvols -- dict of [chainID][basetoken_addr][nft_addr] : data consume volume
       approved_token_addrs -- dict of [chainID] : list_of_addr
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
       rates -- dict of [basetoken_symbol] : USD_price
@@ -32,20 +34,22 @@ def calcRewards(
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
-      rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsinfo -- dict of [chainID][nft_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
-    (stakes, poolvols, rates) = cleancase.modTuple(stakes, poolvols, rates)
-    (stakes, poolvols) = approvedfilter.modTuple(approved_token_addrs, stakes, poolvols)
+    (allocations, nftvols, rates) = cleancase.modTuple(allocations, nftvols, rates)
+    (allocations, nftvols) = approvedfilter.modTuple(
+        approved_token_addrs, allocations, nftvols
+    )
 
-    stakes_USD = tousd.stakesToUsd(stakes, symbols, rates)
-    poolvols_USD = tousd.poolvolsToUsd(poolvols, symbols, rates)
+    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
-    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(stakes_USD, poolvols_USD)
+    veBalances_USD = _veStakesUSD(veBalances, rates["OCEAN"])
+    veStakes = _getveStakes(allocations, veBalances_USD)
 
+    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(veStakes, nftvols_USD)
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
 
     RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
-
     RF_TOKEN = RF_USD / rates[rewards_symbol]
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
@@ -53,38 +57,76 @@ def calcRewards(
     return rewardsperlp, rewardsinfo
 
 
-def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
+def _veStakesUSD(veBalances: dict, rate: float) -> dict:
     """
     @arguments
-      stakes_USD - dict of [chainID][pool_addr][LP_addr] : stake_USD
-      poolvols_USD -- dict of [chainID][pool_addr] : vol_USD
+      veBalances - dict of [LP_addr] : ve balance for the user
+    """
+    veStakesUSD = {}
+    for LP_addr in veBalances:
+        veStakesUSD[LP_addr] = veBalances[LP_addr] * rate
+    return veStakesUSD
+
+
+def _getveStakes(allocations: dict, veBalances: dict) -> dict:
+    """
+    @arguments
+      allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
+      veBalances - dict of [LP_addr] : ve balance for the user
+    """
+    VE_stakes: dict = {}
+    for chainID in allocations:
+        if chainID not in VE_stakes:
+            VE_stakes[chainID] = {}
+        for nft_addr in allocations[chainID]:
+            if nft_addr not in VE_stakes[chainID]:
+                VE_stakes[chainID][nft_addr] = {}
+            for LP_addr in allocations[chainID][nft_addr]:
+
+                if LP_addr not in veBalances:
+                    continue
+
+                allocation = allocations[chainID][nft_addr][LP_addr]
+                veBalance = veBalances[LP_addr]
+                VE_stakes[chainID][nft_addr][LP_addr] = allocation * veBalance
+
+    return VE_stakes
+
+
+def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
+    """
+    @arguments
+      veStakes - dict of [chainID][nft_addr][LP_addr] : stake_USD
+      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD
 
     @return
-      S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
-      P_USD -- 2d array of [chain c, pool j] -- poolvol for each {c,j}, in USD
-      keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
+      S_USD -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in USD
+      P_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
+      keys_tup -- tuple of (chainIDs list, LP_addrs list, nft_addrs list)
     """
     # base data
-    cleancase.assertStakesUsd(stakes_USD)
-    cleancase.assertPoolvolsUsd(poolvols_USD)
-    chainIDs = list(stakes_USD.keys())
-    LP_addrs = _getLpAddrs(stakes_USD)
-    pool_addrs = _getPoolAddrs(poolvols_USD)
-    N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(pool_addrs)
+    cleancase.assertStakesUsd(veStakes)
+    cleancase.assertNFTvolUsd(nftvols_USD)
+    chainIDs = list(veStakes.keys())
+    LP_addrs = _getLpAddrs(veStakes)
+    nft_addrs = _getNftAddrs(nftvols_USD)
+    N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(nft_addrs)
 
     # convert
     S_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
     P_USD = numpy.zeros((N_c, N_j), dtype=float)
+
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
-            for j, pool_addr in enumerate(pool_addrs):
-                if pool_addr not in stakes_USD[chainID]:
+            for j, nft_addr in enumerate(nft_addrs):
+                if nft_addr not in veStakes[chainID]:
                     continue
-                S_USD[c, i, j] = stakes_USD[chainID][pool_addr].get(LP_addr, 0.0)
-                P_USD[c, j] += poolvols_USD[chainID].get(pool_addr, 0.0)
+                S_USD[c, i, j] = veStakes[chainID][nft_addr].get(LP_addr, 0.0)
+                P_USD[c, j] += nftvols_USD[chainID].get(nft_addr, 0.0)
 
     # done!
-    keys_tup = (chainIDs, LP_addrs, pool_addrs)
+    keys_tup = (chainIDs, LP_addrs, nft_addrs)
+
     return S_USD, P_USD, keys_tup
 
 
@@ -92,12 +134,12 @@ def _stakevolDictsToArrays(stakes_USD: dict, poolvols_USD: dict):
 def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
     """
     @arguments
-      S_USD -- 3d array of [chain c, LP i, pool j] -- stake for each {c,i,j}, in USD
-      P_USD -- 2d array of [chain c, pool j] -- poolvol for each {c,j}, in USD
+      S_USD -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in USD
+      P_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
       rewards_avail_USD -- float -- amount of rewards available, in units of USD
 
     @return
-      RF_USD -- 3d array of [chain c, LP i, pool j] -- rewards denominated in USD
+      RF_USD -- 3d array of [chain c, LP i, nft j] -- rewards denominated in USD
     """
     N_c, N_i, N_j = S_USD.shape
 
@@ -124,7 +166,6 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
                     RF_norm[c, i, j] * rewards_avail_USD,  # baseline
                     S_USD[c, i, j] * TARGET_WPY,  # APY constraint
                 )
-
     # postcondition: nans
     assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
 
@@ -145,20 +186,20 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
 def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
     """
     @arguments
-      RF_TOKEN -- 3d array of [chain c, LP i, pool j]; each entry is denominated in OCEAN, PSDN, etc
-      keys_tup -- tuple of (chainIDs list, LP_addrs list, pool_addrs list)
+      RF_TOKEN -- 3d array of [chain c, LP i, nft j]; each entry is denominated in OCEAN, PSDN, etc
+      keys_tup -- tuple of (chainIDs list, LP_addrs list, nft_addrs list)
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
-      rewardsinfo -- dict of [chainID][pool_addr][LP_addr] : TOKEN_float -- reward per chain/LP
+      rewardsinfo -- dict of [chainID][nft_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
-    chainIDs, LP_addrs, pool_addrs = keys_tup
+    chainIDs, LP_addrs, nft_addrs = keys_tup
 
     rewardsperlp: dict = {}
     rewardsinfo: dict = {}
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
-            for j, pool_addr in enumerate(pool_addrs):
+            for j, nft_addr in enumerate(nft_addrs):
                 assert RF_TOKEN[c, i, j] >= 0.0, RF_TOKEN[c, i, j]
                 if RF_TOKEN[c, i, j] == 0.0:
                     continue
@@ -171,26 +212,25 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
 
                 if chainID not in rewardsinfo:
                     rewardsinfo[chainID] = {}
-                if pool_addr not in rewardsinfo[chainID]:
-                    rewardsinfo[chainID][pool_addr] = {}
-                rewardsinfo[chainID][pool_addr][LP_addr] = RF_TOKEN[c, i, j]
+                if nft_addr not in rewardsinfo[chainID]:
+                    rewardsinfo[chainID][nft_addr] = {}
+                rewardsinfo[chainID][nft_addr][LP_addr] = RF_TOKEN[c, i, j]
 
     return rewardsperlp, rewardsinfo
 
 
 @enforce_types
-def _getPoolAddrs(poolvols_USD: dict) -> List[str]:
-    pool_addr_set = set()
-    for chainID in poolvols_USD:
-        pool_addr_set |= set(poolvols_USD[chainID].keys())
-    return list(pool_addr_set)
+def _getNftAddrs(nftvols_USD: dict) -> List[str]:
+    nft_addr_set = set()
+    for chainID in nftvols_USD:
+        nft_addr_set |= set(nftvols_USD[chainID].keys())
+    return list(nft_addr_set)
 
 
 @enforce_types
 def _getLpAddrs(stakes_USD: dict) -> List[str]:
     LP_addr_set = set()
     for chainID in stakes_USD:
-        LP_addr_set |= set(
-            {addr for addrs in stakes_USD[chainID].values() for addr in addrs}
-        )
+        for nft_addr in stakes_USD[chainID]:
+            LP_addr_set |= set(stakes_USD[chainID][nft_addr].keys())
     return list(LP_addr_set)

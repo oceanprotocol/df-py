@@ -20,7 +20,7 @@ TA = toBase18(10.0)
 
 @enforce_types
 def test_alice_locks_tokens():
-    """sending native tokens to dfrewards contract should revert"""
+    """Lock tokens then check balance."""
     veOCEAN.checkpoint()
     OCEAN.approve(veOCEAN.address, TA, {"from": alice})
 

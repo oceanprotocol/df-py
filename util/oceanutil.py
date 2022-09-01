@@ -3,11 +3,12 @@ import hashlib
 import json
 from typing import Any, Dict, List, Tuple
 
+import random
 import brownie
 from enforce_typing import enforce_types
 
 from util import networkutil
-from util.base18 import fromBase18, toBase18
+from util.base18 import toBase18
 from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 
 
@@ -43,11 +44,12 @@ def recordDeployedContracts(address_file: str):
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
-    C["PoolTemplate"] = B.BPool.at(a["poolTemplate"])
     C["Router"] = B.FactoryRouter.at(a["Router"])
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+    C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
+    C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
 
     CONTRACTS[chainID] = C
 
@@ -68,10 +70,6 @@ def ERC20Template():
     return _contracts("ERC20Template")
 
 
-def PoolTemplate():
-    return _contracts("PoolTemplate")
-
-
 def factoryRouter():
     return _contracts("Router")
 
@@ -82,6 +80,18 @@ def Staking():
 
 def ERC721Factory():
     return _contracts("ERC721Factory")
+
+
+def veOCEAN():
+    return _contracts("veOCEAN")
+
+
+def veAllocate():
+    return _contracts("veAllocate")
+
+
+def FixedPrice():
+    return _contracts("FixedPrice")
 
 
 @enforce_types
@@ -125,7 +135,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(1.0),  # cap. Note contract will hardcod this to max_int
+        toBase18(100000.0),  # cap. Note contract will hardcod this to max_int
         toBase18(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
@@ -140,57 +150,66 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
 
 @enforce_types
-def createBPoolFromDatatoken(
+def createFREFromDatatoken(
     datatoken,
     base_TOKEN,
+    amount,
     from_account,
-    init_TOKEN_liquidity: float = 2000.0,
-    DT_TOKEN_rate: float = 0.1,
-    LP_swap_fee: float = 0.03,
-    mkt_swap_fee: float = 0.01,
 ):
-    TOK_have = fromBase18(base_TOKEN.balanceOf(from_account))
-    TOK_need = init_TOKEN_liquidity
-    TOK_name = base_TOKEN.symbol()
-    assert TOK_have >= TOK_need, f"have {TOK_have} {TOK_name}, need {TOK_need}"
+    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
 
-    pool_template = PoolTemplate()
-    router = factoryRouter()  # router.routerOwner() = '0xe2DD..' = accounts[0]
-    ssbot = Staking()
-
-    base_TOKEN.approve(
-        router.address, toBase18(init_TOKEN_liquidity), {"from": from_account}
-    )
-
-    # dummy values since vestin is now turned off
-    DT_vest_amt: float = 1000.0
-    DT_vest_num_blocks: int = 2426000
-
-    ss_params = [
-        toBase18(DT_TOKEN_rate),  # rate (wei)
-        base_TOKEN.decimals(),  # baseToken (decimals)
-        toBase18(DT_vest_amt),  # vesting amount (wei)
-        DT_vest_num_blocks,  # vested blocks (int, *not* wei)
-        toBase18(init_TOKEN_liquidity),  # initial liquidity (wei)
-    ]
-    swap_fees = [
-        toBase18(LP_swap_fee),  # swap fee for LPs (wei)
-        toBase18(mkt_swap_fee),  # swap fee for marketplace runner (wei)
-    ]
     addresses = [
-        ssbot.address,  # ssbot address
-        base_TOKEN.address,  # baseToken address
-        from_account.address,  # baseTokenSender, provides init baseToken liquidity
-        from_account.address,  # publisherAddress, will get the vested amt
+        base_TOKEN.address,  # baseToken
+        from_account.address,  # owner
         from_account.address,  # marketFeeCollector address
-        pool_template.address,  # poolTemplate address
+        ZERO_ADDRESS,  # allowed swapper
     ]
 
-    tx = datatoken.deployPool(ss_params, swap_fees, addresses, {"from": from_account})
-    pool_address = _poolAddressFromNewBPoolTx(tx)
-    pool = B.BPool.at(pool_address)
+    uints = [
+        base_TOKEN.decimals(),  # baseTokenDecimals
+        datatoken.decimals(),  # datatokenDecimals
+        toBase18(1.0),  # fixedRate
+        0,  # marketFee
+        1,  # withMint
+    ]
 
-    return pool
+    tx = datatoken.createFixedRate(
+        FixedPrice().address, addresses, uints, {"from": from_account}
+    )
+    exchangeId = _FREAddressFromNewFRETx(tx)
+
+    return exchangeId
+
+
+@enforce_types
+def _FREAddressFromNewFRETx(tx) -> str:
+    return tx.events["NewFixedRate"]["exchangeId"]
+
+
+@enforce_types
+def randomCreateFREs(num_FRE: int, base_token, accounts):
+    # create random num_FRE.
+    tups = []  # (pub_account_i, data_NFT, DT, exchangeId)
+    for fre_i in range(num_FRE):
+        if fre_i < len(accounts):
+            account_i = fre_i
+        else:
+            account_i = random.randint(0, len(accounts))
+        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(
+            accounts[account_i], base_token
+        )
+        tups.append((account_i, data_NFT, DT, exchangeId))
+
+    return tups
+
+
+@enforce_types
+def createDataNFTWithFRE(from_account, token):
+    data_NFT = createDataNFT("1", "1", from_account)
+    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+
+    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
+    return (data_NFT, DT, exchangeId)
 
 
 @enforce_types
@@ -327,3 +346,16 @@ def create_checksum(text: str) -> str:
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+    veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+
+
+def create_ve_lock(amount: float, unlock_time: int, from_account):
+    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
+    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
+
+
+def get_ve_balance(account):
+    return veOCEAN().balanceOf(account, brownie.network.chain.time())

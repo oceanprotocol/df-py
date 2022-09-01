@@ -1,10 +1,7 @@
-import brownie
 from enforce_typing import enforce_types
-import pandas as pd
 import pytest
 
-from util import csvs, query
-from util.query import SimplePool
+from util import csvs
 
 
 # for shorter lines
@@ -22,56 +19,55 @@ OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
 @enforce_types
 def test_chainIDforStakeCsv():
-    assert csvs.chainIDforStakeCsv("stakes-chain101.csv") == 101
-    assert csvs.chainIDforStakeCsv("path1/32/stakes-chain92.csv") == 92
+    assert csvs.chainIDforNFTvolsCsv("stakes-chain101.csv") == 101
+    assert csvs.chainIDforNFTvolsCsv("path1/32/stakes-chain92.csv") == 92
 
 
 @enforce_types
-def test_stakes_onechain_lowercase(tmp_path):
+def test_allocations_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
-    }
-    csvs.saveStakesCsv(S1, csv_dir, C1)
-    S1_loaded = csvs.loadStakesCsv(csv_dir, C1)
-    assert S1_loaded == S1
+    S1 = {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}, PC: {LP1: 3.1, LP4: 3.4}}
+    A1 = {1: S1}
+    csvs.saveAllocationCsv(A1, csv_dir)
+    A1_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert A1_loaded == A1
 
 
 @enforce_types
-def test_stakes_onechain_mixedcase(tmp_path):
+def test_allocations_onechain_mixedcase(tmp_path):
     # in this test, it needs to fix the case
     csv_dir = str(tmp_path)
     S1_lowercase = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
+        PA: {LP1: 1.1, LP2: 1.2},
+        PB: {LP1: 2.1, LP3: 2.3},
+        PC: {LP1: 3.1, LP4: 3.4},
     }
     S1_mixedcase = {
-        OCN_ADDR2: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR2: {PC: {LP1: 3.1, LP4: 3.4}},
+        PA: {LP1: 1.1, LP2: 1.2},
+        PB: {LP1: 2.1, LP3: 2.3},
+        PC: {LP1: 3.1, LP4: 3.4},
     }
-    csvs.saveStakesCsv(S1_mixedcase, csv_dir, C1)
-    S1_loaded = csvs.loadStakesCsv(csv_dir, C1)
-    assert S1_loaded == S1_lowercase
+    A1 = {1: S1_mixedcase}
+    csvs.saveAllocationCsv(A1, csv_dir)
+    S1_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert S1_loaded[1] == S1_lowercase
 
 
 @enforce_types
-def test_stakes_twochains(tmp_path):
+def test_allocations_twochains(tmp_path):
     csv_dir = str(tmp_path)
     S1 = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
+        PA: {LP1: 1.1, LP2: 1.2},
+        PB: {LP1: 2.1, LP3: 2.3},
+        PC: {LP1: 3.1, LP4: 3.4},
     }
-    S2 = {OCN_ADDR: {PD: {LP1: 4.1, LP5: 4.5}}, H2O_ADDR: {PE: {LP6: 5.6}}}
+    S2 = {PD: {LP1: 4.1, LP5: 4.5}, PE: {LP6: 5.6}}
 
-    assert len(csvs.stakesCsvFilenames(csv_dir)) == 0
-    csvs.saveStakesCsv(S1, csv_dir, C1)
-    csvs.saveStakesCsv(S2, csv_dir, C2)
-    assert len(csvs.stakesCsvFilenames(csv_dir)) == 2
+    allcs = {1: S1, 2: S2}
 
-    target_S = {C1: S1, C2: S2}
-    loaded_S = csvs.loadStakesCsvs(csv_dir)
-    assert loaded_S == target_S
+    csvs.saveAllocationCsv(allcs, csv_dir)
+    allcs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allcs_loaded == allcs
 
 
 # =================================================================
@@ -80,16 +76,16 @@ def test_stakes_twochains(tmp_path):
 
 @enforce_types
 def test_chainIDforPoolvolsCsv():
-    assert csvs.chainIDforPoolvolsCsv("poolvols-chain101.csv") == 101
-    assert csvs.chainIDforPoolvolsCsv("path1/32/poolvols-chain92.csv") == 92
+    assert csvs.chainIDforNFTvolsCsv("poolvols-chain101.csv") == 101
+    assert csvs.chainIDforNFTvolsCsv("path1/32/poolvols-chain92.csv") == 92
 
 
 @enforce_types
 def test_poolvols_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
-    csvs.savePoolvolsCsv(V1, csv_dir, C1)
-    V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
+    csvs.saveNFTvolsCsv(V1, csv_dir, C1)
+    V1_loaded = csvs.loadNFTvolsCsv(csv_dir, C1)
     assert V1_loaded == V1
 
 
@@ -98,8 +94,8 @@ def test_poolvols_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
     V1_lowercase = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
-    csvs.savePoolvolsCsv(V1_mixedcase, csv_dir, C1)
-    V1_loaded = csvs.loadPoolvolsCsv(csv_dir, C1)
+    csvs.saveNFTvolsCsv(V1_mixedcase, csv_dir, C1)
+    V1_loaded = csvs.loadNFTvolsCsv(csv_dir, C1)
     assert V1_loaded == V1_lowercase
 
 
@@ -109,13 +105,13 @@ def test_poolvols_twochains(tmp_path):
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V2 = {OCN_ADDR: {PD: 4.1, PE: 5.1}, H2O_ADDR: {PF: 6.1}}
 
-    assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 0
-    csvs.savePoolvolsCsv(V1, csv_dir, C1)
-    csvs.savePoolvolsCsv(V2, csv_dir, C2)
-    assert len(csvs.poolvolsCsvFilenames(csv_dir)) == 2
+    assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 0
+    csvs.saveNFTvolsCsv(V1, csv_dir, C1)
+    csvs.saveNFTvolsCsv(V2, csv_dir, C2)
+    assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 2
 
     target_V = {C1: V1, C2: V2}
-    loaded_V = csvs.loadPoolvolsCsvs(csv_dir)
+    loaded_V = csvs.loadNFTvolsCsvs(csv_dir)
     assert loaded_V == target_V
 
 
@@ -175,71 +171,6 @@ def test_symbols(tmp_path):
     assert loaded_symbols_C1 == symbols_C1
     assert loaded_symbols_C2 == symbols_C2
     assert loaded_symbols == {C1: symbols_C1, C2: symbols_C2}
-
-
-# =================================================================
-# poolinfo csvs
-
-
-@enforce_types
-def test_poolinfo(
-    tmp_path, network_setup_and_teardown
-):  # pylint: disable=unused-argument
-    csv_dir = str(tmp_path)
-    accounts = brownie.network.accounts
-    nft1_addr, nft2_addr, nft3_addr = (
-        accounts[5].address,
-        accounts[6].address,
-        accounts[7].address,
-    )
-    P1 = [
-        SimplePool(PA, nft1_addr, "dt1_addr", "DT1_SYM", OCN_ADDR),
-        SimplePool(PB, nft2_addr, "dt2_addr", "DT2_SYM", H2O_ADDR),
-        SimplePool(PC, nft3_addr, "dt3_addr", "DT3_SYM", OCN_ADDR),
-    ]
-    S1 = {
-        OCN_ADDR: {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}},
-        H2O_ADDR: {PC: {LP1: 3.1, LP4: 3.4}},
-    }
-    V1 = {OCN_ADDR: {PA: 0.11, PB: 0.12}, H2O_ADDR: {PC: 3.1}}
-
-    rates = {OCN_SYMB: 0.66, H2O_SYMB: 1.618}
-    for symbol, rate in rates.items():
-        csvs.saveRateCsv(symbol, rate, csv_dir)
-
-    query._ADDR_TO_SYMBOL[
-        OCN_ADDR
-    ] = OCN_SYMB  # to make call to query.symbol(OCN_ADDR) happy
-    query._ADDR_TO_SYMBOL[H2O_ADDR] = H2O_SYMB  # .. H2O_ADDR ..
-
-    assert csvs.poolinfoCsvFilenames(csv_dir) == []
-
-    csvs.savePoolinfoCsv(P1, S1, V1, csv_dir, C1)
-
-    csv_file = csvs.poolinfoCsvFilename(csv_dir, C1)
-    assert csvs.poolinfoCsvFilenames(csv_dir) == [csv_file]
-
-    target_header = [
-        "chainID",
-        "basetoken_symbol",
-        "pool_addr",
-        "vol_amt",
-        "vol_amt_USD",
-        "stake_amt",
-        "stake_amt_USD",
-        "nft_addr",
-        "DT_addr",
-        "DT_symbol",
-        "basetoken_addr",
-        "did",
-        "url",
-    ]
-
-    data = pd.read_csv(csv_file)
-    header = list(data.columns)
-    assert header == target_header
-
-    # (skip fancier tests)
 
 
 # =================================================================
