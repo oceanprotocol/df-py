@@ -64,16 +64,21 @@ def test_getveBatchAllocation():
     nftaddr1 = accounts[0].address
     nftaddr2 = accounts[1].address
 
-    tx = veAllocate.setBatchAllocation([50,50], [nftaddr1,nftaddr2], [1,1], {"from": accounts[0]})
+    tx = veAllocate.setBatchAllocation(
+        [50, 50], [nftaddr1, nftaddr2], [1, 1], {"from": accounts[0]}
+    )
     assert veAllocate.getveAllocation(accounts[0], nftaddr1, 1) == 50
     assert veAllocate.getTotalAllocation(accounts[0]) == 100
+
 
 @enforce_types
 def test_batch_events():
     """Test emitted events."""
     nftaddr1 = accounts[1].address
     nftaddr2 = accounts[1].address
-    tx = veAllocate.setBatchAllocation([25,75], [nftaddr1,nftaddr2], [1,1], {"from": accounts[0]})
+    tx = veAllocate.setBatchAllocation(
+        [25, 75], [nftaddr1, nftaddr2], [1, 1], {"from": accounts[0]}
+    )
     assert tx.events["AllocationSet"][0].values() == [
         accounts[0].address,
         nftaddr1,
@@ -94,7 +99,10 @@ def test_batch_max_allocation():
     nftaddr1 = accounts[1].address
     nftaddr2 = accounts[2].address
     with brownie.reverts("Max Allocation"):
-        veAllocate.setBatchAllocation([3500,7500], [nftaddr1,nftaddr2], [1,1], {"from": accounts[0]})
+        veAllocate.setBatchAllocation(
+            [3500, 7500], [nftaddr1, nftaddr2], [1, 1], {"from": accounts[0]}
+        )
+
 
 @enforce_types
 def test_batch_reverts():
@@ -102,6 +110,10 @@ def test_batch_reverts():
     nftaddr1 = accounts[1].address
     nftaddr2 = accounts[2].address
     with brownie.reverts("Nft array size missmatch"):
-        veAllocate.setBatchAllocation([3500,7500], [nftaddr1,nftaddr2,nftaddr2], [1,1], {"from": accounts[0]})
+        veAllocate.setBatchAllocation(
+            [3500, 7500], [nftaddr1, nftaddr2, nftaddr2], [1, 1], {"from": accounts[0]}
+        )
     with brownie.reverts("Chain array size missmatch"):
-        veAllocate.setBatchAllocation([3500,7500], [nftaddr1,nftaddr2], [1], {"from": accounts[0]})
+        veAllocate.setBatchAllocation(
+            [3500, 7500], [nftaddr1, nftaddr2], [1], {"from": accounts[0]}
+        )
