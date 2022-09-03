@@ -56,3 +56,52 @@ def setup_function():
     global accounts, veAllocate
     accounts = brownie.network.accounts
     veAllocate = B.veAllocate.deploy({"from": accounts[0]})
+
+
+@enforce_types
+def test_getveBatchAllocation():
+    """getveAllocation should return the correct allocation."""
+    nftaddr1 = accounts[0].address
+    nftaddr2 = accounts[1].address
+
+    tx = veAllocate.setBatchAllocation([50,50], [nftaddr1,nftaddr2], [1,1], {"from": accounts[0]})
+    assert veAllocate.getveAllocation(accounts[0], nftaddr1, 1) == 50
+    assert veAllocate.getTotalAllocation(accounts[0]) == 100
+
+@enforce_types
+def test_batch_events():
+    """Test emitted events."""
+    nftaddr1 = accounts[1].address
+    nftaddr2 = accounts[1].address
+    tx = veAllocate.setBatchAllocation([25,75], [nftaddr1,nftaddr2], [1,1], {"from": accounts[0]})
+    assert tx.events["AllocationSet"][0].values() == [
+        accounts[0].address,
+        nftaddr1,
+        1,
+        25,
+    ]
+    assert tx.events["AllocationSet"][1].values() == [
+        accounts[0].address,
+        nftaddr2,
+        1,
+        75,
+    ]
+
+
+@enforce_types
+def test_batch_max_allocation():
+    """Cannot set allocation above max."""
+    nftaddr1 = accounts[1].address
+    nftaddr2 = accounts[2].address
+    with brownie.reverts("Max Allocation"):
+        veAllocate.setBatchAllocation([3500,7500], [nftaddr1,nftaddr2], [1,1], {"from": accounts[0]})
+
+@enforce_types
+def test_batch_reverts():
+    """Cannot have different lengths in arrays."""
+    nftaddr1 = accounts[1].address
+    nftaddr2 = accounts[2].address
+    with brownie.reverts("Nft array size missmatch"):
+        veAllocate.setBatchAllocation([3500,7500], [nftaddr1,nftaddr2,nftaddr2], [1,1], {"from": accounts[0]})
+    with brownie.reverts("Chain array size missmatch"):
+        veAllocate.setBatchAllocation([3500,7500], [nftaddr1,nftaddr2], [1], {"from": accounts[0]})
