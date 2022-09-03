@@ -5,7 +5,7 @@ pragma solidity ^0.8.12;
 
 contract veAllocate {
     mapping(address => mapping(address => mapping(uint256 => uint256)))
-         private veAllocation;
+        private veAllocation;
     mapping(address => uint256) private _totalAllocation;
 
     event AllocationSet(
