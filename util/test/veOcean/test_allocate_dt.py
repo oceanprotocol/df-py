@@ -79,17 +79,11 @@ def test_batch_events():
     tx = veAllocate.setBatchAllocation(
         [25, 75], [nftaddr1, nftaddr2], [1, 1], {"from": accounts[0]}
     )
-    assert tx.events["AllocationSet"][0].values() == [
+    assert tx.events["AllocationSetMultiple"].values() == [
         accounts[0].address,
-        nftaddr1,
-        1,
-        25,
-    ]
-    assert tx.events["AllocationSet"][1].values() == [
-        accounts[0].address,
-        nftaddr2,
-        1,
-        75,
+        [nftaddr1, nftaddr2],
+        [1, 1],
+        [25, 75],
     ]
 
 

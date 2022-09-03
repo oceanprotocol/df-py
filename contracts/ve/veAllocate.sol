@@ -5,14 +5,21 @@ pragma solidity ^0.8.12;
 
 contract veAllocate {
     mapping(address => mapping(address => mapping(uint256 => uint256)))
-         veAllocation;
-    mapping(address => uint256) _totalAllocation;
+         private veAllocation;
+    mapping(address => uint256) private _totalAllocation;
 
     event AllocationSet(
         address indexed sender,
         address indexed nft,
         uint256 indexed chainId,
         uint256 amount
+    );
+
+    event AllocationSetMultiple(
+        address indexed sender,
+        address[] nft,
+        uint256[] chainId,
+        uint256[] amount
     );
 
     function getveAllocation(
@@ -63,6 +70,6 @@ contract veAllocate {
             emit AllocationSet(msg.sender, nft[i], chainId[i], amount[i]);
         }
         require(_totalAllocation[msg.sender] <= 10000, "Max Allocation");
-        
+        emit AllocationSetMultiple(msg.sender, nft, chainId, amount);
     }
 }
