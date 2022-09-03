@@ -67,7 +67,6 @@ contract veAllocate {
                 amount[i] -
                 veAllocation[msg.sender][nft[i]][chainId[i]];
             veAllocation[msg.sender][nft[i]][chainId[i]] = amount[i];
-            emit AllocationSet(msg.sender, nft[i], chainId[i], amount[i]);
         }
         require(_totalAllocation[msg.sender] <= 10000, "Max Allocation");
         emit AllocationSetMultiple(msg.sender, nft, chainId, amount);
