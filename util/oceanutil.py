@@ -359,8 +359,11 @@ def increase_amount_ve_lock(amount: float, from_account):
     OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
     veOCEAN().increase_amount(amount, {"from": from_account})
 
-def get_ve_balance(account):
-    return veOCEAN().balanceOf(account, brownie.network.chain.time())
+def extend_ve_lock(unlock_time: int, from_account):
+    return veOCEAN().increase_unlock_time(unlock_time, {"from": from_account})
 
-def get_ve_lock_end(account):
-    return veOCEAN().locked__end(account)
+def get_ve_balance(from_account):
+    return veOCEAN().balanceOf(from_account, brownie.network.chain.time())
+
+def get_ve_lock_end(from_account):
+    return veOCEAN().locked__end(from_account)
