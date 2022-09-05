@@ -17,6 +17,7 @@ from util import (
     getrate,
     query,
 )
+from util import oceanutil
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
@@ -24,12 +25,20 @@ from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
     veAllocate,
+    create_ve_lock,
+    increase_amount_ve_lock,
+    get_ve_balance,
+    get_ve_lock_end
 )
 
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
 )
+
+# ve constants
+WEEK = 7 * 86400
+MAXTIME = 4 * 365 * 86400  # 4 years
 
 # ========================================================================
 HELP_MAIN = f"""Data Farming tool, for use by OPF.
@@ -64,9 +73,13 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool newtoken CHAINID - generate new token (for testing)
 
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+  dftool veLockOcean CHAINID amount weeks - Lock an amount of OCEAN into veOCEAN for a set number of weeks.
+  dftool veLockOceanIncreaseAmount CHAINID amount - Increase the amount of Ocean in existing veOCEAN lock.
+  dftool veOceanBalance CHAINID - Returns the total amount of veOCEAN.
 
+  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
+  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset.
+  
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
   dftool help - this message
@@ -762,6 +775,101 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 
 # ========================================================================
 @enforce_types
+def do_veLockOcean():
+    HELP = """Lock Ocean (for testing).
+    
+Usage: dftool veLockOcean CHAINID amount weeks
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "veLockOcean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    amount = float(sys.argv[3])
+    print(f"Arguments:\n amount={amount}")
+
+    weeks = int(sys.argv[4])
+    print(f"Arguments:\n weeks={weeks}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+        
+        # Lock ocean for a certain number of weeks
+        t2 = brownie.network.chain.time() + WEEK * weeks
+    
+        create_ve_lock(amount, t2, from_account)
+        veBalance = get_ve_balance(from_account)
+        print(f"veOCEAN balance: {veBalance}")
+
+
+# ========================================================================
+@enforce_types
+def do_veLockOceanIncreaseAmount():
+    HELP = """Increase the amount of Ocean inside a veLock (for testing).
+    
+Usage: dftool veLockOceanIncreaseAmount CHAINID amount
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "veLockOceanIncreaseAmount"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    amount = float(sys.argv[3])
+    print(f"Arguments:\n amount={amount}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+        
+        increase_amount_ve_lock(amount, from_account)
+        veBalance = get_ve_balance(from_account)
+        print(f"veOCEAN balance: {veBalance}")
+
+
+# ========================================================================
+@enforce_types
+def do_getVeOceanLockEnd():
+    HELP = """Get end time for veOcean lock (for testing).
+    
+Usage: dftool veOceanLockEnd CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "veOceanLockEnd"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+        
+        end_time = get_ve_lock_end(from_account)
+        print(f"veOCEAN lock end time: {end_time}")
+
+
+# ========================================================================
+@enforce_types
 def do_newVeAllocate():
     HELP = """Generate new veAllocate (for testing).
 
@@ -781,6 +889,32 @@ Usage: dftool newVeAllocate CHAINID
     from_account = _getPrivateAccount()
     contract = B.veAllocate.deploy({"from": from_account})
     print(f"veAllocate contract deployed at: {contract.address}")
+
+
+# ========================================================================
+@enforce_types
+def do_getVeOceanBalance():
+    HELP = """Get veOcean balance on a specific chain (for testing).
+    
+Usage: dftool veOceanBalance CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "veOceanBalance"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+        veBalance = get_ve_balance(from_account)
+        print(f"veOCEAN balance: {veBalance}")
 
 
 # ========================================================================
@@ -812,10 +946,9 @@ Usage: dftool veSetAllocation CHAINID amount exchangeId
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        veAllocate().setAllocation(amount, exchangeId, {"from": from_account})
-        allocation = veAllocate().getTotalAllocation(from_account, 100, 0)
-        votingPower = functools.reduce(lambda a, b: a + b, allocation[1])
-        print(f"veAllocate voting power is: {votingPower}")
+        veAllocate().setAllocation(amount, exchangeId, CHAINID, {"from": from_account})
+        allocation = veAllocate().getTotalAllocation(from_account)
+        print(f"amount allocated: {allocation}")
 
 
 # ========================================================================
@@ -974,11 +1107,19 @@ def do_main():
         do_newtoken()
     elif sys.argv[1] == "newVeOcean":
         do_newVeOcean()
+    elif sys.argv[1] == "veLockOcean":
+        do_veLockOcean()
+    elif sys.argv[1] == "veLockOceanIncreaseAmount":
+        do_veLockOceanIncreaseAmount()
+    elif sys.argv[1] == "veOceanBalance":
+        do_getVeOceanBalance()
+    elif sys.argv[1] == "veOceanLockEnd":
+        do_getVeOceanLockEnd()
     elif sys.argv[1] == "newVeAllocate":
         do_newVeAllocate()
     elif sys.argv[1] == "veSetAllocation":
         do_veSetAllocation()
-
+    
     # read actions
     elif sys.argv[1] == "acctinfo":
         do_acctinfo()
