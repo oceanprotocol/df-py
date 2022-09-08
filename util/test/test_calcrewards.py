@@ -577,6 +577,28 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 
 
 @enforce_types
+def test_divide_by_zero():
+    allocations = {C1: {PA: {LP1: 1e6}, PB: {LP2: 1e6}}}
+    vebals = {LP1: 1.0, LP2: 1.0}
+    nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
+
+    rewards_avail_OCEAN = 10000.0
+    rewardsperlp, _ = calcRewards(
+        allocations,
+        vebals,
+        nftvols,
+        APPROVED_TOKEN_ADDRS,
+        SYMBOLS,
+        RATES,
+        rewards_avail_OCEAN,
+        "OCEAN",
+    )
+
+    # Should return empty dict because LP1 and LP2 have zero volume
+    assert rewardsperlp == {}
+
+
+@enforce_types
 def test_alloc_vebal_mismatch():
     # LP2 has allocation but has no ve balance
     # LP1 has ve balance but no allocation

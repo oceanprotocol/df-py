@@ -157,11 +157,18 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
             for j in range(N_j):
                 RF[c, i, j] = S_USD[c, i, j] * P_USD[c, j]  # main formula!
 
+    if numpy.sum(RF) == 0.0:
+        return numpy.zeros((N_c, N_i, N_j), dtype=float)
+
     # normalize values
     RF_norm = RF / numpy.sum(RF)
 
     # filter negligible values (<0.00001% of total RF), then re-normalize
     RF_norm[RF_norm < 0.000001] = 0.0
+
+    if numpy.sum(RF_norm) == 0.0:
+        return numpy.zeros((N_c, N_i, N_j), dtype=float)
+
     RF_norm = RF_norm / numpy.sum(RF_norm)
 
     # reward in USD
