@@ -36,6 +36,13 @@ def calcRewards(
       rewardsperlp -- dict of [chainID][LP_addr] : TOKEN_float -- reward per chain/LP
       rewardsinfo -- dict of [chainID][nft_addr][LP_addr] : TOKEN_float -- reward per chain/LP
     """
+
+    if len(allocations) == 0:
+        raise ValueError("No allocations provided")
+
+    if len(veBalances) == 0:
+        raise ValueError("No veBalances provided")
+
     (allocations, nftvols, rates) = cleancase.modTuple(allocations, nftvols, rates)
     (allocations, nftvols) = approvedfilter.modTuple(
         approved_token_addrs, allocations, nftvols
