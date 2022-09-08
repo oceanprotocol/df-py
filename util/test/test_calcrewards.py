@@ -599,3 +599,29 @@ def test_no_vebals():
 
     assert str(err.value) == "No veBalances provided"
 
+
+@enforce_types
+def test_no_allocations():
+    # LP2 has allocation but has no ve balance
+    # LP1 has ve balance but no allocation
+    # calcRewards should return an empty dict
+    allocations = {}
+    vebals = {
+        LP1: 1.0,
+    }
+    nftvols = {C1: {OCN_ADDR: {LP1: 1.0, LP2: 1.0}}}
+
+    # should raise valueError "no allocations"
+    with pytest.raises(ValueError) as err:
+        err = calcRewards(
+            allocations,
+            vebals,
+            nftvols,
+            APPROVED_TOKEN_ADDRS,
+            SYMBOLS,
+            RATES,
+            10000.0,
+            "OCEAN",
+        )
+
+    assert str(err.value) == "No allocations provided"
