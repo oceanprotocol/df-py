@@ -574,3 +574,25 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     # LP2 reward swamps LP1 because LP2's stake * DCV is way higher; it's *not* bounded by low stake
     assert rewardsperlp[C1] == {LP1: 1.0, LP2: 9999.0}
     assert rewardsinfo[C1] == {PA: {LP1: 1.0}, PB: {LP2: 9999.0}}
+
+
+@enforce_types
+def test_divide_by_zero():
+    allocations = {C1: {PA: {LP1: 1e6}, PB: {LP2: 1e6}}}
+    vebals = {LP1: 1.0, LP2: 1.0}
+    nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
+
+    rewards_avail_OCEAN = 10000.0
+    rewardsperlp, _ = calcRewards(
+        allocations,
+        vebals,
+        nftvols,
+        APPROVED_TOKEN_ADDRS,
+        SYMBOLS,
+        RATES,
+        rewards_avail_OCEAN,
+        "OCEAN",
+    )
+
+    # Should return empty dict because LP1 and LP2 have zero volume
+    assert rewardsperlp == {}
