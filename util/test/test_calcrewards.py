@@ -574,3 +574,28 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     # LP2 reward swamps LP1 because LP2's stake * DCV is way higher; it's *not* bounded by low stake
     assert rewardsperlp[C1] == {LP1: 1.0, LP2: 9999.0}
     assert rewardsinfo[C1] == {PA: {LP1: 1.0}, PB: {LP2: 9999.0}}
+
+
+@enforce_types
+def test_no_vebals():
+    # LP2 has allocation, no ve balances
+    # LP1 has ve balance but no allocation
+    # calcRewards should return an empty dict
+    allocations = {C1: {PB: {LP2: 1e6}}}
+    vebals = {}
+    nftvols = {C1: {OCN_ADDR: {LP1: 1.0, LP2: 1.0}}}
+
+    with pytest.raises(ValueError) as err:
+        calcRewards(
+            allocations,
+            vebals,
+            nftvols,
+            APPROVED_TOKEN_ADDRS,
+            SYMBOLS,
+            RATES,
+            10000.0,
+            "OCEAN",
+        )
+
+    assert str(err.value) == "No veBalances provided"
+
