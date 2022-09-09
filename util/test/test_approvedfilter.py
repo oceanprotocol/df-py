@@ -45,41 +45,41 @@ def test_allocations_main():
 
 
 @enforce_types
-def test_poolvols_fail_cleancase():
-    poolvols_bad = {
-        1: {"0xoCeAn": {"0xpOolA": 1.0, "0xPOOLB": 2.0}},
-        2: {"0xocean2": {"0xPOOLD": 4.0}},
+def test_nftvols_fail_cleancase():
+    nftvols_bad = {
+        1: {"0xoCeAn": {"0xnFtA": 1.0, "0xNFTB": 2.0}},
+        2: {"0xocean2": {"0xNFTD": 4.0}},
     }
-    poolvols_clean = {
-        1: {"0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0}},
-        2: {"0xocean2": {"0xpoold": 4.0}},
+    nftvols_clean = {
+        1: {"0xocean": {"0xnfta": 1.0, "0xnftb": 2.0}},
+        2: {"0xocean2": {"0xnftd": 4.0}},
     }
 
     with pytest.raises(AssertionError):
-        approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols_bad)
+        approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, nftvols_bad)
 
-    approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols_clean)
+    approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, nftvols_clean)
 
 
 @enforce_types
-def test_poolvols_main():
-    poolvols = {
+def test_nftvols_main():
+    nftvols = {
         1: {
-            "0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0},
-            "0xh2o": {"0xpoolc": 3.0},
-            "0xfoo": {"0xpoold": 4.0},  # it should filter this
+            "0xocean": {"0xnfta": 1.0, "0xnftb": 2.0},
+            "0xh2o": {"0xnftc": 3.0},
+            "0xfoo": {"0xnftd": 4.0},  # it should filter this
         },
-        2: {"0xocean2": {"0xpoole": 5.0}},
+        2: {"0xocean2": {"0xnfte": 5.0}},
     }
-    target_poolvols = {
+    target_nftvols = {
         1: {
-            "0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0},
-            "0xh2o": {"0xpoolc": 3.0},
+            "0xocean": {"0xnfta": 1.0, "0xnftb": 2.0},
+            "0xh2o": {"0xnftc": 3.0},
         },
-        2: {"0xocean2": {"0xpoole": 5.0}},
+        2: {"0xocean2": {"0xnfte": 5.0}},
     }
-    cleancase.assertNFTvols(target_poolvols)
+    cleancase.assertNFTvols(target_nftvols)
 
-    mod_poolvols = approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, poolvols)
-    approvedfilter.assertPoolvols(APPROVED_TOKEN_ADDRS, mod_poolvols)
-    assert mod_poolvols == target_poolvols
+    mod_nftvols = approvedfilter.modNFTvols(APPROVED_TOKEN_ADDRS, nftvols)
+    approvedfilter.assertNFTvols(APPROVED_TOKEN_ADDRS, mod_nftvols)
+    assert mod_nftvols == target_nftvols

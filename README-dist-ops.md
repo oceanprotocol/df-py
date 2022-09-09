@@ -52,7 +52,7 @@ export now=`date '+%Y-%m-%d'`
 dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
 dftool getrate H2O $date $now mydata
 
-dftool query $date $now 50 mydata 137 #output approved-137.csv, poolvols-137.csv, stakes-chain137.csv
+dftool query $date $now 50 mydata 137 #output approved-137.csv, nftvols-137.csv, stakes-chain137.csv
 dftool query $date $now 50 mydata 246
 dftool query $date $now 50 mydata 1
 dftool query $date $now 50 mydata 56

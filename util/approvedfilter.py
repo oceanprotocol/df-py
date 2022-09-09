@@ -26,22 +26,22 @@ def modAllocations(allocations: dict) -> dict:
 
 @enforce_types
 def assertAllocations(allocations: dict):
-    """stakes - dict of [chainID][basetoken_address][pool_addr][LP_addr] : stake"""
+    """stakes - dict of [chainID][basetoken_address][NFT_addr][LP_addr] : stake"""
     cleancase.assertAllocations(allocations)
 
 
 @enforce_types
-def modNFTvols(approved_token_addrs: dict, poolvols: dict) -> dict:
-    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
-    cleancase.assertNFTvols(poolvols)
-    return _modD(approved_token_addrs, poolvols)
+def modNFTvols(approved_token_addrs: dict, nftvols: dict) -> dict:
+    """nftvols - dict of [chainID][basetoken_address][NFT_addr] : vol"""
+    cleancase.assertNFTvols(nftvols)
+    return _modD(approved_token_addrs, nftvols)
 
 
 @enforce_types
-def assertPoolvols(approved_token_addrs: dict, poolvols: dict):
-    """poolvols - dict of [chainID][basetoken_address][pool_addr] : vol"""
-    cleancase.assertNFTvols(poolvols)
-    return _assertD(approved_token_addrs, poolvols)
+def assertNFTvols(approved_token_addrs: dict, nftvols: dict):
+    """nftvols - dict of [chainID][basetoken_address][NFT_addr] : vol"""
+    cleancase.assertNFTvols(nftvols)
+    return _assertD(approved_token_addrs, nftvols)
 
 
 @enforce_types

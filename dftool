@@ -46,13 +46,13 @@ Then LP steps:
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (pools, stakes, vols, approved)
-  dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (pools, stakes, .., rates), calc rewards
+  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (nfts, stakes, vols, approved)
+  dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many random tokens & pools then consume (for testing)
+  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
 
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -607,7 +607,7 @@ Usage: dftool compile
 @enforce_types
 def do_manyrandom():
     # UPADATE THIS
-    HELP = f"""Deploy many random tokens & pools then consume (for testing)
+    HELP = f"""Deploy many random tokens & nfts then consume (for testing)
 
 Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
@@ -642,9 +642,10 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     # main work
     recordDeployedContracts(ADDRESS_FILE)
     oceantestutil.fillAccountsWithOCEAN()
-    num_pools = 10  # magic number
+    num_nfts = 10  # magic number
+    # This fn was deprecated, replace.
     # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
-    print(f"dftool manyrandom: Done. {num_pools} new pools created.")
+    print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
 
 
 # ========================================================================

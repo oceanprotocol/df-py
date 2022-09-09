@@ -53,7 +53,7 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
       Load allocation csv; return result as a single dict
 
     @return
-      allocation -- dict of [chainID][basetoken_addr][pool_addr][LP_addr] : stake_amt
+      allocation -- dict of [chainID][basetoken_addr][nft_addr][LP_addr] : stake_amt
     """
     csv_file = allocationCsvFilename(csv_dir)
     V: Dict[int, Dict[str, Dict[str, float]]] = {}
@@ -235,30 +235,30 @@ def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
 def loadNFTvolsCsvs(csv_dir: str):
     """
     @description
-      Load all poolvols csvs (across all chains); return result as single dict
+      Load all nftvols csvs (across all chains); return result as single dict
 
     @return
-      poolvols -- dict of [chainID][basetoken_addr][nft_addr] : vol_amt
+      nftvols -- dict of [chainID][basetoken_addr][nft_addr] : vol_amt
     """
     csv_files = nftvolsCsvFilenames(csv_dir)
-    poolvols = {}
+    nftvols = {}
     for csv_file in csv_files:
         chainID = chainIDforNFTvolsCsv(csv_file)
-        poolvols[chainID] = loadNFTvolsCsv(csv_dir, chainID)
-    return poolvols
+        nftvols[chainID] = loadNFTvolsCsv(csv_dir, chainID)
+    return nftvols
 
 
 @enforce_types
 def loadNFTvolsCsv(csv_dir: str, chainID: int):
     """
     @description
-      Load poolvols for this chainID
+      Load nftvols for this chainID
 
     @return
-      poolvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
     """
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
-    V: Dict[str, Dict[str, float]] = {}  # ie poolvols_at_chain
+    V: Dict[str, Dict[str, float]] = {}  # ie nftvols_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -286,19 +286,19 @@ def loadNFTvolsCsv(csv_dir: str, chainID: int):
 
 @enforce_types
 def nftvolsCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of poolvols filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "poolvols*.csv"))
+    """Returns a list of nftvols filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "nftvols*.csv"))
 
 
 @enforce_types
 def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the poolvols filename for a given chainID"""
-    return os.path.join(csv_dir, f"poolvols-{chainID}.csv")
+    """Returns the nftvols filename for a given chainID"""
+    return os.path.join(csv_dir, f"nftvols-{chainID}.csv")
 
 
 @enforce_types
 def chainIDforNFTvolsCsv(filename) -> int:
-    """Returns chainID for a given poolvols csv filename"""
+    """Returns chainID for a given nftvols csv filename"""
     return _lastInt(filename)
 
 
@@ -654,7 +654,7 @@ def saveRewardsinfoCsv(
       so it can have lots of columns, whatever's interesting for the user.
 
     @arguments
-      rewards -- dict of [chainID][pool_addr][LP_addr] : value (float, *not* base 18)
+      rewards -- dict of [chainID][nft_addr][LP_addr] : value (float, *not* base 18)
       ..
     """
     token_symbol = token_symbol.upper()
@@ -663,18 +663,18 @@ def saveRewardsinfoCsv(
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
 
-        header = ["chainID", "pool_addr", "LP_addr", "amt", "token"]
+        header = ["chainID", "nft_addr", "LP_addr", "amt", "token"]
         writer.writerow(header)
 
         for chainID, innerdict in rewards.items():
             for LP_addr, innerdict2 in innerdict.items():
                 assertIsEthAddr(LP_addr)
-                for pool_addr, value in innerdict2.items():
-                    assertIsEthAddr(pool_addr)
+                for nft_addr, value in innerdict2.items():
+                    assertIsEthAddr(nft_addr)
                     row = [
                         chainID,
                         LP_addr.lower(),
-                        pool_addr.lower(),
+                        nft_addr.lower(),
                         value,
                         token_symbol,
                     ]
