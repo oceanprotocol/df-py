@@ -107,8 +107,10 @@ def test_alice_locks_tokens_exact():
 
     OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
     fee_distributor.checkpoint_token()
+    fee_distributor.checkpoint_total_supply()
     chain.sleep(WEEK)
     fee_distributor.checkpoint_token()
+    fee_distributor.checkpoint_total_supply()
 
     alice_before = OCEAN.balanceOf(alice)
     estimate = fee_estimate.estimateClaim(alice)
@@ -158,8 +160,10 @@ def test_alice_claims_after_lock_ends():
 
     OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
     fee_distributor.checkpoint_token()
+    fee_distributor.checkpoint_total_supply()
     chain.sleep(WEEK)
     fee_distributor.checkpoint_token()
+    fee_distributor.checkpoint_total_supply()
     chain.sleep(WEEK * 5)
     veOCEAN.withdraw({"from": alice})
 

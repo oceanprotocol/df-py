@@ -143,7 +143,10 @@ def estimateClaim(addr: address) -> uint256:
             if balance_of == 0 and user_epoch > max_user_epoch:
                 break
             if balance_of > 0:
-                to_distribute += balance_of * FeeDistributor(self.fee_distributor).tokens_per_week(week_cursor) / FeeDistributor(self.fee_distributor).ve_supply(week_cursor)
+                tokens_per_week: uint256 = FeeDistributor(self.fee_distributor).tokens_per_week(week_cursor)
+                ve_supply: uint256 = FeeDistributor(self.fee_distributor).ve_supply(week_cursor)
+                if ve_supply !=0 and tokens_per_week !=0:
+                   to_distribute += balance_of *  tokens_per_week/ ve_supply
 
             week_cursor += WEEK
 
