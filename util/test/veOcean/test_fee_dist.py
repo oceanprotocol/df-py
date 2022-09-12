@@ -32,6 +32,13 @@ def test_alice_locks_tokens_after():
             "from": accounts[0],
         },
     )
+    fee_estimate = B.FeeEstimate.deploy(
+        veOCEAN.address,
+        fee_distributor.address,
+        {
+            "from": accounts[0],
+        },
+    )
     t0 = chain.time()
     t1 = t0 + WEEK * 10
 
@@ -55,9 +62,11 @@ def test_alice_locks_tokens_after():
     chain.mine()
 
     before_f = OCEAN.balanceOf(fee_distributor)
+    estimate = fee_estimate.estimateClaim(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
     after_f = OCEAN.balanceOf(fee_distributor)
     assert abs(after_f - before_f) < toBase18(0.01)
+    assert abs(after_f - before_f) == estimate
 
 
 @enforce_types
@@ -88,6 +97,13 @@ def test_alice_locks_tokens_exact():
             "from": accounts[0],
         },
     )
+    fee_estimate = B.FeeEstimate.deploy(
+        veOCEAN.address,
+        fee_distributor.address,
+        {
+            "from": accounts[0],
+        },
+    )
 
     OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
     fee_distributor.checkpoint_token()
@@ -95,11 +111,13 @@ def test_alice_locks_tokens_exact():
     fee_distributor.checkpoint_token()
 
     alice_before = OCEAN.balanceOf(alice)
+    estimate = fee_estimate.estimateClaim(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
     alice_after = OCEAN.balanceOf(alice)
 
     assert (alice_before - TA) < 10
     assert alice_after > alice_before
+    assert (alice_after - alice_before) == estimate
 
 
 @enforce_types
@@ -130,6 +148,13 @@ def test_alice_claims_after_lock_ends():
             "from": accounts[0],
         },
     )
+    fee_estimate = B.FeeEstimate.deploy(
+        veOCEAN.address,
+        fee_distributor.address,
+        {
+            "from": accounts[0],
+        },
+    )
 
     OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
     fee_distributor.checkpoint_token()
@@ -140,12 +165,14 @@ def test_alice_claims_after_lock_ends():
 
     before = OCEAN.balanceOf(fee_distributor)
     alice_balance_ocean_before = OCEAN.balanceOf(alice)
+    estimate = fee_estimate.estimateClaim(alice)
     fee_distributor.claim({"from": alice})  # alice claims rewards
     alice_balance_ocean_after = OCEAN.balanceOf(alice)
 
     assert (before - TA) < 10
     assert alice_balance_ocean_after > alice_balance_ocean_before
     assert abs(alice_balance_ocean_after - TA * 2) < 10
+    assert (alice_balance_ocean_after - alice_balance_ocean_before) == estimate
 
 
 @enforce_types
