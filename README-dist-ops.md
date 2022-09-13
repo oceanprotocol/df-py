@@ -1,5 +1,10 @@
 # Rewards Distribution Ops
 
+- [Active Rewards](#active-rewards)
+- [Passive Rewards](#passive-rewards)
+
+## Active Rewards
+
 Outline:
 - Step 0: Set envvars
 - Step 1, 2, 3: Run getrate, query, calc
@@ -171,3 +176,7 @@ Share to community:
 - Share link to tweet in [TG DataFarm](https://t.me/Farm_Ocean)
 - Elsewhere?
 
+## Passive Rewards
+Send the rewards to the fee distributor contract, then call the following functions:
+- `fee_distributor.checkpoint_token()`
+- `fee_distributor.checkpoint_total_supply()`
