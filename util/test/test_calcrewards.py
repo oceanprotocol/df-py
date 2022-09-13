@@ -596,3 +596,80 @@ def test_divide_by_zero():
 
     # Should return empty dict because LP1 and LP2 have zero volume
     assert rewardsperlp == {}
+
+
+@enforce_types
+def test_alloc_vebal_mismatch():
+    # LP2 has allocation but has no ve balance
+    # LP1 has ve balance but no allocation
+    # calcRewards should return an empty dict
+    allocations = {C1: {PB: {LP2: 1e6}}}
+    vebals = {
+        LP1: 1.0,
+    }
+    nftvols = {C1: {OCN_ADDR: {LP1: 1.0, LP2: 1.0}}}
+
+    rewards_avail_OCEAN = 10000.0
+    rewardsperlp, _ = calcRewards(
+        allocations,
+        vebals,
+        nftvols,
+        APPROVED_TOKEN_ADDRS,
+        SYMBOLS,
+        RATES,
+        rewards_avail_OCEAN,
+        "OCEAN",
+    )
+
+    assert rewardsperlp == {}
+
+
+@enforce_types
+def test_no_vebals():
+    # LP2 has allocation, no ve balances
+    # LP1 has ve balance but no allocation
+    # calcRewards should return an empty dict
+    allocations = {C1: {PB: {LP2: 1e6}}}
+    vebals = {}
+    nftvols = {C1: {OCN_ADDR: {LP1: 1.0, LP2: 1.0}}}
+
+    with pytest.raises(ValueError) as err:
+        calcRewards(
+            allocations,
+            vebals,
+            nftvols,
+            APPROVED_TOKEN_ADDRS,
+            SYMBOLS,
+            RATES,
+            10000.0,
+            "OCEAN",
+        )
+
+    assert str(err.value) == "No veBalances provided"
+
+
+@enforce_types
+def test_no_allocations():
+    # LP2 has allocation but has no ve balance
+    # LP1 has ve balance but no allocation
+    # calcRewards should return an empty dict
+    allocations = {}
+    vebals = {
+        LP1: 1.0,
+    }
+    nftvols = {C1: {OCN_ADDR: {LP1: 1.0, LP2: 1.0}}}
+
+    # should raise valueError "no allocations"
+    with pytest.raises(ValueError) as err:
+        err = calcRewards(
+            allocations,
+            vebals,
+            nftvols,
+            APPROVED_TOKEN_ADDRS,
+            SYMBOLS,
+            RATES,
+            10000.0,
+            "OCEAN",
+        )
+
+    assert str(err.value) == "No allocations provided"
