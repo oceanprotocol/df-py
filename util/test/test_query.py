@@ -212,7 +212,7 @@ def test_aquarius_asset_names():
 
 
 @enforce_types
-def test_filter_out_non_market_assets():
+def test_filter_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
         "0xfd97064e1038810c84faeb951097a1e2c8829ae0",
