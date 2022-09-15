@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 
 from util import oceanutil
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
+from util.constants import AQUARIUS_BASE_URL, BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.graphutil import submitQuery
 from util.tok import TokSet
 
@@ -422,3 +422,34 @@ def symbol(addr: str):
         _symbol = _symbol.upper()  # follow lower-upper rules
         _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]
+
+
+@enforce_types
+def getAquariusAssetNames(
+    didList: List[str],
+) -> Dict[str, str]:
+    """
+    @description
+      Return mapping of did -> asset name
+
+    @params
+      didList -- array of dids
+
+    @return
+      did_to_asset_name -- dict of [did] : asset_name
+    """
+
+    # make a post request to Aquarius
+    url = f"{AQUARIUS_BASE_URL}/api/aquarius/assets/names"
+
+    # Aquarius expects "didList": ["did:op:...", ...]
+    payload = json.dumps({"didList": didList})
+    headers = {"Content-Type": "application/json"}
+
+    # send request
+    response = requests.request("POST", url, headers=headers, data=payload)
+
+    # parse response
+    did_to_asset_name = json.loads(response.text)
+
+    return did_to_asset_name
