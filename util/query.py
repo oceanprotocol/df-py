@@ -5,7 +5,7 @@ import requests
 import brownie
 from enforce_typing import enforce_types
 
-from util import oceanutil
+from util import networkutil, oceanutil
 from util.blockrange import BlockRange
 from util.constants import AQUARIUS_BASE_URL, BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.graphutil import submitQuery
@@ -52,6 +52,11 @@ def query_all(
     """
     Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
     Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
+
+    if chainID != networkutil.DEV_CHAINID:
+        # filter out assets that are not on the market when not on dev chain
+        Vi = _filterOutNonMarketAssets(Vi, chainID)
+
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
