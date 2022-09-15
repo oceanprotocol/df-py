@@ -346,7 +346,11 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
             if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
-                filtered_nfts[basetoken_addr] = nftvols[basetoken_addr]
+                if basetoken_addr not in filtered_nfts:
+                    filtered_nfts[basetoken_addr] = {}
+                filtered_nfts[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
+                    nft_addr
+                ]
     return filtered_nfts
 
 
