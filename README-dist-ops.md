@@ -177,6 +177,15 @@ Share to community:
 - Elsewhere?
 
 ## Passive Rewards
+Note, only the admin can call FeeDistributor.vy so to test/verify this is working in local network, please use barge.
+
+#### Local Testnet - Use Barge
+Launch barge
+Test the flow
+
+#### Rinkeby, Mainnet and otherwise
+Only admin can call FeeDistributor.vy
+
 Send the rewards to the fee distributor contract, then call the following functions:
 - `fee_distributor.checkpoint_token()`
 - `fee_distributor.checkpoint_total_supply()`
