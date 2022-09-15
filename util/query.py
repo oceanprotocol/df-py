@@ -56,7 +56,7 @@ def query_all(
     if chainID != networkutil.DEV_CHAINID:
         # when not on dev chain:
         # filter out assets that are not on the market
-        Vi = _filterOutNonMarketAssets(Vi, chainID)
+        Vi = _filterToAquariusAssets(Vi, chainID)
 
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
@@ -355,7 +355,7 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
 
 
 @enforce_types
-def _filterOutNonMarketAssets(nftvols: dict, chainID: int) -> dict:
+def _filterToAquariusAssets(nftvols: dict, chainID: int) -> dict:
     """
     @description
       Return nfts that belong to the Ocean marketplace
