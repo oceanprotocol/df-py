@@ -367,13 +367,13 @@ def _filterToAquariusAssets(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     filtered_nfts: Dict[str, Dict[str, float]] = {}
-    didList = []
+    nft_dids = []
 
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
-            didList.append(oceanutil.calcDID(nft_addr, chainID))
+            nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
 
-    aquariusAssetNames = aquarius_asset_names(didList)
+    aquariusAssetNames = aquarius_asset_names(nft_dids)
 
     # Aquarius returns "" as the name for assets that aren't in the marketplace
     for basetoken_addr in nftvols:
