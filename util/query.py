@@ -484,6 +484,9 @@ def aquarius_asset_names(
       did_to_asset_name -- dict of [did] : asset_name
     """
 
+    # Remove duplicates
+    nft_dids = list(set(nft_dids))
+
     # make a post request to Aquarius
     url = f"{AQUARIUS_BASE_URL}/api/aquarius/assets/names"
 
