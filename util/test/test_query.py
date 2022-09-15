@@ -211,6 +211,37 @@ def test_aquarius_asset_names():
 
 
 @enforce_types
+def test_filter_out_non_market_assets():
+    oceanAddr = oceanutil.OCEAN_address()
+    nftaddrs = [
+        "0xfd97064e1038810c84faeb951097a1e2c8829ae0",
+        "0xa550f42e80bc8a1d17e04223c4d21d650b227197",
+        "0x2b4895e46970d3a2cae203d496d7b9905f707684",
+        oceanAddr,  # invalid, should filter out this one
+    ]
+
+    # I've gathered these addresses from rinkeby
+    chainID = 4
+
+    # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
+    nftvols = {}
+    nftvols[oceanAddr] = {}
+    for nftaddr in nftaddrs:
+        nftvols[oceanAddr][nftaddr] = 1.0
+
+    # filter out non-market assets
+    nftvols_filtered = query._filterOutNonMarketAssets(nftvols, chainID)
+    assert len(nftvols_filtered) == 1
+    assert len(nftvols_filtered[oceanAddr]) == 3
+
+    # match the addresses
+    assert nftaddrs[0] in nftvols_filtered[oceanAddr]
+    assert nftaddrs[1] in nftvols_filtered[oceanAddr]
+    assert nftaddrs[2] in nftvols_filtered[oceanAddr]
+    assert nftaddrs[3] not in nftvols_filtered[oceanAddr]
+
+
+@enforce_types
 def setup_function():
     global OCEAN_ADDR
 
