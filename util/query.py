@@ -327,7 +327,7 @@ def getNFTVolumes(
 def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
     """
     @description
-      Return pools that aren't in purgatory
+      Return nfts that aren't in purgatory
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
@@ -336,6 +336,13 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     bad_dids = _didsInPurgatory()
+    filtered_nfts = {}
+    for basetoken_addr in nftvols:
+        for nft_addr in nftvols[basetoken_addr]:
+            if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
+                filtered_nfts[basetoken_addr] = nftvols[basetoken_addr]
+    return filtered_nfts
+
     filtered_pools = {}
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
