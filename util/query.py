@@ -483,14 +483,32 @@ def getAquariusAssetNames(
     # make a post request to Aquarius
     url = f"{AQUARIUS_BASE_URL}/api/aquarius/assets/names"
 
-    # Aquarius expects "didList": ["did:op:...", ...]
-    payload = json.dumps({"didList": didList})
     headers = {"Content-Type": "application/json"}
 
-    # send request
-    response = requests.request("POST", url, headers=headers, data=payload)
+    did_to_asset_name = {}
+
+    BATCH_SIZE = 5000
+    RETRY_ATTEMPTS = 3
+
+    error_counter = 0
+    # Send in 5k chunks
+    for i in range(0, len(didList), BATCH_SIZE):
+        # Aquarius expects "didList": ["did:op:...", ...]
+        payload = json.dumps({"didList": didList[i : i + BATCH_SIZE]})
+
+        try:
+            resp = requests.post(url, data=payload, headers=headers)
+            data = json.loads(resp.text)
+            did_to_asset_name.update(data)
+        except Exception as e:
+            error_counter += 1
+            i -= BATCH_SIZE
+            if error_counter > RETRY_ATTEMPTS:
+                raise Exception(
+                    f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
+                )
+        error_counter = 0
 
     # parse response
-    did_to_asset_name = json.loads(response.text)
 
     return did_to_asset_name
