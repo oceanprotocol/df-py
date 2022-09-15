@@ -341,7 +341,7 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     bad_dids = _didsInPurgatory()
-    filtered_nfts = {}
+    filtered_nfts: Dict[str, Dict[str, float]] = {}
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
             if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
@@ -361,7 +361,7 @@ def _filterOutNonMarketAssets(nftvols: dict, chainID: int) -> dict:
     @return
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
-    filtered_nfts = {}
+    filtered_nfts: Dict[str, Dict[str, float]] = {}
     didList = []
 
     for basetoken_addr in nftvols:
