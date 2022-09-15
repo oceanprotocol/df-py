@@ -194,6 +194,23 @@ def test_symbol():
 
 
 @enforce_types
+def test_aquarius_asset_names():
+    # test that we can get the asset names from aquarius
+    didList = [
+        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
+        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
+        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",  # invalid, should return ""
+    ]
+    expectedAssetNames = ["Trent", "c2d fresh dataset", "CryptoPunks dataset C2D", ""]
+    assetNames = query.getAquariusAssetNames(didList)
+    assert len(assetNames) == 4
+
+    for i in range(4):
+        assert assetNames[didList[i]] == expectedAssetNames[i]
+
+
+@enforce_types
 def setup_function():
     global OCEAN_ADDR
 
