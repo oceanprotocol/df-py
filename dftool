@@ -22,6 +22,7 @@ from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
 from util.oceanutil import (
+    veFeeDistributor,
     recordDeployedContracts,
     OCEANtoken,
     veAllocate,
@@ -457,6 +458,48 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     )
 
     print("dftool dispense: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_dispense_passive_rewards():
+    HELP = f"""Transfer funds to veFeeDistributor contract and kick it off.
+
+Usage: dftool dispensepassive CHAINID [AMOUNT]
+  CHAINID -- veFeeDistributor contract's network.
+  AMOUNT -- amount to transfer and distribute
+
+Transactions are signed with envvar 'DFTOOL_KEY`.
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "dispensepassive"
+    CHAINID = int(sys.argv[2])
+    AMOUNT = int(sys.argv[3])
+
+    print(
+        f"Arguments: CHAINID={CHAINID}"
+        f", AMOUNT={AMOUNT}"
+    )
+    assert AMOUNT is not None
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    # main work
+    networkutil.connect(CHAINID)
+    from_account = _getPrivateAccount()
+    recordDeployedContracts(ADDRESS_FILE)
+
+    if AMOUNT > 0 :
+        OCEANtoken().transfer(veFeeDistributor().address, AMOUNT, {"from": from_account})
+    veFeeDistributor().checkpoint_token()
+    veFeeDistributor().checkpoint_total_supply()
+
+    print("dftool dispensepassive: Done")
 
 
 # ========================================================================
@@ -1121,7 +1164,8 @@ def do_main():
         do_calc()
     elif sys.argv[1] == "dispense":
         do_dispense()
-
+    elif sys.argv[1] == "dispensepassive":
+        do_dispense_passive_rewards()
     elif sys.argv[1] == "querymany":
         do_querymany()
     elif sys.argv[1] == "compile":

@@ -50,6 +50,7 @@ def recordDeployedContracts(address_file: str):
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
     C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
     C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
+    C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
 
     CONTRACTS[chainID] = C
 
@@ -88,6 +89,10 @@ def veOCEAN():
 
 def veAllocate():
     return _contracts("veAllocate")
+
+
+def veFeeDistributor():
+    return _contracts("veFeeDistributor")
 
 
 def FixedPrice():
