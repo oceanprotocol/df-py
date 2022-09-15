@@ -54,7 +54,8 @@ def query_all(
     Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
 
     if chainID != networkutil.DEV_CHAINID:
-        # filter out assets that are not on the market when not on dev chain
+        # when not on dev chain:
+        # filter out assets that are not on the market
         Vi = _filterOutNonMarketAssets(Vi, chainID)
 
     ASETi: TokSet = getApprovedTokens(chainID)
