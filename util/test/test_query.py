@@ -243,6 +243,24 @@ def test_filter_out_non_market_assets():
 
 
 @enforce_types
+def test_filter_out_purgatory():
+    oceanAddr = oceanutil.OCEAN_address()
+    goodNft = "0xbff8242de628cd45173b71022648617968bd0962"
+    badNft = "0x03894e05af1257714d1e06a01452d157e3a82202"
+
+    nftvols = {}
+    nftvols[oceanAddr] = {}
+    nftvols[oceanAddr][goodNft] = 1.0
+    nftvols[oceanAddr][badNft] = 1.0
+
+    # filter out purgatory
+    nftvols_filtered = query._filterOutPurgatory(nftvols, 137)
+    assert len(nftvols_filtered) == 1
+    assert len(nftvols_filtered[oceanAddr]) == 1
+    assert goodNft in nftvols_filtered[oceanAddr]
+
+
+@enforce_types
 def setup_function():
     global OCEAN_ADDR
 
