@@ -471,14 +471,14 @@ def symbol(addr: str):
 
 @enforce_types
 def aquarius_asset_names(
-    didList: List[str],
+    nft_dids: List[str],
 ) -> Dict[str, str]:
     """
     @description
       Return mapping of did -> asset name
 
     @params
-      didList -- array of dids
+      nft_dids -- array of dids
 
     @return
       did_to_asset_name -- dict of [did] : asset_name
@@ -496,9 +496,9 @@ def aquarius_asset_names(
 
     error_counter = 0
     # Send in 5k chunks
-    for i in range(0, len(didList), BATCH_SIZE):
+    for i in range(0, len(nft_dids), BATCH_SIZE):
         # Aquarius expects "didList": ["did:op:...", ...]
-        payload = json.dumps({"didList": didList[i : i + BATCH_SIZE]})
+        payload = json.dumps({"didList": nft_dids[i : i + BATCH_SIZE]})
 
         try:
             resp = requests.post(url, data=payload, headers=headers)
