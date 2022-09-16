@@ -107,7 +107,7 @@ def test_all():
 
 
 def _foundConsume(CO2_ADDR, st, fin):
-    DT_vols, _ = query.getNFTVolumes(st, fin, CHAINID)
+    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
         return False
     if sum(DT_vols[CO2_ADDR].values()) == 0:
@@ -163,7 +163,7 @@ def _test_getSymbols():
 
 @enforce_types
 def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
-    DT_vols, _ = query.getNFTVolumes(st, fin, CHAINID)
+    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
@@ -172,7 +172,7 @@ def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
 def _test_query(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (V0, A0, SYM0, _) = query.query_all(rng, CHAINID)
+    (V0, A0, SYM0) = query.query_all(rng, CHAINID)
 
     assert CO2_ADDR in V0
     assert A0

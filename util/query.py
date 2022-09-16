@@ -18,15 +18,11 @@ class DataNFT:
         nft_addr: str,
         chain_id: int,
         _symbol: str,
-        basetoken_addr: str,
-        volume: float,
     ):
         self.nft_addr = nft_addr
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
-        self.basetoken_addr = basetoken_addr
-        self.volume = volume
 
     def __repr__(self):
         return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
@@ -38,24 +34,23 @@ def query_all(
 ) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str], List[DataNFT]]:
     """
     @description
-      Return nftvols, nftInfo for the input block range and chain.
+      Return nftvols for the input block range and chain.
 
     @return
       nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
       approved_token_addrs_at_chain -- list_of_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
-      nftinfo -- list of DataNFT objects
 
     @notes
       A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
     Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
-    return (Vi, Ai, SYMi, nftInfo)
+    return (Vi, Ai, SYMi)
 
 
 @enforce_types
@@ -278,22 +273,20 @@ def getNFTInfo(chainID) -> List[DataNFT]:
 
     return NFTinfo
 
+
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], List[DataNFT]]:
+) -> Tuple[Dict[str, Dict[str, float]]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
 
     @return
       nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
-      NFTinfo -- list of DataNFT objects
     """
     print("getVolumes(): begin")
 
     NFTvols: Dict[str, Dict[str, float]] = {}
-    NFTinfo_tmp: Dict[str, Dict[str, Dict[str, Any]]] = {}
-    NFTinfo = []
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -339,30 +332,8 @@ def getNFTVolumes(
                 NFTvols[basetoken_addr][nft_addr] = 0.0
             NFTvols[basetoken_addr][nft_addr] += lastPriceValue
 
-            ### Store nft symbol for later use
-            if not basetoken_addr in NFTinfo_tmp:
-                NFTinfo_tmp[basetoken_addr] = {}
-
-            if not nft_addr in NFTinfo_tmp[basetoken_addr]:
-                NFTinfo_tmp[basetoken_addr][nft_addr] = {}
-
-            NFTinfo_tmp[basetoken_addr][nft_addr]["symbol"] = order["datatoken"][
-                "symbol"
-            ]
-
-    for base_addr in NFTinfo_tmp:
-        for nft_addr in NFTinfo_tmp[base_addr]:
-            datanft = DataNFT(
-                nft_addr,
-                chainID,
-                NFTinfo_tmp[base_addr][nft_addr]["symbol"],
-                base_addr,
-                NFTvols[base_addr][nft_addr],
-            )
-            NFTinfo.append(datanft)
-
     print("getVolumes(): done")
-    return NFTvols, NFTinfo
+    return NFTvols
 
 
 @enforce_types
