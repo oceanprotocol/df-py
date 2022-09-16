@@ -258,7 +258,7 @@ def test_filter_nft_vols_to_aquarius_assets():
         oceanAddr,  # invalid, should filter out this one
     ]
 
-    # I've gathered these addresses from rinkeby
+    # these addresses are from rinkeby
     chainID = 4
 
     # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
