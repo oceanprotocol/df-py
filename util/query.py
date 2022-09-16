@@ -231,7 +231,7 @@ def getAllocations(
     return _allocations
 
 
-def getNFTInfo(chainID) -> List[DataNFT]:
+def getNFTInfos(chainID) -> List[DataNFT]:
     """
     @description
       Return all NFTs on the chain
@@ -270,6 +270,8 @@ def getNFTInfo(chainID) -> List[DataNFT]:
             NFTinfo.append(datanft)
 
         offset += chunk_size
+
+    # TODO filter out NFTs that are not on aquarius
 
     return NFTinfo
 
