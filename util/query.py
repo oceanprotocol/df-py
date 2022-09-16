@@ -356,6 +356,18 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
 
 @enforce_types
 def _filterNftvolsToAquariusAssets(nftvols: dict, chainID: int) -> dict:
+    """
+    @description
+      Return nfts that belong to the Ocean marketplace
+
+    @arguments
+      nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
+      chainID: int
+
+    @return
+      filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
+    """
+
     filtered_nfts: Dict[str, Dict[str, float]] = {}
     nft_dids = []
 
@@ -375,18 +387,20 @@ def _filterNftvolsToAquariusAssets(nftvols: dict, chainID: int) -> dict:
                     nft_addr
                 ]
 
+    return filtered_nfts
+
 
 @enforce_types
-def _filterToAquariusAssets(nft_dids: List[str]) -> dict:
+def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
     """
     @description
-      Return nfts that belong to the Ocean marketplace
+      Filter a list of nft_dids to only those that are in Aquarius
 
     @arguments
-      nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
+      nft_dids: list of nft_dids
 
     @return
-      filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
+      filtered_dids: list of filtered nft_dids
     """
     filtered_nft_dids = []
     nft_dids = []
