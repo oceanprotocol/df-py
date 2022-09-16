@@ -56,7 +56,7 @@ def query_all(
     if chainID != networkutil.DEV_CHAINID:
         # when not on dev chain:
         # filter out assets that are not on the market
-        Vi = _filterNftvolsToAquariusAssets(Vi, chainID)
+        Vi = _filterNftvols(Vi, chainID)
 
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
@@ -352,7 +352,6 @@ def _filterOutPurgatory(nft_dids: Set[str]) -> List[str]:
     @return
       filtered_dids: list of filtered dids
     """
-    nft_dids = list(nft_dids)
     bad_dids = _didsInPurgatory()
     filtered_dids = []
 
@@ -411,7 +410,6 @@ def _filterToAquariusAssets(nft_dids: Set[str]) -> List[str]:
     @return
       filtered_dids: list of filtered nft_dids
     """
-    nft_dids = list(nft_dids)
     filtered_nft_dids = []
 
     aquariusAssetNames = aquarius_asset_names(nft_dids)
