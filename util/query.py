@@ -518,6 +518,4 @@ def aquarius_asset_names(
                 ) from e
         error_counter = 0
 
-    # parse response
-
     return did_to_asset_name
