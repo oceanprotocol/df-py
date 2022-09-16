@@ -236,6 +236,48 @@ def getAllocations(
     return _allocations
 
 
+def getNFTInfo(chainID) -> List[DataNFT]:
+    """
+    @description
+      Return all NFTs on the chain
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+    NFTinfo = []
+    chunk_size = 1000
+    offset = 0
+
+    while True:
+        query = """
+      {
+         nfts(first: %d, skip: %d) {
+            id
+            symbol
+        }
+      }
+      """ % (
+            chunk_size,
+            offset,
+        )
+        result = submitQuery(query, chainID)
+        nfts = result["data"]["nfts"]
+        if len(nfts) == 0:
+            # means there are no records left
+            break
+
+        for nft in nfts:
+            datanft = DataNFT(
+                nft["id"],
+                chainID,
+                nft["symbol"],
+            )
+            NFTinfo.append(datanft)
+
+        offset += chunk_size
+
+    return NFTinfo
+
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], List[DataNFT]]:
