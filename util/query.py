@@ -272,8 +272,8 @@ def getNFTInfos(chainID) -> List[DataNFT]:
 
         offset += chunk_size
 
-    # TODO filter out NFTs that are not on aquarius
     if chainID != networkutil.DEV_CHAINID:
+        # filter if not on dev chain
         NFTinfo = _filterNftinfos(NFTinfo)
 
     return NFTinfo
