@@ -53,11 +53,6 @@ def query_all(
     Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
-    if chainID != networkutil.DEV_CHAINID:
-        # when not on dev chain:
-        # filter out assets that are not on the market
-        Vi = _filterNftvols(Vi, chainID)
-
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
@@ -378,7 +373,9 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
         for nft_addr in nftvols[basetoken_addr]:
             nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
 
-    filtered_dids = _filterDids(nft_dids)
+    if chainID != networkutil.DEV_CHAINID:
+        # filter assets when not on dev chain:
+        filtered_dids = _filterDids(nft_dids)
 
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
