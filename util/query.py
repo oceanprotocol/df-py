@@ -410,7 +410,7 @@ def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
     aquariusAssetNames = aquarius_asset_names(nft_dids)
 
     # Aquarius returns "" as the name for assets that isn't in the marketplace
-    for did in nft_dids:
+    for did in aquariusAssetNames:
         if aquariusAssetNames[did] != "":
             filtered_nft_dids.append(did)
 
