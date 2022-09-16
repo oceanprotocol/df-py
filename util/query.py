@@ -365,6 +365,9 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     @return
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
+    if chainID != networkutil.DEV_CHAINID:
+        # can't filter on dev chain:
+        return nftvols
 
     filtered_nfts: Dict[str, Dict[str, float]] = {}
     nft_dids = []
@@ -372,10 +375,6 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
             nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
-
-    if chainID != networkutil.DEV_CHAINID:
-        # filter assets when not on dev chain:
-        filtered_dids = _filterDids(nft_dids)
 
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
