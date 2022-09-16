@@ -222,7 +222,7 @@ def test_filter_to_aquarius_assets():
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
 
-    filtered_dids = query._filterToAquariusAssets(nft_dids)
+    filtered_dids = query._filterToAquariusAssets(set(nft_dids))
 
     assert len(filtered_dids) == 3
     assert nft_dids[3] not in filtered_dids
@@ -248,7 +248,7 @@ def test_filter_nft_vols_to_aquarius_assets():
         nftvols[oceanAddr][nftaddr] = 1.0
 
     # filter out non-market assets
-    nftvols_filtered = query._filterNftvolsToAquariusAssets(nftvols, chainID)
+    nftvols_filtered = query._filterNftvols(nftvols, chainID)
     assert len(nftvols_filtered) == 1
     assert len(nftvols_filtered[oceanAddr]) == 3
 
@@ -261,20 +261,15 @@ def test_filter_nft_vols_to_aquarius_assets():
 
 @enforce_types
 def test_filter_out_purgatory():
-    oceanAddr = oceanutil.OCEAN_address()
-    goodNft = "0xbff8242de628cd45173b71022648617968bd0962"
-    badNft = "0x03894e05af1257714d1e06a01452d157e3a82202"
-
-    nftvols = {}
-    nftvols[oceanAddr] = {}
-    nftvols[oceanAddr][goodNft] = 1.0
-    nftvols[oceanAddr][badNft] = 1.0
+    dids = [
+        "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b7",
+        "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b5",
+    ]
 
     # filter out purgatory
-    nftvols_filtered = query._filterOutPurgatory(nftvols, 137)
-    assert len(nftvols_filtered) == 1
-    assert len(nftvols_filtered[oceanAddr]) == 1
-    assert goodNft in nftvols_filtered[oceanAddr]
+    dids_filtered = query._filterOutPurgatory(set(dids))
+    assert len(dids_filtered) == 1
+    assert dids[1] in dids_filtered
 
 
 @enforce_types
