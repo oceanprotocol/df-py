@@ -222,7 +222,7 @@ def test_filter_to_aquarius_assets():
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
 
-    filtered_dids = query._filterToAquariusAssets(set(nft_dids))
+    filtered_dids = query._filterToAquariusAssets(nft_dids)
 
     assert len(filtered_dids) == 3
     assert nft_dids[3] not in filtered_dids
@@ -287,7 +287,7 @@ def test_filter_out_purgatory():
     ]
 
     # filter out purgatory
-    dids_filtered = query._filterOutPurgatory(set(dids))
+    dids_filtered = query._filterOutPurgatory(dids)
     assert len(dids_filtered) == 1
     assert dids[1] in dids_filtered
 
