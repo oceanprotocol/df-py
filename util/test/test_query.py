@@ -104,6 +104,7 @@ def test_all():
     _test_getveBalances(blockRange)
     _test_getAllocations(blockRange)
     _test_query(CO2_ADDR)
+    _test_nft_infos()
 
 
 def _foundConsume(CO2_ADDR, st, fin):
@@ -177,6 +178,12 @@ def _test_query(CO2_ADDR: str):
     assert CO2_ADDR in V0
     assert A0
     assert SYM0
+
+
+@enforce_types
+def _test_nft_infos():
+    nfts = query.getNFTInfos(CHAINID)
+    assert len(nfts) > 0
 
 
 @enforce_types
