@@ -494,11 +494,11 @@ def aquarius_asset_names(
 
     did_to_asset_name = {}
 
-    BATCH_SIZE = 5000
+    BATCH_SIZE = 9042
     RETRY_ATTEMPTS = 3
 
     error_counter = 0
-    # Send in 5k chunks
+    # Send in chunks
     for i in range(0, len(nft_dids), BATCH_SIZE):
         # Aquarius expects "didList": ["did:op:...", ...]
         payload = json.dumps({"didList": nft_dids[i : i + BATCH_SIZE]})
