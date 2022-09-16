@@ -273,6 +273,8 @@ def getNFTInfos(chainID) -> List[DataNFT]:
         offset += chunk_size
 
     # TODO filter out NFTs that are not on aquarius
+    if chainID != networkutil.DEV_CHAINID:
+        NFTinfo = _filterNftinfos(NFTinfo)
 
     return NFTinfo
 
@@ -365,6 +367,24 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
     bad_dids = _didsInPurgatory()
     filtered_dids = set(nft_dids) - set(bad_dids)
     return list(filtered_dids)
+
+
+@enforce_types
+def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
+    """
+    @description
+      Filter out NFTs that are in purgatory and are not in Aquarius
+
+    @arguments
+      nftinfos: list of DataNFT objects
+
+    @return
+      filtered_nftinfos: list of filtered DataNFT objects
+    """
+    nft_dids = [nft.did for nft in nftinfos]
+    nft_dids = _filterDids(nft_dids)
+    filtered_nftinfos = [nft for nft in nftinfos if nft.did in nft_dids]
+    return filtered_nftinfos
 
 
 @enforce_types
