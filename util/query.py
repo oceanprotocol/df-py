@@ -278,7 +278,7 @@ def getNFTInfos(chainID) -> List[DataNFT]:
 
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]]]:
+) -> Dict[str, Dict[str, float]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
