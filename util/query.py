@@ -353,13 +353,8 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
       filtered_dids: list of filtered dids
     """
     bad_dids = _didsInPurgatory()
-    filtered_dids = []
-
-    for did in nft_dids:
-        if did not in bad_dids:
-            filtered_dids.append(did)
-
-    return filtered_dids
+    filtered_dids = set(nft_dids) - set(bad_dids)
+    return list(filtered_dids)
 
 
 @enforce_types
