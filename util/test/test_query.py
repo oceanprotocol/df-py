@@ -241,7 +241,7 @@ def test_filter_dids():
         "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b7",
     ]
 
-    filtered_dids = query._filterDids(set(nft_dids))
+    filtered_dids = query._filterDids(nft_dids)
 
     assert len(filtered_dids) == 3
     assert nft_dids[3] not in filtered_dids
