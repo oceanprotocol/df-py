@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Set, Tuple
 
 import requests
 import brownie
@@ -51,7 +51,7 @@ def query_all(
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
     Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
-    Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
+    Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     if chainID != networkutil.DEV_CHAINID:
         # when not on dev chain:
@@ -330,35 +330,44 @@ def getNFTVolumes(
 
 
 @enforce_types
-def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
+def _filterDids(nft_dids: List[str]) -> List[str]:
     """
     @description
-      Return nfts that aren't in purgatory
-
-    @arguments
-      nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
-
-    @return
-      filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
+      Filter out DIDs that are in purgatory and are not in Aquarius
     """
-    bad_dids = _didsInPurgatory()
-    filtered_nfts: Dict[str, Dict[str, float]] = {}
-    for basetoken_addr in nftvols:
-        for nft_addr in nftvols[basetoken_addr]:
-            if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
-                if basetoken_addr not in filtered_nfts:
-                    filtered_nfts[basetoken_addr] = {}
-                filtered_nfts[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
-                    nft_addr
-                ]
-    return filtered_nfts
+    nft_dids = _filterOutPurgatory(set(nft_dids))
+    nft_dids = _filterToAquariusAssets(set(nft_dids))
+    return nft_dids
 
 
 @enforce_types
-def _filterNftvolsToAquariusAssets(nftvols: dict, chainID: int) -> dict:
+def _filterOutPurgatory(nft_dids: Set[str]) -> List[str]:
     """
     @description
-      Return nfts that belong to the Ocean marketplace
+      Return dids that aren't in purgatory
+
+    @arguments
+      nft_dids: list of dids
+
+    @return
+      filtered_dids: list of filtered dids
+    """
+    nft_dids = list(nft_dids)
+    bad_dids = _didsInPurgatory()
+    filtered_dids = []
+
+    for did in nft_dids:
+        if did not in bad_dids:
+            filtered_dids.append(did)
+
+    return filtered_dids
+
+
+@enforce_types
+def _filterNftvols(nftvols: dict, chainID: int) -> dict:
+    """
+    @description
+      Filters out nfts that are in purgatory and are not in Aquarius
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
@@ -375,7 +384,7 @@ def _filterNftvolsToAquariusAssets(nftvols: dict, chainID: int) -> dict:
         for nft_addr in nftvols[basetoken_addr]:
             nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
 
-    filtered_dids = _filterToAquariusAssets(nft_dids)
+    filtered_dids = _filterDids(nft_dids)
 
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
@@ -391,7 +400,7 @@ def _filterNftvolsToAquariusAssets(nftvols: dict, chainID: int) -> dict:
 
 
 @enforce_types
-def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
+def _filterToAquariusAssets(nft_dids: Set[str]) -> List[str]:
     """
     @description
       Filter a list of nft_dids to only those that are in Aquarius
@@ -402,6 +411,7 @@ def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
     @return
       filtered_dids: list of filtered nft_dids
     """
+    nft_dids = list(nft_dids)
     filtered_nft_dids = []
 
     aquariusAssetNames = aquarius_asset_names(nft_dids)
