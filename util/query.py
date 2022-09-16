@@ -403,7 +403,6 @@ def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
       filtered_dids: list of filtered nft_dids
     """
     filtered_nft_dids = []
-    nft_dids = []
 
     aquariusAssetNames = aquarius_asset_names(nft_dids)
 
