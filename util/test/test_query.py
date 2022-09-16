@@ -300,6 +300,25 @@ def test_filter_out_purgatory():
 
 
 @enforce_types
+def test_filter_nftinfos():
+    oceanAddr = oceanutil.OCEAN_address()
+    addresses = [
+        "0xbff8242de628cd45173b71022648617968bd0962",  # good
+        "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
+        oceanAddr,  # invalid
+    ]
+
+    # addresses are from polygon
+    nfts = [query.DataNFT(addr, 137, "TEST") for addr in addresses]
+
+    # filter
+    nfts_filtered = query._filterNftinfos(nfts)
+
+    assert len(nfts_filtered) == 1
+    assert nfts[0] in nfts_filtered
+
+
+@enforce_types
 def setup_function():
     global OCEAN_ADDR
 
