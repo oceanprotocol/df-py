@@ -335,13 +335,13 @@ def _filterDids(nft_dids: List[str]) -> List[str]:
     @description
       Filter out DIDs that are in purgatory and are not in Aquarius
     """
-    nft_dids = _filterOutPurgatory(set(nft_dids))
-    nft_dids = _filterToAquariusAssets(set(nft_dids))
+    nft_dids = _filterOutPurgatory(nft_dids)
+    nft_dids = _filterToAquariusAssets(nft_dids)
     return nft_dids
 
 
 @enforce_types
-def _filterOutPurgatory(nft_dids: Set[str]) -> List[str]:
+def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
     """
     @description
       Return dids that aren't in purgatory
@@ -399,7 +399,7 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
 
 
 @enforce_types
-def _filterToAquariusAssets(nft_dids: Set[str]) -> List[str]:
+def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
     """
     @description
       Filter a list of nft_dids to only those that are in Aquarius
