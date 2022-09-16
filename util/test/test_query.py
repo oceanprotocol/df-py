@@ -201,6 +201,105 @@ def test_symbol():
 
 
 @enforce_types
+def test_aquarius_asset_names():
+    # test that we can get the asset names from aquarius
+    nft_dids = [
+        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
+        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
+        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        # ↓ invalid, should return ""
+        "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
+    ]
+    expectedAssetNames = ["Trent", "c2d fresh dataset", "CryptoPunks dataset C2D", ""]
+    assetNames = query.aquarius_asset_names(nft_dids)
+    assert len(assetNames) == 4
+
+    for i in range(4):
+        assert assetNames[nft_dids[i]] == expectedAssetNames[i]
+
+
+@enforce_types
+def test_filter_to_aquarius_assets():
+    # test that we can get the asset names from aquarius
+    nft_dids = [
+        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
+        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
+        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        # ↓ invalid, should return ""
+        "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
+    ]
+
+    filtered_dids = query._filterToAquariusAssets(nft_dids)
+
+    assert len(filtered_dids) == 3
+    assert nft_dids[3] not in filtered_dids
+
+
+@enforce_types
+def test_filter_dids():
+    # test that we can get the asset names from aquarius
+    nft_dids = [
+        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
+        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
+        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        # ↓ invalid, should filter out""
+        "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
+        # ↓ purgatory asset, should filter out""
+        "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b7",
+    ]
+
+    filtered_dids = query._filterDids(nft_dids)
+
+    assert len(filtered_dids) == 3
+    assert nft_dids[3] not in filtered_dids
+    assert nft_dids[4] not in filtered_dids
+
+
+@enforce_types
+def test_filter_nft_vols_to_aquarius_assets():
+    oceanAddr = oceanutil.OCEAN_address()
+    nftaddrs = [
+        "0xfd97064e1038810c84faeb951097a1e2c8829ae0",
+        "0xa550f42e80bc8a1d17e04223c4d21d650b227197",
+        "0x2b4895e46970d3a2cae203d496d7b9905f707684",
+        oceanAddr,  # invalid, should filter out this one
+    ]
+
+    # these addresses are from rinkeby
+    chainID = 4
+
+    # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
+    nftvols = {}
+    nftvols[oceanAddr] = {}
+    for nftaddr in nftaddrs:
+        nftvols[oceanAddr][nftaddr] = 1.0
+
+    # filter out non-market assets
+    nftvols_filtered = query._filterNftvols(nftvols, chainID)
+    assert len(nftvols_filtered) == 1
+    assert len(nftvols_filtered[oceanAddr]) == 3
+
+    # match the addresses
+    assert nftaddrs[0] in nftvols_filtered[oceanAddr]
+    assert nftaddrs[1] in nftvols_filtered[oceanAddr]
+    assert nftaddrs[2] in nftvols_filtered[oceanAddr]
+    assert nftaddrs[3] not in nftvols_filtered[oceanAddr]
+
+
+@enforce_types
+def test_filter_out_purgatory():
+    dids = [
+        "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b7",
+        "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b5",
+    ]
+
+    # filter out purgatory
+    dids_filtered = query._filterOutPurgatory(dids)
+    assert len(dids_filtered) == 1
+    assert dids[1] in dids_filtered
+
+
+@enforce_types
 def setup_function():
     global OCEAN_ADDR
 

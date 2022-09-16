@@ -5,9 +5,9 @@ import requests
 import brownie
 from enforce_typing import enforce_types
 
-from util import oceanutil
+from util import networkutil, oceanutil
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
+from util.constants import AQUARIUS_BASE_URL, BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.graphutil import submitQuery
 from util.tok import TokSet
 
@@ -46,7 +46,8 @@ def query_all(
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
     Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
-    Vi = _filterOutPurgatory(Vi_unfiltered, chainID)
+    Vi = _filterNftvols(Vi_unfiltered, chainID)
+
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
@@ -339,24 +340,94 @@ def getNFTVolumes(
 
 
 @enforce_types
-def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
+def _filterDids(nft_dids: List[str]) -> List[str]:
     """
     @description
-      Return pools that aren't in purgatory
+      Filter out DIDs that are in purgatory and are not in Aquarius
+    """
+    nft_dids = _filterOutPurgatory(nft_dids)
+    nft_dids = _filterToAquariusAssets(nft_dids)
+    return nft_dids
+
+
+@enforce_types
+def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
+    """
+    @description
+      Return dids that aren't in purgatory
+
+    @arguments
+      nft_dids: list of dids
+
+    @return
+      filtered_dids: list of filtered dids
+    """
+    bad_dids = _didsInPurgatory()
+    filtered_dids = set(nft_dids) - set(bad_dids)
+    return list(filtered_dids)
+
+
+@enforce_types
+def _filterNftvols(nftvols: dict, chainID: int) -> dict:
+    """
+    @description
+      Filters out nfts that are in purgatory and are not in Aquarius
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
+      chainID: int
 
     @return
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
-    bad_dids = _didsInPurgatory()
-    filtered_pools = {}
+    if chainID == networkutil.DEV_CHAINID:
+        # can't filter on dev chain:
+        return nftvols
+
+    filtered_nftvols: Dict[str, Dict[str, float]] = {}
+    nft_dids = []
+
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
-            if oceanutil.calcDID(nft_addr, chainID) not in bad_dids:
-                filtered_pools[basetoken_addr] = nftvols[basetoken_addr]
-    return filtered_pools
+            nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
+
+    filtered_dids = _filterDids(nft_dids)
+
+    for basetoken_addr in nftvols:
+        for nft_addr in nftvols[basetoken_addr]:
+            did = oceanutil.calcDID(nft_addr, chainID)
+            if did in filtered_dids:
+                if basetoken_addr not in filtered_nftvols:
+                    filtered_nftvols[basetoken_addr] = {}
+                filtered_nftvols[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
+                    nft_addr
+                ]
+
+    return filtered_nftvols
+
+
+@enforce_types
+def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
+    """
+    @description
+      Filter a list of nft_dids to only those that are in Aquarius
+
+    @arguments
+      nft_dids: list of nft_dids
+
+    @return
+      filtered_dids: list of filtered nft_dids
+    """
+    filtered_nft_dids = []
+
+    assets = aquarius_asset_names(nft_dids)
+
+    # Aquarius returns "" as the name for assets that isn't in the marketplace
+    for did in assets:
+        if assets[did] != "":
+            filtered_nft_dids.append(did)
+
+    return filtered_nft_dids
 
 
 @enforce_types
@@ -437,3 +508,55 @@ def symbol(addr: str):
         _symbol = _symbol.upper()  # follow lower-upper rules
         _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]
+
+
+@enforce_types
+def aquarius_asset_names(
+    nft_dids: List[str],
+) -> Dict[str, str]:
+    """
+    @description
+      Return mapping of did -> asset name
+
+    @params
+      nft_dids -- array of dids
+
+    @return
+      did_to_asset_name -- dict of [did] : asset_name
+    """
+
+    # Remove duplicates
+    nft_dids = list(set(nft_dids))
+
+    # make a post request to Aquarius
+    url = f"{AQUARIUS_BASE_URL}/api/aquarius/assets/names"
+
+    headers = {"Content-Type": "application/json"}
+
+    did_to_asset_name = {}
+
+    BATCH_SIZE = 9042
+    RETRY_ATTEMPTS = 3
+
+    error_counter = 0
+    # Send in chunks
+    for i in range(0, len(nft_dids), BATCH_SIZE):
+        # Aquarius expects "didList": ["did:op:...", ...]
+        payload = json.dumps({"didList": nft_dids[i : i + BATCH_SIZE]})
+
+        try:
+            resp = requests.post(url, data=payload, headers=headers)
+            data = json.loads(resp.text)
+            did_to_asset_name.update(data)
+        # pylint: disable=broad-except
+        except Exception as e:
+            error_counter += 1
+            i -= BATCH_SIZE
+            if error_counter > RETRY_ATTEMPTS:
+                # pylint: disable=line-too-long
+                raise Exception(
+                    f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
+                ) from e
+        error_counter = 0
+
+    return did_to_asset_name
