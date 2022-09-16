@@ -31,7 +31,7 @@ class DataNFT:
 @enforce_types
 def query_all(
     rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str], List[DataNFT]]:
+) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str]]:
     """
     @description
       Return nftvols for the input block range and chain.
