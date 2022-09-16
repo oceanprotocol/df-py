@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import requests
 import brownie
