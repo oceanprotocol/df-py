@@ -231,7 +231,7 @@ def test_filter_to_aquarius_assets():
         nftvols[oceanAddr][nftaddr] = 1.0
 
     # filter out non-market assets
-    nftvols_filtered = query._filterToAquariusAssets(nftvols, chainID)
+    nftvols_filtered = query._filterNftvolsToAquariusAssets(nftvols, chainID)
     assert len(nftvols_filtered) == 1
     assert len(nftvols_filtered[oceanAddr]) == 3
 

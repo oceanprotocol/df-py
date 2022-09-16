@@ -56,7 +56,7 @@ def query_all(
     if chainID != networkutil.DEV_CHAINID:
         # when not on dev chain:
         # filter out assets that are not on the market
-        Vi = _filterToAquariusAssets(Vi, chainID)
+        Vi = _filterNftvolsToAquariusAssets(Vi, chainID)
 
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
@@ -355,7 +355,29 @@ def _filterOutPurgatory(nftvols: dict, chainID: int) -> dict:
 
 
 @enforce_types
-def _filterToAquariusAssets(nftvols: dict, chainID: int) -> dict:
+def _filterNftvolsToAquariusAssets(nftvols: dict, chainID: int) -> dict:
+    filtered_nfts: Dict[str, Dict[str, float]] = {}
+    nft_dids = []
+
+    for basetoken_addr in nftvols:
+        for nft_addr in nftvols[basetoken_addr]:
+            nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
+
+    filtered_dids = _filterToAquariusAssets(nft_dids)
+
+    for basetoken_addr in nftvols:
+        for nft_addr in nftvols[basetoken_addr]:
+            did = oceanutil.calcDID(nft_addr, chainID)
+            if did in filtered_dids:
+                if basetoken_addr not in filtered_nfts:
+                    filtered_nfts[basetoken_addr] = {}
+                filtered_nfts[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
+                    nft_addr
+                ]
+
+
+@enforce_types
+def _filterToAquariusAssets(nft_dids: List[str]) -> dict:
     """
     @description
       Return nfts that belong to the Ocean marketplace
@@ -366,27 +388,17 @@ def _filterToAquariusAssets(nftvols: dict, chainID: int) -> dict:
     @return
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
-    filtered_nfts: Dict[str, Dict[str, float]] = {}
+    filtered_nft_dids = []
     nft_dids = []
-
-    for basetoken_addr in nftvols:
-        for nft_addr in nftvols[basetoken_addr]:
-            nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
 
     aquariusAssetNames = aquarius_asset_names(nft_dids)
 
-    # Aquarius returns "" as the name for assets that aren't in the marketplace
-    for basetoken_addr in nftvols:
-        for nft_addr in nftvols[basetoken_addr]:
-            did = oceanutil.calcDID(nft_addr, chainID)
-            if aquariusAssetNames[did] != "":
-                if basetoken_addr not in filtered_nfts:
-                    filtered_nfts[basetoken_addr] = {}
-                filtered_nfts[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
-                    nft_addr
-                ]
+    # Aquarius returns "" as the name for assets that isn't in the marketplace
+    for did in nft_dids:
+        if aquariusAssetNames[did] != "":
+            filtered_nft_dids.append(did)
 
-    return filtered_nfts
+    return filtered_nft_dids
 
 
 @enforce_types
