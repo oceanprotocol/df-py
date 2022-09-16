@@ -213,6 +213,23 @@ def test_aquarius_asset_names():
 
 @enforce_types
 def test_filter_to_aquarius_assets():
+    # test that we can get the asset names from aquarius
+    nft_dids = [
+        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
+        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
+        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        # ↓ invalid, should return ""
+        "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
+    ]
+
+    filtered_dids = query._filterToAquariusAssets(nft_dids)
+
+    assert len(filtered_dids) == 3
+    assert nft_dids[3] not in filtered_dids
+
+
+@enforce_types
+def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
         "0xfd97064e1038810c84faeb951097a1e2c8829ae0",
