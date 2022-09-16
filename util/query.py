@@ -365,7 +365,7 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     @return
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
-    if chainID != networkutil.DEV_CHAINID:
+    if chainID == networkutil.DEV_CHAINID:
         # can't filter on dev chain:
         return nftvols
 
