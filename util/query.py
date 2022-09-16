@@ -376,6 +376,8 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
         for nft_addr in nftvols[basetoken_addr]:
             nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
 
+    filtered_nfts = _filterDids(nft_dids)
+
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
             did = oceanutil.calcDID(nft_addr, chainID)
