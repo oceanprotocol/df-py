@@ -154,9 +154,37 @@ SECRET_SEED -- secret integer used to seed the rng
     csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
-    # csvs.saveNftInfoCsv(nftInfo, CSV_DIR, CHAINID)
-
     print("dftool query: Done")
+
+
+# ========================================================================
+
+
+@enforce_types
+def do_nftinfo():
+    HELP = f"""Query chain, output nft info csv
+Usage: dftool nftinfo CSV_DIR CHAINID
+    CSV_DIR -- output dir for nftinfo-CHAINID.csv
+    CHAINID -- {CHAINID_EXAMPLES}
+"""
+    if len(sys.argv) not in [2 + 2]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "nftinfo"
+    CSV_DIR = sys.argv[2]
+    CHAINID = int(sys.argv[3])
+
+    # check files, prep dir
+    if not os.path.exists(CSV_DIR):
+        # create dir
+        _createDirIfNeeded(CSV_DIR)
+
+    nftinfo = query.getNFTInfos(CHAINID)
+    csvs.saveNftInfoCsv(nftinfo, CSV_DIR, CHAINID)
+
+    print("dftool nftinfo: Done")
 
 
 # ========================================================================
@@ -943,6 +971,8 @@ def do_main():
     # write actions
     elif sys.argv[1] == "query":
         do_query()
+    elif sys.argv[1] == "nftinfo":
+        do_nftinfo()
     elif sys.argv[1] == "allocations":
         do_allocations()
     elif sys.argv[1] == "vebals":
