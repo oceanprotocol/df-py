@@ -369,7 +369,7 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
         # can't filter on dev chain:
         return nftvols
 
-    filtered_nfts: Dict[str, Dict[str, float]] = {}
+    filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []
 
     for basetoken_addr in nftvols:
@@ -382,13 +382,13 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
         for nft_addr in nftvols[basetoken_addr]:
             did = oceanutil.calcDID(nft_addr, chainID)
             if did in filtered_dids:
-                if basetoken_addr not in filtered_nfts:
-                    filtered_nfts[basetoken_addr] = {}
-                filtered_nfts[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
+                if basetoken_addr not in filtered_nftvols:
+                    filtered_nftvols[basetoken_addr] = {}
+                filtered_nftvols[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
                     nft_addr
                 ]
 
-    return filtered_nfts
+    return filtered_nftvols
 
 
 @enforce_types
