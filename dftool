@@ -60,6 +60,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (pools, stakes, vols, approved)
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (pools, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispensepassive CHAINID [AMOUNT] - dispense rewards in OCEAN on chainID
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
@@ -75,14 +76,14 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool newtoken CHAINID - generate new token (for testing)
 
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool veOceanLock CHAINID amount weeks - Lock an amount of OCEAN into veOCEAN for a set number of weeks.
-  dftool veOceanLockIncreaseAmount CHAINID amount - Increase the amount of Ocean in existing veOCEAN lock.
-  dftool veOceanLockIncreaseTime CHAINID weeks - Increase the time of Ocean in existing veOCEAN lock.
-  dftool veOceanBalance CHAINID - Returns the total amount of veOCEAN.
-  dftool veOceanLockEnd CHAINID - Returns the lock end time lock of veOCEAN.
+  dftool veoceanlock CHAINID amount weeks - Lock an amount of OCEAN into veOCEAN for a set number of weeks.
+  dftool veoceanlockincreaseamount CHAINID amount - Increase the amount of Ocean in existing veOCEAN lock.
+  dftool veoceanlockincreasetime CHAINID weeks - Increase the time of Ocean in existing veOCEAN lock.
+  dftool veoceanbalance CHAINID - Returns the total amount of veOCEAN.
+  dftool veoceanlockend CHAINID - Returns the lock end time lock of veOCEAN.
 
-  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset.
+  dftool newveallocate CHAINID - deploy veAllocate (for testing)
+  dftool vesetallocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset.
   
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
@@ -496,8 +497,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     if AMOUNT > 0 :
         OCEANtoken().transfer(veFeeDistributor().address, AMOUNT, {"from": from_account})
-    veFeeDistributor().checkpoint_token()
-    veFeeDistributor().checkpoint_total_supply()
+    veFeeDistributor().checkpoint_token({"from": from_account})
+    veFeeDistributor().checkpoint_total_supply({"from": from_account})
 
     print("dftool dispensepassive: Done")
 
@@ -821,17 +822,17 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 
 # ========================================================================
 @enforce_types
-def do_veOceanLock():
+def do_veoceanlock():
     HELP = """Lock Ocean (for testing).
     
-Usage: dftool veOceanLock CHAINID amount weeks
+Usage: dftool veoceanlock CHAINID amount weeks
 """
     if len(sys.argv) not in [5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veOceanLock"
+    assert sys.argv[1] == "veoceanlock"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -858,17 +859,17 @@ Usage: dftool veOceanLock CHAINID amount weeks
 
 # ========================================================================
 @enforce_types
-def do_veOceanLockIncreaseTime():
+def do_veoceanlockincreasetime():
     HELP = """Increase the time of Ocean locked inside veOcean (for testing).
     
-Usage: dftool veOceanLockIncreaseTime CHAINID weeks
+Usage: dftool veoceanlockincreasetime CHAINID weeks
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veOceanLockIncreaseTime"
+    assert sys.argv[1] == "veoceanlockincreasetime"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -892,17 +893,17 @@ Usage: dftool veOceanLockIncreaseTime CHAINID weeks
 
 # ========================================================================
 @enforce_types
-def do_veOceanLockIncreaseAmount():
+def do_veoceanlockincreaseamount():
     HELP = """Increase the amount of Ocean locked inside veOcean (for testing).
     
-Usage: dftool veOceanLockIncreaseAmount CHAINID amount
+Usage: dftool veoceanlockincreaseamount CHAINID amount
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veOceanLockIncreaseAmount"
+    assert sys.argv[1] == "veoceanlockincreaseamount"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -923,17 +924,17 @@ Usage: dftool veOceanLockIncreaseAmount CHAINID amount
 
 # ========================================================================
 @enforce_types
-def do_getVeOceanLockEnd():
+def do_getveoceanlockend():
     HELP = """Get end time for veOcean lock (for testing).
     
-Usage: dftool veOceanLockEnd CHAINID
+Usage: dftool veoceanlockend CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veOceanLockEnd"
+    assert sys.argv[1] == "veoceanlockend"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -950,17 +951,17 @@ Usage: dftool veOceanLockEnd CHAINID
 
 # ========================================================================
 @enforce_types
-def do_newVeAllocate():
+def do_newveallocate():
     HELP = """Generate new veAllocate (for testing).
 
-Usage: dftool newVeAllocate CHAINID
+Usage: dftool newveallocate CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "newVeAllocate"
+    assert sys.argv[1] == "newveallocate"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -973,17 +974,17 @@ Usage: dftool newVeAllocate CHAINID
 
 # ========================================================================
 @enforce_types
-def do_getVeOceanBalance():
+def do_getveoceanbalance():
     HELP = """Get veOcean balance on a specific chain (for testing).
     
-Usage: dftool veOceanBalance CHAINID
+Usage: dftool veoceanbalance CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veOceanBalance"
+    assert sys.argv[1] == "veoceanbalance"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -999,18 +1000,18 @@ Usage: dftool veOceanBalance CHAINID
 
 # ========================================================================
 @enforce_types
-def do_veSetAllocation():
+def do_vesetallocation():
     HELP = """Allocate weight to veAllocate contract (for testing).
     Set to 0 to trigger resetAllocation event.
 
-Usage: dftool veSetAllocation CHAINID amount exchangeId
+Usage: dftool vesetallocation CHAINID amount exchangeId
 """
     if len(sys.argv) not in [5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veSetAllocation"
+    assert sys.argv[1] == "vesetallocation"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -1188,20 +1189,20 @@ def do_main():
         do_newtoken()
     elif sys.argv[1] == "newVeOcean":
         do_newVeOcean()
-    elif sys.argv[1] == "veOceanLock":
-        do_veOceanLock()
-    elif sys.argv[1] == "veOceanLockIncreaseTime":
-        do_veOceanLockIncreaseTime()
-    elif sys.argv[1] == "veOceanLockIncreaseAmount":
-        do_veOceanLockIncreaseAmount()
-    elif sys.argv[1] == "veOceanBalance":
-        do_getVeOceanBalance()
-    elif sys.argv[1] == "veOceanLockEnd":
-        do_getVeOceanLockEnd()
-    elif sys.argv[1] == "newVeAllocate":
-        do_newVeAllocate()
-    elif sys.argv[1] == "veSetAllocation":
-        do_veSetAllocation()
+    elif sys.argv[1] == "veoceanlock":
+        do_veoceanlock()
+    elif sys.argv[1] == "veoceanlockincreasetime":
+        do_veoceanlockincreasetime()
+    elif sys.argv[1] == "veoceanlockincreaseamount":
+        do_veoceanlockincreaseamount()
+    elif sys.argv[1] == "veoceanbalance":
+        do_getveoceanbalance()
+    elif sys.argv[1] == "veoceanlockend":
+        do_getveoceanlockend()
+    elif sys.argv[1] == "newveallocate":
+        do_newveallocate()
+    elif sys.argv[1] == "vesetallocation":
+        do_vesetallocation()
     
     # read actions
     elif sys.argv[1] == "acctinfo":
