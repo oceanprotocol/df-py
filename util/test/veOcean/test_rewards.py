@@ -5,6 +5,7 @@ import pytest
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18, fromBase18
+from datetime import datetime
 
 accounts = None
 alice = None
@@ -21,7 +22,7 @@ DAY = 86400
 
 @enforce_types
 def test_rewards():
-    """Test rewards, claims & feeEstimator"""
+    """Tests over 52 weeks for multiple users & cases if FeeEstimate.estimateClaim equals with the amount that you get after claim"""
 
     fee_distributor = B.FeeDistributor.deploy(
         veOCEAN.address,
@@ -47,96 +48,93 @@ def test_rewards():
     # each actor adds 100 Ocean tokens in week 0
     OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": alice})
     OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": bob})
-    OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": charlie})
-    OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": david})
     
     # each actor has different lock times
     alice_lock_time = t0 + 4 * 365 * 86400 - 15*60 # 4 years - 15 mins
     bob_lock_time = t0 + 2 * 365 * 86400 - 15*60 # 2 years - 15 mins
-    charlie_lock_time = t0 + 1 * 365 * 86400 - 15*60 # 1 year - 15 mins
-    david_lock_time = t0 + 3 * 365 * 86400 - 15*60 # 3 year - 15 mins
     veOCEAN.create_lock(toBase18(100.0), alice_lock_time, {"from": alice})
     veOCEAN.create_lock(toBase18(100.0), bob_lock_time, {"from": bob})
-    veOCEAN.create_lock(toBase18(100.0), charlie_lock_time, {"from": charlie})
-    veOCEAN.create_lock(toBase18(100.0), david_lock_time, {"from": david})
     
-    #wait 2 days and OPF adds rewards
-    #chain.sleep(DAY)
-    #chain.mine()
-    #chain.sleep(DAY)
-    #chain.mine()
-    #OCEAN.transfer(fee_distributor.address, toBase18(opffees), {"from": accounts[0]})
-    #fee_distributor.checkpoint_token()
-    #fee_distributor.checkpoint_total_supply()
-    # and sleep one more day
-    #chain.sleep(DAY)
-    #chain.mine()
-
     alice_total_withdraws=0
     bob_total_withdraws=0
-    charlie_total_withdraws=0
-    david_total_withdraws=0
-    rangeus=52  # we will run the tests for 1 year
-    sleep_amount=DAY * 7
+    rangeus=52  # we will run the tests for 52 weeks
+    sleep_amount=DAY*7
+    chain_time=datetime.utcfromtimestamp(chain.time()).strftime('%Y-%m-%d %H:%M:%S')
+    print(f"Chain_time: {chain_time}")
     for i in range(rangeus):  
         total_days=i*sleep_amount/DAY
-        print(f"\nNew iteration****{i}****  Total days:{total_days}")
+        print(f"\nNew iteration****{i}****  Total days pased:{total_days}")
         chain.sleep(sleep_amount)
         chain.mine()
+        chain_time=datetime.utcfromtimestamp(chain.time()).strftime('%Y-%m-%d %H:%M:%S')
+        print(f"\t Chain_time after sleep: {chain_time}")
         
-        print(f"\t OPF is adding {opffees} as rewards")
+        #every week, OPC adds rewards
+        print(f"\t OPF is adding {opffees} OCEAN as rewards")
         OCEAN.transfer(fee_distributor.address, toBase18(opffees), {"from": accounts[0]})
         fee_distributor.checkpoint_total_supply()
         fee_distributor.checkpoint_token()
         epoch=veOCEAN.epoch()
         print(f"\t veOcean epoch: {epoch}")
         
-        # compute estimateClaim
+        # fetch user data for all actors
         estimateAlice1w = fromBase18(fee_estimate.estimateClaim(alice))
         estimateBob1w = fromBase18(fee_estimate.estimateClaim(bob))
-        estimateCharlie1w = fromBase18(fee_estimate.estimateClaim(charlie))
-        estimateDavid1w = fromBase18(fee_estimate.estimateClaim(david))
         epoch_alice = fee_distributor.user_epoch_of(alice)
         epoch_bob = fee_distributor.user_epoch_of(bob)
-        epoch_charlie = fee_distributor.user_epoch_of(charlie)
-        epoch_david = fee_distributor.user_epoch_of(david)
         time_cursor_alice = fee_distributor.time_cursor_of(alice)
         time_cursor_bob = fee_distributor.time_cursor_of(bob)
+        time_cursor_alice_nice = datetime.utcfromtimestamp(time_cursor_alice).strftime('%Y-%m-%d %H:%M:%S')
+        time_cursor_bob_nice = datetime.utcfromtimestamp(time_cursor_bob).strftime('%Y-%m-%d %H:%M:%S')
         
         
         
-        print(f"\t Alice estimates claim:{estimateAlice1w}, Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice}")
+        print(f"\t Alice estimates claim:{estimateAlice1w}, Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice} = {time_cursor_alice_nice}")
         # Alice claims every week
         initialAlice=fromBase18(OCEAN.balanceOf(alice))
         fee_distributor.claim({"from": alice})  # alice claims rewards
         afterAlice=fromBase18(OCEAN.balanceOf(alice))
         alice_claimed = afterAlice-initialAlice
         alice_total_withdraws=alice_total_withdraws+alice_claimed
+        epoch_alice = fee_distributor.user_epoch_of(alice)
+        time_cursor_alice = fee_distributor.time_cursor_of(alice)
+        time_cursor_alice_nice = datetime.utcfromtimestamp(time_cursor_alice).strftime('%Y-%m-%d %H:%M:%S')
         #compare it
-        print(f"\t Alice claimed:{alice_claimed}")
+        print(f"\t Alice claimed:{alice_claimed}, After claim:  Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice} = {time_cursor_alice_nice}")
         assert alice_claimed == pytest.approx(estimateAlice1w,0.0000001)
 
         # Bob claims every 2 weeks
-        print(f"\t Bob estimates claim:{estimateBob1w}, Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob}")
+        print(f"\t Bob estimates claim:{estimateBob1w}, Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob} = {time_cursor_bob_nice}")
         if i%2==0:
             initialBob=fromBase18(OCEAN.balanceOf(bob))
             fee_distributor.claim({"from": bob})  # bob claims rewards
             afterBob=fromBase18(OCEAN.balanceOf(bob))
             bob_claimed = afterBob-initialBob
             bob_total_withdraws=bob_total_withdraws+bob_claimed
+            epoch_bob = fee_distributor.user_epoch_of(bob)
+            time_cursor_bob = fee_distributor.time_cursor_of(bob)
+            time_cursor_bob_nice = datetime.utcfromtimestamp(time_cursor_bob).strftime('%Y-%m-%d %H:%M:%S')
             #compare it
-            print(f"\t Bob claimed:{bob_claimed}")
+            print(f"\t Bob claimed:{bob_claimed}, after claim Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob} = {time_cursor_bob_nice}")
+            assert bob_claimed == pytest.approx(estimateBob1w,0.0000001)
+
+        # Every 4 weeks, Bob is increasing his lock time, by adding one WEEk (+2 seconds)
+        if i%4==0:
+            bob_lock_time=veOCEAN.locked__end(bob)
+            veOCEAN.increase_unlock_time(bob_lock_time+WEEK+2, { "from": bob})
+            print(f"\t Bob increases the lock time")
             assert bob_claimed == pytest.approx(estimateBob1w,0.0000001)
 
         fee_distributor_ocean_balance=fromBase18(OCEAN.balanceOf(fee_distributor.address))
         fee_distributor_token_last_balance=fromBase18(fee_distributor.token_last_balance())
         print(f"\n\t fee_distributor_ocean_balance:{fee_distributor_ocean_balance}")
         print(f"\t fee_distributor_token_last_balance:{fee_distributor_token_last_balance}")
-        #assert fee_distributor_ocean_balance == pytest.approx(fee_distributor_token_last_balance,0.0000001)
+        assert fee_distributor_ocean_balance == pytest.approx(fee_distributor_token_last_balance,0.0000001)
 
         print("end week********\n")
 
-    assert fee_distributor.token_last_balance() == 2 #this fails, to see the print statements :)
+    #uncomment the line below to see all debug logs
+    #assert fee_distributor.token_last_balance() == 2 #this fails, to see the print statements :)
 
     
 
