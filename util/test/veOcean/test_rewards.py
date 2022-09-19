@@ -11,6 +11,7 @@ alice = None
 bob = None
 veOCEAN = None
 OCEAN = None
+DAY = 86400
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
@@ -60,41 +61,51 @@ def test_rewards():
     veOCEAN.create_lock(toBase18(100.0), david_lock_time, {"from": david})
     
     #wait 2 days and OPF adds rewards
-    chain.sleep(DAY)
-    chain.mine()
-    chain.sleep(DAY)
-    chain.mine()
-    OCEAN.transfer(fee_distributor.address, toBase18(opffees), {"from": accounts[0]})
-    fee_distributor.checkpoint_token()
-    fee_distributor.checkpoint_total_supply()
+    #chain.sleep(DAY)
+    #chain.mine()
+    #chain.sleep(DAY)
+    #chain.mine()
+    #OCEAN.transfer(fee_distributor.address, toBase18(opffees), {"from": accounts[0]})
+    #fee_distributor.checkpoint_token()
+    #fee_distributor.checkpoint_total_supply()
     # and sleep one more day
-    chain.sleep(DAY)
-    chain.mine()
+    #chain.sleep(DAY)
+    #chain.mine()
 
     alice_total_withdraws=0
     bob_total_withdraws=0
     charlie_total_withdraws=0
     david_total_withdraws=0
     rangeus=52  # we will run the tests for 1 year
+    sleep_amount=DAY * 7
     for i in range(rangeus):  
-        print(f"\nNew week****{i}****")
-        chain.sleep(WEEK)
+        total_days=i*sleep_amount/DAY
+        print(f"\nNew iteration****{i}****  Total days:{total_days}")
+        chain.sleep(sleep_amount)
         chain.mine()
         
         print(f"\t OPF is adding {opffees} as rewards")
         OCEAN.transfer(fee_distributor.address, toBase18(opffees), {"from": accounts[0]})
-        fee_distributor.checkpoint_token()
         fee_distributor.checkpoint_total_supply()
-        
+        fee_distributor.checkpoint_token()
+        epoch=veOCEAN.epoch()
+        print(f"\t veOcean epoch: {epoch}")
         
         # compute estimateClaim
         estimateAlice1w = fromBase18(fee_estimate.estimateClaim(alice))
         estimateBob1w = fromBase18(fee_estimate.estimateClaim(bob))
         estimateCharlie1w = fromBase18(fee_estimate.estimateClaim(charlie))
         estimateDavid1w = fromBase18(fee_estimate.estimateClaim(david))
-        print(f"\t Alice estimates claim:{estimateAlice1w}")
+        epoch_alice = fee_distributor.user_epoch_of(alice)
+        epoch_bob = fee_distributor.user_epoch_of(bob)
+        epoch_charlie = fee_distributor.user_epoch_of(charlie)
+        epoch_david = fee_distributor.user_epoch_of(david)
+        time_cursor_alice = fee_distributor.time_cursor_of(alice)
+        time_cursor_bob = fee_distributor.time_cursor_of(bob)
         
         
+        
+        print(f"\t Alice estimates claim:{estimateAlice1w}, Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice}")
         # Alice claims every week
         initialAlice=fromBase18(OCEAN.balanceOf(alice))
         fee_distributor.claim({"from": alice})  # alice claims rewards
@@ -106,7 +117,7 @@ def test_rewards():
         assert alice_claimed == pytest.approx(estimateAlice1w,0.0000001)
 
         # Bob claims every 2 weeks
-        print(f"\t Bob estimates claim:{estimateBob1w}")
+        print(f"\t Bob estimates claim:{estimateBob1w}, Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob}")
         if i%2==0:
             initialBob=fromBase18(OCEAN.balanceOf(bob))
             fee_distributor.claim({"from": bob})  # bob claims rewards
@@ -116,6 +127,12 @@ def test_rewards():
             #compare it
             print(f"\t Bob claimed:{bob_claimed}")
             assert bob_claimed == pytest.approx(estimateBob1w,0.0000001)
+
+        fee_distributor_ocean_balance=fromBase18(OCEAN.balanceOf(fee_distributor.address))
+        fee_distributor_token_last_balance=fromBase18(fee_distributor.token_last_balance())
+        print(f"\n\t fee_distributor_ocean_balance:{fee_distributor_ocean_balance}")
+        print(f"\t fee_distributor_token_last_balance:{fee_distributor_token_last_balance}")
+        #assert fee_distributor_ocean_balance == pytest.approx(fee_distributor_token_last_balance,0.0000001)
 
         print("end week********\n")
 
