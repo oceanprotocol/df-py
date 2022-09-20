@@ -1,5 +1,5 @@
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 
 import requests
 import brownie
@@ -18,15 +18,11 @@ class DataNFT:
         nft_addr: str,
         chain_id: int,
         _symbol: str,
-        basetoken_addr: str,
-        volume: float,
     ):
         self.nft_addr = nft_addr
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
-        self.basetoken_addr = basetoken_addr
-        self.volume = volume
 
     def __repr__(self):
         return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
@@ -35,28 +31,27 @@ class DataNFT:
 @enforce_types
 def query_all(
     rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str], List[DataNFT]]:
+) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str]]:
     """
     @description
-      Return nftvols, nftInfo for the input block range and chain.
+      Return nftvols for the input block range and chain.
 
     @return
       nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
       approved_token_addrs_at_chain -- list_of_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
-      nftinfo -- list of DataNFT objects
 
     @notes
       A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, nftInfo = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     ASETi: TokSet = getApprovedTokens(chainID)
     Ai = ASETi.exportTokenAddrs()[chainID]
     SYMi = getSymbols(ASETi, chainID)
-    return (Vi, Ai, SYMi, nftInfo)
+    return (Vi, Ai, SYMi)
 
 
 @enforce_types
@@ -237,22 +232,80 @@ def getAllocations(
     return _allocations
 
 
+def getNFTInfos(chainID) -> List[DataNFT]:
+    """
+    @description
+      Fetch, filter and return all NFTs on the chain
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+
+    NFTinfo = _getNFTInfos(chainID)
+
+    if chainID != networkutil.DEV_CHAINID:
+        # filter if not on dev chain
+        NFTinfo = _filterNftinfos(NFTinfo)
+
+    return NFTinfo
+
+
+def _getNFTInfos(chainID) -> List[DataNFT]:
+    """
+    @description
+      Return all NFTs on the chain
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+    NFTinfo = []
+    chunk_size = 1000
+    offset = 0
+
+    while True:
+        query = """
+      {
+         nfts(first: %d, skip: %d) {
+            id
+            symbol
+        }
+      }
+      """ % (
+            chunk_size,
+            offset,
+        )
+        result = submitQuery(query, chainID)
+        nfts = result["data"]["nfts"]
+        if len(nfts) == 0:
+            # means there are no records left
+            break
+
+        for nft in nfts:
+            datanft = DataNFT(
+                nft["id"],
+                chainID,
+                nft["symbol"],
+            )
+            NFTinfo.append(datanft)
+
+        offset += chunk_size
+
+    return NFTinfo
+
+
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], List[DataNFT]]:
+) -> Dict[str, Dict[str, float]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
 
     @return
       nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
-      NFTinfo -- list of DataNFT objects
     """
     print("getVolumes(): begin")
 
     NFTvols: Dict[str, Dict[str, float]] = {}
-    NFTinfo_tmp: Dict[str, Dict[str, Dict[str, Any]]] = {}
-    NFTinfo = []
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -298,30 +351,8 @@ def getNFTVolumes(
                 NFTvols[basetoken_addr][nft_addr] = 0.0
             NFTvols[basetoken_addr][nft_addr] += lastPriceValue
 
-            ### Store nft symbol for later use
-            if not basetoken_addr in NFTinfo_tmp:
-                NFTinfo_tmp[basetoken_addr] = {}
-
-            if not nft_addr in NFTinfo_tmp[basetoken_addr]:
-                NFTinfo_tmp[basetoken_addr][nft_addr] = {}
-
-            NFTinfo_tmp[basetoken_addr][nft_addr]["symbol"] = order["datatoken"][
-                "symbol"
-            ]
-
-    for base_addr in NFTinfo_tmp:
-        for nft_addr in NFTinfo_tmp[base_addr]:
-            datanft = DataNFT(
-                nft_addr,
-                chainID,
-                NFTinfo_tmp[base_addr][nft_addr]["symbol"],
-                base_addr,
-                NFTvols[base_addr][nft_addr],
-            )
-            NFTinfo.append(datanft)
-
     print("getVolumes(): done")
-    return NFTvols, NFTinfo
+    return NFTvols
 
 
 @enforce_types
@@ -350,6 +381,24 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
     bad_dids = _didsInPurgatory()
     filtered_dids = set(nft_dids) - set(bad_dids)
     return list(filtered_dids)
+
+
+@enforce_types
+def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
+    """
+    @description
+      Filter out NFTs that are in purgatory and are not in Aquarius
+
+    @arguments
+      nftinfos: list of DataNFT objects
+
+    @return
+      filtered_nftinfos: list of filtered DataNFT objects
+    """
+    nft_dids = [nft.did for nft in nftinfos]
+    nft_dids = _filterDids(nft_dids)
+    filtered_nftinfos = [nft for nft in nftinfos if nft.did in nft_dids]
+    return filtered_nftinfos
 
 
 @enforce_types

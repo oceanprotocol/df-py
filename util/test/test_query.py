@@ -104,10 +104,11 @@ def test_all():
     _test_getveBalances(blockRange)
     _test_getAllocations(blockRange)
     _test_query(CO2_ADDR)
+    _test_nft_infos()
 
 
 def _foundConsume(CO2_ADDR, st, fin):
-    DT_vols, _ = query.getNFTVolumes(st, fin, CHAINID)
+    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
         return False
     if sum(DT_vols[CO2_ADDR].values()) == 0:
@@ -163,7 +164,7 @@ def _test_getSymbols():
 
 @enforce_types
 def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
-    DT_vols, _ = query.getNFTVolumes(st, fin, CHAINID)
+    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
@@ -172,11 +173,17 @@ def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
 def _test_query(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (V0, A0, SYM0, _) = query.query_all(rng, CHAINID)
+    (V0, A0, SYM0) = query.query_all(rng, CHAINID)
 
     assert CO2_ADDR in V0
     assert A0
     assert SYM0
+
+
+@enforce_types
+def _test_nft_infos():
+    nfts = query.getNFTInfos(CHAINID)
+    assert len(nfts) > 0
 
 
 @enforce_types
@@ -290,6 +297,25 @@ def test_filter_out_purgatory():
     dids_filtered = query._filterOutPurgatory(dids)
     assert len(dids_filtered) == 1
     assert dids[1] in dids_filtered
+
+
+@enforce_types
+def test_filter_nftinfos():
+    oceanAddr = oceanutil.OCEAN_address()
+    addresses = [
+        "0xbff8242de628cd45173b71022648617968bd0962",  # good
+        "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
+        oceanAddr,  # invalid
+    ]
+
+    # addresses are from polygon
+    nfts = [query.DataNFT(addr, 137, "TEST") for addr in addresses]
+
+    # filter
+    nfts_filtered = query._filterNftinfos(nfts)
+
+    assert len(nfts_filtered) == 1
+    assert nfts[0] in nfts_filtered
 
 
 @enforce_types
