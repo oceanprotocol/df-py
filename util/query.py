@@ -363,7 +363,7 @@ def getNFTVolumes(
                     # calculate gas cost
                     gasCostWei = float(order["gasPrice"]) * float(order["gasUsed"])
                     gasCost = gasCostWei / 10**18
-                    lastPriceValue = gasCost  # deduct 1 wei so it's not profitable
+                    lastPriceValue = gasCost - 1  # deduct 1 wei so it's not profitable
 
                     # Set base token to wrapped token address for the chains native token
                     basetoken_addr = WRAPPED_TOKEN_ADDRS[chainID]
