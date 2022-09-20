@@ -159,9 +159,7 @@ def test_rewards():
 
         print("end week********\n")
 
-    # uncomment the line below to see all debug logs
-    assert fee_distributor.token_last_balance() == 2 #this fails, to see the print statements :)
-
+    
 
 @enforce_types
 def setup_function():
