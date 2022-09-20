@@ -235,6 +235,24 @@ def getAllocations(
 def getNFTInfos(chainID) -> List[DataNFT]:
     """
     @description
+      Fetch, filter and return all NFTs on the chain
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+
+    NFTinfo = _getNFTInfos(chainID)
+
+    if chainID != networkutil.DEV_CHAINID:
+        # filter if not on dev chain
+        NFTinfo = _filterNftinfos(NFTinfo)
+
+    return NFTinfo
+
+
+def _getNFTInfos(chainID) -> List[DataNFT]:
+    """
+    @description
       Return all NFTs on the chain
 
     @return
@@ -271,10 +289,6 @@ def getNFTInfos(chainID) -> List[DataNFT]:
             NFTinfo.append(datanft)
 
         offset += chunk_size
-
-    if chainID != networkutil.DEV_CHAINID:
-        # filter if not on dev chain
-        NFTinfo = _filterNftinfos(NFTinfo)
 
     return NFTinfo
 
