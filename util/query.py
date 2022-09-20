@@ -7,7 +7,12 @@ from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
 from util.blockrange import BlockRange
-from util.constants import AQUARIUS_BASE_URL, BROWNIE_PROJECT as B, MAX_ALLOCATE
+from util.constants import (
+    AQUARIUS_BASE_URL,
+    BROWNIE_PROJECT as B,
+    MAX_ALLOCATE,
+    WRAPPED_TOKEN_ADDRS,
+)
 from util.graphutil import submitQuery
 from util.tok import TokSet
 
@@ -291,16 +296,6 @@ def _getNFTInfos(chainID) -> List[DataNFT]:
         offset += chunk_size
 
     return NFTinfo
-
-
-WRAPPED_TOKEN_ADDRS = {
-    1: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-    3: "0xc778417e063141139fce010982780140aa0cd5ab",
-    4: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
-    137: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
-    56: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
-    # TODO Add more
-}
 
 
 def getNFTVolumes(
