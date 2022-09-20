@@ -95,6 +95,7 @@ def estimateClaim(addr: address) -> uint256:
     max_user_epoch: uint256 = VotingEscrow(self.voting_escrow).user_point_epoch(addr)
     _start_time: uint256 = FeeDistributor(self.fee_distributor).start_time()
     _last_token_time: uint256 = FeeDistributor(self.fee_distributor).last_token_time()
+    # Round down to weeks
     _last_token_time = _last_token_time / WEEK * WEEK
     
     if max_user_epoch == 0:
