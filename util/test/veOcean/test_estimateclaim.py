@@ -159,7 +159,6 @@ def test_rewards():
 
         print("end week********\n")
 
-    
 
 @enforce_types
 def setup_function():

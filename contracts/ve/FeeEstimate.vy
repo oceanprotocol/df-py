@@ -99,9 +99,9 @@ def estimateClaim(addr: address) -> uint256:
     # if checkpoints are missing, them we cannot have an accurate estimate
     # veFeeDistributor can do the checks, but requires tx and not just some call functions
     if block.timestamp >= FeeDistributor(self.fee_distributor).time_cursor():
-        return 0
+        raise("Call checkpoint function")
     if block.timestamp > _last_token_time + TOKEN_CHECKPOINT_DEADLINE:
-        return 0
+        raise("Call checkpoint function")
 
     # Round down to weeks
     _last_token_time = _last_token_time / WEEK * WEEK
