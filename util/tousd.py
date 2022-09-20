@@ -3,6 +3,7 @@ from typing import Dict
 from enforce_typing import enforce_types
 
 from util import cleancase
+from util.constants import WRAPPED_TOKEN_ADDRS, WRAPPED_TOKEN_SYMBOLS
 
 
 @enforce_types
@@ -50,6 +51,10 @@ def nftvolsToUsd(
     """
     cleancase.assertNFTvols(nftvols)
     cleancase.assertRates(rates)
+
+    # Add native token rates
+    for chainID in WRAPPED_TOKEN_ADDRS.keys():
+        symbols[chainID][WRAPPED_TOKEN_ADDRS[chainID]] = WRAPPED_TOKEN_SYMBOLS[chainID]
 
     addr_rates = ratesToAddrRates(
         rates, symbols
