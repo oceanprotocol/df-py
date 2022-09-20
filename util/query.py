@@ -293,6 +293,16 @@ def _getNFTInfos(chainID) -> List[DataNFT]:
     return NFTinfo
 
 
+WRAPPED_TOKEN_ADDRS = {
+    1: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+    3: "0xc778417e063141139fce010982780140aa0cd5ab",
+    4: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
+    137: "0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270",
+    56: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
+    # TODO Add more
+}
+
+
 def getNFTVolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
@@ -320,10 +330,15 @@ def getNFTVolumes(
               nft {
                 id
               }
+              dispensers {
+                id
+              }
             },
             lastPriceToken,
             lastPriceValue,
-            block
+            block,
+            gasPrice,
+            gasUsed
           }
         }
         """ % (
@@ -339,10 +354,21 @@ def getNFTVolumes(
             break
         for order in new_orders:
             lastPriceValue = float(order["lastPriceValue"])
-            if lastPriceValue == 0:
-                continue
-            nft_addr = order["datatoken"]["nft"]["id"].lower()
             basetoken_addr = order["lastPriceToken"]
+            nft_addr = order["datatoken"]["nft"]["id"].lower()
+
+            if lastPriceValue == 0:
+                if len(order["dispensers"]) > 0:
+                    # this means this is a free asset
+                    # calculate gas cost
+                    gasCostWei = float(order["gasPrice"]) * float(order["gasUsed"])
+                    gasCost = gasCostWei / 10**18
+                    lastPriceValue = gasCost  # deduct 1 wei so it's not profitable
+
+                    # Set base token to wrapped token address for the chains native token
+                    basetoken_addr = WRAPPED_TOKEN_ADDRS[chainID]
+                else:
+                    continue
 
             if basetoken_addr not in NFTvols:
                 NFTvols[basetoken_addr] = {}
