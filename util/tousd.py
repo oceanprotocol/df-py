@@ -3,7 +3,7 @@ from typing import Dict
 from enforce_typing import enforce_types
 
 from util import cleancase
-from util.constants import WRAPPED_TOKEN_ADDRS, WRAPPED_TOKEN_SYMBOLS
+from util.networkutil import WRAPPED_TOKEN_ADDRS, WRAPPED_TOKEN_SYMBOLS
 
 
 @enforce_types

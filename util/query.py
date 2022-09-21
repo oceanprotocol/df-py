@@ -11,7 +11,6 @@ from util.constants import (
     AQUARIUS_BASE_URL,
     BROWNIE_PROJECT as B,
     MAX_ALLOCATE,
-    WRAPPED_TOKEN_ADDRS,
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
@@ -358,7 +357,7 @@ def getNFTVolumes(
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = WRAPPED_TOKEN_ADDRS[chainID]
+            native_token_addr = networkutil.WRAPPED_TOKEN_ADDRS[chainID]
 
             # add gas cost value
             if native_token_addr not in NFTvols:
