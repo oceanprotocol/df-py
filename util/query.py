@@ -353,7 +353,7 @@ def getNFTVolumes(
             nft_addr = order["datatoken"]["nft"]["id"].lower()
 
             # Calculate gas cost
-            gasCostWei = float(order["gasPrice"]) * float(order["gasUsed"])
+            gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
