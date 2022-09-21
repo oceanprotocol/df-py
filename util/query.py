@@ -349,6 +349,8 @@ def getNFTVolumes(
             break
         for order in new_orders:
             lastPriceValue = float(order["lastPriceValue"])
+            if len(order["dispensers"]) == 0:
+                continue
             basetoken_addr = order["lastPriceToken"]
             nft_addr = order["datatoken"]["nft"]["id"].lower()
 
@@ -368,6 +370,9 @@ def getNFTVolumes(
 
             NFTvols[native_token_addr][nft_addr] += gasCost
             # ----
+
+            if lastPriceValue == 0:
+                continue
 
             # add lastPriceValue
             if basetoken_addr not in NFTvols:
