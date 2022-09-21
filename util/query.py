@@ -15,6 +15,7 @@ from util.constants import (
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
+from util.base18 import fromBase18
 
 
 class DataNFT:
@@ -352,19 +353,24 @@ def getNFTVolumes(
             basetoken_addr = order["lastPriceToken"]
             nft_addr = order["datatoken"]["nft"]["id"].lower()
 
-            if lastPriceValue == 0:
-                if len(order["dispensers"]) > 0:
-                    # this means this is a free asset
-                    # calculate gas cost
-                    gasCostWei = float(order["gasPrice"]) * float(order["gasUsed"])
-                    gasCost = gasCostWei / 10**18
-                    lastPriceValue = gasCost - 1  # deduct 1 wei so it's not profitable
+            # Calculate gas cost
+            gasCostWei = float(order["gasPrice"]) * float(order["gasUsed"])
 
-                    # Set base token to wrapped token address for the chains native token
-                    basetoken_addr = WRAPPED_TOKEN_ADDRS[chainID]
-                else:
-                    continue
+            # deduct 1 wei so it's not profitable for free assets
+            gasCost = fromBase18(gasCostWei - 1)
+            native_token_addr = WRAPPED_TOKEN_ADDRS[chainID]
 
+            # add gas cost value
+            if native_token_addr not in NFTvols:
+                NFTvols[native_token_addr] = {}
+
+            if nft_addr not in NFTvols[native_token_addr]:
+                NFTvols[native_token_addr][nft_addr] = 0
+
+            NFTvols[native_token_addr][nft_addr] += gasCost
+            # ----
+
+            # add lastPriceValue
             if basetoken_addr not in NFTvols:
                 NFTvols[basetoken_addr] = {}
 
