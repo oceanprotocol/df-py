@@ -53,8 +53,10 @@ def nftvolsToUsd(
     cleancase.assertRates(rates)
 
     # Add native token rates
-    for chainID in WRAPPED_TOKEN_ADDRS.keys():
-        symbols[chainID][WRAPPED_TOKEN_ADDRS[chainID]] = WRAPPED_TOKEN_SYMBOLS[chainID]
+    for chainID in WRAPPED_TOKEN_ADDRS:
+        token_addr = WRAPPED_TOKEN_ADDRS[chainID]
+        token_symbol = WRAPPED_TOKEN_SYMBOLS[chainID]
+        symbols[chainID][token_addr] = token_symbol
 
     addr_rates = ratesToAddrRates(
         rates, symbols
