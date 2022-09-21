@@ -55,7 +55,7 @@ def nftvolsToUsd(
     # Add native token rates
     for chainID in WRAPPED_TOKEN_ADDRS:
         token_addr = WRAPPED_TOKEN_ADDRS[chainID]
-        token_symbol = WRAPPED_TOKEN_SYMBOLS[chainID]
+        token_symbol = WRAPPED_TOKEN_SYMBOLS[token_addr]
         symbols[chainID][token_addr] = token_symbol
 
     addr_rates = ratesToAddrRates(
