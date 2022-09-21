@@ -349,7 +349,7 @@ def getNFTVolumes(
             break
         for order in new_orders:
             lastPriceValue = float(order["lastPriceValue"])
-            if len(order["dispensers"]) == 0:
+            if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
                 continue
             basetoken_addr = order["lastPriceToken"]
             nft_addr = order["datatoken"]["nft"]["id"].lower()
@@ -362,13 +362,14 @@ def getNFTVolumes(
             native_token_addr = networkutil.WRAPPED_TOKEN_ADDRS[chainID]
 
             # add gas cost value
-            if native_token_addr not in NFTvols:
-                NFTvols[native_token_addr] = {}
+            if gasCost > 0:
+                if native_token_addr not in NFTvols:
+                    NFTvols[native_token_addr] = {}
 
-            if nft_addr not in NFTvols[native_token_addr]:
-                NFTvols[native_token_addr][nft_addr] = 0
+                if nft_addr not in NFTvols[native_token_addr]:
+                    NFTvols[native_token_addr][nft_addr] = 0
 
-            NFTvols[native_token_addr][nft_addr] += gasCost
+                NFTvols[native_token_addr][nft_addr] += gasCost
             # ----
 
             if lastPriceValue == 0:
