@@ -359,7 +359,7 @@ def getNFTVolumes(
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = networkutil.WRAPPED_TOKEN_ADDRS[chainID]
+            native_token_addr = networkutil.CHAIN_ADDRS[chainID]
 
             # add gas cost value
             if gasCost > 0:
