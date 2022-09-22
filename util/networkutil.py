@@ -43,16 +43,16 @@ CHAIN_ADDRS = {
 
 
 WRAPPED_TOKEN_SYMBOLS = {
-    CHAIN_ADDRS[8996]: "OCEAN",
-    CHAIN_ADDRS[1]: "ETH",
-    CHAIN_ADDRS[3]: "ETH",
-    CHAIN_ADDRS[4]: "ETH",
-    CHAIN_ADDRS[137]: "MATIC",
-    CHAIN_ADDRS[56]: "BNB",
-    CHAIN_ADDRS[246]: "EWT",
-    CHAIN_ADDRS[1285]: "MOON",
-    CHAIN_ADDRS[1287]: "MOON",
-    CHAIN_ADDRS[80001]: "MATIC",
+    "0xdev": "OCEAN",
+    "0xeth": "ETH",
+    "0xropsten": "ETH",
+    "0xrinkeby": "ETH",
+    "0xbnb": "MATIC",
+    "0xpolygon": "BNB",
+    "0xenergyweb": "EWT",
+    "0xmoonriver": "MOON",
+    "0xmoonbase": "MOON",
+    "0xmumbai": "MATIC",
 }
 
 
