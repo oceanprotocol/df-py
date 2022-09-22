@@ -49,7 +49,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (nfts, stakes, vols, approved)
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
-  dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
