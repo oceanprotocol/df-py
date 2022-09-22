@@ -414,12 +414,10 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
 def do_dispense():
     HELP = f"""From rewards csv, dispense funds to chain.
 
-Usage: dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
+Usage: dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
   DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
- 
-OPTIONAL:
-  CHAINID (default is 1): CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
+  CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
   BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
 
