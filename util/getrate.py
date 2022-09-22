@@ -89,6 +89,7 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
 
     cg_id = _coingeckoId(token_symbol)
     req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"  # pylint: disable=line-too-long
+    print("URL", req_s)
     res = requests.get(req_s)
     data = res.json()["prices"]
     if data == []:
@@ -117,6 +118,8 @@ def _coingeckoId(token_symbol: str) -> str:
     id_ = token_symbol.lower()
     if id_ == "btc":
         return "bitcoin"
+    if id_ == "ewt":
+        return "energy-web-token"
     if "ocean" in id_:
         return "ocean-protocol"
     return id_
