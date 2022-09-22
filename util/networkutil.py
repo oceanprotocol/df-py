@@ -22,38 +22,26 @@ _CHAINID_TO_NETWORK = {
     1285: "moonriver",
     80001: "mumbai",
 }
+_CHAINID_TO_NATIVE_TOKEN = {
+    8996: "OCEAN",
+    1: "ETH",
+    3: "ETH",
+    4: "ETH",
+    56: "MATIC",
+    137: "BNB",
+    246: "EWT",
+    1287: "MOVR",
+    1285: "MOVR",
+    80001: "MATIC",
+}
+
 _NETWORK_TO_CHAINID = {
     network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
 }
 
 DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
 
-CHAIN_ADDRS = {
-    8996: "0xdev",
-    1: "0xeth",
-    3: "0xropsten",
-    4: "0xrinkeby",
-    56: "0xbnb",
-    137: "0xpolygon",
-    246: "0xenergyweb",
-    1285: "0xmoonriver",
-    1287: "0xmoonbase",
-    80001: "0xmumbai",
-}
-
-
-WRAPPED_TOKEN_SYMBOLS = {
-    "0xdev": "OCEAN",
-    "0xeth": "ETH",
-    "0xropsten": "ETH",
-    "0xrinkeby": "ETH",
-    "0xbnb": "MATIC",
-    "0xpolygon": "BNB",
-    "0xenergyweb": "EWT",
-    "0xmoonriver": "MOVR",
-    "0xmoonbase": "MOVR",
-    "0xmumbai": "MATIC",
-}
+CHAIN_ADDRS = {x: f"0x{y}" for x, y in _CHAINID_TO_NETWORK.items()}
 
 
 @enforce_types
