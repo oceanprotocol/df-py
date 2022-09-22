@@ -50,8 +50,8 @@ WRAPPED_TOKEN_SYMBOLS = {
     "0xbnb": "MATIC",
     "0xpolygon": "BNB",
     "0xenergyweb": "EWT",
-    "0xmoonriver": "MOON",
-    "0xmoonbase": "MOON",
+    "0xmoonriver": "MOVR",
+    "0xmoonbase": "MOVR",
     "0xmumbai": "MATIC",
 }
 
