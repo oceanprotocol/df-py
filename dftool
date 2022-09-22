@@ -53,7 +53,9 @@ Usage: dftool getrate|query|calc|dispense|..
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
+  
+  dftool fillaccounts CHAINID - deploy many random simple tokens (GANACHE ONLY)
+  
   dftool newdfrewards CHAINID - deploy new DFRewards contract
 
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -635,11 +637,11 @@ Usage: dftool compile
 
 # ========================================================================
 @enforce_types
-def do_manyrandom():
+def do_fillaccounts():
     # UPADATE THIS
-    HELP = f"""Deploy many random tokens & nfts then consume (for testing)
+    HELP = f"""Deploy many OCEAN tokens to accounts (GANACHE ONLY)
 
-Usage: dftool manyrandom CHAINID
+Usage: dftool fillaccounts CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
@@ -652,9 +654,9 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     # extract inputs
-    assert sys.argv[1] == "manyrandom"
+    assert sys.argv[1] == "fillaccounts"
     CHAINID = int(sys.argv[2])
-    print("dftool manyrandom: Begin")
+    print("dftool fillaccounts: Begin")
     print(f"Arguments: CHAINID={CHAINID}")
 
     if CHAINID != DEV_CHAINID:
@@ -671,11 +673,9 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
-    num_nfts = 10  # magic number
-    # This fn was deprecated, replace.
-    # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
-    print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
+    oceantestutil.fillAccountsWithSimpleToken(OCEANtoken())
+    
+    print(f"dftool fillaccounts: Done.")
 
 
 # ========================================================================
@@ -989,8 +989,8 @@ def do_main():
         do_querymany()
     elif sys.argv[1] == "compile":
         do_compile()
-    elif sys.argv[1] == "manyrandom":
-        do_manyrandom()
+    elif sys.argv[1] == "fillaccounts":
+        do_fillaccounts()
     elif sys.argv[1] == "newdfrewards":
         do_newdfrewards()
     elif sys.argv[1] == "newdfstrategy":
