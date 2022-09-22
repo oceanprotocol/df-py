@@ -116,10 +116,11 @@ def _toDatetime(st: str, fin: str) -> Tuple[datetime, datetime]:
 def _coingeckoId(token_symbol: str) -> str:
     """Convert token_symbol to coingecko id for a few common tokens"""
     id_ = token_symbol.lower()
-    if id_ == "btc":
-        return "bitcoin"
-    if id_ == "ewt":
-        return "energy-web-token"
-    if "ocean" in id_:
-        return "ocean-protocol"
-    return id_
+
+    all_tokens = requests.get("https://api.coingecko.com/api/v3/coins/list").json()
+
+    for token in all_tokens:
+        if token["symbol"] == id_:
+            return token["id"]
+
+    return None
