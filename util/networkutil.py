@@ -10,30 +10,23 @@ _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 # Development chainid is from brownie, rest are from chainlist.org
 # Chain values to fit Ocean subgraph urls as given in
 # https://v3.docs.oceanprotocol.com/concepts/networks/
-_CHAINID_TO_NETWORK = {
-    8996: "development",  # ganache
-    1: "mainnet",
-    3: "ropsten",
-    4: "rinkeby",
-    56: "bsc",
-    137: "polygon",
-    246: "energyweb",
-    1287: "moonbase",
-    1285: "moonriver",
-    80001: "mumbai",
-}
-_CHAINID_TO_NATIVE_TOKEN = {
-    8996: "OCEAN",
-    1: "ETH",
-    3: "ETH",
-    4: "ETH",
-    56: "MATIC",
-    137: "BNB",
-    246: "EWT",
-    1287: "MOVR",
-    1285: "MOVR",
-    80001: "MATIC",
-}
+
+_RAW_CHAIN_DATA = [
+    (8996, "development", "OCEAN"),
+    (1, "mainnet", "ETH"),
+    (3, "ropsten", "ETH"),
+    (4, "rinkeby", "ETH"),
+    (56, "bsc", "MATIC"),
+    (137, "polygon", "BNB"),
+    (246, "energyweb", "EWT"),
+    (1287, "moonbase", "MOVR"),
+    (1285, "moonriver", "MOVR"),
+    (80001, "mumbai", "MATIC"),
+]
+
+_CHAINID_TO_NETWORK = {x[0]: x[1] for x in _RAW_CHAIN_DATA}
+_CHAINID_TO_NATIVE_TOKEN = {x[0]: x[2] for x in _RAW_CHAIN_DATA}
+
 
 _NETWORK_TO_CHAINID = {
     network: chainID for chainID, network in _CHAINID_TO_NETWORK.items()
