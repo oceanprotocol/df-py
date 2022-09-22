@@ -54,12 +54,17 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
         st_dt = st_dt - timedelta(days=1)
 
     req_s = f"https://api.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
-    res = requests.get(req_s)
-    data = res.json()
-    if data == []:
+    try:
+        res = requests.get(req_s)
+        data = res.json()
+        if data == []:
+            return None
+        avg = sum([float(x[4]) for x in data]) / len(data)
+        return avg
+    # pylint: disable=broad-except
+    except Exception as e:
+        print(f"Error in getBinanceRate: {e}")
         return None
-    avg = sum([float(x[4]) for x in data]) / len(data)
-    return avg
 
 
 @enforce_types
@@ -84,7 +89,10 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
         st_dt = st_dt - timedelta(days=1)
 
     cg_id = _coingeckoId(token_symbol)
+    if cg_id == "":
+        raise ValueError(f"Couldn't find Coingecko ID for {token_symbol}")
     req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"  # pylint: disable=line-too-long
+    print("URL", req_s)
     res = requests.get(req_s)
     data = res.json()["prices"]
     if data == []:
@@ -111,8 +119,11 @@ def _toDatetime(st: str, fin: str) -> Tuple[datetime, datetime]:
 def _coingeckoId(token_symbol: str) -> str:
     """Convert token_symbol to coingecko id for a few common tokens"""
     id_ = token_symbol.lower()
-    if id_ == "btc":
-        return "bitcoin"
-    if "ocean" in id_:
-        return "ocean-protocol"
-    return id_
+
+    all_tokens = requests.get("https://api.coingecko.com/api/v3/coins/list").json()
+
+    for token in all_tokens:
+        if token["symbol"] == id_:
+            return token["id"]
+
+    return ""
