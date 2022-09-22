@@ -61,6 +61,7 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
             return None
         avg = sum([float(x[4]) for x in data]) / len(data)
         return avg
+    # pylint: disable=broad-except
     except Exception as e:
         print(f"Error in getBinanceRate: {e}")
         return None
@@ -88,6 +89,8 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
         st_dt = st_dt - timedelta(days=1)
 
     cg_id = _coingeckoId(token_symbol)
+    if cg_id == "":
+        raise ValueError(f"Couldn't find Coingecko ID for {token_symbol}")
     req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"  # pylint: disable=line-too-long
     print("URL", req_s)
     res = requests.get(req_s)
@@ -123,4 +126,4 @@ def _coingeckoId(token_symbol: str) -> str:
         if token["symbol"] == id_:
             return token["id"]
 
-    return None
+    return ""
