@@ -67,10 +67,8 @@ dftool getrate H2O $date $now $CSV_PATH
 dftool getrate ETH $date $now $CSV_PATH
 dftool getrate MATIC $date $now $CSV_PATH
 dftool getrate BNB $date $now $CSV_PATH
-
-# getrate does not support EWT and MOON for now.
-# dftool getrate EWT $date $now $CSV_PATH 
-# dftool getrate MOON $date $now $CSV_PATH
+dftool getrate EWT $date $now $CSV_PATH 
+dftool getrate MOVR $date $now $CSV_PATH
 
 
 dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137 #output approved-137.csv, nftvols-137.csv, symbols-137.csv
