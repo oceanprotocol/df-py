@@ -416,8 +416,10 @@ def do_dispense():
 
 Usage: dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
-  CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
   DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
+ 
+OPTIONAL:
+  CHAINID (default is 1): CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
   BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
 
@@ -430,7 +432,11 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # extract inputs
     assert sys.argv[1] == "dispense"
     CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
+
+    if len(sys.argv) >= 4:
+        CHAINID = int(sys.argv[3])
+    else:
+        CHAINID = 1
 
     if len(sys.argv) >= 5:
         DFREWARDS_ADDR = sys.argv[4]
@@ -463,7 +469,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
 
-    # "flaten" the rewards dict to dispense all chains in one go
+    # "flatten" the rewards dict to dispense all chains in one go
     all_rewards = {}
     for chainID in rewards:
         for lp in rewards[chainID]:
