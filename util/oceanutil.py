@@ -50,7 +50,7 @@ def recordDeployedContracts(address_file: str):
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
     if "veOCEAN" in a:
-        C["veOCEAN"] = B.veOCEAN.at(a["veOCEAN"])
+        C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
 
     if "veAllocate" in a:
         C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
