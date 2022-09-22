@@ -214,6 +214,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
+    oceantestutil.fillAccountsWithOCEAN()
 
     PREV = types.SimpleNamespace()
 
@@ -228,6 +229,16 @@ def setup_function():
     os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
 
     os.environ["SECRET_SEED"] = "1234"
+
+    OCEAN = oceanutil.OCEANtoken()
+    tups = oceantestutil.randomCreateDataNFTWithFREs(8, OCEAN, accounts)
+    oceantestutil.randomConsumeFREs(tups, OCEAN)
+    oceantestutil.randomLockAndAllocate(tups)
+
+    brownie.network.chain.mine(20)
+    brownie.network.chain.sleep(20)
+    brownie.network.chain.mine(20)
+    time.sleep(2)
 
 
 @enforce_types
