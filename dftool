@@ -49,7 +49,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (nfts, stakes, vols, approved)
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
-  dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
@@ -414,10 +414,10 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
 def do_dispense():
     HELP = f"""From rewards csv, dispense funds to chain.
 
-Usage: dftool dispense CSV_DIR CHAINID [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
+Usage: dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
-  CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}
   DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
+  CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
   BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
 
@@ -430,7 +430,11 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # extract inputs
     assert sys.argv[1] == "dispense"
     CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
+
+    if len(sys.argv) >= 4:
+        CHAINID = int(sys.argv[3])
+    else:
+        CHAINID = 1
 
     if len(sys.argv) >= 5:
         DFREWARDS_ADDR = sys.argv[4]
@@ -462,8 +466,16 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
+
+    # "flatten" the rewards dict to dispense all chains in one go
+    all_rewards = {}
+    for chainID in rewards:
+        for lp in rewards[chainID]:
+            all_rewards[lp] = rewards[chainID][lp]
+
+    # dispense
     dispense.dispense(
-        rewards[CHAINID],
+        all_rewards,
         DFREWARDS_ADDR,
         TOKEN_ADDR,
         from_account,
