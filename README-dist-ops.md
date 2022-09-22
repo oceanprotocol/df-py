@@ -54,14 +54,31 @@ export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 #if DF4, counting ended early, so instead use: `export now=2022-07-12`
 
-dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
-dftool getrate H2O $date $now mydata
+# sample size
+export SAMPLE_SIZE=50
 
-dftool query $date $now 50 mydata 137 #output approved-137.csv, nftvols-137.csv, stakes-chain137.csv
-dftool query $date $now 50 mydata 246
-dftool query $date $now 50 mydata 1
-dftool query $date $now 50 mydata 56
-dftool query $date $now 50 mydata 1285
+# csv directory path
+export CSV_PATH="./mydata"
+
+dftool getrate OCEAN $date $now $CSV_PATH #output rate-OCEAN.csv
+dftool getrate H2O $date $now $CSV_PATH
+
+# get rate of native tokens
+dftool getrate ETH $date $now $CSV_PATH
+dftool getrate MATIC $date $now $CSV_PATH
+dftool getrate BNB $date $now $CSV_PATH
+dftool getrate EWT $date $now $CSV_PATH 
+dftool getrate MOVR $date $now $CSV_PATH
+
+
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137 #output approved-137.csv, nftvols-137.csv, symbols-137.csv
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 246
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 56
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1285
+
+dftool allocations $date $now $SAMPLE_SIZE $CSV_PATH 1
+dftool vebals $date $now $SAMPLE_SIZE $CSV_PATH 1
 ```
 
 Then, in console:
@@ -106,17 +123,7 @@ Then, confirm:
 
 Now, dispense funds for remaining chains. In console:
 ```console
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr #energyweb
-#then, confirm
-
 dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr #mainnet
-#then, confirm
-
-dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr #bsc
-#then, confirm
-
-dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr #moonriver
-#then, confirm
 ```
 
 We're now done dispensing!
