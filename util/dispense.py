@@ -36,7 +36,6 @@ def dispense(
     @return
       <<nothing, but updates the dfrewards contract on-chain>>
     """
-    rewards = rewards
     logger.info("dispense: begin")
     logger.info(f"  # addresses: {len(rewards)}")
 
