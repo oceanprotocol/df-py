@@ -7,9 +7,14 @@ from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
 from util.blockrange import BlockRange
-from util.constants import AQUARIUS_BASE_URL, BROWNIE_PROJECT as B, MAX_ALLOCATE
+from util.constants import (
+    AQUARIUS_BASE_URL,
+    BROWNIE_PROJECT as B,
+    MAX_ALLOCATE,
+)
 from util.graphutil import submitQuery
 from util.tok import TokSet
+from util.base18 import fromBase18
 
 
 class DataNFT:
@@ -320,10 +325,15 @@ def getNFTVolumes(
               nft {
                 id
               }
+              dispensers {
+                id
+              }
             },
             lastPriceToken,
             lastPriceValue,
-            block
+            block,
+            gasPrice,
+            gasUsed
           }
         }
         """ % (
@@ -339,11 +349,33 @@ def getNFTVolumes(
             break
         for order in new_orders:
             lastPriceValue = float(order["lastPriceValue"])
+            if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
+                continue
+            basetoken_addr = order["lastPriceToken"]
+            nft_addr = order["datatoken"]["nft"]["id"].lower()
+
+            # Calculate gas cost
+            gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
+
+            # deduct 1 wei so it's not profitable for free assets
+            gasCost = fromBase18(gasCostWei - 1)
+            native_token_addr = networkutil.CHAIN_ADDRS[chainID]
+
+            # add gas cost value
+            if gasCost > 0:
+                if native_token_addr not in NFTvols:
+                    NFTvols[native_token_addr] = {}
+
+                if nft_addr not in NFTvols[native_token_addr]:
+                    NFTvols[native_token_addr][nft_addr] = 0
+
+                NFTvols[native_token_addr][nft_addr] += gasCost
+            # ----
+
             if lastPriceValue == 0:
                 continue
-            nft_addr = order["datatoken"]["nft"]["id"].lower()
-            basetoken_addr = order["lastPriceToken"]
 
+            # add lastPriceValue
             if basetoken_addr not in NFTvols:
                 NFTvols[basetoken_addr] = {}
 
