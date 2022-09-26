@@ -71,6 +71,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
     veBalances: Dict[str, float] = {}
+    veBalanceUpdateCounter: Dict[str, int] = {}
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
@@ -147,14 +148,20 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
                 ## set user balance
                 if user["id"] not in veBalances:
                     veBalances[user["id"]] = balance
-
-                veBalances[user["id"]] = (balance + veBalances[user["id"]]) / 2
+                    veBalanceUpdateCounter[user["id"]] = 1
+                else:
+                    veBalances[user["id"]] += veBalances[user["id"]]
+                    veBalanceUpdateCounter[user["id"]] += 1
 
             ## increase offset
             offset += chunk_size
         n_blocks_sampled += 1
 
     assert n_blocks_sampled > 0
+
+    # get average
+    for user in veBalances:
+        veBalances[user] /= veBalanceUpdateCounter[user]
 
     print("getveBalances: done")
 
@@ -174,6 +181,7 @@ def getAllocations(
     """
 
     _allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
+    _allocationsUpdateCounter: Dict[int, Dict[str, Dict[str, int]]] = {}
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
@@ -224,15 +232,23 @@ def getAllocations(
 
                     if LP_addr not in _allocations[chain_id][nft_addr]:
                         _allocations[chain_id][nft_addr][LP_addr] = percentage
-
-                    _allocations[chain_id][nft_addr][LP_addr] = (
-                        percentage + _allocations[chain_id][nft_addr][LP_addr]
-                    ) / 2
+                        _allocationsUpdateCounter[chain_id][nft_addr][LP_addr] = 1
+                    else:
+                        _allocations[chain_id][nft_addr][LP_addr] += percentage
+                        _allocationsUpdateCounter[chain_id][nft_addr][LP_addr] += 1
 
             offset += chunk_size
         n_blocks_sampled += 1
 
     assert n_blocks_sampled > 0
+
+    # get average
+    for chain_id in _allocations:
+        for nft_addr in _allocations[chain_id]:
+            for LP_addr in _allocations[chain_id][nft_addr]:
+                _allocations[chain_id][nft_addr][LP_addr] /= _allocationsUpdateCounter[
+                    chain_id
+                ][nft_addr][LP_addr]
 
     return _allocations
 
