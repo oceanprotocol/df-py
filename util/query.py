@@ -150,7 +150,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
                     veBalances[user["id"]] = balance
                     veBalanceUpdateCounter[user["id"]] = 1
                 else:
-                    veBalances[user["id"]] += veBalances[user["id"]]
+                    veBalances[user["id"]] += balance
                     veBalanceUpdateCounter[user["id"]] += 1
 
             ## increase offset
