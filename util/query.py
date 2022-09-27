@@ -230,6 +230,11 @@ def getAllocations(
                     if nft_addr not in _allocations[chain_id]:
                         _allocations[chain_id][nft_addr] = {}
 
+                    if chain_id not in _allocationsUpdateCounter:
+                        _allocationsUpdateCounter[chain_id] = {}
+                    if nft_addr not in _allocationsUpdateCounter[chain_id]:
+                        _allocationsUpdateCounter[chain_id][nft_addr] = {}
+
                     if LP_addr not in _allocations[chain_id][nft_addr]:
                         _allocations[chain_id][nft_addr][LP_addr] = percentage
                         _allocationsUpdateCounter[chain_id][nft_addr][LP_addr] = 1
