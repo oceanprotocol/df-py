@@ -70,8 +70,12 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
+    # [LP_addr] : veBalance
     veBalances: Dict[str, float] = {}
+
+    # [LP_addr] : count
     num_ve_updates: Dict[str, int] = {}
+
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
