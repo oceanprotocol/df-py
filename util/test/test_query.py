@@ -142,7 +142,9 @@ def _test_getAllocations(rng: BlockRange):
                     oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
                     / MAX_ALLOCATE
                 )
-                assert allocations[chainId][nftAddr][userAddr] == allocation
+                assert allocations[chainId][nftAddr][userAddr] == approx(
+                    allocation, 0.0000001
+                )
 
 
 @enforce_types
