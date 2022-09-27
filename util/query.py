@@ -233,17 +233,17 @@ def getAllocations(
                     allocated = float(ve_allocation["allocated"])
                     percentage = allocated / MAX_ALLOCATE
 
-                    if chain_id not in _allocations:
-                        _allocations[chain_id] = {}
-                    if nft_addr not in _allocations[chain_id]:
-                        _allocations[chain_id][nft_addr] = {}
+                    if chain_id not in allocations:
+                        allocations[chain_id] = {}
+                    if nft_addr not in allocations[chain_id]:
+                        allocations[chain_id][nft_addr] = {}
 
                     if chain_id not in num_allocations:
                         num_allocations[chain_id] = {}
                     if nft_addr not in num_allocations[chain_id]:
                         num_allocations[chain_id][nft_addr] = {}
 
-                    if LP_addr not in _allocations[chain_id][nft_addr]:
+                    if LP_addr not in allocations[chain_id][nft_addr]:
                         allocations[chain_id][nft_addr][LP_addr] = percentage
                         num_allocations[chain_id][nft_addr][LP_addr] = 1
                     else:
