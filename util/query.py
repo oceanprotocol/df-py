@@ -256,13 +256,13 @@ def getAllocations(
     assert n_blocks_sampled > 0
 
     # get average
-    for chain_id in _allocations:
-        for nft_addr in _allocations[chain_id]:
-            for LP_addr in _allocations[chain_id][nft_addr]:
+    for chain_id in allocations:
+        for nft_addr in allocations[chain_id]:
+            for LP_addr in allocations[chain_id][nft_addr]:
                 n = num_allocations[chain_id][nft_addr][LP_addr]
-                _allocations[chain_id][nft_addr][LP_addr] /= n
+                allocations[chain_id][nft_addr][LP_addr] /= n
 
-    return _allocations
+    return allocations
 
 
 def getNFTInfos(chainID) -> List[DataNFT]:
