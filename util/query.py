@@ -544,6 +544,12 @@ def getApprovedTokens(chainID: int) -> TokSet:
         symb = B.Simpletoken.at(addr).symbol().upper()
         approved_tokens.add(chainID, addr, symb)
 
+    approved_tokens.add(
+        chainID,
+        networkutil.CHAIN_ADDRS[chainID],
+        networkutil._CHAINID_TO_NATIVE_TOKEN[chainID],
+    )
+
     return approved_tokens
 
 
