@@ -1,5 +1,5 @@
 from enforce_typing import enforce_types
-from util.networkutil import CHAIN_ADDRS
+from util.networkutil import _CHAINID_TO_ADDRS
 
 from util.tousd import ratesToAddrRates, nftvolsToUsd
 
@@ -98,7 +98,7 @@ def test_nftvolsToUsd_twobasetokens():
 
 @enforce_types
 def test_native_token_rates():
-    base_token = CHAIN_ADDRS[1].lower()
+    base_token = _CHAINID_TO_ADDRS[1].lower()
     rates = {"ETH": 100.0}
     symbols = {1: {"x": "x"}}
     nftvols = {1: {base_token: {LP1.lower(): 1.0, LP2.lower(): 2.0}}}
