@@ -98,7 +98,6 @@ def test_all():
     blockRange = BlockRange(startBlockNumber, endBlockNumber, 100, 42)
 
     # run actual tests
-    _test_getApprovedTokens()
     _test_getSymbols()
     _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_getveBalances(blockRange)
@@ -143,12 +142,6 @@ def _test_getAllocations(rng: BlockRange):
                     / MAX_ALLOCATE
                 )
                 assert allocations[chainId][nftAddr][userAddr] == allocation
-
-
-@enforce_types
-def _test_getApprovedTokens():
-    approved_tokens = query.getApprovedTokens(CHAINID)
-    assert approved_tokens.hasSymbol(CHAINID, "OCEAN")
 
 
 @enforce_types
