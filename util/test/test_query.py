@@ -10,6 +10,7 @@ from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
+from util.tok import TokSet
 
 account0, QUERY_ST = None, 0
 
@@ -98,7 +99,6 @@ def test_all():
     blockRange = BlockRange(startBlockNumber, endBlockNumber, 100, 42)
 
     # run actual tests
-    _test_getApprovedTokens()
     _test_getSymbols()
     _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_getveBalances(blockRange)
@@ -147,19 +147,15 @@ def _test_getAllocations(rng: BlockRange):
 
 
 @enforce_types
-def _test_getApprovedTokens():
-    approved_tokens = query.getApprovedTokens(CHAINID)
-    assert approved_tokens.hasSymbol(CHAINID, "OCEAN")
-
-
-@enforce_types
 def _test_getSymbols():
-    approved_tokens = query.getApprovedTokens(CHAINID)
+    oceanToken = oceanutil.OCEANtoken()
+    tokset = TokSet()
+    tokset.add(CHAINID, oceanToken.address.lower(), "OCEAN")
     symbols_at_chain = query.getSymbols(
-        approved_tokens, CHAINID
+        tokset, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
 
-    OCEAN_tok = approved_tokens.tokAtSymbol(CHAINID, "OCEAN")
+    OCEAN_tok = tokset.tokAtSymbol(CHAINID, "OCEAN")
     assert symbols_at_chain[OCEAN_tok.address] == "OCEAN"
 
 
@@ -174,10 +170,9 @@ def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
 def _test_query(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (V0, A0, SYM0) = query.query_all(rng, CHAINID)
+    (V0, SYM0) = query.query_all(rng, CHAINID)
 
     assert CO2_ADDR in V0
-    assert A0
     assert SYM0
 
 

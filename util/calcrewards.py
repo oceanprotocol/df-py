@@ -15,7 +15,6 @@ def calcRewards(
     allocations: Dict[str, Dict[str, Dict[str, float]]],
     veBalances: Dict[str, float],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    approved_token_addrs: Dict[int, List[str]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
     rewards_avail_TOKEN: float,
@@ -26,7 +25,6 @@ def calcRewards(
       allocations - dict of [chainID][nft_addr][LP_addr] : allocation percentage for the user
       veBalances - dict of [LP_addr] : ve balance for the user
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : data consume volume
-      approved_token_addrs -- dict of [chainID] : list_of_addr
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
       rates -- dict of [basetoken_symbol] : USD_price
       rewards_avail_TOKEN -- float -- amount of rewards avail, in units of OCEAN or PSDN
@@ -44,9 +42,7 @@ def calcRewards(
         raise ValueError("No veBalances provided")
 
     (allocations, nftvols, rates) = cleancase.modTuple(allocations, nftvols, rates)
-    (allocations, nftvols) = approvedfilter.modTuple(
-        approved_token_addrs, allocations, nftvols
-    )
+    (allocations, nftvols) = approvedfilter.modTuple(allocations, nftvols)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 

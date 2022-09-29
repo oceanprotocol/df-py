@@ -37,7 +37,6 @@ def test_query(tmp_path):
 
     # test result
     assert csvs.nftvolsCsvFilenames(CSV_DIR)
-    assert csvs.approvedCsvFilenames(CSV_DIR)
     assert csvs.symbolsCsvFilenames(CSV_DIR)
 
 
@@ -106,9 +105,6 @@ def test_calc(tmp_path):
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
     csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
-
-    approved_token_addrs_at_chain = [OCEAN_addr]
-    csvs.saveApprovedCsv(approved_token_addrs_at_chain, CSV_DIR, CHAINID)
 
     csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
 
