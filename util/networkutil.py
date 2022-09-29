@@ -26,6 +26,10 @@ _RAW_CHAIN_DATA = [
 
 _CHAINID_TO_NETWORK = {x[0]: x[1] for x in _RAW_CHAIN_DATA}
 _CHAINID_TO_NATIVE_TOKEN = {x[0]: x[2] for x in _RAW_CHAIN_DATA}
+_CHAINID_TO_ADDRS = {x: f"0x{y}" for x, y in _CHAINID_TO_NETWORK.items()}
+_ADDRS_TO_SYMBOL = {}
+for chainid, addr in _CHAINID_TO_ADDRS.items():
+    _ADDRS_TO_SYMBOL[addr] = _CHAINID_TO_NATIVE_TOKEN[chainid]
 
 
 _NETWORK_TO_CHAINID = {
@@ -33,8 +37,6 @@ _NETWORK_TO_CHAINID = {
 }
 
 DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
-
-CHAIN_ADDRS = {x: f"0x{y}" for x, y in _CHAINID_TO_NETWORK.items()}
 
 
 @enforce_types
