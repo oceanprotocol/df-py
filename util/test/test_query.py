@@ -10,6 +10,7 @@ from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
+from util.tok import TokSet
 
 account0, QUERY_ST = None, 0
 
@@ -146,12 +147,13 @@ def _test_getAllocations(rng: BlockRange):
 
 @enforce_types
 def _test_getSymbols():
-    approved_tokens = query.getApprovedTokens(CHAINID)
+    oceanToken = oceanutil.OCEANtoken()
+    tokset = TokSet().add(CHAINID, oceanToken.address, "OCEAN")
     symbols_at_chain = query.getSymbols(
-        approved_tokens, CHAINID
+        tokset, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
 
-    OCEAN_tok = approved_tokens.tokAtSymbol(CHAINID, "OCEAN")
+    OCEAN_tok = tokset.tokAtSymbol(CHAINID, "OCEAN")
     assert symbols_at_chain[OCEAN_tok.address] == "OCEAN"
 
 
