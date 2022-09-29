@@ -518,7 +518,7 @@ def _didsInPurgatory() -> List[str]:
 
 
 @enforce_types
-def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
+def getSymbols(tokens: TokSet, chainID: int) -> Dict[str, str]:
     """
     @description
       Return mapping of basetoken addr -> symbol for this chain
@@ -526,11 +526,7 @@ def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
     @return
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
     """
-    return {
-        tok.address: tok.symbol
-        for tok in approved_tokens.toks
-        if tok.chainID == chainID
-    }
+    return {tok.address: tok.symbol for tok in tokens.toks if tok.chainID == chainID}
 
 
 _ADDR_TO_SYMBOL = networkutil._ADDRS_TO_SYMBOL  # address : TOKEN_symbol
