@@ -1,8 +1,7 @@
 # 'modX' functions modify 'X' to follow rules: only keep entries with approved basetokens
 # 'assertX' functions asserts that 'X' follows the rules
 
-from copy import deepcopy
-from typing import Dict, List, Tuple
+from typing import Tuple
 
 from enforce_typing import enforce_types
 
