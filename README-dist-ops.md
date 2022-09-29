@@ -83,7 +83,7 @@ dftool vebals $date $now $SAMPLE_SIZE $CSV_PATH 1
 
 Then, in console:
 ```console
-dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
+dftool calc $CSV_PATH 10000 OCEAN # output rewardsperlp-OCEAN.csv
 ```
 
 
@@ -111,7 +111,7 @@ Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local accoun
 
 Finally, the big step: dispense funds. In console:
 ```console
-dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr #polygon
+dftool dispense $CSV_PATH 137 $dfrewards_addr $OCEAN_137_addr #polygon
 ```
 
 Then, confirm:
@@ -123,7 +123,7 @@ Then, confirm:
 
 Now, dispense funds for remaining chains. In console:
 ```console
-dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr #mainnet
+dftool dispense $CSV_PATH 1 $dfrewards_addr $OCEAN_1_addr #mainnet
 ```
 
 We're now done dispensing!
@@ -134,7 +134,7 @@ Next steps are to get the word out.
 
 First, create a tarball of the data. In console:
 ```console
-cd mydata
+cd $CSV_PATH
 tar -cvf df3-final.tar *.csv
 gzip df3-final.tar
 # result is df3-final.tar.gz
