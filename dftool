@@ -47,7 +47,7 @@ Then LP steps:
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (nfts, stakes, vols, approved)
+  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
@@ -126,7 +126,6 @@ SECRET_SEED -- secret integer used to seed the rng
     if not csvs.rateCsvFilenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(0)
-    _exitIfFileExists(csvs.approvedCsvFilename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -150,9 +149,8 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
     rng.filterByMaxBlock(len(chain))
-    (Vi, Ai, SYMi) = query.query_all(rng, CHAINID)
+    (Vi, SYMi) = query.query_all(rng, CHAINID)
     csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
-    csvs.saveApprovedCsv(Ai, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
@@ -375,9 +373,6 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     if not csvs.rateCsvFilenames(CSV_DIR):
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
-    if not csvs.approvedCsvFilenames(CSV_DIR):
-        print(f"\nNo 'approved*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
     if not csvs.symbolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
@@ -396,12 +391,11 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     Allc = csvs.loadAllocationCsvs(CSV_DIR)
     vebals = csvs.loadVeOceanCsv(CSV_DIR)
     nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)
-    A = csvs.loadApprovedCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        Allc, vebals, nftvols, A, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
+        Allc, vebals, nftvols, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
     )
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
