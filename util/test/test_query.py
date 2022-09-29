@@ -149,7 +149,7 @@ def _test_getAllocations(rng: BlockRange):
 def _test_getSymbols():
     oceanToken = oceanutil.OCEANtoken()
     tokset = TokSet()
-    tokset.add(CHAINID, oceanToken.address, "OCEAN")
+    tokset.add(CHAINID, oceanToken.address.lower(), "OCEAN")
     symbols_at_chain = query.getSymbols(
         tokset, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
