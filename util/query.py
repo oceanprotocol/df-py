@@ -36,14 +36,13 @@ class DataNFT:
 @enforce_types
 def query_all(
     rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], List[str], Dict[str, str]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
     """
     @description
       Return nftvols for the input block range and chain.
 
     @return
       nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
-      approved_token_addrs_at_chain -- list_of_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
 
     @notes
@@ -53,10 +52,13 @@ def query_all(
     Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
-    ASETi: TokSet = getApprovedTokens(chainID)
-    Ai = ASETi.exportTokenAddrs()[chainID]
-    SYMi = getSymbols(ASETi, chainID)
-    return (Vi, Ai, SYMi)
+    # get all basetokens from Vi
+    basetokens = TokSet()
+    for basetoken in Vi:
+        _symbol = symbol(basetoken)
+        basetokens.add(chainID, basetoken, _symbol)
+    SYMi = getSymbols(basetokens, chainID)
+    return (Vi, SYMi)
 
 
 @enforce_types
@@ -359,7 +361,7 @@ def getNFTVolumes(
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = networkutil.CHAIN_ADDRS[chainID]
+            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID]
 
             # add gas cost value
             if gasCost > 0:
@@ -516,44 +518,6 @@ def _didsInPurgatory() -> List[str]:
 
 
 @enforce_types
-def getApprovedTokenAddrs(chainID: int) -> dict:
-    """@return - approved_token_addrs_at_chain -- dict of [chainID] : list_of_addr"""
-    tok_set = getApprovedTokens(chainID)
-    d = tok_set.exportTokenAddrs()
-    return d
-
-
-@enforce_types
-def getApprovedTokens(chainID: int) -> TokSet:
-    """
-    @description
-      Return basetokens that are 'approved', ie eligible for data farming
-
-    @return
-      approved_tokens -- TokSet
-    """
-    query = "{ opcs { approvedTokens { id } } }"
-    result = submitQuery(query, chainID)
-    if len(result["data"]["opcs"][0]["approvedTokens"]) == 0:
-        raise Exception(f"No approved tokens found in the chain {chainID}")
-    # subgraph data: "approvedTokens": [ { "id": "address" } ]
-
-    approved_tokens = TokSet()
-    for x in result["data"]["opcs"][0]["approvedTokens"]:
-        addr = x["id"].lower()
-        symb = B.Simpletoken.at(addr).symbol().upper()
-        approved_tokens.add(chainID, addr, symb)
-
-    approved_tokens.add(
-        chainID,
-        networkutil.CHAIN_ADDRS[chainID],
-        networkutil._CHAINID_TO_NATIVE_TOKEN[chainID],
-    )
-
-    return approved_tokens
-
-
-@enforce_types
 def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
     """
     @description
@@ -569,7 +533,7 @@ def getSymbols(approved_tokens: TokSet, chainID: int) -> Dict[str, str]:
     }
 
 
-_ADDR_TO_SYMBOL = {}  # address : TOKEN_symbol
+_ADDR_TO_SYMBOL = networkutil._ADDRS_TO_SYMBOL  # address : TOKEN_symbol
 
 
 def symbol(addr: str):
