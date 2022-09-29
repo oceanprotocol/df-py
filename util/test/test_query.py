@@ -138,11 +138,12 @@ def _test_getAllocations(rng: BlockRange):
     for chainId in allocations:
         for nftAddr in allocations[chainId]:
             for userAddr in allocations[chainId][nftAddr]:
-                allocation = (
+                allocation_contract = (
                     oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
                     / MAX_ALLOCATE
                 )
-                assert allocations[chainId][nftAddr][userAddr] == allocation
+                allocation_query = allocations[chainId][nftAddr][userAddr]
+                assert allocation_query == approx(allocation_contract, 1e-7)
 
 
 @enforce_types
