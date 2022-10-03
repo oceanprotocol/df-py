@@ -62,8 +62,6 @@ def nftvolsToUsd(
 
         symbols[chainID][token_addr] = token_symbol
 
-    print("symbols:", symbols)
-
     addr_rates = ratesToAddrRates(
         rates, symbols
     )  # dict of [chainID][basetoken_addr] : USD_price
