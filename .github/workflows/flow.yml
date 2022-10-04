@@ -79,7 +79,8 @@ jobs:
 
       - name: Run sed
         run: |
-          sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/approved-137.csv
+          cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
+          sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
 
       - name: Run dftool calc
         run: |
