@@ -89,5 +89,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: CSV Files $now
+          name: CSV Files
           path: $CSV_DIR
