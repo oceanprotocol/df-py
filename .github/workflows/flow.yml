@@ -1,8 +1,10 @@
 name: Reward Calculation
 
 on:
-  schedule:
-    - cron: "0 0 * * 4"
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   calculate-reward:
@@ -88,4 +90,4 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: CSV Files
-          path: $CSV_DIR
+          path: /tmp/csv
