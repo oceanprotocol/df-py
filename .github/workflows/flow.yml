@@ -86,12 +86,8 @@ jobs:
         run: |
           ./dftool calc $CSV_DIR 10000 OCEAN
 
-      - name: Zip csv folder
-        run: |
-          zip -r csvs-$now.zip $CSV_DIR
-
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: CSV Files
-          path: csvs-$now.zip
+          name: CSV Files $now
+          path: $CSV_DIR
