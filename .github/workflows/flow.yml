@@ -4,6 +4,11 @@ on:
   schedule:
     - cron: "0 0 * * 4"
   workflow_dispatch:
+    inputs:
+      amt_of_tokens:
+        description: "Amount of tokens to distribute"
+        required: true
+        default: "10000"
 
 jobs:
   calculate-reward:
@@ -83,7 +88,7 @@ jobs:
 
       - name: Run dftool calc
         run: |
-          ./dftool calc $CSV_DIR ${{ secrets.TOKEN_AMOUNT }} OCEAN
+          ./dftool calc $CSV_DIR ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} OCEAN
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
