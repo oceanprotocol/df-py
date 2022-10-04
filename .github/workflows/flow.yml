@@ -50,7 +50,6 @@ jobs:
           echo "ETH_RPC_URL=https://cloudflare-eth.com/" >> $GITHUB_ENV
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
-          echo "SUBGRAPH_URI=https://v4.subgraph.rinkeby.oceanprotocol.com/" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
           echo "date=$(date -dlast-thursday '+%Y-%m-%d')" >> $GITHUB_ENV
           echo "now=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
