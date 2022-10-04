@@ -3,6 +3,7 @@ name: Reward Calculation
 on:
   schedule:
     - cron: "0 0 * * 4"
+  workflow_dispatch:
 
 jobs:
   calculate-reward:
