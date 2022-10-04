@@ -1,4 +1,4 @@
-name: Reward Flow
+name: Reward Calculation
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  build:
+  calculate-reward:
     runs-on: ubuntu-latest
     strategy:
       matrix:
