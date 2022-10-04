@@ -88,10 +88,10 @@ jobs:
 
       - name: Zip csv folder
         run: |
-          zip -r csv.zip $CSV_DIR
+          zip -r csvs-$now.zip $CSV_DIR
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
           name: CSV Files
-          path: csvs.zip
+          path: csvs-$now.zip
