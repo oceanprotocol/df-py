@@ -93,5 +93,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: csv
-          path: csv.zip
+          name: CSV Files
+          path: csvs.zip
