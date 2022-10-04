@@ -82,7 +82,7 @@ jobs:
 
       - name: Run dftool calc
         run: |
-          ./dftool calc $CSV_DIR 10000 OCEAN
+          ./dftool calc $CSV_DIR ${{ secrets.TOKEN_AMOUNT }} OCEAN
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v2
