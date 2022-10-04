@@ -9,6 +9,10 @@ on:
         description: "Amount of tokens to distribute"
         required: true
         default: "10000"
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   calculate-reward:
