@@ -44,7 +44,7 @@ jobs:
         run: |
           echo "DFTOOL_KEY=5c01f85d0aaac3489600c3aa24ce5cfa838eeedc621872fcb747b2530cdf663b" >> $GITHUB_ENV
           echo "ETH_RPC_URL=https://cloudflare-eth.com/" >> $GITHUB_ENV
-          echo "ADDRESS_FILE=address.json" >> $GITHUB_ENV
+          echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SUBGRAPH_URI=https://v4.subgraph.rinkeby.oceanprotocol.com/" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
