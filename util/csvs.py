@@ -178,16 +178,11 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "nft_addr", "did", "symbol"]
+        row = ["chainID", "nft_addr", "did", "symbol", "name"]
         writer.writerow(row)
 
         for nft in nftinfo:
-            row = [
-                str(chainID),
-                nft.nft_addr.lower(),
-                nft.did,
-                nft.symbol,
-            ]
+            row = [str(chainID), nft.nft_addr.lower(), nft.did, nft.symbol, nft.name]
             writer.writerow(row)
 
 
