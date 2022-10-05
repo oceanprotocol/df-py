@@ -123,7 +123,7 @@ def _coingeckoId(token_symbol: str) -> str:
     id_ = token_symbol.lower()
 
     all_tokens = None
-    # Load json file from ./data/coingecko_ids.json relative to root of project
+    # Load json file from ./data/coingecko_ids.json relative to this file
     dirname = os.path.dirname(__file__)
     datapath = "../data/coingecko_ids.json"
     filepath = os.path.join(dirname, datapath)
