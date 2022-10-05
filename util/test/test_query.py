@@ -315,6 +315,14 @@ def test_filter_nftinfos():
 
 
 @enforce_types
+def test_populateNftAssetNames():
+    nfts = [query.DataNFT("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")]
+    nfts = query._populateNftAssetNames(nfts)
+
+    assert nfts[0].name == "Take a Ballet Lesson"
+
+
+@enforce_types
 def setup_function():
     global OCEAN_ADDR
 
