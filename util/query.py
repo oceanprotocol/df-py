@@ -28,6 +28,10 @@ class DataNFT:
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
+        self.name = ""
+
+    def setName(self, name: str):
+        self.name = name
 
     def __repr__(self):
         return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
