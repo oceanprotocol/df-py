@@ -289,6 +289,23 @@ def getNFTInfos(chainID) -> List[DataNFT]:
     return NFTinfo
 
 
+def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+    """
+    @description
+      Populate the NFT asset names
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+
+    nft_dids = [nft.did for nft in nftInfo]
+    did_to_name = aquarius_asset_names(nft_dids)
+
+    for nft in nftInfo:
+        nft.setName(did_to_name[nft.did])
+
+    return nftInfo
+
 def _getNFTInfos(chainID) -> List[DataNFT]:
     """
     @description
