@@ -164,7 +164,7 @@ def veOCEANCsvFilename(csv_dir: str) -> str:
 def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
     """
     @description
-      Save  the nftinfo for this chain. This csv is required for df-sql.
+      Save the nftinfo for this chain. This csv is required for df-sql.
 
     @arguments
         nftinfo -- list of DataNFT
