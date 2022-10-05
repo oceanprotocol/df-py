@@ -16,6 +16,7 @@ _RAW_CHAIN_DATA = [
     (1, "mainnet", "ETH"),
     (3, "ropsten", "ETH"),
     (4, "rinkeby", "ETH"),
+    (5, "goerli", "ETH"),
     (56, "bsc", "BNB"),
     (137, "polygon", "MATIC"),
     (246, "energyweb", "EWT"),
