@@ -7,7 +7,7 @@ import functools
 
 import brownie
 from enforce_typing import enforce_types
-
+from web3.middleware import geth_poa_middleware
 from util import (
     blockrange,
     blocktime,
@@ -27,6 +27,7 @@ from util.oceanutil import (
     veAllocate,
 )
 
+brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
