@@ -285,6 +285,7 @@ def getNFTInfos(chainID) -> List[DataNFT]:
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
         NFTinfo = _filterNftinfos(NFTinfo)
+        NFTinfo = _populateNftAssetNames(NFTinfo)
 
     return NFTinfo
 
@@ -305,6 +306,7 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
         nft.setName(did_to_name[nft.did])
 
     return nftInfo
+
 
 def _getNFTInfos(chainID) -> List[DataNFT]:
     """
