@@ -124,9 +124,10 @@ def _coingeckoId(token_symbol: str) -> str:
 
     all_tokens = None
     # Load json file from ./data/coingecko_ids.json relative to root of project
-    with open(
-        os.path.join(os.path.dirname(__file__), "../data/coingecko_ids.json"), "r"
-    ) as f:
+    dirname = os.path.dirname(__file__)
+    datapath = "../data/coingecko_ids.json"
+    filepath = os.path.join(dirname, datapath)
+    with open(filepath, "r") as f:
         all_tokens = json.load(f)
 
     for token in all_tokens:
