@@ -293,7 +293,7 @@ def getNFTInfos(chainID) -> List[DataNFT]:
 def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     """
     @description
-      Populate the NFT asset names
+      Populate the list of NFTs with the asset names
 
     @return
       nftInfo -- list of DataNFT objects
