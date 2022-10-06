@@ -411,8 +411,8 @@ def do_dispense():
 
 Usage: dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
-  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
   CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
+  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
   BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
 
