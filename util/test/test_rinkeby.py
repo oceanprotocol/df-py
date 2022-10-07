@@ -7,19 +7,19 @@ from util import networkutil
 
 PREV = None
 
-CHAINID = networkutil.networkToChainId("rinkeby")
+CHAINID = networkutil.networkToChainId("goerli")
 
 
 @enforce_types
 def test_chainIdToNetwork():
     network_str = networkutil.chainIdToNetwork(CHAINID)
-    assert network_str == "rinkeby"
+    assert network_str == "goerli"
 
 
 @enforce_types
 def test_chainIdToSubgraphUri():
     uri = networkutil.chainIdToSubgraphUri(CHAINID)
-    assert "subgraph.rinkeby.oceanprotocol.com" in uri
+    assert "subgraph.goerli.oceanprotocol.com" in uri
 
 
 @enforce_types
@@ -34,7 +34,7 @@ def test_main(tmp_path):
     # But it is a problem for unit tests. Our workaround is to do a system call.
 
     ACCOUNT_ADDR = "0xc945a5a960fef1a9c3fef8593fc2446d1d7c6146"
-    TOKEN_ADDR = "0xddea378a6ddc8afec82c36e9b0078826bf9e68b6"
+    TOKEN_ADDR = "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6"
     fn = os.path.join(tmp_path, "out.txt")
     cmd = f"./dftool acctinfo {CHAINID} {ACCOUNT_ADDR} {TOKEN_ADDR}>{fn} 2>{fn}"
     os.system(cmd)
@@ -42,7 +42,9 @@ def test_main(tmp_path):
     s = None
     with open(fn, "r") as f:
         s = f.read()
-    assert " ZRX" in s, cmd
+
+    print("s:", s)
+    assert " WETH" in s, cmd
 
 
 @enforce_types
