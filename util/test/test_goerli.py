@@ -43,7 +43,6 @@ def test_main(tmp_path):
     with open(fn, "r") as f:
         s = f.read()
 
-    print("s:", s)
     assert " WETH" in s, cmd
 
 
