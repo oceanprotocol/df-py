@@ -25,6 +25,10 @@ class BlockRange:
             numpy.random.choice(cand_blocks, num_samples, replace=False)
         )
 
+        if fin not in self._blocks:
+            # always include the last block
+            self._blocks.append(fin)
+
         self.st: int = st
         self.fin: int = fin
 
