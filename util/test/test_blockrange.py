@@ -102,3 +102,14 @@ def test_filter_by_max():
     # pylint: disable=consider-using-enumerate
     for i in range(len(after)):
         assert after[i] in before  # should be in before
+
+
+@enforce_types
+def test_rnd_seed():
+    r1 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
+    r2 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=43)
+    assert r1.getBlocks() != r2.getBlocks()  # should be different
+
+    s1 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
+    s2 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
+    assert s1.getBlocks() == s2.getBlocks()  # should be same
