@@ -1,3 +1,4 @@
+import blocktime
 from datetime import datetime, timezone, date, timedelta
 from math import ceil
 from typing import Union
@@ -131,3 +132,21 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     # ---
 
     return int(block_i)
+
+
+def getstfinBlocks(chain, ST, FIN):
+    if "-" in ST:
+        st_block = blocktime.timestrToBlock(chain, ST)
+    else:
+        st_block = int(ST)
+
+    if FIN == "latest":
+        fin_block = len(chain)
+    elif FIN == "thu":
+        fin_block = blocktime.getBlockNumberThursday(chain)
+    elif "-" in FIN:
+        fin_block = blocktime.timestrToBlock(chain, FIN)
+    else:
+        fin_block = int(FIN)
+
+    return (st_block, fin_block)

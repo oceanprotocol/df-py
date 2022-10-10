@@ -132,19 +132,7 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
+    st_block, fin_block = blocktime.getstfinBlocks(chain, ST, FIN)
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
@@ -226,19 +214,7 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
+    st_block, fin_block = blocktime.getstfinBlocks(chain, ST, FIN)
 
     # main work
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
@@ -289,19 +265,7 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
+    st_block, fin_block = blocktime.getstfinBlocks(chain, ST, FIN)
 
     # main work
     rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
