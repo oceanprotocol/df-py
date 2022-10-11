@@ -95,13 +95,6 @@ def estimateClaim(addr: address) -> uint256:
     _last_token_time: uint256 = FeeDistributor(self.fee_distributor).last_token_time()
     max_user_epoch: uint256 = VotingEscrow(self.voting_escrow).user_point_epoch(addr)
     _start_time: uint256 = FeeDistributor(self.fee_distributor).start_time()
-    
-    # if checkpoints are missing, them we cannot have an accurate estimate
-    # veFeeDistributor can do the checks, but requires tx and not just some call functions
-    if block.timestamp >= FeeDistributor(self.fee_distributor).time_cursor():
-        raise("Call checkpoint function")
-    if block.timestamp > _last_token_time + TOKEN_CHECKPOINT_DEADLINE:
-        raise("Call checkpoint function")
 
     # Round down to weeks
     _last_token_time = _last_token_time / WEEK * WEEK
