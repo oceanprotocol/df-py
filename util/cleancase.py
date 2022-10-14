@@ -33,6 +33,18 @@ def modAllocations(allocations: dict) -> dict:
 
 
 @enforce_types
+def assertStakes(allcs: dict):
+    """stakes - dict of [chainID][nft_addr][LP_addr] : stake"""
+    for chainID in allcs:
+        assert isinstance(chainID, int)
+        for nft_addr in allcs[chainID]:
+            assert nft_addr[:2] == "0x", nft_addr
+            assert nft_addr.lower() == nft_addr, nft_addr
+            for LP_addr in allcs[chainID][nft_addr]:
+                assert isinstance(allcs[chainID][nft_addr][LP_addr], float)
+
+
+@enforce_types
 def assertAllocations(allcs: dict):
     """allocations - dict of [chainID][nft_addr][LP_addr] : percent"""
     lpsum = {}
