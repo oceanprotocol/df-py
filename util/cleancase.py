@@ -75,13 +75,13 @@ def assertStakesUsd(stakes_USD: dict):
 @enforce_types
 def assertStakesAtChain(stakes_at_chain: dict):
     """stakes_at_chain - dict of [basetoken_address][NFT_addr][LP_addr] : stake"""
-    assertAllocations({FAKE_CHAINID: stakes_at_chain})
+    assertStakes({FAKE_CHAINID: stakes_at_chain})
 
 
 @enforce_types
 def assertStakesUsdAtChain(stakes_at_chain: dict):
     """stakes_USD_at_chain - dict of [NFT_addr][LP_addr] : stake"""
-    assertAllocations({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
+    assertStakes({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
 
 
 @enforce_types
