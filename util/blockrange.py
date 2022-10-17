@@ -1,5 +1,9 @@
+from typing import List, Tuple
+
+import requests
 from enforce_typing import enforce_types
 import numpy
+from util.constants import DFBLOCKS_URL
 
 
 @enforce_types
@@ -63,3 +67,13 @@ class BlockRange:
             f", # blocks sampled={self.numBlocks()}"
             f", range={self.getBlocks()[:4]}.."
         )
+
+def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:
+    req = requests.get(f"{DFBLOCKS_URL}/blocks/{chain}/{samples}")
+    data = req.json()
+    start_ts = data["start_ts"]
+    end_ts = data["end_ts"]
+    blocks = data["blocks"]
+    return (blocks, start_ts, end_ts)
+
+
