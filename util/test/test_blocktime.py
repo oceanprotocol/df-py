@@ -144,7 +144,7 @@ def test_getstfinBlocks():
     now_date = now_date.strftime("%Y-%m-%d")
     (st, fin) = getstfinBlocks(chain, "0", now_date)
     assert st == 0
-    assert fin > 0
+    assert fin == 0
 
 
 @enforce_types
