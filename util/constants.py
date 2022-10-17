@@ -3,7 +3,7 @@ import brownie
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 AQUARIUS_BASE_URL = "https://v4.aquarius.oceanprotocol.com"
-
+DFBLOCKS_URL = "https://dfblocks.oceandao.org"
 BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
 
 MAX_ALLOCATE = 10000.0

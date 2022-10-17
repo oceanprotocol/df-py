@@ -1,9 +1,12 @@
 from datetime import datetime, timezone, date, timedelta
 from math import ceil
-from typing import Union
+from typing import List, Tuple, Union
+
+import requests
 
 from enforce_typing import enforce_types
 from scipy import optimize
+from util.constants import DFBLOCKS_URL
 
 
 @enforce_types
@@ -131,9 +134,18 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     # ---
 
     return int(block_i)
+ 
+def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:
+    req = requests.get(f"{DFBLOCKS_URL}/blocks/{chain}/{samples}")
+    data = req.json()
+    start_ts = data["start_ts"]
+    end_ts = data["end_ts"]
+    blocks = data["blocks"]
+    return (blocks, start_ts, end_ts)
 
-
-def getstfinBlocks(chain, ST, FIN):
+    
+@enforce_types
+def getstfinBlocks(chain, ST: str, FIN: str):
     # TODO add tests for this function
     if "-" in ST:
         st_block = timestrToBlock(chain, ST)
