@@ -68,6 +68,7 @@ class BlockRange:
             f", range={self.getBlocks()[:4]}.."
         )
 
+
 def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:
     req = requests.get(f"{DFBLOCKS_URL}/blocks/{chain}/{samples}")
     data = req.json()
@@ -75,5 +76,3 @@ def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:
     end_ts = data["end_ts"]
     blocks = data["blocks"]
     return (blocks, start_ts, end_ts)
-
-
