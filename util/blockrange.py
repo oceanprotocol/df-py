@@ -24,14 +24,9 @@ class BlockRange:
         self.st: int = st
         self.fin: int = fin
 
-        if num_samples == 0:
-            self._blocks = []
-            return
+        cand_blocks = list(range(st, fin + 1))  # []
 
-        cand_blocks = list(range(st, fin))  # [)
-
-        # num_samples-1 because we include fin at the end
-        num_samples = min(num_samples - 1, len(cand_blocks))
+        num_samples = min(num_samples, len(cand_blocks))
         if random_seed is not None:
             numpy.random.seed(random_seed)
 
@@ -39,9 +34,6 @@ class BlockRange:
             numpy.random.choice(cand_blocks, num_samples, replace=False)
         )
 
-        if fin not in self._blocks:
-            # always include the last block
-            self._blocks.append(fin)
 
     def getBlocks(self) -> list:
         return self._blocks
