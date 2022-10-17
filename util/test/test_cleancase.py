@@ -12,29 +12,43 @@ def test_tuple():  # super-basic test
 
 @enforce_types
 def test_allocations():
-    stakes = {
+    allocations = {
         1: {
-            "0xpOolA": {"0xLp1": 1.0, "0xLP2": 2.0},
-            "0xPOOLB": {"0xLP3": 3.0},
-            "0xPOoLC": {"0xlP4": 4.0},
+            "0xpOolA": {"0xLp1": 1.0, "0xLP2": 1.0},
+            "0xPOOLB": {"0xLP3": 1.0},
+            "0xPOoLC": {"0xlP4": 1.0},
         },
-        2: {"0xPOOLD": {"0xLP5": 5.0}},
+        2: {"0xPOOLD": {"0xLP5": 1.0}},
     }
-    target_stakes = {
+    target_allocations = {
         1: {
-            "0xpoola": {"0xlp1": 1.0, "0xlp2": 2.0},
-            "0xpoolb": {"0xlp3": 3.0},
-            "0xpoolc": {"0xlp4": 4.0},
+            "0xpoola": {"0xlp1": 1.0, "0xlp2": 1.0},
+            "0xpoolb": {"0xlp3": 1.0},
+            "0xpoolc": {"0xlp4": 1.0},
         },
-        2: {"0xpoold": {"0xlp5": 5.0}},
+        2: {"0xpoold": {"0xlp5": 1.0}},
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertAllocations(stakes)
+        cleancase.assertAllocations(allocations)
 
-    mod_stakes = cleancase.modAllocations(stakes)
+    mod_stakes = cleancase.modAllocations(allocations)
     cleancase.assertAllocations(mod_stakes)
-    assert mod_stakes == target_stakes
+    assert mod_stakes == target_allocations
+
+
+@enforce_types
+def test_allocations_fail():
+    allocations = {
+        1: {
+            "0xpoola": {"0xlp1": 0.5},
+            "0xpoolb": {"0xlp1": 0.51},
+        },
+    }
+
+    with pytest.raises(AssertionError) as excinfo:
+        cleancase.assertAllocations(allocations)
+    assert str(excinfo.value) == "LP 0xlp1 has 1.01% allocation, > 1.0%"
 
 
 @enforce_types
