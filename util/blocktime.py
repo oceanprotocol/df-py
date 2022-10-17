@@ -2,8 +2,6 @@ from datetime import datetime, timezone, date, timedelta
 from math import ceil
 from typing import Union
 
-import requests
-
 from enforce_typing import enforce_types
 from scipy import optimize
 
