@@ -33,7 +33,7 @@ def modAllocations(allocations: dict) -> dict:
 
 
 @enforce_types
-def assertAllocations(allcs: dict):
+def assertStakes(allcs: dict):
     """stakes - dict of [chainID][nft_addr][LP_addr] : stake"""
     for chainID in allcs:
         assert isinstance(chainID, int)
@@ -42,6 +42,26 @@ def assertAllocations(allcs: dict):
             assert nft_addr.lower() == nft_addr, nft_addr
             for LP_addr in allcs[chainID][nft_addr]:
                 assert isinstance(allcs[chainID][nft_addr][LP_addr], float)
+
+
+@enforce_types
+def assertAllocations(allcs: dict):
+    """allocations - dict of [chainID][nft_addr][LP_addr] : percent"""
+    lpsum = {}
+    for chainID in allcs:
+        assert isinstance(chainID, int)
+        for nft_addr in allcs[chainID]:
+            assert nft_addr[:2] == "0x", nft_addr
+            assert nft_addr.lower() == nft_addr, nft_addr
+            for LP_addr in allcs[chainID][nft_addr]:
+                assert isinstance(allcs[chainID][nft_addr][LP_addr], float)
+                if LP_addr not in lpsum:
+                    lpsum[LP_addr] = 0
+                lpsum[LP_addr] += allcs[chainID][nft_addr][LP_addr]
+    for LP_addr in lpsum:
+        assert (
+            lpsum[LP_addr] <= 1.0
+        ), f"LP {LP_addr} has {lpsum[LP_addr]}% allocation, > 1.0%"
 
 
 @enforce_types
@@ -55,13 +75,13 @@ def assertStakesUsd(stakes_USD: dict):
 @enforce_types
 def assertStakesAtChain(stakes_at_chain: dict):
     """stakes_at_chain - dict of [basetoken_address][NFT_addr][LP_addr] : stake"""
-    assertAllocations({FAKE_CHAINID: stakes_at_chain})
+    assertStakes({FAKE_CHAINID: stakes_at_chain})
 
 
 @enforce_types
 def assertStakesUsdAtChain(stakes_at_chain: dict):
     """stakes_USD_at_chain - dict of [NFT_addr][LP_addr] : stake"""
-    assertAllocations({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
+    assertStakes({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
 
 
 @enforce_types

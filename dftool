@@ -8,6 +8,7 @@ import functools
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
+from util.cleancase import assertAllocations
 from util import (
     blockrange,
     blocktime,
@@ -394,6 +395,8 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
+
+    assertAllocations(Allc)
 
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
         Allc, vebals, nftvols, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
