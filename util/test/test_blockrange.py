@@ -126,11 +126,10 @@ def test_get_blocks_from_api():
 
     assert start_ts + 7 * 24 * 60 * 60 == end_ts
 
+
 @enforce_types
 def test_create_range():
     # test api
     chain = {"id": 1}
     rng = create_range(chain, "api", "", 100, 0)
     assert len(rng.getBlocks()) == 100
-
-
