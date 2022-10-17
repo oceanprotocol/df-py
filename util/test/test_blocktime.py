@@ -126,17 +126,17 @@ def test_getstfinBlocks():
     chain.mine()
     # by block number
     (st, fin) = getstfinBlocks(chain, "0", "1")
-    assert st > 0
+    assert st == 0
     assert fin > 0
 
     # get by latest fin
     (st, fin) = getstfinBlocks(chain, "0", "latest")
-    assert st > 0
+    assert st == 0
     assert fin > 0
 
     # get by thu fin
     (st, fin) = getstfinBlocks(chain, "0", "thu")
-    assert st > 0
+    assert st == 0
     assert fin > 0
 
     # get by datetime
