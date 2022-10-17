@@ -1,10 +1,10 @@
 from typing import List, Tuple
 
 import requests
-from dftool import blocktime
-from enforce_typing import enforce_types
 import numpy
+from enforce_typing import enforce_types
 from util.constants import DFBLOCKS_URL
+from util.blocktime import getstfinBlocks
 
 
 @enforce_types
@@ -70,7 +70,7 @@ def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
         rng.fin = fin
         return rng
 
-    st_block, fin_block = blocktime.getstfinBlocks(chain, st, fin)
+    st_block, fin_block = getstfinBlocks(chain, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
     rng.filterByMaxBlock(len(chain) - 10)
 
