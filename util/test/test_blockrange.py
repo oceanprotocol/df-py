@@ -2,7 +2,7 @@ from datetime import datetime
 from enforce_typing import enforce_types
 import pytest
 
-from util.blockrange import BlockRange, get_blocks_from_api
+from util.blockrange import BlockRange, create_range, get_blocks_from_api
 
 
 @enforce_types
@@ -125,3 +125,12 @@ def test_get_blocks_from_api():
     assert end_ts < now_ts
 
     assert start_ts + 7 * 24 * 60 * 60 == end_ts
+
+@enforce_types
+def test_create_range():
+    # test api
+    chain = {"id": 1}
+    rng = create_range(chain, "api", "", 100, 0)
+    assert len(rng.getBlocks()) == 100
+
+
