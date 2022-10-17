@@ -139,8 +139,12 @@ def test_getstfinBlocks():
     assert st == 0
     assert fin > 0
 
-    # get by datetime
-    # todo
+    # get by datetime YYYY-MM-DD
+    now_date = datetime.fromtimestamp(chain[-1].timestamp)
+    now_date = now_date.strftime("%Y-%m-%d")
+    (st, fin) = getstfinBlocks(chain, "0", now_date)
+    assert st == 0
+    assert fin > 0
 
 
 @enforce_types
