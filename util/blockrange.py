@@ -1,6 +1,7 @@
 from typing import List, Tuple
 
 import requests
+from dftool import blocktime
 from enforce_typing import enforce_types
 import numpy
 from util.constants import DFBLOCKS_URL
@@ -58,6 +59,24 @@ class BlockRange:
             f", # blocks sampled={self.numBlocks()}"
             f", range={self.getBlocks()[:4]}.."
         )
+
+
+def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
+    if st == "api" or fin == "api":
+        blocks, st, fin = get_blocks_from_api(chain.id, samples)
+        rng = BlockRange(1, 2, 0)
+        rng._blocks = blocks
+        rng.st = st
+        rng.fin = fin
+        return rng
+
+    st_block, fin_block = blocktime.getstfinBlocks(chain, st, fin)
+
+    # main work
+    rng = BlockRange(st_block, fin_block, samples, rndseed)
+    rng.filterByMaxBlock(len(chain) - 10)
+
+    return rng
 
 
 def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:

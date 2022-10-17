@@ -131,13 +131,10 @@ SECRET_SEED -- secret integer used to seed the rng
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    st_block, fin_block = blocktime.getstfinBlocks(chain, ST, FIN)
-
-    # main work
     recordDeployedContracts(ADDRESS_FILE)
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain))
+    # main work
     (Vi, SYMi) = query.query_all(rng, CHAINID)
     csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
@@ -210,11 +207,7 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    st_block, fin_block = blocktime.getstfinBlocks(chain, ST, FIN)
-
-    # main work
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain) - 10)
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
     allocations = query.getAllocations(rng, CHAINID)
     csvs.saveAllocationCsv(allocations, CSV_DIR)
@@ -258,13 +251,7 @@ SECRET_SEED -- secret integer used to seed the rng
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-
-    st_block, fin_block = blocktime.getstfinBlocks(chain, ST, FIN)
-
-    # main work
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain) - 10)
-
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     balances = query.getveBalances(rng, CHAINID)
     csvs.saveVeOceanCsv(balances, CSV_DIR)
 
