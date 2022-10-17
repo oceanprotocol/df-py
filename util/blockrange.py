@@ -34,7 +34,6 @@ class BlockRange:
             numpy.random.choice(cand_blocks, num_samples, replace=False)
         )
 
-
     def getBlocks(self) -> list:
         return self._blocks
 
