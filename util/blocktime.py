@@ -134,7 +134,7 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def getstfinBlocks(chain, ST: str, FIN: str):
+def getstfinBlocks(chain, ST, FIN):
     # TODO add tests for this function
     if "-" in ST:
         st_block = timestrToBlock(chain, ST)
