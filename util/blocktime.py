@@ -6,7 +6,6 @@ import requests
 
 from enforce_typing import enforce_types
 from scipy import optimize
-from util.constants import DFBLOCKS_URL
 
 
 @enforce_types
