@@ -130,6 +130,9 @@ def test_get_blocks_from_api():
 @enforce_types
 def test_create_range():
     # test api
-    chain = {"id": 1}
-    rng = create_range(chain, "api", "", 100, 0)
+    class c:
+        pass
+
+    c.id = 1
+    rng = create_range(c, "api", "", 100, 0)
     assert len(rng.getBlocks()) == 100
