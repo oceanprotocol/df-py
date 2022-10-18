@@ -65,19 +65,19 @@ jobs:
 
       - name: Run dftool query
         run: |
-          ./dftool query $date $now 200 $CSV_DIR 1
-          ./dftool query $date $now 200 $CSV_DIR 56
-          ./dftool query $date $now 200 $CSV_DIR 137
-          ./dftool query $date $now 200 $CSV_DIR 246
-          ./dftool query $date $now 200 $CSV_DIR 1285
+          ./dftool query api api 200 $CSV_DIR 1
+          ./dftool query api api 200 $CSV_DIR 56
+          ./dftool query api api 200 $CSV_DIR 137
+          ./dftool query api api 200 $CSV_DIR 246
+          ./dftool query api api 200 $CSV_DIR 1285
 
       - name: Run dftool vebals
         run: |
-          ./dftool vebals $date $now 200 $CSV_DIR 1
+          ./dftool vebals api api 200 $CSV_DIR 1
 
       - name: Run dftool allocations
         run: |
-          ./dftool allocations $date $now 200 $CSV_DIR 1
+          ./dftool allocations api api 200 $CSV_DIR 1
 
       - name: Run sed
         run: |
