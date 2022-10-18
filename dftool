@@ -11,7 +11,6 @@ from web3.middleware import geth_poa_middleware
 from util.cleancase import assertAllocations
 from util import (
     blockrange,
-    blocktime,
     calcrewards,
     networkutil,
     csvs,
@@ -132,25 +131,10 @@ SECRET_SEED -- secret integer used to seed the rng
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
-
-    # main work
     recordDeployedContracts(ADDRESS_FILE)
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain))
+    # main work
     (Vi, SYMi) = query.query_all(rng, CHAINID)
     csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
@@ -177,10 +161,8 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        # create dir
-        _createDirIfNeeded(CSV_DIR)
+    # create dir if not exists
+    _createDirIfNeeded(CSV_DIR)
 
     nftinfo = query.getNFTInfos(CHAINID)
     csvs.saveNftInfoCsv(nftinfo, CSV_DIR, CHAINID)
@@ -218,32 +200,14 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        # create dir
-        _createDirIfNeeded(CSV_DIR)
+    # create dir if not exists
+    _createDirIfNeeded(CSV_DIR)
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
-
-    # main work
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain) - 10)
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
     allocations = query.getAllocations(rng, CHAINID)
     csvs.saveAllocationCsv(allocations, CSV_DIR)
@@ -281,33 +245,14 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        # create dir
-        _createDirIfNeeded(CSV_DIR)
+    # create dir if not exists
+    _createDirIfNeeded(CSV_DIR)
+    _exitIfFileExists(csvs.veOCEANCsvFilename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
-
-    # main work
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain) - 10)
-
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     balances = query.getveBalances(rng, CHAINID)
     csvs.saveVeOceanCsv(balances, CSV_DIR)
 
