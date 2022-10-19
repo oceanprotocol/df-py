@@ -281,7 +281,7 @@ def getAllocations(
         for nft_addr in allocations[chain_id]:
             for LP_addr in allocations[chain_id][nft_addr]:
                 if lp_total[LP_addr] == 0.0:
-                    print(f"WARNING: lp_total[LP_addr] == 0.0")
+                    print(f"WARNING: {lp_total[LP_addr]} == 0.0")
                     continue
                 allocations[chain_id][nft_addr][LP_addr] /= lp_total[LP_addr]
 
