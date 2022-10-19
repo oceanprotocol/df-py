@@ -233,7 +233,6 @@ def getAllocations(
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
                     allocated = float(ve_allocation["allocated"])
-                    percentage = allocated / MAX_ALLOCATE
 
                     if chain_id not in allocations:
                         allocations[chain_id] = {}
@@ -246,10 +245,10 @@ def getAllocations(
                         num_allocations[chain_id][nft_addr] = {}
 
                     if LP_addr not in allocations[chain_id][nft_addr]:
-                        allocations[chain_id][nft_addr][LP_addr] = percentage
+                        allocations[chain_id][nft_addr][LP_addr] = allocated
                         num_allocations[chain_id][nft_addr][LP_addr] = 1
                     else:
-                        allocations[chain_id][nft_addr][LP_addr] += percentage
+                        allocations[chain_id][nft_addr][LP_addr] += allocated
                         num_allocations[chain_id][nft_addr][LP_addr] += 1
 
             offset += chunk_size
@@ -263,6 +262,24 @@ def getAllocations(
             for LP_addr in allocations[chain_id][nft_addr]:
                 n = num_allocations[chain_id][nft_addr][LP_addr]
                 allocations[chain_id][nft_addr][LP_addr] /= n
+
+    # get total allocations per each LP
+    lp_total = {}
+    for chain_id in allocations:
+        for nft_addr in allocations[chain_id]:
+            for LP_addr in allocations[chain_id][nft_addr]:
+                if LP_addr not in lp_total:
+                    lp_total[LP_addr] = 0.0
+                lp_total[LP_addr] += allocations[chain_id][nft_addr][LP_addr]
+
+    # normalize values per LP
+    for chain_id in allocations:
+        for nft_addr in allocations[chain_id]:
+            for LP_addr in allocations[chain_id][nft_addr]:
+                if lp_total[LP_addr] == 0.0:
+                    print(f"WARNING: lp_total[LP_addr] == 0.0")
+                    continue
+                allocations[chain_id][nft_addr][LP_addr] /= lp_total[LP_addr]
 
     return allocations
 
