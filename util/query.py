@@ -272,6 +272,10 @@ def getAllocations(
                     lp_total[LP_addr] = 0.0
                 lp_total[LP_addr] += allocations[chain_id][nft_addr][LP_addr]
 
+    for LP_addr in lp_total:
+        if lp_total[LP_addr] < MAX_ALLOCATE:
+            lp_total[LP_addr] = MAX_ALLOCATE
+
     # normalize values per LP
     for chain_id in allocations:
         for nft_addr in allocations[chain_id]:
