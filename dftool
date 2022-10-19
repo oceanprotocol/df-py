@@ -202,6 +202,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
+    _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
