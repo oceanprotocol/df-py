@@ -28,6 +28,10 @@ class DataNFT:
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
+        self.name = ""
+
+    def setName(self, name: str):
+        self.name = name
 
     def __repr__(self):
         return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
@@ -281,8 +285,27 @@ def getNFTInfos(chainID) -> List[DataNFT]:
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
         NFTinfo = _filterNftinfos(NFTinfo)
+        NFTinfo = _populateNftAssetNames(NFTinfo)
 
     return NFTinfo
+
+
+def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+    """
+    @description
+      Populate the list of NFTs with the asset names
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+
+    nft_dids = [nft.did for nft in nftInfo]
+    did_to_name = aquarius_asset_names(nft_dids)
+
+    for nft in nftInfo:
+        nft.setName(did_to_name[nft.did])
+
+    return nftInfo
 
 
 def _getNFTInfos(chainID) -> List[DataNFT]:
