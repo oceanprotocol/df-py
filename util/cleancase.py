@@ -60,7 +60,7 @@ def assertAllocations(allcs: dict):
                 lpsum[LP_addr] += allcs[chainID][nft_addr][LP_addr]
     for LP_addr in lpsum:
         assert (
-            lpsum[LP_addr] <= 1.0
+            lpsum[LP_addr] <= 1.0 + 1e-5  # allow for rounding errors
         ), f"LP {LP_addr} has {lpsum[LP_addr]}% allocation, > 1.0%"
 
 
