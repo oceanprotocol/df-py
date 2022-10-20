@@ -1,4 +1,5 @@
 import json
+from tkinter import N
 from typing import Dict, List, Tuple
 
 import requests
@@ -79,9 +80,6 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     # [LP_addr] : veBalance
     veBalances: Dict[str, float] = {}
 
-    # [LP_addr] : count
-    num_ve_updates: Dict[str, int] = {}
-
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
@@ -158,10 +156,8 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
                 ## set user balance
                 if user["id"] not in veBalances:
                     veBalances[user["id"]] = balance
-                    num_ve_updates[user["id"]] = 1
                 else:
                     veBalances[user["id"]] += balance
-                    num_ve_updates[user["id"]] += 1
 
             ## increase offset
             offset += chunk_size
@@ -171,7 +167,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
     # get average
     for user in veBalances:
-        veBalances[user] /= num_ve_updates[user]
+        veBalances[user] /= n_blocks_sampled
 
     print("getveBalances: done")
 
@@ -192,9 +188,6 @@ def getAllocations(
 
     # [chain_id][nft_addr][LP_addr] : percent
     allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
-
-    # [chain_id][nft_addr][LP_addr] : count
-    num_allocations: Dict[int, Dict[str, Dict[str, int]]] = {}
 
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
@@ -244,17 +237,10 @@ def getAllocations(
                     if nft_addr not in allocations[chain_id]:
                         allocations[chain_id][nft_addr] = {}
 
-                    if chain_id not in num_allocations:
-                        num_allocations[chain_id] = {}
-                    if nft_addr not in num_allocations[chain_id]:
-                        num_allocations[chain_id][nft_addr] = {}
-
                     if LP_addr not in allocations[chain_id][nft_addr]:
                         allocations[chain_id][nft_addr][LP_addr] = percentage
-                        num_allocations[chain_id][nft_addr][LP_addr] = 1
                     else:
                         allocations[chain_id][nft_addr][LP_addr] += percentage
-                        num_allocations[chain_id][nft_addr][LP_addr] += 1
 
             offset += chunk_size
         n_blocks_sampled += 1
@@ -265,8 +251,7 @@ def getAllocations(
     for chain_id in allocations:
         for nft_addr in allocations[chain_id]:
             for LP_addr in allocations[chain_id][nft_addr]:
-                n = num_allocations[chain_id][nft_addr][LP_addr]
-                allocations[chain_id][nft_addr][LP_addr] /= n
+                allocations[chain_id][nft_addr][LP_addr] /= n_blocks_sampled
 
     return allocations
 
