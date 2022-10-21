@@ -59,10 +59,11 @@ def test_all():
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + WEEK * 20  # lock for 20 weeks
     brownie.network.chain.sleep(t1 - t0)
-    for i in range(len(accounts)):
-        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, accounts[i])
+    for acc in accounts:
+        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, acc)
 
     # Allocate to data NFTs
+    # pylint: disable=consider-using-enumerate
     for i in range(len(accounts)):
         oceanutil.set_allocation(
             100,
@@ -76,11 +77,13 @@ def test_all():
     endBlockNumber = 0  # will be set later
 
     # Consume
+    # pylint: disable=consider-using-enumerate
     for i in range(len(accounts)):
         oceantestutil.buyDTFRE(dataNfts[i][2], 1.0, 10000.0, accounts[i], CO2)
         oceantestutil.consumeDT(dataNfts[i][1], publisher_account, accounts[i])
 
     # sampling test accounts locks and allocates after start block
+    # pylint: disable=consider-using-enumerate
     for i in range(len(sampling_test_accounts)):
         oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, sampling_test_accounts[i])
         oceanutil.set_allocation(100, dataNfts[i][0], 8996, sampling_test_accounts[i])
