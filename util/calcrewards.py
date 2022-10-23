@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 from enforce_typing import enforce_types
 import numpy
 
-from util import approvedfilter, cleancase, tousd
+from util import cleancase, tousd
 
 TARGET_WPY = (
     0.015717  # (Weekly Percent Yield) needs to be 1.5717%., for max APY of 125%
@@ -42,7 +42,6 @@ def calcRewards(
         raise ValueError("No veBalances provided")
 
     (allocations, nftvols, rates) = cleancase.modTuple(allocations, nftvols, rates)
-    (allocations, nftvols) = approvedfilter.modTuple(allocations, nftvols)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
