@@ -8,8 +8,8 @@ from util.calcrewards import calcRewards, TARGET_WPY
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2 = 7, 137
-NA, NB = "0xnfta_addr", "0xnftb_addr"
-ST1, ST2, ST3 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr"
+NA, NB = "0xnfta_addr", "0xnf%tb_addr"
+ST1, ST2, ST3 = "0xst1_addr", "0xst2_addr", "0xst3_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
 SYMBOLS = {
@@ -275,7 +275,7 @@ def test_mix_upper_and_lower_case():
     allocations = {C1: {NA: {ST1: 1.0}}}
     allocations2a = {C1: {NA: {ST1: 1.0}}}
     allocations2b = {C1: {"0xnfta_aDDr": {ST1: 1.0}}}
-    allocations2c = {C1: {NA: {"0xlP1_aDdR": 1.0}}}
+    allocations2c = {C1: {NA: {"0xsT1_aDdR": 1.0}}}
 
     nftvols = {C1: {OCN_ADDR: {NA: 10000.0}}}
     nftvols2a = {C1: {OCN_ADDR.upper(): {NA: 10000.0}}}
