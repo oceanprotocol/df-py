@@ -26,11 +26,17 @@ def test_simple():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
     rewards_avail_OCEAN = 10.0
+    
     rewardsperlp, rewardsinfo = _calcRewards(
         allocations, vebals, nftvols, rewards_avail_OCEAN)
-
     assert rewardsperlp == {C1: {ST1: 10.0}}
     assert rewardsinfo == {C1: {NA: {ST1: 10}}}
+
+    #test helper - just C1
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
+    assert rewardsperlp == {ST1: 10.0}
+    assert rewardsinfo == {NA: {ST1: 10}}
 
 @enforce_types
 def test_two_basetokens_OCEAN_and_H2O():
@@ -46,7 +52,7 @@ def test_two_basetokens_OCEAN_and_H2O():
     }  # vol in units of H2O
 
     rewards_avail_OCEAN = 10.0
-    rewardsperlp, rewardsinfo = _calcRewards(
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
         allocations, vebals, nftvols, rewards_avail_OCEAN)
     
     NA_RF_USD = 0.5 * 40.0 * 0.5
@@ -54,8 +60,8 @@ def test_two_basetokens_OCEAN_and_H2O():
     NA_amt = NA_RF_USD / (NA_RF_USD + NB_RF_USD) * 10.0
     NB_amt = NB_RF_USD / (NA_RF_USD + NB_RF_USD) * 10.0
 
-    assert rewardsperlp == {C1: {ST1: 10.0}}
-    assert rewardsinfo == {C1: {NA: {ST1: NA_amt}, NB: {ST1: NB_amt}}}
+    assert rewardsperlp == {ST1: 10.0}
+    assert rewardsinfo == {NA: {ST1: NA_amt}, NB: {ST1: NB_amt}}
 
 
 @enforce_types
@@ -65,13 +71,13 @@ def test_PSDN_rewards():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0 * 1.6 / 0.5}, H2O_ADDR: {NB: 1.0}}}
 
     rewards_avail_PSDN = 10.0
-    rewardsperlp, rewardsinfo = _calcRewards(
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
         allocations, vebals, nftvols, rewards_avail_PSDN, symbol="PSDN")
 
     # only give rewards to LPs of H2O nfts
-    assert rewardsperlp[C1][ST1] == pytest.approx(10.0, 0.0000001)
-    assert rewardsinfo[C1][NB][ST1] == pytest.approx(5.0, 0.0000001)
-    assert rewardsinfo[C1][NA][ST1] == pytest.approx(5.0, 0.0000001)
+    assert rewardsperlp[ST1] == pytest.approx(10.0, 0.0000001)
+    assert rewardsinfo[NB][ST1] == pytest.approx(5.0, 0.0000001)
+    assert rewardsinfo[NA][ST1] == pytest.approx(5.0, 0.0000001)
 
 
 @enforce_types
@@ -129,13 +135,13 @@ def test_two_lps_simple():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
     rewards_avail_OCEAN = 10.0
-    rewardsperlp, rewardsinfo = _calcRewards(
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
         allocations, vebals, nftvols, rewards_avail_OCEAN)
 
-    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
-    assert sum(rewardsinfo[C1][NA].values()) == pytest.approx(10.0, 0.01)
-    assert rewardsperlp == {C1: {ST1: 5.0, ST2: 5.0}}
-    assert rewardsinfo == {C1: {NA: {ST1: 5.0, ST2: 5.0}}}
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp == {ST1: 5.0, ST2: 5.0}
+    assert rewardsinfo == {NA: {ST1: 5.0, ST2: 5.0}}
 
 
 @enforce_types
@@ -145,13 +151,13 @@ def test_two_lps_one_with_negligible_stake():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     rewards_avail_OCEAN = 10.0
     
-    rewardsperlp, rewardsinfo = _calcRewards(
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
         allocations, vebals, nftvols, rewards_avail_OCEAN)
     
-    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
-    assert sum(rewardsinfo[C1][NA].values()) == pytest.approx(10.0, 0.01)
-    assert rewardsperlp == {C1: {ST1: 10.0}}  # no entry for ST2
-    assert rewardsinfo == {C1: {NA: {ST1: 10.0}}}  # no entry for ST2
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp == {ST1: 10.0}  # no entry for ST2
+    assert rewardsinfo == {NA: {ST1: 10.0}}  # no entry for ST2
 
 
 @enforce_types
@@ -166,18 +172,16 @@ def test_two_nfts_one_with_volume():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}  # P1 has volume, but not P2
     rewards_avail_OCEAN = 10.0
     
-    rewardsperlp, rewardsinfo = _calcRewards(
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
         allocations, vebals, nftvols, rewards_avail_OCEAN)
     
-    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
-    assert min(rewardsperlp[C1].values()) > 0, "shouldn't have entries with 0 rewards"
-    assert rewardsperlp == {C1: {ST1: 5.0, ST2: 5.0}}
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert min(rewardsperlp.values()) > 0, "shouldn't have entries with 0 rewards"
+    assert rewardsperlp == {ST1: 5.0, ST2: 5.0}
 
-    assert sum(rewardsinfo[C1][NA].values()) == pytest.approx(10.0, 0.01)
-    assert (
-        min(rewardsinfo[C1][NA].values()) > 0
-    ), "shouldn't have entries with 0 rewards"
-    assert rewardsinfo == {C1: {NA: {ST1: 5.0, ST2: 5.0}}}
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
+    assert min(rewardsinfo[NA].values()) > 0,"shouldn't have entries with 0 rewards"
+    assert rewardsinfo == {NA: {ST1: 5.0, ST2: 5.0}}
 
 
 @enforce_types
@@ -192,20 +196,20 @@ def test_two_nfts_both_with_volume():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}  # P1 & P2 both have volume
     rewards_avail_OCEAN = 10.0
     
-    rewardsperlp, rewardsinfo = _calcRewards(
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
         allocations, vebals, nftvols, rewards_avail_OCEAN)
     
-    assert sum(rewardsperlp[C1].values()) == pytest.approx(10.0, 0.01)
-    assert rewardsperlp[C1][ST1] == rewardsperlp[C1][ST2]
-    assert rewardsperlp[C1][ST1] == rewardsperlp[C1][ST3]
-    assert rewardsperlp[C1][ST2] == rewardsperlp[C1][ST3]
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp[ST1] == rewardsperlp[ST2]
+    assert rewardsperlp[ST1] == rewardsperlp[ST3]
+    assert rewardsperlp[ST2] == rewardsperlp[ST3]
 
-    assert sum(rewardsinfo[C1][NA].values()) == pytest.approx(5.0, 0.01)
-    assert sum(rewardsinfo[C1][NB].values()) == pytest.approx(5.0, 0.01)
-    assert rewardsinfo[C1][NA][ST1] == approx(10 / 3 / 2)
-    assert rewardsinfo[C1][NB][ST1] == approx(10 / 3 / 2)
-    assert rewardsinfo[C1][NA][ST2] == approx(10 / 3)
-    assert rewardsinfo[C1][NB][ST3] == approx(10 / 3)
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
+    assert sum(rewardsinfo[NB].values()) == pytest.approx(5.0, 0.01)
+    assert rewardsinfo[NA][ST1] == approx(10 / 3 / 2)
+    assert rewardsinfo[NB][ST1] == approx(10 / 3 / 2)
+    assert rewardsinfo[NA][ST2] == approx(10 / 3)
+    assert rewardsinfo[NB][ST3] == approx(10 / 3)
 
 
 @enforce_types
@@ -265,33 +269,26 @@ def test_mix_upper_and_lower_case():
 
 
 def test_calcrewards_math():
-    ## update this test if the reward function is changes
-
+    ## update this test if the reward function is changed
     allocations = {C1: {NA: {ST1: 0.5, ST2: 1.0}, NB: {ST1: 0.5, ST3: 1.0}}}
     vebals = {ST1: 40000.0, ST2: 50000.0, ST3: 10000.0}
     nftvols = {C1: {OCN_ADDR: {NA: 32.0, NB: 8.0}}}
     rewards_avail_OCEAN = 100.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
+    
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
 
-    assert sum(rewardsperlp[C1].values()) == pytest.approx(100.0, 0.01)
+    assert sum(rewardsperlp.values()) == pytest.approx(100.0, 0.01)
 
-    assert rewardsperlp[C1][ST1] == pytest.approx(32.25, 0.01)
+    assert rewardsperlp[ST1] == pytest.approx(32.25, 0.01)
 
-    assert rewardsperlp[C1][ST2] == pytest.approx(64.51, 0.01)
-    assert rewardsperlp[C1][ST3] == pytest.approx(3.22, 0.01)
+    assert rewardsperlp[ST2] == pytest.approx(64.51, 0.01)
+    assert rewardsperlp[ST3] == pytest.approx(3.22, 0.01)
 
-    assert rewardsinfo[C1][NA][ST1] == pytest.approx(25.86, 0.01)
-    assert rewardsinfo[C1][NA][ST2] == pytest.approx(64.51, 0.01)
-    assert rewardsinfo[C1][NB][ST1] == pytest.approx(6.45, 0.01)
-    assert rewardsinfo[C1][NB][ST3] == pytest.approx(3.22, 0.01)
+    assert rewardsinfo[NA][ST1] == pytest.approx(25.86, 0.01)
+    assert rewardsinfo[NA][ST2] == pytest.approx(64.51, 0.01)
+    assert rewardsinfo[NB][ST1] == pytest.approx(6.45, 0.01)
+    assert rewardsinfo[NB][ST3] == pytest.approx(3.22, 0.01)
 
 
 @enforce_types
@@ -299,19 +296,13 @@ def test_bound_APY_one_nft():
     allocations = {C1: {NA: {ST1: 1.0}}}
     vebals = {ST1: 1.0}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
-    assert rewardsperlp[C1] == {ST1: 1.0 * TARGET_WPY}
-    assert rewardsinfo[C1] == {NA: {ST1: 1.0 * TARGET_WPY}}
+    
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
+    
+    assert rewardsperlp == {ST1: 1.0 * TARGET_WPY}
+    assert rewardsinfo == {NA: {ST1: 1.0 * TARGET_WPY}}
 
 
 @enforce_types
@@ -319,21 +310,14 @@ def test_bound_APY_one_LP__high_stake__two_nfts():
     allocations = {C1: {NA: {ST1: 0.5}, NB: {ST1: 0.5}}}
     vebals = {ST1: 2e6}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-
     rewards_avail_OCEAN = 1000.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
+    
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
 
     # ensure that total rewards given doesn't exceed rewards_avail
-    assert rewardsperlp[C1] == {ST1: 1000.0}
-    assert rewardsinfo[C1] == {NA: {ST1: 500.0}, NB: {ST1: 500.0}}
+    assert rewardsperlp == {ST1: 1000.0}
+    assert rewardsinfo == {NA: {ST1: 500.0}, NB: {ST1: 500.0}}
 
 
 @enforce_types
@@ -341,20 +325,13 @@ def test_bound_APY_two_nfts__equal_low_stake__equal_low_DCV():
     allocations = {C1: {NA: {ST1: 1.0}, NB: {ST2: 1.0}}}
     vebals = {ST1: 5.0, ST2: 5.0}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
 
-    assert rewardsperlp[C1] == {ST1: 5.0 * TARGET_WPY, ST2: 5.0 * TARGET_WPY}
-    assert rewardsinfo[C1] == {NA: {ST1: 5.0 * TARGET_WPY}, NB: {ST2: 5.0 * TARGET_WPY}}
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
+
+    assert rewardsperlp == {ST1: 5.0 * TARGET_WPY, ST2: 5.0 * TARGET_WPY}
+    assert rewardsinfo == {NA: {ST1: 5.0 * TARGET_WPY}, NB: {ST2: 5.0 * TARGET_WPY}}
 
 
 @enforce_types
@@ -362,22 +339,15 @@ def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
     allocations = {C1: {NA: {ST1: 1.0}, NB: {ST2: 1.0}}}
     vebals = {ST1: 5.0, ST2: 20000.0}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
+
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
 
     # ST1 and ST2 each have stake sufficiently low that TARGET_WPY bounds it.
     # But, ST2 staked more, so it earns more
-    assert rewardsperlp[C1] == {ST1: 5.0 * TARGET_WPY, ST2: 20000.0 * TARGET_WPY}
-    assert rewardsinfo[C1] == {
+    assert rewardsperlp == {ST1: 5.0 * TARGET_WPY, ST2: 20000.0 * TARGET_WPY}
+    assert rewardsinfo == {
         NA: {ST1: 5.0 * TARGET_WPY},
         NB: {ST2: 20000 * TARGET_WPY},
     }
@@ -388,22 +358,15 @@ def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
     allocations = {C1: {NA: {ST1: 1.0}, NB: {ST2: 1.0}}}
     vebals = {ST1: 5.0, ST2: 5.0}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 10000.0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
+
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
 
     # ST1 and ST2 get same amount - they're both bounded because both have low stake
     # Critically, ST2 doesn't swamp ST1 just because ST2's stake * DCV is way higher
-    assert rewardsperlp[C1] == {ST1: 5.0 * TARGET_WPY, ST2: 5.0 * TARGET_WPY}
-    assert rewardsinfo[C1] == {NA: {ST1: 5.0 * TARGET_WPY}, NB: {ST2: 5.0 * TARGET_WPY}}
+    assert rewardsperlp == {ST1: 5.0 * TARGET_WPY, ST2: 5.0 * TARGET_WPY}
+    assert rewardsinfo == {NA: {ST1: 5.0 * TARGET_WPY}, NB: {ST2: 5.0 * TARGET_WPY}}
 
 
 @enforce_types
@@ -411,21 +374,14 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     allocations = {C1: {NA: {ST1: 1.0}, NB: {ST2: 1.0}}}
     vebals = {ST1: 1e6, ST2: 1e6}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 9999.0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, rewardsinfo = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
-
+    
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
+    
     # ST2 reward swamps ST1 because ST2's stake * DCV is way higher; it's *not* bounded by low stake
-    assert rewardsperlp[C1] == {ST1: 1.0, ST2: 9999.0}
-    assert rewardsinfo[C1] == {NA: {ST1: 1.0}, NB: {ST2: 9999.0}}
+    assert rewardsperlp == {ST1: 1.0, ST2: 9999.0}
+    assert rewardsinfo == {NA: {ST1: 1.0}, NB: {ST2: 9999.0}}
 
 
 @enforce_types
@@ -433,17 +389,10 @@ def test_divide_by_zero():
     allocations = {C1: {NA: {ST1: 1.0}, NB: {ST2: 1.0}}}
     vebals = {ST1: 10000.0, ST2: 10000.0}
     nftvols = {C1: {OCN_ADDR: {ST1: 0, ST2: 0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, _ = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
+    
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
 
     # Should return empty dict because ST1 and ST2 have zero volume
     assert rewardsperlp == {}
@@ -459,17 +408,10 @@ def test_alloc_vebal_mismatch():
         ST1: 10000.0,
     }
     nftvols = {C1: {OCN_ADDR: {ST1: 1.0, ST2: 1.0}}}
-
     rewards_avail_OCEAN = 10000.0
-    rewardsperlp, _ = calcRewards(
-        allocations,
-        vebals,
-        nftvols,
-        SYMBOLS,
-        RATES,
-        rewards_avail_OCEAN,
-        "OCEAN",
-    )
+    
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        allocations, vebals, nftvols, rewards_avail_OCEAN)
 
     assert rewardsperlp == {}
 
@@ -482,18 +424,12 @@ def test_no_vebals():
     allocations = {C1: {NB: {ST2: 1.0}}}
     vebals = {}
     nftvols = {C1: {OCN_ADDR: {ST1: 1.0, ST2: 1.0}}}
+    rewards_avail_OCEAN = 100.0
 
     with pytest.raises(ValueError) as err:
-        calcRewards(
-            allocations,
-            vebals,
-            nftvols,
-            SYMBOLS,
-            RATES,
-            10000.0,
-            "OCEAN",
-        )
-
+        err = _calcRewardsC1(
+            allocations, vebals, nftvols, rewards_avail_OCEAN)
+        
     assert str(err.value) == "No veBalances provided"
 
 
@@ -507,23 +443,27 @@ def test_no_allocations():
         ST1: 10000.0,
     }
     nftvols = {C1: {OCN_ADDR: {ST1: 1.0, ST2: 1.0}}}
+    rewards_avail_OCEAN = 100.0
 
     # should raise valueError "no allocations"
     with pytest.raises(ValueError) as err:
-        err = calcRewards(
-            allocations,
-            vebals,
-            nftvols,
-            SYMBOLS,
-            RATES,
-            10000.0,
-            "OCEAN",
-        )
+        err = _calcRewardsC1(
+            allocations, vebals, nftvols, rewards_avail_OCEAN)
 
     assert str(err.value) == "No allocations provided"
 
 #========================================================================
+# Helpers to keep function calls compact, and return vals compact.
 
+@enforce_types
+def _calcRewardsC1(allocations, vebals, nftvols, rewards_avail,
+                   symbols=SYMBOLS, rates=RATES, symbol="OCEAN"):
+    rewardsperlp, rewardsinfo = \
+        _calcRewards(allocations, vebals, nftvols, rewards_avail, symbols, rates, symbol)
+    rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
+    rewardsinfo = {} if not rewardsinfo else rewardsinfo[C1]
+    return rewardsperlp, rewardsinfo
+    
 @enforce_types
 def _calcRewards(allocations, vebals, nftvols, rewards_avail,
                  symbols=SYMBOLS, rates=RATES, symbol="OCEAN"):
