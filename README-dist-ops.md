@@ -70,22 +70,22 @@ dftool getrate BNB $date $now $CSV_PATH
 dftool getrate EWT $date $now $CSV_PATH 
 dftool getrate MOVR $date $now $CSV_PATH
 
-
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137 #output approved-137.csv, nftvols-137.csv, symbols-137.csv
+# query chain, output nftvols & symbols
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137
 dftool query $date $now $SAMPLE_SIZE $CSV_PATH 246
 dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1
 dftool query $date $now $SAMPLE_SIZE $CSV_PATH 56
 dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1285
 
+# query chain, output % allocations
 dftool allocations $date $now $SAMPLE_SIZE $CSV_PATH 1
+
+# query chain, output ve balances
 dftool vebals $date $now $SAMPLE_SIZE $CSV_PATH 1
-```
 
-Then, in console:
-```console
-dftool calc $CSV_PATH 10000 OCEAN # output rewardsperlp-OCEAN.csv
+# bring it all together to calculate rewards per lp
+dftool calc $CSV_PATH 10000 OCEAN
 ```
-
 
 ### Step 4: Run dispense
 
