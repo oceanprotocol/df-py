@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple
 
 from enforce_typing import enforce_types
-import numpy
+import numpy as np
 
 from util import cleancase, tousd
 
@@ -115,8 +115,8 @@ def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
     N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(nft_addrs)
 
     # convert
-    S_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
-    P_USD = numpy.zeros((N_c, N_j), dtype=float)
+    S_USD = np.zeros((N_c, N_i, N_j), dtype=float)
+    P_USD = np.zeros((N_c, N_j), dtype=float)
 
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
@@ -133,7 +133,7 @@ def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
 
 
 @enforce_types
-def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
+def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> np.ndarray:
     """
     @arguments
       S_USD -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in USD
@@ -146,28 +146,28 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
     N_c, N_i, N_j = S_USD.shape
 
     # compute reward function, store in array RF[c,i,j]
-    RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    RF = np.zeros((N_c, N_i, N_j), dtype=float)
     for c in range(N_c):
         for i in range(N_i):
             for j in range(N_j):
                 RF[c, i, j] = S_USD[c, i, j] * P_USD[c, j]  # main formula!
 
-    if numpy.sum(RF) == 0.0:
-        return numpy.zeros((N_c, N_i, N_j), dtype=float)
+    if np.sum(RF) == 0.0:
+        return np.zeros((N_c, N_i, N_j), dtype=float)
 
     # normalize values
-    RF_norm = RF / numpy.sum(RF)
+    RF_norm = RF / np.sum(RF)
 
     # filter negligible values (<0.00001% of total RF), then re-normalize
     RF_norm[RF_norm < 0.000001] = 0.0
 
-    if numpy.sum(RF_norm) == 0.0:
-        return numpy.zeros((N_c, N_i, N_j), dtype=float)
+    if np.sum(RF_norm) == 0.0:
+        return np.zeros((N_c, N_i, N_j), dtype=float)
 
-    RF_norm = RF_norm / numpy.sum(RF_norm)
+    RF_norm = RF_norm / np.sum(RF_norm)
 
     # reward in USD
-    RF_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    RF_USD = np.zeros((N_c, N_i, N_j), dtype=float)
     for c in range(N_c):
         for i in range(N_i):
             for j in range(N_j):
@@ -176,15 +176,15 @@ def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
                     S_USD[c, i, j] * TARGET_WPY,  # APY constraint
                 )
     # postcondition: nans
-    assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
+    assert not np.isnan(np.min(RF_USD)), RF_USD
 
     # postcondition: sum is ok. First check within a tol; shrink slightly if needed
-    sum1 = numpy.sum(RF_USD)
+    sum1 = np.sum(RF_USD)
     tol = 1e-13
     assert sum1 <= rewards_avail_USD * (1 + tol), (sum1, rewards_avail_USD, RF_USD)
     if sum1 > rewards_avail_USD:
         RF_USD /= 1 + tol
-    sum2 = numpy.sum(RF_USD)
+    sum2 = np.sum(RF_USD)
     assert sum1 <= rewards_avail_USD * (1 + tol), (sum2, rewards_avail_USD, RF_USD)
 
     # done!
