@@ -1,7 +1,7 @@
 from typing import Dict, List, Tuple
 
 from enforce_typing import enforce_types
-import numpy
+import numpy as np
 
 from util import cleancase, tousd
 
@@ -48,10 +48,10 @@ def calcRewards(
     veBalances_USD = _veStakesUSD(veBalances, rates["OCEAN"])
     veStakes = _getveStakes(allocations, veBalances_USD)
 
-    S_USD, P_USD, keys_tup = _stakevolDictsToArrays(veStakes, nftvols_USD)
+    S_USD, DCV_USD, keys_tup = _stakevolDictsToArrays(veStakes, nftvols_USD)
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
 
-    RF_USD = _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD)
+    RF_USD = _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD)
     RF_TOKEN = RF_USD / rates[rewards_symbol]
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
@@ -103,7 +103,7 @@ def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
 
     @return
       S_USD -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in USD
-      P_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
+      DCV_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
       keys_tup -- tuple of (chainIDs list, LP_addrs list, nft_addrs list)
     """
     # base data
@@ -115,8 +115,8 @@ def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
     N_c, N_i, N_j = len(chainIDs), len(LP_addrs), len(nft_addrs)
 
     # convert
-    S_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
-    P_USD = numpy.zeros((N_c, N_j), dtype=float)
+    S_USD = np.zeros((N_c, N_i, N_j), dtype=float)
+    DCV_USD = np.zeros((N_c, N_j), dtype=float)
 
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
@@ -124,71 +124,61 @@ def _stakevolDictsToArrays(veStakes: dict, nftvols_USD: dict):
                 if nft_addr not in veStakes[chainID]:
                     continue
                 S_USD[c, i, j] = veStakes[chainID][nft_addr].get(LP_addr, 0.0)
-                P_USD[c, j] += nftvols_USD[chainID].get(nft_addr, 0.0)
+                DCV_USD[c, j] += nftvols_USD[chainID].get(nft_addr, 0.0)
 
     # done!
     keys_tup = (chainIDs, LP_addrs, nft_addrs)
 
-    return S_USD, P_USD, keys_tup
+    return S_USD, DCV_USD, keys_tup
 
 
 @enforce_types
-def _calcRewardsUsd(S_USD, P_USD, rewards_avail_USD: float) -> numpy.ndarray:
+def _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD: float) -> np.ndarray:
     """
     @arguments
       S_USD -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in USD
-      P_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
+      DCV_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
       rewards_avail_USD -- float -- amount of rewards available, in units of USD
 
     @return
-      RF_USD -- 3d array of [chain c, LP i, nft j] -- rewards denominated in USD
+      R_USD -- 3d array of [chain c, LP i, nft j] -- rewards denominated in USD
     """
     N_c, N_i, N_j = S_USD.shape
+    Z = np.zeros((N_c, N_i, N_j), dtype=float)
 
-    # compute reward function, store in array RF[c,i,j]
-    RF = numpy.zeros((N_c, N_i, N_j), dtype=float)
+    # corner case
+    if np.sum(DCV_USD) == 0.0 or np.sum(DCV_USD) == 0.0:
+        return Z
+
+    # compute rewards
+    R_USD = np.zeros((N_c, N_i, N_j), dtype=float) #rewards, in USD
+    DCV = np.sum(DCV_USD)
     for c in range(N_c):
-        for i in range(N_i):
-            for j in range(N_j):
-                RF[c, i, j] = S_USD[c, i, j] * P_USD[c, j]  # main formula!
+        for j in range(N_j):
+            stake_j = sum(S_USD[c, :, j])
+            DCV_j = DCV_USD[c, j]
+            if stake_j == 0.0 or DCV_j == 0.0: continue
+            
+            for i in range(N_i):
+                stake_ij = S_USD[c, i, j]
 
-    if numpy.sum(RF) == 0.0:
-        return numpy.zeros((N_c, N_i, N_j), dtype=float)
+                #main formula!
+                R_USD[c, i, j] = (stake_ij / stake_j) * (DCV_j / DCV) * rewards_avail_USD
 
-    # normalize values
-    RF_norm = RF / numpy.sum(RF)
-
-    # filter negligible values (<0.00001% of total RF), then re-normalize
-    RF_norm[RF_norm < 0.000001] = 0.0
-
-    if numpy.sum(RF_norm) == 0.0:
-        return numpy.zeros((N_c, N_i, N_j), dtype=float)
-
-    RF_norm = RF_norm / numpy.sum(RF_norm)
-
-    # reward in USD
-    RF_USD = numpy.zeros((N_c, N_i, N_j), dtype=float)
-    for c in range(N_c):
-        for i in range(N_i):
-            for j in range(N_j):
-                RF_USD[c, i, j] = min(
-                    RF_norm[c, i, j] * rewards_avail_USD,  # baseline
-                    S_USD[c, i, j] * TARGET_WPY,  # APY constraint
-                )
     # postcondition: nans
-    assert not numpy.isnan(numpy.min(RF_USD)), RF_USD
+    assert not np.isnan(np.min(R_USD)), R_USD
 
     # postcondition: sum is ok. First check within a tol; shrink slightly if needed
-    sum1 = numpy.sum(RF_USD)
+    sum1 = np.sum(R_USD)
     tol = 1e-13
-    assert sum1 <= rewards_avail_USD * (1 + tol), (sum1, rewards_avail_USD, RF_USD)
+    assert sum1 <= rewards_avail_USD * (1 + tol), (sum1, rewards_avail_USD, R_USD)
     if sum1 > rewards_avail_USD:
-        RF_USD /= 1 + tol
-    sum2 = numpy.sum(RF_USD)
-    assert sum1 <= rewards_avail_USD * (1 + tol), (sum2, rewards_avail_USD, RF_USD)
+        R_USD /= (1 + tol)
+    sum2 = np.sum(R_USD)
+    assert sum1 <= rewards_avail_USD * (1 + tol), (sum2, rewards_avail_USD, R_USD)
 
     # done!
-    return RF_USD
+    return R_USD
 
 
 @enforce_types
