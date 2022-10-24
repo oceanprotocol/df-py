@@ -60,6 +60,7 @@ export SAMPLE_SIZE=50
 # csv directory path
 export CSV_PATH="./mydata"
 
+# get rate of tokens data's priced in
 dftool getrate OCEAN $date $now $CSV_PATH #output rate-OCEAN.csv
 dftool getrate H2O $date $now $CSV_PATH
 
