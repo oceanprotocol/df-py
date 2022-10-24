@@ -39,8 +39,10 @@ HELP_MAIN = f"""Data Farming tool, for use by OPF.
 OPF steps:
 1. getrate - run per basetoken (OCEAN, H2O)
 2. query - run per CHAINID ({DEV_CHAINID}, 1, 137, ..)
+   allocations - run once
+   vebals - run once
 3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
-4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
+4. dispense - run once
 
 Then LP steps:
 5. call DFRewards.claim(), or related
@@ -49,6 +51,8 @@ Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
+  dftool allocations ST FIN NSAMP CSV_DIR CHAINID
+  dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
