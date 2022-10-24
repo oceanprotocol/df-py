@@ -5,9 +5,8 @@ import numpy as np
 
 from util import cleancase, tousd
 
-TARGET_WPY = (
-    0.015717  # (Weekly Percent Yield) needs to be 1.5717%., for max APY of 125%
-)
+# Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
+TARGET_WPY = 0.015717
 
 
 @enforce_types
