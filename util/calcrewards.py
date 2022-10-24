@@ -163,7 +163,10 @@ def _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD: float) -> np.ndarray:
                 stake_ij = S_USD[c, i, j]
 
                 # main formula!
-                R_USD[c, i, j] = stake_ij / stake_j * DCV_j / DCV * rewards_avail_USD
+                R_USD[c, i, j] = min(
+                    stake_ij / stake_j * DCV_j / DCV * rewards_avail_USD,
+                    stake_ij * TARGET_WPY,
+                )
 
     # postcondition: nans
     assert not np.isnan(np.min(R_USD)), R_USD
