@@ -52,7 +52,6 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
-  dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
   dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
@@ -428,32 +427,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     print("dftool dispense: Done")
 
-
-# ========================================================================
-@enforce_types
-def do_querymany():
-    HELP = """Like 'query' except query *many* chains.
-
-Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
-"""
-    if len(sys.argv) < 7:
-        print(HELP)
-        sys.exit(0)
-
-    # extract inputs
-    assert sys.argv[1] == "querymany"
-    # pylint: disable=unbalanced-tuple-unpacking
-    ST, FIN, NSAMP, CSV_DIR = sys.argv[2:6]
-    CHAINIDS = [int(arg) for arg in sys.argv[6:]]
-    print(f"dftool querymany: Begin. CHAINIDs={CHAINIDS}")
-
-    for CHAINID in CHAINIDS:
-        print(f"Call dftool query for CHAINID={CHAINID}: Begin")
-        cmd = f"dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
-        os.system(cmd)
-        print(f"Call dftool query for CHAINID={CHAINID}: Done")
-
-    print("dftool querymany: Done")
 
 
 # ========================================================================
@@ -941,8 +914,6 @@ def do_main():
     elif sys.argv[1] == "dispense":
         do_dispense()
 
-    elif sys.argv[1] == "querymany":
-        do_querymany()
     elif sys.argv[1] == "compile":
         do_compile()
     elif sys.argv[1] == "manyrandom":
