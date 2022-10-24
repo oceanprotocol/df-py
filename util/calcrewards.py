@@ -150,19 +150,20 @@ def _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD: float) -> np.ndarray:
         return np.zeros((N_c, N_i, N_j), dtype=float)
 
     # compute rewards
-    R_USD = np.zeros((N_c, N_i, N_j), dtype=float) #rewards, in USD
+    R_USD = np.zeros((N_c, N_i, N_j), dtype=float)  # rewards, in USD
     DCV = np.sum(DCV_USD)
     for c in range(N_c):
         for j in range(N_j):
             stake_j = sum(S_USD[c, :, j])
             DCV_j = DCV_USD[c, j]
-            if stake_j == 0.0 or DCV_j == 0.0: continue
-            
+            if stake_j == 0.0 or DCV_j == 0.0:
+                continue
+
             for i in range(N_i):
                 stake_ij = S_USD[c, i, j]
 
-                #main formula!
-                R_USD[c, i, j] = (stake_ij / stake_j) * (DCV_j / DCV) * rewards_avail_USD
+                # main formula!
+                R_USD[c, i, j] = stake_ij / stake_j * DCV_j / DCV * rewards_avail_USD
 
     # postcondition: nans
     assert not np.isnan(np.min(R_USD)), R_USD
@@ -172,7 +173,7 @@ def _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD: float) -> np.ndarray:
     tol = 1e-13
     assert sum1 <= rewards_avail_USD * (1 + tol), (sum1, rewards_avail_USD, R_USD)
     if sum1 > rewards_avail_USD:
-        R_USD /= (1 + tol)
+        R_USD /= 1 + tol
     sum2 = np.sum(R_USD)
     assert sum1 <= rewards_avail_USD * (1 + tol), (sum2, rewards_avail_USD, R_USD)
 
