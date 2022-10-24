@@ -51,10 +51,10 @@ def calcRewards(
     S_USD, DCV_USD, keys_tup = _stakevolDictsToArrays(veStakes, nftvols_USD)
     rewards_avail_USD = rewards_avail_TOKEN * rates[rewards_symbol]
 
-    RF_USD = _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD)
-    RF_TOKEN = RF_USD / rates[rewards_symbol]
+    R_USD = _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD)
+    R_TOKEN = R_USD / rates[rewards_symbol]
 
-    (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(RF_TOKEN, keys_tup)
+    (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R_TOKEN, keys_tup)
 
     return rewardsperlp, rewardsinfo
 
@@ -182,10 +182,10 @@ def _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD: float) -> np.ndarray:
 
 
 @enforce_types
-def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
+def _rewardArrayToDicts(R_TOKEN, keys_tup) -> Tuple[dict, dict]:
     """
     @arguments
-      RF_TOKEN -- 3d array of [chain c, LP i, nft j]; each entry is denominated in OCEAN, PSDN, etc
+      R_TOKEN -- 3d array of [chain c, LP i, nft j]; each entry is denominated in OCEAN, PSDN, etc
       keys_tup -- tuple of (chainIDs list, LP_addrs list, nft_addrs list)
 
     @return
@@ -199,21 +199,21 @@ def _rewardArrayToDicts(RF_TOKEN, keys_tup) -> Tuple[dict, dict]:
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
             for j, nft_addr in enumerate(nft_addrs):
-                assert RF_TOKEN[c, i, j] >= 0.0, RF_TOKEN[c, i, j]
-                if RF_TOKEN[c, i, j] == 0.0:
+                assert R_TOKEN[c, i, j] >= 0.0, R_TOKEN[c, i, j]
+                if R_TOKEN[c, i, j] == 0.0:
                     continue
 
                 if chainID not in rewardsperlp:
                     rewardsperlp[chainID] = {}
                 if LP_addr not in rewardsperlp[chainID]:
                     rewardsperlp[chainID][LP_addr] = 0.0
-                rewardsperlp[chainID][LP_addr] += RF_TOKEN[c, i, j]
+                rewardsperlp[chainID][LP_addr] += R_TOKEN[c, i, j]
 
                 if chainID not in rewardsinfo:
                     rewardsinfo[chainID] = {}
                 if nft_addr not in rewardsinfo[chainID]:
                     rewardsinfo[chainID][nft_addr] = {}
-                rewardsinfo[chainID][nft_addr][LP_addr] = RF_TOKEN[c, i, j]
+                rewardsinfo[chainID][nft_addr][LP_addr] = R_TOKEN[c, i, j]
 
     return rewardsperlp, rewardsinfo
 
