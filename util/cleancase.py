@@ -57,8 +57,9 @@ def assertAllocations(allcs: dict):
                     lpsum[LP_addr] = 0.0
                 lpsum[LP_addr] += float(allc)
     for LP_addr in lpsum:
-        assert lpsum[LP_addr] <= 1.0 + 1e-5, \
-            f"LP {LP_addr} has {lpsum[LP_addr]}% allocation, > 1.0%"
+        assert (
+            lpsum[LP_addr] <= 1.0 + 1e-5
+        ), f"LP {LP_addr} has {lpsum[LP_addr]}% allocation, > 1.0%"
 
 
 @enforce_types
