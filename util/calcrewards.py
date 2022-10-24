@@ -144,11 +144,10 @@ def _calcRewardsUsd(S_USD, DCV_USD, rewards_avail_USD: float) -> np.ndarray:
       R_USD -- 3d array of [chain c, LP i, nft j] -- rewards denominated in USD
     """
     N_c, N_i, N_j = S_USD.shape
-    Z = np.zeros((N_c, N_i, N_j), dtype=float)
 
     # corner case
     if np.sum(DCV_USD) == 0.0 or np.sum(DCV_USD) == 0.0:
-        return Z
+        return np.zeros((N_c, N_i, N_j), dtype=float)
 
     # compute rewards
     R_USD = np.zeros((N_c, N_i, N_j), dtype=float) #rewards, in USD
