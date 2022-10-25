@@ -1,4 +1,6 @@
-from util.blockrange import allocsToStakes
+from enforce_typing import enforce_types
+
+from util.allocs import allocsToStakes
 
 # for shorter lines
 C1, C2 = 7, 137
@@ -9,11 +11,10 @@ ST1, ST2, ST3 = "0xst1_addr", "0xst2_addr", "0xst3_addr"
 @enforce_types
 def test_empty():
     assert allocsToStakes({}, {}) == {}
-    assert allocsToStakes({C1:{}}, {}) == {}
-    assert allocsToStakes({C1:{NA:{}}}, {}) == {}
-    assert allocsToStakes({C1:{NA:{ST1:{}}}}, {}) == {}
-    assert allocsToStakes({C1:{NA:{ST1:{1.0}}}}, {}) == {}
-    assert allocsToStakes({C1:{NA:{ST1:{}}}}, {ST1:5.0}) == {}
+    assert allocsToStakes({C1:{}}, {}) == {C1:{}}
+    assert allocsToStakes({C1:{NA:{}}}, {}) == {C1:{NA:{}}}
+    assert allocsToStakes({C1:{NA:{ST1:1.0}}}, {}) == {C1:{NA:{ST1:0.0}}}
+    assert allocsToStakes({C1:{NA:{}}}, {ST1:5.0}) == {C1:{NA:{}}}
 
 
 @enforce_types
