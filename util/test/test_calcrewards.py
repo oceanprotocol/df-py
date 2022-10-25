@@ -8,7 +8,7 @@ from util.calcrewards import calcRewards, TARGET_WPY
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2 = 7, 137
-NA, NB = "0xnfta_addr", "0xnf%tb_addr"
+NA, NB = "0xnfta_addr", "0xnftb_addr"
 ST1, ST2, ST3 = "0xst1_addr", "0xst2_addr", "0xst3_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
@@ -21,43 +21,36 @@ APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR], C2: ["0xocean2", "Oxh2o2"]}
 
 @enforce_types
 def test_simple():
-    allocations = {C1: {NA: {ST1: 1.0}}}
+    stakes = {C1: {NA: {ST1: 1000.0}}}
     vebals = {ST1: 1000.0}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
-    rewards_avail_OCEAN = 10.0
+    rewards_avail = 10.0 #in OCEAN
 
-    rewardsperlp, rewardsinfo = _calcRewards(
-        allocations, vebals, nftvols, rewards_avail_OCEAN
-    )
+    rewardsperlp, rewardsinfo = _calcRewards(stakes, nftvols, rewards_avail)
     assert rewardsperlp == {C1: {ST1: 10.0}}
     assert rewardsinfo == {C1: {NA: {ST1: 10}}}
 
     # test helper - just C1
-    rewardsperlp, rewardsinfo = _calcRewardsC1(
-        allocations, vebals, nftvols, rewards_avail_OCEAN
-    )
+    rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
     assert rewardsperlp == {ST1: 10.0}
     assert rewardsinfo == {NA: {ST1: 10}}
 
 
 @enforce_types
 def test_two_basetokens_OCEAN_and_H2O():
-    allocations = {
+    stakes = {
         C1: {
-            NA: {ST1: 0.5},
-            NB: {ST1: 0.5},
+            NA: {ST1: 5000.0},
+            NB: {ST1: 5000.0},
         }
     }
-    vebals = {ST1: 10000.0}
     nftvols = {
         C1: {OCN_ADDR: {NA: 40.0}, H2O_ADDR: {NB: 12.5}}  # vol in units of OCEAN
     }  # vol in units of H2O
 
-    rewards_avail_OCEAN = 10.0
-    rewardsperlp, rewardsinfo = _calcRewardsC1(
-        allocations, vebals, nftvols, rewards_avail_OCEAN
-    )
+    rewards_avail = 10.0 # in OCEAN
+    rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
 
     NA_RF_USD = 0.5 * 40.0 * 0.5
     NB_RF_USD = 0.5 * 12.5 * 1.6
@@ -68,23 +61,9 @@ def test_two_basetokens_OCEAN_and_H2O():
     assert rewardsinfo == {NA: {ST1: NA_amt}, NB: {ST1: NB_amt}}
 
 
-@enforce_types
-def test_PSDN_rewards():
-    allocations = {C1: {NA: {ST1: 0.5}, NB: {ST1: 0.5}}}
-    vebals = {ST1: 10000.0}
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0 * 1.6 / 0.5}, H2O_ADDR: {NB: 1.0}}}
+#===================== FIXME FROM HERE ON
 
-    rewards_avail_PSDN = 10.0
-    rewardsperlp, rewardsinfo = _calcRewardsC1(
-        allocations, vebals, nftvols, rewards_avail_PSDN, symbol="PSDN"
-    )
-
-    # only give rewards to LPs of H2O nfts
-    assert rewardsperlp[ST1] == pytest.approx(10.0, 0.0000001)
-    assert rewardsinfo[NB][ST1] == pytest.approx(5.0, 0.0000001)
-    assert rewardsinfo[NA][ST1] == pytest.approx(5.0, 0.0000001)
-
-
+    
 @enforce_types
 def test_two_chains():
     # first cut: symbols are the same
@@ -244,7 +223,7 @@ def test_mix_upper_and_lower_case():
 
     # sanity check
     cleancase.assertAllocations(allocations)
-    cleancase.assertNFTvols(nftvols)
+    cleancase.assertNftvols(nftvols)
     cleancase.assertRates(RATES)
 
     # the real tests
@@ -471,16 +450,14 @@ def test_no_allocations():
 
 @enforce_types
 def _calcRewardsC1(
-    allocations,
-    vebals,
+    stakes,
     nftvols,
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
-    symbol="OCEAN",
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
-        allocations, vebals, nftvols, rewards_avail, symbols, rates, symbol
+        stakes, nftvols, rewards_avail, symbols, rates
     )
     rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
     rewardsinfo = {} if not rewardsinfo else rewardsinfo[C1]
@@ -489,15 +466,11 @@ def _calcRewardsC1(
 
 @enforce_types
 def _calcRewards(
-    allocations,
-    vebals,
+    stakes,
     nftvols,
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
-    symbol="OCEAN",
 ):
     """Helper. Fills in SYMBOLS and RATES, to keep calls compact"""
-    return calcRewards(
-        allocations, vebals, nftvols, symbols, rates, rewards_avail, symbol
-    )
+    return calcRewards(stakes, nftvols, symbols, rates, rewards_avail)

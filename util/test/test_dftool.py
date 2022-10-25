@@ -109,14 +109,12 @@ def test_calc(tmp_path):
     csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
-    TOKEN_SYMBOL = "OCEAN"
-    TOT_TOKEN = 1000.0
-
-    cmd = f"./dftool calc {CSV_DIR} {TOT_TOKEN} {TOKEN_SYMBOL}"
+    TOT_OCEAN = 1000.0
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN}"
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
     assert os.path.exists(rewards_csv)
 
 
@@ -128,18 +126,17 @@ def test_dispense(tmp_path):
     account1 = accounts[1]
     address1 = account1.address.lower()
     CSV_DIR = str(tmp_path)
-    TOKEN_SYMBOL = "OCEAN"
-    TOT_TOKEN = 1000.0
+    TOT_OCEAN = 1000.0
 
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
     OCEAN = oceanutil.OCEANtoken()
-    OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
-    assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
+    OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_OCEAN), {"from": accounts[0]})
+    assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_OCEAN
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
-    rewards = {CHAINID: {address1: TOT_TOKEN}}
-    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
+    rewards = {CHAINID: {address1: TOT_OCEAN}}
+    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, "OCEAN")
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
