@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 
-from util.allocs import allocsToStakes
+from util.allocations import allocsToStakes
 
 # for shorter lines
 C1, C2 = 7, 137
