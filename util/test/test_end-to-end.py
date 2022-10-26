@@ -86,7 +86,7 @@ def test_with_csvs(tmp_path):
     V = csvs.loadNftvolsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
-    stakes = allocations.loadStakes(csv_dir) # loads allocs & vebals, then *
+    stakes = allocations.loadStakes(csv_dir)  # loads allocs & vebals, then *
 
     OCEAN_avail = 0.0001
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)

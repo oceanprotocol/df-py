@@ -63,7 +63,7 @@ def queryNftvolsAndSymbols(
         basetokens.add(chainID, basetoken, _symbol)
     SYMi = getSymbols(basetokens, chainID)
     return (Vi, SYMi)
-    
+
 
 @enforce_types
 def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
