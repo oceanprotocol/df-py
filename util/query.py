@@ -66,7 +66,7 @@ def queryNftvolsAndSymbols(
 
 
 @enforce_types
-def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
+def queryVebals(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     """
     @description
       Return all ve balances
@@ -83,7 +83,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
-    print("getveBalances: begin")
+    print("queryVebals: begin")
 
     for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
@@ -168,7 +168,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     for user in veBalances:
         veBalances[user] /= n_blocks_sampled
 
-    print("getveBalances: done")
+    print("queryVebals: done")
 
     return veBalances
 

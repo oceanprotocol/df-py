@@ -112,7 +112,7 @@ def test_all():
     # run actual tests
     _test_getSymbols()
     _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
-    _test_getveBalances(blockRange, sampling_accounts_addrs)
+    _test_queryVebals(blockRange, sampling_accounts_addrs)
     _test_getAllocations(blockRange, sampling_accounts_addrs)
     _test_query(CO2_ADDR)
     _test_nft_infos()
@@ -130,8 +130,8 @@ def _foundConsume(CO2_ADDR, st, fin):
 
 
 @enforce_types
-def _test_getveBalances(rng: BlockRange, sampling_accounts: list):
-    veBalances = query.getveBalances(rng, CHAINID)
+def _test_queryVebals(rng: BlockRange, sampling_accounts: list):
+    veBalances = query.queryVebals(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
 
