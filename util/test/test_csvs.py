@@ -64,6 +64,21 @@ def test_allocations_twochains(tmp_path):
 
 
 # =================================================================
+# vebals csvs
+
+
+@enforce_types
+def test_vebals(tmp_path):
+    vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
+
+    csv_dir = str(tmp_path)
+    csvs.saveVebalsCsv(vebals, csv_dir)
+
+    loaded_vebals = csvs.loadVebalsCsv(csv_dir)
+    assert loaded_vebals == vebals
+
+
+# =================================================================
 # nftvols csvs
 
 
