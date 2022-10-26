@@ -55,8 +55,7 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
     @return
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 2d array of [chain_nft j] -- nftvol for each {j}, in USD
-      keys_tup -- tuple of (chainIDs_list, LP_addrs_list, nft_addrs_list,
-                            chain_nfts_tup)
+      keys_tup -- tuple of (LP_addrs_list, chain_nfts_tup)
     """
     chainIDs = list(stakes.keys())
     nft_addrs = _getNftAddrs(nftvols_USD)
@@ -80,7 +79,7 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
             V_USD[j] += nftvols_USD[chainID].get(nft_addr, 0.0)
 
     # done!
-    keys_tup = (chainIDs, LP_addrs, nft_addrs, chain_nft_tups)
+    keys_tup = (LP_addrs, chain_nft_tups)
 
     return S, V_USD, keys_tup
 
@@ -147,8 +146,7 @@ def _rewardArrayToDicts(R, keys_tup) -> Tuple[dict, dict]:
     """
     @arguments
       R -- 2d array of [LP i, chain_nft j]; each entry is denominated in OCEAN
-      keys_tup -- tuple of (chainIDs_list, LP_addrs_list, nft_addrs_list,
-                            chain_nfts_tup)
+      keys_tup -- tuple of (LP_addrs_list, chain_nfts_tup)
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_reward_float
@@ -158,7 +156,7 @@ def _rewardArrayToDicts(R, keys_tup) -> Tuple[dict, dict]:
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    chainIDs, LP_addrs, nft_addrs, chain_nfts_tup = keys_tup
+    LP_addrs, chain_nfts_tup = keys_tup
 
     rewardsperlp: dict = {}
     rewardsinfo: dict = {}
