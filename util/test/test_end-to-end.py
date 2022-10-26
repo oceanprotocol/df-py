@@ -77,7 +77,7 @@ def test_with_csvs(tmp_path):
 
     vebals = query.getveBalances(rng, chainID)
     allocs = query.getAllocations(rng, chainID)
-    csvs.saveVeoceanCsv(vebals, csv_dir)
+    csvs.saveVebalsCsv(vebals, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
     vebals = allocs = None  # ensure not used later
 
@@ -87,7 +87,7 @@ def test_with_csvs(tmp_path):
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     allocs = csvs.loadAllocationCsvs(csv_dir)
-    vebals = csvs.loadVeoceanCsv(csv_dir)
+    vebals = csvs.loadVebalsCsv(csv_dir)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
     OCEAN_avail = 0.0001
