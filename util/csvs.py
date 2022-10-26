@@ -92,7 +92,7 @@ def allocationCsvFilename(csv_dir: str) -> str:
 
 
 # ========================================================================
-# veOCEAN csvs
+# vebals csvs
 def saveVebalsCsv(vebals: dict, csv_dir: str):
     """
     @description
@@ -113,10 +113,7 @@ def saveVebalsCsv(vebals: dict, csv_dir: str):
         writer.writerow(row)
         for LP_addr in S.keys():
             assertIsEthAddr(LP_addr)
-            row = [
-                LP_addr.lower(),
-                S[LP_addr],
-            ]
+            row = [LP_addr.lower(), S[LP_addr]]
             writer.writerow(row)
 
     print(f"Created {csv_file}")

@@ -13,20 +13,17 @@ OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"  # all lowercase
 OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
 
+
+
 # =================================================================
-# stakes csvs
-
-
-@enforce_types
-def test_chainIDforStakeCsv():
-    assert csvs.chainIDforNftvolsCsv("stakes-chain101.csv") == 101
-    assert csvs.chainIDforNftvolsCsv("path1/32/stakes-chain92.csv") == 92
-
+# allocations csvs
 
 @enforce_types
 def test_allocations_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}, PC: {LP1: 3.1, LP4: 3.4}}
+    S1 = {PA: {LP1: 1.1, LP2: 1.2},
+          PB: {LP1: 2.1, LP3: 2.3},
+          PC: {LP1: 3.1, LP4: 3.4}}
     A1 = {1: S1}
     csvs.saveAllocationCsv(A1, csv_dir)
     A1_loaded = csvs.loadAllocationCsvs(csv_dir)
@@ -35,7 +32,6 @@ def test_allocations_onechain_lowercase(tmp_path):
 
 @enforce_types
 def test_allocations_onechain_mixedcase(tmp_path):
-    # in this test, it needs to fix the case
     csv_dir = str(tmp_path)
     S1_lowercase = {
         PA: {LP1: 1.1, LP2: 1.2},
@@ -71,17 +67,16 @@ def test_allocations_twochains(tmp_path):
 
 
 # =================================================================
-# poolvols csvs
-
+# nftvols csvs
 
 @enforce_types
-def test_chainIDforPoolvolsCsv():
+def test_chainIDforNftvolsCsv():
     assert csvs.chainIDforNftvolsCsv("poolvols-chain101.csv") == 101
     assert csvs.chainIDforNftvolsCsv("path1/32/poolvols-chain92.csv") == 92
 
 
 @enforce_types
-def test_poolvols_onechain_lowercase(tmp_path):
+def test_nftvols_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     csvs.saveNftvolsCsv(V1, csv_dir, C1)
@@ -90,7 +85,7 @@ def test_poolvols_onechain_lowercase(tmp_path):
 
 
 @enforce_types
-def test_poolvols_onechain_mixedcase(tmp_path):
+def test_nftvols_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
     V1_lowercase = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
@@ -100,7 +95,7 @@ def test_poolvols_onechain_mixedcase(tmp_path):
 
 
 @enforce_types
-def test_poolvols_twochains(tmp_path):
+def test_nftvols_twochains(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V2 = {OCN_ADDR: {PD: 4.1, PE: 5.1}, H2O_ADDR: {PF: 6.1}}
