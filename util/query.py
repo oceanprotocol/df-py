@@ -285,14 +285,14 @@ def queryNftinfo(chainID) -> List[DataNFT]:
       nftInfo -- list of DataNFT objects
     """
 
-    NFTinfo = _queryNftinfo(chainID)
+    nftinfo = _queryNftinfo(chainID)
 
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
-        NFTinfo = _filterNftinfos(NFTinfo)
-        NFTinfo = _populateNftAssetNames(NFTinfo)
+        nftinfo = _filterNftinfos(nftinfo)
+        nftinfo = _populateNftAssetNames(nftinfo)
 
-    return NFTinfo
+    return nftinfo
 
 
 def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
@@ -321,7 +321,7 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
     @return
       nftInfo -- list of DataNFT objects
     """
-    NFTinfo = []
+    nftinfo = []
     chunk_size = 1000
     offset = 0
 
@@ -349,11 +349,11 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
                 chainID,
                 nft["symbol"],
             )
-            NFTinfo.append(datanft)
+            nftinfo.append(datanft)
 
         offset += chunk_size
 
-    return NFTinfo
+    return nftinfo
 
 
 def getNFTVolumes(
