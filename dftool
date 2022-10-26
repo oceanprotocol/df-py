@@ -167,7 +167,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    nftinfo = query.getNFTInfos(CHAINID)
+    nftinfo = query.queryNftinfo(CHAINID)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -257,7 +257,7 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    balances = query.queryVebals(rng, CHAINID)
+    balances = query.queryVebalances(rng, CHAINID)
     csvs.saveVebalsCsv(balances, CSV_DIR)
 
     print("dftool vebals: Done")

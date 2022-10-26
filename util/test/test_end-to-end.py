@@ -30,7 +30,7 @@ def test_without_csvs():
 
     (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
 
-    vebals = query.queryVebals(rng, chainID)
+    vebals = query.queryVebalances(rng, chainID)
     allocs = query.queryAllocations(rng, chainID)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
@@ -75,7 +75,7 @@ def test_with_csvs(tmp_path):
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = SYM0 = None  # ensure not used later
 
-    vebals = query.queryVebals(rng, chainID)
+    vebals = query.queryVebalances(rng, chainID)
     allocs = query.queryAllocations(rng, chainID)
     csvs.saveVebalsCsv(vebals, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
