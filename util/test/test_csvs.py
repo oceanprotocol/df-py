@@ -6,7 +6,7 @@ from util import csvs
 
 # for shorter lines
 C1, C2 = 1, 137
-PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf"  # pools
+PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf"  # nfts
 LP1, LP2, LP3, LP4, LP5, LP6 = "0xlp1", "0xlp2", "0xlp3", "0xlp4", "0xlp5", "0xlp6"
 OCN_SYMB, H2O_SYMB = "OCN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"  # all lowercase
@@ -20,43 +20,51 @@ OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 @enforce_types
 def test_allocations_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}, PC: {LP1: 3.1, LP4: 3.4}}
-    A1 = {1: S1}
-    csvs.saveAllocationCsv(A1, csv_dir)
-    A1_loaded = csvs.loadAllocationCsvs(csv_dir)
-    assert A1_loaded == A1
+    allocs = {
+        C1: {
+            PA: {LP1: 0.1, LP2: 1.0},
+            PB: {LP1: 0.2, LP3: 1.0},
+            PC: {LP1: 0.7, LP4: 1.0},
+        }
+    }
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allocs_loaded == allocs
 
 
 @enforce_types
 def test_allocations_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
-    S1_lowercase = {
-        PA: {LP1: 1.1, LP2: 1.2},
-        PB: {LP1: 2.1, LP3: 2.3},
-        PC: {LP1: 3.1, LP4: 3.4},
+    allocs_lowercase = {
+        C1: {
+            PA: {"0xlp1": 0.1, "0xlp2": 1.0},
+            PB: {"0xlp1": 0.2, "0xlp3": 1.0},
+            PC: {"0xlp1": 0.7, "0xlp4": 1.0},
+        }
     }
-    S1_mixedcase = {
-        PA: {LP1: 1.1, LP2: 1.2},
-        PB: {LP1: 2.1, LP3: 2.3},
-        PC: {LP1: 3.1, LP4: 3.4},
+    allocs_mixedcase = {
+        C1: {
+            PA: {"0xlP1": 0.1, "0xLP2": 1.0},
+            PB: {"0xLp1": 0.2, "0xlp3": 1.0},
+            PC: {"0xlp1": 0.7, "0xLp4": 1.0},
+        }
     }
-    A1 = {1: S1_mixedcase}
-    csvs.saveAllocationCsv(A1, csv_dir)
-    S1_loaded = csvs.loadAllocationCsvs(csv_dir)
-    assert S1_loaded[1] == S1_lowercase
+    csvs.saveAllocationCsv(allocs_mixedcase, csv_dir)
+    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allocs_loaded == allocs_lowercase
 
 
 @enforce_types
 def test_allocations_twochains(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {
-        PA: {LP1: 1.1, LP2: 1.2},
-        PB: {LP1: 2.1, LP3: 2.3},
-        PC: {LP1: 3.1, LP4: 3.4},
+    allocs = {
+        C1: {
+            PA: {LP1: 0.1, LP2: 1.0},
+            PB: {LP1: 0.3, LP3: 1.0},
+            PC: {LP1: 0.5, LP4: 1.0},
+        },
+        C2: {PD: {LP1: 0.1, LP5: 1.0}, PE: {LP6: 1.0}},
     }
-    S2 = {PD: {LP1: 4.1, LP5: 4.5}, PE: {LP6: 5.6}}
-
-    allocs = {1: S1, 2: S2}
 
     csvs.saveAllocationCsv(allocs, csv_dir)
     allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
@@ -69,11 +77,10 @@ def test_allocations_twochains(tmp_path):
 
 @enforce_types
 def test_vebals(tmp_path):
-    vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
-
     csv_dir = str(tmp_path)
-    csvs.saveVebalsCsv(vebals, csv_dir)
 
+    vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
+    csvs.saveVebalsCsv(vebals, csv_dir)
     loaded_vebals = csvs.loadVebalsCsv(csv_dir)
     assert loaded_vebals == vebals
 
