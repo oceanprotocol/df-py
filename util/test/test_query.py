@@ -111,7 +111,7 @@ def test_all():
 
     # run actual tests
     _test_getSymbols()
-    _test__queryNftvolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
+    _test_queryNftvolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_queryVebalances(blockRange, sampling_accounts_addrs)
     _test_queryAllocations(blockRange, sampling_accounts_addrs)
     _test_query(CO2_ADDR)
@@ -177,7 +177,7 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test__queryNftvolumes(CO2_ADDR: str, st, fin):
+def _test_queryNftvolumes(CO2_ADDR: str, st, fin):
     DT_vols = query._queryNftvolumes(st, fin, CHAINID)
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
@@ -194,7 +194,7 @@ def _test_queryNftvolsAndSymbols(CO2_ADDR: str):
 
 
 @enforce_types
-def _test_nft_infos():
+def _test_queryNftinfo():
     nfts = query.queryNftinfo(CHAINID)
     assert len(nfts) > 0
 
