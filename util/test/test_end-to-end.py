@@ -4,6 +4,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util import (
+    allocations,
     blockrange,
     calcrewards,
     csvs,
@@ -28,8 +29,11 @@ def test_without_csvs():
     rng = blockrange.BlockRange(st, fin, n)
 
     (V0, SYM0) = query.query_all(rng, chainID)
+    
     vebals = query.getveBalances(rng, chainID)
-    allocations = query.getAllocations(rng, chainID)
+    allocs = query.getAllocations(rng, chainID)
+    stakes = allocations.allocsToStakes(allocs, vebals)
+    
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
     V, SYM = (
@@ -39,9 +43,8 @@ def test_without_csvs():
 
     OCEAN_avail = 0.0001
 
-    rewardsperlp, _ = calcrewards.calcRewards(
-        allocations, vebals, V, SYM, R, OCEAN_avail, "OCEAN"
-    )
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
+
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
 
@@ -73,21 +76,23 @@ def test_with_csvs(tmp_path):
     V0 = SYM0 = None  # ensure not used later
 
     vebals = query.getveBalances(rng, chainID)
-    allocations = query.getAllocations(rng, chainID)
+    allocs = query.getAllocations(rng, chainID)
     csvs.saveVeOceanCsv(vebals, csv_dir)
-    csvs.saveAllocationCsv(allocations, csv_dir)
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    vebals = allocs = None # ensure not used later
 
     # 3. simulate "dftool calc"
     R = csvs.loadRateCsvs(csv_dir)
-    allcs = csvs.loadAllocationCsvs(csv_dir)
-    vebals = csvs.loadVeOceanCsv(csv_dir)
     V = csvs.loadNFTvolsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
+    
+    allocs = csvs.loadAllocationCsvs(csv_dir)
+    vebals = csvs.loadVeOceanCsv(csv_dir)
+    stakes = allocations.allocsToStakes(allocs, vebals)
 
     OCEAN_avail = 0.0001
-    rewardsperlp, _ = calcrewards.calcRewards(
-        allcs, vebals, V, SYM, R, OCEAN_avail, "OCEAN"
-    )
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
+
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
