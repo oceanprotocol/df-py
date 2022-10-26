@@ -111,7 +111,7 @@ def test_all():
 
     # run actual tests
     _test_getSymbols()
-    _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
+    _test_queryNftvolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_queryVebalances(blockRange, sampling_accounts_addrs)
     _test_queryAllocations(blockRange, sampling_accounts_addrs)
     _test_query(CO2_ADDR)
@@ -119,7 +119,7 @@ def test_all():
 
 
 def _foundConsume(CO2_ADDR, st, fin):
-    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
+    DT_vols = query.queryNftvolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
         return False
     if sum(DT_vols[CO2_ADDR].values()) == 0:
@@ -177,8 +177,8 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
-    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
+def _test_queryNftvolumes(CO2_ADDR: str, st, fin):
+    DT_vols = query.queryNftvolumes(st, fin, CHAINID)
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
