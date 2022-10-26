@@ -33,9 +33,9 @@ def calcRewards(
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
-    S, DCV_USD, keys_tup = _stakevolDictsToArrays(stakes, nftvols_USD)
+    S, V_USD, keys_tup = _stakevolDictsToArrays(stakes, nftvols_USD)
 
-    R = _calcRewardsUsd(S, DCV_USD, rewards_avail)
+    R = _calcRewardsUsd(S, V_USD, rewards_avail)
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
 
@@ -50,7 +50,7 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
 
     @return
       S -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in veOCEAN
-      DCV_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
+      V_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
       keys_tup -- tuple of (chainIDs list, LP_addrs list, nft_addrs list)
     """
     # base data
@@ -61,7 +61,7 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
 
     # convert
     S = np.zeros((N_c, N_i, N_j), dtype=float)
-    DCV_USD = np.zeros((N_c, N_j), dtype=float)
+    V_USD = np.zeros((N_c, N_j), dtype=float)
 
     for c, chainID in enumerate(chainIDs):
         for i, LP_addr in enumerate(LP_addrs):
@@ -69,20 +69,20 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
                 if nft_addr not in stakes[chainID]:
                     continue
                 S[c, i, j] = stakes[chainID][nft_addr].get(LP_addr, 0.0)
-                DCV_USD[c, j] += nftvols_USD[chainID].get(nft_addr, 0.0)
+                V_USD[c, j] += nftvols_USD[chainID].get(nft_addr, 0.0)
 
     # done!
     keys_tup = (chainIDs, LP_addrs, nft_addrs)
 
-    return S, DCV_USD, keys_tup
+    return S, V_USD, keys_tup
 
 
 @enforce_types
-def _calcRewardsUsd(S, DCV_USD, rewards_avail: float) -> np.ndarray:
+def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
     """
     @arguments
       S -- 3d array of [chain c, LP i, nft j] -- stake for each {c,i,j}, in veOCEAN
-      DCV_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
+      V_USD -- 2d array of [chain c, nft j] -- nftvol for each {c,j}, in USD
       rewards_avail -- float -- amount of rewards available, in OCEAN
 
     @return
@@ -95,7 +95,7 @@ def _calcRewardsUsd(S, DCV_USD, rewards_avail: float) -> np.ndarray:
     for c in range(N_c):
         for i in range(N_i):
             for j in range(N_j):
-                RF[c, i, j] = S[c, i, j] * DCV_USD[c, j]  # main formula!
+                RF[c, i, j] = S[c, i, j] * V_USD[c, j]  # main formula!
 
     if np.sum(RF) == 0.0:
         return np.zeros((N_c, N_i, N_j), dtype=float)
