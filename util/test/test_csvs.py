@@ -56,11 +56,11 @@ def test_allocations_twochains(tmp_path):
     }
     S2 = {PD: {LP1: 4.1, LP5: 4.5}, PE: {LP6: 5.6}}
 
-    allcs = {1: S1, 2: S2}
+    allocs = {1: S1, 2: S2}
 
-    csvs.saveAllocationCsv(allcs, csv_dir)
-    allcs_loaded = csvs.loadAllocationCsvs(csv_dir)
-    assert allcs_loaded == allcs
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allocs_loaded == allocs
 
 
 # =================================================================
