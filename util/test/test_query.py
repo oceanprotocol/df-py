@@ -184,7 +184,7 @@ def _test_queryNftvolumes(CO2_ADDR: str, st, fin):
 
 
 @enforce_types
-def _test_queryNFtVolsAndSymbols(CO2_ADDR: str):
+def _test_queryNftvolsAndSymbols(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
     (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
