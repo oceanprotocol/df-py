@@ -251,14 +251,14 @@ SECRET_SEED -- secret integer used to seed the rng
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(csvs.veOCEANCsvFilename(CSV_DIR))
+    _exitIfFileExists(csvs.veoceanCsvFilename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     balances = query.getveBalances(rng, CHAINID)
-    csvs.saveVeOceanCsv(balances, CSV_DIR)
+    csvs.saveVeoceanCsv(balances, CSV_DIR)
 
     print("dftool vebals: Done")
 
@@ -326,7 +326,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     if not csvs.allocationCsvFilename(CSV_DIR):
         print(f"\nNo 'allocation*.csv' file in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
-    if not csvs.veOCEANCsvFilename(CSV_DIR):
+    if not csvs.veoceanCsvFilename(CSV_DIR):
         print(f"\nNo 'veocean*.csv' file in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
@@ -336,7 +336,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
 
     # main work
     allocs = csvs.loadAllocationCsvs(CSV_DIR)
-    vebals = csvs.loadVeOceanCsv(CSV_DIR)
+    vebals = csvs.loadVeoceanCsv(CSV_DIR)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
     nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)

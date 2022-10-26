@@ -69,7 +69,7 @@ def test_query_ve_balances(tmp_path):
     os.system(cmd)
 
     # test result
-    vebals_csv = csvs.veOCEANCsvFilename(CSV_DIR)
+    vebals_csv = csvs.veoceanCsvFilename(CSV_DIR)
     assert os.path.exists(vebals_csv)
 
 
@@ -101,7 +101,7 @@ def test_calc(tmp_path):
     csvs.saveNFTvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
-    csvs.saveVeOceanCsv(vebals, CSV_DIR)
+    csvs.saveVeoceanCsv(vebals, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
     csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)

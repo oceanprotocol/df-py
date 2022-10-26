@@ -93,7 +93,7 @@ def allocationCsvFilename(csv_dir: str) -> str:
 
 # ========================================================================
 # veOCEAN csvs
-def saveVeOceanCsv(balances: dict, csv_dir: str):
+def saveVeoceanCsv(balances: dict, csv_dir: str):
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
@@ -104,7 +104,7 @@ def saveVeOceanCsv(balances: dict, csv_dir: str):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = veOCEANCsvFilename(csv_dir)
+    csv_file = veoceanCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
     S = balances
     with open(csv_file, "w") as f:
@@ -122,7 +122,7 @@ def saveVeOceanCsv(balances: dict, csv_dir: str):
     print(f"Created {csv_file}")
 
 
-def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
+def loadVeoceanCsv(csv_dir: str) -> Dict[str, float]:
     """
     @description
       Load veOCEAN csv; return result as a single dict
@@ -130,7 +130,7 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
     @return
       veOCEAN -- dict of [LP_addr] : balance
     """
-    csv_file = veOCEANCsvFilename(csv_dir)
+    csv_file = veoceanCsvFilename(csv_dir)
     V: Dict[str, float] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -151,7 +151,7 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
 
 
 @enforce_types
-def veOCEANCsvFilename(csv_dir: str) -> str:
+def veoceanCsvFilename(csv_dir: str) -> str:
     """Returns the veOCEAN filename"""
     return os.path.join(csv_dir, "vebals.csv")
 
