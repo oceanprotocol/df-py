@@ -114,8 +114,8 @@ def test_all():
     _test_queryNftvolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_queryVebalances(blockRange, sampling_accounts_addrs)
     _test_queryAllocations(blockRange, sampling_accounts_addrs)
-    _test_query(CO2_ADDR)
-    _test_nft_infos()
+    _test_queryNftvolsAndSymbols(CO2_ADDR)
+    _test_queryNftinfo()
 
 
 def _foundConsume(CO2_ADDR, st, fin):
