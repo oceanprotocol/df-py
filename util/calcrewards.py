@@ -28,7 +28,7 @@ def calcRewards(
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_float
       rewardsinfo -- dict of [chainID][nft_addr][LP_addr] : OCEAN_float
-    """    
+    """
     (stakes, nftvols, rates) = cleancase.modTuple(stakes, nftvols, rates)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
@@ -128,7 +128,7 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
     tol = 1e-13
     assert sum1 <= rewards_avail * (1 + tol), (sum1, rewards_avail, R)
     if sum1 > rewards_avail:
-        R /= (1 + tol)
+        R /= 1 + tol
     sum2 = np.sum(R)
     assert sum1 <= rewards_avail * (1 + tol), (sum2, rewards_avail, R)
 

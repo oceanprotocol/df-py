@@ -78,7 +78,6 @@ def test_stakes():
     assert mod_stakes == target_stakes
 
 
-
 @enforce_types
 def test_vebals1_fixcase():
     vebals = {"0xLp1": 10.1, "0xLP2": 20.2}
@@ -103,14 +102,12 @@ def test_vebals2_missing0x():
 @enforce_types
 def test_nftvols():
     poolvols = {
-        1: {"0xoCeAn": {"0xpOolA": 1.0, "0xPOOLB": 2.0},
-            "0xH2o":   {"0xPOoLC": 3.0}},
+        1: {"0xoCeAn": {"0xpOolA": 1.0, "0xPOOLB": 2.0}, "0xH2o": {"0xPOoLC": 3.0}},
         2: {"0xocean": {"0xPOOLD": 4.0}},
     }
 
     target_poolvols = {
-        1: {"0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0},
-            "0xh2o":   {"0xpoolc": 3.0}},
+        1: {"0xocean": {"0xpoola": 1.0, "0xpoolb": 2.0}, "0xh2o": {"0xpoolc": 3.0}},
         2: {"0xocean": {"0xpoold": 4.0}},
     }
 

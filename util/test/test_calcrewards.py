@@ -24,7 +24,7 @@ def test_simple():
     stakes = {C1: {NA: {ST1: 1000.0}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
-    rewards_avail = 10.0 #in OCEAN
+    rewards_avail = 10.0  # in OCEAN
 
     rewardsperlp, rewardsinfo = _calcRewards(stakes, nftvols, rewards_avail)
     assert rewardsperlp == {C1: {ST1: 10.0}}
@@ -48,7 +48,7 @@ def test_two_basetokens_OCEAN_and_H2O():
         C1: {OCN_ADDR: {NA: 40.0}, H2O_ADDR: {NB: 12.5}}  # vol in units of OCEAN
     }  # vol in units of H2O
 
-    rewards_avail = 10.0 # in OCEAN
+    rewards_avail = 10.0  # in OCEAN
     rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
 
     NA_RF_USD = 0.5 * 40.0 * 0.5
@@ -60,9 +60,9 @@ def test_two_basetokens_OCEAN_and_H2O():
     assert rewardsinfo == {NA: {ST1: NA_amt}, NB: {ST1: NB_amt}}
 
 
-#===================== FIXME FROM HERE ON
+# ===================== FIXME FROM HERE ON
 
-    
+
 @enforce_types
 def test_two_chains():
     # first cut: symbols are the same
@@ -344,7 +344,6 @@ def test_divide_by_zero():
 
     # Should return empty dict because ST1 and ST2 have zero volume
     assert rewardsperlp == {}
-
 
 
 # ========================================================================

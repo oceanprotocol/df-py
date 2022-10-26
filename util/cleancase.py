@@ -44,7 +44,7 @@ def assertAllocations(allocs: dict):
                 if LP_addr not in lpsum:
                     lpsum[LP_addr] = 0.0
                 lpsum[LP_addr] += float(alloc)
-        
+
     for LP_addr in lpsum:
         assert (
             lpsum[LP_addr] <= 1.0 + 1e-5
