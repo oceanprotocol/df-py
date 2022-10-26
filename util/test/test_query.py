@@ -113,7 +113,7 @@ def test_all():
     _test_getSymbols()
     _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
     _test_queryVebals(blockRange, sampling_accounts_addrs)
-    _test_getAllocations(blockRange, sampling_accounts_addrs)
+    _test_queryAllocations(blockRange, sampling_accounts_addrs)
     _test_query(CO2_ADDR)
     _test_nft_infos()
 
@@ -144,8 +144,8 @@ def _test_queryVebals(rng: BlockRange, sampling_accounts: list):
 
 
 @enforce_types
-def _test_getAllocations(rng: BlockRange, sampling_accounts: list):
-    allocations = query.getAllocations(rng, CHAINID)
+def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
+    allocations = query.queryAllocations(rng, CHAINID)
 
     assert len(allocations) > 0
 

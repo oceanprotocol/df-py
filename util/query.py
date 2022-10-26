@@ -174,7 +174,7 @@ def queryVebals(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
 
 @enforce_types
-def getAllocations(
+def queryAllocations(
     rng: BlockRange, CHAINID: int
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """

@@ -213,7 +213,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    allocs = query.getAllocations(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID)
     csvs.saveAllocationCsv(allocs, CSV_DIR)
 
     print("dftool allocations: Done")
