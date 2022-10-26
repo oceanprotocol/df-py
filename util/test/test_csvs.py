@@ -13,17 +13,14 @@ OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"  # all lowercase
 OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
 
-
-
 # =================================================================
 # allocations csvs
+
 
 @enforce_types
 def test_allocations_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {PA: {LP1: 1.1, LP2: 1.2},
-          PB: {LP1: 2.1, LP3: 2.3},
-          PC: {LP1: 3.1, LP4: 3.4}}
+    S1 = {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}, PC: {LP1: 3.1, LP4: 3.4}}
     A1 = {1: S1}
     csvs.saveAllocationCsv(A1, csv_dir)
     A1_loaded = csvs.loadAllocationCsvs(csv_dir)
@@ -68,6 +65,7 @@ def test_allocations_twochains(tmp_path):
 
 # =================================================================
 # nftvols csvs
+
 
 @enforce_types
 def test_chainIDforNftvolsCsv():
