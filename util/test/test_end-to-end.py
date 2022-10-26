@@ -29,11 +29,11 @@ def test_without_csvs():
     rng = blockrange.BlockRange(st, fin, n)
 
     (V0, SYM0) = query.query_all(rng, chainID)
-    
+
     vebals = query.getveBalances(rng, chainID)
     allocs = query.getAllocations(rng, chainID)
     stakes = allocations.allocsToStakes(allocs, vebals)
-    
+
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
     V, SYM = (
@@ -79,13 +79,13 @@ def test_with_csvs(tmp_path):
     allocs = query.getAllocations(rng, chainID)
     csvs.saveVeOceanCsv(vebals, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
-    vebals = allocs = None # ensure not used later
+    vebals = allocs = None  # ensure not used later
 
     # 3. simulate "dftool calc"
     R = csvs.loadRateCsvs(csv_dir)
     V = csvs.loadNFTvolsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
-    
+
     allocs = csvs.loadAllocationCsvs(csv_dir)
     vebals = csvs.loadVeOceanCsv(csv_dir)
     stakes = allocations.allocsToStakes(allocs, vebals)
