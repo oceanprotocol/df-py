@@ -71,7 +71,7 @@ def test_with_csvs(tmp_path):
 
     # 2. simulate "dftool query"
     (V0, SYM0) = query.query_all(rng, chainID)
-    csvs.saveNFTvolsCsv(V0, csv_dir, chainID)
+    csvs.saveNftvolsCsv(V0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = SYM0 = None  # ensure not used later
 
@@ -83,7 +83,7 @@ def test_with_csvs(tmp_path):
 
     # 3. simulate "dftool calc"
     R = csvs.loadRateCsvs(csv_dir)
-    V = csvs.loadNFTvolsCsvs(csv_dir)
+    V = csvs.loadNftvolsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     allocs = csvs.loadAllocationCsvs(csv_dir)

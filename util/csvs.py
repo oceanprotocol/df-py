@@ -203,7 +203,7 @@ def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
 
 
 @enforce_types
-def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
+def saveNftvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
       Save the nftvols csv for this chain. This csv is a key input for
@@ -231,7 +231,7 @@ def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
 
 
 @enforce_types
-def loadNFTvolsCsvs(csv_dir: str):
+def loadNftvolsCsvs(csv_dir: str):
     """
     @description
       Load all nftvols csvs (across all chains); return result as single dict
@@ -242,13 +242,13 @@ def loadNFTvolsCsvs(csv_dir: str):
     csv_files = nftvolsCsvFilenames(csv_dir)
     nftvols = {}
     for csv_file in csv_files:
-        chainID = chainIDforNFTvolsCsv(csv_file)
-        nftvols[chainID] = loadNFTvolsCsv(csv_dir, chainID)
+        chainID = chainIDforNftvolsCsv(csv_file)
+        nftvols[chainID] = loadNftvolsCsv(csv_dir, chainID)
     return nftvols
 
 
 @enforce_types
-def loadNFTvolsCsv(csv_dir: str, chainID: int):
+def loadNftvolsCsv(csv_dir: str, chainID: int):
     """
     @description
       Load nftvols for this chainID
@@ -296,7 +296,7 @@ def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
 
 
 @enforce_types
-def chainIDforNFTvolsCsv(filename) -> int:
+def chainIDforNftvolsCsv(filename) -> int:
     """Returns chainID for a given nftvols csv filename"""
     return _lastInt(filename)
 

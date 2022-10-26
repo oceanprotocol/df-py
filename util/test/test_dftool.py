@@ -98,7 +98,7 @@ def test_calc(tmp_path):
     csvs.saveAllocationCsv(allocations, CSV_DIR)
 
     nftvolts_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
-    csvs.saveNFTvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
+    csvs.saveNftvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     csvs.saveVeoceanCsv(vebals, CSV_DIR)

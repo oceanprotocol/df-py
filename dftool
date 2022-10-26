@@ -139,7 +139,7 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     # main work
     (Vi, SYMi) = query.query_all(rng, CHAINID)
-    csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
+    csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
@@ -339,7 +339,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     vebals = csvs.loadVeoceanCsv(CSV_DIR)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
-    nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)
+    nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
