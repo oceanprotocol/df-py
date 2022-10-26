@@ -168,7 +168,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     _createDirIfNeeded(CSV_DIR)
 
     nftinfo = query.getNFTInfos(CHAINID)
-    csvs.saveNftInfoCsv(nftinfo, CSV_DIR, CHAINID)
+    csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
 

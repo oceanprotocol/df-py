@@ -161,7 +161,7 @@ def veoceanCsvFilename(csv_dir: str) -> str:
 
 
 @enforce_types
-def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
+def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
@@ -173,7 +173,7 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
     """
 
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = nftInfoCsvFilename(csv_dir, chainID)
+    csv_file = nftinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
@@ -193,7 +193,7 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
 
 
 @enforce_types
-def nftInfoCsvFilename(csv_dir: str, chainID: int) -> str:
+def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the nftinfo filename"""
     return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
 
