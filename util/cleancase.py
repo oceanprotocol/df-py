@@ -78,7 +78,7 @@ def assertStakes(stakes: dict):
         for nft_addr in stakes[chainID]:
             assert nft_addr[:2] == "0x", nft_addr
             assert nft_addr.lower() == nft_addr, nft_addr
-            for LP_addr, stake in stakes[chainID][nft_addr].items():
+            for stake in stakes[chainID][nft_addr].values():
                 assert isinstance(stake, float)
 
 

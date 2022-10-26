@@ -2,7 +2,6 @@ from enforce_typing import enforce_types
 import pytest
 from pytest import approx
 
-from util import cleancase
 from util.calcrewards import calcRewards, TARGET_WPY
 
 # for shorter lines
