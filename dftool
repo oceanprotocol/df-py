@@ -8,10 +8,9 @@ import functools
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
-from util.cleancase import assertAllocations
 from util import (
+    allocations,
     blockrange,
-    calcrewards,
     networkutil,
     csvs,
     dispense,
@@ -19,6 +18,7 @@ from util import (
     query,
 )
 from util.base18 import fromBase18
+from util.calcrewards import calcRewards
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
 from util.oceanutil import (
@@ -53,7 +53,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
+  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
   dftool compile - compile contracts
@@ -139,7 +139,7 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     # main work
     (Vi, SYMi) = query.query_all(rng, CHAINID)
-    csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
+    csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
@@ -168,7 +168,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     _createDirIfNeeded(CSV_DIR)
 
     nftinfo = query.getNFTInfos(CHAINID)
-    csvs.saveNftInfoCsv(nftinfo, CSV_DIR, CHAINID)
+    csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
 
@@ -213,8 +213,8 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    allocations = query.getAllocations(rng, CHAINID)
-    csvs.saveAllocationCsv(allocations, CSV_DIR)
+    allocs = query.getAllocations(rng, CHAINID)
+    csvs.saveAllocationCsv(allocs, CSV_DIR)
 
     print("dftool allocations: Done")
 
@@ -251,14 +251,14 @@ SECRET_SEED -- secret integer used to seed the rng
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(csvs.veOCEANCsvFilename(CSV_DIR))
+    _exitIfFileExists(csvs.vebalsCsvFilename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     balances = query.getveBalances(rng, CHAINID)
-    csvs.saveVeOceanCsv(balances, CSV_DIR)
+    csvs.saveVebalsCsv(balances, CSV_DIR)
 
     print("dftool vebals: Done")
 
@@ -300,25 +300,21 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
 def do_calc():
     HELP = """From stakes/vols/rates csvs, output rewards csvs.
 
-Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
+Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
-  TOT_TOKEN -- total amount of TOKEN to distribute (decimal, not wei)
-  TOKEN_SYMBOL -- e.g. OCEAN
+  TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
+  IGNORED -- Ignored. This argument is kept for compatibility.
 """
 
-    if len(sys.argv) not in [2 + 3]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
-    TOT_TOKEN = float(sys.argv[3])
-    TOKEN_SYMBOL = sys.argv[4]
-    print(
-        f"Arguments:\n TOT_TOKEN={TOT_TOKEN}, CSV_DIR={CSV_DIR}"
-        f", TOKEN_SYMBOL={TOKEN_SYMBOL}"
-    )
+    TOT_OCEAN = float(sys.argv[3])
+    print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
 
     # do we have the input files?
     if not csvs.rateCsvFilenames(CSV_DIR):
@@ -330,28 +326,27 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     if not csvs.allocationCsvFilename(CSV_DIR):
         print(f"\nNo 'allocation*.csv' file in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
-    if not csvs.veOCEANCsvFilename(CSV_DIR):
+    if not csvs.vebalsCsvFilename(CSV_DIR):
         print(f"\nNo 'veocean*.csv' file in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
     # shouldn't already have the output file
-    _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL))
-    _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, TOKEN_SYMBOL))
+    _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
+    _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
 
     # main work
-    Allc = csvs.loadAllocationCsvs(CSV_DIR)
-    vebals = csvs.loadVeOceanCsv(CSV_DIR)
-    nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)
+    allocs = csvs.loadAllocationCsvs(CSV_DIR)
+    vebals = csvs.loadVebalsCsv(CSV_DIR)
+    stakes = allocations.allocsToStakes(allocs, vebals)
+
+    nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
-    assertAllocations(Allc)
+    rewardsperlp, rewardsinfo = calcRewards(stakes, nftvols, SYM, R, TOT_OCEAN)
 
-    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        Allc, vebals, nftvols, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
-    )
-    csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, TOKEN_SYMBOL)
-    csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, TOKEN_SYMBOL)
+    csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")
+    csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
 
@@ -430,7 +425,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     )
 
     print("dftool dispense: Done")
-
 
 
 # ========================================================================

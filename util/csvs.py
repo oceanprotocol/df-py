@@ -92,46 +92,43 @@ def allocationCsvFilename(csv_dir: str) -> str:
 
 
 # ========================================================================
-# veOCEAN csvs
-def saveVeOceanCsv(balances: dict, csv_dir: str):
+# vebals csvs
+def saveVebalsCsv(vebals: dict, csv_dir: str):
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
       dftool calcrewards, and contains just enough info for it to operate, and no more.
 
     @arguments
-      balances -- dict of [LP_addr] : balance
+      vebals -- dict of [LP_addr] : balance
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = veOCEANCsvFilename(csv_dir)
+    csv_file = vebalsCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
-    S = balances
+    S = vebals
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         row = ["LP_addr", "balance"]
         writer.writerow(row)
         for LP_addr in S.keys():
             assertIsEthAddr(LP_addr)
-            row = [
-                LP_addr.lower(),
-                S[LP_addr],
-            ]
+            row = [LP_addr.lower(), S[LP_addr]]
             writer.writerow(row)
 
     print(f"Created {csv_file}")
 
 
-def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
+def loadVebalsCsv(csv_dir: str) -> Dict[str, float]:
     """
     @description
-      Load veOCEAN csv; return result as a single dict
+      Load veOCEAN balances csv; return result as a single dict
 
     @return
-      veOCEAN -- dict of [LP_addr] : balance
+      vebals -- dict of [LP_addr] : balance
     """
-    csv_file = veOCEANCsvFilename(csv_dir)
-    V: Dict[str, float] = {}
+    csv_file = vebalsCsvFilename(csv_dir)
+    vebals: Dict[str, float] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -145,14 +142,14 @@ def loadVeOceanCsv(csv_dir: str) -> Dict[str, float]:
 
             assertIsEthAddr(LP_addr)
 
-            V[LP_addr] = balance
+            vebals[LP_addr] = balance
     print(f"Loaded {csv_file}")
-    return V
+    return vebals
 
 
 @enforce_types
-def veOCEANCsvFilename(csv_dir: str) -> str:
-    """Returns the veOCEAN filename"""
+def vebalsCsvFilename(csv_dir: str) -> str:
+    """Returns the vebals filename"""
     return os.path.join(csv_dir, "vebals.csv")
 
 
@@ -161,7 +158,7 @@ def veOCEANCsvFilename(csv_dir: str) -> str:
 
 
 @enforce_types
-def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
+def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
@@ -173,7 +170,7 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
     """
 
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = nftInfoCsvFilename(csv_dir, chainID)
+    csv_file = nftinfoCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
@@ -193,7 +190,7 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
 
 
 @enforce_types
-def nftInfoCsvFilename(csv_dir: str, chainID: int) -> str:
+def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the nftinfo filename"""
     return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
 
@@ -203,7 +200,7 @@ def nftInfoCsvFilename(csv_dir: str, chainID: int) -> str:
 
 
 @enforce_types
-def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
+def saveNftvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
       Save the nftvols csv for this chain. This csv is a key input for
@@ -217,13 +214,13 @@ def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
-    V = nftvols_at_chain
+    nftvols = nftvols_at_chain
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         writer.writerow(["chainID", "basetoken_addr", "nft_addr", "vol_amt"])
-        for basetoken_addr in V.keys():
+        for basetoken_addr in nftvols.keys():
             assertIsEthAddr(basetoken_addr)
-            for nft_addr, vol in V[basetoken_addr].items():
+            for nft_addr, vol in nftvols[basetoken_addr].items():
                 assertIsEthAddr(nft_addr)
                 row = [chainID, basetoken_addr.lower(), nft_addr.lower(), vol]
                 writer.writerow(row)
@@ -231,7 +228,7 @@ def saveNFTvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
 
 
 @enforce_types
-def loadNFTvolsCsvs(csv_dir: str):
+def loadNftvolsCsvs(csv_dir: str):
     """
     @description
       Load all nftvols csvs (across all chains); return result as single dict
@@ -242,13 +239,13 @@ def loadNFTvolsCsvs(csv_dir: str):
     csv_files = nftvolsCsvFilenames(csv_dir)
     nftvols = {}
     for csv_file in csv_files:
-        chainID = chainIDforNFTvolsCsv(csv_file)
-        nftvols[chainID] = loadNFTvolsCsv(csv_dir, chainID)
+        chainID = chainIDforNftvolsCsv(csv_file)
+        nftvols[chainID] = loadNftvolsCsv(csv_dir, chainID)
     return nftvols
 
 
 @enforce_types
-def loadNFTvolsCsv(csv_dir: str, chainID: int):
+def loadNftvolsCsv(csv_dir: str, chainID: int):
     """
     @description
       Load nftvols for this chainID
@@ -257,7 +254,7 @@ def loadNFTvolsCsv(csv_dir: str, chainID: int):
       nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
     """
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
-    V: Dict[str, Dict[str, float]] = {}  # ie nftvols_at_chain
+    nftvols: Dict[str, Dict[str, float]] = {}  # ie nftvols_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -274,13 +271,13 @@ def loadNFTvolsCsv(csv_dir: str, chainID: int):
             assertIsEthAddr(basetoken_addr)
             assertIsEthAddr(nft_addr)
 
-            if basetoken_addr not in V:
-                V[basetoken_addr] = {}
-            assert nft_addr not in V[basetoken_addr], "duplicate found"
-            V[basetoken_addr][nft_addr] = vol_amt
+            if basetoken_addr not in nftvols:
+                nftvols[basetoken_addr] = {}
+            assert nft_addr not in nftvols[basetoken_addr], "duplicate found"
+            nftvols[basetoken_addr][nft_addr] = vol_amt
     print(f"Loaded {csv_file}")
 
-    return V
+    return nftvols
 
 
 @enforce_types
@@ -296,7 +293,7 @@ def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
 
 
 @enforce_types
-def chainIDforNFTvolsCsv(filename) -> int:
+def chainIDforNftvolsCsv(filename) -> int:
     """Returns chainID for a given nftvols csv filename"""
     return _lastInt(filename)
 
