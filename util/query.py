@@ -344,7 +344,7 @@ def queryNftvolsAndSymbols(
       A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered = queryNftvolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered = _queryNftvolumes(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     # get all basetokens from Vi
@@ -356,7 +356,7 @@ def queryNftvolsAndSymbols(
     return (Vi, SYMi)
 
 
-def queryNftvolumes(
+def _queryNftvolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
     """
