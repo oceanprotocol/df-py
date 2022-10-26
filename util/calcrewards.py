@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple 
 
 from enforce_typing import enforce_types
 import numpy as np
