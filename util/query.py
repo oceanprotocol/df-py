@@ -38,34 +38,6 @@ class DataNFT:
 
 
 @enforce_types
-def queryNftvolsAndSymbols(
-    rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
-    """
-    @description
-      Return nftvols for the input block range and chain.
-
-    @return
-      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
-      symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
-
-    @notes
-      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
-      Basetoken symbols are full uppercase, addresses are full lowercase.
-    """
-    Vi_unfiltered = queryNftvolumes(rng.st, rng.fin, chainID)
-    Vi = _filterNftvols(Vi_unfiltered, chainID)
-
-    # get all basetokens from Vi
-    basetokens = TokSet()
-    for basetoken in Vi:
-        _symbol = symbol(basetoken)
-        basetokens.add(chainID, basetoken, _symbol)
-    SYMi = getSymbols(basetokens, chainID)
-    return (Vi, SYMi)
-
-
-@enforce_types
 def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     """
     @description
@@ -354,6 +326,34 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
         offset += chunk_size
 
     return nftinfo
+
+
+@enforce_types
+def queryNftvolsAndSymbols(
+    rng: BlockRange, chainID: int
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
+    """
+    @description
+      Return nftvols for the input block range and chain.
+
+    @return
+      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
+      symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
+
+    @notes
+      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
+      Basetoken symbols are full uppercase, addresses are full lowercase.
+    """
+    Vi_unfiltered = queryNftvolumes(rng.st, rng.fin, chainID)
+    Vi = _filterNftvols(Vi_unfiltered, chainID)
+
+    # get all basetokens from Vi
+    basetokens = TokSet()
+    for basetoken in Vi:
+        _symbol = symbol(basetoken)
+        basetokens.add(chainID, basetoken, _symbol)
+    SYMi = getSymbols(basetokens, chainID)
+    return (Vi, SYMi)
 
 
 def queryNftvolumes(
