@@ -5,7 +5,6 @@ import re
 from typing import Any, Dict, List
 from enforce_typing import enforce_types
 
-from util.allocations import allocsToStakes
 from util.query import DataNFT
 
 
