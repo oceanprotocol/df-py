@@ -335,9 +335,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
 
     # main work
-    allocs = csvs.loadAllocationCsvs(CSV_DIR)
-    vebals = csvs.loadVebalsCsv(CSV_DIR)
-    stakes = allocations.allocsToStakes(allocs, vebals)
+    stakes = allocations.loadStakes(CSV_DIR)
 
     nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
