@@ -89,7 +89,7 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_query():
-    HELP = f"""Query chain, output nft volume csv
+    HELP = f"""Query chain, output nftvols & symbols
 
 Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
@@ -138,7 +138,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     recordDeployedContracts(ADDRESS_FILE)
     # main work
-    (Vi, SYMi) = query.query_all(rng, CHAINID)
+    (Vi, SYMi) = query.queryNftvolsAndSymbols(rng, CHAINID)
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 

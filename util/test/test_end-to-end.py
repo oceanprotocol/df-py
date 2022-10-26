@@ -28,7 +28,7 @@ def test_without_csvs():
     st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
 
-    (V0, SYM0) = query.query_all(rng, chainID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
 
     vebals = query.getveBalances(rng, chainID)
     allocs = query.getAllocations(rng, chainID)
@@ -70,7 +70,7 @@ def test_with_csvs(tmp_path):
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
     # 2. simulate "dftool query"
-    (V0, SYM0) = query.query_all(rng, chainID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
     csvs.saveNftvolsCsv(V0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = SYM0 = None  # ensure not used later

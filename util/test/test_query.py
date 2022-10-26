@@ -184,10 +184,10 @@ def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
 
 
 @enforce_types
-def _test_query(CO2_ADDR: str):
+def _test_queryNFtVolsAndSymbols(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (V0, SYM0) = query.query_all(rng, CHAINID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
 
     assert CO2_ADDR in V0
     assert SYM0

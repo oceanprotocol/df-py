@@ -38,7 +38,7 @@ class DataNFT:
 
 
 @enforce_types
-def query_all(
+def queryNftvolsAndSymbols(
     rng: BlockRange, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
     """
