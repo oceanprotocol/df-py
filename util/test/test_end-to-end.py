@@ -28,10 +28,10 @@ def test_without_csvs():
     st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
 
-    (V0, SYM0) = query.query_all(rng, chainID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
 
-    vebals = query.getveBalances(rng, chainID)
-    allocs = query.getAllocations(rng, chainID)
+    vebals = query.queryVebalances(rng, chainID)
+    allocs = query.queryAllocations(rng, chainID)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618}
@@ -70,13 +70,13 @@ def test_with_csvs(tmp_path):
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
     # 2. simulate "dftool query"
-    (V0, SYM0) = query.query_all(rng, chainID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
     csvs.saveNftvolsCsv(V0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = SYM0 = None  # ensure not used later
 
-    vebals = query.getveBalances(rng, chainID)
-    allocs = query.getAllocations(rng, chainID)
+    vebals = query.queryVebalances(rng, chainID)
+    allocs = query.queryAllocations(rng, chainID)
     csvs.saveVebalsCsv(vebals, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
     vebals = allocs = None  # ensure not used later
@@ -86,9 +86,7 @@ def test_with_csvs(tmp_path):
     V = csvs.loadNftvolsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
-    allocs = csvs.loadAllocationCsvs(csv_dir)
-    vebals = csvs.loadVebalsCsv(csv_dir)
-    stakes = allocations.allocsToStakes(allocs, vebals)
+    stakes = allocations.loadStakes(csv_dir)  # loads allocs & vebals, then *
 
     OCEAN_avail = 0.0001
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)

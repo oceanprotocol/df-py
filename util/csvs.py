@@ -13,20 +13,19 @@ from util.query import DataNFT
 
 
 @enforce_types
-def saveAllocationCsv(allocations: dict, csv_dir: str):
+def saveAllocationCsv(allocs: dict, csv_dir: str):
     """
     @description
-      Save the allocations csv for this chain. This csv is a key input for
-      dftool calcrewards, and contains just enough info for it to operate, and no more.
+      Save the allocations csv for this chain.
 
     @arguments
-      allocations -- dict of [chain_id][nft_addr][LP_addr] : percent
+      allocs -- dict of [chain_id][nft_addr][LP_addr] : percent_float
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = allocationCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
-    S = allocations
+    S = allocs
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         row = ["chainID", "nft_addr", "LP_addr", "percent"]
@@ -53,10 +52,10 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
       Load allocation csv; return result as a single dict
 
     @return
-      allocation -- dict of [chainID][basetoken_addr][nft_addr][LP_addr] : stake_amt
+      allocs -- dict of [chainID][basetoken_addr][nft_addr][LP_addr] : perc_flt
     """
     csv_file = allocationCsvFilename(csv_dir)
-    V: Dict[int, Dict[str, Dict[str, float]]] = {}
+    allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -73,16 +72,16 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
             assertIsEthAddr(nft_addr)
             assertIsEthAddr(LP_addr)
 
-            if chainID not in V:
-                V[chainID] = {}
+            if chainID not in allocs:
+                allocs[chainID] = {}
 
-            if nft_addr not in V[chainID]:
-                V[chainID][nft_addr] = {}
+            if nft_addr not in allocs[chainID]:
+                allocs[chainID][nft_addr] = {}
 
-            V[chainID][nft_addr][LP_addr] = percent
+            allocs[chainID][nft_addr][LP_addr] = percent
     print(f"Loaded {csv_file}")
 
-    return V
+    return allocs
 
 
 @enforce_types
@@ -106,14 +105,13 @@ def saveVebalsCsv(vebals: dict, csv_dir: str):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = vebalsCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
-    S = vebals
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         row = ["LP_addr", "balance"]
         writer.writerow(row)
-        for LP_addr in S.keys():
+        for LP_addr in vebals.keys():
             assertIsEthAddr(LP_addr)
-            row = [LP_addr.lower(), S[LP_addr]]
+            row = [LP_addr.lower(), vebals[LP_addr]]
             writer.writerow(row)
 
     print(f"Created {csv_file}")

@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 
-from util import cleancase
+from util import cleancase, csvs
 
 
 @enforce_types
@@ -29,4 +29,17 @@ def allocsToStakes(allocs: dict, vebals: dict) -> dict:
                 stakes[chainID][nft_addr][LP_addr] = stake
 
     cleancase.assertStakes(stakes)
+    return stakes
+
+
+def loadStakes(csv_dir: str) -> dict:
+    """
+    Loads allocs and vebals, computes stakes from it, and returns stakes.
+
+    @return
+      stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float - abs alloc
+    """
+    allocs = csvs.loadAllocationCsvs(csv_dir)
+    vebals = csvs.loadVebalsCsv(csv_dir)
+    stakes = allocsToStakes(allocs, vebals)
     return stakes

@@ -111,15 +111,15 @@ def test_all():
 
     # run actual tests
     _test_getSymbols()
-    _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
-    _test_getveBalances(blockRange, sampling_accounts_addrs)
-    _test_getAllocations(blockRange, sampling_accounts_addrs)
-    _test_query(CO2_ADDR)
-    _test_nft_infos()
+    _test_queryNftvolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
+    _test_queryVebalances(blockRange, sampling_accounts_addrs)
+    _test_queryAllocations(blockRange, sampling_accounts_addrs)
+    _test_queryNftvolsAndSymbols(CO2_ADDR)
+    _test_queryNftinfo()
 
 
 def _foundConsume(CO2_ADDR, st, fin):
-    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
+    DT_vols = query._queryNftvolumes(st, fin, CHAINID)
     if CO2_ADDR not in DT_vols:
         return False
     if sum(DT_vols[CO2_ADDR].values()) == 0:
@@ -130,8 +130,8 @@ def _foundConsume(CO2_ADDR, st, fin):
 
 
 @enforce_types
-def _test_getveBalances(rng: BlockRange, sampling_accounts: list):
-    veBalances = query.getveBalances(rng, CHAINID)
+def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
+    veBalances = query.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
 
@@ -144,8 +144,8 @@ def _test_getveBalances(rng: BlockRange, sampling_accounts: list):
 
 
 @enforce_types
-def _test_getAllocations(rng: BlockRange, sampling_accounts: list):
-    allocations = query.getAllocations(rng, CHAINID)
+def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
+    allocations = query.queryAllocations(rng, CHAINID)
 
     assert len(allocations) > 0
 
@@ -177,25 +177,25 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_getNFTVolumes(CO2_ADDR: str, st, fin):
-    DT_vols = query.getNFTVolumes(st, fin, CHAINID)
+def _test_queryNftvolumes(CO2_ADDR: str, st, fin):
+    DT_vols = query._queryNftvolumes(st, fin, CHAINID)
     assert CO2_ADDR in DT_vols, (CO2_ADDR, DT_vols.keys())
     assert sum(DT_vols[CO2_ADDR].values()) > 0.0
 
 
 @enforce_types
-def _test_query(CO2_ADDR: str):
+def _test_queryNftvolsAndSymbols(CO2_ADDR: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (V0, SYM0) = query.query_all(rng, CHAINID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
 
     assert CO2_ADDR in V0
     assert SYM0
 
 
 @enforce_types
-def _test_nft_infos():
-    nfts = query.getNFTInfos(CHAINID)
+def _test_queryNftinfo():
+    nfts = query.queryNftinfo(CHAINID)
     assert len(nfts) > 0
 
 
@@ -214,7 +214,7 @@ def test_symbol():
 
 
 @enforce_types
-def test_aquarius_asset_names():
+def test_queryAquariusAssetNames():
     # test that we can get the asset names from aquarius
     nft_dids = [
         "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
@@ -224,7 +224,7 @@ def test_aquarius_asset_names():
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
     expectedAssetNames = ["Trent", "c2d fresh dataset", "CryptoPunks dataset C2D", ""]
-    assetNames = query.aquarius_asset_names(nft_dids)
+    assetNames = query.queryAquariusAssetNames(nft_dids)
     assert len(assetNames) == 4
 
     for i in range(4):

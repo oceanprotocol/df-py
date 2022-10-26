@@ -38,7 +38,7 @@ class DataNFT:
 
 
 @enforce_types
-def query_all(
+def queryNftvolsAndSymbols(
     rng: BlockRange, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
     """
@@ -53,7 +53,7 @@ def query_all(
       A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered = getNFTVolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered = _queryNftvolumes(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     # get all basetokens from Vi
@@ -66,24 +66,24 @@ def query_all(
 
 
 @enforce_types
-def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
+def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     """
     @description
       Return all ve balances
 
     @return
-      veBalances -- dict of veBalances [LP_addr] : veBalance
+      vebals -- dict of [LP_addr] : veOCEAN_float
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
     # [LP_addr] : veBalance
-    veBalances: Dict[str, float] = {}
+    vebals: Dict[str, float] = {}
 
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
-    print("getveBalances: begin")
+    print("queryVebalances: begin")
 
     for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
@@ -153,10 +153,10 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
                 balance += totalAmount
 
                 ## set user balance
-                if user["id"] not in veBalances:
-                    veBalances[user["id"]] = balance
+                if user["id"] not in vebals:
+                    vebals[user["id"]] = balance
                 else:
-                    veBalances[user["id"]] += balance
+                    vebals[user["id"]] += balance
 
             ## increase offset
             offset += chunk_size
@@ -165,16 +165,16 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     assert n_blocks_sampled > 0
 
     # get average
-    for user in veBalances:
-        veBalances[user] /= n_blocks_sampled
+    for user in vebals:
+        vebals[user] /= n_blocks_sampled
 
-    print("getveBalances: done")
+    print("queryVebalances: done")
 
-    return veBalances
+    return vebals
 
 
 @enforce_types
-def getAllocations(
+def queryAllocations(
     rng: BlockRange, CHAINID: int
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
@@ -186,7 +186,7 @@ def getAllocations(
     """
 
     # [chain_id][nft_addr][LP_addr] : percent
-    allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
+    allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
 
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
@@ -218,27 +218,27 @@ def getAllocations(
                 block,
             )
             result = submitQuery(query, CHAINID)
-            _allocations = result["data"]["veAllocateUsers"]
-            if len(_allocations) == 0:
+            _allocs = result["data"]["veAllocateUsers"]
+            if len(_allocs) == 0:
                 # means there are no records left
                 break
 
-            for allocation in _allocations:
+            for allocation in _allocs:
                 LP_addr = allocation["id"]
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
                     allocated = float(ve_allocation["allocated"])
 
-                    if chain_id not in allocations:
-                        allocations[chain_id] = {}
-                    if nft_addr not in allocations[chain_id]:
-                        allocations[chain_id][nft_addr] = {}
+                    if chain_id not in allocs:
+                        allocs[chain_id] = {}
+                    if nft_addr not in allocs[chain_id]:
+                        allocs[chain_id][nft_addr] = {}
 
-                    if LP_addr not in allocations[chain_id][nft_addr]:
-                        allocations[chain_id][nft_addr][LP_addr] = allocated
+                    if LP_addr not in allocs[chain_id][nft_addr]:
+                        allocs[chain_id][nft_addr][LP_addr] = allocated
                     else:
-                        allocations[chain_id][nft_addr][LP_addr] += allocated
+                        allocs[chain_id][nft_addr][LP_addr] += allocated
 
             offset += chunk_size
         n_blocks_sampled += 1
@@ -246,37 +246,37 @@ def getAllocations(
     assert n_blocks_sampled > 0
 
     # get average
-    for chain_id in allocations:
-        for nft_addr in allocations[chain_id]:
-            for LP_addr in allocations[chain_id][nft_addr]:
-                allocations[chain_id][nft_addr][LP_addr] /= n_blocks_sampled
+    for chain_id in allocs:
+        for nft_addr in allocs[chain_id]:
+            for LP_addr in allocs[chain_id][nft_addr]:
+                allocs[chain_id][nft_addr][LP_addr] /= n_blocks_sampled
 
-    # get total allocations per each LP
+    # get total allocs per each LP
     lp_total = {}
-    for chain_id in allocations:
-        for nft_addr in allocations[chain_id]:
-            for LP_addr in allocations[chain_id][nft_addr]:
+    for chain_id in allocs:
+        for nft_addr in allocs[chain_id]:
+            for LP_addr in allocs[chain_id][nft_addr]:
                 if LP_addr not in lp_total:
                     lp_total[LP_addr] = 0.0
-                lp_total[LP_addr] += allocations[chain_id][nft_addr][LP_addr]
+                lp_total[LP_addr] += allocs[chain_id][nft_addr][LP_addr]
 
     for LP_addr in lp_total:
         if lp_total[LP_addr] < MAX_ALLOCATE:
             lp_total[LP_addr] = MAX_ALLOCATE
 
     # normalize values per LP
-    for chain_id in allocations:
-        for nft_addr in allocations[chain_id]:
-            for LP_addr in allocations[chain_id][nft_addr]:
+    for chain_id in allocs:
+        for nft_addr in allocs[chain_id]:
+            for LP_addr in allocs[chain_id][nft_addr]:
                 if lp_total[LP_addr] == 0.0:
                     print(f"WARNING: {lp_total[LP_addr]} == 0.0")
                     continue
-                allocations[chain_id][nft_addr][LP_addr] /= lp_total[LP_addr]
+                allocs[chain_id][nft_addr][LP_addr] /= lp_total[LP_addr]
 
-    return allocations
+    return allocs
 
 
-def getNFTInfos(chainID) -> List[DataNFT]:
+def queryNftinfo(chainID) -> List[DataNFT]:
     """
     @description
       Fetch, filter and return all NFTs on the chain
@@ -285,14 +285,14 @@ def getNFTInfos(chainID) -> List[DataNFT]:
       nftInfo -- list of DataNFT objects
     """
 
-    NFTinfo = _getNFTInfos(chainID)
+    nftinfo = _queryNftinfo(chainID)
 
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
-        NFTinfo = _filterNftinfos(NFTinfo)
-        NFTinfo = _populateNftAssetNames(NFTinfo)
+        nftinfo = _filterNftinfos(nftinfo)
+        nftinfo = _populateNftAssetNames(nftinfo)
 
-    return NFTinfo
+    return nftinfo
 
 
 def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
@@ -305,7 +305,7 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     """
 
     nft_dids = [nft.did for nft in nftInfo]
-    did_to_name = aquarius_asset_names(nft_dids)
+    did_to_name = queryAquariusAssetNames(nft_dids)
 
     for nft in nftInfo:
         nft.setName(did_to_name[nft.did])
@@ -313,7 +313,7 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     return nftInfo
 
 
-def _getNFTInfos(chainID) -> List[DataNFT]:
+def _queryNftinfo(chainID) -> List[DataNFT]:
     """
     @description
       Return all NFTs on the chain
@@ -321,7 +321,7 @@ def _getNFTInfos(chainID) -> List[DataNFT]:
     @return
       nftInfo -- list of DataNFT objects
     """
-    NFTinfo = []
+    nftinfo = []
     chunk_size = 1000
     offset = 0
 
@@ -349,14 +349,14 @@ def _getNFTInfos(chainID) -> List[DataNFT]:
                 chainID,
                 nft["symbol"],
             )
-            NFTinfo.append(datanft)
+            nftinfo.append(datanft)
 
         offset += chunk_size
 
-    return NFTinfo
+    return nftinfo
 
 
-def getNFTVolumes(
+def _queryNftvolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
     """
@@ -544,7 +544,7 @@ def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
     """
     filtered_nft_dids = []
 
-    assets = aquarius_asset_names(nft_dids)
+    assets = queryAquariusAssetNames(nft_dids)
 
     # Aquarius returns "" as the name for assets that isn't in the marketplace
     for did in assets:
@@ -599,7 +599,7 @@ def symbol(addr: str):
 
 
 @enforce_types
-def aquarius_asset_names(
+def queryAquariusAssetNames(
     nft_dids: List[str],
 ) -> Dict[str, str]:
     """
