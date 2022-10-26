@@ -305,7 +305,7 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     """
 
     nft_dids = [nft.did for nft in nftInfo]
-    did_to_name = aquarius_asset_names(nft_dids)
+    did_to_name = queryAquariusAssetNames(nft_dids)
 
     for nft in nftInfo:
         nft.setName(did_to_name[nft.did])
@@ -544,7 +544,7 @@ def _filterToAquariusAssets(nft_dids: List[str]) -> List[str]:
     """
     filtered_nft_dids = []
 
-    assets = aquarius_asset_names(nft_dids)
+    assets = queryAquariusAssetNames(nft_dids)
 
     # Aquarius returns "" as the name for assets that isn't in the marketplace
     for did in assets:
@@ -599,7 +599,7 @@ def symbol(addr: str):
 
 
 @enforce_types
-def aquarius_asset_names(
+def queryAquariusAssetNames(
     nft_dids: List[str],
 ) -> Dict[str, str]:
     """
