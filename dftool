@@ -11,7 +11,6 @@ from web3.middleware import geth_poa_middleware
 from util import (
     allocations,
     blockrange,
-    calcrewards,
     networkutil,
     csvs,
     dispense,
@@ -19,6 +18,7 @@ from util import (
     query,
 )
 from util.base18 import fromBase18
+from util.calcrewards import calcRewards
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
 from util.oceanutil import (
@@ -338,13 +338,13 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     allocs = csvs.loadAllocationCsvs(CSV_DIR)
     vebals = csvs.loadVeOceanCsv(CSV_DIR)
     stakes = allocations.allocsToStakes(allocs, vebals)
-    
+
     nftvols = csvs.loadNFTvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
-    rewardsperlp, rewardsinfo = calcrewards.calcRewards(stakes, nftvols, SYM, R, TOT_OCEAN)
-    
+    rewardsperlp, rewardsinfo = calcRewards(stakes, nftvols, SYM, R, TOT_OCEAN)
+
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, "OCEAN")
 
@@ -425,7 +425,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     )
 
     print("dftool dispense: Done")
-
 
 
 # ========================================================================
