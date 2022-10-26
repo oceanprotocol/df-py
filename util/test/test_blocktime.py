@@ -9,6 +9,7 @@ from util import networkutil, oceanutil
 from util.blocktime import (
     getBlockNumberThursday,
     getNextThursdayTimestamp,
+    getstfinBlocks,
     timestrToBlock,
     timestrToTimestamp,
     timestampToBlock,
@@ -118,6 +119,32 @@ def test_get_next_thursday_block_number():
     apprx = ceil(apprx / 100) * 100
 
     assert next_thursday_block == approx(apprx, 1)
+
+
+@enforce_types
+def test_getstfinBlocks():
+    chain.mine()
+    # by block number
+    (st, fin) = getstfinBlocks(chain, "0", "1")
+    assert st == 0
+    assert fin > 0
+
+    # get by latest fin
+    (st, fin) = getstfinBlocks(chain, "0", "latest")
+    assert st == 0
+    assert fin > 0
+
+    # get by thu fin
+    (st, fin) = getstfinBlocks(chain, "0", "thu")
+    assert st == 0
+    assert fin > 0
+
+    # get by datetime YYYY-MM-DD
+    now_date = datetime.fromtimestamp(chain[-1].timestamp)
+    now_date = now_date.strftime("%Y-%m-%d")
+    (st, fin) = getstfinBlocks(chain, "0", now_date)
+    assert st == 0
+    assert fin == 0
 
 
 @enforce_types

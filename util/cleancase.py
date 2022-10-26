@@ -23,45 +23,63 @@ def modAllocations(allocations: dict) -> dict:
         for nft_addr in allocations[chainID]:
             nft_addr2 = nft_addr.lower()
             allocations2[chainID2][nft_addr2] = {}
-            for LP_addr in allocations[chainID][nft_addr]:
+            for LP_addr, alloc in allocations[chainID][nft_addr].items():
                 LP_addr2 = LP_addr.lower()
-                allocations2[chainID2][nft_addr2][LP_addr2] = allocations[chainID][
-                    nft_addr
-                ][LP_addr]
+                allocations2[chainID2][nft_addr2][LP_addr2] = alloc
     assertAllocations(allocations2)
     return allocations2
 
 
 @enforce_types
-def assertAllocations(allcs: dict):
+def assertStakes(allcs: dict):
     """stakes - dict of [chainID][nft_addr][LP_addr] : stake"""
     for chainID in allcs:
         assert isinstance(chainID, int)
         for nft_addr in allcs[chainID]:
             assert nft_addr[:2] == "0x", nft_addr
             assert nft_addr.lower() == nft_addr, nft_addr
-            for LP_addr in allcs[chainID][nft_addr]:
-                assert isinstance(allcs[chainID][nft_addr][LP_addr], float)
+            for allc in allcs[chainID][nft_addr].values():
+                assert isinstance(allc, float)
+
+
+@enforce_types
+def assertAllocations(allcs: dict):
+    """allocations - dict of [chainID][nft_addr][LP_addr] : percent"""
+    lpsum = {}
+    for chainID in allcs:
+        assert isinstance(chainID, int)
+        for nft_addr in allcs[chainID]:
+            assert nft_addr[:2] == "0x", nft_addr
+            assert nft_addr.lower() == nft_addr, nft_addr
+            for LP_addr, allc in allcs[chainID][nft_addr].items():
+                assert isinstance(allc, float)
+                if LP_addr not in lpsum:
+                    lpsum[LP_addr] = 0.0
+                lpsum[LP_addr] += float(allc)
+    for LP_addr in lpsum:
+        assert (
+            lpsum[LP_addr] <= 1.0 + 1e-5
+        ), f"LP {LP_addr} has {lpsum[LP_addr]}% allocation, > 1.0%"
 
 
 @enforce_types
 def assertStakesUsd(stakes_USD: dict):
     """stakes_USD - dict of [chainID][nft_addr][LP_addr] : stake"""
     for chainID in stakes_USD:
-        for nftaddr in stakes_USD[chainID]:
-            assertStakesUsdAtChain(stakes_USD[chainID][nftaddr])
+        for stake_USD in stakes_USD[chainID].values():
+            assertStakesUsdAtChain(stake_USD)
 
 
 @enforce_types
 def assertStakesAtChain(stakes_at_chain: dict):
     """stakes_at_chain - dict of [basetoken_address][NFT_addr][LP_addr] : stake"""
-    assertAllocations({FAKE_CHAINID: stakes_at_chain})
+    assertStakes({FAKE_CHAINID: stakes_at_chain})
 
 
 @enforce_types
 def assertStakesUsdAtChain(stakes_at_chain: dict):
     """stakes_USD_at_chain - dict of [NFT_addr][LP_addr] : stake"""
-    assertAllocations({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
+    assertStakes({FAKE_CHAINID: {FAKE_TOKEN_ADDR: stakes_at_chain}})
 
 
 @enforce_types

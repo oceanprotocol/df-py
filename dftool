@@ -7,10 +7,10 @@ import functools
 
 import brownie
 from enforce_typing import enforce_types
-
+from web3.middleware import geth_poa_middleware
+from util.cleancase import assertAllocations
 from util import (
     blockrange,
-    blocktime,
     calcrewards,
     networkutil,
     csvs,
@@ -27,6 +27,7 @@ from util.oceanutil import (
     veAllocate,
 )
 
+brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
@@ -38,8 +39,10 @@ HELP_MAIN = f"""Data Farming tool, for use by OPF.
 OPF steps:
 1. getrate - run per basetoken (OCEAN, H2O)
 2. query - run per CHAINID ({DEV_CHAINID}, 1, 137, ..)
+   allocations - run once
+   vebals - run once
 3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
-4. dispense - run per rewardtoken*CHAINID: OCEAN*1, OCEAN*137, EWT*246..
+4. dispense - run once
 
 Then LP steps:
 5. call DFRewards.claim(), or related
@@ -48,10 +51,11 @@ Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
+  dftool allocations ST FIN NSAMP CSV_DIR CHAINID
+  dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
 
-  dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]] 
   dftool compile - compile contracts
   dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
@@ -130,25 +134,10 @@ SECRET_SEED -- secret integer used to seed the rng
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
-
-    # main work
     recordDeployedContracts(ADDRESS_FILE)
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain))
+    # main work
     (Vi, SYMi) = query.query_all(rng, CHAINID)
     csvs.saveNFTvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
@@ -175,10 +164,8 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        # create dir
-        _createDirIfNeeded(CSV_DIR)
+    # create dir if not exists
+    _createDirIfNeeded(CSV_DIR)
 
     nftinfo = query.getNFTInfos(CHAINID)
     csvs.saveNftInfoCsv(nftinfo, CSV_DIR, CHAINID)
@@ -216,32 +203,15 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        # create dir
-        _createDirIfNeeded(CSV_DIR)
+    # create dir if not exists
+    _createDirIfNeeded(CSV_DIR)
+    _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
-
-    # main work
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain) - 10)
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
     allocations = query.getAllocations(rng, CHAINID)
     csvs.saveAllocationCsv(allocations, CSV_DIR)
@@ -279,33 +249,14 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        # create dir
-        _createDirIfNeeded(CSV_DIR)
+    # create dir if not exists
+    _createDirIfNeeded(CSV_DIR)
+    _exitIfFileExists(csvs.veOCEANCsvFilename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-
-    if "-" in ST:
-        st_block = blocktime.timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
-    if FIN == "latest":
-        fin_block = len(chain)
-    elif FIN == "thu":
-        fin_block = blocktime.getBlockNumberThursday(chain)
-    elif "-" in FIN:
-        fin_block = blocktime.timestrToBlock(chain, FIN)
-    else:
-        fin_block = int(FIN)
-
-    # main work
-    rng = blockrange.BlockRange(st_block, fin_block, NSAMP, SECRET_SEED)
-    rng.filterByMaxBlock(len(chain) - 10)
-
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     balances = query.getveBalances(rng, CHAINID)
     csvs.saveVeOceanCsv(balances, CSV_DIR)
 
@@ -394,6 +345,8 @@ Usage: dftool calc CSV_DIR TOT_TOKEN TOKEN_SYMBOL
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
+    assertAllocations(Allc)
+
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
         Allc, vebals, nftvols, SYM, R, TOT_TOKEN, TOKEN_SYMBOL
     )
@@ -410,8 +363,8 @@ def do_dispense():
 
 Usage: dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
-  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
   CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
+  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
   TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
   BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
 
@@ -478,32 +431,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     print("dftool dispense: Done")
 
-
-# ========================================================================
-@enforce_types
-def do_querymany():
-    HELP = """Like 'query' except query *many* chains.
-
-Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
-"""
-    if len(sys.argv) < 7:
-        print(HELP)
-        sys.exit(0)
-
-    # extract inputs
-    assert sys.argv[1] == "querymany"
-    # pylint: disable=unbalanced-tuple-unpacking
-    ST, FIN, NSAMP, CSV_DIR = sys.argv[2:6]
-    CHAINIDS = [int(arg) for arg in sys.argv[6:]]
-    print(f"dftool querymany: Begin. CHAINIDs={CHAINIDS}")
-
-    for CHAINID in CHAINIDS:
-        print(f"Call dftool query for CHAINID={CHAINID}: Begin")
-        cmd = f"dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
-        os.system(cmd)
-        print(f"Call dftool query for CHAINID={CHAINID}: Done")
-
-    print("dftool querymany: Done")
 
 
 # ========================================================================
@@ -991,8 +918,6 @@ def do_main():
     elif sys.argv[1] == "dispense":
         do_dispense()
 
-    elif sys.argv[1] == "querymany":
-        do_querymany()
     elif sys.argv[1] == "compile":
         do_compile()
     elif sys.argv[1] == "manyrandom":

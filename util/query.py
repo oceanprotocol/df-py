@@ -28,6 +28,10 @@ class DataNFT:
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
+        self.name = ""
+
+    def setName(self, name: str):
+        self.name = name
 
     def __repr__(self):
         return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
@@ -74,9 +78,6 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
     # [LP_addr] : veBalance
     veBalances: Dict[str, float] = {}
-
-    # [LP_addr] : count
-    num_ve_updates: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
@@ -154,10 +155,8 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
                 ## set user balance
                 if user["id"] not in veBalances:
                     veBalances[user["id"]] = balance
-                    num_ve_updates[user["id"]] = 1
                 else:
                     veBalances[user["id"]] += balance
-                    num_ve_updates[user["id"]] += 1
 
             ## increase offset
             offset += chunk_size
@@ -167,7 +166,7 @@ def getveBalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
     # get average
     for user in veBalances:
-        veBalances[user] /= num_ve_updates[user]
+        veBalances[user] /= n_blocks_sampled
 
     print("getveBalances: done")
 
@@ -188,9 +187,6 @@ def getAllocations(
 
     # [chain_id][nft_addr][LP_addr] : percent
     allocations: Dict[int, Dict[str, Dict[str, float]]] = {}
-
-    # [chain_id][nft_addr][LP_addr] : count
-    num_allocations: Dict[int, Dict[str, Dict[str, int]]] = {}
 
     n_blocks = rng.numBlocks()
     n_blocks_sampled = 0
@@ -233,24 +229,16 @@ def getAllocations(
                     nft_addr = ve_allocation["nftAddress"]
                     chain_id = ve_allocation["chainId"]
                     allocated = float(ve_allocation["allocated"])
-                    percentage = allocated / MAX_ALLOCATE
 
                     if chain_id not in allocations:
                         allocations[chain_id] = {}
                     if nft_addr not in allocations[chain_id]:
                         allocations[chain_id][nft_addr] = {}
 
-                    if chain_id not in num_allocations:
-                        num_allocations[chain_id] = {}
-                    if nft_addr not in num_allocations[chain_id]:
-                        num_allocations[chain_id][nft_addr] = {}
-
                     if LP_addr not in allocations[chain_id][nft_addr]:
-                        allocations[chain_id][nft_addr][LP_addr] = percentage
-                        num_allocations[chain_id][nft_addr][LP_addr] = 1
+                        allocations[chain_id][nft_addr][LP_addr] = allocated
                     else:
-                        allocations[chain_id][nft_addr][LP_addr] += percentage
-                        num_allocations[chain_id][nft_addr][LP_addr] += 1
+                        allocations[chain_id][nft_addr][LP_addr] += allocated
 
             offset += chunk_size
         n_blocks_sampled += 1
@@ -261,8 +249,29 @@ def getAllocations(
     for chain_id in allocations:
         for nft_addr in allocations[chain_id]:
             for LP_addr in allocations[chain_id][nft_addr]:
-                n = num_allocations[chain_id][nft_addr][LP_addr]
-                allocations[chain_id][nft_addr][LP_addr] /= n
+                allocations[chain_id][nft_addr][LP_addr] /= n_blocks_sampled
+
+    # get total allocations per each LP
+    lp_total = {}
+    for chain_id in allocations:
+        for nft_addr in allocations[chain_id]:
+            for LP_addr in allocations[chain_id][nft_addr]:
+                if LP_addr not in lp_total:
+                    lp_total[LP_addr] = 0.0
+                lp_total[LP_addr] += allocations[chain_id][nft_addr][LP_addr]
+
+    for LP_addr in lp_total:
+        if lp_total[LP_addr] < MAX_ALLOCATE:
+            lp_total[LP_addr] = MAX_ALLOCATE
+
+    # normalize values per LP
+    for chain_id in allocations:
+        for nft_addr in allocations[chain_id]:
+            for LP_addr in allocations[chain_id][nft_addr]:
+                if lp_total[LP_addr] == 0.0:
+                    print(f"WARNING: {lp_total[LP_addr]} == 0.0")
+                    continue
+                allocations[chain_id][nft_addr][LP_addr] /= lp_total[LP_addr]
 
     return allocations
 
@@ -281,8 +290,27 @@ def getNFTInfos(chainID) -> List[DataNFT]:
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
         NFTinfo = _filterNftinfos(NFTinfo)
+        NFTinfo = _populateNftAssetNames(NFTinfo)
 
     return NFTinfo
+
+
+def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+    """
+    @description
+      Populate the list of NFTs with the asset names
+
+    @return
+      nftInfo -- list of DataNFT objects
+    """
+
+    nft_dids = [nft.did for nft in nftInfo]
+    did_to_name = aquarius_asset_names(nft_dids)
+
+    for nft in nftInfo:
+        nft.setName(did_to_name[nft.did])
+
+    return nftInfo
 
 
 def _getNFTInfos(chainID) -> List[DataNFT]:

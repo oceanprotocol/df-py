@@ -32,9 +32,6 @@ def test_all():
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    startBlockNumber = len(brownie.network.chain)
-    endBlockNumber = 0  # will be set later
-
     CO2_SYM = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_SYM, CO2_SYM, 18, 1e26, {"from": account0})
     CO2_ADDR = CO2.address.lower()
@@ -43,11 +40,11 @@ def test_all():
     accounts = []
     publisher_account = account0
     OCEAN_LOCK_AMT = toBase18(5.0)
-    for i in range(5):
+    for i in range(7):
         accounts.append(brownie.network.accounts.add())
         CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
         OCEAN.transfer(accounts[i], OCEAN_LOCK_AMT, {"from": account0})
-
+    sampling_test_accounts = [accounts.pop(), accounts.pop()]
     # Create data nfts
     dataNfts = []
     for i in range(5):
@@ -62,11 +59,12 @@ def test_all():
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + WEEK * 20  # lock for 20 weeks
     brownie.network.chain.sleep(t1 - t0)
-    for i in range(5):
-        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, accounts[i])
+    for acc in accounts:
+        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, acc)
 
     # Allocate to data NFTs
-    for i in range(5):
+    # pylint: disable=consider-using-enumerate
+    for i in range(len(accounts)):
         oceanutil.set_allocation(
             100,
             dataNfts[i][0],
@@ -74,10 +72,21 @@ def test_all():
             accounts[i],
         )
 
+    # set start block number for querying
+    startBlockNumber = len(brownie.network.chain)
+    endBlockNumber = 0  # will be set later
+
     # Consume
-    for i in range(5):
+    # pylint: disable=consider-using-enumerate
+    for i in range(len(accounts)):
         oceantestutil.buyDTFRE(dataNfts[i][2], 1.0, 10000.0, accounts[i], CO2)
         oceantestutil.consumeDT(dataNfts[i][1], publisher_account, accounts[i])
+
+    # sampling test accounts locks and allocates after start block
+    # pylint: disable=consider-using-enumerate
+    for i in range(len(sampling_test_accounts)):
+        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, sampling_test_accounts[i])
+        oceanutil.set_allocation(100, dataNfts[i][0], 8996, sampling_test_accounts[i])
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
@@ -98,11 +107,13 @@ def test_all():
 
     blockRange = BlockRange(startBlockNumber, endBlockNumber, 100, 42)
 
+    sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
+
     # run actual tests
     _test_getSymbols()
     _test_getNFTVolumes(CO2_ADDR, startBlockNumber, endBlockNumber)
-    _test_getveBalances(blockRange)
-    _test_getAllocations(blockRange)
+    _test_getveBalances(blockRange, sampling_accounts_addrs)
+    _test_getAllocations(blockRange, sampling_accounts_addrs)
     _test_query(CO2_ADDR)
     _test_nft_infos()
 
@@ -119,18 +130,21 @@ def _foundConsume(CO2_ADDR, st, fin):
 
 
 @enforce_types
-def _test_getveBalances(rng: BlockRange):
+def _test_getveBalances(rng: BlockRange, sampling_accounts: list):
     veBalances = query.getveBalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
 
     for account in veBalances:
         bal = oceanutil.get_ve_balance(account) / 1e18
+        if account in sampling_accounts:
+            assert veBalances[account] < bal
+            continue
         assert veBalances[account] == approx(bal, 0.001)
 
 
 @enforce_types
-def _test_getAllocations(rng: BlockRange):
+def _test_getAllocations(rng: BlockRange, sampling_accounts: list):
     allocations = query.getAllocations(rng, CHAINID)
 
     assert len(allocations) > 0
@@ -143,6 +157,9 @@ def _test_getAllocations(rng: BlockRange):
                     / MAX_ALLOCATE
                 )
                 allocation_query = allocations[chainId][nftAddr][userAddr]
+                if userAddr in sampling_accounts:
+                    assert allocation_query < allocation_contract
+                    continue
                 assert allocation_query == approx(allocation_contract, 1e-7)
 
 
@@ -312,6 +329,14 @@ def test_filter_nftinfos():
 
     assert len(nfts_filtered) == 1
     assert nfts[0] in nfts_filtered
+
+
+@enforce_types
+def test_populateNftAssetNames():
+    nfts = [query.DataNFT("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")]
+    nfts = query._populateNftAssetNames(nfts)
+
+    assert nfts[0].name == "Take a Ballet Lesson"
 
 
 @enforce_types

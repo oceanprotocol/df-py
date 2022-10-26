@@ -164,7 +164,7 @@ def veOCEANCsvFilename(csv_dir: str) -> str:
 def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
     """
     @description
-      Save  the nftinfo for this chain. This csv is required for df-sql.
+      Save the nftinfo for this chain. This csv is required for df-sql.
 
     @arguments
         nftinfo -- list of DataNFT
@@ -178,7 +178,7 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "nft_addr", "did", "symbol"]
+        row = ["chainID", "nft_addr", "did", "symbol", "name"]
         writer.writerow(row)
 
         for nft in nftinfo:
@@ -187,6 +187,7 @@ def saveNftInfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
                 nft.nft_addr.lower(),
                 nft.did,
                 nft.symbol,
+                nft.name.replace(",", "%@#"),
             ]
             writer.writerow(row)
 
