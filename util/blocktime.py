@@ -170,7 +170,7 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         block_day = block_dt.weekday
         return block_ts, block_dt, block_day
 
-    block_ts, block_dt, block_day = get_tsdtday(block_number)
+    _, _, block_day = get_tsdtday(block_number)
 
     if block_day >= 3:  # if it's Thursday or later
         # decrement until we find the first block in Thursday
