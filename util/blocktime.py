@@ -134,6 +134,64 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
+def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
+    """Example: 1648872899.0 --> 4928"""
+    assert chain.id == "1", "chain must be ETH mainnet"
+
+    AVG_BLOCK_TIME = 12  # seconds
+    current_block = chain.height
+    current_time = chain.time
+
+    assert current_time > timestamp, "timestamp must be in past"
+    diff = current_time - timestamp
+    block_diff = int(diff / AVG_BLOCK_TIME)
+    block = current_block - block_diff
+    return block
+
+
+@enforce_types
+def ethFindFirstThuBlock(chain, block_number: int) -> int:
+    """
+    @arguments
+        chain -- brownie.networks.chain
+        block_number -- int
+    @return
+        block_number -- int
+    @description
+        Finds the first Thursday block closest to the given block number
+    """
+
+    # this function isn't meant to be used for another chain
+    assert chain.id == "1", "chain must be ETH mainnet"
+
+    def get_tsdtday(block_i):
+        block_ts = chain[block_i].timestamp
+        block_dt = datetime.fromtimestamp(block_ts)
+        block_day = block_dt.weekday
+        return block_ts, block_dt, block_day
+
+    block_ts, block_dt, block_day = get_tsdtday(block_number)
+
+    if block_day >= 3:  # if it's Thursday or later
+        # decrement until we find the first block in Thursday
+        while True:
+            block_number -= 1
+            block_ts, block_dt, block_day = get_tsdtday(block_number)
+            if block_day != "Thu":
+                block_number += 1
+                break
+    else:
+        # increment until we find the first block in Thursday
+        while True:
+            block_number += 1
+            block_ts, block_dt, block_day = get_tsdtday(block_number)
+            if block_day == "Thu":
+                break
+
+    return block_number
+
+
+@enforce_types
 def getstfinBlocks(chain, ST, FIN):
     if "-" in ST:
         st_block = timestrToBlock(chain, ST)
