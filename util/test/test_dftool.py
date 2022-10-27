@@ -59,7 +59,7 @@ def test_getrate(tmp_path):
 
 
 @enforce_types
-def test_query_ve_balances(tmp_path):
+def test_vebals(tmp_path):
     CSV_DIR = str(tmp_path)
     ST = 0
     FIN = "latest"
@@ -74,7 +74,7 @@ def test_query_ve_balances(tmp_path):
 
 
 @enforce_types
-def test_query_allocations(tmp_path):
+def test_allocations(tmp_path):
     CSV_DIR = str(tmp_path)
     ST = 0
     FIN = "latest"
