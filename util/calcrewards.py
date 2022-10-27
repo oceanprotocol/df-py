@@ -127,7 +127,7 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
     tol = 1e-13
     assert sum1 <= rewards_avail * (1 + tol), (sum1, rewards_avail, R)
     if sum1 > rewards_avail:
-        R /= (1 + tol)
+        R /= 1 + tol
     sum2 = np.sum(R)
     assert sum1 <= rewards_avail * (1 + tol), (sum2, rewards_avail, R)
 
