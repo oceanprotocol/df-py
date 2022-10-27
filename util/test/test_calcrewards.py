@@ -8,7 +8,7 @@ from util.calcrewards import calcRewards, TARGET_WPY
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2 = 7, 137
 NA, NB = "0xnfta_addr", "0xnftb_addr"
-LP1, LP2, LP3 = "0xst1_addr", "0xst2_addr", "0xst3_addr"
+LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
 SYMBOLS = {
@@ -193,7 +193,7 @@ def test_mix_upper_and_lower_case():
     stakes = {C1: {NA: {LP1: 10000.0}}}
     stakes2a = {C1: {NA: {LP1: 10000.0}}}
     stakes2b = {C1: {"0xnfta_aDDr": {LP1: 10000.0}}}
-    stakes2c = {C1: {NA: {"0xsT1_aDdR": 10000.0}}}
+    stakes2c = {C1: {NA: {"0xlP1_aDdR": 10000.0}}}
 
     nftvols = {C1: {OCN_ADDR: {NA: 10000.0}}}
     nftvols2a = {C1: {OCN_ADDR.upper(): {NA: 10000.0}}}
@@ -232,25 +232,21 @@ def test_mix_upper_and_lower_case():
 
 
 def test_calcrewards_math():
-    ## update this test if the reward function is changed
-    stakes = {C1: {NA: {LP1: 20000.0, LP2: 50000.0},
-                   NB: {LP1: 20000.0, LP3: 10000.0}}}
-    nftvols = {C1: {OCN_ADDR: {NA: 32.0, NB: 8.0}}}
-    rewards_avail = 100.0
+    ## update this test when the reward function is changed
+    stakes = {C1: {NA: {LP1: 1.0e6, LP2: 9.0e6},
+                   NB: {LP3: 10.0e6, LP4: 90.0e6}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 0.5e6, NB: 0.5e6}}}
+    rewards_avail = 5000.0
 
-    rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
+    rewardsperlp, _ = _calcRewardsC1(stakes, nftvols, rewards_avail)
 
-    assert sum(rewardsperlp.values()) == pytest.approx(100.0, 0.01)
+    assert sum(rewardsperlp.values()) == pytest.approx(rewards_avail, 0.01)
 
-    assert rewardsperlp[LP1] == pytest.approx(32.25, 0.01)
+    assert rewardsperlp[LP1] == pytest.approx(250.0, 0.01)
+    assert rewardsperlp[LP2] == pytest.approx(2250.0, 0.01)
+    assert rewardsperlp[LP3] == pytest.approx(250.0, 0.01)
+    assert rewardsperlp[LP4] == pytest.approx(2250.0, 0.01)
 
-    assert rewardsperlp[LP2] == pytest.approx(64.51, 0.01)
-    assert rewardsperlp[LP3] == pytest.approx(3.22, 0.01)
-
-    assert rewardsinfo[NA][LP1] == pytest.approx(25.86, 0.01)
-    assert rewardsinfo[NA][LP2] == pytest.approx(64.51, 0.01)
-    assert rewardsinfo[NB][LP1] == pytest.approx(6.45, 0.01)
-    assert rewardsinfo[NB][LP3] == pytest.approx(3.22, 0.01)
 
 
 @enforce_types
