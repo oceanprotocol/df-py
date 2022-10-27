@@ -114,7 +114,7 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
             stake_ij = S[i, j]
 
             # main formula!
-            R[c, i, j] = min(
+            R[i, j] = min(
                 (stake_ij / stake_j) * (DCV_j / DCV) * rewards_avail,
                 stake_ij * TARGET_WPY,
             )
@@ -127,7 +127,7 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
     tol = 1e-13
     assert sum1 <= rewards_avail * (1 + tol), (sum1, rewards_avail, R)
     if sum1 > rewards_avail:
-        R_USD /= 1 + tol
+        R /= (1 + tol)
     sum2 = np.sum(R)
     assert sum1 <= rewards_avail * (1 + tol), (sum2, rewards_avail, R)
 
