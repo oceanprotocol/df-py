@@ -158,7 +158,7 @@ def test_ethTimestamptoBlock():
     ts = _chain[-5000].timestamp
     block = _chain[-5000].number
 
-    guess = ethTimestamptoBlock(_chain, block)
+    guess = ethTimestamptoBlock(_chain, ts)
 
     assert guess == approx(block, 10)
 
