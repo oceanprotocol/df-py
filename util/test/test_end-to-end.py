@@ -92,7 +92,7 @@ def test_with_csvs(tmp_path):
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
+    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail/1000), sum_
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
