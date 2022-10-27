@@ -1,3 +1,5 @@
+import json
+import os
 from datetime import datetime, timedelta
 from typing import Tuple, Union
 
@@ -120,7 +122,13 @@ def _coingeckoId(token_symbol: str) -> str:
     """Convert token_symbol to coingecko id for a few common tokens"""
     id_ = token_symbol.lower()
 
-    all_tokens = requests.get("https://api.coingecko.com/api/v3/coins/list").json()
+    all_tokens = None
+    # Load json file from ./data/coingecko_ids.json relative to this file
+    dirname = os.path.dirname(__file__)
+    datapath = "../data/coingecko_ids.json"
+    filepath = os.path.join(dirname, datapath)
+    with open(filepath, "r") as f:
+        all_tokens = json.load(f)
 
     for token in all_tokens:
         if token["symbol"] == id_:
