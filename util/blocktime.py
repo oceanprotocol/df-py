@@ -176,7 +176,7 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         # decrement until we find the first block in Thursday
         while True:
             block_number -= 1
-            block_ts, block_dt, block_day = get_tsdtday(block_number)
+            _, _, block_day = get_tsdtday(block_number)
             if block_day != "Thu":
                 block_number += 1
                 break
@@ -184,7 +184,7 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         # increment until we find the first block in Thursday
         while True:
             block_number += 1
-            block_ts, block_dt, block_day = get_tsdtday(block_number)
+            _, _, block_day = get_tsdtday(block_number)
             if block_day == "Thu":
                 break
 
