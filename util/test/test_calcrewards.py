@@ -233,7 +233,8 @@ def test_mix_upper_and_lower_case():
 
 def test_calcrewards_math():
     ## update this test if the reward function is changed
-    stakes = {C1: {NA: {ST1: 20000.0, ST2: 50000.0}, NB: {ST1: 20000.0, ST3: 10000.0}}}
+    stakes = {C1: {NA: {ST1: 20000.0, ST2: 50000.0},
+                   NB: {ST1: 20000.0, ST3: 10000.0}}}
     nftvols = {C1: {OCN_ADDR: {NA: 32.0, NB: 8.0}}}
     rewards_avail = 100.0
 
