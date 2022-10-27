@@ -234,8 +234,7 @@ def test_mix_upper_and_lower_case():
 
 def test_calcrewards_math():
     ## update this test when the reward function is changed
-    stakes = {C1: {NA: {LP1: 1.0e6, LP2: 9.0e6},
-                   NB: {LP3: 10.0e6, LP4: 90.0e6}}}
+    stakes = {C1: {NA: {LP1: 1.0e6, LP2: 9.0e6}, NB: {LP3: 10.0e6, LP4: 90.0e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: 0.5e6, NB: 0.5e6}}}
     rewards_avail = 5000.0
 
@@ -247,7 +246,6 @@ def test_calcrewards_math():
     assert rewardsperlp[LP2] == pytest.approx(2250.0, 0.01)
     assert rewardsperlp[LP3] == pytest.approx(250.0, 0.01)
     assert rewardsperlp[LP4] == pytest.approx(2250.0, 0.01)
-
 
 
 @enforce_types

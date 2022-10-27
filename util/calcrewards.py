@@ -125,7 +125,7 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
 
     if np.sum(R) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
-            
+
     # postcondition: nans
     assert not np.isnan(np.min(R)), R
 
