@@ -7,6 +7,8 @@ from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
 from util.blocktime import (
+    ethFindFirstThuBlock,
+    ethTimestamptoBlock,
     getBlockNumberThursday,
     getNextThursdayTimestamp,
     getstfinBlocks,
@@ -145,6 +147,37 @@ def test_getstfinBlocks():
     (st, fin) = getstfinBlocks(chain, "0", now_date)
     assert st == 0
     assert fin == 0
+
+
+@enforce_types
+def test_ethTimestamptoBlock():
+    networkutil.disconnect()
+    networkutil.connect(1)
+
+    _chain = brownie.network.chain
+    ts = _chain[-5000].timestamp
+    block = _chain[-5000].number
+
+    guess = ethTimestamptoBlock(_chain, block)
+
+    assert guess == approx(block, 10)
+
+
+@enforce_types
+def test_ethFindFirstThuBlock():
+    networkutil.disconnect()
+    networkutil.connect(1)
+
+    _chain = brownie.network.chain
+
+    expected = 15835687
+
+    # get timestamp last thu
+    last_thu = 1666213200
+    last_thu_block_guess = ethTimestamptoBlock(_chain, last_thu)
+    last_thu_block = ethFindFirstThuBlock(_chain, last_thu_block_guess)
+
+    assert last_thu_block == expected
 
 
 @enforce_types
