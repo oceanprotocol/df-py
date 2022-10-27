@@ -119,7 +119,7 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
                 stake_ij * TARGET_WPY,
             )
 
-    # filter negligible values (<0.00001% of total RF)
+    # filter negligible values
     R[R < 0.000001] = 0.0
 
     if np.sum(R) == 0.0:
