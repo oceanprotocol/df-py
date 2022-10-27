@@ -133,10 +133,11 @@ def test_two_lps_one_with_negligible_stake():
 
     rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
 
-    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
-    assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
-    assert rewardsperlp == {LP1: 10.0}  # no entry for LP2
-    assert rewardsinfo == {NA: {LP1: 10.0}}  # no entry for LP2
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 1e-5)
+    assert LP2 not in rewardsperlp
+
+    assert rewardsinfo[NA][LP1] == pytest.approx(10.0, 1e-6)
+    assert LP2 not in rewardsinfo[NA]
 
 
 @enforce_types
