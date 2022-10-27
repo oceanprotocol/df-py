@@ -223,7 +223,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
 
 @enforce_types
-def do_veBalances():
+def do_vebals():
     HELP = f"""Query chain, outputs veBalances csv
 
 Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID
@@ -902,7 +902,7 @@ def do_main():
     elif sys.argv[1] == "allocations":
         do_allocations()
     elif sys.argv[1] == "vebals":
-        do_veBalances()
+        do_vebals()
     elif sys.argv[1] == "getrate":
         do_getrate()
     elif sys.argv[1] == "calc":
