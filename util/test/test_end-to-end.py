@@ -46,7 +46,7 @@ def test_without_csvs():
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail/1000.0), sum_
+    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000.0), sum_
 
 
 @enforce_types
