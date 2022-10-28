@@ -201,11 +201,6 @@ def createFREFromDatatoken(
     return exchange_id
 
 
-@enforce_types
-def _FREAddressFromNewFRETx(tx) -> str:
-    return 
-
-
 # =============================================================================
 # veOCEAN routines
 
