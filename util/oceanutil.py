@@ -172,7 +172,8 @@ def createFREFromDatatoken(
     amount,
     from_account,
 ):
-    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
+    datatoken.approve(FixedPrice().address, toBase18(amount),
+                      {"from": from_account})
 
     addresses = [
         base_TOKEN.address,  # baseToken
