@@ -187,7 +187,7 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(1.0),  # fixedRate
+        toBase18(1.0),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]
@@ -197,6 +197,7 @@ def createFREFromDatatoken(
     # -> pools/FactoryRouter.sol::deployFixedRate()
     # -> pools/fixedRate/FixedRateExchange.sol::createWithDecimals(
     #      datatoken: address, addresses: list, uints: list)
+    # Creates an Exchange struct (defined at FixedRateExchange.sol)
     tx = datatoken.createFixedRate(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
