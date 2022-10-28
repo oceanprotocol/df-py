@@ -1,5 +1,7 @@
 from datetime import datetime
 from math import ceil
+import os
+import types
 from pytest import approx
 
 import brownie
@@ -16,6 +18,8 @@ from util.blocktime import (
     timestrToTimestamp,
     timestampToBlock,
 )
+
+PREV = None
 
 chain = None
 
@@ -151,7 +155,6 @@ def test_getstfinBlocks():
 
 @enforce_types
 def test_ethTimestamptoBlock():
-    networkutil.disconnect()
     networkutil.connect(1)
 
     _chain = brownie.network.chain
@@ -162,10 +165,11 @@ def test_ethTimestamptoBlock():
 
     assert guess == approx(block, 10)
 
+    networkutil.connect(networkutil.DEV_CHAINID)
+
 
 @enforce_types
 def test_ethFindFirstThuBlock():
-    networkutil.disconnect()
     networkutil.connect(1)
 
     _chain = brownie.network.chain
@@ -173,11 +177,13 @@ def test_ethFindFirstThuBlock():
     expected = 15835687
 
     # get timestamp last thu
-    last_thu = 1666213200
+    last_thu = 1666828800
     last_thu_block_guess = ethTimestamptoBlock(_chain, last_thu)
     last_thu_block = ethFindFirstThuBlock(_chain, last_thu_block_guess)
 
     assert last_thu_block == expected
+
+    networkutil.connect(networkutil.DEV_CHAINID)
 
 
 @enforce_types
@@ -187,7 +193,23 @@ def setup_function():
     global chain
     chain = brownie.network.chain
 
+    global PREV
+
+    PREV = types.SimpleNamespace()
+
+    PREV.WEB3_INFURA_PROJECT_ID = os.environ.get("WEB3_INFURA_PROJECT_ID")
+
+    # got this value from https://rpc.info/. We could also use our own
+    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
+
 
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
+
+    global PREV
+
+    if PREV.WEB3_INFURA_PROJECT_ID is None:
+        del os.environ["WEB3_INFURA_PROJECT_ID"]
+    else:
+        os.environ["WEB3_INFURA_PROJECT_ID"] = PREV.WEB3_INFURA_PROJECT_ID
