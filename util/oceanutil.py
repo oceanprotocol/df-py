@@ -203,13 +203,9 @@ def _FREAddressFromNewFRETx(tx) -> str:
     return tx.events["NewFixedRate"]["exchangeId"]
 
 
-@enforce_types
-def _poolAddressFromNewBPoolTx(tx) -> str:
-    return tx.events["NewPool"]["poolAddress"]
-
-
 # =============================================================================
 # veOCEAN routines
+
 
 def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
@@ -222,7 +218,6 @@ def create_ve_lock(amount: float, unlock_time: int, from_account):
 
 def get_ve_balance(account):
     return veOCEAN().balanceOf(account, brownie.network.chain.time())
-
 
 
 # =============================================================================
@@ -354,5 +349,3 @@ def create_checksum(text: str) -> str:
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
-
