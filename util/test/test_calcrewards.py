@@ -330,6 +330,11 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 
 
 @enforce_types
+def test_bound_budget_by_DCT():
+    pass #placeholder
+    
+
+@enforce_types
 def test_divide_by_zero():
     stakes = {C1: {NA: {LP1: 10000.0}, NB: {LP2: 10000.0}}}
     nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
