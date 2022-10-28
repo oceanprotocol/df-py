@@ -39,11 +39,11 @@ def test_all():
     oceantestutil.fillAccountsWithToken(CO2)
     accounts = []
     publisher_account = account0
-    OCEAN_LOCK_AMT = toBase18(5.0)
+    OCEAN_lock_amt = toBase18(5.0)
     for i in range(7):
         accounts.append(brownie.network.accounts.add())
         CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
-        OCEAN.transfer(accounts[i], OCEAN_LOCK_AMT, {"from": account0})
+        OCEAN.transfer(accounts[i], OCEAN_lock_amt, {"from": account0})
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
     # Create data nfts
     data_nfts = []
@@ -60,7 +60,7 @@ def test_all():
     t2 = t1 + WEEK * 20  # lock for 20 weeks
     brownie.network.chain.sleep(t1 - t0)
     for acc in accounts:
-        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, acc)
+        oceanutil.create_ve_lock(OCEAN_lock_amt, t2, acc)
 
     # Allocate to data NFTs
     # pylint: disable=consider-using-enumerate
@@ -85,7 +85,7 @@ def test_all():
     # sampling test accounts locks and allocates after start block
     # pylint: disable=consider-using-enumerate
     for i in range(len(sampling_test_accounts)):
-        oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, sampling_test_accounts[i])
+        oceanutil.create_ve_lock(OCEAN_lock_amt, t2, sampling_test_accounts[i])
         oceanutil.set_allocation(100, data_nfts[i][0], 8996, sampling_test_accounts[i])
 
     # keep deploying, until TheGraph node sees volume, or timeout
