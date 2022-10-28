@@ -136,16 +136,25 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 @enforce_types
 def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
-    assert chain.id == "1", "chain must be ETH mainnet"
+    # assert chain.id == "1", "chain must be ETH mainnet"
 
-    AVG_BLOCK_TIME = 12  # seconds
     current_block = chain.height
-    current_time = chain.time
+    current_time = chain.time()
 
-    assert current_time > timestamp, "timestamp must be in past"
-    diff = current_time - timestamp
-    block_diff = int(diff / AVG_BLOCK_TIME)
-    block = current_block - block_diff
+    return ethCalcBlockNumber(current_time, current_block, timestamp, chain)
+
+
+@enforce_types
+def ethCalcBlockNumber(ts, block, target_ts, chain):
+    AVG_BLOCK_TIME = 12  # seconds
+    diff = target_ts - ts
+    diff_blocks = diff // AVG_BLOCK_TIME
+    block += diff_blocks
+
+    ts_found = chain[block].timestamp
+    if abs(ts_found - target_ts) > 12 * 5:
+        return ethCalcBlockNumber(ts_found, block, target_ts, chain)
+
     return block
 
 
@@ -162,12 +171,12 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
     """
 
     # this function isn't meant to be used for another chain
-    assert chain.id == "1", "chain must be ETH mainnet"
+    # assert chain.id == "1", "chain must be ETH mainnet"
 
     def get_tsdtday(block_i):
         block_ts = chain[block_i].timestamp
         block_dt = datetime.fromtimestamp(block_ts)
-        block_day = block_dt.weekday
+        block_day = block_dt.weekday()
         return block_ts, block_dt, block_day
 
     _, _, block_day = get_tsdtday(block_number)
