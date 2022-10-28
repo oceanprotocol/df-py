@@ -331,8 +331,8 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 
 @enforce_types
 def test_bound_budget_by_DCT():
-    pass #placeholder
-    
+    pass  # placeholder
+
 
 @enforce_types
 def test_divide_by_zero():
