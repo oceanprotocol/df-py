@@ -46,13 +46,13 @@ def test_all():
         OCEAN.transfer(accounts[i], OCEAN_LOCK_AMT, {"from": account0})
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
     # Create data nfts
-    dataNfts = []
+    data_nfts = []
     for i in range(5):
         (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
             publisher_account, CO2
         )
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
-        dataNfts.append((data_NFT, DT, exchangeId))
+        data_nfts.append((data_NFT, DT, exchangeId))
 
     # Lock veOCEAN
     t0 = brownie.network.chain.time()
@@ -67,7 +67,7 @@ def test_all():
     for i in range(len(accounts)):
         oceanutil.set_allocation(
             100,
-            dataNfts[i][0],
+            data_nfts[i][0],
             8996,
             accounts[i],
         )
@@ -79,14 +79,14 @@ def test_all():
     # Consume
     # pylint: disable=consider-using-enumerate
     for i in range(len(accounts)):
-        oceantestutil.buyDTFRE(dataNfts[i][2], 1.0, 10000.0, accounts[i], CO2)
-        oceantestutil.consumeDT(dataNfts[i][1], publisher_account, accounts[i])
+        oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, accounts[i], CO2)
+        oceantestutil.consumeDT(data_nfts[i][1], publisher_account, accounts[i])
 
     # sampling test accounts locks and allocates after start block
     # pylint: disable=consider-using-enumerate
     for i in range(len(sampling_test_accounts)):
         oceanutil.create_ve_lock(OCEAN_LOCK_AMT, t2, sampling_test_accounts[i])
-        oceanutil.set_allocation(100, dataNfts[i][0], 8996, sampling_test_accounts[i])
+        oceanutil.set_allocation(100, data_nfts[i][0], 8996, sampling_test_accounts[i])
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
