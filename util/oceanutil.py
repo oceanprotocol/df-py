@@ -3,7 +3,6 @@ import hashlib
 import json
 from typing import Any, Dict, List, Tuple
 
-import random
 import brownie
 from enforce_typing import enforce_types
 
