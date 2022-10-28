@@ -136,8 +136,6 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 @enforce_types
 def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
-    # assert chain.id == "1", "chain must be ETH mainnet"
-
     current_block = chain.height
     current_time = chain.time()
 
@@ -169,9 +167,6 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
     @description
         Finds the first Thursday block closest to the given block number
     """
-
-    # this function isn't meant to be used for another chain
-    # assert chain.id == "1", "chain must be ETH mainnet"
 
     def get_tsdtday(block_i):
         block_ts = chain[block_i].timestamp
