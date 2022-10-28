@@ -168,19 +168,19 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         Finds the first Thursday block closest to the given block number
     """
 
-    def get_tsdtday(block_i):
+    def get_block_day(block_i):
         block_ts = chain[block_i].timestamp
         block_dt = datetime.fromtimestamp(block_ts)
         block_day = block_dt.weekday()
-        return block_ts, block_dt, block_day
+        return block_day
 
-    _, _, block_day = get_tsdtday(block_number)
+    block_day = get_block_day(block_number)
 
     if block_day >= 3:  # if it's Thursday or later
         # decrement until we find the first block in Thursday
         while True:
             block_number -= 1
-            _, _, block_day = get_tsdtday(block_number)
+            block_day = get_block_day(block_number)
             if block_day != "Thu":
                 block_number += 1
                 break
@@ -188,7 +188,7 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         # increment until we find the first block in Thursday
         while True:
             block_number += 1
-            _, _, block_day = get_tsdtday(block_number)
+            block_day = get_block_day(block_number)
             if block_day == "Thu":
                 break
 
