@@ -169,11 +169,13 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 def createFREFromDatatoken(
     datatoken,
     base_TOKEN,
-    amount,
+    amount: float,
     from_account,
-):
-    datatoken.approve(FixedPrice().address, toBase18(amount),
-                      {"from": from_account})
+) -> str:
+    """Create new fixed-rate exchange. Returns its exchange_id (str)"""
+    datatoken.approve(
+        FixedPrice().address, toBase18(amount), {"from": from_account}
+    )
 
     addresses = [
         base_TOKEN.address,  # baseToken
@@ -193,14 +195,15 @@ def createFREFromDatatoken(
     tx = datatoken.createFixedRate(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
-    exchangeId = _FREAddressFromNewFRETx(tx)
 
-    return exchangeId
+    exchange_id: str = tx.events["NewFixedRate"]["exchangeId"]
+
+    return exchange_id
 
 
 @enforce_types
 def _FREAddressFromNewFRETx(tx) -> str:
-    return tx.events["NewFixedRate"]["exchangeId"]
+    return 
 
 
 # =============================================================================
