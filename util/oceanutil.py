@@ -191,23 +191,6 @@ def _FREAddressFromNewFRETx(tx) -> str:
 
 
 @enforce_types
-def randomCreateFREs(num_FRE: int, base_token, accounts):
-    # create random num_FRE.
-    tups = []  # (pub_account_i, data_NFT, DT, exchangeId)
-    for fre_i in range(num_FRE):
-        if fre_i < len(accounts):
-            account_i = fre_i
-        else:
-            account_i = random.randint(0, len(accounts))
-        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(
-            accounts[account_i], base_token
-        )
-        tups.append((account_i, data_NFT, DT, exchangeId))
-
-    return tups
-
-
-@enforce_types
 def createDataNFTWithFRE(from_account, token):
     data_NFT = createDataNFT("1", "1", from_account)
     DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)

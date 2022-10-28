@@ -45,6 +45,7 @@ def test_all():
         CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
         OCEAN.transfer(accounts[i], OCEAN_lock_amt, {"from": account0})
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
+    
     # Create data nfts
     data_nfts = []
     for i in range(5):
