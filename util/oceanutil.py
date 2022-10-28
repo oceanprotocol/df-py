@@ -192,6 +192,11 @@ def createFREFromDatatoken(
         1,  # withMint
     ]
 
+    # In https://github.com/oceanprotocol/contracts:
+    # templates/ERC20Template.sol::createFixedRate()
+    # -> pools/FactoryRouter.sol::deployFixedRate()
+    # -> pools/fixedRate/FixedRateExchange.sol::createWithDecimals(
+    #      datatoken: address, addresses: list, uints: list)
     tx = datatoken.createFixedRate(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
