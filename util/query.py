@@ -402,7 +402,10 @@ def _queryNftvolumes(
         )
         offset += chunk_size
         result = submitQuery(query, chainID)
+        if "errors" in result:
+            raise AssertionError(result)
         new_orders = result["data"]["orders"]
+
         if new_orders == []:
             break
         for order in new_orders:

@@ -20,7 +20,7 @@ def calcRewards(
     """
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
-      nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_volume_float
+      nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
       rewards_avail -- float -- amount of rewards avail, in units of OCEAN
@@ -97,38 +97,38 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
     """
     N_i, N_j = S.shape
 
-    # compute reward function, store in array RF[i,j]
-    RF = np.zeros((N_i, N_j), dtype=float)
-    for i in range(N_i):
-        for j in range(N_j):
-            RF[i, j] = S[i, j] * V_USD[j]  # main formula!
-
-    if np.sum(RF) == 0.0:
+    # corner case
+    if np.sum(V_USD) == 0.0 or np.sum(V_USD) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
 
-    # normalize values
-    RF_norm = RF / np.sum(RF)
-
-    # filter negligible values (<0.00001% of total RF), then re-normalize
-    RF_norm[RF_norm < 0.000001] = 0.0
-
-    if np.sum(RF_norm) == 0.0:
-        return np.zeros((N_i, N_j), dtype=float)
-
-    RF_norm = RF_norm / np.sum(RF_norm)
-
-    # reward in USD
+    # compute rewards
     R = np.zeros((N_i, N_j), dtype=float)
-    for i in range(N_i):
-        for j in range(N_j):
+    DCV = np.sum(V_USD)
+    for j in range(N_j):
+        stake_j = sum(S[:, j])
+        DCV_j = V_USD[j]
+        if stake_j == 0.0 or DCV_j == 0.0:
+            continue
+
+        for i in range(N_i):
+            stake_ij = S[i, j]
+
+            # main formula!
             R[i, j] = min(
-                RF_norm[i, j] * rewards_avail,  # baseline, in OCEAN
-                S[i, j] * TARGET_WPY,  # APY constraint
+                (stake_ij / stake_j) * (DCV_j / DCV) * rewards_avail,
+                stake_ij * TARGET_WPY,
             )
+
+    # filter negligible values
+    R[R < 0.000001] = 0.0
+
+    if np.sum(R) == 0.0:
+        return np.zeros((N_i, N_j), dtype=float)
+
     # postcondition: nans
     assert not np.isnan(np.min(R)), R
 
-    # postcondition: sum is ok. First check within a tol; shrink slightly if needed
+    # postcondition: sum is ok. First check within a tol; shrink if needed
     sum1 = np.sum(R)
     tol = 1e-13
     assert sum1 <= rewards_avail * (1 + tol), (sum1, rewards_avail, R)
@@ -137,7 +137,6 @@ def _calcRewardsUsd(S, V_USD, rewards_avail: float) -> np.ndarray:
     sum2 = np.sum(R)
     assert sum1 <= rewards_avail * (1 + tol), (sum2, rewards_avail, R)
 
-    # done!
     return R
 
 

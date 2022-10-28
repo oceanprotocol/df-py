@@ -29,6 +29,8 @@ def test_without_csvs():
     rng = blockrange.BlockRange(st, fin, n)
 
     (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
+    V = {chainID: V0}
+    SYM = {chainID: SYM0}
 
     vebals = query.queryVebalances(rng, chainID)
     allocs = query.queryAllocations(rng, chainID)
@@ -36,17 +38,12 @@ def test_without_csvs():
 
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
-    V, SYM = (
-        {chainID: V0},
-        {chainID: SYM0},
-    )
-
-    OCEAN_avail = 0.0001
+    OCEAN_avail = 1e-4
 
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
+    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000.0), sum_
 
 
 @enforce_types
@@ -88,11 +85,11 @@ def test_with_csvs(tmp_path):
 
     stakes = allocations.loadStakes(csv_dir)  # loads allocs & vebals, then *
 
-    OCEAN_avail = 0.0001
+    OCEAN_avail = 1e-4
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    assert sum_ == pytest.approx(OCEAN_avail, 0.01), sum_
+    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000), sum_
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
