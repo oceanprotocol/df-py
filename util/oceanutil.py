@@ -98,6 +98,19 @@ def FixedPrice():
     return _contracts("FixedPrice")
 
 
+# ===========================================================================
+# Creating Ocean objects: data NFT, datatoken, FRE contract
+
+
+@enforce_types
+def createDataNFTWithFRE(from_account, token):
+    data_NFT = createDataNFT("1", "1", from_account)
+    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+
+    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
+    return (data_NFT, DT, exchangeId)
+
+
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
@@ -191,20 +204,11 @@ def _FREAddressFromNewFRETx(tx) -> str:
 
 
 @enforce_types
-def createDataNFTWithFRE(from_account, token):
-    data_NFT = createDataNFT("1", "1", from_account)
-    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
-
-    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
-    return (data_NFT, DT, exchangeId)
-
-
-@enforce_types
 def _poolAddressFromNewBPoolTx(tx) -> str:
     return tx.events["NewPool"]["poolAddress"]
 
 
-# ===============================================================================
+# =============================================================================
 # fee stuff needed for consume
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
