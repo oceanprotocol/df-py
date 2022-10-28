@@ -169,9 +169,10 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 def createFREFromDatatoken(
     datatoken,
     base_TOKEN,
-    amount,
+    amount: float,
     from_account,
-):
+) -> str:
+    """Create new fixed-rate exchange. Returns its exchange_id (str)"""
     datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
 
     addresses = [
@@ -184,22 +185,24 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(1.0),  # fixedRate
+        toBase18(1.0),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]
 
+    # In https://github.com/oceanprotocol/contracts:
+    # templates/ERC20Template.sol::createFixedRate()
+    # -> pools/FactoryRouter.sol::deployFixedRate()
+    # -> pools/fixedRate/FixedRateExchange.sol::createWithDecimals(
+    #      datatoken: address, addresses: list, uints: list)
+    # Creates an Exchange struct (defined at FixedRateExchange.sol)
     tx = datatoken.createFixedRate(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
-    exchangeId = _FREAddressFromNewFRETx(tx)
 
-    return exchangeId
+    exchange_id: str = tx.events["NewFixedRate"]["exchangeId"]
 
-
-@enforce_types
-def _FREAddressFromNewFRETx(tx) -> str:
-    return tx.events["NewFixedRate"]["exchangeId"]
+    return exchange_id
 
 
 # =============================================================================
