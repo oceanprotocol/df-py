@@ -173,9 +173,7 @@ def createFREFromDatatoken(
     from_account,
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
-    datatoken.approve(
-        FixedPrice().address, toBase18(amount), {"from": from_account}
-    )
+    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
 
     addresses = [
         base_TOKEN.address,  # baseToken
