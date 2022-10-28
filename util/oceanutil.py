@@ -209,6 +209,23 @@ def _poolAddressFromNewBPoolTx(tx) -> str:
 
 
 # =============================================================================
+# veOCEAN routines
+
+def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+    veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+
+
+def create_ve_lock(amount: float, unlock_time: int, from_account):
+    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
+    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
+
+
+def get_ve_balance(account):
+    return veOCEAN().balanceOf(account, brownie.network.chain.time())
+
+
+
+# =============================================================================
 # fee stuff needed for consume
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
@@ -339,14 +356,3 @@ def create_checksum(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
-    veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
-
-
-def create_ve_lock(amount: float, unlock_time: int, from_account):
-    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
-    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
-
-
-def get_ve_balance(account):
-    return veOCEAN().balanceOf(account, brownie.network.chain.time())
