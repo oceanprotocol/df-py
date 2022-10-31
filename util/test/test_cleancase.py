@@ -5,12 +5,6 @@ from util import cleancase
 
 
 @enforce_types
-def test_tuple():  # super-basic test
-    tup = cleancase.modTuple({}, {}, {})
-    assert len(tup) == 3
-
-
-@enforce_types
 def test_allocations():
     allocs = {
         1: {
