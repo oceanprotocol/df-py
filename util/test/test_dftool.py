@@ -47,11 +47,11 @@ def test_getrate(tmp_path):
 
     # main cmd
     TOKEN_SYMBOL = "OCEAN"
-    ST = "2022-01-01"
+    _ST = "2022-01-01"
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool getrate {TOKEN_SYMBOL} {_ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     # test result
