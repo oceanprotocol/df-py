@@ -351,7 +351,6 @@ def test_divide_by_zero():
     assert rewardsperlp == {}
 
 
-    
 # ========================================================================
 # Tests around bounding rewards by DCV
 
@@ -360,38 +359,38 @@ def test_divide_by_zero():
 def test_totalDcv():
     totDcv = calcrewards.totalDcv
     SYM, R, O, H, O2 = SYMBOLS, RATES, OCN_ADDR, H2O_ADDR, OCN_ADDR2
-    
-    assert totDcv({C1:{O:{NA:1.0}}}, SYM, R) == 1.0
-    assert totDcv({C1:{O:{NA:0.5, NB:0.5}}}, SYM, R) == 1.0
-    assert totDcv({C1:{O:{NA:0.25, NB:0.25}}, C2:{O2:{NA:0.5}}}, SYM, R) == 1.0
-    assert totDcv({C1:{H:{NA:1.0}}}, SYM, R) == 1.6/0.5 # 1 H2O = 1.6 USD 
-    assert totDcv({C1:{O:{NA:1.0}, H:{NB:1.0}}}, SYM, R) == (1.0 + 1.6/0.5)
+
+    assert totDcv({C1: {O: {NA: 1.0}}}, SYM, R) == 1.0
+    assert totDcv({C1: {O: {NA: 0.5, NB: 0.5}}}, SYM, R) == 1.0
+    assert totDcv({C1: {O: {NA: 0.25, NB: 0.25}}, C2: {O2: {NA: 0.5}}}, SYM, R) == 1.0
+    assert totDcv({C1: {H: {NA: 1.0}}}, SYM, R) == 1.6 / 0.5  # 1 H2O = 1.6 USD
+    assert totDcv({C1: {O: {NA: 1.0}, H: {NB: 1.0}}}, SYM, R) == (1.0 + 1.6 / 0.5)
 
 
 @enforce_types
 def test_getDFWeekNumber():
     wkNbr = calcrewards.getDfWeekNumber
 
-    #test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
-    assert wkNbr(datetime(2022,  9, 28)) == -1 # Wed
-    assert wkNbr(datetime(2022,  9, 29)) == 5 # Thu
-    assert wkNbr(datetime(2022,  9, 30)) == 5 # Fri
-    assert wkNbr(datetime(2022, 10,  5)) == 5 # Wed
-    assert wkNbr(datetime(2022, 10,  6)) == 6 # Thu
-    assert wkNbr(datetime(2022, 10, 12)) == 6 # Wed
-    assert wkNbr(datetime(2022, 10, 13)) == 7 # Thu
+    # test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
+    assert wkNbr(datetime(2022, 9, 28)) == -1  # Wed
+    assert wkNbr(datetime(2022, 9, 29)) == 5  # Thu
+    assert wkNbr(datetime(2022, 9, 30)) == 5  # Fri
+    assert wkNbr(datetime(2022, 10, 5)) == 5  # Wed
+    assert wkNbr(datetime(2022, 10, 6)) == 6  # Thu
+    assert wkNbr(datetime(2022, 10, 12)) == 6  # Wed
+    assert wkNbr(datetime(2022, 10, 13)) == 7  # Thu
 
-    #test DF9. Start Thu Oct 27. Last day is Wed Nov 2, 2022,
-    assert wkNbr(datetime(2022, 10, 25)) == 8 # Wed
-    assert wkNbr(datetime(2022, 10, 26)) == 8 # Wed
-    assert wkNbr(datetime(2022, 10, 27)) == 9 # Thu
-    assert wkNbr(datetime(2022, 10, 28)) == 9 # Fri
-    assert wkNbr(datetime(2022, 11, 2)) == 9 #Wed
-    assert wkNbr(datetime(2022, 11, 3)) == 10 #Thu
-    assert wkNbr(datetime(2022, 11, 4)) == 10 #Fri
+    # test DF9. Start Thu Oct 27. Last day is Wed Nov 2, 2022,
+    assert wkNbr(datetime(2022, 10, 25)) == 8  # Wed
+    assert wkNbr(datetime(2022, 10, 26)) == 8  # Wed
+    assert wkNbr(datetime(2022, 10, 27)) == 9  # Thu
+    assert wkNbr(datetime(2022, 10, 28)) == 9  # Fri
+    assert wkNbr(datetime(2022, 11, 2)) == 9  # Wed
+    assert wkNbr(datetime(2022, 11, 3)) == 10  # Thu
+    assert wkNbr(datetime(2022, 11, 4)) == 10  # Fri
 
-    #test many weeks
-    start_dt = datetime(2022,  9, 29)
+    # test many weeks
+    start_dt = datetime(2022, 9, 29)
     for wks_offset in range(50):
         true_wk = wks_offset + 1 + 4
         assert wkNbr(start_dt + timedelta(weeks=wks_offset)) == true_wk
@@ -402,7 +401,7 @@ def test_getDFWeekNumber():
         assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=5)) == true_wk
         assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=6)) == true_wk
 
-    #test extremes
+    # test extremes
     assert wkNbr(datetime(2000, 1, 1)) == -1
     assert wkNbr(datetime(2022, 6, 14)) == -1
     assert wkNbr(datetime(2022, 6, 15)) == -1
@@ -437,40 +436,40 @@ def test_boundRewardsByDcv():
     boundRew = calcrewards.boundRewardsByDcv
     mult = calcrewards.calcDcvMultiplier
 
-    #week 1
+    # week 1
     # args: (rewards_OCEAN, DCV_OCEAN, DF_week)
     assert boundRew(100.0, 0.0, 1) == 100.0
     assert boundRew(100.0, 1e9, 1) == 100.0
 
-    #week 8
+    # week 8
     assert boundRew(100.0, 0.0, 8) == 100.0
     assert boundRew(100.0, 1e9, 8) == 100.0
 
-    #week 9
+    # week 9
     assert boundRew(100.0, 0.0, 9) == 0.0
     assert boundRew(100.0, 50.0, 9) == 50.0
     assert boundRew(100.0, 100.0, 9) == 100.0
     assert boundRew(100.0, 1e9, 9) == 100.0
 
-    #week 10
+    # week 10
     assert boundRew(100.0, 0.0, 10) == 0.0
     assert boundRew(100.0, 50.0, 10) == mult(10) * 50.0
     assert boundRew(100.0, 100.0, 10) == mult(10) * 100.0
     assert boundRew(100.0, 1e9, 10) == 100.0
 
-    #week 28
+    # week 28
     assert boundRew(100.0, 0.0, 28) == 0.0
     assert boundRew(100.0, 50.0, 28) == mult(28) * 50.0
     assert boundRew(100.0, 100.0, 28) == mult(28) * 100.0
     assert boundRew(100.0, 1e9, 28) == 100.0
 
-    #week 29
+    # week 29
     assert boundRew(100.0, 0.0, 29) == 0.0
     assert boundRew(100.0, 50.0, 29) == mult(29) * 50.0
     assert boundRew(100.0, 100.0, 29) == mult(29) * 100.0
     assert boundRew(100.0, 1e9, 29) == 100.0
 
-    #week 100
+    # week 100
     assert boundRew(100.0, 0.0, 100) == 0.0
     assert boundRew(100.0, 50.0, 100) == mult(100) * 50.0
     assert boundRew(100.0, 100.0, 100) == mult(100) * 100.0

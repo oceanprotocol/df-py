@@ -25,12 +25,12 @@ def totalDcv(nftvols: dict, symbols: dict, rates: dict) -> float:
       DCV_OCEAN -- data consume volume, in units of OCEAN
     """
     nftvols, rates = modNFTvols(nftvols), modRates(rates)
-    
-    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates) #[cID][nft]:vol
-    
-    DCV_USD = sum(vol
-                  for chainID in nftvols_USD
-                  for vol in nftvols_USD[chainID].values())
+
+    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)  # [cID][nft]:vol
+
+    DCV_USD = sum(
+        vol for chainID in nftvols_USD for vol in nftvols_USD[chainID].values()
+    )
     DCV_OCEAN = DCV_USD / rates["OCEAN"]
     return DCV_OCEAN
 
@@ -41,7 +41,7 @@ def getDfWeekNumber(dt: datetime) -> int:
     There was a gap from DF4 to DF5. Since we only care about future dates,
     don't bother to properly support this gap, just focus on future.
     """
-    DF5_start = datetime(2022, 9, 29) # Thu Sep 29
+    DF5_start = datetime(2022, 9, 29)  # Thu Sep 29
     if dt < DF5_start:
         return -1
 
@@ -60,7 +60,7 @@ def calcDcvMultiplier(DF_week: int) -> float:
       DF_week -- e.g. 9 for DF9
 
     @return
-      DCV_multiplier -- 
+      DCV_multiplier --
     """
     if DF_week < 9:
         return np.inf
@@ -77,11 +77,11 @@ def boundRewardsByDcv(rewards_OCEAN, DCV_OCEAN, DF_week: int) -> float:
       Applies the formula:
       usable_rewards_OCEAN = min(rewards_OCEAN, DCV_multiplier * DCV_total)
 
-      Where DCV_multiplier = 100% for DF9, then decreasing linearly each week, 
+      Where DCV_multiplier = 100% for DF9, then decreasing linearly each week,
       to a final value of 3% in 20 weeks (DF28). After that, it stays at 3%.
 
     @arguments
-      rewards_OCEAN -- amount of rewards available, in OCEAN 
+      rewards_OCEAN -- amount of rewards available, in OCEAN
       DCV_OCEAN -- total data consume volume, in OCEAN
       DF_week -- e.g. 9 for DF9
 
@@ -117,8 +117,7 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, rates = \
-        modStakes(stakes), modNFTvols(nftvols), modRates(rates)
+    stakes, nftvols, rates = modStakes(stakes), modNFTvols(nftvols), modRates(rates)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
