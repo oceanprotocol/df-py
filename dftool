@@ -869,7 +869,7 @@ def _createDirIfNeeded(dir_: str):
         os.mkdir(dir_)
 
 
-def _getAddressEnvvarOrExit() -> tuple:
+def _getAddressEnvvarOrExit() -> str:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:

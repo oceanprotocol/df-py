@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Dict, List, Tuple
 
 from enforce_typing import enforce_types
@@ -64,10 +64,11 @@ def calcDcvMultiplier(DF_week: int) -> float:
     """
     if DF_week < 9:
         return np.inf
-    elif 9 <= DF_week <= 28:
+
+    if 9 <= DF_week <= 28:
         return -0.0485 * (DF_week - 9) + 1.0
-    else:
-        return 0.03
+
+    return 0.03
 
 
 @enforce_types
