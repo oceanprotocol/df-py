@@ -42,11 +42,8 @@ def test_ethFindFirstThuBlock():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(1)  # mainnet
-    global chain
+    global chain, PREV
     chain = brownie.network.chain
-
-    global PREV
 
     PREV = types.SimpleNamespace()
 
@@ -54,6 +51,7 @@ def setup_function():
 
     # got this value from https://rpc.info/. We could also use our own
     os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
+    networkutil.connect(1)  # mainnet
 
 
 @enforce_types
