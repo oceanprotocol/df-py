@@ -14,6 +14,7 @@ accounts, PREV, DISPENSE_ACCT = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+ST = 0
 
 
 @enforce_types
@@ -28,7 +29,6 @@ def test_query(tmp_path):
     csvs.saveRateCsv("OCEAN", 0.5, CSV_DIR)
 
     # main cmd
-    ST = 0
     FIN = "latest"
     NSAMP = 5
 
@@ -47,11 +47,11 @@ def test_getrate(tmp_path):
 
     # main cmd
     TOKEN_SYMBOL = "OCEAN"
-    ST = "2022-01-01"
+    _ST = "2022-01-01"
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool getrate {TOKEN_SYMBOL} {_ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     # test result
@@ -61,7 +61,6 @@ def test_getrate(tmp_path):
 @enforce_types
 def test_vebals(tmp_path):
     CSV_DIR = str(tmp_path)
-    ST = 0
     FIN = "latest"
     NSAMP = 100
 
@@ -76,7 +75,6 @@ def test_vebals(tmp_path):
 @enforce_types
 def test_allocations(tmp_path):
     CSV_DIR = str(tmp_path)
-    ST = 0
     FIN = "latest"
     NSAMP = 100
 
@@ -202,9 +200,10 @@ def test_noarg_commands():
 
 @enforce_types
 def setup_function():
-    global accounts, PREV, DISPENSE_ACCT
+    global accounts, PREV, DISPENSE_ACCT, ST
 
     networkutil.connect(CHAINID)
+    ST = len(brownie.network.chain)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()

@@ -134,6 +134,68 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
+def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
+    """Example: 1648872899.0 --> 4928"""
+    current_block = chain[-1].number
+    current_time = chain[-1].timestamp
+
+    return ethCalcBlockNumber(current_time, current_block, timestamp, chain)
+
+
+@enforce_types
+def ethCalcBlockNumber(ts, block, target_ts, chain):
+    AVG_BLOCK_TIME = 12  # seconds
+    diff = target_ts - ts
+    diff_blocks = diff // AVG_BLOCK_TIME
+    block += diff_blocks
+
+    ts_found = chain[block].timestamp
+    if abs(ts_found - target_ts) > 12 * 5:
+        return ethCalcBlockNumber(ts_found, block, target_ts, chain)
+
+    return block
+
+
+@enforce_types
+def ethFindFirstThuBlock(chain, block_number: int) -> int:
+    """
+    @arguments
+        chain -- brownie.networks.chain
+        block_number -- int
+    @return
+        block_number -- int
+    @description
+        Finds the first Thursday block closest to the given block number
+    """
+
+    def get_block_day(block_i):
+        block_ts = chain[block_i].timestamp
+        block_dt = datetime.fromtimestamp(block_ts)
+        block_day = block_dt.weekday()
+        return block_day
+
+    block_day = get_block_day(block_number)
+
+    if block_day >= 3:  # if it's Thursday or later
+        # decrement until we find the first block in Thursday
+        while True:
+            block_number -= 1
+            block_day = get_block_day(block_number)
+            if block_day != 3:
+                block_number += 1
+                break
+    else:
+        # increment until we find the first block in Thursday
+        while True:
+            block_number += 1
+            block_day = get_block_day(block_number)
+            if block_day == 3:
+                break
+
+    return block_number
+
+
+@enforce_types
 def getstfinBlocks(chain, ST, FIN):
     if "-" in ST:
         st_block = timestrToBlock(chain, ST)
