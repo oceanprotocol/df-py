@@ -136,8 +136,8 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 @enforce_types
 def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
-    current_block = chain.height
-    current_time = chain.time()
+    current_block = chain[-1].number
+    current_time = chain[-1].timestamp
 
     return ethCalcBlockNumber(current_time, current_block, timestamp, chain)
 
@@ -181,7 +181,7 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         while True:
             block_number -= 1
             block_day = get_block_day(block_number)
-            if block_day != "Thu":
+            if block_day != 3:
                 block_number += 1
                 break
     else:
@@ -189,7 +189,7 @@ def ethFindFirstThuBlock(chain, block_number: int) -> int:
         while True:
             block_number += 1
             block_day = get_block_day(block_number)
-            if block_day == "Thu":
+            if block_day == 3:
                 break
 
     return block_number
