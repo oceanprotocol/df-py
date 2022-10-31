@@ -9,11 +9,6 @@ FAKE_TOKEN_ADDR = "0xfake_token"
 
 
 @enforce_types
-def modTuple(stakes: dict, nftvols: dict, rates: dict) -> tuple:
-    return (modStakes(stakes), modNFTvols(nftvols), modRates(rates))
-
-
-@enforce_types
 def modAllocations(allocs: dict) -> dict:
     """allocs - dict of [chainID][nft_addr][LP_addr] : LP's % alloc"""
     allocs2: dict = {}

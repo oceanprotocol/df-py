@@ -1,7 +1,11 @@
+from datetime import datetime, timedelta
+
 from enforce_typing import enforce_types
+import numpy as np
 import pytest
 from pytest import approx
 
+from util import calcrewards
 from util.calcrewards import calcRewards, TARGET_WPY
 
 # for shorter lines
@@ -11,11 +15,12 @@ NA, NB = "0xnfta_addr", "0xnftb_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
+OCN_ADDR2, H2O_ADDR2 = "0xocean2", "Oxh2o2"
 SYMBOLS = {
     C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
-    C2: {"0xocean2": "OCEAN", "Oxh2o2": "H2O"},
+    C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
 }
-APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR], C2: ["0xocean2", "Oxh2o2"]}
+APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR], C2: [OCN_ADDR2, H2O_ADDR2]}
 
 
 @enforce_types
@@ -69,10 +74,10 @@ def test_two_chains():
         C1: {NA: {LP1: 50000.0}},
         C2: {NB: {LP1: 50000.0}},
     }
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0}}, C2: {"0xocean2": {NB: 1.0}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0}}, C2: {OCN_ADDR2: {NB: 1.0}}}
     symbols = {
         C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
-        C2: {"0xocean2": "OCEAN", "Oxh2o2": "H2O"},
+        C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
     }
 
     target_rewardsperlp = {C1: {LP1: 10.0}, C2: {LP1: 10.0}}
@@ -88,7 +93,7 @@ def test_two_chains():
     assert rewardsinfo == target_rewardsinfo
 
     # now, make it so that Ocean token in C2 is MOCEAN
-    symbols[C2]["0xocean2"] = "MOCEAN"
+    symbols[C2][OCN_ADDR2] = "MOCEAN"
     rewardsperlp, rewardsinfo = _calcRewards(
         stakes, nftvols, rewards_avail, symbols=symbols
     )
@@ -330,6 +335,11 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 
 
 @enforce_types
+def test_bound_budget_by_DCT():
+    pass  # placeholder
+
+
+@enforce_types
 def test_divide_by_zero():
     stakes = {C1: {NA: {LP1: 10000.0}, NB: {LP2: 10000.0}}}
     nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
@@ -339,6 +349,131 @@ def test_divide_by_zero():
 
     # Should return empty dict because LP1 and LP2 have zero volume
     assert rewardsperlp == {}
+
+
+# ========================================================================
+# Tests around bounding rewards by DCV
+
+
+@enforce_types
+def test_totalDcv():
+    totDcv = calcrewards.totalDcv
+    SYM, R, O, H, O2 = SYMBOLS, RATES, OCN_ADDR, H2O_ADDR, OCN_ADDR2
+
+    assert totDcv({C1: {O: {NA: 1.0}}}, SYM, R) == 1.0
+    assert totDcv({C1: {O: {NA: 0.5, NB: 0.5}}}, SYM, R) == 1.0
+    assert totDcv({C1: {O: {NA: 0.25, NB: 0.25}}, C2: {O2: {NA: 0.5}}}, SYM, R) == 1.0
+    assert totDcv({C1: {H: {NA: 1.0}}}, SYM, R) == 1.6 / 0.5  # 1 H2O = 1.6 USD
+    assert totDcv({C1: {O: {NA: 1.0}, H: {NB: 1.0}}}, SYM, R) == (1.0 + 1.6 / 0.5)
+
+
+@enforce_types
+def test_getDFWeekNumber():
+    wkNbr = calcrewards.getDfWeekNumber
+
+    # test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
+    assert wkNbr(datetime(2022, 9, 28)) == -1  # Wed
+    assert wkNbr(datetime(2022, 9, 29)) == 5  # Thu
+    assert wkNbr(datetime(2022, 9, 30)) == 5  # Fri
+    assert wkNbr(datetime(2022, 10, 5)) == 5  # Wed
+    assert wkNbr(datetime(2022, 10, 6)) == 6  # Thu
+    assert wkNbr(datetime(2022, 10, 12)) == 6  # Wed
+    assert wkNbr(datetime(2022, 10, 13)) == 7  # Thu
+
+    # test DF9. Start Thu Oct 27. Last day is Wed Nov 2, 2022,
+    assert wkNbr(datetime(2022, 10, 25)) == 8  # Wed
+    assert wkNbr(datetime(2022, 10, 26)) == 8  # Wed
+    assert wkNbr(datetime(2022, 10, 27)) == 9  # Thu
+    assert wkNbr(datetime(2022, 10, 28)) == 9  # Fri
+    assert wkNbr(datetime(2022, 11, 2)) == 9  # Wed
+    assert wkNbr(datetime(2022, 11, 3)) == 10  # Thu
+    assert wkNbr(datetime(2022, 11, 4)) == 10  # Fri
+
+    # test many weeks
+    start_dt = datetime(2022, 9, 29)
+    for wks_offset in range(50):
+        true_wk = wks_offset + 1 + 4
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset)) == true_wk
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=1)) == true_wk
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=2)) == true_wk
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=3)) == true_wk
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=4)) == true_wk
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=5)) == true_wk
+        assert wkNbr(start_dt + timedelta(weeks=wks_offset, days=6)) == true_wk
+
+    # test extremes
+    assert wkNbr(datetime(2000, 1, 1)) == -1
+    assert wkNbr(datetime(2022, 6, 14)) == -1
+    assert wkNbr(datetime(2022, 6, 15)) == -1
+    assert 50 < wkNbr(datetime(2030, 1, 1)) < 10000
+    assert 50 < wkNbr(datetime(2040, 1, 1)) < 10000
+
+
+@enforce_types
+def test_calcDcvMultiplier():
+    mult = calcrewards.calcDcvMultiplier
+    assert mult(-10) == np.inf
+    assert mult(-1) == np.inf
+    assert mult(0) == np.inf
+    assert mult(1) == np.inf
+    assert mult(8) == np.inf
+    assert mult(9) == 1.0
+    assert mult(10) == pytest.approx(0.951, 0.001)
+    assert mult(11) == pytest.approx(0.903, 0.001)
+    assert mult(12) == pytest.approx(0.854, 0.001)
+    assert mult(20) == pytest.approx(0.4665, 0.001)
+    assert mult(27) == pytest.approx(0.127, 0.001)
+    assert mult(28) == pytest.approx(0.0785, 0.001)
+    assert mult(29) == 0.03
+    assert mult(30) == 0.03
+    assert mult(31) == 0.03
+    assert mult(100) == 0.03
+    assert mult(10000) == 0.03
+
+
+@enforce_types
+def test_boundRewardsByDcv():
+    boundRew = calcrewards.boundRewardsByDcv
+    mult = calcrewards.calcDcvMultiplier
+
+    # week 1
+    # args: (rewards_OCEAN, DCV_OCEAN, DF_week)
+    assert boundRew(100.0, 0.0, 1) == 100.0
+    assert boundRew(100.0, 1e9, 1) == 100.0
+
+    # week 8
+    assert boundRew(100.0, 0.0, 8) == 100.0
+    assert boundRew(100.0, 1e9, 8) == 100.0
+
+    # week 9
+    assert boundRew(100.0, 0.0, 9) == 0.0
+    assert boundRew(100.0, 50.0, 9) == 50.0
+    assert boundRew(100.0, 100.0, 9) == 100.0
+    assert boundRew(100.0, 1e9, 9) == 100.0
+
+    # week 10
+    assert boundRew(100.0, 0.0, 10) == 0.0
+    assert boundRew(100.0, 50.0, 10) == mult(10) * 50.0
+    assert boundRew(100.0, 100.0, 10) == mult(10) * 100.0
+    assert boundRew(100.0, 1e9, 10) == 100.0
+
+    # week 28
+    assert boundRew(100.0, 0.0, 28) == 0.0
+    assert boundRew(100.0, 50.0, 28) == mult(28) * 50.0
+    assert boundRew(100.0, 100.0, 28) == mult(28) * 100.0
+    assert boundRew(100.0, 1e9, 28) == 100.0
+
+    # week 29
+    assert boundRew(100.0, 0.0, 29) == 0.0
+    assert boundRew(100.0, 50.0, 29) == mult(29) * 50.0
+    assert boundRew(100.0, 100.0, 29) == mult(29) * 100.0
+    assert boundRew(100.0, 1e9, 29) == 100.0
+
+    # week 100
+    assert boundRew(100.0, 0.0, 100) == 0.0
+    assert boundRew(100.0, 50.0, 100) == mult(100) * 50.0
+    assert boundRew(100.0, 100.0, 100) == mult(100) * 100.0
+    assert boundRew(100.0, 1e9, 100) == 100.0
 
 
 # ========================================================================

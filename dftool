@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # pylint: disable=too-many-lines
-# we should divide this file into submodules in the future
+import datetime
 import os
 import sys
 import functools
@@ -11,14 +11,14 @@ from web3.middleware import geth_poa_middleware
 from util import (
     allocations,
     blockrange,
-    networkutil,
+    calcrewards,
     csvs,
     dispense,
     getrate,
+    networkutil,
     query,
 )
 from util.base18 import fromBase18
-from util.calcrewards import calcRewards
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
 from util.oceanutil import (
@@ -336,12 +336,24 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
 
     # main work
     stakes = allocations.loadStakes(CSV_DIR)
-
     nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
-    rewardsperlp, rewardsinfo = calcRewards(stakes, nftvols, SYM, R, TOT_OCEAN)
+    DCV_OCEAN = calcrewards.totalDcv(nftvols, SYM, R)
+    cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
+    prev_week = cur_week - 1
+    m = calcrewards.calcDcvMultiplier(prev_week)
+    TOT_OCEAN2 = calcrewards.boundRewardsByDcv(TOT_OCEAN, DCV_OCEAN, prev_week)
+    print(
+        f"Given prev_week=DF{prev_week}, DCV={DCV_OCEAN} OCEAN: "
+        f" multiplier={m}; we bound rewards to {TOT_OCEAN2} OCEAN"
+        f" (original value: {TOT_OCEAN} OCEAN)"
+    )
+
+    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
+        stakes, nftvols, SYM, R, TOT_OCEAN2
+    )
 
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")
     csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, "OCEAN")
@@ -857,7 +869,7 @@ def _createDirIfNeeded(dir_: str):
         os.mkdir(dir_)
 
 
-def _getAddressEnvvarOrExit() -> tuple:
+def _getAddressEnvvarOrExit() -> str:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:
