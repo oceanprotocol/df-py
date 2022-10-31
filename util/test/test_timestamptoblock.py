@@ -5,7 +5,7 @@ import brownie
 from pytest import approx
 from enforce_typing import enforce_types
 
-from util import networkutil, oceanutil
+from util import networkutil
 from util.blocktime import (
     ethFindFirstThuBlock,
     ethTimestamptoBlock,
