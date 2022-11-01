@@ -58,6 +58,8 @@ def timestrToTimestamp(timestr: str) -> float:
     ncolon = timestr.count(":")
     if ncolon == 1:
         dt = datetime.strptime(timestr, "%Y-%m-%d_%H:%M")
+    elif ncolon == 2:
+        dt = datetime.strptime(timestr, "%Y-%m-%d_%H:%M:%S")
     else:
         dt = datetime.strptime(timestr, "%Y-%m-%d")
 
