@@ -8,7 +8,7 @@ from enforce_typing import enforce_types
 
 from util import networkutil
 from util.blocktime import (
-    ethFindFirstThuBlock,
+    ethFindClosestBlock,
     ethTimestamptoBlock,
     timestrToBlock,
 )
@@ -41,13 +41,13 @@ def test_timestrToBlock_eth():
 
 
 @enforce_types
-def test_ethFindFirstThuBlock():
-    expected = 15835687
+def test_ethFindClosestBlock():
+    expected = 15835686
 
     # get timestamp last thu
     last_thu = 1666828800
     last_thu_block_guess = ethTimestamptoBlock(chain, last_thu)
-    last_thu_block = ethFindFirstThuBlock(chain, last_thu_block_guess)
+    last_thu_block = ethFindClosestBlock(chain, last_thu_block_guess, last_thu)
 
     assert last_thu_block == expected
 
