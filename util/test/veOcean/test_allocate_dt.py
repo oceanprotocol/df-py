@@ -51,14 +51,6 @@ def test_max_allocation():
 
 
 @enforce_types
-def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
-    global accounts, veAllocate
-    accounts = brownie.network.accounts
-    veAllocate = B.veAllocate.deploy({"from": accounts[0]})
-
-
-@enforce_types
 def test_getveBatchAllocation():
     """getveAllocation should return the correct allocation."""
     nftaddr1 = accounts[0].address
@@ -111,3 +103,11 @@ def test_batch_reverts():
         veAllocate.setBatchAllocation(
             [3500, 7500], [nftaddr1, nftaddr2], [1], {"from": accounts[0]}
         )
+
+
+@enforce_types
+def setup_function():
+    networkutil.connect(networkutil.DEV_CHAINID)
+    global accounts, veAllocate
+    accounts = brownie.network.accounts
+    veAllocate = B.veAllocate.deploy({"from": accounts[0]})
