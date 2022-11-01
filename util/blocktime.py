@@ -160,42 +160,49 @@ def ethCalcBlockNumber(ts, block, target_ts, chain):
 
 
 @enforce_types
-def ethFindFirstThuBlock(chain, block_number: int) -> int:
+def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) -> int:
     """
     @arguments
         chain -- brownie.networks.chain
         block_number -- int
+        timestamp -- int
     @return
         block_number -- int
     @description
-        Finds the first Thursday block closest to the given block number
+        Finds the closest block number to given timestamp
     """
 
-    def get_block_day(block_i):
-        block_ts = chain[block_i].timestamp
-        block_dt = datetime.fromtimestamp(block_ts)
-        block_day = block_dt.weekday()
-        return block_day
+    block_ts = chain[block_number].timestamp
+    found = block_number
 
-    block_day = get_block_day(block_number)
-
-    if block_day >= 3:  # if it's Thursday or later
-        # decrement until we find the first block in Thursday
+    if block_ts > timestamp:
+        # search backwards
+        last = None
         while True:
-            block_number -= 1
-            block_day = get_block_day(block_number)
-            if block_day != 3:
-                block_number += 1
+            last = found
+            found -= 1
+            if chain[found].timestamp < timestamp:
                 break
+        # compare last and found
+        if abs(chain[last].timestamp - timestamp) < abs(
+            chain[found].timestamp - timestamp
+        ):
+            found = last
     else:
-        # increment until we find the first block in Thursday
+        # search forwards
+        last = None
         while True:
-            block_number += 1
-            block_day = get_block_day(block_number)
-            if block_day == 3:
+            last = found
+            found += 1
+            if chain[found].timestamp > timestamp:
                 break
+        # compare last and found
+        if abs(chain[last].timestamp - timestamp) < abs(
+            chain[found].timestamp - timestamp
+        ):
+            found = last
 
-    return block_number
+    return found
 
 
 @enforce_types
