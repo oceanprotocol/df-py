@@ -28,19 +28,19 @@ def getNextThursdayTimestamp() -> int:
 
 
 @enforce_types
-def timestrToBlock(chain, timestr: str) -> int:
+def timestrToBlock(chain, timestr: str, test_eth: bool = False) -> int:
     """
     Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
 
     @arguments
       chain -- brownie.networks.chain
-      timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM
+      timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM | YYYY-MM-DD_HH:MM:SS
     @return
       block -- int
     """
     timestamp = timestrToTimestamp(timestr)
-    if chain.id == 1:
+    if chain.id == 1 or test_eth:
         # more accurate for mainnet
         block = ethTimestamptoBlock(chain, timestamp)
         block = ethFindClosestBlock(chain, block, timestamp)
