@@ -27,7 +27,7 @@ def test_ethTimestamptoBlock():
     assert guess == approx(block, 10)
 
 
-def test_timestrToBlock_eth():
+def test_timestrToBlock_eth_1():
     ts = chain[-5000].timestamp
     block = chain[-5000].number
 
@@ -37,7 +37,18 @@ def test_timestrToBlock_eth():
 
     guess = timestrToBlock(chain, dt_str)
 
-    assert guess == approx(block, 10)
+    assert guess == block
+
+
+@enforce_types
+def test_timestrToBlock_eth_2():
+    expected = 15735470
+    ts = 1665619200
+    dt = datetime.fromtimestamp(ts)
+    dt_str = dt.strftime("%Y-%m-%d_%H:%M")
+
+    guess = timestrToBlock(chain, dt_str)
+    assert guess == expected
 
 
 @enforce_types
