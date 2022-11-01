@@ -145,8 +145,9 @@ def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
     current_block = chain[-1].number
     current_time = chain[-1].timestamp
-
-    return ethCalcBlockNumber(current_time, current_block, timestamp, chain)
+    return ethCalcBlockNumber(
+        int(current_time), int(current_block), int(timestamp), chain
+    )
 
 
 @enforce_types
