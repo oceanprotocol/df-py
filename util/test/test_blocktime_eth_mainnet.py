@@ -51,7 +51,11 @@ def test_timestrToBlock_eth_2():
     assert guess == expected
 
 
-    guess = timestrToBlock(chain, dt_str)
+@enforce_types
+def test_timestrToBlock_eth_3():
+    expected = 15835686
+    dt_str = "2022-10-27"
+    guess = timestrToBlock(chain, dt_str, True)
     assert guess == expected
 
 
