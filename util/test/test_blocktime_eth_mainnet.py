@@ -9,6 +9,7 @@ from util import networkutil
 from util.blocktime import (
     ethFindFirstThuBlock,
     ethTimestamptoBlock,
+    timestrToBlock,
 )
 
 PREV = None
@@ -17,25 +18,31 @@ chain = None
 
 @enforce_types
 def test_ethTimestamptoBlock():
-    _chain = brownie.network.chain
-    ts = _chain[-5000].timestamp
-    block = _chain[-5000].number
+    ts = chain[-5000].timestamp
+    block = chain[-5000].number
 
-    guess = ethTimestamptoBlock(_chain, ts)
+    guess = ethTimestamptoBlock(chain, ts)
+
+    assert guess == approx(block, 10)
+
+
+def test_timestrToBlock_eth():
+    ts = chain[-5000].timestamp
+    block = chain[-5000].number
+
+    guess = timestrToBlock(chain, ts)
 
     assert guess == approx(block, 10)
 
 
 @enforce_types
 def test_ethFindFirstThuBlock():
-    _chain = brownie.network.chain
-
     expected = 15835687
 
     # get timestamp last thu
     last_thu = 1666828800
-    last_thu_block_guess = ethTimestamptoBlock(_chain, last_thu)
-    last_thu_block = ethFindFirstThuBlock(_chain, last_thu_block_guess)
+    last_thu_block_guess = ethTimestamptoBlock(chain, last_thu)
+    last_thu_block = ethFindFirstThuBlock(chain, last_thu_block_guess)
 
     assert last_thu_block == expected
 
