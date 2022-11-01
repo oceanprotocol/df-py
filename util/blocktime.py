@@ -41,9 +41,10 @@ def timestrToBlock(chain, timestr: str) -> int:
     """
     timestamp = timestrToTimestamp(timestr)
     if chain.id == 1:
+        # more accurate for mainnet
         return ethTimestamptoBlock(chain, timestamp)
-    else:
-        return timestampToBlock(chain, timestamp)
+
+    return timestampToBlock(chain, timestamp)
 
 
 @enforce_types

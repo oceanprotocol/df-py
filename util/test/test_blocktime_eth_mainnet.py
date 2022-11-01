@@ -1,3 +1,4 @@
+from datetime import datetime
 import os
 import types
 import brownie
@@ -30,7 +31,11 @@ def test_timestrToBlock_eth():
     ts = chain[-5000].timestamp
     block = chain[-5000].number
 
-    guess = timestrToBlock(chain, ts)
+    # convert ts to YYYY-MM-DD_HH:MM
+    dt = datetime.fromtimestamp(ts)
+    dt_str = dt.strftime("%Y-%m-%d_%H:%M")
+
+    guess = timestrToBlock(chain, dt_str)
 
     assert guess == approx(block, 10)
 
