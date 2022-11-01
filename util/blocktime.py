@@ -42,7 +42,9 @@ def timestrToBlock(chain, timestr: str) -> int:
     timestamp = timestrToTimestamp(timestr)
     if chain.id == 1:
         # more accurate for mainnet
-        return ethTimestamptoBlock(chain, timestamp)
+        block = ethTimestamptoBlock(chain, timestamp)
+        block = ethFindClosestBlock(chain, block, timestamp)
+        return block
 
     return timestampToBlock(chain, timestamp)
 
