@@ -151,12 +151,11 @@ def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def ethCalcBlockNumber(ts, block, target_ts, chain):
+def ethCalcBlockNumber(ts: int, block: int, target_ts: int, chain):
     AVG_BLOCK_TIME = 12  # seconds
     diff = target_ts - ts
     diff_blocks = diff // AVG_BLOCK_TIME
     block += diff_blocks
-
     ts_found = chain[block].timestamp
     if abs(ts_found - target_ts) > 12 * 5:
         return ethCalcBlockNumber(ts_found, block, target_ts, chain)
