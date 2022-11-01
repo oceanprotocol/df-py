@@ -179,33 +179,24 @@ def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) 
     block_ts = chain[block_number].timestamp
     found = block_number
 
+    last = None
     if block_ts > timestamp:
         # search backwards
-        last = None
         while True:
             last = found
             found -= 1
             if chain[found].timestamp < timestamp:
                 break
-        # compare last and found
-        if abs(chain[last].timestamp - timestamp) < abs(
-            chain[found].timestamp - timestamp
-        ):
-            found = last
+
     else:
         # search forwards
-        last = None
         while True:
             last = found
             found += 1
             if chain[found].timestamp > timestamp:
                 break
-        # compare last and found
-        if abs(chain[last].timestamp - timestamp) < abs(
-            chain[found].timestamp - timestamp
-        ):
-            found = last
-
+    if abs(chain[last].timestamp - timestamp) < abs(chain[found].timestamp - timestamp):
+        found = last
     return found
 
 
