@@ -40,8 +40,10 @@ def timestrToBlock(chain, timestr: str) -> int:
       block -- int
     """
     timestamp = timestrToTimestamp(timestr)
-    block = timestampToBlock(chain, timestamp)
-    return block
+    if chain.id == 1:
+        return ethTimestamptoBlock(chain, timestamp)
+    else:
+        return timestampToBlock(chain, timestamp)
 
 
 @enforce_types
