@@ -199,6 +199,20 @@ def test_noarg_commands():
 
 
 @enforce_types
+def test_checkpoint_feedistributor():
+    feeDistributor = oceanutil.FeeDistributor()
+    timecursor_before = feeDistributor.time_cursor()
+    brownie.network.chain.sleep(60 * 60 * 24 * 7)
+    brownie.network.chain.mine()
+    cmd = f"./dftool checkpoint_feedist {CHAINID}"
+    os.system(cmd)
+
+    timecursor_after = feeDistributor.time_cursor()
+
+    assert timecursor_after > timecursor_before
+
+
+@enforce_types
 def setup_function():
     global accounts, PREV, DISPENSE_ACCT, ST
 
