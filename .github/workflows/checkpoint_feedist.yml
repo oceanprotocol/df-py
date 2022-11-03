@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  calculate-reward:
+  checkpoint-feedistributor:
     runs-on: ubuntu-latest
     strategy:
       matrix:
