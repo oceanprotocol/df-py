@@ -2,11 +2,11 @@ name: Checkpoint FeeDistributor
 
 on:
   schedule:
-    - cron: "1 0 * * 4"
+    - cron: "0 0 * * 4"
   workflow_dispatch:
 
 jobs:
-  calculate-reward:
+  checkpoint-feedistributor:
     runs-on: ubuntu-latest
     strategy:
       matrix:
