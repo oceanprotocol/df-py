@@ -26,6 +26,7 @@ ignore=
   README.md,
   README-dist-ops.md,
   README-control-ops.md,
+  README-crons-ops.md,
   logging.conf,
   requirements.txt,
   compile.sh,
