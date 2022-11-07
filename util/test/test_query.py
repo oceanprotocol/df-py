@@ -200,19 +200,15 @@ def _test_queryNftinfo():
     assert len(nfts) > 0
 
 
+# pylint: disable=too-many-statements
 @enforce_types
 def test_allocation_sampling():
-    publisher_account = account0
-    alice = brownie.accounts.add()
-    bob = brownie.accounts.add()
-    carol = brownie.accounts.add()
-    karen = brownie.accounts.add()
-    james = brownie.accounts.add()
-    publisher_account.transfer(alice, "1 ether")
-    publisher_account.transfer(bob, "1 ether")
-    publisher_account.transfer(carol, "1 ether")
-    publisher_account.transfer(karen, "1 ether")
-    publisher_account.transfer(james, "1 ether")
+    alice, bob, carol, karen, james = [brownie.accounts.add() for _ in range(5)]
+    account0.transfer(alice, "1 ether")
+    account0.transfer(bob, "1 ether")
+    account0.transfer(carol, "1 ether")
+    account0.transfer(karen, "1 ether")
+    account0.transfer(james, "1 ether")
 
     allocate_addrs = [
         f"0x000000000000000000000000000000000000000{i}" for i in range(1, 8)
@@ -225,7 +221,6 @@ def test_allocation_sampling():
     # James allocates 10% 0-0, 20% 1-0, 30% 2-0, 5% 3-0, 50% 4-0, 0% 5-0, 100% 6-0
 
     def forward(blocks):
-        # assuming 10 = 24 hours
         brownie.network.chain.sleep(1)
         brownie.network.chain.mine(blocks)
 
@@ -335,6 +330,7 @@ def test_allocation_sampling():
     while True:
         try:
             allocations = query.queryAllocations(rng, CHAINID)
+        # pylint: disable=bare-except
         except:
             pass
         if allocations is not None and len(allocations) > 0:
