@@ -201,6 +201,179 @@ def _test_queryNftinfo():
 
 
 @enforce_types
+def test_allocation_sampling():
+    publisher_account = account0
+    alice = brownie.accounts.add()
+    bob = brownie.accounts.add()
+    carol = brownie.accounts.add()
+    karen = brownie.accounts.add()
+    james = brownie.accounts.add()
+    publisher_account.transfer(alice, "1 ether")
+    publisher_account.transfer(bob, "1 ether")
+    publisher_account.transfer(carol, "1 ether")
+    publisher_account.transfer(karen, "1 ether")
+    publisher_account.transfer(james, "1 ether")
+
+    allocate_addrs = [
+        f"0x000000000000000000000000000000000000000{i}" for i in range(1, 8)
+    ]
+
+    # Alice allocates at 0-0 and 3.5-3
+    # Bob allocates at 0-0 1-1 2-2 3-3 4-4 5-5 6-6 100%
+    # Carol allocates at 2-2 6-2 100%
+    # Karen allocates at 10% 0-0, 20% 2-2 and 100% 6-6
+    # James allocates 10% 0-0, 20% 1-0, 30% 2-0, 5% 3-0, 50% 4-0, 0% 5-0, 100% 6-0
+
+    def forward(blocks):
+        # assuming 10 = 24 hours
+        brownie.network.chain.sleep(1)
+        brownie.network.chain.mine(blocks)
+
+    start_block = len(brownie.network.chain)
+
+    # DAY 0
+    oceanutil.set_allocation(10000, allocate_addrs[0], 8996, alice)  # 100% at 0
+    oceanutil.set_allocation(10000, allocate_addrs[0], 8996, bob)  # 100% at 0
+    oceanutil.set_allocation(1000, allocate_addrs[0], 8996, karen)  # 10% at 0
+    oceanutil.set_allocation(1000, allocate_addrs[0], 8996, james)  # 10% at 0
+
+    forward(100)
+
+    # DAY 1
+    # Bob removes and re-adds 100%
+    oceanutil.set_allocation(0, allocate_addrs[0], 8996, bob)  # 0% at 1
+    oceanutil.set_allocation(10000, allocate_addrs[1], 8996, bob)  # 100% at 1
+
+    # Karen allocates 10%
+    oceanutil.set_allocation(1000, allocate_addrs[1], 8996, karen)  # 10% at 1
+
+    # James allocates 20%
+    oceanutil.set_allocation(2000, allocate_addrs[0], 8996, james)  # 20% at 1
+
+    forward(100)
+
+    # DAY 2
+    # Bob removes and re-adds 100%
+    oceanutil.set_allocation(0, allocate_addrs[1], 8996, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[2], 8996, bob)
+
+    # Carol allocates 100%
+    oceanutil.set_allocation(10000, allocate_addrs[2], 8996, carol)
+
+    # Karen allocates 20%
+    oceanutil.set_allocation(2000, allocate_addrs[2], 8996, karen)
+
+    # James allocates 30%
+    oceanutil.set_allocation(3000, allocate_addrs[0], 8996, james)
+    forward(100)
+
+    # DAY 3
+
+    # Bob removes and re-adds 100%
+    oceanutil.set_allocation(0, allocate_addrs[2], 8996, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[3], 8996, bob)
+
+    # James allocates 5%
+    oceanutil.set_allocation(500, allocate_addrs[0], 8996, james)
+
+    forward(50)
+
+    # DAY 3.5
+    # Alice allocates 100%
+    oceanutil.set_allocation(0, allocate_addrs[0], 8996, alice)
+    oceanutil.set_allocation(10000, allocate_addrs[3], 8996, alice)
+
+    forward(50)
+
+    # DAY 4
+    # Bob removes and re-adds 100%
+    oceanutil.set_allocation(0, allocate_addrs[3], 8996, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[4], 8996, bob)
+
+    # James allocates 50%
+    oceanutil.set_allocation(5000, allocate_addrs[0], 8996, james)
+
+    forward(100)
+
+    # DAY 5
+
+    # Bob removes and re-adds 100%
+    oceanutil.set_allocation(0, allocate_addrs[4], 8996, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[5], 8996, bob)
+
+    # James allocates 0%
+    oceanutil.set_allocation(0, allocate_addrs[0], 8996, james)
+
+    forward(100)
+
+    # DAY 6
+    # Bob removes and re-adds 100%
+    oceanutil.set_allocation(0, allocate_addrs[5], 8996, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[6], 8996, bob)
+
+    # Carol allocates 100%
+    oceanutil.set_allocation(0, allocate_addrs[2], 8996, carol)
+    oceanutil.set_allocation(10000, allocate_addrs[6], 8996, carol)
+
+    # Karen allocates 100%
+    oceanutil.set_allocation(0, allocate_addrs[0], 8996, karen)
+    oceanutil.set_allocation(0, allocate_addrs[1], 8996, karen)
+    oceanutil.set_allocation(0, allocate_addrs[2], 8996, karen)
+    oceanutil.set_allocation(10000, allocate_addrs[6], 8996, karen)
+
+    # James allocates 100%
+    oceanutil.set_allocation(10000, allocate_addrs[0], 8996, james)
+
+    # FIN
+    forward(100)
+    end_block = len(brownie.network.chain)
+
+    # query
+    rng = BlockRange(start_block, end_block, end_block - start_block, 42)
+
+    allocations = None
+    while True:
+        try:
+            allocations = query.queryAllocations(rng, CHAINID)
+        except:
+            pass
+        if allocations is not None and len(allocations) > 0:
+            break
+        time.sleep(1)
+        forward(5)
+
+    allocations = allocations[str(CHAINID)]
+
+    for addr in allocate_addrs:
+        assert addr in allocations, addr
+        # Bob
+        assert allocations[addr][bob.address.lower()] == approx(1 / 7, 0.1)
+
+    # Alice
+    _a = alice.address.lower()
+    assert allocations[allocate_addrs[0]][_a] == approx(0.5, 0.03)
+    assert allocations[allocate_addrs[3]][_a] == approx(0.5, 0.03)
+
+    # Karen
+    _k = karen.address.lower()
+    assert allocations[allocate_addrs[0]][_k] == approx(0.1 * 6 / 7, 0.03)
+    assert allocations[allocate_addrs[1]][_k] == approx(0.1 * 5 / 7, 0.03)
+    assert allocations[allocate_addrs[2]][_k] == approx(0.2 * 4 / 7, 0.03)
+    assert allocations[allocate_addrs[6]][_k] == approx(1 / 7, 0.03)
+
+    # Carol
+    _c = carol.address.lower()
+    assert allocations[allocate_addrs[2]][_c] == approx(4 / 7, 0.03)
+    assert allocations[allocate_addrs[6]][_c] == approx(1 / 7, 0.03)
+
+    # James
+    _j = james.address.lower()
+    _j_expected = (
+        0.1 * 1 / 7 + 0.2 * 1 / 7 + 0.3 * 1 / 7 + 0.05 * 1 / 7 + 0.5 * 1 / 7 + 1 / 7
+    )
+    assert allocations[allocate_addrs[0]][_j] == approx(_j_expected, 0.03)
+
+
 def test_symbol():
     testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": account0})
     assert query.symbol(testToken) == "CO2"
