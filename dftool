@@ -25,6 +25,7 @@ from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
     veAllocate,
+    FeeDistributor,
 )
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -63,6 +64,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
+  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
 
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
@@ -854,6 +856,37 @@ Usage: dftool chaininfo CHAINID
 
 
 # ========================================================================
+@enforce_types
+def do_checkpoint_feedist():
+    HELP = f"""Checkpoint FeeDistributor contract.
+
+Usage: dftool checkpoint_feedist CHAINID
+    CHAINID -- {CHAINID_EXAMPLES}
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    CHAINID = int(sys.argv[2])
+    networkutil.connect(CHAINID)
+
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is None:
+        print("ADDRESS_FILE not set")
+        sys.exit(1)
+
+    recordDeployedContracts(ADDRESS_FILE)
+    from_account = _getPrivateAccount()
+    feedist = FeeDistributor()
+
+    # Checkpoint
+    feedist.checkpoint_total_supply({"from": from_account})
+    feedist.checkpoint_token({"from": from_account})
+
+    print("Checkpointed FeeDistributor")
+
+
+# ========================================================================
 # utilities
 
 
@@ -946,6 +979,8 @@ def do_main():
         do_newVeAllocate()
     elif sys.argv[1] == "veSetAllocation":
         do_veSetAllocation()
+    elif sys.argv[1] == "checkpoint_feedist":
+        do_checkpoint_feedist()
 
     # read actions
     elif sys.argv[1] == "acctinfo":

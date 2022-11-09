@@ -54,6 +54,9 @@ def recordDeployedContracts(address_file: str):
     if "veAllocate" in a:
         C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
 
+    if "veFeeDistributor" in a:
+        C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
+
     CONTRACTS[chainID] = C
 
 
@@ -95,6 +98,10 @@ def veAllocate():
 
 def FixedPrice():
     return _contracts("FixedPrice")
+
+
+def FeeDistributor():
+    return _contracts("veFeeDistributor")
 
 
 # ===========================================================================
