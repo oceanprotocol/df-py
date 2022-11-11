@@ -95,7 +95,7 @@ def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
 
 # ========================================================================
 # vebals csvs
-def saveVebalsCsv(vebals: dict, csv_dir: str):
+def saveVebalsCsv(vebals: dict, csv_dir: str, sampled=True):
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
@@ -106,7 +106,7 @@ def saveVebalsCsv(vebals: dict, csv_dir: str):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = vebalsCsvFilename(csv_dir)
+    csv_file = vebalsCsvFilename(csv_dir, sampled)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -149,9 +149,12 @@ def loadVebalsCsv(csv_dir: str) -> Dict[str, float]:
 
 
 @enforce_types
-def vebalsCsvFilename(csv_dir: str) -> str:
+def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
     """Returns the vebals filename"""
-    return os.path.join(csv_dir, "vebals.csv")
+    f = "vebals.csv"
+    if not sampled:
+        f = "vebals_realtime.csv"
+    return os.path.join(csv_dir, f)
 
 
 # ========================================================================
