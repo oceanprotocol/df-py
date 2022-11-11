@@ -88,7 +88,7 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
 def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
     """Returns the allocations filename"""
     f = "allocations.csv"
-    if sampled == False:
+    if not sampled:
         f = "allocations_no_sampling.csv"
     return os.path.join(csv_dir, f)
 
