@@ -89,7 +89,7 @@ def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
     """Returns the allocations filename"""
     f = "allocations.csv"
     if not sampled:
-        f = "allocations_no_sampling.csv"
+        f = "allocations_realtime.csv"
     return os.path.join(csv_dir, f)
 
 
