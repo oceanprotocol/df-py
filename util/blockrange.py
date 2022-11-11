@@ -27,6 +27,11 @@ class BlockRange:
 
         cand_blocks = list(range(st, fin + 1))  # []
 
+        if num_samples == 1:
+            print("WARNING: num_samples=1, so not sampling")
+            self._blocks = [fin]
+            return
+
         num_samples = min(num_samples, len(cand_blocks))
         if random_seed is not None:
             numpy.random.seed(random_seed)
