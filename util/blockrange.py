@@ -77,7 +77,7 @@ def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
 
     st_block, fin_block = getstfinBlocks(chain, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
-    rng.filterByMaxBlock(len(chain) - 10)
+    rng.filterByMaxBlock(len(chain) - 5)
 
     return rng
 
