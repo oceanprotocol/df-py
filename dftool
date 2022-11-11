@@ -205,10 +205,6 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    sampling = True
-    if NSAMP == 1:
-        sampling = False
-
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR))
@@ -219,11 +215,8 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    if not sampling:
-        # use the last block
-        rng = blockrange.create_range(chain, ST, FIN, 1, SECRET_SEED)
     allocs = query.queryAllocations(rng, CHAINID)
-    csvs.saveAllocationCsv(allocs, CSV_DIR, sampling)
+    csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
 
@@ -267,7 +260,7 @@ SECRET_SEED -- secret integer used to seed the rng
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     balances = query.queryVebalances(rng, CHAINID)
-    csvs.saveVebalsCsv(balances, CSV_DIR)
+    csvs.saveVebalsCsv(balances, CSV_DIR, NSAMP > 1)
 
     print("dftool vebals: Done")
 
