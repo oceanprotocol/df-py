@@ -13,7 +13,7 @@ from util.query import DataNFT
 
 
 @enforce_types
-def saveAllocationCsv(allocs: dict, csv_dir: str):
+def saveAllocationCsv(allocs: dict, csv_dir: str, sampled=True):
     """
     @description
       Save the allocations csv for this chain.
@@ -23,7 +23,7 @@ def saveAllocationCsv(allocs: dict, csv_dir: str):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = allocationCsvFilename(csv_dir)
+    csv_file = allocationCsvFilename(csv_dir, sampled)
     assert not os.path.exists(csv_file), csv_file
     S = allocs
     with open(csv_file, "w") as f:
@@ -85,9 +85,12 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
 
 
 @enforce_types
-def allocationCsvFilename(csv_dir: str) -> str:
+def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
     """Returns the allocations filename"""
-    return os.path.join(csv_dir, "allocations.csv")
+    f = "allocations.csv"
+    if sampled == False:
+        f = "allocations_no_sampling.csv"
+    return os.path.join(csv_dir, f)
 
 
 # ========================================================================
