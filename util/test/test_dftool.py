@@ -71,6 +71,14 @@ def test_vebals(tmp_path):
     vebals_csv = csvs.vebalsCsvFilename(CSV_DIR)
     assert os.path.exists(vebals_csv)
 
+    # test without sampling
+    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
+    assert os.path.exists(allocations_csv)
+
 
 @enforce_types
 def test_allocations(tmp_path):
@@ -83,6 +91,14 @@ def test_allocations(tmp_path):
 
     # test result
     allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
+    assert os.path.exists(allocations_csv)
+
+    # test without sampling
+    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
     assert os.path.exists(allocations_csv)
 
 
