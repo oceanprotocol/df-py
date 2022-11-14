@@ -69,15 +69,15 @@ def test_vebals(tmp_path):
 
     # test result
     vebals_csv = csvs.vebalsCsvFilename(CSV_DIR)
-    assert os.path.exists(vebals_csv)
+    assert os.path.exists(vebals_csv), "vebals csv file not found"
 
     # test without sampling
-    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
     os.system(cmd)
 
     # test result
-    allocations_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
-    assert os.path.exists(allocations_csv)
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
+    assert os.path.exists(vebals_csv), "vebals_realtime csv not found"
 
 
 @enforce_types
@@ -91,15 +91,15 @@ def test_allocations(tmp_path):
 
     # test result
     allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
-    assert os.path.exists(allocations_csv)
+    assert os.path.exists(allocations_csv), "allocations csv file not found"
 
     # test without sampling
-    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
     os.system(cmd)
 
     # test result
     allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
-    assert os.path.exists(allocations_csv)
+    assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
 
 
 @enforce_types
