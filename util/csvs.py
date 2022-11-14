@@ -13,7 +13,7 @@ from util.query import DataNFT
 
 
 @enforce_types
-def saveAllocationCsv(allocs: dict, csv_dir: str):
+def saveAllocationCsv(allocs: dict, csv_dir: str, sampled=True):
     """
     @description
       Save the allocations csv for this chain.
@@ -23,7 +23,7 @@ def saveAllocationCsv(allocs: dict, csv_dir: str):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = allocationCsvFilename(csv_dir)
+    csv_file = allocationCsvFilename(csv_dir, sampled)
     assert not os.path.exists(csv_file), csv_file
     S = allocs
     with open(csv_file, "w") as f:
@@ -85,14 +85,17 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
 
 
 @enforce_types
-def allocationCsvFilename(csv_dir: str) -> str:
+def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
     """Returns the allocations filename"""
-    return os.path.join(csv_dir, "allocations.csv")
+    f = "allocations.csv"
+    if not sampled:
+        f = "allocations_realtime.csv"
+    return os.path.join(csv_dir, f)
 
 
 # ========================================================================
 # vebals csvs
-def saveVebalsCsv(vebals: dict, csv_dir: str):
+def saveVebalsCsv(vebals: dict, csv_dir: str, sampled=True):
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
@@ -103,7 +106,7 @@ def saveVebalsCsv(vebals: dict, csv_dir: str):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = vebalsCsvFilename(csv_dir)
+    csv_file = vebalsCsvFilename(csv_dir, sampled)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -146,9 +149,12 @@ def loadVebalsCsv(csv_dir: str) -> Dict[str, float]:
 
 
 @enforce_types
-def vebalsCsvFilename(csv_dir: str) -> str:
+def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
     """Returns the vebals filename"""
-    return os.path.join(csv_dir, "vebals.csv")
+    f = "vebals.csv"
+    if not sampled:
+        f = "vebals_realtime.csv"
+    return os.path.join(csv_dir, f)
 
 
 # ========================================================================

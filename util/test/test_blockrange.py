@@ -136,3 +136,10 @@ def test_create_range():
     c.id = 1
     rng = create_range(c, "api", "", 100, 0)
     assert len(rng.getBlocks()) == 100
+
+
+@enforce_types
+def test_no_sampling():
+    # should return fin if num_samples is 1
+    rng = BlockRange(st=10, fin=20, num_samples=1)
+    assert rng.getBlocks() == [20]

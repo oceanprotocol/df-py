@@ -208,7 +208,7 @@ def getstfinBlocks(chain, ST, FIN):
         st_block = int(ST)
 
     if FIN == "latest":
-        fin_block = len(chain)
+        fin_block = len(chain) - 5
     elif FIN == "thu":
         fin_block = getBlockNumberThursday(chain)
     elif "-" in FIN:
