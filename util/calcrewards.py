@@ -138,7 +138,7 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
 
     @return
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
-      V_USD -- 2d array of [chain_nft j] -- nftvol for each {j}, in USD
+      V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
       keys_tup -- tuple of (LP_addrs_list, chain_nfts_tup)
     """
     chainIDs = list(stakes.keys())
@@ -173,7 +173,7 @@ def _calcRewardsUsd(S, V_USD, rewards_OCEAN: float) -> np.ndarray:
     """
     @arguments
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
-      V_USD -- 2d array of [chain_nft j] -- nftvol for each {j}, in USD
+      V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
       rewards_OCEAN -- amount of rewards available, in OCEAN
 
     @return
