@@ -183,13 +183,16 @@ def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
         writer.writerow(row)
 
         for nft in nftinfo:
+            isinpurg = "0"
+            if nft.is_purgatory:
+                isinpurg = "1"
             row = [
                 str(chainID),
                 nft.nft_addr.lower(),
                 nft.did,
                 nft.symbol,
                 nft.name.replace(",", "%@#"),
-                nft.is_purgatory
+                isinpurg
             ]
             writer.writerow(row)
 
