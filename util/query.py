@@ -23,12 +23,14 @@ class DataNFT:
         nft_addr: str,
         chain_id: int,
         _symbol: str,
+        is_purgatory: bool = False,
     ):
         self.nft_addr = nft_addr
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
         self.name = ""
+        self.is_purgatory = is_purgatory
 
     def setName(self, name: str):
         self.name = name
