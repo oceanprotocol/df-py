@@ -292,6 +292,7 @@ def queryNftinfo(chainID) -> List[DataNFT]:
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
         nftinfo = _filterNftinfos(nftinfo)
+        nftinfo = _markPurgatoryNfts(nftinfo)
         nftinfo = _populateNftAssetNames(nftinfo)
 
     return nftinfo
@@ -491,9 +492,16 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
       filtered_nftinfos: list of filtered DataNFT objects
     """
     nft_dids = [nft.did for nft in nftinfos]
-    nft_dids = _filterDids(nft_dids)
+    nft_dids = _filterToAquariusAssets(nft_dids)
     filtered_nftinfos = [nft for nft in nftinfos if nft.did in nft_dids]
     return filtered_nftinfos
+
+@enforce_types
+def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
+    bad_dids = _didsInPurgatory()
+    for nft in nftinfos:
+        if nft.did in bad_didts:
+            nft.is_purgatory = True
 
 
 @enforce_types
