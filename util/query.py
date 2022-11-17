@@ -502,6 +502,7 @@ def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
     for nft in nftinfos:
         if nft.did in bad_dids:
             nft.is_purgatory = True
+    return nftinfos
 
 
 @enforce_types
