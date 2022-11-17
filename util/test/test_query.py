@@ -497,8 +497,9 @@ def test_filter_nftinfos():
     # filter
     nfts_filtered = query._filterNftinfos(nfts)
 
-    assert len(nfts_filtered) == 1
+    assert len(nfts_filtered) == 2
     assert nfts[0] in nfts_filtered
+    assert nfts[1] in nfts_filtered # shouldn't filter purgatory
 
 
 @enforce_types
