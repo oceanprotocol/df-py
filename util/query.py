@@ -500,7 +500,7 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
 def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
     bad_dids = _didsInPurgatory()
     for nft in nftinfos:
-        if nft.did in bad_didts:
+        if nft.did in bad_dids:
             nft.is_purgatory = True
 
 
