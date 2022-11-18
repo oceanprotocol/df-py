@@ -192,7 +192,7 @@ def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
                 nft.did,
                 nft.symbol,
                 nft.name.replace(",", "%@#"),
-                isinpurg
+                isinpurg,
             ]
             writer.writerow(row)
 

@@ -496,6 +496,7 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
     filtered_nftinfos = [nft for nft in nftinfos if nft.did in nft_dids]
     return filtered_nftinfos
 
+
 @enforce_types
 def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
     bad_dids = _didsInPurgatory()

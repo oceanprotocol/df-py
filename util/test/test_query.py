@@ -499,7 +499,8 @@ def test_filter_nftinfos():
 
     assert len(nfts_filtered) == 2
     assert nfts[0] in nfts_filtered
-    assert nfts[1] in nfts_filtered # shouldn't filter purgatory
+    assert nfts[1] in nfts_filtered  # shouldn't filter purgatory
+
 
 @enforce_types
 def test_mark_purgatory_nftinfos():
