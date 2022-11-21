@@ -13,7 +13,7 @@ TRY_AGAIN = 3
 
 @enforce_types
 def dispense(
-    rewards_at_chain: Dict[str, float],
+    rewards: Dict[str, float],
     dfrewards_addr: str,
     token_addr: str,
     from_account,
@@ -25,8 +25,8 @@ def dispense(
       Allocate rewards to LPs.
 
     @arguments
-      rewards_at_chain -- dict of [LP_addr]:TOKEN_amt (float, not wei)
-        -- rewards for each LP on this chain
+      rewards -- dict of [LP_addr]:TOKEN_amt (float, not wei)
+        -- rewards for each LP
       dfrewards_addr -- address of dfrewards contract
       token_addr -- address of token we're allocating rewards with (eg OCEAN)
       from_account -- account doing the spending
@@ -36,7 +36,6 @@ def dispense(
     @return
       <<nothing, but updates the dfrewards contract on-chain>>
     """
-    rewards = rewards_at_chain
     logger.info("dispense: begin")
     logger.info(f"  # addresses: {len(rewards)}")
 

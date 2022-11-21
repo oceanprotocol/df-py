@@ -3,6 +3,7 @@ from typing import Dict
 from enforce_typing import enforce_types
 
 from util import cleancase
+from util.networkutil import _CHAINID_TO_ADDRS, _CHAINID_TO_NATIVE_TOKEN
 
 
 @enforce_types
@@ -50,6 +51,16 @@ def nftvolsToUsd(
     """
     cleancase.assertNFTvols(nftvols)
     cleancase.assertRates(rates)
+
+    # Add native token rates
+    for chainID in _CHAINID_TO_ADDRS:
+        token_addr = _CHAINID_TO_ADDRS[chainID]
+        token_symbol = _CHAINID_TO_NATIVE_TOKEN[chainID]
+
+        if chainID not in symbols:
+            symbols[chainID] = {}
+
+        symbols[chainID][token_addr] = token_symbol
 
     addr_rates = ratesToAddrRates(
         rates, symbols

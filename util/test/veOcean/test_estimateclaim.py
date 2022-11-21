@@ -77,10 +77,10 @@ def test_rewards():
             fee_distributor.address, toBase18(opffees), {"from": accounts[0]}
         )
         with brownie.reverts("Call checkpoint function"):
-            fee_estimate.estimateClaim(alice)
+            fee_estimate.estimateClaimAcc(alice)
         fee_distributor.checkpoint_total_supply()
         with brownie.reverts("Call checkpoint function"):
-            fee_estimate.estimateClaim(alice)
+            fee_estimate.estimateClaimAcc(alice)
         fee_distributor.checkpoint_token()
         epoch = veOCEAN.epoch()
         print(f"\t veOcean epoch: {epoch}")

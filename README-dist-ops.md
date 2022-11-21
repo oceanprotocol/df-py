@@ -54,21 +54,39 @@ export date=`date -d "last Thursday" '+%Y-%m-%d'`
 export now=`date '+%Y-%m-%d'`
 #if DF4, counting ended early, so instead use: `export now=2022-07-12`
 
-dftool getrate OCEAN $date $now mydata #output rate-OCEAN.csv
-dftool getrate H2O $date $now mydata
+# sample size
+export SAMPLE_SIZE=50
 
-dftool query $date $now 50 mydata 137 #output approved-137.csv, nftvols-137.csv, stakes-chain137.csv
-dftool query $date $now 50 mydata 246
-dftool query $date $now 50 mydata 1
-dftool query $date $now 50 mydata 56
-dftool query $date $now 50 mydata 1285
+# csv directory path
+export CSV_PATH="./mydata"
+
+# get rate of tokens data's priced in
+dftool getrate OCEAN $date $now $CSV_PATH #output rate-OCEAN.csv
+dftool getrate H2O $date $now $CSV_PATH
+
+# get rate of native tokens
+dftool getrate ETH $date $now $CSV_PATH
+dftool getrate MATIC $date $now $CSV_PATH
+dftool getrate BNB $date $now $CSV_PATH
+dftool getrate EWT $date $now $CSV_PATH 
+dftool getrate MOVR $date $now $CSV_PATH
+
+# query chain, output nftvols & symbols
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 246
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 56
+dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1285
+
+# query chain, output % allocations
+dftool allocations $date $now $SAMPLE_SIZE $CSV_PATH 1
+
+# query chain, output ve balances
+dftool vebals $date $now $SAMPLE_SIZE $CSV_PATH 1
+
+# bring it all together to calculate rewards per lp
+dftool calc $CSV_PATH 10000 OCEAN
 ```
-
-Then, in console:
-```console
-dftool calc mydata 10000 OCEAN # output rewardsperlp-OCEAN.csv
-```
-
 
 ### Step 4: Run dispense
 
@@ -94,7 +112,7 @@ Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local accoun
 
 Finally, the big step: dispense funds. In console:
 ```console
-dftool dispense mydata 137 $dfrewards_addr $OCEAN_137_addr #polygon
+dftool dispense $CSV_PATH 137 $dfrewards_addr $OCEAN_137_addr #polygon
 ```
 
 Then, confirm:
@@ -106,17 +124,7 @@ Then, confirm:
 
 Now, dispense funds for remaining chains. In console:
 ```console
-dftool dispense mydata 246 $dfrewards_addr $OCEAN_246_addr #energyweb
-#then, confirm
-
-dftool dispense mydata 1 $dfrewards_addr $OCEAN_1_addr #mainnet
-#then, confirm
-
-dftool dispense mydata 56 $dfrewards_addr $OCEAN_56_addr #bsc
-#then, confirm
-
-dftool dispense mydata 1285 $dfrewards_addr $OCEAN_1285_addr #moonriver
-#then, confirm
+dftool dispense $CSV_PATH 1 $dfrewards_addr $OCEAN_1_addr #mainnet
 ```
 
 We're now done dispensing!
@@ -127,7 +135,7 @@ Next steps are to get the word out.
 
 First, create a tarball of the data. In console:
 ```console
-cd mydata
+cd $CSV_PATH
 tar -cvf df3-final.tar *.csv
 gzip df3-final.tar
 # result is df3-final.tar.gz
