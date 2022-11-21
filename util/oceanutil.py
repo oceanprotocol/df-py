@@ -3,7 +3,6 @@ import hashlib
 import json
 from typing import Any, Dict, List, Tuple
 
-import random
 import brownie
 from enforce_typing import enforce_types
 
@@ -48,9 +47,15 @@ def recordDeployedContracts(address_file: str):
     C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
-    C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
-    C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
-    C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
+
+    if "veOCEAN" in a:
+        C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
+
+    if "veAllocate" in a:
+        C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
+
+    if "veFeeDistributor" in a:
+        C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
 
     CONTRACTS[chainID] = C
 
@@ -91,12 +96,25 @@ def veAllocate():
     return _contracts("veAllocate")
 
 
-def veFeeDistributor():
+def FixedPrice():
+    return _contracts("FixedPrice")
+
+
+def FeeDistributor():
     return _contracts("veFeeDistributor")
 
 
-def FixedPrice():
-    return _contracts("FixedPrice")
+# ===========================================================================
+# Creating Ocean objects: data NFT, datatoken, FRE contract
+
+
+@enforce_types
+def createDataNFTWithFRE(from_account, token):
+    data_NFT = createDataNFT("1", "1", from_account)
+    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+
+    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
+    return (data_NFT, DT, exchangeId)
 
 
 @enforce_types
@@ -158,9 +176,10 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 def createFREFromDatatoken(
     datatoken,
     base_TOKEN,
-    amount,
+    amount: float,
     from_account,
-):
+) -> str:
+    """Create new fixed-rate exchange. Returns its exchange_id (str)"""
     datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
 
     addresses = [
@@ -173,56 +192,44 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(1.0),  # fixedRate
+        toBase18(1.0),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]
 
+    # In https://github.com/oceanprotocol/contracts:
+    # templates/ERC20Template.sol::createFixedRate()
+    # -> pools/FactoryRouter.sol::deployFixedRate()
+    # -> pools/fixedRate/FixedRateExchange.sol::createWithDecimals(
+    #      datatoken: address, addresses: list, uints: list)
+    # Creates an Exchange struct (defined at FixedRateExchange.sol)
     tx = datatoken.createFixedRate(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
-    exchangeId = _FREAddressFromNewFRETx(tx)
 
-    return exchangeId
+    exchange_id: str = tx.events["NewFixedRate"]["exchangeId"]
 
-
-@enforce_types
-def _FREAddressFromNewFRETx(tx) -> str:
-    return tx.events["NewFixedRate"]["exchangeId"]
+    return exchange_id
 
 
-@enforce_types
-def randomCreateFREs(num_FRE: int, base_token, accounts):
-    # create random num_FRE.
-    tups = []  # (pub_account_i, data_NFT, DT, exchangeId)
-    for fre_i in range(num_FRE):
-        if fre_i < len(accounts):
-            account_i = fre_i
-        else:
-            account_i = random.randint(0, len(accounts))
-        (data_NFT, DT, exchangeId) = createDataNFTWithFRE(
-            accounts[account_i], base_token
-        )
-        tups.append((account_i, data_NFT, DT, exchangeId))
-
-    return tups
+# =============================================================================
+# veOCEAN routines
 
 
-@enforce_types
-def createDataNFTWithFRE(from_account, token):
-    data_NFT = createDataNFT("1", "1", from_account)
-    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
-
-    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
-    return (data_NFT, DT, exchangeId)
+def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+    veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
 
 
-@enforce_types
-def _poolAddressFromNewBPoolTx(tx) -> str:
-    return tx.events["NewPool"]["poolAddress"]
+def create_ve_lock(amount: float, unlock_time: int, from_account):
+    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
+    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
 
 
-# ===============================================================================
+def get_ve_balance(account):
+    return veOCEAN().balanceOf(account, brownie.network.chain.time())
+
+
+# =============================================================================
 # fee stuff needed for consume
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
@@ -351,7 +358,6 @@ def create_checksum(text: str) -> str:
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
-
 
 def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})

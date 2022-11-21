@@ -6,7 +6,7 @@ from util import csvs
 
 # for shorter lines
 C1, C2 = 1, 137
-PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf"  # pools
+PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf"  # nfts
 LP1, LP2, LP3, LP4, LP5, LP6 = "0xlp1", "0xlp2", "0xlp3", "0xlp4", "0xlp5", "0xlp6"
 OCN_SYMB, H2O_SYMB = "OCN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"  # all lowercase
@@ -14,104 +14,119 @@ OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
 
 # =================================================================
-# stakes csvs
-
-
-@enforce_types
-def test_chainIDforStakeCsv():
-    assert csvs.chainIDforNFTvolsCsv("stakes-chain101.csv") == 101
-    assert csvs.chainIDforNFTvolsCsv("path1/32/stakes-chain92.csv") == 92
+# allocations csvs
 
 
 @enforce_types
 def test_allocations_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {PA: {LP1: 1.1, LP2: 1.2}, PB: {LP1: 2.1, LP3: 2.3}, PC: {LP1: 3.1, LP4: 3.4}}
-    A1 = {1: S1}
-    csvs.saveAllocationCsv(A1, csv_dir)
-    A1_loaded = csvs.loadAllocationCsvs(csv_dir)
-    assert A1_loaded == A1
+    allocs = {
+        C1: {
+            PA: {LP1: 0.1, LP2: 1.0},
+            PB: {LP1: 0.2, LP3: 1.0},
+            PC: {LP1: 0.7, LP4: 1.0},
+        }
+    }
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allocs_loaded == allocs
 
 
 @enforce_types
 def test_allocations_onechain_mixedcase(tmp_path):
-    # in this test, it needs to fix the case
     csv_dir = str(tmp_path)
-    S1_lowercase = {
-        PA: {LP1: 1.1, LP2: 1.2},
-        PB: {LP1: 2.1, LP3: 2.3},
-        PC: {LP1: 3.1, LP4: 3.4},
+    allocs_lowercase = {
+        C1: {
+            PA: {"0xlp1": 0.1, "0xlp2": 1.0},
+            PB: {"0xlp1": 0.2, "0xlp3": 1.0},
+            PC: {"0xlp1": 0.7, "0xlp4": 1.0},
+        }
     }
-    S1_mixedcase = {
-        PA: {LP1: 1.1, LP2: 1.2},
-        PB: {LP1: 2.1, LP3: 2.3},
-        PC: {LP1: 3.1, LP4: 3.4},
+    allocs_mixedcase = {
+        C1: {
+            PA: {"0xlP1": 0.1, "0xLP2": 1.0},
+            PB: {"0xLp1": 0.2, "0xlp3": 1.0},
+            PC: {"0xlp1": 0.7, "0xLp4": 1.0},
+        }
     }
-    A1 = {1: S1_mixedcase}
-    csvs.saveAllocationCsv(A1, csv_dir)
-    S1_loaded = csvs.loadAllocationCsvs(csv_dir)
-    assert S1_loaded[1] == S1_lowercase
+    csvs.saveAllocationCsv(allocs_mixedcase, csv_dir)
+    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allocs_loaded == allocs_lowercase
 
 
 @enforce_types
 def test_allocations_twochains(tmp_path):
     csv_dir = str(tmp_path)
-    S1 = {
-        PA: {LP1: 1.1, LP2: 1.2},
-        PB: {LP1: 2.1, LP3: 2.3},
-        PC: {LP1: 3.1, LP4: 3.4},
+    allocs = {
+        C1: {
+            PA: {LP1: 0.1, LP2: 1.0},
+            PB: {LP1: 0.3, LP3: 1.0},
+            PC: {LP1: 0.5, LP4: 1.0},
+        },
+        C2: {PD: {LP1: 0.1, LP5: 1.0}, PE: {LP6: 1.0}},
     }
-    S2 = {PD: {LP1: 4.1, LP5: 4.5}, PE: {LP6: 5.6}}
 
-    allcs = {1: S1, 2: S2}
-
-    csvs.saveAllocationCsv(allcs, csv_dir)
-    allcs_loaded = csvs.loadAllocationCsvs(csv_dir)
-    assert allcs_loaded == allcs
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    assert allocs_loaded == allocs
 
 
 # =================================================================
-# poolvols csvs
+# vebals csvs
 
 
 @enforce_types
-def test_chainIDforPoolvolsCsv():
-    assert csvs.chainIDforNFTvolsCsv("poolvols-chain101.csv") == 101
-    assert csvs.chainIDforNFTvolsCsv("path1/32/poolvols-chain92.csv") == 92
+def test_vebals(tmp_path):
+    csv_dir = str(tmp_path)
+
+    vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
+    csvs.saveVebalsCsv(vebals, csv_dir)
+    loaded_vebals = csvs.loadVebalsCsv(csv_dir)
+    assert loaded_vebals == vebals
+
+
+# =================================================================
+# nftvols csvs
 
 
 @enforce_types
-def test_poolvols_onechain_lowercase(tmp_path):
+def test_chainIDforNftvolsCsv():
+    assert csvs.chainIDforNftvolsCsv("poolvols-chain101.csv") == 101
+    assert csvs.chainIDforNftvolsCsv("path1/32/poolvols-chain92.csv") == 92
+
+
+@enforce_types
+def test_nftvols_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
-    csvs.saveNFTvolsCsv(V1, csv_dir, C1)
-    V1_loaded = csvs.loadNFTvolsCsv(csv_dir, C1)
+    csvs.saveNftvolsCsv(V1, csv_dir, C1)
+    V1_loaded = csvs.loadNftvolsCsv(csv_dir, C1)
     assert V1_loaded == V1
 
 
 @enforce_types
-def test_poolvols_onechain_mixedcase(tmp_path):
+def test_nftvols_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
     V1_lowercase = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
-    csvs.saveNFTvolsCsv(V1_mixedcase, csv_dir, C1)
-    V1_loaded = csvs.loadNFTvolsCsv(csv_dir, C1)
+    csvs.saveNftvolsCsv(V1_mixedcase, csv_dir, C1)
+    V1_loaded = csvs.loadNftvolsCsv(csv_dir, C1)
     assert V1_loaded == V1_lowercase
 
 
 @enforce_types
-def test_poolvols_twochains(tmp_path):
+def test_nftvols_twochains(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V2 = {OCN_ADDR: {PD: 4.1, PE: 5.1}, H2O_ADDR: {PF: 6.1}}
 
     assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 0
-    csvs.saveNFTvolsCsv(V1, csv_dir, C1)
-    csvs.saveNFTvolsCsv(V2, csv_dir, C2)
+    csvs.saveNftvolsCsv(V1, csv_dir, C1)
+    csvs.saveNftvolsCsv(V2, csv_dir, C2)
     assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 2
 
     target_V = {C1: V1, C2: V2}
-    loaded_V = csvs.loadNFTvolsCsvs(csv_dir)
+    loaded_V = csvs.loadNftvolsCsvs(csv_dir)
     assert loaded_V == target_V
 
 
@@ -243,7 +258,7 @@ def test_rewardsinfo(
             PE: {LP1: 0.000000000000001, LP2: 12314552354},
         },
     }
-    target_rewards = """chainID,pool_addr,LP_addr,amt,token
+    target_rewards = """chainID,nft_addr,LP_addr,amt,token
 1,0xpa,0xlp1,3.2,MYTOKEN
 1,0xpa,0xlp2,5.4,MYTOKEN
 1,0xpb,0xlp2,5.3,MYTOKEN

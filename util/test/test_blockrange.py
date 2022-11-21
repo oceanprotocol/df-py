@@ -1,7 +1,8 @@
+from datetime import datetime
 from enforce_typing import enforce_types
 import pytest
 
-from util.blockrange import BlockRange
+from util.blockrange import BlockRange, create_range, get_blocks_from_api
 
 
 @enforce_types
@@ -102,3 +103,43 @@ def test_filter_by_max():
     # pylint: disable=consider-using-enumerate
     for i in range(len(after)):
         assert after[i] in before  # should be in before
+
+
+@enforce_types
+def test_rnd_seed():
+    r1 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
+    r2 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=43)
+    assert r1.getBlocks() != r2.getBlocks()  # should be different
+
+    s1 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
+    s2 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
+    assert s1.getBlocks() == s2.getBlocks()  # should be same
+
+
+@enforce_types
+def test_get_blocks_from_api():
+    (blocks, start_ts, end_ts) = get_blocks_from_api(1, 100)
+    assert len(blocks) == 100
+
+    now_ts = datetime.now().timestamp()
+    assert end_ts < now_ts
+
+    assert start_ts + 7 * 24 * 60 * 60 == end_ts
+
+
+@enforce_types
+def test_create_range():
+    # test api
+    class c:
+        pass
+
+    c.id = 1
+    rng = create_range(c, "api", "", 100, 0)
+    assert len(rng.getBlocks()) == 100
+
+
+@enforce_types
+def test_no_sampling():
+    # should return fin if num_samples is 1
+    rng = BlockRange(st=10, fin=20, num_samples=1)
+    assert rng.getBlocks() == [20]

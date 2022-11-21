@@ -8,7 +8,7 @@
 </div>
 <br/>
 
-CLI-based Data Farming (DF) backend. It's used for weekly "dispense" ops and to create data for DF frontend. 
+CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend. 
 
 ```text
 Usage: dftool getrate|query|calc|dispense|..

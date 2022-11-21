@@ -14,6 +14,7 @@ accounts, PREV, DISPENSE_ACCT = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+ST = 0
 
 
 @enforce_types
@@ -28,7 +29,6 @@ def test_query(tmp_path):
     csvs.saveRateCsv("OCEAN", 0.5, CSV_DIR)
 
     # main cmd
-    ST = 0
     FIN = "latest"
     NSAMP = 5
 
@@ -37,7 +37,6 @@ def test_query(tmp_path):
 
     # test result
     assert csvs.nftvolsCsvFilenames(CSV_DIR)
-    assert csvs.approvedCsvFilenames(CSV_DIR)
     assert csvs.symbolsCsvFilenames(CSV_DIR)
 
 
@@ -48,11 +47,11 @@ def test_getrate(tmp_path):
 
     # main cmd
     TOKEN_SYMBOL = "OCEAN"
-    ST = "2022-01-01"
+    _ST = "2022-01-01"
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool getrate {TOKEN_SYMBOL} {_ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     # test result
@@ -60,9 +59,8 @@ def test_getrate(tmp_path):
 
 
 @enforce_types
-def test_query_ve_balances(tmp_path):
+def test_vebals(tmp_path):
     CSV_DIR = str(tmp_path)
-    ST = 0
     FIN = "latest"
     NSAMP = 100
 
@@ -70,14 +68,21 @@ def test_query_ve_balances(tmp_path):
     os.system(cmd)
 
     # test result
-    vebals_csv = csvs.veOCEANCsvFilename(CSV_DIR)
-    assert os.path.exists(vebals_csv)
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR)
+    assert os.path.exists(vebals_csv), "vebals csv file not found"
+
+    # test without sampling
+    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    os.system(cmd)
+
+    # test result
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
+    assert os.path.exists(vebals_csv), "vebals_realtime csv not found"
 
 
 @enforce_types
-def test_query_allocations(tmp_path):
+def test_allocations(tmp_path):
     CSV_DIR = str(tmp_path)
-    ST = 0
     FIN = "latest"
     NSAMP = 100
 
@@ -86,7 +91,15 @@ def test_query_allocations(tmp_path):
 
     # test result
     allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
-    assert os.path.exists(allocations_csv)
+    assert os.path.exists(allocations_csv), "allocations csv file not found"
+
+    # test without sampling
+    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
+    assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
 
 
 @enforce_types
@@ -99,28 +112,23 @@ def test_calc(tmp_path):
     csvs.saveAllocationCsv(allocations, CSV_DIR)
 
     nftvolts_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
-    csvs.saveNFTvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
+    csvs.saveNftvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
-    csvs.saveVeOceanCsv(vebals, CSV_DIR)
+    csvs.saveVebalsCsv(vebals, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
     csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
 
-    approved_token_addrs_at_chain = [OCEAN_addr]
-    csvs.saveApprovedCsv(approved_token_addrs_at_chain, CSV_DIR, CHAINID)
-
     csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
-    TOKEN_SYMBOL = "OCEAN"
-    TOT_TOKEN = 1000.0
-
-    cmd = f"./dftool calc {CSV_DIR} {TOT_TOKEN} {TOKEN_SYMBOL}"
+    TOT_OCEAN = 1000.0
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN}"
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, TOKEN_SYMBOL)
+    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
     assert os.path.exists(rewards_csv)
 
 
@@ -132,18 +140,17 @@ def test_dispense(tmp_path):
     account1 = accounts[1]
     address1 = account1.address.lower()
     CSV_DIR = str(tmp_path)
-    TOKEN_SYMBOL = "OCEAN"
-    TOT_TOKEN = 1000.0
+    TOT_OCEAN = 1000.0
 
     # accounts[0] has OCEAN. Ensure that dispensing account has some
     global DISPENSE_ACCT
     OCEAN = oceanutil.OCEANtoken()
-    OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_TOKEN), {"from": accounts[0]})
-    assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_TOKEN
+    OCEAN.transfer(DISPENSE_ACCT, toBase18(TOT_OCEAN), {"from": accounts[0]})
+    assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_OCEAN
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
-    rewards = {CHAINID: {address1: TOT_TOKEN}}
-    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, TOKEN_SYMBOL)
+    rewards = {CHAINID: {address1: TOT_OCEAN}}
+    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, "OCEAN")
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
@@ -208,12 +215,28 @@ def test_noarg_commands():
 
 
 @enforce_types
+def test_checkpoint_feedistributor():
+    feeDistributor = oceanutil.FeeDistributor()
+    timecursor_before = feeDistributor.time_cursor()
+    brownie.network.chain.sleep(60 * 60 * 24 * 7)
+    brownie.network.chain.mine()
+    cmd = f"./dftool checkpoint_feedist {CHAINID}"
+    os.system(cmd)
+
+    timecursor_after = feeDistributor.time_cursor()
+
+    assert timecursor_after > timecursor_before
+
+
+@enforce_types
 def setup_function():
-    global accounts, PREV, DISPENSE_ACCT
+    global accounts, PREV, DISPENSE_ACCT, ST
 
     networkutil.connect(CHAINID)
+    ST = len(brownie.network.chain)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
+    oceantestutil.fillAccountsWithOCEAN()
 
     PREV = types.SimpleNamespace()
 
@@ -228,6 +251,16 @@ def setup_function():
     os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
 
     os.environ["SECRET_SEED"] = "1234"
+
+    OCEAN = oceanutil.OCEANtoken()
+    tups = oceantestutil.randomCreateDataNFTWithFREs(8, OCEAN, accounts)
+    oceantestutil.randomConsumeFREs(tups, OCEAN)
+    oceantestutil.randomLockAndAllocate(tups)
+
+    brownie.network.chain.mine(20)
+    brownie.network.chain.sleep(20)
+    brownie.network.chain.mine(20)
+    time.sleep(2)
 
 
 @enforce_types

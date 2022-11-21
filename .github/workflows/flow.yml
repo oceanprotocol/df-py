@@ -1,0 +1,95 @@
+name: Reward Calculation
+
+on:
+  schedule:
+    - cron: "0 0 * * 4"
+  workflow_dispatch:
+    inputs:
+      amt_of_tokens:
+        description: "Amount of tokens to distribute"
+        required: true
+        default: "10000"
+
+jobs:
+  calculate-reward:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python {{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --quiet
+
+      - name: Set up Openzeppelin
+        run: |
+          brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
+          brownie pm install GNSPS/solidity-bytes-utils@0.8.0
+
+      - name: Add networks to brownie
+        run: |
+          brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
+          brownie networks add mumbai mumbai host=https://matic-mumbai.chainstacklabs.com chainid=80001
+          brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
+          brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
+          brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
+          brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
+
+      - name: Set env variables
+        run: |
+          echo "DFTOOL_KEY=5c01f85d0aaac3489600c3aa24ce5cfa838eeedc621872fcb747b2530cdf663b" >> $GITHUB_ENV
+          echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
+          echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
+          echo "date=$(date -dlast-thursday '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "now=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
+
+      - name: Run dftool getrate
+        run: |
+          ./dftool getrate OCEAN $date $now $CSV_DIR
+          ./dftool getrate ETH $date $now $CSV_DIR
+          ./dftool getrate BNB $date $now $CSV_DIR
+          ./dftool getrate EWT $date $now $CSV_DIR
+          ./dftool getrate MOVR $date $now $CSV_DIR
+          ./dftool getrate MATIC $date $now $CSV_DIR
+
+      - name: Run dftool query
+        run: |
+          ./dftool query $date $now 200 $CSV_DIR 1
+          ./dftool query $date $now 200 $CSV_DIR 56
+          ./dftool query $date $now 200 $CSV_DIR 137
+          ./dftool query $date $now 200 $CSV_DIR 246
+          ./dftool query $date $now 200 $CSV_DIR 1285
+
+      - name: Run dftool vebals
+        run: |
+          ./dftool vebals $date $now 200 $CSV_DIR 1
+
+      - name: Run dftool allocations
+        run: |
+          ./dftool allocations $date $now 200 $CSV_DIR 1
+
+      - name: Run sed
+        run: |
+          cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
+          sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
+
+      - name: Run dftool calc
+        run: |
+          ./dftool calc $CSV_DIR ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} OCEAN
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: CSV Files
+          path: /tmp/csv

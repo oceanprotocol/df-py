@@ -28,20 +28,25 @@ def getNextThursdayTimestamp() -> int:
 
 
 @enforce_types
-def timestrToBlock(chain, timestr: str) -> int:
+def timestrToBlock(chain, timestr: str, test_eth: bool = False) -> int:
     """
     Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
 
     @arguments
       chain -- brownie.networks.chain
-      timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM
+      timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM | YYYY-MM-DD_HH:MM:SS
     @return
       block -- int
     """
     timestamp = timestrToTimestamp(timestr)
-    block = timestampToBlock(chain, timestamp)
-    return block
+    if chain.id == 1 or test_eth:
+        # more accurate for mainnet
+        block = ethTimestamptoBlock(chain, timestamp)
+        block = ethFindClosestBlock(chain, block, timestamp)
+        return block
+
+    return timestampToBlock(chain, timestamp)
 
 
 @enforce_types
@@ -53,6 +58,8 @@ def timestrToTimestamp(timestr: str) -> float:
     ncolon = timestr.count(":")
     if ncolon == 1:
         dt = datetime.strptime(timestr, "%Y-%m-%d_%H:%M")
+    elif ncolon == 2:
+        dt = datetime.strptime(timestr, "%Y-%m-%d_%H:%M:%S")
     else:
         dt = datetime.strptime(timestr, "%Y-%m-%d")
 
@@ -131,3 +138,82 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
     # ---
 
     return int(block_i)
+
+
+@enforce_types
+def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
+    """Example: 1648872899.0 --> 4928"""
+    current_block = chain[-1].number
+    current_time = chain[-1].timestamp
+    return ethCalcBlockNumber(
+        int(current_time), int(current_block), int(timestamp), chain
+    )
+
+
+@enforce_types
+def ethCalcBlockNumber(ts: int, block: int, target_ts: int, chain):
+    AVG_BLOCK_TIME = 12.06  # seconds
+    diff = target_ts - ts
+    diff_blocks = int(diff // AVG_BLOCK_TIME)
+    block += diff_blocks
+    ts_found = chain[block].timestamp
+    if abs(ts_found - target_ts) > 12 * 5:
+        return ethCalcBlockNumber(ts_found, block, target_ts, chain)
+
+    return block
+
+
+@enforce_types
+def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) -> int:
+    """
+    @arguments
+        chain -- brownie.networks.chain
+        block_number -- int
+        timestamp -- int
+    @return
+        block_number -- int
+    @description
+        Finds the closest block number to given timestamp
+    """
+
+    block_ts = chain[block_number].timestamp
+    found = block_number
+
+    last = None
+    if block_ts > timestamp:
+        # search backwards
+        while True:
+            last = found
+            found -= 1
+            if chain[found].timestamp < timestamp:
+                break
+
+    else:
+        # search forwards
+        while True:
+            last = found
+            found += 1
+            if chain[found].timestamp > timestamp:
+                break
+    if abs(chain[last].timestamp - timestamp) < abs(chain[found].timestamp - timestamp):
+        found = last
+    return found
+
+
+@enforce_types
+def getstfinBlocks(chain, ST, FIN):
+    if "-" in ST:
+        st_block = timestrToBlock(chain, ST)
+    else:
+        st_block = int(ST)
+
+    if FIN == "latest":
+        fin_block = len(chain) - 5
+    elif FIN == "thu":
+        fin_block = getBlockNumberThursday(chain)
+    elif "-" in FIN:
+        fin_block = timestrToBlock(chain, FIN)
+    else:
+        fin_block = int(FIN)
+
+    return (st_block, fin_block)

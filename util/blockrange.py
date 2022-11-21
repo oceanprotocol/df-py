@@ -1,5 +1,10 @@
-from enforce_typing import enforce_types
+from typing import List, Tuple
+
+import requests
 import numpy
+from enforce_typing import enforce_types
+from util.constants import DFBLOCKS_URL
+from util.blocktime import getstfinBlocks
 
 
 @enforce_types
@@ -16,7 +21,17 @@ class BlockRange:
         assert fin > 0
         assert num_samples >= 0
         assert st <= fin
-        cand_blocks = list(range(st, fin + 1))
+
+        self.st: int = st
+        self.fin: int = fin
+
+        cand_blocks = list(range(st, fin + 1))  # []
+
+        if num_samples == 1:
+            print("WARNING: num_samples=1, so not sampling")
+            self._blocks = [fin]
+            return
+
         num_samples = min(num_samples, len(cand_blocks))
         if random_seed is not None:
             numpy.random.seed(random_seed)
@@ -24,9 +39,6 @@ class BlockRange:
         self._blocks = sorted(
             numpy.random.choice(cand_blocks, num_samples, replace=False)
         )
-
-        self.st: int = st
-        self.fin: int = fin
 
     def getBlocks(self) -> list:
         return self._blocks
@@ -52,3 +64,28 @@ class BlockRange:
             f", # blocks sampled={self.numBlocks()}"
             f", range={self.getBlocks()[:4]}.."
         )
+
+
+def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
+    if st == "api" or fin == "api":
+        blocks, st, fin = get_blocks_from_api(chain.id, samples)
+        rng = BlockRange(1, 2, 0)
+        rng._blocks = blocks
+        rng.st = st
+        rng.fin = fin
+        return rng
+
+    st_block, fin_block = getstfinBlocks(chain, st, fin)
+    rng = BlockRange(st_block, fin_block, samples, rndseed)
+    rng.filterByMaxBlock(len(chain) - 5)
+
+    return rng
+
+
+def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:
+    req = requests.get(f"{DFBLOCKS_URL}/blocks/{chain}/{samples}")
+    data = req.json()
+    start_ts = data["start_ts"]
+    end_ts = data["end_ts"]
+    blocks = data["blocks"]
+    return (blocks, start_ts, end_ts)
