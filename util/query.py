@@ -23,12 +23,14 @@ class DataNFT:
         nft_addr: str,
         chain_id: int,
         _symbol: str,
+        is_purgatory: bool = False,
     ):
         self.nft_addr = nft_addr
         self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
         self.symbol = _symbol
         self.name = ""
+        self.is_purgatory = is_purgatory
 
     def setName(self, name: str):
         self.name = name
@@ -290,6 +292,7 @@ def queryNftinfo(chainID) -> List[DataNFT]:
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
         nftinfo = _filterNftinfos(nftinfo)
+        nftinfo = _markPurgatoryNfts(nftinfo)
         nftinfo = _populateNftAssetNames(nftinfo)
 
     return nftinfo
@@ -489,9 +492,18 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
       filtered_nftinfos: list of filtered DataNFT objects
     """
     nft_dids = [nft.did for nft in nftinfos]
-    nft_dids = _filterDids(nft_dids)
+    nft_dids = _filterToAquariusAssets(nft_dids)
     filtered_nftinfos = [nft for nft in nftinfos if nft.did in nft_dids]
     return filtered_nftinfos
+
+
+@enforce_types
+def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
+    bad_dids = _didsInPurgatory()
+    for nft in nftinfos:
+        if nft.did in bad_dids:
+            nft.is_purgatory = True
+    return nftinfos
 
 
 @enforce_types
