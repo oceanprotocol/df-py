@@ -29,18 +29,16 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
 @enforce_types
-def fillAccountsWithSimpleToken(token):
-    accounts = network.accounts
+def mintTokenAccountZero(token, amount):
+    account = network.accounts[0]
+    bal_before: int = fromBase18(token.balanceOf(account))
 
-    for i in range(1, 10):
-        bal_before: int = fromBase18(token.balanceOf(accounts[i]))
-        if bal_before < 1000:
-            token.mint(accounts[i], toBase18(1000.0), {"from": accounts[0]})
+    if bal_before < amount:
+        token.mint(account, toBase18(amount), {"from": account})
 
-    print(f"fillAccountsWithToken({token.symbol()}), balances after:")
-    for i in range(10):
-        amt = fromBase18(token.balanceOf(accounts[i]))
-        print(f"  Account #{i} has {amt} {token.symbol()}")
+    print(f"mintTokenAccountZero({token.symbol()}), balances after:")
+    amt = fromBase18(token.balanceOf(account))
+    print(f"Account #0 has {amt} {token.symbol()}")
 
 
 @enforce_types
@@ -58,6 +56,12 @@ def fillAccountsWithToken(token):
     for i in range(10):
         amt = fromBase18(token.balanceOf(accounts[i]))
         print(f"  Account #{i} has {amt} {token.symbol()}")
+
+
+@enforce_types
+def initAccountZeroOCEAN(amount):
+    OCEAN = oceanutil.OCEANtoken()
+    mintTokenAccountZero(OCEAN, amount)
 
 
 @enforce_types

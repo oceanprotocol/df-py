@@ -59,10 +59,8 @@ Usage: dftool getrate|query|calc|dispense|..
 
   dftool compile - compile contracts
   
-  dftool fillaccounts CHAINID - deploy many random simple tokens (GANACHE ONLY)
-  
   dftool newdfrewards CHAINID - deploy new DFRewards contract
-
+    
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
@@ -75,6 +73,8 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+
+  dftool initdevwallets CHAINID - Init dev env. Ie. Wallets for testing. (GANACHE ONLY)
 
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
@@ -576,11 +576,11 @@ Usage: dftool compile
 
 # ========================================================================
 @enforce_types
-def do_fillaccounts():
+def do_initdevwallets():
     # UPADATE THIS
-    HELP = f"""Deploy many OCEAN tokens to accounts (GANACHE ONLY)
+    HELP = f"""dftool initdevwallets CHAINID - Init dev env. Ie. Wallets for testing. (GANACHE ONLY)
 
-Usage: dftool fillaccounts CHAINID
+Usage: dftool initdevwallets CHAINID 
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
@@ -593,13 +593,13 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     # extract inputs
-    assert sys.argv[1] == "fillaccounts"
+    assert sys.argv[1] == "initdevwallets"
     CHAINID = int(sys.argv[2])
-    print("dftool fillaccounts: Begin")
+    print("dftool initdevwallets: Begin")
     print(f"Arguments: CHAINID={CHAINID}")
 
     if CHAINID != DEV_CHAINID:
-        # To support other testnets, they need to fillAccountsWithOcean()
+        # To support other testnets, they need to initdevwallets()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
         sys.exit(0)
@@ -612,9 +612,13 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithSimpleToken(OCEANtoken())
+    oceantestutil.initAccountZeroOCEAN(10000.0)
+    oceantestutil.fillAccountsWithOCEAN()
+
+    OCEAN = OCEANtoken()
+    accounts = brownie.network.accounts
     
-    print(f"dftool fillaccounts: Done.")
+    print(f"dftool initdevwallets: Done.")
 
 
 # ========================================================================
@@ -957,8 +961,8 @@ def do_main():
 
     elif sys.argv[1] == "compile":
         do_compile()
-    elif sys.argv[1] == "fillaccounts":
-        do_fillaccounts()
+    elif sys.argv[1] == "initdevwallets":
+        do_initdevwallets()
     elif sys.argv[1] == "newdfrewards":
         do_newdfrewards()
     elif sys.argv[1] == "newdfstrategy":
