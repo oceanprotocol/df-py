@@ -98,7 +98,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
   dftool getbalanceveocean CHAINID - Returns the total amount of veOCEAN. (for testing)
-  dftool getlockendveocean CHAINID - Returns the lock end time lock of veOCEAN. (for testing)
+  dftool getlockendveocean CHAINID - Get end time for veOcean lock (for testing).
   
   # Help Actions
   dftool help - this message
