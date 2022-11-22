@@ -73,7 +73,7 @@ Usage: dftool getrate|query|calc|dispense|..
   
   # web3 ops actions
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
-  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
+  dftool checkpointfeedist CHAINID - checkpoint FeeDistributor contract
   dftool dispensepassive CHAINID [AMOUNT] - dispense rewards in OCEAN on chainID
   dftool newdfrewards CHAINID - deploy new DFRewards contract
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -1091,10 +1091,10 @@ Usage: dftool chaininfo CHAINID
 
 # ========================================================================
 @enforce_types
-def do_checkpoint_feedist():
+def do_checkpointfeedist():
     HELP = f"""Checkpoint FeeDistributor contract.
 
-Usage: dftool checkpoint_feedist CHAINID
+Usage: dftool checkpointfeedist CHAINID
     CHAINID -- {CHAINID_EXAMPLES}
 """
     if len(sys.argv) not in [3]:
@@ -1191,8 +1191,8 @@ def do_main():
     # web3 ops actions
     elif sys.argv[1] == "dispense":
         do_dispense()
-    elif sys.argv[1] == "checkpoint_feedist":
-        do_checkpoint_feedist()
+    elif sys.argv[1] == "checkpointfeedist":
+        do_checkpointfeedist()
     elif sys.argv[1] == "dispensepassive":
         do_dispensepassive()
     elif sys.argv[1] == "newdfrewards":
