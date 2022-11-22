@@ -61,7 +61,7 @@ def test_all():
     t2 = t1 + WEEK * 20  # lock for 20 weeks
     brownie.network.chain.sleep(t1 - t0)
     for acc in accounts:
-        oceanutil.create_ve_lock(OCEAN_lock_amt, t2, acc)
+        oceanutil.create_lock_ve_ocean(OCEAN_lock_amt, t2, acc)
 
     # Allocate to data NFTs
     # pylint: disable=consider-using-enumerate
@@ -86,7 +86,7 @@ def test_all():
     # sampling test accounts locks and allocates after start block
     # pylint: disable=consider-using-enumerate
     for i in range(len(sampling_test_accounts)):
-        oceanutil.create_ve_lock(OCEAN_lock_amt, t2, sampling_test_accounts[i])
+        oceanutil.create_lock_ve_ocean(OCEAN_lock_amt, t2, sampling_test_accounts[i])
         oceanutil.set_allocation(100, data_nfts[i][0], 8996, sampling_test_accounts[i])
 
     # keep deploying, until TheGraph node sees volume, or timeout
@@ -137,7 +137,7 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
     assert sum(veBalances.values()) > 0
 
     for account in veBalances:
-        bal = oceanutil.get_ve_balance(account) / 1e18
+        bal = oceanutil.get_balance_ve_ocean(account) / 1e18
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue

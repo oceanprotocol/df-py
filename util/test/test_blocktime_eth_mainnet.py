@@ -75,23 +75,9 @@ def test_ethFindClosestBlock():
 def setup_function():
     global chain, PREV
     chain = brownie.network.chain
-
-    PREV = types.SimpleNamespace()
-
-    PREV.WEB3_INFURA_PROJECT_ID = os.environ.get("WEB3_INFURA_PROJECT_ID")
-
-    # got this value from https://rpc.info/. We could also use our own
-    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
     networkutil.connect(1)  # mainnet
 
 
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-
-    global PREV
-
-    if PREV.WEB3_INFURA_PROJECT_ID is None:
-        del os.environ["WEB3_INFURA_PROJECT_ID"]
-    else:
-        os.environ["WEB3_INFURA_PROJECT_ID"] = PREV.WEB3_INFURA_PROJECT_ID

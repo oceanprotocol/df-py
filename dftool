@@ -26,11 +26,11 @@ from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
     veAllocate,
-    create_ve_lock,
-    increase_amount_ve_lock,
-    extend_ve_lock,
-    get_ve_balance,
-    get_ve_lock_end,
+    create_lock_ve_ocean,
+    increase_amount_ve_ocean,
+    increase_unlock_time_ve_ocean,
+    get_balance_ve_ocean,
+    get_lock_end_ve_ocean,
     FeeDistributor
 )
 
@@ -59,40 +59,48 @@ Then LP steps:
 5. call DFRewards.claim(), or related
 
 Usage: dftool getrate|query|calc|dispense|..
-
-  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
-  dftool allocations ST FIN NSAMP CSV_DIR CHAINID
-  dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
-  dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
-
+  
+  # init actions
   dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
-  dftool newdfrewards CHAINID - deploy new DFRewards contract
 
+  # data farming query & calc actions
+  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
+  dftool nftinfo CSV_DIR CHAINID - Query chain, output nft_info csv
+  dftool allocations ST FIN NSAMP CSV_DIR CHAINID - Query chain, outputs allocation csv
+  dftool vebals ST FIN NSAMP CSV_DIR CHAINID - Query chain, outputs veBalances csv
+  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - Get exchange rate, and output rate csv.
+  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
+  
+  # web3 ops actions
+  dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
+  dftool dispensepassive CHAINID [AMOUNT] - dispense rewards in OCEAN on chainID
+  dftool newdfrewards CHAINID - deploy new DFRewards contract
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
-  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
 
+  # DFVE User Actions
+  dftool createlockveocean CHAINID amount weeks - Lock an amount of OCEAN into veOCEAN for a set number of weeks. (for testing)
+  dftool increaselockamountveocean CHAINID amount - Increase the amount of Ocean in existing veOCEAN lock. (for testing)
+  dftool increaseunlocktimeveocean CHAINID weeks - Increase the time of Ocean in existing veOCEAN lock. (for testing)
+  dftool setveallocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+  
+  # Debug Actions
+  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
-
-  dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool veoceanlock CHAINID amount weeks - Lock an amount of OCEAN into veOCEAN for a set number of weeks.
-  dftool veoceanlockincreaseamount CHAINID amount - Increase the amount of Ocean in existing veOCEAN lock.
-  dftool veoceanlockincreasetime CHAINID weeks - Increase the time of Ocean in existing veOCEAN lock.
-  dftool veoceanbalance CHAINID - Returns the total amount of veOCEAN.
-  dftool veoceanlockend CHAINID - Returns the lock end time lock of veOCEAN.
-
+  dftool newveocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newveallocate CHAINID - deploy veAllocate (for testing)
-  dftool vesetallocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset.
   
+  # Read Actions
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
+  dftool getbalanceveocean CHAINID - Returns the total amount of veOCEAN. (for testing)
+  dftool getlockendveocean CHAINID - Returns the lock end time lock of veOCEAN. (for testing)
+  
+  # Help Actions
   dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
@@ -458,8 +466,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 # ========================================================================
 @enforce_types
-<<<<<<< HEAD
-def do_dispense_passive_rewards():
+def do_dispensepassive():
     HELP = f"""Transfer funds to FeeDistributor contract and kick it off.
 
 Usage: dftool dispensepassive CHAINID [AMOUNT]
@@ -501,35 +508,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 # ========================================================================
 @enforce_types
-def do_querymany():
-    HELP = """Like 'query' except query *many* chains.
-
-Usage: dftool querymany ST FIN NSAMP CSV_DIR CHAINID1 [CHAINID2 [CHAINID3 ..]]
-"""
-    if len(sys.argv) < 7:
-        print(HELP)
-        sys.exit(0)
-
-    # extract inputs
-    assert sys.argv[1] == "querymany"
-    # pylint: disable=unbalanced-tuple-unpacking
-    ST, FIN, NSAMP, CSV_DIR = sys.argv[2:6]
-    CHAINIDS = [int(arg) for arg in sys.argv[6:]]
-    print(f"dftool querymany: Begin. CHAINIDs={CHAINIDS}")
-
-    for CHAINID in CHAINIDS:
-        print(f"Call dftool query for CHAINID={CHAINID}: Begin")
-        cmd = f"dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
-        os.system(cmd)
-        print(f"Call dftool query for CHAINID={CHAINID}: Done")
-
-    print("dftool querymany: Done")
-
-
-# ========================================================================
-@enforce_types
-=======
->>>>>>> main
 def do_newdfrewards():
     HELP = f"""Deploy new DFRewards contract.
 
@@ -701,6 +679,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     recordDeployedContracts(ADDRESS_FILE)
     oceantestutil.fillAccountsWithOCEAN()
     num_nfts = 10  # magic number
+    
     # This fn was deprecated, replace.
     # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
@@ -788,17 +767,17 @@ Usage: dftool newtoken CHAINID
 
 # ========================================================================
 @enforce_types
-def do_newVeOcean():
+def do_newveocean():
     HELP = """Generate new veOcean (for testing).
 
-Usage: dftool newVeOcean CHAINID TOKEN_ADDR
+Usage: dftool newveocean CHAINID TOKEN_ADDR
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "newVeOcean"
+    assert sys.argv[1] == "newveocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -821,17 +800,17 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 
 # ========================================================================
 @enforce_types
-def do_veoceanlock():
+def do_createlockveocean():
     HELP = """Lock Ocean (for testing).
     
-Usage: dftool veoceanlock CHAINID amount weeks
+Usage: dftool createlockveocean CHAINID amount weeks
 """
     if len(sys.argv) not in [5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veoceanlock"
+    assert sys.argv[1] == "createlockveocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -851,24 +830,28 @@ Usage: dftool veoceanlock CHAINID amount weeks
         # Lock ocean for a certain number of weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
     
-        create_ve_lock(amount, end_time, from_account)
-        veBalance = get_ve_balance(from_account)
-        print(f"veOCEAN balance: {veBalance}")
+        ve_balance = get_balance_ve_ocean(from_account)
+        print(f"before: veOCEAN balance: {ve_balance}")
+        
+        create_lock_ve_ocean(amount, end_time, from_account)
+        
+        ve_balance = get_balance_ve_ocean(from_account)
+        print(f"after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
 @enforce_types
-def do_veoceanlockincreasetime():
+def do_increaseunlocktimeveocean():
     HELP = """Increase the time of Ocean locked inside veOcean (for testing).
     
-Usage: dftool veoceanlockincreasetime CHAINID weeks
+Usage: dftool increaseunlocktimeveocean CHAINID weeks
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veoceanlockincreasetime"
+    assert sys.argv[1] == "increaseunlocktimeveocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -885,24 +868,28 @@ Usage: dftool veoceanlockincreasetime CHAINID weeks
         # Lock ocean for a certain number of weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
 
-        extend_ve_lock(end_time, from_account)
-        veBalance = get_ve_balance(from_account)
-        print(f"veOCEAN balance: {veBalance}")
+        ve_lock_end = get_lock_end_ve_ocean(from_account)
+        print(f"before: veOCEAN lock end: {ve_lock_end}")
+
+        increase_unlock_time_ve_ocean(end_time, from_account)
+
+        ve_lock_end = get_lock_end_ve_ocean(from_account)
+        print(f"after: veOCEAN lock end: {ve_lock_end}")
 
 
 # ========================================================================
 @enforce_types
-def do_veoceanlockincreaseamount():
+def do_increaselockamountveocean():
     HELP = """Increase the amount of Ocean locked inside veOcean (for testing).
     
-Usage: dftool veoceanlockincreaseamount CHAINID amount
+Usage: dftool increaselockamountveocean CHAINID amount
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veoceanlockincreaseamount"
+    assert sys.argv[1] == "increaselockamountveocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -916,24 +903,28 @@ Usage: dftool veoceanlockincreaseamount CHAINID amount
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         
-        increase_amount_ve_lock(amount, from_account)
-        veBalance = get_ve_balance(from_account)
-        print(f"veOCEAN balance: {veBalance}")
+        ve_balance = get_balance_ve_ocean(from_account)
+        print(f"before: veOCEAN balance: {ve_balance}")
+        
+        increase_amount_ve_ocean(amount, from_account)
+        
+        ve_balance = get_balance_ve_ocean(from_account)
+        print(f"after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
 @enforce_types
-def do_getveoceanlockend():
+def do_getlockendveocean():
     HELP = """Get end time for veOcean lock (for testing).
     
-Usage: dftool veoceanlockend CHAINID
+Usage: dftool getlockendveocean CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veoceanlockend"
+    assert sys.argv[1] == "getlockendveocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -944,8 +935,8 @@ Usage: dftool veoceanlockend CHAINID
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         
-        end_time = get_ve_lock_end(from_account)
-        print(f"veOCEAN lock end time: {end_time}")
+        ve_lock_end = get_lock_end_ve_ocean(from_account)
+        print(f"veOCEAN lock end time: {ve_lock_end}")
 
 
 # ========================================================================
@@ -973,17 +964,17 @@ Usage: dftool newveallocate CHAINID
 
 # ========================================================================
 @enforce_types
-def do_getveoceanbalance():
+def do_getbalanceveocean():
     HELP = """Get veOcean balance on a specific chain (for testing).
     
-Usage: dftool veoceanbalance CHAINID
+Usage: dftool getbalanceveocean CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "veoceanbalance"
+    assert sys.argv[1] == "getbalanceveocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -993,24 +984,24 @@ Usage: dftool veoceanbalance CHAINID
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        veBalance = get_ve_balance(from_account)
+        veBalance = get_balance_ve_ocean(from_account)
         print(f"veOCEAN balance: {veBalance}")
 
 
 # ========================================================================
 @enforce_types
-def do_vesetallocation():
+def do_setveallocation():
     HELP = """Allocate weight to veAllocate contract (for testing).
     Set to 0 to trigger resetAllocation event.
 
-Usage: dftool vesetallocation CHAINID amount exchangeId
+Usage: dftool setveallocation CHAINID amount exchangeId
 """
     if len(sys.argv) not in [5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "vesetallocation"
+    assert sys.argv[1] == "setveallocation"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -1178,6 +1169,7 @@ def _getPrivateAccount():
 # main
 @enforce_types
 def do_main():
+    # if help
     if len(sys.argv) == 1 or sys.argv[1] == "help":
         do_help()
     # init actions
@@ -1186,8 +1178,6 @@ def do_main():
     # data farming query & calc actions
     elif sys.argv[1] == "query":
         do_query()
-    elif sys.argv[1] == "querymany":
-        do_querymany()
     elif sys.argv[1] == "nftinfo":
         do_nftinfo()
     elif sys.argv[1] == "allocations":
@@ -1204,7 +1194,7 @@ def do_main():
     elif sys.argv[1] == "checkpoint_feedist":
         do_checkpoint_feedist()
     elif sys.argv[1] == "dispensepassive":
-        do_dispense_passive_rewards()
+        do_dispensepassive()
     elif sys.argv[1] == "newdfrewards":
         do_newdfrewards()
     elif sys.argv[1] == "newdfstrategy":
@@ -1214,23 +1204,23 @@ def do_main():
     elif sys.argv[1] == "retirestrategy":
         do_retirestrategy()
     # dfve user actions
-    elif sys.argv[1] == "veoceanlock":
-        do_veoceanlock()
-    elif sys.argv[1] == "veoceanlockincreasetime":
-        do_veoceanlockincreasetime()
-    elif sys.argv[1] == "veoceanlockincreaseamount":
-        do_veoceanlockincreaseamount()
-    elif sys.argv[1] == "vesetallocation":
-        do_vesetallocation()
+    elif sys.argv[1] == "createlockveocean":
+        do_createlockveocean()
+    elif sys.argv[1] == "increaseunlocktimeveocean":
+        do_increaseunlocktimeveocean()
+    elif sys.argv[1] == "increaselockamountveocean":
+        do_increaselockamountveocean()
+    elif sys.argv[1] == "setveallocation":
+        do_setveallocation()
     # read actions
     elif sys.argv[1] == "acctinfo":
         do_acctinfo()
     elif sys.argv[1] == "chaininfo":
         do_chaininfo()
-    elif sys.argv[1] == "veoceanbalance":
-        do_getveoceanbalance()
-    elif sys.argv[1] == "veoceanlockend":
-        do_getveoceanlockend()
+    elif sys.argv[1] == "getbalanceveocean":
+        do_getbalanceveocean()
+    elif sys.argv[1] == "getlockendveocean":
+        do_getlockendveocean()
     # debug actions
     elif sys.argv[1] == "manyrandom":
         do_manyrandom()
@@ -1240,11 +1230,11 @@ def do_main():
         do_newacct()
     elif sys.argv[1] == "newtoken":
         do_newtoken()
-    elif sys.argv[1] == "newVeOcean":
-        do_newVeOcean()
+    elif sys.argv[1] == "newveocean":
+        do_newveocean()
     elif sys.argv[1] == "newveallocate":
         do_newveallocate()
-    # help actions
+    # default to help
     else:
         do_help()
     
