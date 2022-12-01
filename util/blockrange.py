@@ -68,24 +68,11 @@ class BlockRange:
 
 def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
     if st == "api" or fin == "api":
-        blocks, st, fin = get_blocks_from_api(chain.id, samples)
-        rng = BlockRange(1, 2, 0)
-        rng._blocks = blocks
-        rng.st = st
-        rng.fin = fin
-        return rng
+        print("dfblocks has been deprecated")
+        exit()
 
     st_block, fin_block = getstfinBlocks(chain, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
     rng.filterByMaxBlock(len(chain) - 5)
 
     return rng
-
-
-def get_blocks_from_api(chain, samples: int) -> Tuple[List[int], int, int]:
-    req = requests.get(f"{DFBLOCKS_URL}/blocks/{chain}/{samples}")
-    data = req.json()
-    start_ts = data["start_ts"]
-    end_ts = data["end_ts"]
-    blocks = data["blocks"]
-    return (blocks, start_ts, end_ts)
