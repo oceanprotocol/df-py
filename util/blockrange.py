@@ -1,9 +1,5 @@
-from typing import List, Tuple
-
-import requests
 import numpy
 from enforce_typing import enforce_types
-from util.constants import DFBLOCKS_URL
 from util.blocktime import getstfinBlocks
 
 
@@ -69,7 +65,7 @@ class BlockRange:
 def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
     if st == "api" or fin == "api":
         print("dfblocks has been deprecated")
-        exit()
+        sys.exit()
 
     st_block, fin_block = getstfinBlocks(chain, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
