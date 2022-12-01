@@ -1,4 +1,4 @@
-# pylint: disable=logging-format-interpolation
+# pylint: disable=logging-fstring-interpolation, logging-format-interpolation
 from typing import Dict, Optional
 
 from enforce_typing import enforce_types
