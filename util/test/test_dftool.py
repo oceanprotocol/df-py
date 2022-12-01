@@ -171,7 +171,7 @@ def test_manyrandom():
     cmd = f"./dftool manyrandom {networkutil.DEV_CHAINID}"
     output_s = ""
     with subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     ) as proc:
         while proc.poll() is None:
             output_s += proc.stdout.readline().decode("ascii")
@@ -184,7 +184,6 @@ def test_initdevwallets():
     cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
     os.system(cmd)
 
-    accounts = brownie.network.accounts
     OCEAN = oceanutil.OCEANtoken()
     assert fromBase18(OCEAN.balanceOf(accounts[0].address)) > 999.0
     assert fromBase18(OCEAN.balanceOf(accounts[9].address)) > 999.0
@@ -216,7 +215,7 @@ def test_noarg_commands():
 
         output_s = ""
         with subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+                cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         ) as proc:
             while proc.poll() is None:
                 output_s += proc.stdout.readline().decode("ascii")

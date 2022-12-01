@@ -241,7 +241,7 @@ def test_rewardsperlp_main(tmp_path):
 
 @enforce_types
 def test_rewardsinfo(
-    tmp_path, network_setup_and_teardown
+        tmp_path, network_setup_and_teardown
 ):  # pylint: disable=unused-argument
     rewards = {
         1: {
@@ -274,7 +274,6 @@ def test_rewardsinfo(
     csv_dir = str(tmp_path)
     csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
 
-    # pylint: disable=consider-using-with
     loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
     csv = loaded_rewards.read()
     assert csv == target_rewards

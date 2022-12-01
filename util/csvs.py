@@ -312,7 +312,7 @@ def chainIDforNftvolsCsv(filename) -> int:
 
 @enforce_types
 def saveApprovedCsv(
-    approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int
+        approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int
 ):
     """
     @description
@@ -582,7 +582,7 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 @enforce_types
 def saveRewardsperlpCsv(
-    rewards: Dict[str, Dict[str, float]], csv_dir: str, token_symbol: str
+        rewards: Dict[str, Dict[str, float]], csv_dir: str, token_symbol: str
 ):
     """
     @description
@@ -650,7 +650,7 @@ def rewardsperlpCsvFilename(csv_dir: str, token_symbol: str) -> str:
 
 @enforce_types
 def saveRewardsinfoCsv(
-    rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
+        rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
 ):
     """
     @description

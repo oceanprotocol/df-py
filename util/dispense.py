@@ -1,4 +1,4 @@
-# pylint: disable=logging-fstring-interpolation
+# pylint: disable=logging-format-interpolation
 from typing import Dict, Optional
 
 from enforce_typing import enforce_types
@@ -13,12 +13,12 @@ TRY_AGAIN = 3
 
 @enforce_types
 def dispense(
-    rewards: Dict[str, float],
-    dfrewards_addr: str,
-    token_addr: str,
-    from_account,
-    batch_size: int = MAX_BATCH_SIZE,
-    batch_number: Optional[int] = None,
+        rewards: Dict[str, float],
+        dfrewards_addr: str,
+        token_addr: str,
+        from_account,
+        batch_size: int = MAX_BATCH_SIZE,
+        batch_number: Optional[int] = None,
 ):
     """
     @description
@@ -37,7 +37,7 @@ def dispense(
       <<nothing, but updates the dfrewards contract on-chain>>
     """
     logger.info("dispense: begin")
-    logger.info(f"  # addresses: {len(rewards)}")
+    logger.info(f'  # addresses: %s', len(rewards))
 
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)

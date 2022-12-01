@@ -96,11 +96,11 @@ def boundRewardsByDcv(rewards_OCEAN, DCV_OCEAN, DF_week: int) -> float:
 
 @enforce_types
 def calcRewards(
-    stakes: Dict[str, Dict[str, Dict[str, float]]],
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    symbols: Dict[int, Dict[str, str]],
-    rates: Dict[str, float],
-    rewards_OCEAN: float,
+        stakes: Dict[str, Dict[str, Dict[str, float]]],
+        nftvols: Dict[int, Dict[str, Dict[str, float]]],
+        symbols: Dict[int, Dict[str, str]],
+        rates: Dict[str, float],
+        rewards_OCEAN: float,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments

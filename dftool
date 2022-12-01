@@ -616,7 +616,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     oceantestutil.initAccountZeroOCEAN(10000.0)
     oceantestutil.fillAccountsWithOCEAN()
 
-    print(f"dftool initdevwallets: Done.")
+    print("dftool initdevwallets: Done.")
 
 
 # ========================================================================
@@ -656,7 +656,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     # main work
     recordDeployedContracts(ADDRESS_FILE)
     OCEAN = OCEANtoken()
-    
+
     num_nfts = 10  # magic number
     tups = oceantestutil.randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
     oceantestutil.randomLockAndAllocate(tups)
@@ -1001,13 +1001,12 @@ def do_main():
         do_calc()
     elif sys.argv[1] == "dispense":
         do_dispense()
-
     elif sys.argv[1] == "compile":
         do_compile()
     elif sys.argv[1] == "initdevwallets":
         do_initdevwallets()
     elif sys.argv[1] == "manyrandom":
-        do_manyrandom
+        do_manyrandom()
     elif sys.argv[1] == "newdfrewards":
         do_newdfrewards()
     elif sys.argv[1] == "newdfstrategy":
@@ -1030,7 +1029,6 @@ def do_main():
         do_veSetAllocation()
     elif sys.argv[1] == "checkpoint_feedist":
         do_checkpoint_feedist()
-
     # read actions
     elif sys.argv[1] == "acctinfo":
         do_acctinfo()
