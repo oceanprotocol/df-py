@@ -37,7 +37,7 @@ def dispense(
       <<nothing, but updates the dfrewards contract on-chain>>
     """
     logger.info("dispense: begin")
-    logger.info(f'  # addresses: %s', len(rewards))
+    logger.info(f"  # addresses: {len(rewards)}")
 
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
