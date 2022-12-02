@@ -32,7 +32,7 @@ def test_without_csvs():
     V = {chainID: V0}
     SYM = {chainID: SYM0}
 
-    vebals = query.queryVebalances(rng, chainID)
+    vebals, _, _ = query.queryVebalances(rng, chainID)
     allocs = query.queryAllocations(rng, chainID)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
@@ -72,9 +72,9 @@ def test_with_csvs(tmp_path):
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = SYM0 = None  # ensure not used later
 
-    vebals = query.queryVebalances(rng, chainID)
+    vebals, locked_amt, unlock_time = query.queryVebalances(rng, chainID)
     allocs = query.queryAllocations(rng, chainID)
-    csvs.saveVebalsCsv(vebals, csv_dir)
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
     vebals = allocs = None  # ensure not used later
 

@@ -132,7 +132,7 @@ def _foundConsume(CO2_addr, st, fin):
 
 @enforce_types
 def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
-    veBalances = query.queryVebalances(rng, CHAINID)
+    veBalances, _, _ = query.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
 
