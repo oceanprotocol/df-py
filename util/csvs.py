@@ -2,7 +2,7 @@ import csv
 import glob
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
 from util.query import DataNFT
@@ -129,7 +129,9 @@ def saveVebalsCsv(
     print(f"Created {csv_file}")
 
 
-def loadVebalsCsv(csv_dir: str) -> Dict[str, float]:
+def loadVebalsCsv(
+    csv_dir: str,
+) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
       Load veOCEAN balances csv; return result as a single dict

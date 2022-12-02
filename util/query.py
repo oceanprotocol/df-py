@@ -68,7 +68,9 @@ def queryNftvolsAndSymbols(
 
 
 @enforce_types
-def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
+def queryVebalances(
+    rng: BlockRange, CHAINID: int
+) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
       Return all ve balances
@@ -87,7 +89,7 @@ def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
     locked_amt: Dict[str, float] = {}
 
     # [LP_addr] : lock_time
-    unlock_time: Dict[str, float] = {}
+    unlock_time: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
@@ -176,7 +178,7 @@ def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
                 ## set unlock time
                 if user["id"] not in unlock_time:
-                    unlock_time[user["id"]] = user["unlockTime"]
+                    unlock_time[user["id"]] = int(user["unlockTime"])
 
             ## increase offset
             offset += chunk_size
