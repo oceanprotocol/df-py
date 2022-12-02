@@ -40,6 +40,6 @@ def loadStakes(csv_dir: str) -> dict:
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float - abs alloc
     """
     allocs = csvs.loadAllocationCsvs(csv_dir)
-    vebals = csvs.loadVebalsCsv(csv_dir)
+    vebals, _, _ = csvs.loadVebalsCsv(csv_dir)
     stakes = allocsToStakes(allocs, vebals)
     return stakes
