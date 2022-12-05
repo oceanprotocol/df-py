@@ -149,7 +149,7 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
             continue
         assert veBalances[account] == approx(bal, 0.001)
 
-        lock = oceanutil.locked(account)
+        lock = oceanutil.veOCEAN().locked(account)
         assert lock[0] == locked_amts[account]
         assert lock[1] == unlock_times[account]
 
