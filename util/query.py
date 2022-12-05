@@ -171,14 +171,12 @@ def queryVebalances(
                     vebals[user["id"]] += balance
 
                 ## set locked amount
-                if user["id"] not in locked_amt:
-                    locked_amt[user["id"]] = float(user["lockedAmount"])
-                else:
-                    locked_amt[user["id"]] += float(user["lockedAmount"])
+                # always get the latest
+                locked_amt[user["id"]] = float(user["lockedAmount"])
 
                 ## set unlock time
-                if user["id"] not in unlock_time:
-                    unlock_time[user["id"]] = int(user["unlockTime"])
+                # always get the latest
+                unlock_time[user["id"]] = int(user["unlockTime"])
 
             ## increase offset
             offset += chunk_size
