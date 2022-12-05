@@ -78,7 +78,7 @@ def queryVebalances(
     @return
       vebals -- dict of [LP_addr] : veOCEAN_float
       locked_amt -- dict of [LP_addr] : locked_amt
-      lock_time -- dict of [LP_addr] : unlock_time
+      unlock_time -- dict of [LP_addr] : unlock_time
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
 

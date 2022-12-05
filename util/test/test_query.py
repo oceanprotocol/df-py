@@ -132,9 +132,15 @@ def _foundConsume(CO2_addr, st, fin):
 
 @enforce_types
 def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
-    veBalances, _, _ = query.queryVebalances(rng, CHAINID)
+    veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
+
+    assert len(locked_amts) > 0
+    assert sum(locked_amts.values()) > 0
+
+    assert len(unlock_times) > 0
+    assert sum(unlock_times.values()) > 0
 
     for account in veBalances:
         bal = oceanutil.get_ve_balance(account) / 1e18
@@ -142,6 +148,10 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
             assert veBalances[account] < bal
             continue
         assert veBalances[account] == approx(bal, 0.001)
+
+        lock = oceanutil.locked(account)
+        assert lock[0] == locked_amts[account]
+        assert lock[1] == unlock_times[account]
 
 
 @enforce_types
