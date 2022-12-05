@@ -482,11 +482,11 @@ def test_boundRewardsByDcv():
 
 @enforce_types
 def _calcRewardsC1(
-        stakes,
-        nftvols,
-        rewards_avail,
-        symbols=SYMBOLS,
-        rates=RATES,
+    stakes,
+    nftvols,
+    rewards_avail,
+    symbols=SYMBOLS,
+    rates=RATES,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
         stakes, nftvols, rewards_avail, symbols, rates
@@ -498,11 +498,11 @@ def _calcRewardsC1(
 
 @enforce_types
 def _calcRewards(
-        stakes,
-        nftvols,
-        rewards_avail,
-        symbols=SYMBOLS,
-        rates=RATES,
+    stakes,
+    nftvols,
+    rewards_avail,
+    symbols=SYMBOLS,
+    rates=RATES,
 ):
     """Helper. Fills in SYMBOLS and RATES, to keep calls compact"""
     return calcRewards(stakes, nftvols, symbols, rates, rewards_avail)

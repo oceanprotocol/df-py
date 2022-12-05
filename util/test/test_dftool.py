@@ -171,7 +171,7 @@ def test_manyrandom():
     cmd = f"./dftool manyrandom {networkutil.DEV_CHAINID}"
     output_s = ""
     with subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
     ) as proc:
         while proc.poll() is None:
             output_s += proc.stdout.readline().decode("ascii")
@@ -215,7 +215,7 @@ def test_noarg_commands():
 
         output_s = ""
         with subprocess.Popen(
-                cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
         ) as proc:
             while proc.poll() is None:
                 output_s += proc.stdout.readline().decode("ascii")

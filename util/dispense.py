@@ -13,12 +13,12 @@ TRY_AGAIN = 3
 
 @enforce_types
 def dispense(
-        rewards: Dict[str, float],
-        dfrewards_addr: str,
-        token_addr: str,
-        from_account,
-        batch_size: int = MAX_BATCH_SIZE,
-        batch_number: Optional[int] = None,
+    rewards: Dict[str, float],
+    dfrewards_addr: str,
+    token_addr: str,
+    from_account,
+    batch_size: int = MAX_BATCH_SIZE,
+    batch_number: Optional[int] = None,
 ):
     """
     @description

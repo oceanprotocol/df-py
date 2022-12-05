@@ -8,8 +8,8 @@ from util.networkutil import _CHAINID_TO_ADDRS, _CHAINID_TO_NATIVE_TOKEN
 
 @enforce_types
 def ratesToAddrRates(
-        rates: Dict[str, float],
-        symbols: Dict[int, Dict[str, str]],
+    rates: Dict[str, float],
+    symbols: Dict[int, Dict[str, str]],
 ) -> dict:
     """
     @description
@@ -33,9 +33,9 @@ def ratesToAddrRates(
 
 @enforce_types
 def nftvolsToUsd(
-        nftvols: dict,
-        symbols: Dict[int, Dict[str, str]],
-        rates: Dict[str, float],
+    nftvols: dict,
+    symbols: Dict[int, Dict[str, str]],
+    rates: Dict[str, float],
 ) -> dict:
     """
     @description

@@ -19,11 +19,11 @@ from util.base18 import fromBase18
 
 class DataNFT:
     def __init__(
-            self,
-            nft_addr: str,
-            chain_id: int,
-            _symbol: str,
-            is_purgatory: bool = False,
+        self,
+        nft_addr: str,
+        chain_id: int,
+        _symbol: str,
+        is_purgatory: bool = False,
     ):
         self.nft_addr = nft_addr
         self.did = oceanutil.calcDID(nft_addr, chain_id)
@@ -41,7 +41,7 @@ class DataNFT:
 
 @enforce_types
 def queryNftvolsAndSymbols(
-        rng: BlockRange, chainID: int
+    rng: BlockRange, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
     """
     @description
@@ -177,7 +177,7 @@ def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
 @enforce_types
 def queryAllocations(
-        rng: BlockRange, CHAINID: int
+    rng: BlockRange, CHAINID: int
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
@@ -215,9 +215,10 @@ def queryAllocations(
             }
           }
           """ % (
-              chunk_size,
-              offset,
-              block)
+                chunk_size,
+                offset,
+                block,
+            )
             result = submitQuery(query, CHAINID)
             _allocs = result["data"]["veAllocateUsers"]
             if len(_allocs) == 0:
@@ -336,8 +337,9 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
         }
       }
       """ % (
-          chunk_size,
-          offset)
+            chunk_size,
+            offset,
+        )
         result = submitQuery(query, chainID)
         nfts = result["data"]["nfts"]
         if len(nfts) == 0:
@@ -358,9 +360,7 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
 
 
 def _queryNftvolumes(
-        st_block: int,
-        end_block: int,
-        chainID: int
+    st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
     """
     @description
@@ -401,7 +401,8 @@ def _queryNftvolumes(
             st_block,
             end_block,
             offset,
-            chunk_size)
+            chunk_size,
+        )
         offset += chunk_size
         result = submitQuery(query, chainID)
         if "errors" in result:
@@ -614,7 +615,7 @@ def symbol(addr: str):
 
 @enforce_types
 def queryAquariusAssetNames(
-        nft_dids: List[str],
+    nft_dids: List[str],
 ) -> Dict[str, str]:
     """
     @description

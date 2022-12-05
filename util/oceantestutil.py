@@ -44,7 +44,9 @@ def mintTokenAccountZero(token, amount):
 @enforce_types
 def fillAccountsWithToken(token):
     accounts = network.accounts
-    print(f"fillAccountsWithToken ({token.symbol()}), account[0] balance: ({token.balanceOf(accounts[0].address)})")
+    print(
+        f"fillAccountsWithToken ({token.symbol()}), account[0] balance: ({token.balanceOf(accounts[0].address)})"
+    )
 
     for i in range(1, 10):
         bal_before: int = fromBase18(token.balanceOf(accounts[i]))
