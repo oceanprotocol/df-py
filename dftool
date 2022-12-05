@@ -262,8 +262,8 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    balances = query.queryVebalances(rng, CHAINID)
-    csvs.saveVebalsCsv(balances, CSV_DIR, NSAMP > 1)
+    balances, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
+    csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
     print("dftool vebals: Done")
 

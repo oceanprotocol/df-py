@@ -2,7 +2,7 @@ import csv
 import glob
 import os
 import re
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
 from util.query import DataNFT
@@ -95,7 +95,9 @@ def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
 
 # ========================================================================
 # vebals csvs
-def saveVebalsCsv(vebals: dict, csv_dir: str, sampled=True):
+def saveVebalsCsv(
+    vebals: dict, locked_amt: dict, unlock_time: dict, csv_dir: str, sampled=True
+):
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
@@ -103,6 +105,8 @@ def saveVebalsCsv(vebals: dict, csv_dir: str, sampled=True):
 
     @arguments
       vebals -- dict of [LP_addr] : balance
+      locked_amt -- dict of [LP_addr] : locked_amt
+      unlock_time -- dict of [LP_addr] : unlock_time
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
@@ -110,17 +114,24 @@ def saveVebalsCsv(vebals: dict, csv_dir: str, sampled=True):
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["LP_addr", "balance"]
+        row = ["LP_addr", "balance", "locked_amt", "unlock_time"]
         writer.writerow(row)
         for LP_addr in vebals.keys():
             assertIsEthAddr(LP_addr)
-            row = [LP_addr.lower(), vebals[LP_addr]]
+            row = [
+                LP_addr.lower(),
+                vebals[LP_addr],
+                locked_amt[LP_addr],
+                unlock_time[LP_addr],
+            ]
             writer.writerow(row)
 
     print(f"Created {csv_file}")
 
 
-def loadVebalsCsv(csv_dir: str) -> Dict[str, float]:
+def loadVebalsCsv(
+    csv_dir: str,
+) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
       Load veOCEAN balances csv; return result as a single dict
@@ -130,22 +141,29 @@ def loadVebalsCsv(csv_dir: str) -> Dict[str, float]:
     """
     csv_file = vebalsCsvFilename(csv_dir)
     vebals: Dict[str, float] = {}
+    locked_amts: Dict[str, float] = {}
+    unlock_times: Dict[str, int] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["LP_addr", "balance"]
+                assert row == ["LP_addr", "balance", "locked_amt", "unlock_time"]
                 continue
-            LP_addr, _balance = row
+            LP_addr, _balance, _locked_amt, _unlock_time = row
 
             LP_addr = LP_addr.lower()
             balance = float(_balance)
+            locked_amt = float(_locked_amt)
+            unlock_time = int(_unlock_time)
 
             assertIsEthAddr(LP_addr)
 
             vebals[LP_addr] = balance
+            locked_amts[LP_addr] = locked_amt
+            unlock_times[LP_addr] = unlock_time
+
     print(f"Loaded {csv_file}")
-    return vebals
+    return vebals, locked_amts, unlock_times
 
 
 @enforce_types
