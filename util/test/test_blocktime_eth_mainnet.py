@@ -1,6 +1,4 @@
 from datetime import datetime
-import os
-import types
 import brownie
 
 from pytest import approx

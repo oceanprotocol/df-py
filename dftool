@@ -18,7 +18,6 @@ from util import (
     networkutil,
     query,
 )
-from util import oceanutil
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
@@ -467,7 +466,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 # ========================================================================
 @enforce_types
 def do_dispensepassive():
-    HELP = f"""Transfer funds to FeeDistributor contract and kick it off.
+    HELP = """Transfer funds to FeeDistributor contract and kick it off.
 
 Usage: dftool dispensepassive CHAINID [AMOUNT]
   CHAINID -- FeeDistributor contract's network.
