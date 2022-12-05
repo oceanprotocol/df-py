@@ -359,19 +359,24 @@ def create_checksum(text: str) -> str:
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
+
 def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+
 
 def create_lock_ve_ocean(amount: float, unlock_time: int, from_account):
     OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
     veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
 
+
 def increase_amount_ve_ocean(amount: float, from_account):
     OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
     veOCEAN().increase_amount(amount, {"from": from_account})
 
+
 def increase_unlock_time_ve_ocean(unlock_time: int, from_account):
     return veOCEAN().increase_unlock_time(unlock_time, {"from": from_account})
+
 
 def get_lock_end_ve_ocean(from_account):
     return veOCEAN().locked__end(from_account)
