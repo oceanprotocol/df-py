@@ -52,7 +52,9 @@ def test_load_stakes(tmp_path):
     csvs.saveAllocationCsv(allocs, csv_dir)
 
     vebals = {ST1: 100.0, ST2: 200.0}
-    csvs.saveVebalsCsv(vebals, csv_dir)
+    locked_amt = {ST1: 10.0, ST2: 20.0}
+    unlock_time = {ST1: 1, ST2: 1}
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
 
     target_stakes = allocsToStakes(allocs, vebals)
     loaded_stakes = loadStakes(csv_dir)

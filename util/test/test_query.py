@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 from pytest import approx
 
 from util import oceanutil, oceantestutil, networkutil, query
-from util.base18 import toBase18
+from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
@@ -132,9 +132,15 @@ def _foundConsume(CO2_addr, st, fin):
 
 @enforce_types
 def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
-    veBalances = query.queryVebalances(rng, CHAINID)
+    veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
+
+    assert len(locked_amts) > 0
+    assert sum(locked_amts.values()) > 0
+
+    assert len(unlock_times) > 0
+    assert sum(unlock_times.values()) > 0
 
     for account in veBalances:
         bal = oceanutil.get_balance_ve_ocean(account) / 1e18
@@ -142,6 +148,10 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
             assert veBalances[account] < bal
             continue
         assert veBalances[account] == approx(bal, 0.001)
+
+        lock = oceanutil.veOCEAN().locked(account)
+        assert fromBase18(lock[0]) == locked_amts[account]
+        assert lock[1] == unlock_times[account]
 
 
 @enforce_types

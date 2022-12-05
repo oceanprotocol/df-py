@@ -115,7 +115,9 @@ def test_calc(tmp_path):
     csvs.saveNftvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
-    csvs.saveVebalsCsv(vebals, CSV_DIR)
+    locked_amt = {"0xlp_addr1": 10.0}
+    unlock_time = {"0xlp_addr1": 1}
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
     csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
