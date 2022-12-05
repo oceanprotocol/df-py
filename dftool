@@ -979,64 +979,44 @@ def _getPrivateAccount():
     return account
 
 
+ARGV_FNS = {
+    "query" : do_query,
+    "nftinfo" : do_nftinfo,
+    "allocations" : do_allocations,
+    "vebals" : do_vebals,
+    "getrate" : do_getrate,
+    "calc" : do_calc,
+    "dispense" : do_dispense,
+    "compile" : do_compile,
+    "initdevwallets" : do_initdevwallets,
+    "manyrandom" : do_manyrandom,
+    "newdfrewards" : do_newdfrewards,
+    "newdfstrategy" : do_newdfstrategy,
+    "addstrategy" : do_addstrategy,
+    "retirestrategy" : do_retirestrategy,
+    "mine" : do_mine,
+    "newacct" : do_newacct,
+    "newtoken" : do_newtoken,
+    "newVeOcean" : do_newVeOcean,
+    "newVeAllocate" : do_newVeAllocate,
+    "veSetAllocation" : do_veSetAllocation,
+    "checkpoint_feedist" : do_checkpoint_feedist,
+    "acctinfo" : do_acctinfo,
+    "chaininfo" : do_chaininfo
+}
+
+
 # ========================================================================
 # main
 @enforce_types
 def do_main():
     if len(sys.argv) == 1 or sys.argv[1] == "help":
         do_help()
-
-    # write actions
-    elif sys.argv[1] == "query":
-        do_query()
-    elif sys.argv[1] == "nftinfo":
-        do_nftinfo()
-    elif sys.argv[1] == "allocations":
-        do_allocations()
-    elif sys.argv[1] == "vebals":
-        do_vebals()
-    elif sys.argv[1] == "getrate":
-        do_getrate()
-    elif sys.argv[1] == "calc":
-        do_calc()
-    elif sys.argv[1] == "dispense":
-        do_dispense()
-    elif sys.argv[1] == "compile":
-        do_compile()
-    elif sys.argv[1] == "initdevwallets":
-        do_initdevwallets()
-    elif sys.argv[1] == "manyrandom":
-        do_manyrandom()
-    elif sys.argv[1] == "newdfrewards":
-        do_newdfrewards()
-    elif sys.argv[1] == "newdfstrategy":
-        do_newdfstrategy()
-    elif sys.argv[1] == "addstrategy":
-        do_addstrategy()
-    elif sys.argv[1] == "retirestrategy":
-        do_retirestrategy()
-    elif sys.argv[1] == "mine":
-        do_mine()
-    elif sys.argv[1] == "newacct":
-        do_newacct()
-    elif sys.argv[1] == "newtoken":
-        do_newtoken()
-    elif sys.argv[1] == "newVeOcean":
-        do_newVeOcean()
-    elif sys.argv[1] == "newVeAllocate":
-        do_newVeAllocate()
-    elif sys.argv[1] == "veSetAllocation":
-        do_veSetAllocation()
-    elif sys.argv[1] == "checkpoint_feedist":
-        do_checkpoint_feedist()
-    # read actions
-    elif sys.argv[1] == "acctinfo":
-        do_acctinfo()
-    elif sys.argv[1] == "chaininfo":
-        do_chaininfo()
     else:
-        do_help()
-
+        if sys.argv[1] in ARGV_FNS:
+            ARGV_FNS[sys.argv[1]]()
+        else:
+            do_help()
 
 if __name__ == "__main__":
     do_main()

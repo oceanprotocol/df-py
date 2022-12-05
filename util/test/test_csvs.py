@@ -278,9 +278,9 @@ def test_rewardsinfo(
     csv_dir = str(tmp_path)
     csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
 
-    loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
-    csv = loaded_rewards.read()
-    assert csv == target_rewards
+    with open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r") as f:
+        csv = f.read()
+        assert csv == target_rewards
 
 
 # =================================================================
