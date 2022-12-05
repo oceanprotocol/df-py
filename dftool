@@ -3,7 +3,6 @@
 import datetime
 import os
 import sys
-import functools
 
 import brownie
 from enforce_typing import enforce_types
@@ -72,7 +71,7 @@ Usage: dftool getrate|query|calc|dispense|..
   
   # web3 ops actions
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
-  dftool checkpointfeedist CHAINID - checkpoint FeeDistributor contract
+  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
   dftool dispensepassive CHAINID [AMOUNT] - dispense rewards in OCEAN on chainID
   dftool newdfrewards CHAINID - deploy new DFRewards contract
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -1090,10 +1089,10 @@ Usage: dftool chaininfo CHAINID
 
 # ========================================================================
 @enforce_types
-def do_checkpointfeedist():
+def do_checkpoint_feedist():
     HELP = f"""Checkpoint FeeDistributor contract.
 
-Usage: dftool checkpointfeedist CHAINID
+Usage: dftool checkpoint_feedist CHAINID
     CHAINID -- {CHAINID_EXAMPLES}
 """
     if len(sys.argv) not in [3]:
@@ -1176,7 +1175,7 @@ ARGV_FNS = {
     "calc" : do_calc,
     # web3 ops actions
     "dispense" : do_dispense,
-    "checkpointfeedist" : do_checkpointfeedist,
+    "checkpoint_feedist" : do_checkpoint_feedist,
     "dispensepassive" : do_dispensepassive,
     "newdfrewards" : do_newdfrewards,
     "newdfstrategy" : do_newdfstrategy,
