@@ -679,7 +679,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     recordDeployedContracts(ADDRESS_FILE)
     oceantestutil.fillAccountsWithOCEAN()
     num_nfts = 10  # magic number
-    
+
     # This fn was deprecated, replace.
     # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
@@ -826,15 +826,15 @@ Usage: dftool createlockveocean CHAINID amount weeks
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        
+
         # Lock ocean for a certain number of weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
-    
+
         ve_balance = get_balance_ve_ocean(from_account)
         print(f"before: veOCEAN balance: {ve_balance}")
-        
+
         create_lock_ve_ocean(amount, end_time, from_account)
-        
+
         ve_balance = get_balance_ve_ocean(from_account)
         print(f"after: veOCEAN balance: {ve_balance}")
 
@@ -864,7 +864,7 @@ Usage: dftool increaseunlocktimeveocean CHAINID weeks
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        
+
         # Lock ocean for a certain number of weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
 
@@ -902,12 +902,12 @@ Usage: dftool increaselockamountveocean CHAINID amount
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        
+
         ve_balance = get_balance_ve_ocean(from_account)
         print(f"before: veOCEAN balance: {ve_balance}")
-        
+
         increase_amount_ve_ocean(amount, from_account)
-        
+
         ve_balance = get_balance_ve_ocean(from_account)
         print(f"after: veOCEAN balance: {ve_balance}")
 
@@ -934,7 +934,7 @@ Usage: dftool getlockendveocean CHAINID
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        
+
         ve_lock_end = get_lock_end_ve_ocean(from_account)
         print(f"veOCEAN lock end time: {ve_lock_end}")
 
@@ -1111,7 +1111,7 @@ Usage: dftool checkpointfeedist CHAINID
 
     recordDeployedContracts(ADDRESS_FILE)
     from_account = _getPrivateAccount()
-    
+
     # Checkpoint
     FeeDistributor().checkpoint_total_supply({"from": from_account})
     FeeDistributor().checkpoint_token({"from": from_account})
@@ -1166,7 +1166,7 @@ def _getPrivateAccount():
 
 
 ARGV_FNS = {
-    # init 
+    # init
     "compile" : do_compile,
     # df, query & calc
     "query" : do_query,
