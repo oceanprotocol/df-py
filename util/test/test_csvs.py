@@ -80,9 +80,13 @@ def test_vebals(tmp_path):
     csv_dir = str(tmp_path)
 
     vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
-    csvs.saveVebalsCsv(vebals, csv_dir)
-    loaded_vebals = csvs.loadVebalsCsv(csv_dir)
+    locked_amt = {LP1: 10.0, LP2: 20.0, LP3: 3.0}
+    unlock_time = {LP1: 1, LP2: 1, LP3: 3}
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
+    loaded_vebals, locked_amts, unlock_times = csvs.loadVebalsCsv(csv_dir)
     assert loaded_vebals == vebals
+    assert locked_amts == locked_amt
+    assert unlock_times == unlock_time
 
 
 # =================================================================
