@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 from pytest import approx
 
 from util import oceanutil, oceantestutil, networkutil, query
-from util.base18 import toBase18
+from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
@@ -150,7 +150,7 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
         assert veBalances[account] == approx(bal, 0.001)
 
         lock = oceanutil.veOCEAN().locked(account)
-        assert lock[0] == locked_amts[account]
+        assert lock[0] == fromBase18(locked_amts[account])
         assert lock[1] == unlock_times[account]
 
 
