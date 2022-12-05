@@ -1165,6 +1165,44 @@ def _getPrivateAccount():
     return account
 
 
+ARGV_FNS = {
+    # init 
+    "compile" : do_compile,
+    # df, query & calc
+    "query" : do_query,
+    "nftinfo" : do_nftinfo,
+    "allocations" : do_allocations,
+    "vebals" : do_vebals,
+    "getrate" : do_getrate,
+    "calc" : do_calc,
+    # web3 ops actions
+    "dispense" : do_dispense,
+    "checkpointfeedist" : do_checkpointfeedist,
+    "dispensepassive" : do_dispensepassive,
+    "newdfrewards" : do_newdfrewards,
+    "newdfstrategy" : do_newdfstrategy,
+    "addstrategy" : do_addstrategy,
+    "retirestrategy" : do_retirestrategy,
+    # dfve user actions
+    "createlockveocean" : do_createlockveocean,
+    "increaseunlocktimeveocean" : do_increaseunlocktimeveocean,
+    "increaselockamountveocean" : do_increaselockamountveocean,
+    "setveallocation" : do_setveallocation,
+    # read actions
+    "acctinfo" : do_acctinfo,
+    "chaininfo" : do_chaininfo,
+    "getbalanceveocean" : do_getbalanceveocean,
+    "getlockendveocean" : do_getlockendveocean,
+    # debug actions
+    "manyrandom" : do_manyrandom,
+    "mine" : do_mine,
+    "newacct" : do_newacct,
+    "newtoken" : do_newtoken,
+    "newveocean" : do_newveocean,
+    "newveallocate" : do_newveallocate,
+}
+
+
 # ========================================================================
 # main
 @enforce_types
@@ -1172,72 +1210,12 @@ def do_main():
     # if help
     if len(sys.argv) == 1 or sys.argv[1] == "help":
         do_help()
-    # init actions
-    elif sys.argv[1] == "compile":
-        do_compile()
-    # data farming query & calc actions
-    elif sys.argv[1] == "query":
-        do_query()
-    elif sys.argv[1] == "nftinfo":
-        do_nftinfo()
-    elif sys.argv[1] == "allocations":
-        do_allocations()
-    elif sys.argv[1] == "vebals":
-        do_vebals()
-    elif sys.argv[1] == "getrate":
-        do_getrate()
-    elif sys.argv[1] == "calc":
-        do_calc()
-    # web3 ops actions
-    elif sys.argv[1] == "dispense":
-        do_dispense()
-    elif sys.argv[1] == "checkpointfeedist":
-        do_checkpointfeedist()
-    elif sys.argv[1] == "dispensepassive":
-        do_dispensepassive()
-    elif sys.argv[1] == "newdfrewards":
-        do_newdfrewards()
-    elif sys.argv[1] == "newdfstrategy":
-        do_newdfstrategy()
-    elif sys.argv[1] == "addstrategy":
-        do_addstrategy()
-    elif sys.argv[1] == "retirestrategy":
-        do_retirestrategy()
-    # dfve user actions
-    elif sys.argv[1] == "createlockveocean":
-        do_createlockveocean()
-    elif sys.argv[1] == "increaseunlocktimeveocean":
-        do_increaseunlocktimeveocean()
-    elif sys.argv[1] == "increaselockamountveocean":
-        do_increaselockamountveocean()
-    elif sys.argv[1] == "setveallocation":
-        do_setveallocation()
-    # read actions
-    elif sys.argv[1] == "acctinfo":
-        do_acctinfo()
-    elif sys.argv[1] == "chaininfo":
-        do_chaininfo()
-    elif sys.argv[1] == "getbalanceveocean":
-        do_getbalanceveocean()
-    elif sys.argv[1] == "getlockendveocean":
-        do_getlockendveocean()
-    # debug actions
-    elif sys.argv[1] == "manyrandom":
-        do_manyrandom()
-    elif sys.argv[1] == "mine":
-        do_mine()
-    elif sys.argv[1] == "newacct":
-        do_newacct()
-    elif sys.argv[1] == "newtoken":
-        do_newtoken()
-    elif sys.argv[1] == "newveocean":
-        do_newveocean()
-    elif sys.argv[1] == "newveallocate":
-        do_newveallocate()
-    # default to help
     else:
-        do_help()
-    
+        if sys.argv[1] in ARGV_FNS:
+            ARGV_FNS[sys.argv[1]]()
+        else:
+            do_help()
+
 
 if __name__ == "__main__":
     do_main()
