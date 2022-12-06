@@ -35,6 +35,9 @@ jobs:
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 
+      - name: Run tests
+        run: brownie test util/test
+
       - name: Add networks to brownie
         run: |
           brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
