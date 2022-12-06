@@ -97,3 +97,9 @@ jobs:
           name: CSV Files
           retention-days: 5
           path: /tmp/csv
+
+      - name: Distribute test rewards
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_TEST }}" >> $GITHUB_ENV
+          ./dftool dispense $CSV_DIR 80001 0x4259c164eedA7483dda2b4b622D761A88674D31f 0x9cA2EfA141bd7217480F754859Aa3b2E7DB37C8F
