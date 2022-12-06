@@ -75,7 +75,7 @@ def test_ethFindClosestBlock():
 def setup_function():
     global chain, PREV
     chain = brownie.network.chain
-    
+
     PREV = types.SimpleNamespace()
 
     PREV.WEB3_INFURA_PROJECT_ID = os.environ.get("WEB3_INFURA_PROJECT_ID")
