@@ -39,7 +39,7 @@ jobs:
           ls -la "$HOME/.ocean/ocean-contracts/artifacts/"
         env:
           CONTRACTS_VERSION: v1.1.3
-          SUBGRAPH_VERSION: v2.0.7
+          SUBGRAPH_VERSION: v3.0.0
 
       - name: Install dependencies
         working-directory: ${{ github.workspace }}

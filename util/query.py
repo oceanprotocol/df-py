@@ -408,7 +408,9 @@ def _queryNftvolumes(
                 id
               }
             },
-            lastPriceToken,
+            lastPriceToken{
+              id
+            },
             lastPriceValue,
             block,
             gasPrice,
@@ -433,7 +435,7 @@ def _queryNftvolumes(
             lastPriceValue = float(order["lastPriceValue"])
             if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
                 continue
-            basetoken_addr = order["lastPriceToken"]
+            basetoken_addr = order["lastPriceToken"]["id"]
             nft_addr = order["datatoken"]["nft"]["id"].lower()
 
             # Calculate gas cost
