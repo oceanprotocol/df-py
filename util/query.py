@@ -68,18 +68,28 @@ def queryNftvolsAndSymbols(
 
 
 @enforce_types
-def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
+def queryVebalances(
+    rng: BlockRange, CHAINID: int
+) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
       Return all ve balances
 
     @return
       vebals -- dict of [LP_addr] : veOCEAN_float
+      locked_amt -- dict of [LP_addr] : locked_amt
+      unlock_time -- dict of [LP_addr] : unlock_time
     """
     MAX_TIME = 4 * 365 * 86400  # max lock time
 
     # [LP_addr] : veBalance
     vebals: Dict[str, float] = {}
+
+    # [LP_addr] : locked_amt
+    locked_amt: Dict[str, float] = {}
+
+    # [LP_addr] : lock_time
+    unlock_time: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
@@ -160,6 +170,14 @@ def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
                 else:
                     vebals[user["id"]] += balance
 
+                ## set locked amount
+                # always get the latest
+                locked_amt[user["id"]] = float(user["lockedAmount"])
+
+                ## set unlock time
+                # always get the latest
+                unlock_time[user["id"]] = int(user["unlockTime"])
+
             ## increase offset
             offset += chunk_size
         n_blocks_sampled += 1
@@ -172,7 +190,7 @@ def queryVebalances(rng: BlockRange, CHAINID: int) -> Dict[str, float]:
 
     print("queryVebalances: done")
 
-    return vebals
+    return vebals, locked_amt, unlock_time
 
 
 @enforce_types
