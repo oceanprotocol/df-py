@@ -1,3 +1,4 @@
+import os
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional
 
@@ -6,6 +7,7 @@ from enforce_typing import enforce_types
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
 from util.logger import logger
+from util.multisig import send_multisig_tx
 
 MAX_BATCH_SIZE = 100
 TRY_AGAIN = 3
@@ -71,12 +73,25 @@ def dispense(
                 logger.info(
                     f"Allocating rewards Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses {z}"
                 )
-                df_rewards.allocate(
-                    to_addrs[st:fin],
-                    values[st:fin],
-                    TOK.address,
-                    {"from": from_account},
-                )
+
+                # if env use multisig
+                usemultisig = os.getenv("USE_MULTISIG", "false")
+                if usemultisig == "true":
+                    # get data of tx
+                    data = df_rewards.allocate.encode_input(
+                        to_addrs[st:fin], values[st:fin], TOK.address
+                    )
+                    # value is 0
+                    value = 0
+                    to = df_rewards.address
+                    send_multisig_tx(to, value, data)
+                else:
+                    df_rewards.allocate(
+                        to_addrs[st:fin],
+                        values[st:fin],
+                        TOK.address,
+                        {"from": from_account},
+                    )
                 done = True
                 break
             # pylint: disable=broad-except
