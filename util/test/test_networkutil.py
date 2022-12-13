@@ -25,3 +25,10 @@ def test_networkToChainId():
     assert networkutil.networkToChainId("development") == 8996
     assert networkutil.networkToChainId("mainnet") == 1
     assert networkutil.networkToChainId("polygon") == 137
+
+
+@enforce_types
+def test_getLatestBlock():
+    assert networkutil.getLatestBlock(1) > 16175541
+    assert networkutil.getLatestBlock(137) > 36778951
+    assert networkutil.getLatestBlock(56) > 23867876
