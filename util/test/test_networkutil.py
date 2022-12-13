@@ -1,3 +1,4 @@
+from brownie import network
 from enforce_typing import enforce_types
 
 from util import networkutil
@@ -29,5 +30,6 @@ def test_networkToChainId():
 
 @enforce_types
 def test_getLatestBlock():
-    assert networkutil.getLatestBlock(137) > 36778951
-    assert networkutil.getLatestBlock(56) > 23867876
+    networkutil.connect(networkutil.DEV_CHAINID)
+    latest = networkutil.getLatestBlock(networkutil.DEV_CHAINID)
+    assert latest == len(network.chain) - 1
