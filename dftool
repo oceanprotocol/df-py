@@ -156,8 +156,9 @@ def do_nftinfo():
 Usage: dftool nftinfo CSV_DIR CHAINID
     CSV_DIR -- output dir for nftinfo-CHAINID.csv
     CHAINID -- {CHAINID_EXAMPLES}
+    [ENDBLOCK] -- optional end block to query, default is latest
 """
-    if len(sys.argv) not in [2 + 2]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
@@ -165,11 +166,12 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     assert sys.argv[1] == "nftinfo"
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
+    ENDBLOCK = int(sys.argv[4]) if len(sys.argv) == 5 else None
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    nftinfo = query.queryNftinfo(CHAINID)
+    nftinfo = query.queryNftinfo(CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
