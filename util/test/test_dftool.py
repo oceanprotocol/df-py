@@ -41,6 +41,22 @@ def test_query(tmp_path):
 
 
 @enforce_types
+def test_nftinfo(tmp_path):
+    # insert fake inputs:
+    # <nothing to insert>
+
+    # main cmd
+    FIN = "2022-02-02"
+    CSV_DIR = str(tmp_path)
+
+    cmd = f"./dftool nftinfo {CSV_DIR} {FIN}"
+    os.system(cmd)
+
+    # test result
+    assert csvs.nftinfoCsvFilename(CSV_DIR)
+
+
+@enforce_types
 def test_getrate(tmp_path):
     # insert fake inputs:
     # <nothing to insert>
