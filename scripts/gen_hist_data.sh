@@ -46,6 +46,7 @@ dftool getrate BNB $date $now $CSV_DIR
 dftool getrate EWT $date $now $CSV_DIR
 dftool getrate MOVR $date $now $CSV_DIR
 dftool getrate MATIC $date $now $CSV_DIR
+dftool getrate USDC $date $now $CSV_DIR
 
 if [ $USE_TESTNET -eq 1 ]; then
     dftool query $date $now $SAMPLES $CSV_DIR 5
