@@ -296,7 +296,7 @@ def queryAllocations(
     return allocs
 
 
-def queryNftinfo(chainID) -> List[DataNFT]:
+def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
     """
     @description
       Fetch, filter and return all NFTs on the chain
@@ -305,7 +305,7 @@ def queryNftinfo(chainID) -> List[DataNFT]:
       nftInfo -- list of DataNFT objects
     """
 
-    nftinfo = _queryNftinfo(chainID)
+    nftinfo = _queryNftinfo(chainID, endBlock)
 
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
@@ -334,7 +334,7 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     return nftInfo
 
 
-def _queryNftinfo(chainID) -> List[DataNFT]:
+def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
     """
     @description
       Return all NFTs on the chain
@@ -346,10 +346,13 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
     chunk_size = 1000
     offset = 0
 
+    if endBlock == "latest":
+        endBlock = networkutil.getLatestBlock(chainID)
+
     while True:
         query = """
       {
-         nfts(first: %d, skip: %d) {
+         nfts(first: %d, skip: %d, block:{number:%d}) {
             id
             symbol
         }
@@ -357,6 +360,7 @@ def _queryNftinfo(chainID) -> List[DataNFT]:
       """ % (
             chunk_size,
             offset,
+            endBlock,
         )
         result = submitQuery(query, chainID)
         nfts = result["data"]["nfts"]

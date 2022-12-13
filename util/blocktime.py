@@ -201,19 +201,31 @@ def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) 
 
 
 @enforce_types
-def getstfinBlocks(chain, ST, FIN):
-    if "-" in ST:
-        st_block = timestrToBlock(chain, ST)
-    else:
-        st_block = int(ST)
-
+def getfinBlock(chain, FIN):
+    fin_block = 0
     if FIN == "latest":
         fin_block = len(chain) - 5
     elif FIN == "thu":
         fin_block = getBlockNumberThursday(chain)
-    elif "-" in FIN:
+    elif "-" in str(FIN):
         fin_block = timestrToBlock(chain, FIN)
     else:
         fin_block = int(FIN)
+    return fin_block
 
+
+@enforce_types
+def getstBlock(chain, ST):
+    st_block = 0
+    if "-" in str(ST):
+        st_block = timestrToBlock(chain, ST)
+    else:
+        st_block = int(ST)
+    return st_block
+
+
+@enforce_types
+def getstfinBlocks(chain, ST, FIN):
+    st_block = getstBlock(chain, ST)
+    fin_block = getfinBlock(chain, FIN)
     return (st_block, fin_block)
