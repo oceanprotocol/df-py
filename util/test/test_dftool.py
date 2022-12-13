@@ -53,7 +53,7 @@ def test_nftinfo(tmp_path):
     os.system(cmd)
 
     # test result
-    assert csvs.nftinfoCsvFilename(CSV_DIR)
+    assert csvs.nftinfoCsvFilename(CSV_DIR, CHAINID)
 
 
 @enforce_types
