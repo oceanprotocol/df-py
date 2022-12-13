@@ -3,7 +3,7 @@ set -e
 # Set env vars
 export WEB3_INFURA_PROJECT_ID="${WEB3_INFURA_PROJECT_ID:-9aa3d95b3bc440fa88ea12eaa4456161}"
 export DFTOOL_KEY="${DFTOOL_KEY:-19ff97f5f910341bc0c7db98c663394c3f2a83050353e43f0fa9acc70a3212c5}"
-export SECRET_SEED=25362634
+export SECRET_SEED="${SECRET_SEED:-25362634}"
 export ADDRESS_FILE=$(dirname $(dirname $(readlink -f "$0")))/.github/workflows/data/address.json
 export SAMPLES=50
 # First argument is round number, second is output directory
