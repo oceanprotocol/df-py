@@ -49,7 +49,7 @@ def test_nftinfo(tmp_path):
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool nftinfo {CSV_DIR} {FIN}"
+    cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} {FIN}"
     os.system(cmd)
 
     # test result
