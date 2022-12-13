@@ -27,6 +27,7 @@ from util.oceanutil import (
     veAllocate,
     FeeDistributor,
 )
+from util.blocktime import getfinBlock
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -156,8 +157,9 @@ def do_nftinfo():
 Usage: dftool nftinfo CSV_DIR CHAINID
     CSV_DIR -- output dir for nftinfo-CHAINID.csv
     CHAINID -- {CHAINID_EXAMPLES}
+    [FIN] -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
 """
-    if len(sys.argv) not in [2 + 2]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
@@ -165,11 +167,14 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     assert sys.argv[1] == "nftinfo"
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
-
+    ENDBLOCK = sys.argv[4] if len(sys.argv) == 5 else "latest"
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain
+    ENDBLOCK = getfinBlock(chain, ENDBLOCK)
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    nftinfo = query.queryNftinfo(CHAINID)
+    nftinfo = query.queryNftinfo(CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")

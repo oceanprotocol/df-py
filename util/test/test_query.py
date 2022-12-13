@@ -209,6 +209,12 @@ def _test_queryNftinfo():
     nfts = query.queryNftinfo(CHAINID)
     assert len(nfts) > 0
 
+    nfts_latest = query.queryNftinfo(CHAINID, "latest")
+    assert len(nfts_latest) == len(nfts)
+
+    nfts_block = query.queryNftinfo(137, 29778602)
+    assert len(nfts_block) == 11
+
 
 # pylint: disable=too-many-statements
 @enforce_types
