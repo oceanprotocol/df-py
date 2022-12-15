@@ -427,12 +427,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
 
     # "flatten" the rewards dict to dispense all chains in one go
-    all_rewards = {}
-    for chainID in rewards:
-        for lp in rewards[chainID]:
-            if lp not in all_rewards:
-                all_rewards[lp] = 0
-            all_rewards[lp] += rewards[chainID][lp]
+    all_rewards = calcrewards.flattenRewards(rewards)
     # dispense
     dispense.dispense(
         all_rewards,
