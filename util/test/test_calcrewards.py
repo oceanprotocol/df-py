@@ -6,7 +6,7 @@ import pytest
 from pytest import approx
 
 from util import calcrewards
-from util.calcrewards import calcRewards, TARGET_WPY
+from util.calcrewards import calcRewards, TARGET_WPY, flattenRewards
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
@@ -474,6 +474,31 @@ def test_boundRewardsByDcv():
     assert boundRew(100.0, 50.0, 100) == mult(100) * 50.0
     assert boundRew(100.0, 100.0, 100) == mult(100) * 100.0
     assert boundRew(100.0, 1e9, 100) == 100.0
+
+
+@enforce_types
+def test_flattenRewards():
+    rewards = {
+        "C1": {
+            LP1: 100.0,
+            LP2: 200.0,
+        },
+        "C2": {
+            LP1: 300.0,
+        },
+        "C3": {
+            LP1: 500.0,
+            LP2: 600.0,
+            LP3: 700.0,
+        },
+    }
+
+    flat_rewards = flattenRewards(rewards)
+    assert flat_rewards == {
+        LP1: 100.0 + 300.0 + 500.0,
+        LP2: 200.0 + 600.0,
+        LP3: 700.0,
+    }
 
 
 # ========================================================================
