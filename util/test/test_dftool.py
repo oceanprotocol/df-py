@@ -157,6 +157,7 @@ def test_dispense(tmp_path):
     accounts = brownie.network.accounts
     account1 = accounts[1]
     address1 = account1.address.lower()
+    address2 = accounts[2].address.lower()
     CSV_DIR = str(tmp_path)
     TOT_OCEAN = 1000.0
 
@@ -167,7 +168,10 @@ def test_dispense(tmp_path):
     assert fromBase18(OCEAN.balanceOf(DISPENSE_ACCT.address)) == TOT_OCEAN
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
-    rewards = {CHAINID: {address1: TOT_OCEAN}}
+    rewards = {
+        CHAINID: {address1: 400},
+        "5": {address1: 300, address2: 300},
+    }
     csvs.saveRewardsperlpCsv(rewards, CSV_DIR, "OCEAN")
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
@@ -181,7 +185,8 @@ def test_dispense(tmp_path):
     os.system(cmd)
 
     # test result
-    assert df_rewards.claimable(address1, OCEAN.address)
+    assert df_rewards.claimable(address1, OCEAN.address) == toBase18(700.0)
+    assert df_rewards.claimable(address2, OCEAN.address) == toBase18(300.0)
 
 
 @enforce_types
