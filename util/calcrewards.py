@@ -72,6 +72,24 @@ def calcDcvMultiplier(DF_week: int) -> float:
 
 
 @enforce_types
+def flattenRewards(rewards: dict) -> dict:
+    """
+    @arguments
+      rewards -- dict of [chainID][LP_addr] : reward_float
+
+    @return
+      flat_rewards -- dict of [LP_addr] : reward_float
+    """
+    flat_rewards = {}
+    for chainID in rewards:
+        for LP_addr in rewards[chainID]:
+            if LP_addr not in flat_rewards:
+                flat_rewards[LP_addr] = 0.0
+            flat_rewards[LP_addr] += rewards[chainID][LP_addr]
+    return flat_rewards
+
+
+@enforce_types
 def boundRewardsByDcv(rewards_OCEAN, DCV_OCEAN, DF_week: int) -> float:
     """
     @description
