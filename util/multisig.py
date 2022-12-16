@@ -9,7 +9,16 @@ from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
 
 
-def send_multisig_tx(multisig_address, to, value, data, nonce):
+def get_safe_nonce(multisig_address):
+    BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
+    API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/?limit=1&executed=false&queued=true&trusted=true"
+    response = requests.request("GET", API_URL)
+    data = response.json()
+    return data["results"][0]["nonce"] + 1
+
+
+def send_multisig_tx(multisig_address, to, value, data):
+    nonce = get_safe_nonce(multisig_address)
     BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
     # convert bytes to string in sig
@@ -48,7 +57,7 @@ def send_multisig_tx(multisig_address, to, value, data, nonce):
         "to": to,
         "sender": sender_address,
         "signature": sig_hex,
-        "safeTransactionData": data.hex(),
+        "data": data,
         "contractTransactionHash": hash,
         "gasToken": "0x0000000000000000000000000000000000000000",
         "refundReceiver": "0x0000000000000000000000000000000000000000",
@@ -67,6 +76,7 @@ def send_multisig_tx(multisig_address, to, value, data, nonce):
     payload["contractTransactionHash"] = hash
     payload["signature"] = sig.signature.hex()
     json_payload = json.dumps(payload)
+    print(json_payload)
     response = requests.request("POST", API_URL, headers=headers, data=json_payload)
     print(response.text.encode("utf8"))
     print(acc.address)

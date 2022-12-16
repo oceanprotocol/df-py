@@ -65,8 +65,8 @@ def dispense(
             data = TOK.approve.encode_input(df_rewards, amt)
             value = 0
             to = TOK.address
-            data = bytes.fromhex(data[2:])
-            send_multisig_tx(multisigaddr, to, value, data, nonce)
+            # data = bytes.fromhex(data[2:])
+            send_multisig_tx(multisigaddr, to, value, data)
             return nonce + 1
         TOK.approve(df_rewards, amt, {"from": from_account})
         return 0
@@ -99,9 +99,9 @@ def dispense(
                 value = 0
                 to = df_rewards.address
                 # convert data to bytes
-                data = bytes.fromhex(data[2:])
+                # data = bytes.fromhex(data[2:])
 
-                send_multisig_tx(multisigaddr, to, value, data, nonce)
+                send_multisig_tx(multisigaddr, to, value, data)
                 nonce += 1
             else:
                 df_rewards.allocate(
