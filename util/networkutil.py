@@ -58,6 +58,13 @@ def chainIdToSubgraphUri(chainID: int) -> str:
 
 
 @enforce_types
+def chainIdToMultisigUri(chainID: int) -> str:
+    """Returns the multisig API URI for a given chainID"""
+    network_str = chainIdToNetwork(chainID)
+    return f"https://safe-transaction-{network_str}.safe.global"
+
+
+@enforce_types
 def chainIdToNetwork(chainID: int) -> str:
     """Returns the network name for a given chainID"""
     return _CHAINID_TO_NETWORK[chainID]

@@ -1,4 +1,6 @@
 import os
+import brownie
+
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional
 
@@ -40,7 +42,14 @@ def dispense(
     """
     logger.info("dispense: begin")
     logger.info(f"  # addresses: {len(rewards)}")
-
+    nonce = 0
+    multisigaddr = None
+    usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
+    if usemultisig:
+        logger.info("multisig enabled")
+        multisigaddr = "0xd701c6F346a6D99c44cc07E9E9E681B67184BF34"
+        nonce = brownie.network.web3.eth.getTransactionCount(multisigaddr) + 1
+    nonce = 0
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
@@ -51,15 +60,22 @@ def dispense(
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
 
+    def approveAmt(amt, nonce):
+        if usemultisig:
+            data = TOK.approve.encode_input(df_rewards, amt)
+            value = 0
+            to = TOK.address
+            data = bytes.fromhex(data[2:])
+            send_multisig_tx(multisigaddr, to, value, data, nonce)
+            return nonce + 1
+        TOK.approve(df_rewards, amt, {"from": from_account})
+        return 0
+
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
-        TOK.approve(
-            df_rewards,
-            sum(values[b_st : b_st + batch_size]),
-            {"from": from_account},
-        )
+        nonce = approveAmt(sum(values[b_st : b_st + batch_size]), nonce)
     else:
-        TOK.approve(df_rewards, sum(values), {"from": from_account})
+        nonce = approveAmt(sum(values), nonce)
 
     logger.info(f"Total {len(sts)} batches")
     for i, st in enumerate(sts):
@@ -68,37 +84,35 @@ def dispense(
         fin = st + batch_size
         done = False
         for z in range(TRY_AGAIN):
-            try:
-                # pylint: disable=line-too-long
-                logger.info(
-                    f"Allocating rewards Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses {z}"
-                )
+            # pylint: disable=line-too-long
+            logger.info(
+                f"Allocating rewards Batch #{(i+1)}/{len(sts)}, {len(to_addrs[st:fin])} addresses {z}"
+            )
 
-                # if env use multisig
-                usemultisig = os.getenv("USE_MULTISIG", "false")
-                if usemultisig == "true":
-                    # get data of tx
-                    data = df_rewards.allocate.encode_input(
-                        to_addrs[st:fin], values[st:fin], TOK.address
-                    )
-                    # value is 0
-                    value = 0
-                    to = df_rewards.address
-                    send_multisig_tx(to, value, data)
-                else:
-                    df_rewards.allocate(
-                        to_addrs[st:fin],
-                        values[st:fin],
-                        TOK.address,
-                        {"from": from_account},
-                    )
-                done = True
-                break
-            # pylint: disable=broad-except
-            except Exception as e:
-                logger.critical(
-                    f'An error occured "{e}" while allocating funds, trying again {z}'
+            # if env use multisig
+            if usemultisig:
+                # get data of tx
+                data = df_rewards.allocate.encode_input(
+                    to_addrs[st:fin], values[st:fin], TOK.address
                 )
+                # value is 0
+                value = 0
+                to = df_rewards.address
+                # convert data to bytes
+                data = bytes.fromhex(data[2:])
+
+                send_multisig_tx(multisigaddr, to, value, data, nonce)
+                nonce += 1
+            else:
+                df_rewards.allocate(
+                    to_addrs[st:fin],
+                    values[st:fin],
+                    TOK.address,
+                    {"from": from_account},
+                )
+            done = True
+            break
+
         if done is False:
             logger.critical(f"Could not allocate funds for batch {i+1}")
     logger.info("dispense: done")
