@@ -1,9 +1,9 @@
 import os
-import brownie
 
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional
 
+import brownie
 from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B

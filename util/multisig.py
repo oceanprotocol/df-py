@@ -1,12 +1,11 @@
 import os
-import requests
 import json
+import requests
 import brownie
 from brownie import web3
 
 # from web3 import Web3
 from util import networkutil
-from util.constants import BROWNIE_PROJECT as B
 
 
 def get_safe_nonce(multisig_address):
@@ -22,12 +21,12 @@ def send_multisig_tx(multisig_address, to, value, data):
     BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
     # convert bytes to string in sig
-    hash = "0x714aaa0313d34ffdf8c794b69c3edc4e2f45e166ef3ef1ee0be2d32e638e2241"
+    safe_hash = "0x714aaa0313d34ffdf8c794b69c3edc4e2f45e166ef3ef1ee0be2d32e638e2241"
     # sign transaction hash
     PK = os.getenv("DFTOOL_KEY")
     acc = web3.eth.account.from_key(PK)
     sender_address = acc.address
-    sig = acc.signHash(hash)
+    sig = acc.signHash(safe_hash)
     sig_hex = sig.signature.hex()
     # POST
     gas = 0  # web3.eth.estimateGas(tx_dict)
@@ -58,7 +57,7 @@ def send_multisig_tx(multisig_address, to, value, data):
         "sender": sender_address,
         "signature": sig_hex,
         "data": data,
-        "contractTransactionHash": hash,
+        "contractTransactionHash": safe_hash,
         "gasToken": "0x0000000000000000000000000000000000000000",
         "refundReceiver": "0x0000000000000000000000000000000000000000",
     }
@@ -69,11 +68,11 @@ def send_multisig_tx(multisig_address, to, value, data):
     print(response.text.encode("utf8"))
 
     # Fix this later
-    hash = response.text.split("=")[1]
-    hash = hash.split(" ")[0]
-    sig = acc.signHash(hash)
+    safe_hash = response.text.split("=")[1]
+    safe_hash = safe_hash.split(" ")[0]
+    sig = acc.signHash(safe_hash)
 
-    payload["contractTransactionHash"] = hash
+    payload["contractTransactionHash"] = safe_hash
     payload["signature"] = sig.signature.hex()
     json_payload = json.dumps(payload)
     print(json_payload)
