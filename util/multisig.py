@@ -21,7 +21,6 @@ def send_multisig_tx(multisig_address, to, value, data):
     nonce = get_safe_nonce(multisig_address)
     BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
-    # convert bytes to string in sig
     safe_hash = "0x714aaa0313d34ffdf8c794b69c3edc4e2f45e166ef3ef1ee0be2d32e638e2241"
     # sign transaction hash
     PK = os.getenv("DFTOOL_KEY")
@@ -29,7 +28,6 @@ def send_multisig_tx(multisig_address, to, value, data):
     sender_address = acc.address
     sig = acc.signHash(safe_hash)
     sig_hex = sig.signature.hex()
-    # POST
     gas = 0  # web3.eth.estimateGas(tx_dict)
     gasPrice = 0
     # proxy contract
