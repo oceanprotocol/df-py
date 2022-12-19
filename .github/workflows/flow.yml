@@ -150,4 +150,4 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_TEST }}" >> $GITHUB_ENV
-          ./dftool dispense $CSV_DIR 5 0x4259c164eedA7483dda2b4b622D761A88674D31f 0xc518a7AdC6fd05cbbBb6255799ccB7B1043e3E2a
+          ./dftool dispense $CSV_DIR 5 0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 0xCfDdA22C9837aE76E0faA845354f33C62E03653a
