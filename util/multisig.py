@@ -74,7 +74,6 @@ def send_multisig_tx(multisig_address, to, value, data):
     payload["contractTransactionHash"] = safe_hash
     payload["signature"] = sig.signature.hex()
     json_payload = json.dumps(payload)
-    print(json_payload)
     response = requests.request("POST", API_URL, headers=headers, data=json_payload)
     print(response.text.encode("utf8"))
     print(acc.address)
