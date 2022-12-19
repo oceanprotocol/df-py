@@ -10,7 +10,8 @@ from util import networkutil
 
 def get_safe_nonce(multisig_address):
     BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
-    API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/?limit=1&executed=false&queued=true&trusted=true"
+    API_QUERY = "?limit=1&executed=false&queued=true&trusted=true"
+    API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/{API_QUERY}"
     response = requests.request("GET", API_URL)
     data = response.json()
     return data["results"][0]["nonce"] + 1
