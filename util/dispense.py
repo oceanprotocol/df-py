@@ -53,7 +53,6 @@ def dispense(
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
-
     to_addrs = list(rewards.keys())
     values = [toBase18(rewards[to_addr]) for to_addr in to_addrs]
 

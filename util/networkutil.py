@@ -77,6 +77,24 @@ def networkToChainId(network: str) -> int:
 
 
 @enforce_types
+def getLatestBlock(chainID) -> int:
+    network = brownie.network
+    prev = None
+    if not network.is_connected():
+        connect(chainID)
+    else:
+        prev = network.chain.id
+        if prev != chainID:
+            disconnect()
+            connect(chainID)
+    lastBlock = network.chain.height
+    if prev is not None:
+        disconnect()
+        connect(prev)
+    return lastBlock
+
+
+@enforce_types
 def connect(chainID: int):
     network = brownie.network
     if network.is_connected():
