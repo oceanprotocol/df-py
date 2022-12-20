@@ -57,6 +57,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
   dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispense_passive CHAINID AMOUNT
 
   dftool compile - compile contracts
   dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
@@ -858,6 +859,35 @@ Usage: dftool chaininfo CHAINID
 
 # ========================================================================
 @enforce_types
+def do_dispense_passive_rewards():
+    HELP = f"""Dispense passive rewards.
+
+Usage: dftool dispense_passive CHAINID AMOUNT
+    CHAINID -- {CHAINID_EXAMPLES}
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP)
+        sys.exit(0)
+
+    CHAINID = int(sys.argv[2])
+    networkutil.connect(CHAINID)
+    AMOUNT = float(sys.argv[3])
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is None:
+        print("ADDRESS_FILE not set")
+        sys.exit(1)
+
+    recordDeployedContracts(ADDRESS_FILE)
+    from_account = _getPrivateAccount()
+    feedist = FeeDistributor()
+    OCEAN = OCEANtoken()
+    dispense.dispense_passive(OCEAN, feedist, AMOUNT, from_account)
+
+    print("Dispensed passive rewards")
+
+
+# ========================================================================
+@enforce_types
 def do_checkpoint_feedist():
     HELP = f"""Checkpoint FeeDistributor contract.
 
@@ -982,6 +1012,8 @@ def do_main():
         do_veSetAllocation()
     elif sys.argv[1] == "checkpoint_feedist":
         do_checkpoint_feedist()
+    elif sys.argv[1] == "dispense_passive":
+        do_dispense_passive_rewards()
 
     # read actions
     elif sys.argv[1] == "acctinfo":
