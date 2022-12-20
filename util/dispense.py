@@ -119,6 +119,6 @@ def dispense_passive(ocean, feedistributor, amount):
     checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
     checkpoint_token_data = feedistributor.checkpoint_token.encode_input()
     multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
-
-    for data in [transfer_data, checkpoint_total_supply_data, checkpoint_token_data]:
+    send_multisig_tx(multisig_addr, ocean.address, 0, transfer_data)
+    for data in [checkpoint_total_supply_data, checkpoint_token_data]:
         send_multisig_tx(multisig_addr, feedistributor.address, 0, data)
