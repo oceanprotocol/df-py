@@ -881,7 +881,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT
     from_account = _getPrivateAccount()
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
-    dispense.dispense_passive(OCEAN, feedist, AMOUNTc)
+    dispense.dispense_passive(OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
 
