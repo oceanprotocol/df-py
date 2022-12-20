@@ -112,7 +112,7 @@ def dispense(
     logger.info("dispense: done")
 
 
-def dispense_passive(ocean, feedistributor, amount, from_account):
+def dispense_passive(ocean, feedistributor, amount):
     amount_wei = toBase18(amount)
     transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
     checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
