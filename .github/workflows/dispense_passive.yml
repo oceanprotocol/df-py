@@ -11,7 +11,6 @@ on:
         default: "10000"
 
 jobs:
-  
   # we already have a test flow in test.yml
   # re-use that flow
   run-tests:
@@ -54,7 +53,6 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }}
-
       - name: Distribute passive rewards
         env:
           USE_MULTISIG: true
