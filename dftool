@@ -878,7 +878,6 @@ Usage: dftool dispense_passive CHAINID AMOUNT
         sys.exit(1)
 
     recordDeployedContracts(ADDRESS_FILE)
-    from_account = _getPrivateAccount()
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
     dispense.dispense_passive(OCEAN, feedist, AMOUNT)
