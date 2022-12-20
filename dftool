@@ -966,6 +966,7 @@ def _getPrivateAccount():
 # ========================================================================
 # main
 @enforce_types
+# pylint: disable=too-many-statements
 def do_main():
     if len(sys.argv) == 1 or sys.argv[1] == "help":
         do_help()
