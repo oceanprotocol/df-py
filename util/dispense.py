@@ -43,14 +43,11 @@ def dispense(
     """
     logger.info("dispense: begin")
     logger.info(f"  # addresses: {len(rewards)}")
-    nonce = 0
     multisigaddr = None
     usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
     if usemultisig:
         logger.info("multisig enabled")
         multisigaddr = chainIdToMultisigAddr(brownie.network.chain.id)
-        nonce = brownie.network.web3.eth.getTransactionCount(multisigaddr) + 1
-    nonce = 0
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
@@ -60,22 +57,20 @@ def dispense(
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
 
-    def approveAmt(amt, nonce):
+    def approveAmt(amt):
         if usemultisig:
             data = TOK.approve.encode_input(df_rewards, amt)
             value = 0
             to = TOK.address
             # data = bytes.fromhex(data[2:])
             send_multisig_tx(multisigaddr, to, value, data)
-            return nonce + 1
         TOK.approve(df_rewards, amt, {"from": from_account})
-        return 0
 
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
-        nonce = approveAmt(sum(values[b_st : b_st + batch_size]), nonce)
+        approveAmt(sum(values[b_st : b_st + batch_size]))
     else:
-        nonce = approveAmt(sum(values), nonce)
+        approveAmt(sum(values))
 
     logger.info(f"Total {len(sts)} batches")
     for i, st in enumerate(sts):
@@ -102,7 +97,6 @@ def dispense(
                 # data = bytes.fromhex(data[2:])
 
                 send_multisig_tx(multisigaddr, to, value, data)
-                nonce += 1
             else:
                 df_rewards.allocate(
                     to_addrs[st:fin],
