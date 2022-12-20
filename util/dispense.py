@@ -6,6 +6,7 @@ from typing import Dict, Optional
 import brownie
 from enforce_typing import enforce_types
 
+from util.networkutil import chainIdToMultisigAddr
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
 from util.logger import logger
@@ -47,7 +48,7 @@ def dispense(
     usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
     if usemultisig:
         logger.info("multisig enabled")
-        multisigaddr = "0xd701c6F346a6D99c44cc07E9E9E681B67184BF34"
+        multisigaddr = chainIdToMultisigAddr(brownie.network.chain.id)
         nonce = brownie.network.web3.eth.getTransactionCount(multisigaddr) + 1
     nonce = 0
     df_rewards = B.DFRewards.at(dfrewards_addr)
