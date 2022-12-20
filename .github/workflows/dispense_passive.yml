@@ -1,1 +1,55 @@
+name: Dispense Passive Rewards
 
+on:
+  schedule:
+    - cron: "0 0 * * 5"
+  workflow_dispatch:
+    inputs:
+      amt_of_tokens:
+        description: "Amount of tokens to distribute"
+        required: true
+        default: "10000"
+
+jobs:
+  # we already have a test flow in test.yml
+  # re-use that flow
+  run-tests:
+    uses: ./.github/workflows/test.yml
+
+  dispense-passive:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    needs: run-tests
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python {{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --quiet
+
+      - name: Set up Openzeppelin
+        run: |
+          brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
+          brownie pm install GNSPS/solidity-bytes-utils@0.8.0
+
+      - name: Set env variables
+        run: |
+          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_TEST }}" >> $GITHUB_ENV
+          echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
+          echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+
+      - name: Distribute test passive rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }}
