@@ -53,7 +53,7 @@ jobs:
 
       - name: Set env variables
         run: |
-          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_TEST }}" >> $GITHUB_ENV
+          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
@@ -108,3 +108,10 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           ./dftool dispense $CSV_DIR 5 0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 0xCfDdA22C9837aE76E0faA845354f33C62E03653a
+
+      - name: Distribute active rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool dispense $CSV_DIR 1 0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
