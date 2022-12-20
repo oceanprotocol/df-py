@@ -102,7 +102,7 @@ jobs:
           retention-days: 5
           path: /tmp/csv
 
-      - name: Distribute test rewards
+      - name: Distribute test active rewards
         env:
           USE_MULTISIG: true
         if: github.event_name == 'workflow_dispatch'
