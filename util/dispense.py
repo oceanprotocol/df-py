@@ -110,3 +110,14 @@ def dispense(
         if done is False:
             logger.critical(f"Could not allocate funds for batch {i+1}")
     logger.info("dispense: done")
+
+
+def dispense_passive(ocean, feedistributor, amount, from_account):
+    amount_wei = toBase18(amount)
+    transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
+    checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
+    checkpoint_token_data = feedistributor.checkpoint_token.encode_input()
+    multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
+
+    for data in [transfer_data, checkpoint_total_supply_data, checkpoint_token_data]:
+        send_multisig_tx(multisig_addr, feedistributor.address, 0, data)
