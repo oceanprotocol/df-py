@@ -64,6 +64,7 @@ def dispense(
             to = TOK.address
             # data = bytes.fromhex(data[2:])
             send_multisig_tx(multisigaddr, to, value, data)
+            return
         TOK.approve(df_rewards, amt, {"from": from_account})
 
     if batch_number is not None:
