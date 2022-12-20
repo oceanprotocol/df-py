@@ -1,4 +1,4 @@
-name: Reward Calculation
+name: Dispense Active Rewards
 
 on:
   schedule:
@@ -17,7 +17,7 @@ jobs:
   run-tests:
     uses: ./.github/workflows/test.yml
 
-  calculate-reward:
+  dispense-active:
     runs-on: ubuntu-latest
     strategy:
       matrix:
