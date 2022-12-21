@@ -104,12 +104,13 @@ jobs:
       - id: 'auth'
         uses: 'google-github-actions/auth@v1'
         with:
-          workload_identity_provider: ${{ secrets.GCLOUD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          credentials_json: '${{ secrets.GC_SECRET }}'
+          #workload_identity_provider: ${{ secrets.GCLOUD_IDENTITY_PROVIDER }}
+          #service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          
 
       - id: 'upload-folder'
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
           path: '/tmp/csv/${{ env.DFWEEK }}'
           destination: 'df-historical-data'
-      
