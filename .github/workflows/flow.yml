@@ -11,10 +11,6 @@ on:
         default: "10000"
 
 jobs:
-  calculate-reward:
-    permissions:
-      contents: 'read'
-      id-token: 'write'
   
   # we already have a test flow in test.yml
   # re-use that flow
@@ -22,6 +18,9 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   dispense-active:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     strategy:
       matrix:
