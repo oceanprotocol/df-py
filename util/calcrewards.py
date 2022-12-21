@@ -11,7 +11,6 @@ from util.cleancase import modStakes, modNFTvols, modRates
 TARGET_WPY = 0.015717
 
 
-
 @enforce_types
 def getDfWeekNumber(dt: datetime) -> int:
     """Return the DF week number. This is used by boundRewardsByDcv().
@@ -79,7 +78,7 @@ def calcRewards(
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
     S, V_USD, keys_tup = _stakevolDictsToArrays(stakes, nftvols_USD)
-    
+
     R = _calcRewardsUsd(S, V_USD, DCV_multiplier, rewards_OCEAN)
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
@@ -126,8 +125,9 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
 
 
 @enforce_types
-def _calcRewardsUsd(S, V_USD, DCV_multiplier: float, rewards_OCEAN: float) \
-    -> np.ndarray:
+def _calcRewardsUsd(
+    S, V_USD, DCV_multiplier: float, rewards_OCEAN: float
+) -> np.ndarray:
     """
     @arguments
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
@@ -159,8 +159,8 @@ def _calcRewardsUsd(S, V_USD, DCV_multiplier: float, rewards_OCEAN: float) \
             # main formula!
             R[i, j] = min(
                 (stake_ij / stake_j) * (DCV_j / DCV) * rewards_OCEAN,
-                stake_ij * TARGET_WPY, # bound rewards by max APY
-                DCV_j * DCV_multiplier, # bound rewards by DCV
+                stake_ij * TARGET_WPY,  # bound rewards by max APY
+                DCV_j * DCV_multiplier,  # bound rewards by DCV
             )
 
     # filter negligible values
@@ -239,7 +239,6 @@ def _getLpAddrs(stakes: dict) -> List[str]:
         for nft_addr in stakes[chainID]:
             LP_addr_set |= set(stakes[chainID][nft_addr].keys())
     return list(LP_addr_set)
-
 
 
 @enforce_types

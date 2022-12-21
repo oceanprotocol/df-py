@@ -335,18 +335,20 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 def test_bound_by_DCV_one_nft():
     DCV_OCEAN = 100.0
     DCV_USD = DCV_OCEAN / RATES["OCEAN"]
-    
+
     stakes = {C1: {NA: {LP1: 1e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
     rewards_avail = 10000.0
 
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, rewards_avail, DCV_multiplier=1.0)
+        stakes, nftvols, rewards_avail, DCV_multiplier=1.0
+    )
     assert rewardsperlp == {LP1: 100.0}
     assert rewardsinfo == {NA: {LP1: 100.0}}
 
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, rewards_avail, DCV_multiplier=0.5)
+        stakes, nftvols, rewards_avail, DCV_multiplier=0.5
+    )
     assert rewardsperlp == {LP1: 50.0}
     assert rewardsinfo == {NA: {LP1: 50.0}}
 
@@ -365,6 +367,7 @@ def test_divide_by_zero():
 
 # ========================================================================
 # Tests around bounding rewards by DCV
+
 
 @enforce_types
 def test_getDFWeekNumber():
@@ -469,7 +472,12 @@ def _calcRewardsC1(
     DCV_multiplier=np.inf,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
-        stakes, nftvols, rewards_avail, symbols, rates, DCV_multiplier,
+        stakes,
+        nftvols,
+        rewards_avail,
+        symbols,
+        rates,
+        DCV_multiplier,
     )
     rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
     rewardsinfo = {} if not rewardsinfo else rewardsinfo[C1]
@@ -486,6 +494,4 @@ def _calcRewards(
     DCV_multiplier=np.inf,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
-    return calcRewards(
-        stakes, nftvols, symbols, rates, DCV_multiplier, rewards_avail
-    )
+    return calcRewards(stakes, nftvols, symbols, rates, DCV_multiplier, rewards_avail)
