@@ -39,8 +39,9 @@ def test_without_csvs():
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
     OCEAN_avail = 1e-4
+    m = float("inf")
 
-    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, m, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000.0), sum_
@@ -85,8 +86,9 @@ def test_with_csvs(tmp_path):
 
     stakes = allocations.loadStakes(csv_dir)  # loads allocs & vebals, then *
 
+    m = float("inf")
     OCEAN_avail = 1e-4
-    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, m, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
     assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000), sum_
