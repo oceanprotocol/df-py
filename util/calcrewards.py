@@ -11,29 +11,6 @@ from util.cleancase import modStakes, modNFTvols, modRates
 TARGET_WPY = 0.015717
 
 
-@enforce_types
-def totalDcv(nftvols: dict, symbols: dict, rates: dict) -> float:
-    """
-    Returns DCV, in OCEAN
-
-    @arguments
-      nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
-      symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
-      rates -- dict of [basetoken_symbol] : USD_price_float
-
-    @return
-      DCV_OCEAN -- data consume volume, in units of OCEAN
-    """
-    nftvols, rates = modNFTvols(nftvols), modRates(rates)
-
-    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)  # [cID][nft]:vol
-
-    DCV_USD = sum(
-        vol for chainID in nftvols_USD for vol in nftvols_USD[chainID].values()
-    )
-    DCV_OCEAN = DCV_USD / rates["OCEAN"]
-    return DCV_OCEAN
-
 
 @enforce_types
 def getDfWeekNumber(dt: datetime) -> int:
@@ -72,52 +49,12 @@ def calcDcvMultiplier(DF_week: int) -> float:
 
 
 @enforce_types
-def flattenRewards(rewards: dict) -> dict:
-    """
-    @arguments
-      rewards -- dict of [chainID][LP_addr] : reward_float
-
-    @return
-      flat_rewards -- dict of [LP_addr] : reward_float
-    """
-    flat_rewards = {}
-    for chainID in rewards:
-        for LP_addr in rewards[chainID]:
-            if LP_addr not in flat_rewards:
-                flat_rewards[LP_addr] = 0.0
-            flat_rewards[LP_addr] += rewards[chainID][LP_addr]
-    return flat_rewards
-
-
-@enforce_types
-def boundRewardsByDcv(rewards_OCEAN, DCV_OCEAN, DF_week: int) -> float:
-    """
-    @description
-      Applies the formula:
-      usable_rewards_OCEAN = min(rewards_OCEAN, DCV_multiplier * DCV_total)
-
-      Where DCV_multiplier = 100% for DF9, then decreasing linearly each week,
-      to a final value of 3% in 20 weeks (DF28). After that, it stays at 3%.
-
-    @arguments
-      rewards_OCEAN -- amount of rewards available, in OCEAN
-      DCV_OCEAN -- total data consume volume, in OCEAN
-      DF_week -- e.g. 9 for DF9
-
-    @return
-      usable_rewards_OCEAN -- float
-    """
-    DCV_multiplier = calcDcvMultiplier(DF_week)
-    usable_rewards_OCEAN = min(rewards_OCEAN, DCV_multiplier * DCV_OCEAN)
-    return usable_rewards_OCEAN
-
-
-@enforce_types
 def calcRewards(
     stakes: Dict[str, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
+    DCV_multiplier: float,
     rewards_OCEAN: float,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
@@ -126,7 +63,8 @@ def calcRewards(
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
-      rewards_OCEAN -- float -- amount of rewards avail, in units of OCEAN
+      DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
+      rewards_OCEAN -- amount of rewards avail, in units of OCEAN
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_reward_float
@@ -141,7 +79,8 @@ def calcRewards(
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
     S, V_USD, keys_tup = _stakevolDictsToArrays(stakes, nftvols_USD)
-    R = _calcRewardsUsd(S, V_USD, rewards_OCEAN)
+    
+    R = _calcRewardsUsd(S, V_USD, DCV_multiplier, rewards_OCEAN)
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
 
@@ -187,11 +126,13 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
 
 
 @enforce_types
-def _calcRewardsUsd(S, V_USD, rewards_OCEAN: float) -> np.ndarray:
+def _calcRewardsUsd(S, V_USD, DCV_multiplier: float, rewards_OCEAN: float) \
+    -> np.ndarray:
     """
     @arguments
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
+      DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       rewards_OCEAN -- amount of rewards available, in OCEAN
 
     @return
@@ -218,7 +159,8 @@ def _calcRewardsUsd(S, V_USD, rewards_OCEAN: float) -> np.ndarray:
             # main formula!
             R[i, j] = min(
                 (stake_ij / stake_j) * (DCV_j / DCV) * rewards_OCEAN,
-                stake_ij * TARGET_WPY,
+                stake_ij * TARGET_WPY, # bound rewards by max APY
+                DCV_j * DCV_multiplier, # bound rewards by DCV
             )
 
     # filter negligible values
@@ -297,3 +239,22 @@ def _getLpAddrs(stakes: dict) -> List[str]:
         for nft_addr in stakes[chainID]:
             LP_addr_set |= set(stakes[chainID][nft_addr].keys())
     return list(LP_addr_set)
+
+
+
+@enforce_types
+def flattenRewards(rewards: dict) -> dict:
+    """
+    @arguments
+      rewards -- dict of [chainID][LP_addr] : reward_float
+
+    @return
+      flat_rewards -- dict of [LP_addr] : reward_float
+    """
+    flat_rewards = {}
+    for chainID in rewards:
+        for LP_addr in rewards[chainID]:
+            if LP_addr not in flat_rewards:
+                flat_rewards[LP_addr] = 0.0
+            flat_rewards[LP_addr] += rewards[chainID][LP_addr]
+    return flat_rewards

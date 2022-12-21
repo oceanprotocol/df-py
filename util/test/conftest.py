@@ -6,7 +6,6 @@ import brownie
 from util import networkutil
 from util.oceanutil import OCEANtoken, recordDevDeployedContracts
 
-
 @enforce_types
 @pytest.fixture
 def network_setup_and_teardown():

@@ -64,9 +64,6 @@ def test_two_basetokens_OCEAN_and_H2O():
     assert rewardsinfo == {NA: {LP1: NA_amt}, NB: {LP1: NB_amt}}
 
 
-# ===================== FIXME FROM HERE ON
-
-
 @enforce_types
 def test_two_chains():
     # first cut: symbols are the same
@@ -335,8 +332,23 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 
 
 @enforce_types
-def test_bound_budget_by_DCT():
-    pass  # placeholder
+def test_bound_by_DCV_one_nft():
+    DCV_OCEAN = 100.0
+    DCV_USD = DCV_OCEAN / RATES["OCEAN"]
+    
+    stakes = {C1: {NA: {LP1: 1e6}}}
+    nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
+    rewards_avail = 10000.0
+
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        stakes, nftvols, rewards_avail, DCV_multiplier=1.0)
+    assert rewardsperlp == {LP1: 100.0}
+    assert rewardsinfo == {NA: {LP1: 100.0}}
+
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        stakes, nftvols, rewards_avail, DCV_multiplier=0.5)
+    assert rewardsperlp == {LP1: 50.0}
+    assert rewardsinfo == {NA: {LP1: 50.0}}
 
 
 @enforce_types
@@ -353,19 +365,6 @@ def test_divide_by_zero():
 
 # ========================================================================
 # Tests around bounding rewards by DCV
-
-
-@enforce_types
-def test_totalDcv():
-    totDcv = calcrewards.totalDcv
-    SYM, R, O, H, O2 = SYMBOLS, RATES, OCN_ADDR, H2O_ADDR, OCN_ADDR2
-
-    assert totDcv({C1: {O: {NA: 1.0}}}, SYM, R) == 1.0
-    assert totDcv({C1: {O: {NA: 0.5, NB: 0.5}}}, SYM, R) == 1.0
-    assert totDcv({C1: {O: {NA: 0.25, NB: 0.25}}, C2: {O2: {NA: 0.5}}}, SYM, R) == 1.0
-    assert totDcv({C1: {H: {NA: 1.0}}}, SYM, R) == 1.6 / 0.5  # 1 H2O = 1.6 USD
-    assert totDcv({C1: {O: {NA: 1.0}, H: {NB: 1.0}}}, SYM, R) == (1.0 + 1.6 / 0.5)
-
 
 @enforce_types
 def test_getDFWeekNumber():
@@ -432,51 +431,6 @@ def test_calcDcvMultiplier():
 
 
 @enforce_types
-def test_boundRewardsByDcv():
-    boundRew = calcrewards.boundRewardsByDcv
-    mult = calcrewards.calcDcvMultiplier
-
-    # week 1
-    # args: (rewards_OCEAN, DCV_OCEAN, DF_week)
-    assert boundRew(100.0, 0.0, 1) == 100.0
-    assert boundRew(100.0, 1e9, 1) == 100.0
-
-    # week 8
-    assert boundRew(100.0, 0.0, 8) == 100.0
-    assert boundRew(100.0, 1e9, 8) == 100.0
-
-    # week 9
-    assert boundRew(100.0, 0.0, 9) == 0.0
-    assert boundRew(100.0, 50.0, 9) == 50.0
-    assert boundRew(100.0, 100.0, 9) == 100.0
-    assert boundRew(100.0, 1e9, 9) == 100.0
-
-    # week 10
-    assert boundRew(100.0, 0.0, 10) == 0.0
-    assert boundRew(100.0, 50.0, 10) == mult(10) * 50.0
-    assert boundRew(100.0, 100.0, 10) == mult(10) * 100.0
-    assert boundRew(100.0, 1e9, 10) == 100.0
-
-    # week 28
-    assert boundRew(100.0, 0.0, 28) == 0.0
-    assert boundRew(100.0, 50.0, 28) == mult(28) * 50.0
-    assert boundRew(100.0, 100.0, 28) == mult(28) * 100.0
-    assert boundRew(100.0, 1e9, 28) == 100.0
-
-    # week 29
-    assert boundRew(100.0, 0.0, 29) == 0.0
-    assert boundRew(100.0, 50.0, 29) == mult(29) * 50.0
-    assert boundRew(100.0, 100.0, 29) == mult(29) * 100.0
-    assert boundRew(100.0, 1e9, 29) == 100.0
-
-    # week 100
-    assert boundRew(100.0, 0.0, 100) == 0.0
-    assert boundRew(100.0, 50.0, 100) == mult(100) * 50.0
-    assert boundRew(100.0, 100.0, 100) == mult(100) * 100.0
-    assert boundRew(100.0, 1e9, 100) == 100.0
-
-
-@enforce_types
 def test_flattenRewards():
     rewards = {
         "C1": {
@@ -512,9 +466,10 @@ def _calcRewardsC1(
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
+    DCV_multiplier=np.inf,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
-        stakes, nftvols, rewards_avail, symbols, rates
+        stakes, nftvols, rewards_avail, symbols, rates, DCV_multiplier,
     )
     rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
     rewardsinfo = {} if not rewardsinfo else rewardsinfo[C1]
@@ -528,6 +483,9 @@ def _calcRewards(
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
+    DCV_multiplier=np.inf,
 ):
-    """Helper. Fills in SYMBOLS and RATES, to keep calls compact"""
-    return calcRewards(stakes, nftvols, symbols, rates, rewards_avail)
+    """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
+    return calcRewards(
+        stakes, nftvols, symbols, rates, DCV_multiplier, rewards_avail
+    )

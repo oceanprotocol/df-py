@@ -348,19 +348,12 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
 
-    DCV_OCEAN = calcrewards.totalDcv(nftvols, SYM, R)
     cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
     prev_week = cur_week - 1
     m = calcrewards.calcDcvMultiplier(prev_week)
-    TOT_OCEAN2 = calcrewards.boundRewardsByDcv(TOT_OCEAN, DCV_OCEAN, prev_week)
-    print(
-        f"Given prev_week=DF{prev_week}, DCV={DCV_OCEAN} OCEAN: "
-        f" multiplier={m}; we bound rewards to {TOT_OCEAN2} OCEAN"
-        f" (original value: {TOT_OCEAN} OCEAN)"
-    )
-
+    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        stakes, nftvols, SYM, R, TOT_OCEAN2
+        stakes, nftvols, SYM, R, m, TOT_OCEAN,
     )
 
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")
