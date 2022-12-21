@@ -12,4 +12,4 @@ echo $df_week
 mkdir -p /tmp/csv/$df_week
 cp /tmp/csv/*.csv /tmp/csv/$df_week
 
- echo "DFWEEK=$df_week" >> $GITHUB_ENV
+echo "DFWEEK=$df_week" >> $GITHUB_ENV
