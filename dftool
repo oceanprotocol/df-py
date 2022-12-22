@@ -4,7 +4,6 @@ import datetime
 import os
 import sys
 import functools
-import time
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware

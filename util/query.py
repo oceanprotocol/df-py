@@ -69,6 +69,7 @@ def queryNftvolsAndSymbols(
 
 
 @enforce_types
+# pylint: disable=keyword-arg-before-vararg
 def retryFunction(f, retries: int = 1, delay=10, *args, **kwargs):
     """
     @description
@@ -86,6 +87,7 @@ def retryFunction(f, retries: int = 1, delay=10, *args, **kwargs):
     for i in range(retries):
         try:
             return f(*args, **kwargs)
+        # pylint: disable=broad-except
         except Exception as e:
             print(f"retry {i}: {e}")
             time.sleep(delay)
