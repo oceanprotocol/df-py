@@ -147,18 +147,12 @@ SECRET_SEED -- secret integer used to seed the rng
 
     recordDeployedContracts(ADDRESS_FILE)
     # main work
-    for i in range(RETRIES):
-        try:
-            (Vi, SYMi) = query.queryNftvolsAndSymbols(rng, CHAINID)
-            csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
-            csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
-            break
-        except Exception as e:
-            print(f"Query failed, retrying {i+1}/{RETRIES}...")
-            print(e)
-            if i == RETRIES - 1:
-                raise e
-            time.sleep(10)
+
+    (Vi, SYMi) = query.retryFunction(
+        query.queryNftvolsAndSymbols, RETRIES, 10, rng, CHAINID
+    )
+    csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
+    csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool query: Done")
 
@@ -189,7 +183,10 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    nftinfo = query.queryNftinfo(CHAINID, ENDBLOCK)
+    # this function can be a bit problematic and only used for generating data for frontend
+    # retry 3 times with 10s delay by default
+    nftinfo = query.retryFunction(query.queryNftinfo, 3, 10, ENDBLOCK, CHAINID)
+    query.queryNftinfo(CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -240,17 +237,8 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    for i in range(RETRIES):
-        try:
-            allocs = query.queryAllocations(rng, CHAINID)
-            csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
-            break
-        except Exception as e:
-            print(f"Query failed, retrying {i+1}/{RETRIES}...")
-            print(e)
-            if i == RETRIES - 1:
-                raise e
-            time.sleep(10)
+    allocs = query.retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
+    csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
 
@@ -299,17 +287,10 @@ SECRET_SEED -- secret integer used to seed the rng
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    for i in range(RETRIES):
-        try:
-            balances, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
-            csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
-            break
-        except Exception as e:
-            print(f"Query failed, retrying {i+1}/{RETRIES}...")
-            print(e)
-            if i == RETRIES - 1:
-                raise e
-            time.sleep(10)
+    balances, locked_amt, unlock_time = query.retryFunction(
+        query.queryVebalances, RETRIES, 10, rng, CHAINID
+    )
+    csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
     print("dftool vebals: Done")
 
@@ -346,18 +327,9 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
     _createDirIfNeeded(CSV_DIR)
 
     # main work
-    for i in range(RETRIES):
-        try:
-            rate = getrate.getrate(TOKEN_SYMBOL, ST, FIN)
-            print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
-            csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
-            break
-        except Exception as e:
-            print(f"Query failed, retrying {i+1}/{RETRIES}...")
-            print(e)
-            if i == RETRIES - 1:
-                raise e
-            time.sleep(10)
+    rate = query.retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
+    print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
+    csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
 
 # ========================================================================
