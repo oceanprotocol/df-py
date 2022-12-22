@@ -4,7 +4,7 @@ import datetime
 import os
 import sys
 import functools
-
+import time
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
@@ -101,14 +101,19 @@ Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
+  [RETRIES] -- optional, # times to retry failed queries
 
 Uses these envvars:
 ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 SECRET_SEED -- secret integer used to seed the rng
 """
-    if len(sys.argv) not in [2 + 5]:
+    if len(sys.argv) not in [2 + 5, 2 + 6]:
         print(HELP)
         sys.exit(0)
+
+    RETRIES = 1
+    if len(sys.argv) == 2 + 6:
+        RETRIES = int(sys.argv[7])
 
     # extract inputs
     assert sys.argv[1] == "query"
@@ -142,9 +147,18 @@ SECRET_SEED -- secret integer used to seed the rng
 
     recordDeployedContracts(ADDRESS_FILE)
     # main work
-    (Vi, SYMi) = query.queryNftvolsAndSymbols(rng, CHAINID)
-    csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
-    csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
+    for i in range(RETRIES):
+        try:
+            (Vi, SYMi) = query.queryNftvolsAndSymbols(rng, CHAINID)
+            csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
+            csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
+            break
+        except Exception as e:
+            print(f"Query failed, retrying {i+1}/{RETRIES}...")
+            print(e)
+            if i == RETRIES - 1:
+                raise e
+            time.sleep(10)
 
     print("dftool query: Done")
 
@@ -194,13 +208,18 @@ Usage: dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
+  [RETRIES] -- # times to retry failed queries
 
 Uses these envvars:
 SECRET_SEED -- secret integer used to seed the rng
 """
-    if len(sys.argv) not in [7]:
+    if len(sys.argv) not in [7, 8]:
         print(HELP)
         sys.exit(0)
+
+    RETRIES = 1
+    if len(sys.argv) == 8:
+        RETRIES = int(sys.argv[7])
 
     # extract inputs
     assert sys.argv[1] == "allocations"
@@ -221,8 +240,17 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    allocs = query.queryAllocations(rng, CHAINID)
-    csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
+    for i in range(RETRIES):
+        try:
+            allocs = query.queryAllocations(rng, CHAINID)
+            csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
+            break
+        except Exception as e:
+            print(f"Query failed, retrying {i+1}/{RETRIES}...")
+            print(e)
+            if i == RETRIES - 1:
+                raise e
+            time.sleep(10)
 
     print("dftool allocations: Done")
 
@@ -240,13 +268,18 @@ Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
+  [RETRIES] -- # times to retry failed queries
 
 Uses these envvars:
 SECRET_SEED -- secret integer used to seed the rng
 """
-    if len(sys.argv) not in [7]:
+    if len(sys.argv) not in [7, 8]:
         print(HELP)
         sys.exit(0)
+
+    RETRIES = 1
+    if len(sys.argv) == 8:
+        RETRIES = int(sys.argv[7])
 
     # extract inputs
     assert sys.argv[1] == "vebals"
@@ -265,8 +298,18 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    balances, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
-    csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
+
+    for i in range(RETRIES):
+        try:
+            balances, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
+            csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
+            break
+        except Exception as e:
+            print(f"Query failed, retrying {i+1}/{RETRIES}...")
+            print(e)
+            if i == RETRIES - 1:
+                raise e
+            time.sleep(10)
 
     print("dftool vebals: Done")
 
@@ -281,10 +324,15 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
   ST -- start time -- YYYY-MM-DD
   FIN -- end time -- YYYY-MM-DD
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+  [RETRIES] -- # times to retry failed queries
 """
-    if len(sys.argv) not in [2 + 4]:
+    if len(sys.argv) not in [2 + 4, 2 + 5]:
         print(HELP)
         sys.exit(0)
+
+    RETRIES = 1
+    if len(sys.argv) == 2 + 5:
+        RETRIES = int(sys.argv[2 + 4])
 
     # extract inputs
     assert sys.argv[1] == "getrate"
@@ -298,9 +346,18 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
     _createDirIfNeeded(CSV_DIR)
 
     # main work
-    rate = getrate.getrate(TOKEN_SYMBOL, ST, FIN)
-    print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
-    csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
+    for i in range(RETRIES):
+        try:
+            rate = getrate.getrate(TOKEN_SYMBOL, ST, FIN)
+            print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
+            csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
+            break
+        except Exception as e:
+            print(f"Query failed, retrying {i+1}/{RETRIES}...")
+            print(e)
+            if i == RETRIES - 1:
+                raise e
+            time.sleep(10)
 
 
 # ========================================================================
