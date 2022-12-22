@@ -546,16 +546,17 @@ def test_populateNftAssetNames():
 
 @enforce_types
 def test_retryFunction():
+    # pylint: disable=global-variable-undefined
     global testfunc_callcount
     testfunc_callcount = 0
 
     def testfunc_fail(some_arg: int):
+        # pylint: disable=global-variable-undefined
         global testfunc_callcount
         testfunc_callcount += 1
         if testfunc_callcount == 3:
             return testfunc_callcount + some_arg
-        else:
-            raise Exception("failed")
+        raise Exception("failed")
 
     some_arg = 1
     assert (
@@ -573,6 +574,7 @@ def test_retryFunction():
     testfunc_callcount = 0
 
     def testquery_fail():
+        # pylint: disable=global-variable-undefined
         global testfunc_callcount
         blockRange = None
         if testfunc_callcount < 2:
