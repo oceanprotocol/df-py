@@ -141,7 +141,7 @@ def _calcRewardsUsd(
     N_i, N_j = S.shape
 
     # corner case
-    if np.sum(V_USD) == 0.0 or np.sum(V_USD) == 0.0:
+    if np.sum(V_USD) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
 
     # compute rewards
