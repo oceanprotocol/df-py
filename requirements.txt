@@ -5,4 +5,4 @@ numpy
 pandas
 scipy
 types-requests
-pytest-retry=1.2.1
+pytest-retry==1.2.1
