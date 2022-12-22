@@ -18,13 +18,16 @@ jobs:
     uses: ./.github/workflows/test.yml
 
   dispense-active:
+    permissions:
+      contents: 'read'
+      id-token: 'write'
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8]
     needs: run-tests
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
 
       - name: Set up Python {{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -115,3 +118,20 @@ jobs:
         if: github.event_name == 'schedule'
         run: |
           ./dftool dispense $CSV_DIR 1 0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
+
+      - name: Rename folder to round number
+        run: |
+          bash ./scripts/workflow_rename_folder.sh
+
+      - id: 'auth'
+        uses: 'google-github-actions/auth@v1'
+        with:
+          credentials_json: '${{ secrets.GC_SECRET }}'
+          #workload_identity_provider: ${{ secrets.GCLOUD_IDENTITY_PROVIDER }}
+          #service_account: ${{ secrets.SERVICE_ACCOUNT }}
+          
+      - id: 'upload-folder'
+        uses: 'google-github-actions/upload-cloud-storage@v1'
+        with:
+          path: '/tmp/csv/${{ env.DFWEEK }}'
+          destination: 'df-historical-data'
