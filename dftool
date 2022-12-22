@@ -347,13 +347,14 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
+    P = csvs.loadPublishersCsvs(CSV_DIR)
 
     cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
     prev_week = cur_week - 1
     m = calcrewards.calcDcvMultiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
     rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        stakes, nftvols, SYM, R, m, TOT_OCEAN,
+        stakes, nftvols, SYM, R, P, m, TOT_OCEAN,
     )
 
     csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")

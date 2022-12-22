@@ -11,7 +11,7 @@ from util.calcrewards import calcRewards, TARGET_WPY, flattenRewards
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2 = 7, 137
-NA, NB = "0xnfta_addr", "0xnftb_addr"
+NA, NB, NC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
@@ -433,6 +433,34 @@ def test_calcDcvMultiplier():
     assert mult(10000) == 0.03
 
 
+# ========================================================================
+# Test helper functions found in calcrewards
+
+@enforce_types
+def test_getNftAddrs():
+    nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
+    nft_addrs = calcrewards._getNftAddrs(nftvols_USD)
+    assert type(nft_addrs) == list
+    assert sorted(nft_addrs) == sorted([NA, NB])
+
+
+@enforce_types
+def test_getLpAddrs():
+    stakes = {
+        C1: {
+            NA: {LP1: 5.0, LP2: 1.0},
+            NB: {LP1: 5.0, LP3: 1.0},
+        },
+        C2: {
+            NA: {LP1: 5.0},
+            NC: {LP4: 1.0},
+        },
+    }
+    LP_addrs = calcrewards._getLpAddrs(stakes)
+    assert type(LP_addrs) == list
+    assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
+
+
 @enforce_types
 def test_flattenRewards():
     rewards = {
@@ -469,6 +497,7 @@ def _calcRewardsC1(
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
+    publishers=None,
     DCV_multiplier=np.inf,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
@@ -477,6 +506,7 @@ def _calcRewardsC1(
         rewards_avail,
         symbols,
         rates,
+        publishers,
         DCV_multiplier,
     )
     rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
@@ -491,7 +521,24 @@ def _calcRewards(
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
+    publishers=None,
     DCV_multiplier=np.inf,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
-    return calcRewards(stakes, nftvols, symbols, rates, DCV_multiplier, rewards_avail)
+    if publishers is None:
+        publishers = _nullPublishers(stakes, nftvols)
+        
+    return calcRewards(stakes, nftvols, symbols, rates, publishers, DCV_multiplier, rewards_avail)
+
+
+def _nullPublishers(stakes, nftvols):
+    """@return -- null_publishers -- dict of [chainID][nft_addr] : None"""
+    nftvols_USD = FIXME
+    chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
+    null_publishers = {}
+    for (chainID, nft_addr) in chain_nft_tups:
+        if chainID not in publishers:
+            null_publishers[chainID] = {}
+        null_publishers[chainID][nft_addr] = None
+    return null_publishers
+

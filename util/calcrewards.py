@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from enforce_typing import enforce_types
 import numpy as np
@@ -53,6 +53,7 @@ def calcRewards(
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
+    publishers: Dict[int, Dict[str, Union[str, None]]],
     DCV_multiplier: float,
     rewards_OCEAN: float,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
@@ -62,6 +63,7 @@ def calcRewards(
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
+      publishers -- dict of [chainID][nft_addr] : LP_addr or None
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       rewards_OCEAN -- amount of rewards avail, in units of OCEAN
 
@@ -77,37 +79,46 @@ def calcRewards(
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
-    S, V_USD, keys_tup = _stakevolDictsToArrays(stakes, nftvols_USD)
+    keys_tup = _getKeysTuple(stakes, nftvols_USD)
+    S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
+    P = _publisherDictToArray(publishers, keys_tup)
 
-    R = _calcRewardsUsd(S, V_USD, DCV_multiplier, rewards_OCEAN)
+    R = _calcRewardsUsd(S, V_USD, P, DCV_multiplier, rewards_OCEAN)
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
 
     return rewardsperlp, rewardsinfo
 
 
-def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
+@enforce_types
+def _getKeysTuple(
+    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    nftvols_USD: Dict[int, Dict[str, str]],
+) -> Tuple[List[str], List[Tuple[int, str]]]:
+    """@return -- tuple of (LP_addrs_list, chain_nft_tups)"""
+    chain_nft_tups = _getChainNftTups(stakes, nftvols_USD)
+    LP_addrs = _getLpAddrs(stakes)
+    return (LP_addrs, chain_nft_tups)
+
+
+@enforce_types
+def _stakeVolDictsToArrays(
+    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    nftvols_USD: Dict[int, Dict[str, str]],
+    keys_tup: Tuple[List[str], List[Tuple[int, str]]],
+) -> Tuple[np.ndarray, np.ndarray]:
     """
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
       nftvols_USD -- dict of [chainID][nft_addr] : vol_USD_float
+      keys_tup -- tuple of (LP_addrs_list, chain_nft_tups)
 
     @return
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
-      keys_tup -- tuple of (LP_addrs_list, chain_nfts_tup)
     """
-    chainIDs = list(stakes.keys())
-    nft_addrs = _getNftAddrs(nftvols_USD)
-    chain_nft_tups = [
-        (chainID, nft_addr)  # all (chain, nft) tups with stake
-        for chainID in chainIDs
-        for nft_addr in nft_addrs
-        if nft_addr in stakes[chainID]
-    ]
+    (chain_nft_tups, LP_addrs) = keys_tup
     N_j = len(chain_nft_tups)
-
-    LP_addrs = _getLpAddrs(stakes)
     N_i = len(LP_addrs)
 
     S = np.zeros((N_i, N_j), dtype=float)
@@ -118,20 +129,50 @@ def _stakevolDictsToArrays(stakes: dict, nftvols_USD: dict):
             S[i, j] = stakes[chainID][nft_addr].get(LP_addr, 0.0)
             V_USD[j] += nftvols_USD[chainID].get(nft_addr, 0.0)
 
-    # done!
-    keys_tup = (LP_addrs, chain_nft_tups)
+    return S, V_USD
 
-    return S, V_USD, keys_tup
+
+@enforce_types
+def _publisherDictToArray(
+    publishers: Dict[int, Dict[str, Union[str, None]]],
+    keys_tup: Tuple[List[str], List[Tuple[int, str]]],
+) -> np.ndarray:
+    """
+    @arguments
+      publishers -- dict of [chainID][nft_addr] : LP_addr or None
+      keys_tup -- tuple of (LP_addrs_list, chain_nft_tups)
+
+    @return
+      P -- 1d array of [chain_nft j] -- the LP i that published j. -1 if not LP
+    """
+    (chain_nft_tups, LP_addrs) = keys_tup
+    N_j = len(chain_nft_tups)
+
+    P = np.zeros(N_j, dtype=int)
+    for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
+        pub_addr = publishers[chainID][nft_addr] 
+        if pub_addr is None:
+            P[j] = -1
+        else:
+            assert pub_addr in LP_addrs, "can't find publisher in LP_addrs"
+            P[j] = LP_addrs.index(pub_addr)
+
+    return P
 
 
 @enforce_types
 def _calcRewardsUsd(
-    S, V_USD, DCV_multiplier: float, rewards_OCEAN: float
+    S: np.ndarray,
+    V_USD: np.ndarray,
+    P: np.ndarray,
+    DCV_multiplier: float,
+    rewards_OCEAN: float
 ) -> np.ndarray:
     """
     @arguments
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
+      P -- 1d array of [chain_nft j] -- the LP i that published j. -1 if not LP
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       rewards_OCEAN -- amount of rewards available, in OCEAN
 
@@ -143,6 +184,11 @@ def _calcRewardsUsd(
     # corner case
     if np.sum(V_USD) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
+
+    # modify S's: publishers get rewarded as if 2x stake on their asset
+    for j in range(N_j):
+        if P[j] != -1: # -1 = publisher didn't stake
+            S[P[j], j] *= 2.0
 
     # compute rewards
     R = np.zeros((N_i, N_j), dtype=float)
@@ -185,11 +231,14 @@ def _calcRewardsUsd(
 
 
 @enforce_types
-def _rewardArrayToDicts(R, keys_tup) -> Tuple[dict, dict]:
+def _rewardArrayToDicts(
+    R: np.ndarray,
+    keys_tup: Tuple[List[str], List[Tuple[int, str]]],
+) -> Tuple[dict, dict]:
     """
     @arguments
       R -- 2d array of [LP i, chain_nft j]; each entry is denominated in OCEAN
-      keys_tup -- tuple of (LP_addrs_list, chain_nfts_tup)
+      keys_tup -- tuple of (LP_addrs_list, chain_nft_tups)
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_reward_float
@@ -199,12 +248,12 @@ def _rewardArrayToDicts(R, keys_tup) -> Tuple[dict, dict]:
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    LP_addrs, chain_nfts_tup = keys_tup
+    LP_addrs, chain_nft_tups = keys_tup
 
     rewardsperlp: dict = {}
     rewardsinfo: dict = {}
     for i, LP_addr in enumerate(LP_addrs):
-        for j, (chainID, nft_addr) in enumerate(chain_nfts_tup):
+        for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
             assert R[i, j] >= 0.0, R[i, j]
             if R[i, j] == 0.0:
                 continue
@@ -225,24 +274,65 @@ def _rewardArrayToDicts(R, keys_tup) -> Tuple[dict, dict]:
 
 
 @enforce_types
-def _getNftAddrs(nftvols_USD: dict) -> List[str]:
-    nft_addr_set = set()
-    for chainID in nftvols_USD:
-        nft_addr_set |= set(nftvols_USD[chainID].keys())
-    return list(nft_addr_set)
+def _getChainNftTups(
+    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    nftvols_USD: Dict[int, Dict[str, str]],
+) -> List[Tuple[int,str]]:
+    """
+    @arguments
+      stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
+      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD_float
+
+    @return
+      chain_nft_tups -- list of (chainID, nft_addr), indexed by j
+    """
+    chainIDs = list(stakes.keys())
+    nft_addrs = _getNftAddrs(nftvols_USD)
+    chain_nft_tups = [
+        (chainID, nft_addr)  # all (chain, nft) tups with stake
+        for chainID in chainIDs
+        for nft_addr in nft_addrs
+        if nft_addr in stakes[chainID]
+    ]
+    return chain_nft_tups
 
 
 @enforce_types
-def _getLpAddrs(stakes: dict) -> List[str]:
-    LP_addr_set = set()
+def _getNftAddrs(nftvols_USD: Dict[int, Dict[str, str]]) -> List[str]:
+    """
+    @arguments
+      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD_float
+
+    @return
+      nft_addrs -- list of unique nft addrs. Order is consistent.
+    """
+    nft_addrs = set()
+    for chainID in nftvols_USD:
+        for nft_addr in nftvols_USD[chainID]:
+            nft_addrs.add(nft_addr)
+    import pdb; pdb.set_trace()
+    return sorted(nft_addrs)
+
+
+@enforce_types
+def _getLpAddrs(stakes: Dict[str, Dict[str, Dict[str, float]]]) -> List[str]:
+    """
+    @arguments
+      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD_float
+
+    @return
+      LP_addrs -- list of unique LP addrs. Order is consistent.
+    """
+    LP_addrs = set()
     for chainID in stakes:
         for nft_addr in stakes[chainID]:
-            LP_addr_set |= set(stakes[chainID][nft_addr].keys())
-    return list(LP_addr_set)
+            for LP_addr in stakes[chainID][nft_addr]:
+                LP_addrs.add(LP_addr)
+    return sorted(LP_addrs)
 
 
 @enforce_types
-def flattenRewards(rewards: dict) -> dict:
+def flattenRewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
     """
     @arguments
       rewards -- dict of [chainID][LP_addr] : reward_float
