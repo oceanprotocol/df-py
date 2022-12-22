@@ -65,75 +65,29 @@ jobs:
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
 
       - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          retry_wait_seconds: 60
-          command: |
-            ./dftool getrate OCEAN $date $now $CSV_DIR
-            ./dftool getrate ETH $date $now $CSV_DIR
-            ./dftool getrate BNB $date $now $CSV_DIR
-            ./dftool getrate EWT $date $now $CSV_DIR
-            ./dftool getrate MOVR $date $now $CSV_DIR
-            ./dftool getrate MATIC $date $now $CSV_DIR
+        run: |
+          ./dftool getrate OCEAN $date $now $CSV_DIR
+          ./dftool getrate ETH $date $now $CSV_DIR
+          ./dftool getrate BNB $date $now $CSV_DIR
+          ./dftool getrate EWT $date $now $CSV_DIR
+          ./dftool getrate MOVR $date $now $CSV_DIR
+          ./dftool getrate MATIC $date $now $CSV_DIR
 
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool query $date $now 200 $CSV_DIR 1
+      - name: Run dftool query
+        run: |
+          ./dftool query $date $now 200 $CSV_DIR 1
+          ./dftool query $date $now 200 $CSV_DIR 56
+          ./dftool query $date $now 200 $CSV_DIR 137
+          ./dftool query $date $now 200 $CSV_DIR 246
+          ./dftool query $date $now 200 $CSV_DIR 1285
 
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool query $date $now 200 $CSV_DIR 56
+      - name: Run dftool vebals
+        run: |
+          ./dftool vebals $date $now 200 $CSV_DIR 1
 
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool query $date $now 200 $CSV_DIR 137
-      
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool query $date $now 200 $CSV_DIR 246
-
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool query $date $now 200 $CSV_DIR 1285
-
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool vebals $date $now 200 $CSV_DIR 1
-      
-      - name: Run dftool getrate
-        uses: nick-fields/retry@v2
-        with:
-          max_attempts: 5
-          retry_on: error
-          timeout_minutes: 60
-          command: ./dftool allocations $date $now 200 $CSV_DIR 1
+      - name: Run dftool allocations
+        run: |
+          ./dftool allocations $date $now 200 $CSV_DIR 1
 
       - name: Run sed
         run: |
