@@ -545,6 +545,7 @@ def test_populateNftAssetNames():
 
 
 testfunc_callcount = 0
+
 @enforce_types
 def test_retryFunction():
     # pylint: disable=global-variable-undefined
