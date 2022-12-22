@@ -244,9 +244,7 @@ def test_rewardsperlp_main(tmp_path):
 
 
 @enforce_types
-def test_rewardsinfo(
-    tmp_path, network_setup_and_teardown
-):  # pylint: disable=unused-argument
+def test_rewardsinfo(tmp_path):
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},

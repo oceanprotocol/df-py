@@ -75,8 +75,13 @@ python -m venv venv
 #activate env
 source venv/bin/activate
 
-#install dependencies
+# Avoid errors for the step that follows
 pip install wheel
+
+# Install Ocean library. We need the pre-release, to get ocean.py v2.0
+pip3 install --pre ocean-lib
+
+#install other dependencies. We don't want or use pre-releases here
 pip install -r requirements.txt
 
 #install openzeppelin library, to import from .sol (ignore FileExistsErrors)
@@ -243,22 +248,3 @@ Here are the steps:
 - To access the accounts in hw use: brownie.network.accounts
 
 (Discussion in [this issue](https://github.com/oceanprotocol/df-issues/issues/66).)
-
-# Usage: Brownie Console
-
-From terminal:
-```console
-brownie console
-```
-
-In brownie console:
-```python
->>> t = Simpletoken.deploy("TEST", "Test Token", 18, 100, {'from': accounts[0]})
-Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9c2b8
-  Gas price: 0.0 gwei   Gas limit: 6721975   Nonce: 0
-  Simpletoken.constructor confirmed   Block: 1   Gas used: 551616 (8.21%)
-  Simpletoken deployed at: 0x3194cBDC3dbcd3E11a07892e7bA5c3394048Cc87
-
->>> t.symbol()                                                                                                                                                                                              
-'TEST'
-```

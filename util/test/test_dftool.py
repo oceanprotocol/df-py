@@ -190,37 +190,31 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def test_manyrandom():
-    cmd = f"./dftool manyrandom {networkutil.DEV_CHAINID}"
-    output_s = ""
-    with subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    ) as proc:
-        while proc.poll() is None:
-            output_s += proc.stdout.readline().decode("ascii")
-    return_code = proc.wait()
-    assert return_code == 0, f"Error. \n{output_s}"
-
-
-@enforce_types
 def test_noarg_commands():
     # Test commands that have no args. They're usually help commands;
     # sometimes they do the main work (eg compile).
     argv1s = [
         "",
-        "query",
         "getrate",
+        "query",
+        "allocations",
+        "vebals",
         "calc",
         "dispense",
-        "querymany",
+        "dispense_passive",
+        
         "compile",
-        "manyrandom",
-        "newdfrewards",
+        
+        "checkpoint_feedist",
+        
         "mine",
         "newacct",
-        "newtoken",
+        
+        "veSetAllocation",
+        
         "acctinfo",
         "chaininfo",
+        "help",
     ]
     for argv1 in argv1s:
         print(f"Test dftool {argv1}")
