@@ -70,6 +70,7 @@ jobs:
           max_attempts: 5
           retry_on: error
           timeout_minutes: 60
+          retry_wait_seconds: 60
           command: |
             ./dftool getrate OCEAN $date $now $CSV_DIR
             ./dftool getrate ETH $date $now $CSV_DIR
