@@ -49,6 +49,8 @@ jobs:
           pip install -r requirements.txt --quiet
 
       - name: Set up Openzeppelin
+        with: 
+          github-token: ${{ secrets.GITHUB_TOKEN }}
         run: |
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
