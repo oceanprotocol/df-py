@@ -82,6 +82,17 @@ def data_nft_factory(config):
     return DataNFTFactoryContract(config, address)
 
 
+# ========================================================================
+@pytest.fixture
+def alice():
+    return _get_wallet(1)
+
+
+@pytest.fixture
+def bob():
+    return _get_wallet(2)
+
+
 
 # ========================================================================
 # from ocean.py ./tests/resources/helper_functions.py
@@ -102,14 +113,3 @@ def _get_ocean_instance() -> Ocean:
     config_dict = get_config_dict()
     ocean = Ocean(config_dict)
     return ocean
-
-
-# ========================================================================
-@enforce_types
-def alice():
-    return get_wallet(1)
-
-
-@enforce_types
-def bob():
-    return get_wallet(2)
