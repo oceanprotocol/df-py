@@ -142,14 +142,17 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
     assert len(unlock_times) > 0
     assert sum(unlock_times.values()) > 0
 
+    veOCEAN = FIXME
+
     for account in veBalances:
-        bal = oceanutil.get_ve_balance(account) / 1e18
+        t = brownie.network.chain.time()
+        bal = fromBase18(veOCEAN.balanceOf(account, t))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
         assert veBalances[account] == approx(bal, 0.001)
 
-        lock = oceanutil.veOCEAN().locked(account)
+        lock = veOCEAN.locked(account)
         assert fromBase18(lock[0]) == locked_amts[account]
         assert lock[1] == unlock_times[account]
 

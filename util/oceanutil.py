@@ -9,10 +9,6 @@ from enforce_typing import enforce_types
 from util.constants import ZERO_ADDRESS
 
 
-def get_ve_balance(account):
-    return veOCEAN().balanceOf(account, brownie.network.chain.time())
-
-
 # =============================================================================
 # fee stuff needed for consume
 

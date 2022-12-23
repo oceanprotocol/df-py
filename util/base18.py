@@ -1,8 +1,8 @@
 from enforce_typing import enforce_types
-
+from typing import Union
 
 @enforce_types
-def toBase18(amt: float) -> int:
+def toBase18(amt: Union[float, int]) -> int:
     return int(amt * 1e18)
 
 
