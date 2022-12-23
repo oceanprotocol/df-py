@@ -1,6 +1,8 @@
 import brownie
 from enforce_typing import enforce_types
 
+from ocean_lib.models.arguments import DataNFTArguments, DatatokenArguments
+
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
 from util import networkutil, oceanutil
@@ -9,8 +11,8 @@ accounts, a1, a2, a3 = None, None, None, None
 
 
 @enforce_types
-def test_basic():
-    TOK = _deployTOK(accounts[0])
+def test_basic(ocean):
+    TOK = _deployTOK(ocean, accounts[0])
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     assert df_rewards.claimable(a1, TOK.address) == 0
 
@@ -30,8 +32,8 @@ def test_lostETH():
 
 
 @enforce_types
-def test_TOK():
-    TOK = _deployTOK(accounts[9])
+def test_TOK(ocean):
+    TOK = _deployTOK(ocean, accounts[9])
     TOK.transfer(accounts[0].address, toBase18(100.0), {"from": accounts[9]})
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
@@ -63,7 +65,7 @@ def test_TOK():
 
 
 @enforce_types
-def test_OCEAN():
+def test_OCEAN(ocean):
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
@@ -84,9 +86,9 @@ def test_OCEAN():
 
 
 @enforce_types
-def test_multiple_TOK():
-    TOK1 = _deployTOK(accounts[0])
-    TOK2 = _deployTOK(accounts[0])
+def test_multiple_TOK(ocean):
+    TOK1 = _deployTOK(ocean, accounts[0])
+    TOK2 = _deployTOK(ocean, accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
@@ -137,7 +139,7 @@ def test_multiple_TOK():
     assert TOK2.balanceOf(a1) == 15
 
 
-def test_bad_token():
+def test_bad_token(ocean):
     badToken = B.Badtoken.deploy(
         "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
     )
@@ -152,8 +154,8 @@ def test_bad_token():
         df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
 
 
-def test_strategies():
-    TOK = _deployTOK(accounts[0])
+def test_strategies(ocean):
+    TOK = _deployTOK(ocean, accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DummyStrategy.deploy(df_rewards.address, {"from": accounts[0]})
@@ -215,7 +217,7 @@ def test_strategies():
 
 
 @enforce_types
-def _test_claim_and_restake():
+def _test_claim_and_restake(ocean):
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
@@ -264,8 +266,13 @@ def _test_claim_and_restake():
 
 
 @enforce_types
-def _deployTOK(account):
-    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
+def _deployTOK(ocean, account):
+    data_NFT = ocean.data_nft_factory.create(DataNFTArguments('1','1'), account)
+    cap = toBase18(100.0)
+    DT = data_NFT.create_datatoken(
+        DatatokenArguments('TOK','TOK',cap=toBase18(100.0)), account
+    )
+    return (data_NFT, DT)
 
 
 @enforce_types

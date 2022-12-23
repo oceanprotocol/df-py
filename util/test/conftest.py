@@ -7,9 +7,11 @@ import os
 from brownie.network import accounts
 from enforce_typing import enforce_types
 import pytest
+from typing import Tuple
 
 from ocean_lib.example_config import get_config_dict
 from ocean_lib.ocean.util import get_address_of_type
+from ocean_lib.models.arguments import DataNFTArguments, DatatokenArguments
 from ocean_lib.models.data_nft import DataNFT
 from ocean_lib.models.data_nft_factory import DataNFTFactoryContract
 from ocean_lib.models.datatoken import Datatoken
@@ -81,6 +83,23 @@ def OCEAN(config, OCEAN_address) -> Datatoken:
 def data_nft_factory(config):
     address = get_address_of_type(config, "ERC721Factory")
     return DataNFTFactoryContract(config, address)
+
+
+@pytest.fixture
+def data_NFT_and_DT(ocean, alice) -> Tuple[DataNFT, Datatoken]:
+    data_NFT = ocean.data_nft_factory.create(DataNFTArguments('1','1'), alice)
+    DT = data_NFT.create_datatoken(DatatokenArguments('1','1'), alice)
+    return (data_NFT, DT)
+
+
+@pytest.fixture
+def data_NFT(data_NFT_and_DT) -> DataNFT:
+    return data_NFT_and_DT[0]
+
+
+@pytest.fixture
+def DT(data_NFT_and_DT) -> Datatoken:
+    return data_NFT_and_DT[1]
 
 
 # ========================================================================
