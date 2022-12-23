@@ -1,12 +1,15 @@
 from enforce_typing import enforce_types
 
+from util.base18 import toBase18, fromBase18
+
 
 @enforce_types
-def test_createDataset(ocean, alice):
-    name = "Branin dataset"
-    url = "https://raw.githubusercontent.com/trentmc/branin/main/branin.arff"
-    (data_nft, datatoken, ddo) = ocean.assets.create_url_asset(name, url, alice)
-    assert data_NFT.name() == name
+def test_createDataNFT(ocean, alice):
+    from ocean_lib.models.arguments import DataNFTArguments
+    args = DataNFTArguments('NFT1', 'NFT1')
+    data_NFT = ocean.data_nft_factory.create(args, alice)
+    assert data_NFT.name() == 'NFT1'
+    
 
     
 @enforce_types

@@ -8,7 +8,6 @@ from brownie.network import accounts
 from enforce_typing import enforce_types
 import pytest
 
-from util.base18 import toBase18
 from ocean_lib.example_config import get_config_dict
 from ocean_lib.ocean.util import get_address_of_type
 from ocean_lib.models.data_nft import DataNFT
@@ -17,6 +16,8 @@ from ocean_lib.models.datatoken import Datatoken
 from ocean_lib.ocean.ocean import Ocean
 from ocean_lib.web3_internal.contract_utils import get_contracts_addresses_all_networks
 from ocean_lib.web3_internal.utils import connect_to_network
+
+from util.base18 import toBase18, fromBase18
 
 _NETWORK = "ganache"
 
@@ -33,7 +34,7 @@ def setup_all(request, config, OCEAN):
         return
 
     wallet = _get_ganache_wallet()
-
+    
     if not wallet:
         return
 
@@ -98,14 +99,21 @@ def bob():
 # from ocean.py ./tests/resources/helper_functions.py
 @enforce_types
 def _get_wallet(index: int):
-    return accounts.add(os.getenv(f"TEST_PRIVATE_KEY{index}"))
+    private_key = os.getenv(f"TEST_PRIVATE_KEY{index}")
+    if not private_key:        
+        if index == 1:
+            private_key = "0x8467415bb2ba7c91084d932276214b11a3dd9bdb2930fefa194b666dd8020b99"
+        elif index == 2:
+            private_key = "0x1d751ded5a32226054cd2e71261039b65afb9ee1c746d055dd699b1150a5befc"
+        else:
+            raise ValueError("need default private keys for index > 2")
+    return accounts.add(private_key)
 
 
 @enforce_types
 def _get_ganache_wallet():
-    return accounts.add(
-        "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58"
-    )
+    private_key = "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58"
+    return accounts.add(private_key)
 
 
 @enforce_types
