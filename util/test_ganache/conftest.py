@@ -16,6 +16,7 @@ from ocean_lib.models.data_nft import DataNFT
 from ocean_lib.models.data_nft_factory import DataNFTFactoryContract
 from ocean_lib.models.datatoken import Datatoken
 from ocean_lib.ocean.ocean import Ocean
+from ocean_lib.ocean.util import get_address_of_type
 from ocean_lib.web3_internal.contract_utils import get_contracts_addresses_all_networks
 from ocean_lib.web3_internal.utils import connect_to_network
 
@@ -62,28 +63,23 @@ def setup_all(request, config, OCEAN):
 def config():
     return get_config_dict()
 
-
 @pytest.fixture
 def ocean():
     return _get_ocean_instance()
 
-
 @pytest.fixture
 def OCEAN_address(config) -> str:
     return get_address_of_type(config, "Ocean")
-
 
 @pytest.fixture
 def OCEAN(config, OCEAN_address) -> Datatoken:
     connect_to_network("development")
     return Datatoken(config, OCEAN_address)
 
-
 @pytest.fixture
 def data_nft_factory(config):
     address = get_address_of_type(config, "ERC721Factory")
     return DataNFTFactoryContract(config, address)
-
 
 @pytest.fixture
 def data_NFT_and_DT(ocean, alice) -> Tuple[DataNFT, Datatoken]:
@@ -91,11 +87,9 @@ def data_NFT_and_DT(ocean, alice) -> Tuple[DataNFT, Datatoken]:
     DT = data_NFT.create_datatoken(DatatokenArguments('1','1'), alice)
     return (data_NFT, DT)
 
-
 @pytest.fixture
 def data_NFT(data_NFT_and_DT) -> DataNFT:
     return data_NFT_and_DT[0]
-
 
 @pytest.fixture
 def DT(data_NFT_and_DT) -> Datatoken:
@@ -112,6 +106,32 @@ def alice():
 def bob():
     return _get_wallet(2)
 
+# ========================================================================
+# replace these with ocean.df_rewards() etc once ocean.py supports (#1235)
+#  -as of Dec 23, 2022 there's an ocean.py PR (#1236)
+from ocean_lib.web3_internal.contract_base import ContractBase
+
+class DFStrategyV1(ContractBase):
+    CONTRACT_NAME = "DFStrategyV1"
+    
+class DFRewards(ContractBase):
+    CONTRACT_NAME = "DFRewards"
+
+@pytest.fixture
+def df_rewards(config) -> DFRewards:
+    return DFRewards(config, _addr(config, "DFRewards"))
+
+@pytest.fixture
+def df_strategy_v1(config) -> DFStrategyV1:
+    return DFStrategyV1(config, _addr(config, "DFRewards"))
+
+@pytest.fixture
+def df_strategy(df_strategy_v1) -> DFStrategyV1: # alias for df_strategy_v1
+    return df_strategy_v1
+
+@enforce_types
+def _addr(config: dict, type_str: str):
+    return get_address_of_type(config, type_str)
 
 
 # ========================================================================
