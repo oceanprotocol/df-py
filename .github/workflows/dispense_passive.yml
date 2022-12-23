@@ -2,7 +2,7 @@ name: Dispense Passive Rewards
 
 on:
   schedule:
-    - cron: "0 0 * * 5"
+    - cron: "33 14 * * 5"
   workflow_dispatch:
     inputs:
       amt_of_tokens:
@@ -11,17 +11,11 @@ on:
         default: "10000"
 
 jobs:
-  # we already have a test flow in test.yml
-  # re-use that flow
-  run-tests:
-    uses: ./.github/workflows/test.yml
-
   dispense-passive:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8]
-    needs: run-tests
     steps:
       - uses: actions/checkout@v2
 
