@@ -7,22 +7,24 @@ from util.constants import BROWNIE_PROJECT as B
 from util.base18 import toBase18
 from util import networkutil, oceanutil
 
-
-@enforce_types
-def test_basic(data_NFT, alice, df_rewards):
-    TOK = _deployTOK(data_NFT, alice)
-    assert df_rewards.claimable(alice.address, TOK.address) == 0
+accounts, a1, a2, a3, a4 = None, None, None, None, None
 
 
 @enforce_types
-def test_TOK(data_NFT, df_rewards, df_strategy):
-    TOK = _deployTOK(data_NFT, accounts[9])
-    TOK.transfer(acc0, toBase18(100.0), {"from": accounts[9]})
+def test_basic(data_nft_factory, df_rewards):
+    TOK = _deployTOK(data_nft_factory, accounts[0])
+    assert df_rewards.claimable(accounts[0].address, TOK.address) == 0
+
+
+@enforce_types
+def test_TOK(data_nft_factory, df_rewards, df_strategy):
+    TOK = _deployTOK(data_nft_factory, accounts[4])
+    TOK.transfer(accounts[0], toBase18(100.0), {"from": accounts[4]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
-    TOK.approve(df_rewards, sum(values), {"from": acc0})
-    df_rewards.allocate(tos, values, TOK.address, {"from": acc0})
+    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
+    df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     assert df_rewards.claimable(a1, TOK.address) == 10
     assert df_rewards.claimable(a2, TOK.address) == 20
@@ -38,21 +40,18 @@ def test_TOK(data_NFT, df_rewards, df_strategy):
     df_strategy.claim([TOK.address], {"from": accounts[2]})
     assert TOK.balanceOf(a2) == 20
 
-    # a9 claims for a3
+    # a4 claims for a3
     assert TOK.balanceOf(a3) == 0
     df_rewards.claimFor(a3, TOK.address, {"from": accounts[9]})
     assert TOK.balanceOf(a3) == 30
 
 
 @enforce_types
-def test_OCEAN(ocean, df_rewards, df_strategy):
-    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
-    OCEAN = oceanutil.OCEANtoken()
-    assert OCEAN.balanceOf(acc0) >= 10
+def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
+    assert OCEAN.balanceOf(accounts[0]) >= 10
 
-    OCEAN.approve(df_rewards, 10, {"from": acc0})
-    df_rewards.allocate([a1], [10], OCEAN.address, {"from": acc0})
+    OCEAN.approve(df_rewards, 10, {"from": accounts[0]})
+    df_rewards.allocate([a1], [10], OCEAN.address, {"from": accounts[0]})
 
     assert df_rewards.claimable(a1, OCEAN.address) == 10
 
@@ -63,22 +62,22 @@ def test_OCEAN(ocean, df_rewards, df_strategy):
 
 
 @enforce_types
-def test_multiple_TOK(ocean, df_rewards, df_strategy):
-    data_NFT1 = ocean.data_nft_factory.create(DataNFTArguments('1','1'), acc0)
-    data_NFT2 = ocean.data_nft_factory.create(DataNFTArguments('2','2'), acc0)
+def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
+    data_NFT1 = data_nft_factory.create(DataNFTArguments('1','1'), accounts[0])
+    data_NFT2 = data_nft_factory.create(DataNFTArguments('2','2'), accounts[0])
     
-    TOK1 = _deployTOK(data_NFT1, acc0)
-    TOK2 = _deployTOK(data_NFT2, acc0)
+    TOK1 = _deployTOK(data_NFT1, accounts[0])
+    TOK2 = _deployTOK(data_NFT2, accounts[0])
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
-    TOK1.approve(df_rewards, sum(values), {"from": acc0})
-    TOK2.approve(df_rewards, sum(values) + 15, {"from": acc0})
+    TOK1.approve(df_rewards, sum(values), {"from": accounts[0]})
+    TOK2.approve(df_rewards, sum(values) + 15, {"from": accounts[0]})
 
-    df_rewards.allocate(tos, values, TOK1.address, {"from": acc0})
+    df_rewards.allocate(tos, values, TOK1.address, {"from": accounts[0]})
     df_rewards.allocate(
-        tos, [x + 5 for x in values], TOK2.address, {"from": acc0}
+        tos, [x + 5 for x in values], TOK2.address, {"from": accounts[0]}
     )
 
     assert df_strategy.claimables(a1, [TOK1.address, TOK2.address]) == [10, 15]
@@ -118,26 +117,26 @@ def test_multiple_TOK(ocean, df_rewards, df_strategy):
 
 def test_bad_token(ocean, df_rewards):
     badToken = B.Badtoken.deploy(
-        "BAD", "BAD", 18, toBase18(10000.0), {"from": acc0}
+        "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
     )
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
-    badToken.approve(df_rewards, sum(values), {"from": acc0})
+    badToken.approve(df_rewards, sum(values), {"from": accounts[0]})
 
     with brownie.reverts("Not enough tokens"):
-        df_rewards.allocate(tos, values, badToken.address, {"from": acc0})
+        df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
 
 
-def test_strategies(data_NFT, df_rewards, df_strategy):
-    TOK = _deployTOK(data_NFT, acc0)
+def test_strategies(data_nft_factory, df_rewards, df_strategy):
+    TOK = _deployTOK(data_nft_factory, accounts[0])
 
     # allocate rewards
     tos = [a1, a2, a3]
     values = [10, 20, 30]
-    TOK.approve(df_rewards, sum(values), {"from": acc0})
-    df_rewards.allocate(tos, values, TOK.address, {"from": acc0})
+    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
+    df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     assert TOK.balanceOf(df_strategy) == 0
     with brownie.reverts("Caller doesn't match"):
@@ -194,7 +193,7 @@ def test_claim_and_restake(ocean, df_rewards, df_strategy):
     address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
-    deployer = acc0
+    deployer = accounts[0]
     bob = accounts[1]
 
     OCEAN.transfer(bob, 100, {"from": deployer})
@@ -237,9 +236,23 @@ def test_claim_and_restake(ocean, df_rewards, df_strategy):
 
 
 @enforce_types
-def _deployTOK(data_NFT, account):
+def _deployTOK(data_nft_factory, account):
     assert account is not None
+    data_NFT = data_nft_factory.create(DataNFTArguments('1','1'), account)
     cap = toBase18(100.0)
     args = DatatokenArguments('TOK','TOK',cap=toBase18(100.0))
     TOK = data_NFT.create_datatoken(args, account)
     return TOK
+
+@enforce_types
+def setup_function():
+    global accounts, a1, a2, a3, a4
+    accounts = brownie.network.accounts
+    while len(accounts) < 5:
+        print("sdfafdsafsd")
+        accounts.add()
+        
+    a1 = accounts[1].address
+    a2 = accounts[2].address
+    a3 = accounts[3].address
+    a4 = accounts[4].address

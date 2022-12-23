@@ -10,7 +10,6 @@ import pytest
 from typing import Tuple
 
 from ocean_lib.example_config import get_config_dict
-from ocean_lib.ocean.util import get_address_of_type
 from ocean_lib.models.arguments import DataNFTArguments, DatatokenArguments
 from ocean_lib.models.data_nft import DataNFT
 from ocean_lib.models.data_nft_factory import DataNFTFactoryContract
@@ -50,7 +49,7 @@ def setup_all(request, config, OCEAN):
     amt_distribute = toBase18(1000)
     OCEAN.mint(wallet.address, toBase18(20000), {"from": wallet})
 
-    for i in [1, 2]:
+    for i in range(1, 5):
         w = _get_wallet(i)
         if w.balance() < toBase18(2):
             wallet.transfer(w, toBase18(4))
@@ -69,7 +68,7 @@ def ocean():
 
 @pytest.fixture
 def OCEAN_address(config) -> str:
-    return get_address_of_type(config, "Ocean")
+    return _addr(config, "Ocean")
 
 @pytest.fixture
 def OCEAN(config, OCEAN_address) -> Datatoken:
@@ -78,8 +77,7 @@ def OCEAN(config, OCEAN_address) -> Datatoken:
 
 @pytest.fixture
 def data_nft_factory(config):
-    address = get_address_of_type(config, "ERC721Factory")
-    return DataNFTFactoryContract(config, address)
+    return DataNFTFactoryContract(config, _addr(config, "ERC721Factory"))
 
 @pytest.fixture
 def data_NFT_and_DT(ocean, alice) -> Tuple[DataNFT, Datatoken]:
@@ -136,23 +134,32 @@ def _addr(config: dict, type_str: str):
 
 # ========================================================================
 # from ocean.py ./tests/resources/helper_functions.py
+_WALLETS = {}
+_DEFAULT_KEYS = [
+    "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58",
+    "0x8467415bb2ba7c91084d932276214b11a3dd9bdb2930fefa194b666dd8020b99",
+    "0x1d751ded5a32226054cd2e71261039b65afb9ee1c746d055dd699b1150a5befc"
+]
 @enforce_types
 def _get_wallet(index: int):
-    private_key = os.getenv(f"TEST_PRIVATE_KEY{index}")
-    if not private_key:        
-        if index == 1:
-            private_key = "0x8467415bb2ba7c91084d932276214b11a3dd9bdb2930fefa194b666dd8020b99"
-        elif index == 2:
-            private_key = "0x1d751ded5a32226054cd2e71261039b65afb9ee1c746d055dd699b1150a5befc"
+    global _WALLETS, _DEFAULT_KEYS
+
+    if index not in _WALLETS:    
+        private_key = os.getenv(f"TEST_PRIVATE_KEY{index}")
+        if not private_key and index < len(_DEFAULT_KEYS):
+            private_key = _DEFAULT_KEYS[index]
+            
+        if private_key:
+            _WALLETS[index] = accounts.add(private_key)
         else:
-            raise ValueError("need default private keys for index > 2")
-    return accounts.add(private_key)
+            _WALLETS[index] = accounts.add()
+
+    return _WALLETS[index]
 
 
 @enforce_types
 def _get_ganache_wallet():
-    private_key = "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58"
-    return accounts.add(private_key)
+    return _get_wallet(0)
 
 
 @enforce_types
