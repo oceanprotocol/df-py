@@ -2,7 +2,7 @@ name: Dispense Passive Rewards
 
 on:
   schedule:
-    - cron: "33 14 * * 5"
+    - cron: "38 14 * * 5"
   workflow_dispatch:
     inputs:
       amt_of_tokens:
