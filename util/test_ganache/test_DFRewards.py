@@ -23,12 +23,11 @@ def test_TOK(data_nft_factory, df_rewards, df_strategy):
 
     # main work
     TOK = _deployTOK(data_nft_factory, accounts[4])
-    import pdb; pdb.set_trace()
     TOK.transfer(accounts[0], toBase18(100.0), {"from": accounts[4]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
-    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
+    TOK.approve(df_rewards.address, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     assert df_rewards.claimable(a1, TOK.address) == 10
@@ -148,7 +147,7 @@ def test_strategies(data_nft_factory, df_rewards, df_strategy):
     # allocate rewards
     tos = [a1, a2, a3]
     values = [10, 20, 30]
-    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
+    TOK.approve(df_rewards.address, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     assert TOK.balanceOf(df_strategy) == 0
@@ -250,8 +249,9 @@ def test_claim_and_restake(ocean, df_rewards, df_strategy):
 
 @enforce_types
 def _deployTOK(data_nft_factory, account):
+    """Deploy ERC20 token 'TOK', and mint 100 tokens"""
     data_NFT = data_nft_factory.create(DataNFTArguments('1','1'), account)
-    cap = toBase18(100.0)
-    args = DatatokenArguments('TOK', 'TOK', cap=toBase18(100.0))
+    args = DatatokenArguments('TOK', 'TOK')
     TOK = data_NFT.create_datatoken(args, account)
+    TOK.mint(account, toBase18(100.0), {"from": account})
     return TOK
