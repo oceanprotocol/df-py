@@ -15,56 +15,75 @@ from ocean_lib.models.data_nft import DataNFT
 from ocean_lib.models.data_nft_factory import DataNFTFactoryContract
 from ocean_lib.models.datatoken import Datatoken
 from ocean_lib.ocean.ocean import Ocean
+from ocean_lib.ocean.mint_fake_ocean import mint_fake_OCEAN
 from ocean_lib.ocean.util import get_address_of_type
 from ocean_lib.web3_internal.contract_utils import get_contracts_addresses_all_networks
 from ocean_lib.web3_internal.utils import connect_to_network
 
 from util.base18 import toBase18, fromBase18
 
-_NETWORK = "ganache"
-
 
 # ========================================================================
 # from ocean.py ./conftest_ganache.py
 @pytest.fixture(autouse=True)
 def setup_all(request, config, OCEAN):
-    connect_to_network("development")
-    accounts.clear()
-
     # a test can skip setup_all() via decorator "@pytest.mark.nosetup_all"
     if "nosetup_all" in request.keywords:
         return
 
-    wallet = _get_ganache_wallet()
+    connect_to_network("development")
     
-    if not wallet:
-        return
-
     if not get_contracts_addresses_all_networks(config):
         print("Can not find addresses.")
         return
 
-    assert wallet.balance() >= toBase18(10), "need more eth"
-    
-    amt_distribute = toBase18(1000)
-    OCEAN.mint(wallet.address, toBase18(20000), {"from": wallet})
+    accounts.clear()
 
-    for i in range(1, 5):
-        w = _get_wallet(i)
-        if w.balance() < toBase18(2):
-            wallet.transfer(w, toBase18(4))
+    # keys 0, 1, 2 go with ocean.py values. Key 3 is arbitrary
+    # (mostly to play well with mint_fake_ocean).
+    from collections import OrderedDict
+    private_keys = OrderedDict({
+        "FACTORY_DEPLOYER_PRIVATE_KEY" : "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58",
+        "TEST_PRIVATE_KEY1" : "0x8467415bb2ba7c91084d932276214b11a3dd9bdb2930fefa194b666dd8020b99",
+        "TEST_PRIVATE_KEY2" : "0x1d751ded5a32226054cd2e71261039b65afb9ee1c746d055dd699b1150a5befc",
+        "TEST_PRIVATE_KEY3" : "0xf0fdd6852028a8cdcbb7995c717fd0649a12c45c9bd072ccf1166b02d147cc27"
+    })
 
-        if OCEAN.balanceOf(w) < toBase18(100):
-            OCEAN.mint(w, amt_distribute, {"from": wallet})
+    # create accounts
+    for private_key in private_keys.values():
+        accounts.add(private_key)
+
+    #set envvars. Will overwrite old ones
+    for envvar_name, private_key in private_keys.items():
+        os.environ[envvar_name] = private_key
+
+    accounts[0].transfer(accounts[3], toBase18(10.0))
+
+    # ensure each account has ETH
+    for i, account in enumerate(accounts):
+        assert account.balance() > 0, print(f"account {i} has no ETH")
+
+    # ensure that accounts have OCEAN
+    mint_fake_OCEAN(config)
+    for i, account in enumerate(accounts):
+        assert OCEAN.balanceOf(account) > 0, print(f"account {i} has no OCEAN")
+
+    # amt_distribute = toBase18(1000)
+    # OCEAN.mint(wallet.address, toBase18(20000), {"from": accounts[0]})
+
+    # for account in accounts[:2]:
+    #     if OCEAN.balanceOf(account) < toBase18(100):
+    #         OCEAN.mint(account, amt_distribute, {"from": accounts[0]})
 
 
 @pytest.fixture
-def config():
+def config() -> dict:
     return get_config_dict()
 
 @pytest.fixture
-def ocean():
-    return _get_ocean_instance()
+def ocean() -> Ocean:
+    config_dict = get_config_dict()
+    return Ocean(config_dict)
 
 @pytest.fixture
 def OCEAN_address(config) -> str:
@@ -72,26 +91,11 @@ def OCEAN_address(config) -> str:
 
 @pytest.fixture
 def OCEAN(config, OCEAN_address) -> Datatoken:
-    connect_to_network("development")
     return Datatoken(config, OCEAN_address)
 
 @pytest.fixture
 def data_nft_factory(config):
     return DataNFTFactoryContract(config, _addr(config, "ERC721Factory"))
-
-@pytest.fixture
-def data_NFT_and_DT(ocean, alice) -> Tuple[DataNFT, Datatoken]:
-    data_NFT = ocean.data_nft_factory.create(DataNFTArguments('1','1'), alice)
-    DT = data_NFT.create_datatoken(DatatokenArguments('1','1'), alice)
-    return (data_NFT, DT)
-
-@pytest.fixture
-def data_NFT(data_NFT_and_DT) -> DataNFT:
-    return data_NFT_and_DT[0]
-
-@pytest.fixture
-def DT(data_NFT_and_DT) -> Datatoken:
-    return data_NFT_and_DT[1]
 
 
 # ========================================================================
@@ -132,38 +136,4 @@ def _addr(config: dict, type_str: str):
     return get_address_of_type(config, type_str)
 
 
-# ========================================================================
-# from ocean.py ./tests/resources/helper_functions.py
-_WALLETS = {}
-_DEFAULT_KEYS = [
-    "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58",
-    "0x8467415bb2ba7c91084d932276214b11a3dd9bdb2930fefa194b666dd8020b99",
-    "0x1d751ded5a32226054cd2e71261039b65afb9ee1c746d055dd699b1150a5befc"
-]
-@enforce_types
-def _get_wallet(index: int):
-    global _WALLETS, _DEFAULT_KEYS
 
-    if index not in _WALLETS:    
-        private_key = os.getenv(f"TEST_PRIVATE_KEY{index}")
-        if not private_key and index < len(_DEFAULT_KEYS):
-            private_key = _DEFAULT_KEYS[index]
-            
-        if private_key:
-            _WALLETS[index] = accounts.add(private_key)
-        else:
-            _WALLETS[index] = accounts.add()
-
-    return _WALLETS[index]
-
-
-@enforce_types
-def _get_ganache_wallet():
-    return _get_wallet(0)
-
-
-@enforce_types
-def _get_ocean_instance() -> Ocean:
-    config_dict = get_config_dict()
-    ocean = Ocean(config_dict)
-    return ocean
