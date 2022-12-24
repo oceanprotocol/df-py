@@ -46,7 +46,6 @@ def setup_all(request, config, OCEAN):
         "FACTORY_DEPLOYER_PRIVATE_KEY" : "0xc594c6e5def4bab63ac29eed19a134c130388f74f019bc74b8f4389df2837a58",
         "TEST_PRIVATE_KEY1" : "0x8467415bb2ba7c91084d932276214b11a3dd9bdb2930fefa194b666dd8020b99",
         "TEST_PRIVATE_KEY2" : "0x1d751ded5a32226054cd2e71261039b65afb9ee1c746d055dd699b1150a5befc",
-        "TEST_PRIVATE_KEY3" : "0xf0fdd6852028a8cdcbb7995c717fd0649a12c45c9bd072ccf1166b02d147cc27"
     })
 
     # create accounts
@@ -57,8 +56,6 @@ def setup_all(request, config, OCEAN):
     for envvar_name, private_key in private_keys.items():
         os.environ[envvar_name] = private_key
 
-    accounts[0].transfer(accounts[3], toBase18(10.0))
-
     # ensure each account has ETH
     for i, account in enumerate(accounts):
         assert account.balance() > 0, print(f"account {i} has no ETH")
@@ -67,13 +64,6 @@ def setup_all(request, config, OCEAN):
     mint_fake_OCEAN(config)
     for i, account in enumerate(accounts):
         assert OCEAN.balanceOf(account) > 0, print(f"account {i} has no OCEAN")
-
-    # amt_distribute = toBase18(1000)
-    # OCEAN.mint(wallet.address, toBase18(20000), {"from": accounts[0]})
-
-    # for account in accounts[:2]:
-    #     if OCEAN.balanceOf(account) < toBase18(100):
-    #         OCEAN.mint(account, amt_distribute, {"from": accounts[0]})
 
 
 @pytest.fixture

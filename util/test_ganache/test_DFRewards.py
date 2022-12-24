@@ -1,13 +1,11 @@
 import brownie
+from brownie.network import accounts
 from enforce_typing import enforce_types
-
 from ocean_lib.models.arguments import DataNFTArguments, DatatokenArguments
 
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import fromBase18, toBase18
 from util import networkutil, oceanutil
-
-accounts, a1, a2, a3, a4 = None, None, None, None, None
 
 
 @enforce_types
@@ -18,7 +16,14 @@ def test_basic(data_nft_factory, df_rewards):
 
 @enforce_types
 def test_TOK(data_nft_factory, df_rewards, df_strategy):
+    while len(accounts) < 5:
+        accounts.add()
+    accounts[0].transfer(accounts[4], toBase18(10.0))
+    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+
+    # main work
     TOK = _deployTOK(data_nft_factory, accounts[4])
+    import pdb; pdb.set_trace()
     TOK.transfer(accounts[0], toBase18(100.0), {"from": accounts[4]})
 
     tos = [a1, a2, a3]
@@ -63,6 +68,10 @@ def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
 
 @enforce_types
 def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
+    while len(accounts) < 5:
+        accounts.add()
+    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+    
     data_NFT1 = data_nft_factory.create(DataNFTArguments('1','1'), accounts[0])
     data_NFT2 = data_nft_factory.create(DataNFTArguments('2','2'), accounts[0])
     
@@ -130,6 +139,10 @@ def test_bad_token(ocean, df_rewards):
 
 
 def test_strategies(data_nft_factory, df_rewards, df_strategy):
+    while len(accounts) < 5:
+        accounts.add()
+    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+    
     TOK = _deployTOK(data_nft_factory, accounts[0])
 
     # allocate rewards
@@ -237,22 +250,8 @@ def test_claim_and_restake(ocean, df_rewards, df_strategy):
 
 @enforce_types
 def _deployTOK(data_nft_factory, account):
-    assert account is not None
     data_NFT = data_nft_factory.create(DataNFTArguments('1','1'), account)
     cap = toBase18(100.0)
-    args = DatatokenArguments('TOK','TOK',cap=toBase18(100.0))
+    args = DatatokenArguments('TOK', 'TOK', cap=toBase18(100.0))
     TOK = data_NFT.create_datatoken(args, account)
     return TOK
-
-@enforce_types
-def setup_function():
-    global accounts, a1, a2, a3, a4
-    accounts = brownie.network.accounts
-    while len(accounts) < 5:
-        print("sdfafdsafsd")
-        accounts.add()
-        
-    a1 = accounts[1].address
-    a2 = accounts[2].address
-    a3 = accounts[3].address
-    a4 = accounts[4].address
