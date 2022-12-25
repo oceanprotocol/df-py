@@ -1,3 +1,5 @@
+import time
+
 import brownie
 from brownie.network import accounts
 from enforce_typing import enforce_types
@@ -36,16 +38,22 @@ def test_TOK(df_rewards, df_strategy):
     # a1 claims for itself
     assert TOK.balanceOf(a1) == 0
     df_strategy.claim([TOK.address], {"from": accounts[1]})
-    assert fromBase18(TOK.balanceOf(a1)) == 10
 
     # a2 claims for itself too
     assert TOK.balanceOf(a2) == 0
     df_strategy.claim([TOK.address], {"from": accounts[2]})
-    assert fromBase18(TOK.balanceOf(a2)) == 20
 
     # a4 claims for a3
     assert TOK.balanceOf(a3) == 0
     df_rewards.claimFor(a3, TOK.address, {"from": accounts[4]})
+
+    # workaround if ganache txs not done yet
+    for i in range(10):
+        if TOK.balanceOf(a3) > 0:
+            break
+        time.sleep(0.5)
+    assert fromBase18(TOK.balanceOf(a1)) == 10
+    assert fromBase18(TOK.balanceOf(a2)) == 20
     assert fromBase18(TOK.balanceOf(a3)) == 30
 
 
