@@ -19,7 +19,7 @@ def test_TOK(data_nft_factory, df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
     accounts[0].transfer(accounts[4], toBase18(10.0))
-    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+    a1, a2, a3 = _a123()
 
     # main work
     TOK = _deployTOK(data_nft_factory, accounts[4])
@@ -70,14 +70,11 @@ def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
 def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
-    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
-    
-    data_NFT1 = data_nft_factory.create(DataNFTArguments('1','1'), accounts[0])
-    data_NFT2 = data_nft_factory.create(DataNFTArguments('2','2'), accounts[0])
-    
-    TOK1 = _deployTOK(data_NFT1, accounts[0])
-    TOK2 = _deployTOK(data_NFT2, accounts[0])
+    a1, a2, a3 = _a123()
 
+    TOK1 = _deployTOK(data_nft_factory, accounts[0], '1')
+    TOK2 = _deployTOK(data_nft_factory, accounts[0], '2')
+    
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
@@ -127,7 +124,7 @@ def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
 def test_bad_token(ocean, df_rewards):
     while len(accounts) < 5:
         accounts.add()
-    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+    a1, a2, a3 = _a123()
     
     badToken = B.Badtoken.deploy(
         "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
@@ -145,7 +142,7 @@ def test_bad_token(ocean, df_rewards):
 def test_strategies(data_nft_factory, df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
-    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
+    a1, a2, a3 = _a123()
     
     TOK = _deployTOK(data_nft_factory, accounts[0])
 
@@ -207,10 +204,16 @@ def test_strategies(data_nft_factory, df_rewards, df_strategy):
 
 
 @enforce_types
-def _deployTOK(data_nft_factory, account):
+def _deployTOK(data_nft_factory, account, name='1'):
     """Deploy ERC20 token 'TOK', and mint 100 tokens"""
-    data_NFT = data_nft_factory.create(DataNFTArguments('1','1'), account)
+    data_NFT = data_nft_factory.create(DataNFTArguments(name, name), account)
     args = DatatokenArguments('TOK', 'TOK')
     TOK = data_NFT.create_datatoken(args, account)
     TOK.mint(account, toBase18(100.0), {"from": account})
     return TOK
+
+
+@enforce_types
+def _a123():
+    accounts = brownie.network.accounts
+    return accounts[1].address, accounts[2].address, accounts[3].address
