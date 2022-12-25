@@ -54,7 +54,7 @@ def test_TOK(data_nft_factory, df_rewards, df_strategy):
 def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
-    OCEAN.approve(df_rewards, 10, {"from": accounts[0]})
+    OCEAN.approve(df_rewards.address, 10, {"from": accounts[0]})
     df_rewards.allocate([a1], [10], OCEAN.address, {"from": accounts[0]})
 
     assert df_rewards.claimable(a1, OCEAN.address) == 10
@@ -80,8 +80,8 @@ def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
-    TOK1.approve(df_rewards, sum(values), {"from": accounts[0]})
-    TOK2.approve(df_rewards, sum(values) + 15, {"from": accounts[0]})
+    TOK1.approve(df_rewards.address, sum(values), {"from": accounts[0]})
+    TOK2.approve(df_rewards.address, sum(values) + 15, {"from": accounts[0]})
 
     df_rewards.allocate(tos, values, TOK1.address, {"from": accounts[0]})
     df_rewards.allocate(
@@ -131,7 +131,7 @@ def test_bad_token(ocean, df_rewards):
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
-    badToken.approve(df_rewards, sum(values), {"from": accounts[0]})
+    badToken.approve(df_rewards.address, sum(values), {"from": accounts[0]})
 
     with brownie.reverts("Not enough tokens"):
         df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
@@ -222,7 +222,7 @@ def test_claim_and_restake(ocean, df_rewards, df_strategy):
 
     tos = [a1]
     values = [50]
-    OCEAN.approve(df_rewards, sum(values), {"from": deployer})
+    OCEAN.approve(df_rewards.address, sum(values), {"from": deployer})
     df_rewards.allocate(tos, values, OCEAN.address, {"from": deployer})
 
     assert df_rewards.claimable(a1, OCEAN.address) == 50
