@@ -25,6 +25,7 @@ from util.base18 import toBase18, fromBase18
 
 # ========================================================================
 # from ocean.py ./conftest_ganache.py
+@enforce_types
 @pytest.fixture(autouse=True)
 def setup_all(request, config, OCEAN):
     # a test can skip setup_all() via decorator "@pytest.mark.nosetup_all"
@@ -66,34 +67,41 @@ def setup_all(request, config, OCEAN):
         assert OCEAN.balanceOf(account) > 0, print(f"account {i} has no OCEAN")
 
 
+@enforce_types
 @pytest.fixture
 def config() -> dict:
     return get_config_dict()
 
+@enforce_types
 @pytest.fixture
 def ocean() -> Ocean:
     config_dict = get_config_dict()
     return Ocean(config_dict)
 
+@enforce_types
 @pytest.fixture
 def OCEAN_address(config) -> str:
     return _addr(config, "Ocean")
 
+@enforce_types
 @pytest.fixture
 def OCEAN(config, OCEAN_address) -> Datatoken:
     return Datatoken(config, OCEAN_address)
 
+@enforce_types
 @pytest.fixture
 def data_nft_factory(config):
     return DataNFTFactoryContract(config, _addr(config, "ERC721Factory"))
 
 
 # ========================================================================
+@enforce_types
 @pytest.fixture
 def alice():
     return _get_wallet(1)
 
 
+@enforce_types
 @pytest.fixture
 def bob():
     return _get_wallet(2)
@@ -103,24 +111,30 @@ def bob():
 #  -as of Dec 23, 2022 there's an ocean.py PR (#1236)
 from ocean_lib.web3_internal.contract_base import ContractBase
 
+@enforce_types
 class DFStrategyV1(ContractBase):
     CONTRACT_NAME = "DFStrategyV1"
     
+@enforce_types
 class DFRewards(ContractBase):
     CONTRACT_NAME = "DFRewards"
 
+@enforce_types
 @pytest.fixture
 def df_rewards(config) -> DFRewards:
     return DFRewards(config, _addr(config, "DFRewards"))
 
+@enforce_types
 @pytest.fixture
 def df_strategy_v1(config) -> DFStrategyV1:
-    return DFStrategyV1(config, _addr(config, "DFRewards"))
+    return DFStrategyV1(config, _addr(config, "DFStrategyV1"))
 
+@enforce_types
 @pytest.fixture
 def df_strategy(df_strategy_v1) -> DFStrategyV1: # alias for df_strategy_v1
     return df_strategy_v1
 
+@enforce_types
 @enforce_types
 def _addr(config: dict, type_str: str):
     return get_address_of_type(config, type_str)
