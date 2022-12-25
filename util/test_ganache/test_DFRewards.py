@@ -27,13 +27,13 @@ def test_TOK(df_rewards, df_strategy):
     TOK.transfer(accounts[0], toBase18(100.0), {"from": accounts[4]})
 
     tos = [a1, a2, a3]
-    values = [toBase18(10), toBase18(20), toBase18(30)]
+    values = [10, 20, 30]
     TOK.approve(df_rewards.address, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
-    assert fromBase18(df_rewards.claimable(a1, TOK.address)) == 10
-    assert fromBase18(df_rewards.claimable(a2, TOK.address)) == 20
-    assert fromBase18(df_rewards.claimable(a3, TOK.address)) == 30
+    assert df_rewards.claimable(a1, TOK.address) == 10
+    assert df_rewards.claimable(a2, TOK.address) == 20
+    assert df_rewards.claimable(a3, TOK.address) == 30
 
     # a1 claims for itself
     assert TOK.balanceOf(a1) == 0
@@ -52,9 +52,9 @@ def test_TOK(df_rewards, df_strategy):
         if TOK.balanceOf(a3) > 0:
             break
         time.sleep(0.5)
-    assert fromBase18(TOK.balanceOf(a1)) == 10
-    assert fromBase18(TOK.balanceOf(a2)) == 20
-    assert fromBase18(TOK.balanceOf(a3)) == 30
+    assert TOK.balanceOf(a1) == 10
+    assert TOK.balanceOf(a2) == 20
+    assert TOK.balanceOf(a3) == 30
 
 
 @enforce_types
@@ -68,7 +68,11 @@ def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
     assert df_rewards.claimable(a1, OCEAN.address) == 10
 
     bal_before = OCEAN.balanceOf(a1)
-    df_strategy.claim([OCEAN.address], {"from": accounts[1]})
+    tx = df_strategy.claim([OCEAN.address], {"from": accounts[1]})
+    for i in range(10):
+        if OCEAN.balanceOf(a1) > bal_before:
+            break
+        time.sleep(0.5)
     bal_after = OCEAN.balanceOf(a1)
     assert (bal_after - bal_before) == 10
 
