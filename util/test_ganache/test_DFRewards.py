@@ -86,9 +86,10 @@ def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
         tos, [x + 5 for x in values], TOK2.address, {"from": accounts[0]}
     )
 
-    assert df_strategy.claimables(a1, [TOK1.address, TOK2.address]) == [10, 15]
-    assert df_strategy.claimables(a2, [TOK1.address, TOK2.address]) == [20, 25]
-    assert df_strategy.claimables(a3, [TOK1.address, TOK2.address]) == [30, 35]
+    t1, t2 = TOK1.address, TOK2.address
+    assert df_strategy.claimables(a1, [t1, t2]) == [10, 15]
+    assert df_strategy.claimables(a2, [t1, t2]) == [20, 25]
+    assert df_strategy.claimables(a3, [t1, t2]) == [30, 35]
 
     # multiple claims
 
