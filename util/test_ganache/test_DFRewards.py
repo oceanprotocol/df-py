@@ -1,7 +1,6 @@
 import brownie
 from brownie.network import accounts
 from enforce_typing import enforce_types
-from ocean_lib.models.arguments import DataNFTArguments, DatatokenArguments
 
 from util.constants import BROWNIE_PROJECT as B
 from util.base18 import fromBase18, toBase18
@@ -9,45 +8,45 @@ from util import networkutil, oceanutil
 
 
 @enforce_types
-def test_basic(data_nft_factory, df_rewards):
-    TOK = _deployTOK(data_nft_factory, accounts[0])
+def test_basic(df_rewards):
+    TOK = _deployTOK(accounts[0])
     assert df_rewards.claimable(accounts[0].address, TOK.address) == 0
 
 
 @enforce_types
-def test_TOK(data_nft_factory, df_rewards, df_strategy):
+def test_TOK(df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
     accounts[0].transfer(accounts[4], toBase18(10.0))
     a1, a2, a3 = _a123()
 
     # main work
-    TOK = _deployTOK(data_nft_factory, accounts[4])
+    TOK = _deployTOK(accounts[4])
     TOK.transfer(accounts[0], toBase18(100.0), {"from": accounts[4]})
 
     tos = [a1, a2, a3]
-    values = [10, 20, 30]
+    values = [toBase18(10), toBase18(20), toBase18(30)]
     TOK.approve(df_rewards.address, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
-    assert df_rewards.claimable(a1, TOK.address) == 10
-    assert df_rewards.claimable(a2, TOK.address) == 20
-    assert df_rewards.claimable(a3, TOK.address) == 30
+    assert fromBase18(df_rewards.claimable(a1, TOK.address)) == 10
+    assert fromBase18(df_rewards.claimable(a2, TOK.address)) == 20
+    assert fromBase18(df_rewards.claimable(a3, TOK.address)) == 30
 
     # a1 claims for itself
     assert TOK.balanceOf(a1) == 0
     df_strategy.claim([TOK.address], {"from": accounts[1]})
-    assert TOK.balanceOf(a1) == 10
+    assert fromBase18(TOK.balanceOf(a1)) == 10
 
     # a2 claims for itself too
     assert TOK.balanceOf(a2) == 0
     df_strategy.claim([TOK.address], {"from": accounts[2]})
-    assert TOK.balanceOf(a2) == 20
+    assert fromBase18(TOK.balanceOf(a2)) == 20
 
     # a4 claims for a3
     assert TOK.balanceOf(a3) == 0
-    df_rewards.claimFor(a3, TOK.address, {"from": accounts[9]})
-    assert TOK.balanceOf(a3) == 30
+    df_rewards.claimFor(a3, TOK.address, {"from": accounts[4]})
+    assert fromBase18(TOK.balanceOf(a3)) == 30
 
 
 @enforce_types
@@ -67,13 +66,13 @@ def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
 
 
 @enforce_types
-def test_multiple_TOK(data_nft_factory, df_rewards, df_strategy):
+def test_multiple_TOK(df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
     a1, a2, a3 = _a123()
 
-    TOK1 = _deployTOK(data_nft_factory, accounts[0], '1')
-    TOK2 = _deployTOK(data_nft_factory, accounts[0], '2')
+    TOK1 = _deployTOK(accounts[0])
+    TOK2 = _deployTOK(accounts[0])
     
     tos = [a1, a2, a3]
     values = [10, 20, 30]
@@ -140,12 +139,12 @@ def test_bad_token(ocean, df_rewards):
         df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
 
 
-def test_strategies(data_nft_factory, df_rewards, df_strategy):
+def test_strategies(df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
     a1, a2, a3 = _a123()
     
-    TOK = _deployTOK(data_nft_factory, accounts[0])
+    TOK = _deployTOK(accounts[0])
 
     # allocate rewards
     tos = [a1, a2, a3]
@@ -205,13 +204,8 @@ def test_strategies(data_nft_factory, df_rewards, df_strategy):
 
 
 @enforce_types
-def _deployTOK(data_nft_factory, account, name='1'):
-    """Deploy ERC20 token 'TOK', and mint 100 tokens"""
-    data_NFT = data_nft_factory.create(DataNFTArguments(name, name), account)
-    args = DatatokenArguments('TOK', 'TOK')
-    TOK = data_NFT.create_datatoken(args, account)
-    TOK.mint(account, toBase18(100.0), {"from": account})
-    return TOK
+def _deployTOK(account):
+    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
 
 
 @enforce_types
