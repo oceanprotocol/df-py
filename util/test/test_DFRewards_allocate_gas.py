@@ -45,7 +45,7 @@ def test_insufficient_gas_reverts():
         df_rewards.allocate(
             addresses, rewards, token_addr, {"from": account0, "gas_limit": 100000}
         )
-    assert str(e_info.value) == "base fee exceeds gas limit"
+    assert str(e_info.value) == "intrinsic gas too low"
 
 
 @enforce_types

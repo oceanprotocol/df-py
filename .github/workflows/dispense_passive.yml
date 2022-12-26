@@ -11,17 +11,11 @@ on:
         default: "10000"
 
 jobs:
-  # we already have a test flow in test.yml
-  # re-use that flow
-  run-tests:
-    uses: ./.github/workflows/test.yml
-
   dispense-passive:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8]
-    needs: run-tests
     steps:
       - uses: actions/checkout@v2
 
