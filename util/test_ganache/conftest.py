@@ -33,6 +33,9 @@ def setup_all(request, config, OCEAN):
         return
 
     connect_to_network("development")
+
+    # from brownie.network import chain, priority_fee
+    # priority_fee(chain.priority_fee)
     
     if not get_contracts_addresses_all_networks(config):
         print("Can not find addresses.")
