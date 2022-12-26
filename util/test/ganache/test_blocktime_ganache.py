@@ -3,6 +3,7 @@ from math import ceil
 from pytest import approx
 
 import brownie
+from brownie.network import chain
 from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
@@ -14,8 +15,6 @@ from util.blocktime import (
     timestrToTimestamp,
     timestampToBlock,
 )
-
-chain = None
 
 
 @enforce_types
@@ -145,16 +144,3 @@ def test_getstfinBlocks():
     (st, fin) = getstfinBlocks(chain, "0", now_date)
     assert st == 0
     assert fin == 0
-
-
-@enforce_types
-def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
-    oceanutil.recordDevDeployedContracts()
-    global chain
-    chain = brownie.network.chain
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
