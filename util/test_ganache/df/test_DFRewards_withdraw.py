@@ -1,6 +1,7 @@
 import brownie
 from brownie.network import accounts
 from enforce_typing import enforce_types
+from ocean_lib.web3_internal.utils import connect_to_network
 
 from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
@@ -21,10 +22,10 @@ def test_withdraw_random_TOK(df_rewards):
         toBase18(100.0), TOK.address, {"from": accounts[0]}
     )
 
-    import time
-    timeout = time.time() + 10
-    while time.time() < timeout and not (fromBase18(TOK.balanceOf(accounts[0])) == 100.0):
-        time.sleep(0.5)
+    # import time
+    # timeout = time.time() + 10
+    # while time.time() < timeout and not (fromBase18(TOK.balanceOf(accounts[0])) == 100.0):
+    #     time.sleep(0.5)
     assert fromBase18(TOK.balanceOf(accounts[0])) == 100.0
 
 
@@ -50,18 +51,3 @@ def test_withdraw_main(df_rewards, df_strategy):
 @enforce_types
 def _deployTOK(account):
     return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
-
-
-# IDEA: maybe setup_function and teardown_function are the key way
-# to avoid reproducability issues
-
-# @enforce_types
-# def setup_function():
-#     networkutil.connect(networkutil.DEV_CHAINID)
-#     global accounts
-#     accounts = brownie.network.accounts
-
-
-# @enforce_types
-# def teardown_function():
-#     brownie.network.disconnect()

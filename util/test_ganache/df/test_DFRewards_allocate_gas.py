@@ -66,14 +66,3 @@ def _prep_batch_allocate(number: int) -> Any:
     rewards = [1 for i in range(number)]
     OCEAN.approve(df_rewards, sum(rewards), {"from": account0})
     return addresses, rewards, OCEAN.address, df_rewards
-
-
-
-@enforce_types
-def setup_function():
-    connect_to_network("development")
-
-
-@enforce_types
-def teardown_function():
-    brownie.network.disconnect()
