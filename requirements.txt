@@ -1,4 +1,4 @@
-eth-brownie==1.19.2
+eth-brownie==1.19.1
 enforce_typing
 mypy
 numpy
