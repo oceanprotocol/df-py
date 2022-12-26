@@ -3,6 +3,7 @@ from typing import Any
 import brownie
 import pytest
 from enforce_typing import enforce_types
+from ocean_lib.web3_internal.utils import connect_to_network
 
 from util import networkutil, oceanutil, oceantestutil
 from util.random_addresses import get_random_addresses
@@ -67,13 +68,12 @@ def _prep_batch_allocate(number: int) -> Any:
     return addresses, rewards, OCEAN.address, df_rewards
 
 
+
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
-    oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    connect_to_network("development")
 
 
 @enforce_types
 def teardown_function():
-    networkutil.disconnect()
+    brownie.network.disconnect()
