@@ -1,7 +1,7 @@
 
 from brownie.network import accounts
 from enforce_typing import enforce_types
-from ocean_lib.models.arguments import DataNFTArguments
+from ocean_lib.models.data_nft import DataNFTArguments
 
 from util.base18 import toBase18, fromBase18
 
