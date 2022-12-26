@@ -14,8 +14,8 @@ jobs:
   
   # we already have a test flow in test.yml
   # re-use that flow
-  run-tests:
-    uses: ./.github/workflows/test.yml
+  # run-tests:
+  #   uses: ./.github/workflows/test.yml
 
   dispense-active:
     permissions:
