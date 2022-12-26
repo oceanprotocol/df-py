@@ -141,55 +141,16 @@ def test_strategies(df_rewards, df_strategy):
     TOK.approve(df_rewards.address, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
-    assert TOK.balanceOf(df_strategy) == 0
-    with brownie.reverts("Caller doesn't match"):
-        # tx origin must be a1
-        df_strategy.claim(TOK.address, a1, {"from": accounts[2]})
-
-    with brownie.reverts("Caller must be a strategy"):
-        # non strategy addresses cannot claim
-        df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
+    assert TOK.balanceOf(df_strategy.address) == 0
 
     # add strategy
-    df_rewards.addStrategy(df_strategy.address)
+    df_rewards.addStrategy(df_strategy.address, {"from":accounts[0]})
     assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
-
-    # should claim since it's a strategy
-    df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
-
-    # strategy balance increases
-    assert TOK.balanceOf(df_strategy) == 10
-
-    # should claim since it's a strategy
-    df_strategy.claim(TOK.address, a2, {"from": accounts[2]})
-
-    # strategy balance increases
-    assert TOK.balanceOf(df_strategy) == 30
 
     # retire strategy
-    df_rewards.retireStrategy(df_strategy.address)
+    df_rewards.retireStrategy(df_strategy.address, {"from":accounts[0]})
     assert not df_rewards.isStrategy(df_strategy.address)
-
-    with brownie.reverts("Caller must be a strategy"):
-        # non strategy addresses cannot claim
-        df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
-
-    with brownie.reverts("Ownable: caller is not the owner"):
-        # addresses other than the owner cannot add new strategy
-        df_rewards.addStrategy(df_strategy.address, {"from": accounts[3]})
-
-    # add strategy
-    df_rewards.addStrategy(df_strategy.address)
-    assert df_rewards.isStrategy(df_strategy.address)
-    assert df_rewards.live_strategies(0) == df_strategy.address
-
-    # should claim since it's a strategy
-    df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
-
-    # strategy balance increases
-    assert TOK.balanceOf(df_strategy) == 60
-
 
 
 @enforce_types
