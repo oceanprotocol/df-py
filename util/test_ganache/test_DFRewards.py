@@ -1,5 +1,3 @@
-import time
-
 import brownie
 from brownie.network import accounts
 from enforce_typing import enforce_types
@@ -47,11 +45,6 @@ def test_TOK(df_rewards, df_strategy):
     assert TOK.balanceOf(a3) == 0
     df_rewards.claimFor(a3, TOK.address, {"from": accounts[4]})
 
-    # workaround if ganache txs not done yet
-    for i in range(10):
-        if TOK.balanceOf(a3) > 0:
-            break
-        time.sleep(0.5)
     assert TOK.balanceOf(a1) == 10
     assert TOK.balanceOf(a2) == 20
     assert TOK.balanceOf(a3) == 30
@@ -68,11 +61,7 @@ def test_OCEAN(ocean, df_rewards, df_strategy, OCEAN):
     assert df_rewards.claimable(a1, OCEAN.address) == 10
 
     bal_before = OCEAN.balanceOf(a1)
-    tx = df_strategy.claim([OCEAN.address], {"from": accounts[1]})
-    for i in range(10):
-        if OCEAN.balanceOf(a1) > bal_before:
-            break
-        time.sleep(0.5)
+    df_strategy.claim([OCEAN.address], {"from": accounts[1]})
     bal_after = OCEAN.balanceOf(a1)
     assert (bal_after - bal_before) == 10
 
