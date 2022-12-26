@@ -95,18 +95,6 @@ def data_nft_factory(config):
 
 
 # ========================================================================
-@enforce_types
-@pytest.fixture
-def alice():
-    return _get_wallet(1)
-
-
-@enforce_types
-@pytest.fixture
-def bob():
-    return _get_wallet(2)
-
-# ========================================================================
 # replace these with ocean.df_rewards() etc once ocean.py supports (#1235)
 #  -as of Dec 23, 2022 there's an ocean.py PR (#1236)
 from ocean_lib.web3_internal.contract_base import ContractBase
