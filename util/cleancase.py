@@ -128,6 +128,32 @@ def assertNFTvols(nftvols: dict):
 
 
 @enforce_types
+def modSymbols(symbols: dict) -> dict:
+    """symbols - dict of [chainID][basetoken_address] : symbol"""
+    symbols2: dict = {}
+    for chainID in symbols:
+        chainID2 = chainID
+        symbols2[chainID2] = {}
+        for base_addr, symbol in symbols[chainID].items():
+            base_addr2 = base_addr.lower()
+            symbol2 = symbol.upper()
+            symbols2[chainID2][base_addr2] = symbol2
+
+    assertSymbols(symbols2)
+    return symbols2
+
+
+@enforce_types
+def assertSymbols(symbols: dict):
+    """nftvols - dict of [chainID][basetoken_address] : symbol"""
+    for chainID in symbols:
+        for base_addr, symbol in symbols[chainID].items():
+            assert base_addr == base_addr.lower(), base_addr
+            assert base_addr[:2] == "0x", base_addr
+            assert symbol == symbol.upper(), symbol
+
+
+@enforce_types
 def modRates(rates: dict) -> dict:
     """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
     rates2 = {}
@@ -145,3 +171,30 @@ def assertRates(rates: dict):
     for base_symb in rates:
         assert base_symb == base_symb.upper(), base_symb
         assert base_symb[:2] != "0x"
+
+
+@enforce_types
+def modPublishers(publishers: dict) -> dict:
+    """publishers - dict of [chainID][nft_addr] : publisher_addr"""
+    publishers2: dict = {}
+    for chainID in publishers:
+        chainID2 = chainID
+        publishers2[chainID2] = {}
+        for nft_addr, publisher_addr in publishers[chainID].items():
+            nft_addr2 = nft_addr.lower()
+            publisher_addr2 = publisher_addr.lower()
+            publishers2[chainID2][nft_addr2] = publisher_addr2
+
+    assertPublishers(publishers2)
+    return publishers2
+
+
+@enforce_types
+def assertPublishers(publishers: dict):
+    """nftvols - dict of [chainID][nft_addr] : publisher_addr"""
+    for chainID in publishers:
+        for nft_addr, publisher_addr in publishers[chainID].items():
+            assert nft_addr == nft_addr.lower(), nft_addr
+            assert nft_addr[:2] == "0x", nft_addr
+            assert publisher_addr == publisher_addr.lower(), publisher_addr
+            assert publisher_addr[:2] == "0x", publisher_addr

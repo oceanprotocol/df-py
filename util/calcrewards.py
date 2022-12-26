@@ -4,8 +4,7 @@ from typing import Dict, List, Tuple, Union
 from enforce_typing import enforce_types
 import numpy as np
 
-from util import tousd
-from util.cleancase import modStakes, modNFTvols, modRates
+from util import tousd, cleancase as cc
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -53,7 +52,7 @@ def calcRewards(
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
-    publishers: Dict[int, Dict[str, Union[str, None]]],
+    publishers: Dict[int, Dict[str, str]],
     DCV_multiplier: float,
     rewards_OCEAN: float,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
@@ -63,7 +62,7 @@ def calcRewards(
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
-      publishers -- dict of [chainID][nft_addr] : LP_addr or None
+      publishers -- dict of [chainID][nft_addr] : publisher_addr
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       rewards_OCEAN -- amount of rewards avail, in units of OCEAN
 
@@ -75,7 +74,9 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, rates = modStakes(stakes), modNFTvols(nftvols), modRates(rates)
+    stakes, nftvols, symbols, rates, publishers = \
+        cc.modStakes(stakes), cc.modNFTvols(nftvols), cc.modSymbols(symbols), \
+        cc.modRates(rates), cc.modPublishers(publishers)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
@@ -117,7 +118,7 @@ def _stakeVolDictsToArrays(
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
     """
-    (chain_nft_tups, LP_addrs) = keys_tup
+    LP_addrs, chain_nft_tups = keys_tup
     N_j = len(chain_nft_tups)
     N_i = len(LP_addrs)
 
@@ -134,27 +135,30 @@ def _stakeVolDictsToArrays(
 
 @enforce_types
 def _publisherDictToArray(
-    publishers: Dict[int, Dict[str, Union[str, None]]],
+    publishers: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
 ) -> np.ndarray:
     """
     @arguments
-      publishers -- dict of [chainID][nft_addr] : LP_addr or None
+      publishers -- dict of [chainID][nft_addr] : publisher_addr
       keys_tup -- tuple of (LP_addrs_list, chain_nft_tups)
 
     @return
-      P -- 1d array of [chain_nft j] -- the LP i that published j. -1 if not LP
+      P -- 1d array of [chain_nft j] -- the LP i that published j
+
+    @notes
+      If a publisher of an nft didn't LP anywhere, then it won't have an LP i.
+      In this case, P[chain_nft j] will be set to -1
     """
-    (chain_nft_tups, LP_addrs) = keys_tup
+    LP_addrs, chain_nft_tups = keys_tup
     N_j = len(chain_nft_tups)
 
     P = np.zeros(N_j, dtype=int)
     for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
-        pub_addr = publishers[chainID][nft_addr] 
-        if pub_addr is None:
+        pub_addr = publishers[chainID][nft_addr]
+        if pub_addr not in LP_addrs:
             P[j] = -1
         else:
-            assert pub_addr in LP_addrs, "can't find publisher in LP_addrs"
             P[j] = LP_addrs.index(pub_addr)
 
     return P
@@ -310,7 +314,6 @@ def _getNftAddrs(nftvols_USD: Dict[int, Dict[str, str]]) -> List[str]:
     for chainID in nftvols_USD:
         for nft_addr in nftvols_USD[chainID]:
             nft_addrs.add(nft_addr)
-    import pdb; pdb.set_trace()
     return sorted(nft_addrs)
 
 

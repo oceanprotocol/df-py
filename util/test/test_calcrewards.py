@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
+from typing import Dict, List, Tuple, Union
 
 from enforce_typing import enforce_types
 import numpy as np
 import pytest
 from pytest import approx
 
-from util import calcrewards
+from util import calcrewards, tousd, cleancase as cc
 from util.calcrewards import calcRewards, TARGET_WPY, flattenRewards
+from util.constants import ZERO_ADDRESS
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
@@ -15,7 +17,7 @@ NA, NB, NC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
-OCN_ADDR2, H2O_ADDR2 = "0xocean2", "Oxh2o2"
+OCN_ADDR2, H2O_ADDR2 = "0xocean2", "0xh2o2"
 SYMBOLS = {
     C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
     C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
@@ -441,7 +443,7 @@ def test_getNftAddrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
     nft_addrs = calcrewards._getNftAddrs(nftvols_USD)
     assert type(nft_addrs) == list
-    assert sorted(nft_addrs) == sorted([NA, NB])
+    assert sorted(nft_addrs) == sorted([NA, NB, NC])
 
 
 @enforce_types
@@ -516,29 +518,35 @@ def _calcRewardsC1(
 
 @enforce_types
 def _calcRewards(
-    stakes,
-    nftvols,
-    rewards_avail,
-    symbols=SYMBOLS,
-    rates=RATES,
+    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    nftvols: Dict[int, Dict[str, Dict[str, float]]],
+    rewards_avail: float,
+    symbols: Dict[int, Dict[str, str]]=SYMBOLS,
+    rates:Dict[str, float]=RATES,
     publishers=None,
-    DCV_multiplier=np.inf,
+    DCV_multiplier:float=np.inf,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if publishers is None:
-        publishers = _nullPublishers(stakes, nftvols)
+        publishers = _nullPublishers(stakes, nftvols, symbols, rates)
         
     return calcRewards(stakes, nftvols, symbols, rates, publishers, DCV_multiplier, rewards_avail)
 
 
-def _nullPublishers(stakes, nftvols):
-    """@return -- null_publishers -- dict of [chainID][nft_addr] : None"""
-    nftvols_USD = FIXME
+@enforce_types
+def _nullPublishers(stakes, nftvols, symbols, rates,
+) -> Dict[int, Dict[str, Union[str, None]]]:
+    """@return - publishers -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
+    stakes, nftvols, symbols, rates = \
+        cc.modStakes(stakes), cc.modNFTvols(nftvols), cc.modSymbols(symbols), \
+        cc.modRates(rates)
+    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
     chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
-    null_publishers = {}
+    
+    publishers = {}
     for (chainID, nft_addr) in chain_nft_tups:
         if chainID not in publishers:
-            null_publishers[chainID] = {}
-        null_publishers[chainID][nft_addr] = None
-    return null_publishers
+            publishers[chainID] = {}
+        publishers[chainID][nft_addr] = ZERO_ADDRESS
+    return publishers
 
