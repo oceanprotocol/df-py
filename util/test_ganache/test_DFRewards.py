@@ -110,11 +110,7 @@ def test_multiple_TOK(df_rewards, df_strategy):
     assert TOK2.balanceOf(a3) == 0
     df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[3]})
 
-    # wait, then test
-    timeout = time.time() + 10
-    while time.time() < timeout and not (TOK1.balanceOf(a3) == 30):
-        time.sleep(0.5)
-
+    # now test
     assert TOK1.balanceOf(a1) == 10
     assert TOK2.balanceOf(a1) == 15
     
@@ -130,24 +126,6 @@ def test_multiple_TOK(df_rewards, df_strategy):
     df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
     assert TOK1.balanceOf(a1) == 10
     assert TOK2.balanceOf(a1) == 15
-
-
-def test_bad_token(ocean, df_rewards):
-    while len(accounts) < 5:
-        accounts.add()
-    a1, a2, a3 = _a123()
-    
-    badToken = B.Badtoken.deploy(
-        "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
-    )
-
-    tos = [a1, a2, a3]
-    values = [10, 20, 30]
-
-    badToken.approve(df_rewards.address, sum(values), {"from": accounts[0]})
-
-    with brownie.reverts("Not enough tokens"):
-        df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
 
 
 def test_strategies(df_rewards, df_strategy):
