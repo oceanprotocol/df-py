@@ -129,6 +129,7 @@ jobs:
           bash ./scripts/workflow_rename_folder.sh
 
       - id: 'auth'
+        if: github.event_name == 'schedule'
         uses: 'google-github-actions/auth@v1'
         with:
           credentials_json: '${{ secrets.GC_SECRET }}'
@@ -136,6 +137,7 @@ jobs:
           #service_account: ${{ secrets.SERVICE_ACCOUNT }}
           
       - id: 'upload-folder'
+        if: github.event_name == 'schedule'
         uses: 'google-github-actions/upload-cloud-storage@v1'
         with:
           path: '/tmp/csv/${{ env.DFWEEK }}'
