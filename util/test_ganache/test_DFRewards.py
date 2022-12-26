@@ -76,20 +76,19 @@ def test_multiple_TOK(df_rewards, df_strategy):
     TOK2 = _deployTOK(accounts[0])
     
     tos = [a1, a2, a3]
-    values = [10, 20, 30]
+    values1 = [10, 20, 30]
+    values2 = [15, 25, 35]
 
-    TOK1.approve(df_rewards.address, sum(values), {"from": accounts[0]})
-    TOK2.approve(df_rewards.address, sum(values) + 15, {"from": accounts[0]})
+    TOK1.approve(df_rewards.address, sum(values1), {"from": accounts[0]})
+    TOK2.approve(df_rewards.address, sum(values2), {"from": accounts[0]})
 
-    df_rewards.allocate(tos, values, TOK1.address, {"from": accounts[0]})
-    df_rewards.allocate(
-        tos, [x + 5 for x in values], TOK2.address, {"from": accounts[0]}
-    )
+    df_rewards.allocate(tos, values1, TOK1.address, {"from": accounts[0]})
+    df_rewards.allocate(tos, values2, TOK2.address, {"from": accounts[0]})
 
-    t1, t2 = TOK1.address, TOK2.address
-    assert df_strategy.claimables(a1, [t1, t2]) == [10, 15]
-    assert df_strategy.claimables(a2, [t1, t2]) == [20, 25]
-    assert df_strategy.claimables(a3, [t1, t2]) == [30, 35]
+    tok1, tok2 = TOK1.address, TOK2.address
+    assert df_strategy.claimables(a1, [tok1, tok2]) == [10, 15]
+    assert df_strategy.claimables(a2, [tok1, tok2]) == [20, 25]
+    assert df_strategy.claimables(a3, [tok1, tok2]) == [30, 35]
 
     # multiple claims
 
