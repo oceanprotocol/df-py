@@ -68,6 +68,8 @@ jobs:
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
 
       - name: Run dftool getrate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
           ./dftool getrate ETH $date $now $CSV_DIR $RETRY_TIMES
