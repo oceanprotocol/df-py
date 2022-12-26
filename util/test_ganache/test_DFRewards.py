@@ -1,3 +1,5 @@
+import time
+
 import brownie
 from brownie.network import accounts
 from enforce_typing import enforce_types
@@ -71,6 +73,7 @@ def test_multiple_TOK(df_rewards, df_strategy):
     while len(accounts) < 5:
         accounts.add()
     a1, a2, a3 = _a123()
+    accounts[0].transfer(accounts[3], toBase18(1.0))
 
     TOK1 = _deployTOK(accounts[0])
     TOK2 = _deployTOK(accounts[0])
@@ -96,20 +99,28 @@ def test_multiple_TOK(df_rewards, df_strategy):
     assert TOK1.balanceOf(a1) == 0
     assert TOK2.balanceOf(a1) == 0
     df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
-    assert TOK1.balanceOf(a1) == 10
-    assert TOK2.balanceOf(a1) == 15
 
     # a2 claims for itself
     assert TOK1.balanceOf(a2) == 0
     assert TOK2.balanceOf(a2) == 0
     df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[2]})
-    assert TOK1.balanceOf(a2) == 20
-    assert TOK2.balanceOf(a2) == 25
 
     # a3 claims for itself
     assert TOK1.balanceOf(a3) == 0
     assert TOK2.balanceOf(a3) == 0
     df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[3]})
+
+    # wait, then test
+    timeout = time.time() + 10
+    while time.time() < timeout and not (TOK1.balanceOf(a3) == 30):
+        time.sleep(0.5)
+
+    assert TOK1.balanceOf(a1) == 10
+    assert TOK2.balanceOf(a1) == 15
+    
+    assert TOK1.balanceOf(a2) == 20
+    assert TOK2.balanceOf(a2) == 25
+    
     assert TOK1.balanceOf(a3) == 30
     assert TOK2.balanceOf(a3) == 35
 
