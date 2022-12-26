@@ -117,7 +117,7 @@ def test_two_chains():
 
 @enforce_types
 def test_two_lps_simple():
-    stakes = {C1: {NA: {LP1: 100000.0, LP2: 100000.0}}}
+    stakes = {C1: {NA: {LP1: 100e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
     rewards_avail = 10.0
@@ -131,7 +131,7 @@ def test_two_lps_simple():
 
 @enforce_types
 def test_two_lps_one_with_negligible_stake():
-    stakes = {C1: {NA: {LP1: 10000.0, LP2: 1e-14 * 10000.0}}}
+    stakes = {C1: {NA: {LP1: 10e3, LP2: 1e-14 * 10e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     rewards_avail = 10.0
 
@@ -190,6 +190,57 @@ def test_two_nfts_both_with_volume():
     assert rewardsinfo[NB][LP1] == approx(10 / 3 / 2)
     assert rewardsinfo[NA][LP2] == approx(10 / 3)
     assert rewardsinfo[NB][LP3] == approx(10 / 3)
+
+
+@enforce_types
+def test_two_LPs__one_NFT__one_LP_published():
+    # LP1 published NA, so it gets 2x equivalent stake on that
+    stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
+    publishers = {C1: {NA: LP1}}
+
+    rewards_avail = 10.0
+    rewardsperlp, rewardsinfo = \
+        _calcRewardsC1(stakes, nftvols, rewards_avail, publishers=publishers)
+
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
+    assert rewardsperlp == {LP1: 5.0, LP2: 5.0}
+    assert rewardsinfo == {NA: {LP1: 5.0, LP2: 5.0}}
+
+
+@enforce_types
+def test_two_LPs__two_NFTs__one_LP_published_one_NFT():
+    # LP1 published NA, so it gets 2x equivalent stake on NA (but not NB)
+    stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 100e3}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
+    publishers = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
+
+    rewards_avail = 10.0
+    rewardsperlp, rewardsinfo = \
+        _calcRewardsC1(stakes, nftvols, rewards_avail, publishers=publishers)
+
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
+    assert rewardsperlp == {LP1: 5.0, LP2: 5.0}
+    assert rewardsinfo == {NA: {LP1: 2.5, LP2: 2.5}, NB: {LP1: 2.5, LP2: 2.5}}
+
+
+@enforce_types
+def test_two_LPs__two_NFTs__two_LPs_published():
+    # LP1 published NA, LP2 published NB, they each get 2x equivalent stake
+    stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 50e3}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
+    publishers = {C1: {NA: LP1, NB: LP2}}
+
+    rewards_avail = 10.0
+    rewardsperlp, rewardsinfo = \
+        _calcRewardsC1(stakes, nftvols, rewards_avail, publishers=publishers)
+
+    assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
+    assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
+    assert rewardsperlp == {LP1: 5.0, LP2: 5.0}
+    assert rewardsinfo == {NA: {LP1: 2.5, LP2: 2.5}, NB: {LP1: 2.5, LP2: 2.5}}
 
 
 @enforce_types
