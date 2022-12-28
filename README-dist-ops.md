@@ -72,11 +72,11 @@ dftool getrate EWT $date $now $CSV_PATH
 dftool getrate MOVR $date $now $CSV_PATH
 
 # query chain, output nftvols & symbols
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 246
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 56
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1285
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 137
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 246
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 1
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 56
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 1285
 
 # query chain, output % allocations
 dftool allocations $date $now $SAMPLE_SIZE $CSV_PATH 1
@@ -112,7 +112,7 @@ Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local accoun
 
 Finally, the big step: dispense funds. In console:
 ```console
-dftool dispense $CSV_PATH 137 $dfrewards_addr $OCEAN_137_addr #polygon
+dftool dispense_active $CSV_PATH 137 $dfrewards_addr $OCEAN_137_addr #polygon
 ```
 
 Then, confirm:
@@ -124,7 +124,7 @@ Then, confirm:
 
 Now, dispense funds for remaining chains. In console:
 ```console
-dftool dispense $CSV_PATH 1 $dfrewards_addr $OCEAN_1_addr #mainnet
+dftool dispense_active $CSV_PATH 1 $dfrewards_addr $OCEAN_1_addr #mainnet
 ```
 
 We're now done dispensing!

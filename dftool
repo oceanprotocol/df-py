@@ -52,11 +52,11 @@ Then LP steps:
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
+  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
-  dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
 
   dftool compile - compile contracts
@@ -92,10 +92,10 @@ def do_help():
 
 # ========================================================================
 @enforce_types
-def do_query():
+def do_volsym():
     HELP = f"""Query chain, output nftvols & symbols
 
-Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
+Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
@@ -116,11 +116,11 @@ SECRET_SEED -- secret integer used to seed the rng
         RETRIES = int(sys.argv[7])
 
     # extract inputs
-    assert sys.argv[1] == "query"
+    assert sys.argv[1] == "query" or sys.argv[1] == "volsym"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
-    print("dftool query: Begin")
+    print("dftool volsym: Begin")
     print(
         f"Arguments:\n "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
@@ -152,7 +152,7 @@ SECRET_SEED -- secret integer used to seed the rng
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
-    print("dftool query: Done")
+    print("dftool volsym: Done")
 
 
 # ========================================================================
@@ -398,10 +398,10 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
 
 # ========================================================================
 @enforce_types
-def do_dispense():
+def do_dispense_active():
     HELP = f"""From rewards csv, dispense funds to chain.
 
-Usage: dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
+Usage: dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
   CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
   DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
@@ -415,7 +415,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "dispense"
+    assert sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active"
     CSV_DIR = sys.argv[2]
 
     if len(sys.argv) >= 4:
@@ -997,8 +997,8 @@ def do_main():
         do_help()
 
     # write actions
-    elif sys.argv[1] == "query":
-        do_query()
+    elif sys.argv[1] == "volsym" or sys.argv[1] == "query":
+        do_volsym()
     elif sys.argv[1] == "nftinfo":
         do_nftinfo()
     elif sys.argv[1] == "allocations":
@@ -1009,9 +1009,8 @@ def do_main():
         do_getrate()
     elif sys.argv[1] == "calc":
         do_calc()
-    elif sys.argv[1] == "dispense":
-        do_dispense()
-
+    elif sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active":
+        do_dispense_active()
     elif sys.argv[1] == "compile":
         do_compile()
     elif sys.argv[1] == "manyrandom":

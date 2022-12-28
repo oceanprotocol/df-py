@@ -114,8 +114,8 @@ def main():
     DISPENSE_ACCT = brownie.network.accounts.add()
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
-    print("Running dftool query")
-    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    print("Running dftool volsym")
+    cmd = f"./dftool volsym {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
 
     print("Running dftool get rate")
@@ -137,7 +137,7 @@ def main():
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     DFREWARDS_ADDR = df_rewards.address
     TOKEN_ADDR = OCEAN.address
-    cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
+    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
     os.system(cmd)
 
     claimable_amounts = []
