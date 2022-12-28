@@ -115,7 +115,7 @@ SECRET_SEED -- secret integer used to seed the rng
         RETRIES = int(sys.argv[7])
 
     # extract inputs
-    assert sys.argv[1] == "query"
+    assert sys.argv[1] == "query" or sys.argv[1] == "volsym"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
@@ -416,7 +416,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "dispense"
+    assert sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active"
     CSV_DIR = sys.argv[2]
 
     if len(sys.argv) >= 4:
