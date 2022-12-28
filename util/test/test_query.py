@@ -11,6 +11,7 @@ from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
+from util.retry import retryFunction
 
 account0, QUERY_ST = None, 0
 
@@ -570,15 +571,15 @@ def test_retryFunction_query():
         testfunc_callcount += 1
         return query.queryAllocations(blockRange, CHAINID)
 
-    assert len(query.retryFunction(testquery_fail, 3, 0.1)) > 0
+    assert len(retryFunction(testquery_fail, 3, 0.1)) > 0
     testfunc_callcount = 0
 
     with raises(Exception):
-        query.retryFunction(testquery_fail, 2, 0.1)
+        retryFunction(testquery_fail, 2, 0.1)
     testfunc_callcount = 0
 
     with raises(Exception):
-        query.retryFunction(testquery_fail, 1, 0.1)
+        retryFunction(testquery_fail, 1, 0.1)
     testfunc_callcount = 0
 
 
