@@ -18,26 +18,36 @@ from util.tok import TokSet
 from util.base18 import fromBase18
 
 
-class DataNFT:
+@enforce_types
+class SimpleDataNft:
     def __init__(
         self,
-        nft_addr: str,
         chain_id: int,
+        nft_addr: str,
         _symbol: str,
+        creator: str, # i.e. publisher
         is_purgatory: bool = False,
+        name: str = "",
     ):
-        self.nft_addr = nft_addr
-        self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
-        self.symbol = _symbol
-        self.name = ""
+        self.nft_addr = nft_addr.lower()
+        self.symbol = _symbol.upper()
+        self.creator = creator.lower()
         self.is_purgatory = is_purgatory
+        self.name = name # can be any mix of upper and lower case
+        self.did = oceanutil.calcDID(nft_addr, chain_id)
 
     def setName(self, name: str):
         self.name = name
 
-    def __repr__(self):
-        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
+    def __eq__(self, x) -> bool:
+        return repr(self) == repr(x)
+
+    def __repr__(self) -> str:
+        return f"SimpleDataNft(" \
+            f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', " \
+            f"'{self.creator}', {self.is_purgatory}, '{self.name}'" \
+            f")"
 
 
 @enforce_types
@@ -323,13 +333,14 @@ def queryAllocations(
     return allocs
 
 
-def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
+@enforce_types
+def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     """
     @description
       Fetch, filter and return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nftinfo = _queryNftinfo(chainID, endBlock)
@@ -343,13 +354,14 @@ def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
     return nftinfo
 
 
-def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+@enforce_types
+def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Populate the list of NFTs with the asset names
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nft_dids = [nft.did for nft in nftInfo]
@@ -361,13 +373,14 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     return nftInfo
 
 
-def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
+@enforce_types
+def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     """
     @description
       Return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
     nftinfo = []
     chunk_size = 1000
@@ -382,6 +395,7 @@ def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
          nfts(first: %d, skip: %d, block:{number:%d}) {
             id
             symbol
+            creator
         }
       }
       """ % (
@@ -390,24 +404,26 @@ def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
             endBlock,
         )
         result = submitQuery(query, chainID)
-        nfts = result["data"]["nfts"]
-        if len(nfts) == 0:
+        nft_records = result["data"]["nfts"]
+        if len(nft_records) == 0:
             # means there are no records left
             break
 
-        for nft in nfts:
-            datanft = DataNFT(
-                nft["id"],
+        for nft_record in nft_records:
+            data_nft = SimpleDataNft(
                 chainID,
-                nft["symbol"],
+                nft_record["id"],
+                nft_record["symbol"],
+                nft_record["creator"],
             )
-            nftinfo.append(datanft)
+            nftinfo.append(data_nft)
 
         offset += chunk_size
 
     return nftinfo
 
 
+@enforce_types
 def _queryNftvolumes(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Dict[str, float]]:
@@ -531,16 +547,16 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
 
 
 @enforce_types
-def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Filter out NFTs that are in purgatory and are not in Aquarius
 
     @arguments
-      nftinfos: list of DataNFT objects
+      nftinfos: list of SimpleDataNft objects
 
     @return
-      filtered_nftinfos: list of filtered DataNFT objects
+      filtered_nftinfos: list of filtered SimpleDataNft objects
     """
     nft_dids = [nft.did for nft in nftinfos]
     nft_dids = _filterToAquariusAssets(nft_dids)
@@ -549,7 +565,7 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
 
 
 @enforce_types
-def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     bad_dids = _didsInPurgatory()
     for nft in nftinfos:
         if nft.did in bad_dids:
@@ -654,6 +670,7 @@ def getSymbols(tokens: TokSet, chainID: int) -> Dict[str, str]:
 _ADDR_TO_SYMBOL = networkutil._ADDRS_TO_SYMBOL  # address : TOKEN_symbol
 
 
+@enforce_types
 def symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL

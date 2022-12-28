@@ -500,15 +500,12 @@ def test_filter_out_purgatory():
 
 @enforce_types
 def test_filter_nftinfos():
-    oceanAddr = oceanutil.OCEAN_address()
-    addresses = [
+    addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanAddr,  # invalid
+        oceanutil.OCEAN_address(),  # invalid
     ]
-
-    # addresses are from polygon
-    nfts = [query.DataNFT(addr, 137, "TEST") for addr in addresses]
+    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     # filter
     nfts_filtered = query._filterNftinfos(nfts)
@@ -520,15 +517,13 @@ def test_filter_nftinfos():
 
 @enforce_types
 def test_mark_purgatory_nftinfos():
-    oceanAddr = oceanutil.OCEAN_address()
-    addresses = [
+    addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanAddr,  # invalid
+        oceanutil.OCEAN_address(),  # invalid
     ]
 
-    # addresses are from polygon
-    nfts = [query.DataNFT(addr, 137, "TEST") for addr in addresses]
+    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     nfts_marked = query._markPurgatoryNfts(nfts)
 
@@ -538,10 +533,46 @@ def test_mark_purgatory_nftinfos():
 
 @enforce_types
 def test_populateNftAssetNames():
-    nfts = [query.DataNFT("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")]
+    nft_addr = "0xbff8242de628cd45173b71022648617968bd0962"
+    nfts = [query.SimpleDataNft(137, nft_addr, "TEST", "0x123")]
     nfts = query._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
+
+
+@enforce_types
+def test_SimpleDataNFT():
+    # test attributes
+    nft_addr = "0xBff8242de628cd45173b71022648617968bd0962"
+    nft = query.SimpleDataNft(137, nft_addr, "dn1", "0x123AbC")
+    assert nft.chain_id == 137
+    assert nft.nft_addr == nft_addr.lower()
+    assert nft.symbol == "DN1"
+    assert nft.creator == "0x123abc"
+    assert nft.name == ""
+    assert nft.is_purgatory == False
+    assert isinstance(nft.did, str)
+
+    # test __eq__
+    nft2 = query.SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
+    assert nft == nft2
+    
+    nft3 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
+    assert nft != nft3
+
+    # test __repr__
+    assert repr(nft) == "SimpleDataNft(137, '0xbff8242de628cd45173b71022648617968bd0962', 'DN1', '0x123abc', False, '')"
+
+    # test setName
+    nft.setName("nAmE1")
+    assert nft.name == "nAmE1"
+    assert "nAmE1" in repr(nft)
+
+    # non-default args in constructor
+    nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
+    assert nft4.is_purgatory == True
+    assert nft4.name == "namE2"
+    
 
 
 testfunc_callcount = 0
