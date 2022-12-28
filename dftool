@@ -91,7 +91,7 @@ def do_help():
 
 # ========================================================================
 @enforce_types
-def do_query():
+def do_volsym():
     HELP = f"""Query chain, output nftvols & symbols
 
 Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
@@ -399,7 +399,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
 
 # ========================================================================
 @enforce_types
-def do_dispense():
+def do_dispense_active():
     HELP = f"""From rewards csv, dispense funds to chain.
 
 Usage: dftool dispense CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
@@ -998,8 +998,8 @@ def do_main():
         do_help()
 
     # write actions
-    elif sys.argv[1] == "query":
-        do_query()
+    elif sys.argv[1] == "volsym" or sys.argv[1] == "query":
+        do_volsym()
     elif sys.argv[1] == "nftinfo":
         do_nftinfo()
     elif sys.argv[1] == "allocations":
@@ -1010,9 +1010,8 @@ def do_main():
         do_getrate()
     elif sys.argv[1] == "calc":
         do_calc()
-    elif sys.argv[1] == "dispense":
-        do_dispense()
-
+    elif sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active":
+        do_dispense_active()
     elif sys.argv[1] == "compile":
         do_compile()
     elif sys.argv[1] == "manyrandom":
