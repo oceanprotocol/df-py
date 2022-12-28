@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
-from util.retry import retryFunction
 from pytest import raises
+from util.retry import retryFunction
 
 testfunc_callcount = 0
 
