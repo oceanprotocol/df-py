@@ -16,7 +16,7 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool getrate - get exchange rate
   dftool volsym - query chain for stakes & volumes
   dftool calc - calculate rewards
-  dftool dispense - dispense funds
+  dftool dispense_active - dispense funds
   ...
 ```
 

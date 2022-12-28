@@ -112,7 +112,7 @@ Then, from DF Treasury multisig, send OCEAN & gas funds sent to the local accoun
 
 Finally, the big step: dispense funds. In console:
 ```console
-dftool dispense $CSV_PATH 137 $dfrewards_addr $OCEAN_137_addr #polygon
+dftool dispense_active $CSV_PATH 137 $dfrewards_addr $OCEAN_137_addr #polygon
 ```
 
 Then, confirm:
@@ -124,7 +124,7 @@ Then, confirm:
 
 Now, dispense funds for remaining chains. In console:
 ```console
-dftool dispense $CSV_PATH 1 $dfrewards_addr $OCEAN_1_addr #mainnet
+dftool dispense_active $CSV_PATH 1 $dfrewards_addr $OCEAN_1_addr #mainnet
 ```
 
 We're now done dispensing!
