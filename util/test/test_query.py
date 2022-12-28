@@ -36,9 +36,9 @@ def test_all():
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
     CO2_addr = CO2.address.lower()
     OCEAN = oceanutil.OCEANtoken()
-    
+
     OCEAN_lock_amt = toBase18(5.0)
-    
+
     accounts = []
     for i in range(7):
         acc = brownie.network.accounts.add()
@@ -46,15 +46,13 @@ def test_all():
         CO2.transfer(acc, toBase18(11000.0), {"from": account0})
         OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
         accounts.append(acc)
-        
+
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
 
     # Create data nfts
     data_nfts = []
     for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
-            account0, CO2
-        )
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(account0, CO2)
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
