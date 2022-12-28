@@ -360,7 +360,7 @@ def test_allocation_sampling():
     for addr in allocate_addrs:
         assert addr in allocations, addr
         # Bob
-        assert allocations[addr][bob.address.lower()] == approx(1 / 7, 0.1)
+        assert allocations[addr][bob.address.lower()] == approx((1 / 7), 0.1)
 
     # Alice
     _a = alice.address.lower()
@@ -369,15 +369,15 @@ def test_allocation_sampling():
 
     # Karen
     _k = karen.address.lower()
-    assert allocations[allocate_addrs[0]][_k] == approx(0.1 * 6 / 7, 0.03)
-    assert allocations[allocate_addrs[1]][_k] == approx(0.1 * 5 / 7, 0.03)
-    assert allocations[allocate_addrs[2]][_k] == approx(0.2 * 4 / 7, 0.03)
-    assert allocations[allocate_addrs[6]][_k] == approx(1 / 7, 0.03)
+    assert allocations[allocate_addrs[0]][_k] == approx((0.1 * 6 / 7), 0.03)
+    assert allocations[allocate_addrs[1]][_k] == approx((0.1 * 5 / 7), 0.03)
+    assert allocations[allocate_addrs[2]][_k] == approx((0.2 * 4 / 7), 0.03)
+    assert allocations[allocate_addrs[6]][_k] == approx((1 / 7), 0.03)
 
     # Carol
     _c = carol.address.lower()
-    assert allocations[allocate_addrs[2]][_c] == approx(4 / 7, 0.03)
-    assert allocations[allocate_addrs[6]][_c] == approx(1 / 7, 0.03)
+    assert allocations[allocate_addrs[2]][_c] == approx((4 / 7), 0.03)
+    assert allocations[allocate_addrs[6]][_c] == approx((1 / 7), 0.03)
 
     # James
     _j = james.address.lower()
