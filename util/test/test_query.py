@@ -16,7 +16,6 @@ from util.retry import retryFunction
 account0, QUERY_ST = None, 0
 
 CHAINID = networkutil.DEV_CHAINID
-OCEAN_ADDR: str = ""
 WEEK = 7 * 86400
 
 
@@ -37,22 +36,23 @@ def test_all():
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
     CO2_addr = CO2.address.lower()
     OCEAN = oceanutil.OCEANtoken()
-    oceantestutil.fillAccountsWithToken(CO2)
-    accounts = []
-    publisher_account = account0
+
     OCEAN_lock_amt = toBase18(5.0)
+
+    accounts = []
     for i in range(7):
-        accounts.append(brownie.network.accounts.add())
-        CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
-        OCEAN.transfer(accounts[i], OCEAN_lock_amt, {"from": account0})
+        acc = brownie.network.accounts.add()
+        account0.transfer(acc, toBase18(0.1))
+        CO2.transfer(acc, toBase18(11000.0), {"from": account0})
+        OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
+        accounts.append(acc)
+
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
 
     # Create data nfts
     data_nfts = []
     for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
-            publisher_account, CO2
-        )
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(account0, CO2)
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
@@ -82,7 +82,7 @@ def test_all():
     # pylint: disable=consider-using-enumerate
     for i in range(len(accounts)):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, accounts[i], CO2)
-        oceantestutil.consumeDT(data_nfts[i][1], publisher_account, accounts[i])
+        oceantestutil.consumeDT(data_nfts[i][1], account0, accounts[i])
 
     # sampling test accounts locks and allocates after start block
     # pylint: disable=consider-using-enumerate
@@ -585,14 +585,11 @@ def test_retryFunction_query():
 
 @enforce_types
 def setup_function():
-    global OCEAN_ADDR
-
     networkutil.connect(networkutil.DEV_CHAINID)
     global account0, QUERY_ST
     account0 = brownie.network.accounts[0]
     QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
-    OCEAN_ADDR = oceanutil.OCEAN_address().lower()
 
 
 @enforce_types
