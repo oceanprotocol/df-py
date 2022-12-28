@@ -389,15 +389,15 @@ def test_allocation_sampling():
 
 def test_symbol():
     testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": account0})
-    assert query.symbol(testToken) == "CO2"
+    assert query.symbol(testToken.address) == "CO2"
 
     testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": account0})
-    assert query.symbol(testToken) == "ASDASDASD"
+    assert query.symbol(testToken.address) == "ASDASDASD"
 
     testToken = B.Simpletoken.deploy(
         "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": account0}
     )
-    assert query.symbol(testToken) == "!@#$@!%$#^%$&~!@"
+    assert query.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
 
 
 @enforce_types
