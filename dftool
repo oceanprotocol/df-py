@@ -51,7 +51,7 @@ Then LP steps:
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool query ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
+  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
@@ -94,7 +94,7 @@ def do_help():
 def do_volsym():
     HELP = f"""Query chain, output nftvols & symbols
 
-Usage: dftool query ST FIN NSAMP CSV_DIR CHAINID
+Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
@@ -119,7 +119,7 @@ SECRET_SEED -- secret integer used to seed the rng
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
-    print("dftool query: Begin")
+    print("dftool volsym: Begin")
     print(
         f"Arguments:\n "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
@@ -153,7 +153,7 @@ SECRET_SEED -- secret integer used to seed the rng
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
-    print("dftool query: Done")
+    print("dftool volsym: Done")
 
 
 # ========================================================================

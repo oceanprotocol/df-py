@@ -78,13 +78,13 @@ jobs:
           ./dftool getrate MOVR $date $now $CSV_DIR $RETRY_TIMES
           ./dftool getrate MATIC $date $now $CSV_DIR $RETRY_TIMES
 
-      - name: Run dftool query
+      - name: Run dftool volsym
         run: |
-          ./dftool query $date $now 200 $CSV_DIR 1 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 56 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 137 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 246 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 1285 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 56 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 137 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 246 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 1285 $RETRY_TIMES
 
       - name: Run dftool vebals
         run: |

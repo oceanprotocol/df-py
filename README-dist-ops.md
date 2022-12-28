@@ -72,11 +72,11 @@ dftool getrate EWT $date $now $CSV_PATH
 dftool getrate MOVR $date $now $CSV_PATH
 
 # query chain, output nftvols & symbols
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 137
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 246
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 56
-dftool query $date $now $SAMPLE_SIZE $CSV_PATH 1285
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 137
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 246
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 1
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 56
+dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 1285
 
 # query chain, output % allocations
 dftool allocations $date $now $SAMPLE_SIZE $CSV_PATH 1

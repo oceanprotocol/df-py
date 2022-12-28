@@ -114,8 +114,8 @@ def main():
     DISPENSE_ACCT = brownie.network.accounts.add()
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key
 
-    print("Running dftool query")
-    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    print("Running dftool volsym")
+    cmd = f"./dftool volsym {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
 
     print("Running dftool get rate")
