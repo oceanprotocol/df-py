@@ -17,6 +17,7 @@ from util import (
     networkutil,
     query,
 )
+from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID
@@ -147,9 +148,7 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     # main work
 
-    (Vi, SYMi) = query.retryFunction(
-        query.queryNftvolsAndSymbols, RETRIES, 10, rng, CHAINID
-    )
+    (Vi, SYMi) = retryFunction(query.queryNftvolsAndSymbols, RETRIES, 10, rng, CHAINID)
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
@@ -184,7 +183,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
 
     # this function can be a bit problematic and only used for generating data for frontend
     # retry 3 times with 10s delay by default
-    nftinfo = query.retryFunction(query.queryNftinfo, 3, 10, ENDBLOCK, CHAINID)
+    nftinfo = retryFunction(query.queryNftinfo, 3, 10, ENDBLOCK, CHAINID)
     query.queryNftinfo(CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
@@ -236,7 +235,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    allocs = query.retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
+    allocs = retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
@@ -286,7 +285,7 @@ SECRET_SEED -- secret integer used to seed the rng
     chain = brownie.network.chain
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    balances, locked_amt, unlock_time = query.retryFunction(
+    balances, locked_amt, unlock_time = retryFunction(
         query.queryVebalances, RETRIES, 10, rng, CHAINID
     )
     csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
@@ -326,7 +325,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
     _createDirIfNeeded(CSV_DIR)
 
     # main work
-    rate = query.retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
+    rate = retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
