@@ -198,7 +198,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         row = ["chainID", "nft_addr", "did", "symbol", "name",
-               "is_purgatory", "creator"]
+               "is_purgatory", "owner_addr"]
         writer.writerow(row)
 
         for nft in nftinfo:
@@ -210,7 +210,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
                 nft.symbol,
                 nft.name.replace(",", "%@#"),
                 isinpurg,
-                nft.creator,
+                nft.owner_addr,
             ]
             writer.writerow(row)
 
@@ -248,7 +248,7 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
                 assert row == ["chainID", "nft_addr", "did", "symbol", "name",
-                               "is_purgatory", "creator"]
+                               "is_purgatory", "owner_addr"]
                 continue
 
             chainID2 = int(row[0])
@@ -256,14 +256,14 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
             symbol = row[3].upper()
             name = row[4]
             is_purgatory = bool(int(row[5]))
-            creator = row[6]
+            owner_addr = row[6]
 
             assert chainID2 == chainID, "csv had data from different chain"
             assertIsEthAddr(nft_addr)
-            assertIsEthAddr(creator)
+            assertIsEthAddr(owner_addr)
 
             nft = SimpleDataNft(
-                chainID, nft_addr, symbol, creator, is_purgatory, name
+                chainID, nft_addr, symbol, owner_addr, is_purgatory, name
             )
             nftinfo.append(nft)
             

@@ -24,14 +24,14 @@ class SimpleDataNft:
         chain_id: int,
         nft_addr: str,
         _symbol: str,
-        creator: str, # i.e. publisher
+        owner_addr: str,
         is_purgatory: bool = False,
         name: str = "",
     ):
         self.chain_id = chain_id
         self.nft_addr = nft_addr.lower()
         self.symbol = _symbol.upper()
-        self.creator = creator.lower()
+        self.owner_addr = owner_addr.lower()
         self.is_purgatory = is_purgatory
         self.name = name # can be any mix of upper and lower case
         self.did = oceanutil.calcDID(nft_addr, chain_id)
@@ -45,7 +45,7 @@ class SimpleDataNft:
     def __repr__(self) -> str:
         return f"SimpleDataNft(" \
             f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', " \
-            f"'{self.creator}', {self.is_purgatory}, '{self.name}'" \
+            f"'{self.owner_addr}', {self.is_purgatory}, '{self.name}'" \
             f")"
 
 
@@ -368,7 +368,9 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
          nfts(first: %d, skip: %d, block:{number:%d}) {
             id
             symbol
-            creator
+            owner {
+              id
+            }
         }
       }
       """ % (
@@ -383,13 +385,16 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
             break
 
         for nft_record in nft_records:
-            data_nft = SimpleDataNft(
-                chainID,
-                nft_record["id"],
-                nft_record["symbol"],
-                nft_record["creator"],
-            )
-            nftinfo.append(data_nft)
+            nft_addr = nft_record["id"]
+            _symbol = nft_record["symbol"]
+            owner_addr = nft_record["owner"]["id"]
+            simple_data_nft = SimpleDataNft(
+                chain_id=chainID,
+                nft_addr=nft_addr,
+                _symbol=_symbol,
+                owner_addr=owner_addr,
+                )
+            nftinfo.append(simple_data_nft)
 
         offset += chunk_size
 

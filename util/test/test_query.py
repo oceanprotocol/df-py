@@ -549,7 +549,7 @@ def test_SimpleDataNFT():
     assert nft.chain_id == 137
     assert nft.nft_addr == nft_addr.lower()
     assert nft.symbol == "DN1"
-    assert nft.creator == "0x123abc"
+    assert nft.owner_addr == "0x123abc"
     assert nft.name == ""
     assert nft.is_purgatory == False
     assert isinstance(nft.did, str)
@@ -573,7 +573,7 @@ def test_SimpleDataNFT():
     nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory == True
     assert nft4.name == "namE2"
-    
+
 
 
 testfunc_callcount = 0
