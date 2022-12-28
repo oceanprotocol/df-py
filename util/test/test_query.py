@@ -11,11 +11,11 @@ from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
+from util.retry import retryFunction
 
 account0, QUERY_ST = None, 0
 
 CHAINID = networkutil.DEV_CHAINID
-OCEAN_ADDR: str = ""
 WEEK = 7 * 86400
 
 
@@ -36,22 +36,23 @@ def test_all():
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
     CO2_addr = CO2.address.lower()
     OCEAN = oceanutil.OCEANtoken()
-    oceantestutil.fillAccountsWithToken(CO2)
-    accounts = []
-    publisher_account = account0
+
     OCEAN_lock_amt = toBase18(5.0)
+
+    accounts = []
     for i in range(7):
-        accounts.append(brownie.network.accounts.add())
-        CO2.transfer(accounts[i], toBase18(11000.0), {"from": account0})
-        OCEAN.transfer(accounts[i], OCEAN_lock_amt, {"from": account0})
+        acc = brownie.network.accounts.add()
+        account0.transfer(acc, toBase18(0.1))
+        CO2.transfer(acc, toBase18(11000.0), {"from": account0})
+        OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
+        accounts.append(acc)
+
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
 
     # Create data nfts
     data_nfts = []
     for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
-            publisher_account, CO2
-        )
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(account0, CO2)
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
@@ -81,7 +82,7 @@ def test_all():
     # pylint: disable=consider-using-enumerate
     for i in range(len(accounts)):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, accounts[i], CO2)
-        oceantestutil.consumeDT(data_nfts[i][1], publisher_account, accounts[i])
+        oceantestutil.consumeDT(data_nfts[i][1], account0, accounts[i])
 
     # sampling test accounts locks and allocates after start block
     # pylint: disable=consider-using-enumerate
@@ -359,7 +360,7 @@ def test_allocation_sampling():
     for addr in allocate_addrs:
         assert addr in allocations, addr
         # Bob
-        assert allocations[addr][bob.address.lower()] == approx(1 / 7, 0.1)
+        assert allocations[addr][bob.address.lower()] == approx((1 / 7), 0.1)
 
     # Alice
     _a = alice.address.lower()
@@ -368,15 +369,15 @@ def test_allocation_sampling():
 
     # Karen
     _k = karen.address.lower()
-    assert allocations[allocate_addrs[0]][_k] == approx(0.1 * 6 / 7, 0.03)
-    assert allocations[allocate_addrs[1]][_k] == approx(0.1 * 5 / 7, 0.03)
-    assert allocations[allocate_addrs[2]][_k] == approx(0.2 * 4 / 7, 0.03)
-    assert allocations[allocate_addrs[6]][_k] == approx(1 / 7, 0.03)
+    assert allocations[allocate_addrs[0]][_k] == approx((0.1 * 6 / 7), 0.03)
+    assert allocations[allocate_addrs[1]][_k] == approx((0.1 * 5 / 7), 0.03)
+    assert allocations[allocate_addrs[2]][_k] == approx((0.2 * 4 / 7), 0.03)
+    assert allocations[allocate_addrs[6]][_k] == approx((1 / 7), 0.03)
 
     # Carol
     _c = carol.address.lower()
-    assert allocations[allocate_addrs[2]][_c] == approx(4 / 7, 0.03)
-    assert allocations[allocate_addrs[6]][_c] == approx(1 / 7, 0.03)
+    assert allocations[allocate_addrs[2]][_c] == approx((4 / 7), 0.03)
+    assert allocations[allocate_addrs[6]][_c] == approx((1 / 7), 0.03)
 
     # James
     _j = james.address.lower()
@@ -388,15 +389,15 @@ def test_allocation_sampling():
 
 def test_symbol():
     testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": account0})
-    assert query.symbol(testToken) == "CO2"
+    assert query.symbol(testToken.address) == "CO2"
 
     testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": account0})
-    assert query.symbol(testToken) == "ASDASDASD"
+    assert query.symbol(testToken.address) == "ASDASDASD"
 
     testToken = B.Simpletoken.deploy(
         "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": account0}
     )
-    assert query.symbol(testToken) == "!@#$@!%$#^%$&~!@"
+    assert query.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
 
 
 @enforce_types
@@ -579,32 +580,9 @@ testfunc_callcount = 0
 
 
 @enforce_types
-def test_retryFunction():
+def test_retryFunction_query():
     # pylint: disable=global-variable-undefined
     global testfunc_callcount
-    testfunc_callcount = 0
-
-    def testfunc_fail(some_arg: int):
-        # pylint: disable=global-variable-undefined
-        global testfunc_callcount
-        testfunc_callcount += 1
-        if testfunc_callcount == 3:
-            return testfunc_callcount + some_arg
-        raise Exception("failed")
-
-    some_arg = 1
-    assert (
-        query.retryFunction(testfunc_fail, 3, 0.1, some_arg)
-        == testfunc_callcount + some_arg
-    )
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        query.retryFunction(testfunc_fail, 2, 0.1, some_arg)
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        query.retryFunction(testfunc_fail, 1, 0.1, some_arg)
     testfunc_callcount = 0
 
     def testquery_fail():
@@ -624,28 +602,25 @@ def test_retryFunction():
         testfunc_callcount += 1
         return query.queryAllocations(blockRange, CHAINID)
 
-    assert len(query.retryFunction(testquery_fail, 3, 0.1)) > 0
+    assert len(retryFunction(testquery_fail, 3, 0.1)) > 0
     testfunc_callcount = 0
 
     with raises(Exception):
-        query.retryFunction(testquery_fail, 2, 0.1)
+        retryFunction(testquery_fail, 2, 0.1)
     testfunc_callcount = 0
 
     with raises(Exception):
-        query.retryFunction(testquery_fail, 1, 0.1)
+        retryFunction(testquery_fail, 1, 0.1)
     testfunc_callcount = 0
 
 
 @enforce_types
 def setup_function():
-    global OCEAN_ADDR
-
     networkutil.connect(networkutil.DEV_CHAINID)
     global account0, QUERY_ST
     account0 = brownie.network.accounts[0]
     QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
-    OCEAN_ADDR = oceanutil.OCEAN_address().lower()
 
 
 @enforce_types

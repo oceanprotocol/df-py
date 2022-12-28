@@ -14,9 +14,9 @@ CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispen
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate - get exchange rate
-  dftool query - query chain for stakes & volumes
+  dftool volsym - query chain for stakes & volumes
   dftool calc - calculate rewards
-  dftool dispense - dispense funds
+  dftool dispense_active - dispense funds
   ...
 ```
 

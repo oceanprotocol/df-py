@@ -78,13 +78,13 @@ jobs:
           ./dftool getrate MOVR $date $now $CSV_DIR $RETRY_TIMES
           ./dftool getrate MATIC $date $now $CSV_DIR $RETRY_TIMES
 
-      - name: Run dftool query
+      - name: Run dftool volsym
         run: |
-          ./dftool query $date $now 200 $CSV_DIR 1 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 56 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 137 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 246 $RETRY_TIMES
-          ./dftool query $date $now 200 $CSV_DIR 1285 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 56 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 137 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 246 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 1285 $RETRY_TIMES
 
       - name: Run dftool vebals
         run: |
@@ -115,14 +115,14 @@ jobs:
           USE_MULTISIG: true
         if: github.event_name == 'workflow_dispatch'
         run: |
-          ./dftool dispense $CSV_DIR 5 0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 0xCfDdA22C9837aE76E0faA845354f33C62E03653a
+          ./dftool dispense_active $CSV_DIR 5 0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 0xCfDdA22C9837aE76E0faA845354f33C62E03653a
 
       - name: Distribute active rewards
         env:
           USE_MULTISIG: true
         if: github.event_name == 'schedule'
         run: |
-          ./dftool dispense $CSV_DIR 1 0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
+          ./dftool dispense_active $CSV_DIR 1 0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
 
       - name: Rename folder to round number
         run: |

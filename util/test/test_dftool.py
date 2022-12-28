@@ -32,7 +32,7 @@ def test_query(tmp_path):
     FIN = "latest"
     NSAMP = 5
 
-    cmd = f"./dftool query {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool volsym {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
 
     # test result
@@ -181,7 +181,7 @@ def test_dispense(tmp_path):
     DFREWARDS_ADDR = df_rewards.address
     TOKEN_ADDR = oceanutil.OCEAN_address()
 
-    cmd = f"./dftool dispense {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
+    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
     os.system(cmd)
 
     # test result
@@ -209,9 +209,11 @@ def test_noarg_commands():
     argv1s = [
         "",
         "query",
+        "volsym",
         "getrate",
         "calc",
         "dispense",
+        "dispense_active",
         "querymany",
         "compile",
         "manyrandom",

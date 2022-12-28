@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
     strategy:
       matrix:
         python-version: [3.8]
@@ -49,8 +51,6 @@ jobs:
           pip install -r requirements.txt --quiet
 
       - name: Set up Openzeppelin
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0

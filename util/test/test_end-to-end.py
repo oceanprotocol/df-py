@@ -52,7 +52,7 @@ def test_with_csvs(tmp_path):
     """
     Simulate these steps, with csvs in between
     1. dftool getrate
-    2. dftool query
+    2. dftool volsym
     3. dftool calc
     4. dftool dispense
     """
@@ -67,7 +67,7 @@ def test_with_csvs(tmp_path):
     csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
-    # 2. simulate "dftool query"
+    # 2. simulate "dftool volsym"
     (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
     csvs.saveNftvolsCsv(V0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
