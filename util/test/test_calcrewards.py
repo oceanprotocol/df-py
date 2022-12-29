@@ -497,7 +497,7 @@ def test_calcDcvMultiplier():
 def test_getNftAddrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
     nft_addrs = calcrewards._getNftAddrs(nftvols_USD)
-    assert isinstance(nft_addrs,  list)
+    assert isinstance(nft_addrs, list)
     assert sorted(nft_addrs) == sorted([NA, NB, NC])
 
 
