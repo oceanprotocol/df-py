@@ -174,27 +174,27 @@ def assertRates(rates: dict):
 
 
 @enforce_types
-def modPublishers(publishers: dict) -> dict:
-    """publishers - dict of [chainID][nft_addr] : publisher_addr"""
-    publishers2: dict = {}
-    for chainID in publishers:
+def modCreators(creators: dict) -> dict:
+    """creators - dict of [chainID][nft_addr] : creator_addr"""
+    creators2: dict = {}
+    for chainID in creators:
         chainID2 = chainID
-        publishers2[chainID2] = {}
-        for nft_addr, publisher_addr in publishers[chainID].items():
+        creators2[chainID2] = {}
+        for nft_addr, creator_addr in creators[chainID].items():
             nft_addr2 = nft_addr.lower()
-            publisher_addr2 = publisher_addr.lower()
-            publishers2[chainID2][nft_addr2] = publisher_addr2
+            creator_addr2 = creator_addr.lower()
+            creators2[chainID2][nft_addr2] = creator_addr2
 
-    assertPublishers(publishers2)
-    return publishers2
+    assertCreators(creators2)
+    return creators2
 
 
 @enforce_types
-def assertPublishers(publishers: dict):
-    """nftvols - dict of [chainID][nft_addr] : publisher_addr"""
-    for chainID in publishers:
-        for nft_addr, publisher_addr in publishers[chainID].items():
+def assertCreators(creators: dict):
+    """nftvols - dict of [chainID][nft_addr] : creator_addr"""
+    for chainID in creators:
+        for nft_addr, creator_addr in creators[chainID].items():
             assert nft_addr == nft_addr.lower(), nft_addr
             assert nft_addr[:2] == "0x", nft_addr
-            assert publisher_addr == publisher_addr.lower(), publisher_addr
-            assert publisher_addr[:2] == "0x", publisher_addr
+            assert creator_addr == creator_addr.lower(), creator_addr
+            assert creator_addr[:2] == "0x", creator_addr

@@ -153,19 +153,19 @@ def test_rates_0x():
 
 
 @enforce_types
-def test_publishers():
-    publishers = {
+def test_creators():
+    creators = {
         1: {"0xNFt1": "0xLp1", "0xNfT2": "0xlP2"},
         2: {"0xnFT2": "0xlP2n", "0xnfT3": "0xLP3"}
     }
-    target_publishers = {
+    target_creators = {
         1: {"0xnft1": "0xlp1", "0xnft2": "0xlp2"},
         2: {"0xnft2": "0xlp2n", "0xnft3": "0xlp3"}
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertPublishers(publishers)
+        cleancase.assertCreators(creators)
 
-    mod_publishers = cleancase.modPublishers(publishers)
-    cleancase.assertPublishers(mod_publishers)
-    assert mod_publishers == target_publishers
+    mod_creators = cleancase.modCreators(creators)
+    cleancase.assertCreators(mod_creators)
+    assert mod_creators == target_creators

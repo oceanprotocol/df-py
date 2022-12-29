@@ -50,22 +50,26 @@ class SimpleDataNft:
 
 
 @enforce_types
-def queryNftvolsAndSymbols(
-    rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
+def queryVolsCreatorsSymbols(rng: BlockRange, chainID: int) \
+    -> Tuple[
+        Dict[str, Dict[str, float]],
+        Dict[str, str],
+        Dict[str, str]
+    ]:
     """
     @description
-      Return nftvols for the input block range and chain.
+      For given block range and chain, return each nft's {vols, creator, symbol}
 
     @return
-      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
+      nftvols_at_chain -- dict of [nativetoken/basetoken_addr][nft_addr] : vol
+      creators_at_chain -- dict of [nft_addr] : creator_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
 
     @notes
-      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
+      A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered = _queryNftvolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci = _queryVolsCreators(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     # get all basetokens from Vi
@@ -74,7 +78,7 @@ def queryNftvolsAndSymbols(
         _symbol = symbol(basetoken)
         basetokens.add(chainID, basetoken, _symbol)
     SYMi = getSymbols(basetokens, chainID)
-    return (Vi, SYMi)
+    return (Vi, Ci, SYMi)
 
 
 @enforce_types
@@ -403,19 +407,23 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 
 
 @enforce_types
-def _queryNftvolumes(
-    st_block: int, end_block: int, chainID: int
-) -> Dict[str, Dict[str, float]]:
+def _queryVolsCreators(st_block: int, end_block: int, chainID: int) \
+    -> Tuple[
+        Dict[str, Dict[str, float]],
+        Dict[str, Dict[str, float]],
+    ]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
 
     @return
-      nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
+      vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
+      creators (at chain) -- dict of [nft_addr]:vol_amt
     """
-    print("getVolumes(): begin")
+    print("_queryVolsCreators(): begin")
 
-    NFTvols: Dict[str, Dict[str, float]] = {}
+    vols: Dict[str, Dict[str, float]] = {}
+    creators: Dict[str, Dict[str, float]] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -429,6 +437,7 @@ def _queryNftvolumes(
               symbol
               nft {
                 id
+                creator
               }
               dispensers {
                 id
@@ -463,6 +472,7 @@ def _queryNftvolumes(
                 continue
             basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
+            creator_addr = order["datatoken"]["nft"]["id"].lower()
 
             # Calculate gas cost
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
@@ -473,28 +483,28 @@ def _queryNftvolumes(
 
             # add gas cost value
             if gasCost > 0:
-                if native_token_addr not in NFTvols:
-                    NFTvols[native_token_addr] = {}
+                if native_token_addr not in vols:
+                    vols[native_token_addr] = {}
 
-                if nft_addr not in NFTvols[native_token_addr]:
-                    NFTvols[native_token_addr][nft_addr] = 0
+                if nft_addr not in vols[native_token_addr]:
+                    vols[native_token_addr][nft_addr] = 0
 
-                NFTvols[native_token_addr][nft_addr] += gasCost
-            # ----
+                vols[native_token_addr][nft_addr] += gasCost
+                creators[nft_addr] = creator_addr
 
             if lastPriceValue == 0:
                 continue
 
             # add lastPriceValue
-            if basetoken_addr not in NFTvols:
-                NFTvols[basetoken_addr] = {}
+            if basetoken_addr not in vols:
+                vols[basetoken_addr] = {}
 
-            if nft_addr not in NFTvols[basetoken_addr]:
-                NFTvols[basetoken_addr][nft_addr] = 0.0
-            NFTvols[basetoken_addr][nft_addr] += lastPriceValue
+            if nft_addr not in vols[basetoken_addr]:
+                vols[basetoken_addr][nft_addr] = 0.0
+            vols[basetoken_addr][nft_addr] += lastPriceValue
 
-    print("getVolumes(): done")
-    return NFTvols
+    print("_queryVolsCreators(): done")
+    return (vols, creators)
 
 
 @enforce_types

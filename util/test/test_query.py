@@ -113,18 +113,18 @@ def test_all():
 
     # run actual tests
     _test_getSymbols()
-    _test_queryNftvolumes(CO2_addr, startBlockNumber, endBlockNumber)
+    _test_queryVolsCreators(CO2_addr, startBlockNumber, endBlockNumber)
     _test_queryVebalances(blockRange, sampling_accounts_addrs)
     _test_queryAllocations(blockRange, sampling_accounts_addrs)
-    _test_queryNftvolsAndSymbols(CO2_addr)
+    _test_queryVolsCreatorsSymbols(CO2_addr)
     _test_queryNftinfo()
 
 
 def _foundConsume(CO2_addr, st, fin):
-    DT_vols = query._queryNftvolumes(st, fin, CHAINID)
-    if CO2_addr not in DT_vols:
+    V0, _ = query._queryVolsCreators(st, fin, CHAINID)
+    if CO2_addr not in V0:
         return False
-    if sum(DT_vols[CO2_addr].values()) == 0:
+    if sum(V0[CO2_addr].values()) == 0:
         return False
 
     # all good
@@ -189,19 +189,30 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_queryNftvolumes(CO2_addr: str, st, fin):
-    DT_vols = query._queryNftvolumes(st, fin, CHAINID)
-    assert CO2_addr in DT_vols, (CO2_addr, DT_vols.keys())
-    assert sum(DT_vols[CO2_addr].values()) > 0.0
+def _test_queryVolsCreators(CO2_addr: str, st, fin):
+    V0, C0 = query._queryVolsCreators(st, fin, CHAINID)
+
+    # test V0 (volumes)
+    assert CO2_addr in V0, (CO2_addr, V0.keys())
+    assert sum(V0[CO2_addr].values()) > 0.0
+
+    # test C0 (creators)
+    assert C0
+    V0_nft_addrs = set(nft_addr
+                       for token_addr in V0
+                       for nft_addr in V0[token_addr])
+    for C0_nft_addr in C0:
+        assert C0_nft_addr in V0_nft_addrs
 
 
 @enforce_types
-def _test_queryNftvolsAndSymbols(CO2_addr: str):
+def _test_queryVolsCreatorsSymbols(CO2_addr: str):
     st, fin, n = QUERY_ST, len(brownie.network.chain), 500
     rng = BlockRange(st, fin, n)
-    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
+    assert C0
     assert SYM0
 
 

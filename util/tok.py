@@ -1,7 +1,6 @@
 # This is a class to help manage a token tuple (chainID, address, symbol)
-# E.g. for approved tokens
 
-from typing import Union
+from typing import Union, Dict, List
 
 from enforce_typing import enforce_types
 
@@ -82,11 +81,8 @@ class TokSet:
                 return tok
         return None
 
-    def exportTokenAddrs(self) -> dict:
-        """
-        @description -- export in the format used for approved_token_addrs
-        @return -- dict of [chainID] : list_of_addr.
-        """
+    def exportTokenAddrs(self) -> Dict[int,List[str]]:
+        """@return -- dict of [chainID] : list_of_addr"""
         d: dict = {}
         for tok in self.toks:
             if tok.chainID not in d:

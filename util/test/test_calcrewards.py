@@ -12,7 +12,7 @@ from util.constants import ZERO_ADDRESS
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
-C1, C2 = 7, 137
+C1, C2, C3 = 7, 137, 1285 # chainIDs
 NA, NB, NC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
@@ -152,7 +152,7 @@ def test_two_nfts_one_with_volume():
             NB: {LP3: 10000.0},
         }
     }
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}  # P1 has volume, but not P2
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}  # NA has volume, but not NB
     rewards_avail = 10.0
 
     rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
@@ -174,7 +174,7 @@ def test_two_nfts_both_with_volume():
             NB: {LP1: 5000.0, LP3: 10000.0},
         }
     }
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}  # P1 & P2 both have volume
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}  # NA & NB both have volume
     rewards_avail = 10.0
 
     rewardsperlp, rewardsinfo = _calcRewardsC1(stakes, nftvols, rewards_avail)
@@ -193,15 +193,15 @@ def test_two_nfts_both_with_volume():
 
 
 @enforce_types
-def test_two_LPs__one_NFT__one_LP_published():
-    # LP1 published NA, so it gets 2x equivalent stake on that
+def test_two_LPs__one_NFT__one_LP_created():
+    # LP1 created NA, so it gets 2x equivalent stake on that
     stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
-    publishers = {C1: {NA: LP1}}
+    creators = {C1: {NA: LP1}}
 
     rewards_avail = 10.0
     rewardsperlp, rewardsinfo = \
-        _calcRewardsC1(stakes, nftvols, rewards_avail, publishers=publishers)
+        _calcRewardsC1(stakes, nftvols, rewards_avail, creators=creators)
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
@@ -210,15 +210,15 @@ def test_two_LPs__one_NFT__one_LP_published():
 
 
 @enforce_types
-def test_two_LPs__two_NFTs__one_LP_published_one_NFT():
-    # LP1 published NA, so it gets 2x equivalent stake on NA (but not NB)
+def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
+    # LP1 created NA, so it gets 2x equivalent stake on NA (but not NB)
     stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-    publishers = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
+    creators = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
 
     rewards_avail = 10.0
     rewardsperlp, rewardsinfo = \
-        _calcRewardsC1(stakes, nftvols, rewards_avail, publishers=publishers)
+        _calcRewardsC1(stakes, nftvols, rewards_avail, creators=creators)
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
@@ -227,15 +227,15 @@ def test_two_LPs__two_NFTs__one_LP_published_one_NFT():
 
 
 @enforce_types
-def test_two_LPs__two_NFTs__two_LPs_published():
-    # LP1 published NA, LP2 published NB, they each get 2x equivalent stake
+def test_two_LPs__two_NFTs__two_LPs_created():
+    # LP1 created NA, LP2 created NB, they each get 2x equivalent stake
     stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 50e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-    publishers = {C1: {NA: LP1, NB: LP2}}
+    creators = {C1: {NA: LP1, NB: LP2}}
 
     rewards_avail = 10.0
     rewardsperlp, rewardsinfo = \
-        _calcRewardsC1(stakes, nftvols, rewards_avail, publishers=publishers)
+        _calcRewardsC1(stakes, nftvols, rewards_avail, creators=creators)
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
@@ -517,14 +517,14 @@ def test_getLpAddrs():
 @enforce_types
 def test_flattenRewards():
     rewards = {
-        "C1": {
+        C1: {
             LP1: 100.0,
             LP2: 200.0,
         },
-        "C2": {
+        C2: {
             LP1: 300.0,
         },
-        "C3": {
+        C3: {
             LP1: 500.0,
             LP2: 600.0,
             LP3: 700.0,
@@ -550,7 +550,7 @@ def _calcRewardsC1(
     rewards_avail,
     symbols=SYMBOLS,
     rates=RATES,
-    publishers=None,
+    creators=None,
     DCV_multiplier=np.inf,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
@@ -559,7 +559,7 @@ def _calcRewardsC1(
         rewards_avail,
         symbols,
         rates,
-        publishers,
+        creators,
         DCV_multiplier,
     )
     rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
@@ -574,30 +574,30 @@ def _calcRewards(
     rewards_avail: float,
     symbols: Dict[int, Dict[str, str]]=SYMBOLS,
     rates:Dict[str, float]=RATES,
-    publishers=None,
+    creators=None,
     DCV_multiplier:float=np.inf,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
-    if publishers is None:
-        publishers = _nullPublishers(stakes, nftvols, symbols, rates)
+    if creators is None:
+        creators = _nullCreators(stakes, nftvols, symbols, rates)
         
-    return calcRewards(stakes, nftvols, symbols, rates, publishers, DCV_multiplier, rewards_avail)
+    return calcRewards(stakes, nftvols, creators, symbols, rates, DCV_multiplier, rewards_avail)
 
 
 @enforce_types
-def _nullPublishers(stakes, nftvols, symbols, rates,
+def _nullCreators(stakes, nftvols, symbols, rates,
 ) -> Dict[int, Dict[str, Union[str, None]]]:
-    """@return - publishers -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
+    """@return - creators -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
     stakes, nftvols, symbols, rates = \
         cc.modStakes(stakes), cc.modNFTvols(nftvols), cc.modSymbols(symbols), \
         cc.modRates(rates)
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
     chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
     
-    publishers = {}
+    creators = {}
     for (chainID, nft_addr) in chain_nft_tups:
-        if chainID not in publishers:
-            publishers[chainID] = {}
-        publishers[chainID][nft_addr] = ZERO_ADDRESS
-    return publishers
+        if chainID not in creators:
+            creators[chainID] = {}
+        creators[chainID][nft_addr] = ZERO_ADDRESS
+    return creators
 

@@ -394,103 +394,104 @@ def chainIDforNftvolsCsv(filename) -> int:
 
 
 # ========================================================================
-# approved csvs
+# creators csvs
 
 
 @enforce_types
-def saveApprovedCsv(
-    approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int
-):
+def saveCreatorsCsv(creators_at_chain: Dict[str, str], csv_dir: str, chainID: int):
     """
     @description
-      Save the approved tokens for this chain
+      Save the nft creators for this chain
 
     @arguments
-      approved_token_addrs_at_chain --
+      creators_at_chain -- dict of [nft_addr] : creator_addr
       csv_dir -- directory that holds csv files
       chainID -- which chain (network)
-
-    @note
-      We explicitly do *not* track symbols here, since (C1, addr) is enough, and tracking
-      symbols adds complexity and makes things error-prone. Eg. mOCEAN vs OCEAN.
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = approvedCsvFilename(csv_dir, chainID)
+    csv_file = creatorsCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "token_addr"])
-        for token_addr in approved_token_addrs_at_chain:
-            assertIsEthAddr(token_addr)
-            row = [chainID, token_addr.lower()]
+        writer.writerow(["chainID", "nft_addr", "creator_addr"])
+        for nft_addr, creator_addr in creators_at_chain.items():
+            assertIsEthAddr(nft_addr)
+            assertIsEthAddr(creator_addr)
+            row = [
+                chainID,
+                nft_addr.lower(),
+                creator_addr.lower(),
+            ]
             writer.writerow(row)
 
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadApprovedCsvs(csv_dir: str) -> Dict[int, List[str]]:
+def loadCreatorsCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     """
     @description
-      Load all approved tokens across all chains
+      Load all creators csvs across all chains
 
     @return
-      approved_token_addrs -- dict of [chainID] : list_of_addr
+      creators -- dict of [chainID][nft_addr] : creator_addr
     """
-    csv_files = approvedCsvFilenames(csv_dir)
-    approved_token_addrs: dict = {}
+    csv_files = creatorsCsvFilenames(csv_dir)
+    creators: dict = {}
     for csv_file in csv_files:
-        chainID = chainIDforApprovedCsv(csv_file)
-        approved_token_addrs[chainID] = loadApprovedCsv(csv_dir, chainID)
+        chainID = chainIDforCreatorsCsv(csv_file)
+        creators[chainID] = loadCreatorsCsv(csv_dir, chainID)
 
-    return approved_token_addrs
+    return creators
 
 
 @enforce_types
-def loadApprovedCsv(csv_dir: str, chainID: int) -> List[str]:
+def loadCreatorsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
     """
     @description
-      Load approved tokens for this chainID
+      Load creators for this chainID
 
     @return
-      approved_token_addrs_at_chain --
+      creators_at_chain -- dict of [nft_addr] : creator_addr
     """
-    csv_file = approvedCsvFilename(csv_dir, chainID)
-    approved_token_addrs_at_chain: List[str] = []
+    csv_file = creatorsCsvFilename(csv_dir, chainID)
+    creators_at_chain: dict = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "token_addr"]
+                assert row == ["chainID", "nft_addr", "creator_addr"]
                 continue
 
             chainID2 = int(row[0])
-            token_addr = row[1].lower()
+            nft_addr = row[1].lower()
+            creator_addr = row[2].lower()
 
             assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(token_addr)
+            assertIsEthAddr(nft_addr)
+            assertIsEthAddr(creator_addr)
 
-            approved_token_addrs_at_chain.append(token_addr)
+            creators_at_chain[nft_addr] = creator_addr
 
     print(f"Loaded {csv_file}")
-    return approved_token_addrs_at_chain
+    return creators_at_chain
 
 
 @enforce_types
-def approvedCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of approved filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "approved*.csv"))
+def creatorsCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of creators filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "creators*.csv"))
 
 
 @enforce_types
-def approvedCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the approved filename for a given chainID"""
-    return os.path.join(csv_dir, f"approved-{chainID}.csv")
+def creatorsCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the creators filename for a given chainID"""
+    return os.path.join(csv_dir, f"creators-{chainID}.csv")
 
 
 @enforce_types
-def chainIDforApprovedCsv(filename) -> int:
-    """Returns chainID for a given approved csv filename"""
+def chainIDforCreatorsCsv(filename) -> int:
+    """Returns chainID for a given creators csv filename"""
     return _lastInt(filename)
 
 

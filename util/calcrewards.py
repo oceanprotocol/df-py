@@ -50,9 +50,9 @@ def calcDcvMultiplier(DF_week: int) -> float:
 def calcRewards(
     stakes: Dict[str, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
+    creators: Dict[int, Dict[str, str]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
-    publishers: Dict[int, Dict[str, str]],
     DCV_multiplier: float,
     rewards_OCEAN: float,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
@@ -60,9 +60,9 @@ def calcRewards(
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
+      creators -- dict of [chainID][nft_addr] : creator_addr
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
-      publishers -- dict of [chainID][nft_addr] : publisher_addr
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       rewards_OCEAN -- amount of rewards avail, in units of OCEAN
 
@@ -74,17 +74,17 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, symbols, rates, publishers = \
+    stakes, nftvols, symbols, rates, creators = \
         cc.modStakes(stakes), cc.modNFTvols(nftvols), cc.modSymbols(symbols), \
-        cc.modRates(rates), cc.modPublishers(publishers)
+        cc.modRates(rates), cc.modCreators(creators)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
     keys_tup = _getKeysTuple(stakes, nftvols_USD)
     S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
-    P = _publisherDictToArray(publishers, keys_tup)
+    C = _creatorDictToArray(creators, keys_tup)
 
-    R = _calcRewardsUsd(S, V_USD, P, DCV_multiplier, rewards_OCEAN)
+    R = _calcRewardsUsd(S, V_USD, C, DCV_multiplier, rewards_OCEAN)
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
 
@@ -134,41 +134,41 @@ def _stakeVolDictsToArrays(
 
 
 @enforce_types
-def _publisherDictToArray(
-    publishers: Dict[int, Dict[str, str]],
+def _creatorDictToArray(
+    creators: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
 ) -> np.ndarray:
     """
     @arguments
-      publishers -- dict of [chainID][nft_addr] : publisher_addr
+      creators -- dict of [chainID][nft_addr] : creator_addr
       keys_tup -- tuple of (LP_addrs_list, chain_nft_tups)
 
     @return
-      P -- 1d array of [chain_nft j] -- the LP i that published j
+      C -- 1d array of [chain_nft j] -- the LP i that created j
 
     @notes
-      If a publisher of an nft didn't LP anywhere, then it won't have an LP i.
+      If a creator of an nft didn't LP anywhere, then it won't have an LP i.
       In this case, P[chain_nft j] will be set to -1
     """
     LP_addrs, chain_nft_tups = keys_tup
     N_j = len(chain_nft_tups)
 
-    P = np.zeros(N_j, dtype=int)
+    C = np.zeros(N_j, dtype=int)
     for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
-        pub_addr = publishers[chainID][nft_addr]
-        if pub_addr not in LP_addrs:
-            P[j] = -1
+        creator_addr = creators[chainID][nft_addr]
+        if creator_addr not in LP_addrs:
+            C[j] = -1
         else:
-            P[j] = LP_addrs.index(pub_addr)
+            C[j] = LP_addrs.index(creator_addr)
 
-    return P
+    return C
 
 
 @enforce_types
 def _calcRewardsUsd(
     S: np.ndarray,
     V_USD: np.ndarray,
-    P: np.ndarray,
+    C: np.ndarray,
     DCV_multiplier: float,
     rewards_OCEAN: float
 ) -> np.ndarray:
@@ -176,7 +176,7 @@ def _calcRewardsUsd(
     @arguments
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
-      P -- 1d array of [chain_nft j] -- the LP i that published j. -1 if not LP
+      C -- 1d array of [chain_nft j] -- the LP i that created j. -1 if not LP
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       rewards_OCEAN -- amount of rewards available, in OCEAN
 
@@ -189,10 +189,10 @@ def _calcRewardsUsd(
     if np.sum(V_USD) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
 
-    # modify S's: publishers get rewarded as if 2x stake on their asset
+    # modify S's: creators get rewarded as if 2x stake on their asset
     for j in range(N_j):
-        if P[j] != -1: # -1 = publisher didn't stake
-            S[P[j], j] *= 2.0
+        if C[j] != -1: # -1 = creator didn't stake
+            S[C[j], j] *= 2.0
 
     # compute rewards
     R = np.zeros((N_i, N_j), dtype=float)

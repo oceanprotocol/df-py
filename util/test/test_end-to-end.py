@@ -28,76 +28,81 @@ def test_without_csvs():
     st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
 
-    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
+    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, chainID)
     V = {chainID: V0}
+    C = {chainID: C0}
     SYM = {chainID: SYM0}
 
     vebals, _, _ = query.queryVebalances(rng, chainID)
     allocs = query.queryAllocations(rng, chainID)
-    stakes = allocations.allocsToStakes(allocs, vebals)
+    S = allocations.allocsToStakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
-    OCEAN_avail = 1e-4
+    rewards_OCEAN = 1e-4
     m = float("inf")
 
-    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, m, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, rewards_OCEAN)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000.0), sum_
+    tol = rewards_OCEAN / 1000.0
+    assert sum_ == pytest.approx(rewards_OCEAN, tol), sum_
+
+    dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
+    token_addr = oceanutil.OCEAN_address()
+    dispense.dispense(rewardsperlp[chainID], dfrewards_addr, token_addr, accounts[0])
 
 
 @enforce_types
 def test_with_csvs(tmp_path):
-    """
-    Simulate these steps, with csvs in between
-    1. dftool getrate
-    2. dftool volsym
-    3. dftool calc
-    4. dftool dispense
-    """
     chainID = networkutil.DEV_CHAINID
     csv_dir = str(tmp_path)
 
     st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
-    token_addr = oceanutil.OCEAN_address()
 
     # 1. simulate "dftool getrate"
     csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
+    (V0, SYM0) = query.queryVolsCreatorsSymbols(rng, chainID)
     csvs.saveNftvolsCsv(V0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = SYM0 = None  # ensure not used later
 
-    vebals, locked_amt, unlock_time = query.queryVebalances(rng, chainID)
+    # 3. simulate "dftool allocations"
     allocs = query.queryAllocations(rng, chainID)
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
-    vebals = allocs = None  # ensure not used later
+    allocs = None  # ensure not used later
+    
+    # 4. simulate "dftool vebals"
+    vebals, locked_amt, unlock_time = query.queryVebalances(rng, chainID)
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
+    vebals = None  # ensure not used later
 
-    # 3. simulate "dftool calc"
+    # 5. simulate "dftool calc"
+    S = allocations.loadStakes(csv_dir)
     R = csvs.loadRateCsvs(csv_dir)
     V = csvs.loadNftvolsCsvs(csv_dir)
+    C = csvs.loadCreatorsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
-    stakes = allocations.loadStakes(csv_dir)  # loads allocs & vebals, then *
-
     m = float("inf")
-    OCEAN_avail = 1e-4
-    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, m, OCEAN_avail)
+    rewards_OCEAN = 1e-4
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, rewards_OCEAN)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000), sum_
+    tol = rewards_OCEAN / 1000.0
+    assert sum_ == pytest.approx(rewards_OCEAN, tol), sum_
+    
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
-    # 4. simulate "dftool dispense"
+    # 6. simulate "dftool dispense_active"
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
+    token_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[chainID], dfrewards_addr, token_addr, accounts[0])
 
 
