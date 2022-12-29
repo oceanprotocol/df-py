@@ -198,6 +198,7 @@ def _calcRewardsUsd(
         if C[j] != -1:  # -1 = creator didn't stake
             S[C[j], j] *= 2.0
 
+    # perc_per_j
     DCV = np.sum(V_USD)
     perc_per_j = V_USD / DCV
 
@@ -210,11 +211,14 @@ def _calcRewardsUsd(
             continue
 
         for i in range(N_i):
+            perc_at_j = perc_per_j[j]
+
             stake_ij = S[i, j]
+            perc_at_ij = stake_ij / stake_j
 
             # main formula!
             R[i, j] = min(
-                (stake_ij / stake_j) * perc_per_j[j] * rewards_OCEAN,
+                perc_at_j * perc_at_ij * rewards_OCEAN,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
                 DCV_j * DCV_multiplier,  # bound rewards by DCV
             )
