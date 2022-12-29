@@ -85,7 +85,7 @@ def test_with_csvs(tmp_path):
     S = allocations.loadStakes(csv_dir)
     R = csvs.loadRateCsvs(csv_dir)
     V = csvs.loadNftvolsCsvs(csv_dir)
-    C = csvs.loadCreatorsCsvs(CSV_DIR)
+    C = csvs.loadCreatorsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     m = float("inf")
