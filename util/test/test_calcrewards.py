@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Union
 
 from enforce_typing import enforce_types
 import numpy as np
@@ -497,7 +497,7 @@ def test_calcDcvMultiplier():
 def test_getNftAddrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
     nft_addrs = calcrewards._getNftAddrs(nftvols_USD)
-    assert type(nft_addrs) == list
+    assert isinstance(nft_addrs,  list)
     assert sorted(nft_addrs) == sorted([NA, NB, NC])
 
 
@@ -514,7 +514,7 @@ def test_getLpAddrs():
         },
     }
     LP_addrs = calcrewards._getLpAddrs(stakes)
-    assert type(LP_addrs) == list
+    assert isinstance(LP_addrs, list)
     assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
 
 

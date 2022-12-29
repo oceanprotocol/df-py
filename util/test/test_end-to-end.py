@@ -68,6 +68,7 @@ def test_with_csvs(tmp_path):
     # 2. simulate "dftool volsym"
     (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, chainID)
     csvs.saveNftvolsCsv(V0, csv_dir, chainID)
+    csvs.saveCreatorsCsv(C0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
     V0 = C0 = SYM0 = None  # ensure not used later
 

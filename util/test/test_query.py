@@ -560,7 +560,7 @@ def test_SimpleDataNFT():
     assert nft.symbol == "DN1"
     assert nft.owner_addr == "0x123abc"
     assert nft.name == ""
-    assert nft.is_purgatory == False
+    assert not nft.is_purgatory
     assert isinstance(nft.did, str)
 
     # test __eq__
@@ -571,10 +571,9 @@ def test_SimpleDataNFT():
     assert nft != nft3
 
     # test __repr__
-    assert (
-        repr(nft)
-        == "SimpleDataNft(137, '0xbff8242de628cd45173b71022648617968bd0962', 'DN1', '0x123abc', False, '')"
-    )
+    repr1 = repr(nft)
+    repr2 = f"SimpleDataNft(137, '{nft_addr.lower()}', 'DN1', '0x123abc', False, '')"
+    assert repr1 == repr2
 
     # test setName
     nft.setName("nAmE1")
@@ -583,7 +582,7 @@ def test_SimpleDataNFT():
 
     # non-default args in constructor
     nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
-    assert nft4.is_purgatory == True
+    assert nft4.is_purgatory
     assert nft4.name == "namE2"
 
 
