@@ -208,7 +208,7 @@ def _calcRewardsUsd(
         DCV_j = V_USD[j]
         if stake_j == 0.0 or DCV_j == 0.0:
             continue
-        
+
         for i in range(N_i):
             stake_ij = S[i, j]
 
