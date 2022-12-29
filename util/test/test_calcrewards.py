@@ -485,7 +485,6 @@ def test_calcDcvMultiplier():
     assert mult(100) == 0.03
     assert mult(10000) == 0.03
 
-    
 
 # ========================================================================
 # Test rank-based allocate -- end-to-end with calcRewards()
@@ -494,9 +493,10 @@ def test_rank_1_NFT():
     stakes = {C1: {NA: {LP1: 1000.0}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
-    
+
     rew, _ = _calcRewardsC1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert rew == {LP1: 10.0}
+
 
 @enforce_types
 def test_rank_3_NFTs():
@@ -504,35 +504,38 @@ def test_rank_3_NFTs():
     OCEAN_avail = 10.0
 
     # equal volumes
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB:1.0, NC:1.0}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0, NC: 1.0}}}
     rew, _ = _calcRewardsC1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert sorted(rew.keys()) == [LP1, LP2, LP3]
     assert sum(rew.values()) == pytest.approx(10.0, 0.01)
     for LP in [LP1, LP2, LP3]:
-        assert rew[LP] == pytest.approx(10.0/3.0)
-            
+        assert rew[LP] == pytest.approx(10.0 / 3.0)
+
     # unequal volumes
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB:0.002, NC: 0.001}}}
+    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 0.002, NC: 0.001}}}
     rew, _ = _calcRewardsC1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert sorted(rew.keys()) == [LP1, LP2, LP3]
     assert sum(rew.values()) == pytest.approx(10.0, 0.01)
     assert rew[LP1] > rew[LP2] > rew[LP3], rew
     assert rew[LP1] > 3.33, rew
-    assert rew[LP2] > 1.0, rew # if it was pro-rata it would have been << 1.0
-    assert rew[LP3] > 1.0, rew # ""
-    
+    assert rew[LP2] > 1.0, rew  # if it was pro-rata it would have been << 1.0
+    assert rew[LP3] > 1.0, rew  # ""
+
+
 @enforce_types
 def test_rank_10_NFTs():
     _test_rank_N_NFTs(10)
 
+
 @enforce_types
 def test_rank_200_NFTs():
     _test_rank_N_NFTs(200)
-    
+
+
 @enforce_types
 def _test_rank_N_NFTs(N: int):
     OCEAN_avail = 10.0
-    
+
     # equal volumes
     (NFT_addrs, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=True)
     rew, _ = _calcRewardsC1(stakes, nftvols, OCEAN_avail, do_rank=True)
@@ -540,7 +543,7 @@ def _test_rank_N_NFTs(N: int):
     assert LP_addrs == sorted(rew.keys())
     assert sum(rew.values()) == pytest.approx(10.0, 0.01)
     assert min(rew.values()) == max(rew.values())
-    
+
     # unequal volumes
     (NFT_addrs, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=False)
     rew, _ = _calcRewardsC1(stakes, nftvols, OCEAN_avail, do_rank=True)
@@ -554,15 +557,16 @@ def _test_rank_N_NFTs(N: int):
             # if reward is zero, then it shouldn't even show up in rewards dict
             assert LP_addrs[i] not in rew
         else:
-            assert rew[LP_addrs[i]] < rew[LP_addrs[i-1]]
+            assert rew[LP_addrs[i]] < rew[LP_addrs[i - 1]]
+
 
 @enforce_types
-def _rank_testvals(N:int, equal_vol:bool) -> Tuple[list, list, dict, dict]:
+def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
     NFT_addrs = [f"0xnft_{i:03}" for i in range(N)]
-    LP_addrs =  [f"0xlp_{i:03}" for i in range(N)]
+    LP_addrs = [f"0xlp_{i:03}" for i in range(N)]
     stakes, nftvols = {C1: {}}, {C1: {OCN_ADDR: {}}}
     for i, (NFT_addr, LP_addr) in enumerate(zip(NFT_addrs, LP_addrs)):
-        stakes[C1][NFT_addr] = {LP_addr : 1000.0}
+        stakes[C1][NFT_addr] = {LP_addr: 1000.0}
         if equal_vol:
             vol = 1.0
         else:
@@ -570,14 +574,17 @@ def _rank_testvals(N:int, equal_vol:bool) -> Tuple[list, list, dict, dict]:
         nftvols[C1][OCN_ADDR][NFT_addr] = vol
     return (NFT_addrs, LP_addrs, stakes, nftvols)
 
+
 # ========================================================================
 # Test rank-based allocate -- key building block rankBasedAllocate()
+
 
 @enforce_types
 def test_rankBasedAllocate_zerovols():
     V_USD = np.array([32.0, 0.0, 15.0], dtype=float)
     with pytest.raises(ValueError):
         calcrewards._rankBasedAllocate(V_USD)
+
 
 @enforce_types
 def test_rankBasedAllocate_0():
@@ -586,12 +593,14 @@ def test_rankBasedAllocate_0():
     target_p = np.array([], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
+
 @enforce_types
 def test_rankBasedAllocate_1():
     V_USD = np.array([32.0], dtype=float)
     p = calcrewards._rankBasedAllocate(V_USD)
     target_p = np.array([1.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
+
 
 @enforce_types
 def test_rankBasedAllocate_3():
@@ -602,16 +611,17 @@ def test_rankBasedAllocate_3():
     #  perc_per_j = [0.333, 0.5, 0.1666], i.e. [2.0/6.0, 3.0/6.0, 1.0/6.0]
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
     p = calcrewards._rankBasedAllocate(V_USD)
-    target_p = np.array([2.0/6.0, 3.0/6.0, 1.0/6.0], dtype=float)
+    target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
+
 
 @enforce_types
 def test_rankBasedAllocate_20():
     V_USD = 1000.0 * np.random.rand(20)
     p = calcrewards._rankBasedAllocate(V_USD)
     assert len(p) == 20
-    assert sum(p) == pytest.approx(1.0)        
-        
+    assert sum(p) == pytest.approx(1.0)
+
 
 # ========================================================================
 # Test helper functions found in calcrewards
@@ -678,9 +688,9 @@ def _calcRewardsC1(
     OCEAN_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
     rates: Dict[str, float] = RATES,
-    creators = None,
+    creators=None,
     DCV_multiplier: float = np.inf,
-    do_rank:bool = False,
+    do_rank: bool = False,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
         stakes,
@@ -704,7 +714,7 @@ def _calcRewards(
     OCEAN_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
     rates: Dict[str, float] = RATES,
-    creators = None,
+    creators=None,
     DCV_multiplier: float = np.inf,
     do_rank: bool = False,
 ):
@@ -713,7 +723,13 @@ def _calcRewards(
         creators = _nullCreators(stakes, nftvols, symbols, rates)
 
     return calcrewards.calcRewards(
-        stakes, nftvols, creators, symbols, rates, DCV_multiplier, OCEAN_avail,
+        stakes,
+        nftvols,
+        creators,
+        symbols,
+        rates,
+        DCV_multiplier,
+        OCEAN_avail,
         do_rank,
     )
 

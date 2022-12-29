@@ -7,7 +7,7 @@ BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
 
 MAX_ALLOCATE = 10000.0
 
-MAX_N_RANK_ASSETS = 100 #only reward top 100 assets in rank-based setup
+MAX_N_RANK_ASSETS = 100  # only reward top 100 assets in rank-based setup
 
 MULTISIG_ADDRS = {
     1: "0xad0A852F968e19cbCB350AB9426276685651ce41",

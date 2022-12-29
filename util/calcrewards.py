@@ -257,7 +257,7 @@ def _rankBasedAllocate(V_USD: np.ndarray) -> np.ndarray:
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
 
     @return
-      perc_per_j -- 1d array of [chain_nft j] -- percentage 
+      perc_per_j -- 1d array of [chain_nft j] -- percentage
     """
     if len(V_USD) == 0:
         return np.array([], dtype=float)
@@ -271,14 +271,14 @@ def _rankBasedAllocate(V_USD: np.ndarray) -> np.ndarray:
     N = len(ranks)
     max_N = min(N, constants.MAX_N_RANK_ASSETS)
     allocs = np.zeros(N, dtype=float)
-    I = np.where(ranks <= max_N)[0] #indices that we'll allocate to
+    I = np.where(ranks <= max_N)[0]  # indices that we'll allocate to
     assert len(I) > 0, "should be allocating to *something*"
     allocs[I] = max(ranks[I]) - ranks[I] + 1
 
     # normalize
     perc_per_j = allocs / sum(allocs)
 
-    #postconditions
+    # postconditions
     tol = 1e-8
     assert (1.0 - tol) <= sum(perc_per_j) <= (1.0 + tol)
     return perc_per_j
