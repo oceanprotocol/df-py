@@ -198,11 +198,11 @@ def _calcRewardsUsd(
         if C[j] != -1:  # -1 = creator didn't stake
             S[C[j], j] *= 2.0
 
-    perc_per_j = np.sum(S, 1) / np.sum(X)
+    DCV = np.sum(V_USD)
+    perc_per_j = V_USD / DCV
 
     # compute rewards
     R = np.zeros((N_i, N_j), dtype=float)
-    DCV = np.sum(V_USD)
     for j in range(N_j):
         stake_j = sum(S[:, j])
         DCV_j = V_USD[j]
