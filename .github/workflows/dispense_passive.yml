@@ -12,6 +12,8 @@ on:
 
 jobs:
   dispense-passive:
+    env:
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -31,8 +33,6 @@ jobs:
           pip install -r requirements.txt --quiet
 
       - name: Set up Openzeppelin
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
         run: |
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
