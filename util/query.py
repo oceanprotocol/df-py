@@ -165,18 +165,19 @@ def queryVebalances(
                 balance += totalAmount
 
                 ## set user balance
-                if user["id"] not in vebals:
-                    vebals[user["id"]] = balance
+                LP_addr = user["id"].lower()
+                if LP_addr not in vebals:
+                    vebals[LP_addr] = balance
                 else:
-                    vebals[user["id"]] += balance
+                    vebals[LP_addr] += balance
 
                 ## set locked amount
                 # always get the latest
-                locked_amt[user["id"]] = float(user["lockedAmount"])
+                locked_amt[LP_addr] = float(user["lockedAmount"])
 
                 ## set unlock time
                 # always get the latest
-                unlock_time[user["id"]] = int(user["unlockTime"])
+                unlock_time[LP_addr] = int(user["unlockTime"])
 
             ## increase offset
             offset += chunk_size
@@ -185,8 +186,8 @@ def queryVebalances(
     assert n_blocks_sampled > 0
 
     # get average
-    for user in vebals:
-        vebals[user] /= n_blocks_sampled
+    for LP_addr in vebals:
+        vebals[LP_addr] /= n_blocks_sampled
 
     print("queryVebalances: done")
 
@@ -244,9 +245,9 @@ def queryAllocations(
                 break
 
             for allocation in _allocs:
-                LP_addr = allocation["id"]
+                LP_addr = allocation["id"].lower()
                 for ve_allocation in allocation["veAllocation"]:
-                    nft_addr = ve_allocation["nftAddress"]
+                    nft_addr = ve_allocation["nftAddress"].lower()
                     chain_id = ve_allocation["chainId"]
                     allocated = float(ve_allocation["allocated"])
 
@@ -439,7 +440,7 @@ def _queryNftvolumes(
             lastPriceValue = float(order["lastPriceValue"])
             if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
                 continue
-            basetoken_addr = order["lastPriceToken"]["id"]
+            basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
 
             # Calculate gas cost
@@ -447,7 +448,7 @@ def _queryNftvolumes(
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID]
+            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
             if gasCost > 0:
