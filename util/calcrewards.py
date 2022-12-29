@@ -206,13 +206,14 @@ def _calcRewardsUsd(
         DCV_j = V_USD[j]
         if stake_j == 0.0 or DCV_j == 0.0:
             continue
-
+        
+        perc_to_j = DCV_j / DCV
         for i in range(N_i):
             stake_ij = S[i, j]
 
             # main formula!
             R[i, j] = min(
-                (stake_ij / stake_j) * (DCV_j / DCV) * rewards_OCEAN,
+                (stake_ij / stake_j) * perc_to_j * rewards_OCEAN,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
                 DCV_j * DCV_multiplier,  # bound rewards by DCV
             )
