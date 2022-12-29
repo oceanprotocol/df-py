@@ -48,7 +48,7 @@ def calcDcvMultiplier(DF_week: int) -> float:
 
 @enforce_types
 def calcRewards(
-    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     creators: Dict[int, Dict[str, str]],
     symbols: Dict[int, Dict[str, str]],
@@ -97,7 +97,7 @@ def calcRewards(
 
 @enforce_types
 def _getKeysTuple(
-    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
 ) -> Tuple[List[str], List[Tuple[int, str]]]:
     """@return -- tuple of (LP_addrs_list, chain_nft_tups)"""
@@ -108,7 +108,7 @@ def _getKeysTuple(
 
 @enforce_types
 def _stakeVolDictsToArrays(
-    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
 ) -> Tuple[np.ndarray, np.ndarray]:
@@ -283,7 +283,7 @@ def _rewardArrayToDicts(
 
 @enforce_types
 def _getChainNftTups(
-    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
 ) -> List[Tuple[int, str]]:
     """
@@ -322,10 +322,10 @@ def _getNftAddrs(nftvols_USD: Dict[int, Dict[str, str]]) -> List[str]:
 
 
 @enforce_types
-def _getLpAddrs(stakes: Dict[str, Dict[str, Dict[str, float]]]) -> List[str]:
+def _getLpAddrs(stakes: Dict[int, Dict[str, Dict[str, float]]]) -> List[str]:
     """
     @arguments
-      nftvols_USD -- dict of [chainID][nft_addr] : vol_USD_float
+      stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
 
     @return
       LP_addrs -- list of unique LP addrs. Order is consistent.

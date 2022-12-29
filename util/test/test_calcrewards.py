@@ -573,7 +573,7 @@ def _calcRewardsC1(
 
 @enforce_types
 def _calcRewards(
-    stakes: Dict[str, Dict[str, Dict[str, float]]],
+    stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     rewards_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
@@ -607,7 +607,7 @@ def _nullCreators(
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
     chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
 
-    creators = {}
+    creators: Dict[int, Dict[str, Union[str, None]]] = {}
     for (chainID, nft_addr) in chain_nft_tups:
         if chainID not in creators:
             creators[chainID] = {}
