@@ -33,7 +33,7 @@ class SimpleDataNft:
         self.symbol = _symbol.upper()
         self.owner_addr = owner_addr.lower()
         self.is_purgatory = is_purgatory
-        self.name = name # can be any mix of upper and lower case
+        self.name = name  # can be any mix of upper and lower case
         self.did = oceanutil.calcDID(nft_addr, chain_id)
 
     def setName(self, name: str):
@@ -43,19 +43,18 @@ class SimpleDataNft:
         return repr(self) == repr(x)
 
     def __repr__(self) -> str:
-        return f"SimpleDataNft(" \
-            f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', " \
-            f"'{self.owner_addr}', {self.is_purgatory}, '{self.name}'" \
+        return (
+            f"SimpleDataNft("
+            f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', "
+            f"'{self.owner_addr}', {self.is_purgatory}, '{self.name}'"
             f")"
+        )
 
 
 @enforce_types
-def queryVolsCreatorsSymbols(rng: BlockRange, chainID: int) \
-    -> Tuple[
-        Dict[str, Dict[str, float]],
-        Dict[str, str],
-        Dict[str, str]
-    ]:
+def queryVolsCreatorsSymbols(
+    rng: BlockRange, chainID: int
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str], Dict[str, str]]:
     """
     @description
       For given block range and chain, return each nft's {vols, creator, symbol}
@@ -398,7 +397,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
                 nft_addr=nft_addr,
                 _symbol=_symbol,
                 owner_addr=owner_addr,
-                )
+            )
             nftinfo.append(simple_data_nft)
 
         offset += chunk_size
@@ -407,11 +406,9 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 
 
 @enforce_types
-def _queryVolsCreators(st_block: int, end_block: int, chainID: int) \
-    -> Tuple[
-        Dict[str, Dict[str, float]],
-        Dict[str, Dict[str, float]],
-    ]:
+def _queryVolsCreators(
+    st_block: int, end_block: int, chainID: int
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, float]],]:
     """
     @description
       Query the chain for datanft volumes within the given block range.

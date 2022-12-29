@@ -198,9 +198,7 @@ def _test_queryVolsCreators(CO2_addr: str, st, fin):
 
     # test C0 (creators)
     assert C0
-    V0_nft_addrs = set(nft_addr
-                       for token_addr in V0
-                       for nft_addr in V0[token_addr])
+    V0_nft_addrs = set(nft_addr for token_addr in V0 for nft_addr in V0[token_addr])
     for C0_nft_addr in C0:
         assert C0_nft_addr in V0_nft_addrs
 
@@ -568,12 +566,15 @@ def test_SimpleDataNFT():
     # test __eq__
     nft2 = query.SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
     assert nft == nft2
-    
+
     nft3 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
     assert nft != nft3
 
     # test __repr__
-    assert repr(nft) == "SimpleDataNft(137, '0xbff8242de628cd45173b71022648617968bd0962', 'DN1', '0x123abc', False, '')"
+    assert (
+        repr(nft)
+        == "SimpleDataNft(137, '0xbff8242de628cd45173b71022648617968bd0962', 'DN1', '0x123abc', False, '')"
+    )
 
     # test setName
     nft.setName("nAmE1")
@@ -584,7 +585,6 @@ def test_SimpleDataNFT():
     nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory == True
     assert nft4.name == "namE2"
-
 
 
 testfunc_callcount = 0

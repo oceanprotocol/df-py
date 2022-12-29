@@ -75,7 +75,7 @@ def test_with_csvs(tmp_path):
     allocs = query.queryAllocations(rng, chainID)
     csvs.saveAllocationCsv(allocs, csv_dir)
     allocs = None  # ensure not used later
-    
+
     # 4. simulate "dftool vebals"
     vebals, locked_amt, unlock_time = query.queryVebalances(rng, chainID)
     csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
@@ -95,7 +95,7 @@ def test_with_csvs(tmp_path):
     sum_ = sum(rewardsperlp[chainID].values())
     tol = rewards_OCEAN / 1000.0
     assert sum_ == pytest.approx(rewards_OCEAN, tol), sum_
-    
+
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 

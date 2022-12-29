@@ -12,7 +12,7 @@ from util.constants import ZERO_ADDRESS
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
-C1, C2, C3 = 7, 137, 1285 # chainIDs
+C1, C2, C3 = 7, 137, 1285  # chainIDs
 NA, NB, NC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
@@ -200,8 +200,9 @@ def test_two_LPs__one_NFT__one_LP_created():
     creators = {C1: {NA: LP1}}
 
     rewards_avail = 10.0
-    rewardsperlp, rewardsinfo = \
-        _calcRewardsC1(stakes, nftvols, rewards_avail, creators=creators)
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        stakes, nftvols, rewards_avail, creators=creators
+    )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[NA].values()) == pytest.approx(10.0, 0.01)
@@ -217,8 +218,9 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     creators = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
 
     rewards_avail = 10.0
-    rewardsperlp, rewardsinfo = \
-        _calcRewardsC1(stakes, nftvols, rewards_avail, creators=creators)
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        stakes, nftvols, rewards_avail, creators=creators
+    )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
@@ -234,8 +236,9 @@ def test_two_LPs__two_NFTs__two_LPs_created():
     creators = {C1: {NA: LP1, NB: LP2}}
 
     rewards_avail = 10.0
-    rewardsperlp, rewardsinfo = \
-        _calcRewardsC1(stakes, nftvols, rewards_avail, creators=creators)
+    rewardsperlp, rewardsinfo = _calcRewardsC1(
+        stakes, nftvols, rewards_avail, creators=creators
+    )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewardsinfo[NA].values()) == pytest.approx(5.0, 0.01)
@@ -489,6 +492,7 @@ def test_calcDcvMultiplier():
 # ========================================================================
 # Test helper functions found in calcrewards
 
+
 @enforce_types
 def test_getNftAddrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
@@ -572,32 +576,40 @@ def _calcRewards(
     stakes: Dict[str, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     rewards_avail: float,
-    symbols: Dict[int, Dict[str, str]]=SYMBOLS,
-    rates:Dict[str, float]=RATES,
+    symbols: Dict[int, Dict[str, str]] = SYMBOLS,
+    rates: Dict[str, float] = RATES,
     creators=None,
-    DCV_multiplier:float=np.inf,
+    DCV_multiplier: float = np.inf,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if creators is None:
         creators = _nullCreators(stakes, nftvols, symbols, rates)
-        
-    return calcRewards(stakes, nftvols, creators, symbols, rates, DCV_multiplier, rewards_avail)
+
+    return calcRewards(
+        stakes, nftvols, creators, symbols, rates, DCV_multiplier, rewards_avail
+    )
 
 
 @enforce_types
-def _nullCreators(stakes, nftvols, symbols, rates,
+def _nullCreators(
+    stakes,
+    nftvols,
+    symbols,
+    rates,
 ) -> Dict[int, Dict[str, Union[str, None]]]:
     """@return - creators -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
-    stakes, nftvols, symbols, rates = \
-        cc.modStakes(stakes), cc.modNFTvols(nftvols), cc.modSymbols(symbols), \
-        cc.modRates(rates)
+    stakes, nftvols, symbols, rates = (
+        cc.modStakes(stakes),
+        cc.modNFTvols(nftvols),
+        cc.modSymbols(symbols),
+        cc.modRates(rates),
+    )
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
     chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
-    
+
     creators = {}
     for (chainID, nft_addr) in chain_nft_tups:
         if chainID not in creators:
             creators[chainID] = {}
         creators[chainID][nft_addr] = ZERO_ADDRESS
     return creators
-

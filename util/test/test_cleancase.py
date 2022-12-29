@@ -117,11 +117,11 @@ def test_nftvols():
 def test_symbols():
     symbols = {
         1: {"0xoCeAn": "oCeAn", "0xh2o": "H2o"},
-        2: {"0xoceaN": "mOCEan", "0xh2O": "h2O"}
+        2: {"0xoceaN": "mOCEan", "0xh2O": "h2O"},
     }
     target_symbols = {
         1: {"0xocean": "OCEAN", "0xh2o": "H2O"},
-        2: {"0xocean": "MOCEAN", "0xh2o": "H2O"}
+        2: {"0xocean": "MOCEAN", "0xh2o": "H2O"},
     }
 
     with pytest.raises(AssertionError):
@@ -156,11 +156,11 @@ def test_rates_0x():
 def test_creators():
     creators = {
         1: {"0xNFt1": "0xLp1", "0xNfT2": "0xlP2"},
-        2: {"0xnFT2": "0xlP2n", "0xnfT3": "0xLP3"}
+        2: {"0xnFT2": "0xlP2n", "0xnfT3": "0xLP3"},
     }
     target_creators = {
         1: {"0xnft1": "0xlp1", "0xnft2": "0xlp2"},
-        2: {"0xnft2": "0xlp2n", "0xnft3": "0xlp3"}
+        2: {"0xnft2": "0xlp2n", "0xnft3": "0xlp3"},
     }
 
     with pytest.raises(AssertionError):

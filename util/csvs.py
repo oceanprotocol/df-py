@@ -197,8 +197,15 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "nft_addr", "did", "symbol", "name",
-               "is_purgatory", "owner_addr"]
+        row = [
+            "chainID",
+            "nft_addr",
+            "did",
+            "symbol",
+            "name",
+            "is_purgatory",
+            "owner_addr",
+        ]
         writer.writerow(row)
 
         for nft in nftinfo:
@@ -247,8 +254,15 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "nft_addr", "did", "symbol", "name",
-                               "is_purgatory", "owner_addr"]
+                assert row == [
+                    "chainID",
+                    "nft_addr",
+                    "did",
+                    "symbol",
+                    "name",
+                    "is_purgatory",
+                    "owner_addr",
+                ]
                 continue
 
             chainID2 = int(row[0])
@@ -266,7 +280,7 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
                 chainID, nft_addr, symbol, owner_addr, is_purgatory, name
             )
             nftinfo.append(nft)
-            
+
     print(f"Loaded {csv_file}")
 
     return nftinfo

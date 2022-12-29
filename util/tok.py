@@ -81,7 +81,7 @@ class TokSet:
                 return tok
         return None
 
-    def exportTokenAddrs(self) -> Dict[int,List[str]]:
+    def exportTokenAddrs(self) -> Dict[int, List[str]]:
         """@return -- dict of [chainID] : list_of_addr"""
         d: dict = {}
         for tok in self.toks:

@@ -74,9 +74,13 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, symbols, rates, creators = \
-        cc.modStakes(stakes), cc.modNFTvols(nftvols), cc.modSymbols(symbols), \
-        cc.modRates(rates), cc.modCreators(creators)
+    stakes, nftvols, symbols, rates, creators = (
+        cc.modStakes(stakes),
+        cc.modNFTvols(nftvols),
+        cc.modSymbols(symbols),
+        cc.modRates(rates),
+        cc.modCreators(creators),
+    )
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
@@ -170,7 +174,7 @@ def _calcRewardsUsd(
     V_USD: np.ndarray,
     C: np.ndarray,
     DCV_multiplier: float,
-    rewards_OCEAN: float
+    rewards_OCEAN: float,
 ) -> np.ndarray:
     """
     @arguments
@@ -191,7 +195,7 @@ def _calcRewardsUsd(
 
     # modify S's: creators get rewarded as if 2x stake on their asset
     for j in range(N_j):
-        if C[j] != -1: # -1 = creator didn't stake
+        if C[j] != -1:  # -1 = creator didn't stake
             S[C[j], j] *= 2.0
 
     # compute rewards
@@ -281,7 +285,7 @@ def _rewardArrayToDicts(
 def _getChainNftTups(
     stakes: Dict[str, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
-) -> List[Tuple[int,str]]:
+) -> List[Tuple[int, str]]:
     """
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
