@@ -3,8 +3,9 @@ from typing import Dict, List, Tuple
 
 from enforce_typing import enforce_types
 import numpy as np
+import scipy
 
-from util import tousd, cleancase as cc
+from util import cleancase as cc, constants, tousd
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -54,7 +55,8 @@ def calcRewards(
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
     DCV_multiplier: float,
-    rewards_OCEAN: float,
+    OCEAN_avail: float,
+    do_rank: bool,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
@@ -64,7 +66,8 @@ def calcRewards(
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
-      rewards_OCEAN -- amount of rewards avail, in units of OCEAN
+      OCEAN_avail -- amount of rewards avail, in units of OCEAN
+      do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_reward_float
@@ -88,7 +91,7 @@ def calcRewards(
     S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
     C = _creatorDictToArray(creators, keys_tup)
 
-    R = _calcRewardsUsd(S, V_USD, C, DCV_multiplier, rewards_OCEAN)
+    R = _calcRewardsUsd(S, V_USD, C, DCV_multiplier, OCEAN_avail, do_rank)
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
 
@@ -174,7 +177,8 @@ def _calcRewardsUsd(
     V_USD: np.ndarray,
     C: np.ndarray,
     DCV_multiplier: float,
-    rewards_OCEAN: float,
+    OCEAN_avail: float,
+    do_rank: bool,
 ) -> np.ndarray:
     """
     @arguments
@@ -182,7 +186,8 @@ def _calcRewardsUsd(
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
       C -- 1d array of [chain_nft j] -- the LP i that created j. -1 if not LP
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
-      rewards_OCEAN -- amount of rewards available, in OCEAN
+      OCEAN_avail -- amount of rewards available, in OCEAN
+      do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
 
     @return
       R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -199,8 +204,10 @@ def _calcRewardsUsd(
             S[C[j], j] *= 2.0
 
     # perc_per_j
-    DCV = np.sum(V_USD)
-    perc_per_j = V_USD / DCV
+    if do_rank:
+        perc_per_j = _rankBasedAllocate(V_USD)
+    else:
+        perc_per_j = V_USD / np.sum(V_USD)
 
     # compute rewards
     R = np.zeros((N_i, N_j), dtype=float)
@@ -218,7 +225,7 @@ def _calcRewardsUsd(
 
             # main formula!
             R[i, j] = min(
-                perc_at_j * perc_at_ij * rewards_OCEAN,
+                perc_at_j * perc_at_ij * OCEAN_avail,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
                 DCV_j * DCV_multiplier,  # bound rewards by DCV
             )
@@ -235,13 +242,46 @@ def _calcRewardsUsd(
     # postcondition: sum is ok. First check within a tol; shrink if needed
     sum1 = np.sum(R)
     tol = 1e-13
-    assert sum1 <= rewards_OCEAN * (1 + tol), (sum1, rewards_OCEAN, R)
-    if sum1 > rewards_OCEAN:
+    assert sum1 <= OCEAN_avail * (1 + tol), (sum1, OCEAN_avail, R)
+    if sum1 > OCEAN_avail:
         R /= 1 + tol
     sum2 = np.sum(R)
-    assert sum1 <= rewards_OCEAN * (1 + tol), (sum2, rewards_OCEAN, R)
+    assert sum1 <= OCEAN_avail * (1 + tol), (sum2, OCEAN_avail, R)
 
     return R
+
+
+def _rankBasedAllocate(V_USD: np.ndarray) -> np.ndarray:
+    """
+    @arguments
+      V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
+
+    @return
+      perc_per_j -- 1d array of [chain_nft j] -- percentage 
+    """
+    if len(V_USD) == 0:
+        return np.array([], dtype=float)
+    if min(V_USD) <= 0.0:
+        raise ValueError(f"each nft needs volume > 0. min(V_USD)={min(V_USD)}")
+
+    # compute ranks. highest-DCV is rank 1. Then, rank 2. Etc
+    ranks = scipy.stats.rankdata(-1 * V_USD, method="min")
+
+    # compute allocs
+    N = len(ranks)
+    max_N = min(N, constants.MAX_N_RANK_ASSETS)
+    allocs = np.zeros(N, dtype=float)
+    I = np.where(ranks <= max_N)[0] #indices that we'll allocate to
+    assert len(I) > 0, "should be allocating to *something*"
+    allocs[I] = max(ranks[I]) - ranks[I] + 1
+
+    # normalize
+    perc_per_j = allocs / sum(allocs)
+
+    #postconditions
+    tol = 1e-8
+    assert (1.0 - tol) <= sum(perc_per_j) <= (1.0 + tol)
+    return perc_per_j
 
 
 @enforce_types

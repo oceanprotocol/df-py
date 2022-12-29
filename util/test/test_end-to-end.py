@@ -39,14 +39,14 @@ def test_without_csvs():
 
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
-    rewards_OCEAN = 1e-4
+    OCEAN_avail = 1e-4
     m = float("inf")
 
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, rewards_OCEAN)
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    tol = rewards_OCEAN / 1000.0
-    assert sum_ == pytest.approx(rewards_OCEAN, tol), sum_
+    tol = OCEAN_avail / 1000.0
+    assert sum_ == pytest.approx(OCEAN_avail, tol), sum_
 
     dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
     token_addr = oceanutil.OCEAN_address()
@@ -90,12 +90,12 @@ def test_with_csvs(tmp_path):
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     m = float("inf")
-    rewards_OCEAN = 1e-4
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, rewards_OCEAN)
+    OCEAN_avail = 1e-4
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[chainID].values())
-    tol = rewards_OCEAN / 1000.0
-    assert sum_ == pytest.approx(rewards_OCEAN, tol), sum_
+    tol = OCEAN_avail / 1000.0
+    assert sum_ == pytest.approx(OCEAN_avail, tol), sum_
 
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
