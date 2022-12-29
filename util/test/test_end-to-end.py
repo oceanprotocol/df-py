@@ -66,10 +66,10 @@ def test_with_csvs(tmp_path):
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, SYM0) = query.queryVolsCreatorsSymbols(rng, chainID)
+    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, chainID)
     csvs.saveNftvolsCsv(V0, csv_dir, chainID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
-    V0 = SYM0 = None  # ensure not used later
+    V0 = C0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
     allocs = query.queryAllocations(rng, chainID)
