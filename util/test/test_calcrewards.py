@@ -646,14 +646,41 @@ def test_rankBasedAllocate_1000():
     assert sum(p) == pytest.approx(1.0)
 
 
-# @enforce_types
-# @pytest.mark.skip(reason="only unskip this when doing manual tuning")
-# def test_for_manual_tuning_of_rankBasedAllocate():
-#     N = 50
-#     V_USD = 1000.0 * np.random.rand(N)
+@enforce_types
+#@pytest.mark.skip(reason="only unskip this when doing manual tuning")
+def test_plot_ranks():
+    # pylint: disable=unused-variable
+    
+    # to run this function:
+    # 1. in editor, a few lines above this: comment out "pytest.mark.skip" line
+    # 2. in console: pip install matplotlib
+    # 3. in console: pytest util/test/test_calcrewards.py::test_plot_ranks
+    import matplotlib
+    import matplotlib.pyplot as plt
+    import numpy as np
 
-#     (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
+    matplotlib.rcParams.update({'font.size': 22})
+    
+    N = 50
+    V_USD = np.arange(N, 0, -1) # 50, 49, ..., 1. Makes ranking obvious!
 
+    (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
+
+    x = np.arange(1, N+1)
+    plt.bar(x, p)
+    
+    xlabels = [str(i) for i in range(1, N+1)]
+    plt.xticks(x, xlabels)
+    
+    plt.xlabel("DCV Rank of data asset (1=highest)")
+    plt.ylabel("% of OCEAN to that asset")
+    plt.title("% of OCEAN to data asset as a function of its rank")
+
+    mng = plt.get_current_fig_manager()
+    mng.resize(*mng.window.maxsize()) # linux
+    #mng.window.state('zoomed') #windows
+    
+    plt.show()
 
 # ========================================================================
 # Test helper functions found in calcrewards
