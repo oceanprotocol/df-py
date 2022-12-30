@@ -647,40 +647,57 @@ def test_rankBasedAllocate_1000():
 
 
 @enforce_types
-#@pytest.mark.skip(reason="only unskip this when doing manual tuning")
+@pytest.mark.skip(reason="only unskip this when doing manual tuning")
 def test_plot_ranks():
-    # pylint: disable=unused-variable
-    
+    # pylint: disable=unused-variable, import-outside-toplevel
+
     # to run this function:
     # 1. in editor, a few lines above this: comment out "pytest.mark.skip" line
     # 2. in console: pip install matplotlib
     # 3. in console: pytest util/test/test_calcrewards.py::test_plot_ranks
     import matplotlib
     import matplotlib.pyplot as plt
-    import numpy as np
 
-    matplotlib.rcParams.update({'font.size': 22})
-    
-    N = 50
-    V_USD = np.arange(N, 0, -1) # 50, 49, ..., 1. Makes ranking obvious!
+    matplotlib.rcParams.update({"font.size": 22})
+
+    N = 150
+    V_USD = np.arange(N, 0, -1)  # N, N-1, ..., 2, 1. Makes ranking obvious!
 
     (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
 
-    x = np.arange(1, N+1)
-    plt.bar(x, 100.0 * p)
+    x = np.arange(1, N + 1)
 
-    xticks = [1] + list(np.arange(10, N+1, 10))
+    fig, ax1 = plt.subplots()
+    ax2 = ax1.twinx()
+
+    ax1.bar(x, 100.0 * p)
+    ax2.plot(x, np.cumsum(100.0 * p), "g-", linewidth=5.0)
+
+    xticks = [1] + list(np.arange(10, N + 1, 5))
     xlabels = [str(xtick) for xtick in xticks]
     plt.xticks(xticks, xlabels)
-    
-    plt.xlabel("DCV Rank of data asset (1=highest)")
-    plt.ylabel("% of OCEAN to that asset")
-    plt.title("% of OCEAN to data asset as a function of its rank")
+
+    ax1.set_ylabel("% of OCEAN to that asset", color="b")
+    ax2.set_ylabel("Cumulative % of OCEAN to assets", color="g")
+
+    plt.xlabel(
+        "DCV Rank of data asset (1=highest)"
+        f". MAX_N_RANK_ASSETS={constants.MAX_N_RANK_ASSETS}"
+    )
+    plt.title("% of OCEAN to each data asset as function of rank")
+
+    # plt.grid(axis="y", linewidth=2.0, linestyle="--")
+
+    # Show the major grid and style it slightly.
+    ax2.grid(axis="y", which="major", color="#DDDDDD", linewidth=2.5, linestyle="-")
+    ax2.grid(axis="y", which="minor", color="#DDDDDD", linewidth=1.8, linestyle="--")
+    ax2.minorticks_on()
 
     mng = plt.get_current_fig_manager()
     mng.resize(*mng.window.maxsize())
-    
+
     plt.show()
+
 
 # ========================================================================
 # Test helper functions found in calcrewards
