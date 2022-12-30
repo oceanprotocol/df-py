@@ -647,7 +647,7 @@ def test_rankBasedAllocate_1000():
 
 
 @enforce_types
-@pytest.mark.skip(reason="only unskip this when doing manual tuning")
+#@pytest.mark.skip(reason="only unskip this when doing manual tuning")
 def test_plot_ranks():
     # pylint: disable=unused-variable
     
@@ -667,10 +667,11 @@ def test_plot_ranks():
     (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
 
     x = np.arange(1, N+1)
-    plt.bar(x, p)
-    
-    xlabels = [str(i) for i in range(1, N+1)]
-    plt.xticks(x, xlabels)
+    plt.bar(x, 100.0 * p)
+
+    xticks = [1] + list(np.arange(10, N+1, 10))
+    xlabels = [str(xtick) for xtick in xticks]
+    plt.xticks(xticks, xlabels)
     
     plt.xlabel("DCV Rank of data asset (1=highest)")
     plt.ylabel("% of OCEAN to that asset")
