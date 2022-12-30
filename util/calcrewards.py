@@ -253,7 +253,10 @@ def _calcRewardsUsd(
 
 
 def _rankBasedAllocate(
-    V_USD: np.ndarray, return_info: bool = False
+    V_USD: np.ndarray,
+    max_n_rank_assets: int = MAX_N_RANK_ASSETS,
+    rank_scale_op: str = RANK_SCALE_OP,
+    return_info: bool = False
 ) -> Union[np.ndarray, tuple]:
     """
     @arguments
@@ -277,25 +280,25 @@ def _rankBasedAllocate(
 
     # compute allocs
     N = len(ranks)
-    max_N = min(N, MAX_N_RANK_ASSETS)
+    max_N = min(N, max_n_rank_assets)
     allocs = np.zeros(N, dtype=float)
     I = np.where(ranks <= max_N)[0]  # indices that we'll allocate to
     assert len(I) > 0, "should be allocating to *something*"
 
-    if RANK_SCALE_OP == "LIN":
+    if rank_scale_op == "LIN":
         allocs[I] = max(ranks[I]) - ranks[I]
-    elif RANK_SCALE_OP == "POW2":
+    elif rank_scale_op == "POW2":
         allocs[I] = (max(ranks[I]) - ranks[I]) ** 2
-    elif RANK_SCALE_OP == "POW4":
+    elif rank_scale_op == "POW4":
         allocs[I] = (max(ranks[I]) - ranks[I]) ** 4
-    elif RANK_SCALE_OP == "LOG":
+    elif rank_scale_op == "LOG":
         logranks = np.log10(ranks)
         allocs[I] = max(logranks[I]) - logranks[I]
-    elif RANK_SCALE_OP == "SQRT":
-        sqrtranks = np.log10(ranks)
+    elif rank_scale_op == "SQRT":
+        sqrtranks = np.sqrt(ranks)
         allocs[I] = max(sqrtranks[I]) - sqrtranks[I]
     else:
-        raise ValueError(RANK_SCALE_OP)
+        raise ValueError(rank_scale_op)
 
     # normalize
     perc_per_j = allocs / sum(allocs)
