@@ -6,6 +6,7 @@ import numpy as np
 import scipy
 
 from util import cleancase as cc, constants, tousd
+from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -276,11 +277,25 @@ def _rankBasedAllocate(
 
     # compute allocs
     N = len(ranks)
-    max_N = min(N, constants.MAX_N_RANK_ASSETS)
+    max_N = min(N, MAX_N_RANK_ASSETS)
     allocs = np.zeros(N, dtype=float)
     I = np.where(ranks <= max_N)[0]  # indices that we'll allocate to
     assert len(I) > 0, "should be allocating to *something*"
-    allocs[I] = max(ranks[I]) - ranks[I] + 1
+
+    if RANK_SCALE_OP == "LIN":
+        allocs[I] = max(ranks[I]) - ranks[I]
+    elif RANK_SCALE_OP == "POW2":
+        allocs[I] = (max(ranks[I]) - ranks[I]) ** 2
+    elif RANK_SCALE_OP == "POW4":
+        allocs[I] = (max(ranks[I]) - ranks[I]) ** 4
+    elif RANK_SCALE_OP == "LOG":
+        logranks = np.log10(ranks)
+        allocs[I] = max(logranks[I]) - logranks[I]
+    elif RANK_SCALE_OP == "SQRT":
+        sqrtranks = np.log10(ranks)
+        allocs[I] = max(sqrtranks[I]) - sqrtranks[I]
+    else:
+        raise ValueError(RANK_SCALE_OP)
 
     # normalize
     perc_per_j = allocs / sum(allocs)
