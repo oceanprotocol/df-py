@@ -39,10 +39,11 @@ def test_without_csvs():
 
     R = {"OCEAN": 0.5, "H2O": 1.618}
 
-    OCEAN_avail = 1e-4
     m = float("inf")
+    OCEAN_avail = 1e-4
+    do_rank = True
 
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, OCEAN_avail)
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, OCEAN_avail, do_rank)
 
     sum_ = sum(rewardsperlp[chainID].values())
     tol = OCEAN_avail / 1000.0
@@ -89,9 +90,11 @@ def test_with_csvs(tmp_path):
     C = csvs.loadCreatorsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
-    m = float("inf")
     OCEAN_avail = 1e-4
-    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, OCEAN_avail)
+    m = float("inf")
+    do_rank = True
+
+    rewardsperlp, _ = calcrewards.calcRewards(S, V, C, SYM, R, m, OCEAN_avail, do_rank)
 
     sum_ = sum(rewardsperlp[chainID].values())
     tol = OCEAN_avail / 1000.0
