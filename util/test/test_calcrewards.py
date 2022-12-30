@@ -7,7 +7,7 @@ import pytest
 from pytest import approx
 
 from util import calcrewards, cleancase as cc, constants, tousd
-from util.calcrewards import TARGET_WPY
+from util.calcrewards import TARGET_WPY, _rankBasedAllocate
 from util.constants import ZERO_ADDRESS
 
 # for shorter lines
@@ -584,13 +584,13 @@ def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
 def test_rankBasedAllocate_zerovols():
     V_USD = np.array([32.0, 0.0, 15.0], dtype=float)
     with pytest.raises(ValueError):
-        calcrewards._rankBasedAllocate(V_USD)
+        _rankBasedAllocate(V_USD)
 
 
 @enforce_types
 def test_rankBasedAllocate_0():
     V_USD = np.array([], dtype=float)
-    p = calcrewards._rankBasedAllocate(V_USD)
+    p = _rankBasedAllocate(V_USD)
     target_p = np.array([], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
@@ -598,30 +598,52 @@ def test_rankBasedAllocate_0():
 @enforce_types
 def test_rankBasedAllocate_1():
     V_USD = np.array([32.0], dtype=float)
-    p = calcrewards._rankBasedAllocate(V_USD)
+    p = _rankBasedAllocate(V_USD)
     target_p = np.array([1.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
 
 @enforce_types
 def test_rankBasedAllocate_3():
-    # exact calculation based on internal behavior of function. Expect:
-    #  ranks = [2, 1, 3]
-    #  I = [0, 1, 2]
-    #  allocs = [2., 3., 1.], where sum(allocs) == 6.0 = denom in next step
-    #  perc_per_j = [0.333, 0.5, 0.1666], i.e. [2.0/6.0, 3.0/6.0, 1.0/6.0]
+    # exact calculation based on internal behavior of function
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
-    p = calcrewards._rankBasedAllocate(V_USD)
+    
+    (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
+
+    target_ranks = [2, 1, 3]
+    target_I = [0, 1, 2]
+    target_allocs = [2., 3., 1.]
     target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
+
+    np.testing.assert_allclose(ranks, np.array(target_ranks, dtype=float))
+    np.testing.assert_allclose(I,  np.array(target_I, dtype=float))
+    np.testing.assert_allclose(allocs, np.array(target_allocs, dtype=float))
     np.testing.assert_allclose(p, target_p)
 
 
 @enforce_types
 def test_rankBasedAllocate_20():
     V_USD = 1000.0 * np.random.rand(20)
-    p = calcrewards._rankBasedAllocate(V_USD)
+    p = _rankBasedAllocate(V_USD)
     assert len(p) == 20
     assert sum(p) == pytest.approx(1.0)
+
+
+@enforce_types
+def test_rankBasedAllocate_1000():
+    V_USD = 1000.0 * np.random.rand(1000)
+    p = _rankBasedAllocate(V_USD)
+    assert len(p) == 1000
+    assert sum(p) == pytest.approx(1.0)
+
+
+@enforce_types
+@pytest.mark.skip(reason="only unskip this when doing manual tuning")
+def test_for_manual_tuning_of_rankBasedAllocate():
+    N = 50
+    V_USD = 1000.0 * np.random.rand(N)
+    
+    (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
 
 
 # ========================================================================

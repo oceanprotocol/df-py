@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Union
 
 from enforce_typing import enforce_types
 import numpy as np
@@ -251,13 +251,19 @@ def _calcRewardsUsd(
     return R
 
 
-def _rankBasedAllocate(V_USD: np.ndarray) -> np.ndarray:
+def _rankBasedAllocate(V_USD: np.ndarray, return_info:bool=False) \
+    -> Union[np.ndarray, tuple]:
     """
     @arguments
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
+      return_info -- give full info for debugging?
 
-    @return
+    @return 
+    Always return:
       perc_per_j -- 1d array of [chain_nft j] -- percentage
+
+    Also return, if return_info == True:
+      ranks, max_N, allocs, I -- details in code itself
     """
     if len(V_USD) == 0:
         return np.array([], dtype=float)
@@ -281,7 +287,12 @@ def _rankBasedAllocate(V_USD: np.ndarray) -> np.ndarray:
     # postconditions
     tol = 1e-8
     assert (1.0 - tol) <= sum(perc_per_j) <= (1.0 + tol)
-    return perc_per_j
+
+    #return
+    if return_info:
+        return perc_per_j, ranks, max_N, allocs, I
+    else:
+        return perc_per_j
 
 
 @enforce_types
