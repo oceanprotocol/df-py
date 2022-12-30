@@ -256,7 +256,7 @@ def _rankBasedAllocate(
     V_USD: np.ndarray,
     max_n_rank_assets: int = MAX_N_RANK_ASSETS,
     rank_scale_op: str = RANK_SCALE_OP,
-    return_info: bool = False
+    return_info: bool = False,
 ) -> Union[np.ndarray, tuple]:
     """
     @arguments

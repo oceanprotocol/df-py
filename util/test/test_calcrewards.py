@@ -647,10 +647,8 @@ def test_rankBasedAllocate_1000():
 
 
 @enforce_types
-#@pytest.mark.skip(reason="only unskip this when doing manual tuning")
+@pytest.mark.skip(reason="only unskip this when doing manual tuning")
 def test_plot_ranks():
-    # pylint: disable=unused-variable, import-outside-toplevel
-
     # This function is for manual exploration around shapes of the rank curve
     # To use it:
     # 1. in this file, right above: comment out "pytest.mark.skip" line
@@ -659,9 +657,15 @@ def test_plot_ranks():
     # 4. in console: pytest util/test/test_calcrewards.py::test_plot_ranks
 
     # settable values
-    save_or_show = "save" # "save" or "show"
-    max_ns = [20, 50, 100] # example list: [20, 50, 100] 
-    ops = ["LIN", "POW2", "POW4", "LOG", "SQRT"] # full list: ["LIN", "POW2", "POW4", "LOG", "SQRT"]
+    save_or_show = "save"  # "save" or "show"
+    max_ns = [20, 50, 100]  # example list: [20, 50, 100]
+    ops = [
+        "LIN",
+        "POW2",
+        "POW4",
+        "LOG",
+        "SQRT",
+    ]  # full list: ["LIN", "POW2", "POW4", "LOG", "SQRT"]
 
     # go!
     for max_n in max_ns:
@@ -671,16 +675,16 @@ def test_plot_ranks():
 
 @enforce_types
 def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
+    # pylint: disable=unused-variable, import-outside-toplevel
+
     import matplotlib
     import matplotlib.pyplot as plt
-    
+
     N = 120
     V_USD = np.arange(N, 0, -1)  # N, N-1, ..., 2, 1. Makes ranking obvious!
 
     p = _rankBasedAllocate(
-        V_USD,
-        max_n_rank_assets=max_n_rank_assets,
-        rank_scale_op=rank_scale_op
+        V_USD, max_n_rank_assets=max_n_rank_assets, rank_scale_op=rank_scale_op
     )
 
     if save_or_show == "save":
@@ -691,28 +695,35 @@ def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
         linewidth_m = 1.0
     else:
         raise ValueError(save_or_show)
-    
+
     matplotlib.rcParams.update({"font.size": fontsize})
-    
-    fig, ax1 = plt.subplots()
+
+    _, ax1 = plt.subplots()
     ax2 = ax1.twinx()
 
     x = np.arange(1, N + 1)
     ax1.bar(x, 100.0 * p)
     ax1.set_xlabel("DCV Rank of data asset (1=highest)")
     ax1.set_ylabel("% of OCEAN to data asset", color="b")
-    
-    ax2.plot(x, np.cumsum(100.0 * p), "g-", linewidth=3.5*linewidth_m)
+
+    ax2.plot(x, np.cumsum(100.0 * p), "g-", linewidth=3.5 * linewidth_m)
     ax2.set_ylabel("Cumulative % of OCEAN to assets", color="g")
 
-    plt.title("% of OCEAN to data asset vs rank"
-              f". max_n_rank_assets={max_n_rank_assets}"
-              f", rank_scale_op={rank_scale_op}"
-              )
+    plt.title(
+        "% of OCEAN to data asset vs rank"
+        f". max_n_rank_assets={max_n_rank_assets}"
+        f", rank_scale_op={rank_scale_op}"
+    )
 
     # Show the major grid and style it slightly.
-    ax1.grid(axis="y", which="major", color="#DDDDDD", linewidth=2.5*linewidth_m, linestyle="-")
-    
+    ax1.grid(
+        axis="y",
+        which="major",
+        color="#DDDDDD",
+        linewidth=2.5 * linewidth_m,
+        linestyle="-",
+    )
+
     xticks = [1] + list(np.arange(10, N + 1, 5))
     xlabels = [str(xtick) for xtick in xticks]
     plt.xticks(xticks, xlabels)
