@@ -604,19 +604,28 @@ def test_rankBasedAllocate_1():
 
 
 @enforce_types
-def test_rankBasedAllocate_3():
-    # exact calculation based on internal behavior of function
+def test_rankBasedAllocate_3_simple():
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
-    
+    p = _rankBasedAllocate(V_USD)
+    target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
+    np.testing.assert_allclose(p, target_p)
+
+
+@enforce_types
+def test_rankBasedAllocate_3_exact_calculations():
+    V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
+
     (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
 
+    target_max_N = 3
     target_ranks = [2, 1, 3]
     target_I = [0, 1, 2]
-    target_allocs = [2., 3., 1.]
+    target_allocs = [2.0, 3.0, 1.0]
     target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
 
+    assert max_N == target_max_N
     np.testing.assert_allclose(ranks, np.array(target_ranks, dtype=float))
-    np.testing.assert_allclose(I,  np.array(target_I, dtype=float))
+    np.testing.assert_allclose(I, np.array(target_I, dtype=float))
     np.testing.assert_allclose(allocs, np.array(target_allocs, dtype=float))
     np.testing.assert_allclose(p, target_p)
 
@@ -637,13 +646,13 @@ def test_rankBasedAllocate_1000():
     assert sum(p) == pytest.approx(1.0)
 
 
-@enforce_types
-@pytest.mark.skip(reason="only unskip this when doing manual tuning")
-def test_for_manual_tuning_of_rankBasedAllocate():
-    N = 50
-    V_USD = 1000.0 * np.random.rand(N)
-    
-    (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
+# @enforce_types
+# @pytest.mark.skip(reason="only unskip this when doing manual tuning")
+# def test_for_manual_tuning_of_rankBasedAllocate():
+#     N = 50
+#     V_USD = 1000.0 * np.random.rand(N)
+
+#     (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
 
 
 # ========================================================================
