@@ -647,7 +647,7 @@ def test_rankBasedAllocate_1000():
 
 
 @enforce_types
-#@pytest.mark.skip(reason="only unskip this when doing manual tuning")
+@pytest.mark.skip(reason="only unskip this when doing manual tuning")
 def test_plot_ranks():
     # pylint: disable=unused-variable
     
