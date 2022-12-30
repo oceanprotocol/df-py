@@ -564,7 +564,8 @@ def _test_rank_N_NFTs(N: int):
 def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
     NFT_addrs = [f"0xnft_{i:03}" for i in range(N)]
     LP_addrs = [f"0xlp_{i:03}" for i in range(N)]
-    stakes, nftvols = {C1: {}}, {C1: {OCN_ADDR: {}}}
+    stakes: dict = {C1: {}}
+    nftvols: dict = {C1: {OCN_ADDR: {}}}
     for i, (NFT_addr, LP_addr) in enumerate(zip(NFT_addrs, LP_addrs)):
         stakes[C1][NFT_addr] = {LP_addr: 1000.0}
         if equal_vol:
