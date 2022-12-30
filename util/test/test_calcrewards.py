@@ -678,8 +678,7 @@ def test_plot_ranks():
     plt.title("% of OCEAN to data asset as a function of its rank")
 
     mng = plt.get_current_fig_manager()
-    mng.resize(*mng.window.maxsize()) # linux
-    #mng.window.state('zoomed') #windows
+    mng.resize(*mng.window.maxsize())
     
     plt.show()
 
