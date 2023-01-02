@@ -286,17 +286,17 @@ def _rankBasedAllocate(
     assert len(I) > 0, "should be allocating to *something*"
 
     if rank_scale_op == "LIN":
-        allocs[I] = max(ranks[I]) - ranks[I]
-    elif rank_scale_op == "POW2":
-        allocs[I] = (max(ranks[I]) - ranks[I]) ** 2
-    elif rank_scale_op == "POW4":
-        allocs[I] = (max(ranks[I]) - ranks[I]) ** 4
-    elif rank_scale_op == "LOG":
-        logranks = np.log10(ranks)
-        allocs[I] = max(logranks[I]) - logranks[I]
+        allocs[I] = max(ranks[I]) - ranks[I] + 1.0
     elif rank_scale_op == "SQRT":
         sqrtranks = np.sqrt(ranks)
-        allocs[I] = max(sqrtranks[I]) - sqrtranks[I]
+        allocs[I] = max(sqrtranks[I]) - sqrtranks[I] + 1.0
+    elif rank_scale_op == "POW2":
+        allocs[I] = (max(ranks[I]) - ranks[I] + 1.0) ** 2
+    elif rank_scale_op == "POW4":
+        allocs[I] = (max(ranks[I]) - ranks[I] + 1.0) ** 4
+    elif rank_scale_op == "LOG":
+        logranks = np.log10(ranks)
+        allocs[I] = max(logranks[I]) - logranks[I] + np.log10(1.5)
     else:
         raise ValueError(rank_scale_op)
 

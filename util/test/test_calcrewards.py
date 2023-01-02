@@ -606,31 +606,44 @@ def test_rankBasedAllocate_1():
 @enforce_types
 def test_rankBasedAllocate_3_simple():
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
-    p = _rankBasedAllocate(V_USD)
+    p = _rankBasedAllocate(V_USD, rank_scale_op="LIN")
     target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
 
 @enforce_types
-def test_rankBasedAllocate_3_exact_calculations():
-    # by design, this test depends on default values for _rankBasedAllocate()
-    # arguments "max_n_rank_assets" and "rank_scale_op" which are set
-    # in util.constants
+@pytest.mark.parametrize("op", ["LIN", "POW2", "POW4", "LOG", "SQRT"])
+def test_rankBasedAllocate_3_exact(op):
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
 
-    (p, ranks, max_N, allocs, I) = _rankBasedAllocate(V_USD, return_info=True)
+    (p, ranks, max_N, allocs, I) = _rankBasedAllocate(
+        V_USD, max_n_rank_assets=100, rank_scale_op=op, return_info=True
+    )
 
     target_max_N = 3
     target_ranks = [2, 1, 3]
     target_I = [0, 1, 2]
-    target_allocs = [2.0, 3.0, 1.0]
-    target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
 
     assert max_N == target_max_N
+    assert min(allocs) > 0, f"had an alloc=0; op={op}, allocs={allocs}"
+    assert min(p) > 0, f"had a p=0; op={op}, allocs={allocs}, p={p}"
     np.testing.assert_allclose(ranks, np.array(target_ranks, dtype=float))
     np.testing.assert_allclose(I, np.array(target_I, dtype=float))
-    np.testing.assert_allclose(allocs, np.array(target_allocs, dtype=float))
-    np.testing.assert_allclose(p, target_p)
+
+    if op == "LIN":
+        target_allocs = [2.0, 3.0, 1.0]
+        target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
+    elif op == "LOG":
+        target_allocs = [0.352183, 0.653213, 0.176091]
+        target_p = [0.298084, 0.552874, 0.149042]
+    else:
+        return
+
+    target_allocs = np.array(target_allocs, dtype=float)
+    target_p = np.array(target_p, dtype=float)
+
+    np.testing.assert_allclose(allocs, target_allocs, rtol=1e-3)
+    np.testing.assert_allclose(p, target_p, rtol=1e-3)
 
 
 @enforce_types
