@@ -613,7 +613,7 @@ def test_rankBasedAllocate_3_simple():
 
 @enforce_types
 def test_rankBasedAllocate_3_exact_calculations():
-    #by design, this test depends on default values for _rankBasedAllocate()
+    # by design, this test depends on default values for _rankBasedAllocate()
     # arguments "max_n_rank_assets" and "rank_scale_op" which are set
     # in util.constants
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
