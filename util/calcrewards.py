@@ -57,6 +57,7 @@ def calcRewards(
     rates: Dict[str, float],
     DCV_multiplier: float,
     OCEAN_avail: float,
+    do_pubrewards: bool,
     do_rank: bool,
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
@@ -68,6 +69,7 @@ def calcRewards(
       rates -- dict of [basetoken_symbol] : USD_price_float
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       OCEAN_avail -- amount of rewards avail, in units of OCEAN
+      do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
 
     @return
@@ -92,7 +94,9 @@ def calcRewards(
     S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
     C = _creatorDictToArray(creators, keys_tup)
 
-    R = _calcRewardsUsd(S, V_USD, C, DCV_multiplier, OCEAN_avail, do_rank)
+    R = _calcRewardsUsd(
+        S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank
+    )
 
     (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
 
@@ -179,6 +183,7 @@ def _calcRewardsUsd(
     C: np.ndarray,
     DCV_multiplier: float,
     OCEAN_avail: float,
+    do_pubrewards: bool,
     do_rank: bool,
 ) -> np.ndarray:
     """
@@ -188,6 +193,7 @@ def _calcRewardsUsd(
       C -- 1d array of [chain_nft j] -- the LP i that created j. -1 if not LP
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
       OCEAN_avail -- amount of rewards available, in OCEAN
+      do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
 
     @return
@@ -200,9 +206,10 @@ def _calcRewardsUsd(
         return np.zeros((N_i, N_j), dtype=float)
 
     # modify S's: creators get rewarded as if 2x stake on their asset
-    for j in range(N_j):
-        if C[j] != -1:  # -1 = creator didn't stake
-            S[C[j], j] *= 2.0
+    if do_pubrewards:
+        for j in range(N_j):
+            if C[j] != -1:  # -1 = creator didn't stake
+                S[C[j], j] *= 2.0
 
     # perc_per_j
     if do_rank:

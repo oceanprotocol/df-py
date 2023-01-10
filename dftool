@@ -11,6 +11,7 @@ from util import (
     allocations,
     blockrange,
     calcrewards,
+    constants,
     csvs,
     dispense,
     getrate,
@@ -367,14 +368,17 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     C = csvs.loadCreatorsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
-    do_rank = True
+    do_pubrewards = constants.DO_PUBREWARDS
+    do_rank = constants.DO_RANK
 
     cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
     prev_week = cur_week - 1
     m = calcrewards.calcDcvMultiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
 
-    rewperlp, rewinfo = calcRewards(S, V, C, SYM, R, m, TOT_OCEAN, do_rank)
+    rewperlp, rewinfo = calcRewards(
+        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
+    )
 
     csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
     csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")

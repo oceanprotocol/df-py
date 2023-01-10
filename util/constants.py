@@ -7,7 +7,10 @@ BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
 
 MAX_ALLOCATE = 10000.0
 
+DO_PUBREWARDS = False
+
 # used by _rankBasedAllocate() as part of reward function
+DO_RANK = True
 RANK_SCALE_OP = "LOG"  # can be: LIN, POW2, POW4, LOG, SQRT
 MAX_N_RANK_ASSETS = 100  # only reward top N assets. Eg 20, 50, 100, 500
 

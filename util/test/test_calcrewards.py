@@ -198,7 +198,7 @@ def test_two_LPs__one_NFT__one_LP_created():
 
     OCEAN_avail = 10.0
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, OCEAN_avail, creators=creators
+        stakes, nftvols, OCEAN_avail, creators=creators, do_pubrewards=True
     )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
@@ -216,7 +216,7 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
 
     OCEAN_avail = 10.0
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, OCEAN_avail, creators=creators
+        stakes, nftvols, OCEAN_avail, creators=creators, do_pubrewards=True
     )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
@@ -234,7 +234,7 @@ def test_two_LPs__two_NFTs__two_LPs_created():
 
     OCEAN_avail = 10.0
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, OCEAN_avail, creators=creators
+        stakes, nftvols, OCEAN_avail, creators=creators, do_pubrewards=True
     )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
@@ -823,6 +823,7 @@ def _calcRewardsC1(
     rates: Dict[str, float] = RATES,
     creators=None,
     DCV_multiplier: float = np.inf,
+    do_pubrewards: bool = False,
     do_rank: bool = False,
 ):
     rewardsperlp, rewardsinfo = _calcRewards(
@@ -833,6 +834,7 @@ def _calcRewardsC1(
         rates,
         creators,
         DCV_multiplier,
+        do_pubrewards,
         do_rank,
     )
     rewardsperlp = {} if not rewardsperlp else rewardsperlp[C1]
@@ -849,6 +851,7 @@ def _calcRewards(
     rates: Dict[str, float] = RATES,
     creators=None,
     DCV_multiplier: float = np.inf,
+    do_pubrewards: bool = False,
     do_rank: bool = False,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
@@ -863,6 +866,7 @@ def _calcRewards(
         rates,
         DCV_multiplier,
         OCEAN_avail,
+        do_pubrewards,
         do_rank,
     )
 
