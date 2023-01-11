@@ -1,7 +1,6 @@
 # test_dftool1 - lightweight, doesn't need network
 # test_dftool2 - uses network / brownie
 import os
-import subprocess
 import time
 import types
 
@@ -85,7 +84,7 @@ def test_allocations(tmp_path):
     allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
     assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
 
-    
+
 @enforce_types
 def test_dispense(tmp_path):
     # values used for inputs or main cmd

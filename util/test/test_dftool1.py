@@ -7,9 +7,10 @@ import subprocess
 
 from enforce_typing import enforce_types
 
-from util import csvs, oceanutil, networkutil
+from util import csvs, networkutil
 
 CHAINID = networkutil.DEV_CHAINID
+
 
 @enforce_types
 def test_nftinfo(tmp_path):
@@ -125,4 +126,3 @@ def test_noarg_commands():
 
         return_code = proc.wait()
         assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
-
