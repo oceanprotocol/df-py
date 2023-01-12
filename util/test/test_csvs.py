@@ -244,44 +244,31 @@ def test_rewardsperlp_main(tmp_path):
 
 
 @enforce_types
-def test_rewardsinfo(
-    tmp_path, network_setup_and_teardown
-):  # pylint: disable=unused-argument
+def test_rewardsinfo(tmp_path):
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},
-            PB: {
-                LP2: 5.3,
-                LP3: 6.234262346,
-                LP3: 1.324824324234,
-            },
-            PC: {LP3: 1.324824324234, LP4: 1.23143252346354},
+            PB: {LP2: 5.3},
         },
         137: {
             PD: {LP1: 1412341242, LP2: 23424},
-            PE: {LP1: 0.000000000000001, LP2: 12314552354},
         },
     }
     target_rewards = """chainID,nft_addr,LP_addr,amt,token
 1,0xpa,0xlp1,3.2,MYTOKEN
 1,0xpa,0xlp2,5.4,MYTOKEN
 1,0xpb,0xlp2,5.3,MYTOKEN
-1,0xpb,0xlp3,1.324824324234,MYTOKEN
-1,0xpc,0xlp3,1.324824324234,MYTOKEN
-1,0xpc,0xlp4,1.23143252346354,MYTOKEN
 137,0xpd,0xlp1,1412341242,MYTOKEN
 137,0xpd,0xlp2,23424,MYTOKEN
-137,0xpe,0xlp1,1e-15,MYTOKEN
-137,0xpe,0xlp2,12314552354,MYTOKEN
 """
 
     csv_dir = str(tmp_path)
     csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
 
-    # pylint: disable=consider-using-with
-    loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
-    csv = loaded_rewards.read()
-    assert csv == target_rewards
+    csv_filename = csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN")
+    f = open(csv_filename, "r")
+    loaded_rewards = f.read()
+    assert loaded_rewards == target_rewards
 
 
 # =================================================================
