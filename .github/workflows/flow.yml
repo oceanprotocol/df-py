@@ -46,17 +46,7 @@ jobs:
         run: |
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
-     
-      - name: Add networks to brownie
-        run: |
-          brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
-          brownie networks add mumbai mumbai host=https://matic-mumbai.chainstacklabs.com chainid=80001
-          brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
-          brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${{ secrets.WEB3_INFURA_PROJECT_ID }} chainid=137
-          brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
-          brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
-      
-      
+
       - name: Set env variables
         run: |
           echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
@@ -68,6 +58,16 @@ jobs:
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
   
+      - name: Add networks to brownie
+        run: |
+          brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
+          brownie networks add mumbai mumbai host=https://matic-mumbai.chainstacklabs.com chainid=80001
+          brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
+          brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 >> /dev/null
+          brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
+          brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
+      
+      
       - name: Run dftool getrate
         run: |
           ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
