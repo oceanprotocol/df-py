@@ -27,7 +27,7 @@ jobs:
     strategy:
       matrix:
         python-version: [3.8]
-    needs: run-tests
+    #needs: run-tests
     steps:
       - uses: actions/checkout@v3
 
