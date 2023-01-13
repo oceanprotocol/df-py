@@ -43,8 +43,10 @@ def test_insufficient_gas_reverts():
     addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(1250)
     with pytest.raises(Exception) as e_info:
         df_rewards.allocate(
-            addresses, rewards, token_addr,
-            {"from": account0, "gas_limit": 100000, "required_confs": 0}
+            addresses,
+            rewards,
+            token_addr,
+            {"from": account0, "gas_limit": 100000, "required_confs": 0},
         )
     assert str(e_info.value) == "base fee exceeds gas limit"
 
