@@ -55,24 +55,18 @@ def test_erc20_withdraw_main():
 
     with brownie.reverts("Cannot withdraw allocated token"):
         df_rewards.withdrawERCToken(
-            toBase18(50.0),
-            TOK.address,
-            {"from": accounts[0], "required_confs": 0}
+            toBase18(50.0), TOK.address, {"from": accounts[0], "required_confs": 0}
         )
 
     with brownie.reverts("Ownable: caller is not the owner"):
         df_rewards.withdrawERCToken(
-            toBase18(20.0),
-            TOK.address,
-            {"from": accounts[1], "required_confs": 0}
+            toBase18(20.0), TOK.address, {"from": accounts[1], "required_confs": 0}
         )
 
     df_rewards.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
     with brownie.reverts("Cannot withdraw allocated token"):
         df_rewards.withdrawERCToken(
-            toBase18(1.0),
-            TOK.address,
-            {"from": accounts[0], "required_confs": 0}
+            toBase18(1.0), TOK.address, {"from": accounts[0], "required_confs": 0}
         )
     df_strategy.claim([TOK.address], {"from": accounts[1]})
 
