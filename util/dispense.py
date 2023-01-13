@@ -41,7 +41,6 @@ def dispense(
     @return
       <<nothing, but updates the dfrewards contract on-chain>>
     """
-    print("dispense.dispense() 1") #HACK
     logger.info("dispense: begin")
     logger.info(f"  # addresses: {len(rewards)}")
     multisigaddr = None
@@ -49,7 +48,6 @@ def dispense(
     if usemultisig:
         logger.info("multisig enabled")
         multisigaddr = chainIdToMultisigAddr(brownie.network.chain.id)
-    print(f"dispense.dispense() 1b. usemultisig={usemultisig}") #HACK
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
@@ -58,7 +56,6 @@ def dispense(
 
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
-    print("dispense.dispense() 2") #HACK
 
     def approveAmt(amt):
         if usemultisig:
@@ -68,20 +65,16 @@ def dispense(
             # data = bytes.fromhex(data[2:])
             send_multisig_tx(multisigaddr, to, value, data)
             return
-        print(f"dispense.dispense() 3.1 ApproveAmt. amt={amt}, type(amt)={type(amt)}") #HACK
         TOK.approve(df_rewards, amt, {"from": from_account})
-        print("dispense.dispense() 3.2 ApproveAmt") #HACK
 
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
         approveAmt(sum(values[b_st : b_st + batch_size]))
     else:
         approveAmt(sum(values))
-    print("dispense.dispense() 4") #HACK
 
     logger.info(f"Total {len(sts)} batches")
     for i, st in enumerate(sts):
-        print(f"dispense.dispense() 5.1 In loop, i={i}") #HACK
         if batch_number is not None and batch_number != i + 1:
             continue
         fin = st + batch_size
@@ -106,22 +99,17 @@ def dispense(
 
                 send_multisig_tx(multisigaddr, to, value, data)
             else:
-                print(f"dispense.dispense() 5.2 In loop, i={i}. "
-                      f"st={st}, fin={fin}, len(values)={len(values)}, "
-                      f"values[st:fin]={values[st:fin]}") #HACK
                 df_rewards.allocate(
                     to_addrs[st:fin],
                     values[st:fin],
                     TOK.address,
                     {"from": from_account},
                 )
-                print(f"dispense.dispense() 5.3 In loop, i={i}") #HACK
             done = True
             break
 
         if done is False:
             logger.critical(f"Could not allocate funds for batch {i+1}")
-    print("dispense.dispense() 6") #HACK
     logger.info("dispense: done")
 
 
