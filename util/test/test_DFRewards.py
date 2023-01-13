@@ -149,7 +149,10 @@ def test_bad_token():
     badToken.approve(df_rewards, sum(values), {"from": accounts[0]})
 
     with brownie.reverts("Not enough tokens"):
-        df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
+        df_rewards.allocate(
+            tos, values, badToken.address,
+            {"from": accounts[0], "required_confs": 0}
+        )
 
 
 def test_strategies():
@@ -167,11 +170,15 @@ def test_strategies():
     assert TOK.balanceOf(df_strategy) == 0
     with brownie.reverts("Caller doesn't match"):
         # tx origin must be a1
-        df_strategy.claim(TOK.address, a1, {"from": accounts[2]})
+        df_strategy.claim(
+            TOK.address, a1, {"from": accounts[2], "required_confs": 0}
+        )
 
     with brownie.reverts("Caller must be a strategy"):
         # non strategy addresses cannot claim
-        df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
+        df_strategy.claim(
+            TOK.address, a1, {"from": accounts[1], "required_confs": 0}
+        )
 
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
@@ -196,11 +203,15 @@ def test_strategies():
 
     with brownie.reverts("Caller must be a strategy"):
         # non strategy addresses cannot claim
-        df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
+        df_strategy.claim(
+            TOK.address, a3, {"from": accounts[3], "required_confs": 0}
+        )
 
     with brownie.reverts("Ownable: caller is not the owner"):
         # addresses other than the owner cannot add new strategy
-        df_rewards.addStrategy(df_strategy.address, {"from": accounts[3]})
+        df_rewards.addStrategy(
+            df_strategy.address, {"from": accounts[3], "required_confs": 0}
+        )
 
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
@@ -249,7 +260,7 @@ def _test_claim_and_restake():
             OCEAN,
             100,
             veOCEAN,
-            {"from": bob},
+            {"from": bob, "required_confs": 0},
         )
 
     # veBalBefore = veOCEAN.balanceOf(deployer)
@@ -257,7 +268,7 @@ def _test_claim_and_restake():
         OCEAN,
         50,
         veOCEAN,
-        {"from": bob},
+        {"from": bob, "required_confs": 0},
     )
 
     assert df_rewards.claimable(a1, OCEAN.address) == 0

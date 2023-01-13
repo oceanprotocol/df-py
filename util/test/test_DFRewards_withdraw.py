@@ -14,7 +14,7 @@ def test_transfer_eth_reverts():
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     with brownie.reverts("Cannot send ether to nonpayable function"):
         # transfer native eth to dfrewards contract
-        accounts[0].transfer(df_rewards, "1 ether")
+        accounts[0].transfer(df_rewards, "1 ether", required_confs=0)
 
 
 @enforce_types
@@ -54,14 +54,26 @@ def test_erc20_withdraw_main():
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     with brownie.reverts("Cannot withdraw allocated token"):
-        df_rewards.withdrawERCToken(toBase18(50.0), TOK.address, {"from": accounts[0]})
+        df_rewards.withdrawERCToken(
+            toBase18(50.0),
+            TOK.address,
+            {"from": accounts[0], "required_confs": 0}
+        )
 
     with brownie.reverts("Ownable: caller is not the owner"):
-        df_rewards.withdrawERCToken(toBase18(20.0), TOK.address, {"from": accounts[1]})
+        df_rewards.withdrawERCToken(
+            toBase18(20.0),
+            TOK.address,
+            {"from": accounts[1], "required_confs": 0}
+        )
 
     df_rewards.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
     with brownie.reverts("Cannot withdraw allocated token"):
-        df_rewards.withdrawERCToken(toBase18(1.0), TOK.address, {"from": accounts[0]})
+        df_rewards.withdrawERCToken(
+            toBase18(1.0),
+            TOK.address,
+            {"from": accounts[0], "required_confs": 0}
+        )
     df_strategy.claim([TOK.address], {"from": accounts[1]})
 
     TOK.transfer(df_rewards, 100, {"from": accounts[0]})

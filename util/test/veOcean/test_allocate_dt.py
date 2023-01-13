@@ -47,7 +47,12 @@ def test_max_allocation():
     """Cannot set allocation above max."""
     nftaddr = accounts[1].address
     with brownie.reverts("Max Allocation"):
-        veAllocate.setAllocation(10001, nftaddr, 1, {"from": accounts[0]})
+        veAllocate.setAllocation(
+            10001,
+            nftaddr,
+            1,
+            {"from": accounts[0], "required_confs": 0}
+        )
 
 
 @enforce_types
@@ -86,7 +91,10 @@ def test_batch_max_allocation():
     nftaddr2 = accounts[2].address
     with brownie.reverts("Max Allocation"):
         veAllocate.setBatchAllocation(
-            [3500, 7500], [nftaddr1, nftaddr2], [1, 1], {"from": accounts[0]}
+            [3500, 7500],
+            [nftaddr1, nftaddr2],
+            [1, 1],
+            {"from": accounts[0], "required_confs": 0}
         )
 
 
@@ -97,11 +105,17 @@ def test_batch_reverts():
     nftaddr2 = accounts[2].address
     with brownie.reverts("Nft array size missmatch"):
         veAllocate.setBatchAllocation(
-            [3500, 7500], [nftaddr1, nftaddr2, nftaddr2], [1, 1], {"from": accounts[0]}
+            [3500, 7500],
+            [nftaddr1, nftaddr2, nftaddr2],
+            [1, 1],
+            {"from": accounts[0], "required_confs": 0}
         )
     with brownie.reverts("Chain array size missmatch"):
         veAllocate.setBatchAllocation(
-            [3500, 7500], [nftaddr1, nftaddr2], [1], {"from": accounts[0]}
+            [3500, 7500],
+            [nftaddr1, nftaddr2],
+            [1],
+            {"from": accounts[0], "required_confs": 0}
         )
 
 

@@ -25,7 +25,11 @@ def test_velock_not_whitelisted():
     assert smartWalletChecker.check(veLocker) == False
 
     with brownie.reverts("Smart contract depositors not allowed"):
-        veLocker.create_lock(TA, chain.time() + WEEK * 2, {"from": deployer})
+        veLocker.create_lock(
+            TA,
+            chain.time() + WEEK * 2,
+            {"from": deployer, "required_confs": 0}
+        )
 
 
 @enforce_types
