@@ -3,6 +3,5 @@ enforce_typing
 mypy
 numpy
 pandas
-pytest-timestamps
 scipy
 types-requests
