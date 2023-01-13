@@ -17,12 +17,14 @@ def test_small_batch():
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     rewards_at_chain = {a1: 0.1, a2: 0.2, a3: 0.3}
+    print("test_dispense::test_small_batch: call dispense.dispense()") #HACK
     dispense.dispense(
         rewards_at_chain,
         dfrewards_addr=df_rewards.address,
         token_addr=OCEAN.address,
         from_account=accounts[0],
     )
+    print("test_dispense::test_small_batch: back from dispense.dispense()") #HACK
 
     # a1 claims for itself
     bal_before = fromBase18(OCEAN.balanceOf(a1))
