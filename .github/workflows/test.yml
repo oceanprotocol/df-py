@@ -56,4 +56,4 @@ jobs:
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 
       - name: Test with Brownie
-        run: brownie test util/test
+        run: brownie test util/test -s
