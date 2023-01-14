@@ -32,10 +32,9 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 def fillAccountsWithToken(token):
     accounts = network.accounts
     for i in range(1, 10):
-        bal_before: int = fromBase18(token.balanceOf(accounts[i]))
-        if bal_before < 1000:
+        bal_before = fromBase18(token.balanceOf(accounts[i]))
+        if bal_before < 1000.0:
             token.transfer(accounts[i], toBase18(1000.0), {"from": accounts[0]})
-        # bal_after: int = fromBase18(token.balanceOf(accounts[i]))
 
     print(f"fillAccountsWithToken({token.symbol()}), balances after:")
     for i in range(10):
