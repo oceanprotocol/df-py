@@ -173,6 +173,7 @@ def randomLockAndAllocate(tups: list):
 
     acc1 = network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
 
     accounts = [
         network.accounts.at(addr, force=True)
@@ -197,15 +198,15 @@ def randomLockAndAllocate(tups: list):
 
         # Approve locking OCEAN
         assert OCEAN.balanceOf(lock_account) != 0
-        OCEAN.approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
+        OCEAN.approve(veOCEAN.address, LOCK_AMOUNT, {"from": lock_account})
 
         # Check if there is an active lock
-        if oceanutil.veOCEAN().balanceOf(lock_account) == 0:
+        if veOCEAN.balanceOf(lock_account) == 0:
             # Create lock
-            oceanutil.veOCEAN().withdraw({"from": lock_account})
-            oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+            veOCEAN.withdraw({"from": lock_account})
+            veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
-        assert oceanutil.veOCEAN().balanceOf(lock_account) != 0
+        assert veOCEAN.balanceOf(lock_account) != 0
         allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate().getTotalAllocation(
             lock_account
         )
