@@ -401,7 +401,7 @@ def test_symbol():
 
 
 @enforce_types
-pytest.skip("FIXME: unskip and get test to pass. See #437")
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_queryAquariusAssetNames():
     # test that we can get the asset names from aquarius
     nft_dids = [
@@ -420,7 +420,7 @@ def test_queryAquariusAssetNames():
 
 
 @enforce_types
-pytest.skip("FIXME: unskip and get test to pass. See #437")
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_to_aquarius_assets():
     # test that we can get the asset names from aquarius
     nft_dids = [
@@ -438,7 +438,7 @@ def test_filter_to_aquarius_assets():
 
 
 @enforce_types
-pytest.skip("FIXME: unskip and get test to pass. See #437")
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_dids():
     # test that we can get the asset names from aquarius
     nft_dids = [
@@ -459,7 +459,7 @@ def test_filter_dids():
 
 
 @enforce_types
-pytest.skip("FIXME: unskip and get test to pass. See #437")
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
