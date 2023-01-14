@@ -174,10 +174,8 @@ def randomLockAndAllocate(tups: list):
     acc1 = network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
 
-    accounts = [
-        network.accounts.at(addr, force=True)
-        for addr in get_random_addresses(len(tups))
-    ]
+    accounts = network.accounts[: len(tups)]
+
     for account in accounts:
         OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
 
