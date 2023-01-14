@@ -4,7 +4,6 @@ import brownie
 from enforce_typing import enforce_types
 from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
-from util.random_addresses import get_random_addresses
 
 network = brownie.network
 
