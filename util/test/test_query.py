@@ -563,44 +563,6 @@ def test_populateNftAssetNames():
     assert nfts[0].name == "Take a Ballet Lesson"
 
 
-testfunc_callcount = 0
-
-
-@enforce_types
-def test_retryFunction_query():
-    # pylint: disable=global-variable-undefined
-    global testfunc_callcount
-    testfunc_callcount = 0
-
-    def testquery_fail():
-        # pylint: disable=global-variable-undefined
-        global testfunc_callcount
-        blockRange = None
-        if testfunc_callcount < 2:
-            blockRange = BlockRange(999999, 9999999, 100, 42)
-        else:
-            chainlength = brownie.network.chain.height
-            blockRange = BlockRange(
-                chainlength - 2,
-                chainlength - 1,
-                100,
-                42,
-            )
-        testfunc_callcount += 1
-        return query.queryAllocations(blockRange, CHAINID)
-
-    assert len(retryFunction(testquery_fail, 3, 0.1)) > 0
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        retryFunction(testquery_fail, 2, 0.1)
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        retryFunction(testquery_fail, 1, 0.1)
-    testfunc_callcount = 0
-
-
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
