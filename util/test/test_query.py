@@ -220,8 +220,8 @@ def _test_queryNftinfo():
 @enforce_types
 def test_empty_queryAllocations():
     rng = BlockRange(st=0, fin=10, num_samples=1)
-    allocations = query.queryAllocations(rng, CHAINID)
-    assert allocations == {}
+    allocs = query.queryAllocations(rng, CHAINID)
+    assert allocs == {}
 
 
 @enforce_types
