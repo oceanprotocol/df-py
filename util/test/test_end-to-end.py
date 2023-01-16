@@ -16,24 +16,32 @@ from util import (
 )
 from util.constants import BROWNIE_PROJECT as B
 
+CHAINID = networkutil.DEV_CHAINID
+
 accounts = None
 ST = 0
 FIN = 0
 
 
 @enforce_types
-def test_without_csvs():
-    chainID = networkutil.DEV_CHAINID
+def test_end_to_end_main(tmp_path):
+    _setup()
+    _test_without_csvs()
+    _test_with_csvs(tmp_path)
+    
+@enforce_types
+def _test_without_csvs():
+    print("test_end-to-end: _test_without_csvs: begin")
 
     st, fin, n = ST, FIN, 25
     rng = blockrange.BlockRange(st, fin, n)
 
-    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
-    V = {chainID: V0}
-    SYM = {chainID: SYM0}
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
+    V = {CHAINID: V0}
+    SYM = {CHAINID: SYM0}
 
-    vebals, _, _ = query.queryVebalances(rng, chainID)
-    allocs = query.queryAllocations(rng, chainID)
+    vebals, _, _ = query.queryVebalances(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID)
     stakes = allocations.allocsToStakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618}
@@ -42,12 +50,13 @@ def test_without_csvs():
 
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
-    sum_ = sum(rewardsperlp[chainID].values())
+    sum_ = sum(rewardsperlp[CHAINID].values())
     assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000.0), sum_
+    print("test_end-to-end: _test_without_csvs: done")
 
 
 @enforce_types
-def test_with_csvs(tmp_path):
+def _test_with_csvs(tmp_path):
     """
     Simulate these steps, with csvs in between
     1. dftool getrate
@@ -55,7 +64,7 @@ def test_with_csvs(tmp_path):
     3. dftool calc
     4. dftool dispense
     """
-    chainID = networkutil.DEV_CHAINID
+    print("test_end-to-end: _test_with_csvs: begin")
     csv_dir = str(tmp_path)
 
     st, fin, n = ST, FIN, 25
@@ -67,13 +76,13 @@ def test_with_csvs(tmp_path):
     csvs.saveRateCsv("H2O", 1.61, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, chainID)
-    csvs.saveNftvolsCsv(V0, csv_dir, chainID)
-    csvs.saveSymbolsCsv(SYM0, csv_dir, chainID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
+    csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
+    csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
     V0 = SYM0 = None  # ensure not used later
 
-    vebals, locked_amt, unlock_time = query.queryVebalances(rng, chainID)
-    allocs = query.queryAllocations(rng, chainID)
+    vebals, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID)
     csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
     csvs.saveAllocationCsv(allocs, csv_dir)
     vebals = allocs = None  # ensure not used later
@@ -88,7 +97,7 @@ def test_with_csvs(tmp_path):
     OCEAN_avail = 1e-4
     rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
-    sum_ = sum(rewardsperlp[chainID].values())
+    sum_ = sum(rewardsperlp[CHAINID].values())
     assert sum_ == pytest.approx(OCEAN_avail, OCEAN_avail / 1000), sum_
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
@@ -96,15 +105,16 @@ def test_with_csvs(tmp_path):
     # 4. simulate "dftool dispense"
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": accounts[0]}).address
-    dispense.dispense(rewardsperlp[chainID], dfrewards_addr, token_addr, accounts[0])
+    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, token_addr, accounts[0])
 
+    print("test_end-to-end: _test_with_csvs: end")
 
 @enforce_types
-def setup_function():
-    chainID = networkutil.DEV_CHAINID
-    networkutil.connect(chainID)
-
+def _setup():
+    print("test_end-to-end: _setup: begin")
     global accounts, ST, FIN
+    
+    networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
 
     oceanutil.recordDevDeployedContracts()
@@ -114,13 +124,64 @@ def setup_function():
     ST = len(brownie.network.chain) - 1
     tups = oceantestutil.randomCreateDataNFTWithFREs(5, OCEAN, accounts)
     oceantestutil.randomConsumeFREs(tups, OCEAN)
+    
     oceantestutil.randomLockAndAllocate(tups)
-    FIN = len(brownie.network.chain) - 1
 
-    brownie.network.chain.mine(20)
-    brownie.network.chain.sleep(20)
+    # loop until graph query sees both consume & allocation, or timeout
+    for loop_i in range(50):
+        FIN = len(brownie.network.chain) - 1
+        print(f"test_end-to-end: _setup: loop {loop_i} start")
+        assert loop_i < 45, "timeout"
+        found_consume = _foundConsume(OCEAN.address, ST, FIN)
+        found_alloc = False
+        if found_consume:
+            found_alloc = _foundAllocations(ST, FIN)
+        if found_consume and found_alloc:
+            break
+        brownie.network.chain.sleep(10)
+        brownie.network.chain.mine(10)
+        time.sleep(2)
+
+    brownie.network.chain.sleep(10)
     brownie.network.chain.mine(20)
     time.sleep(2)
+    print("test_end-to-end: _setup: done")
+
+
+@enforce_types
+def _foundConsume(OCEAN_addr, st, fin):
+    OCEAN_addr = OCEAN_addr.lower()
+    vols = query._queryNftvolumes(st, fin, CHAINID)
+    vols = query._filterNftvols(vols, CHAINID)
+    if OCEAN_addr not in vols:
+        return False
+    if sum(vols[OCEAN_addr].values()) == 0:
+        return False
+
+    # all good
+    return True
+
+
+@enforce_types
+def _foundAllocations(st, fin):
+    n = 25
+    rng = blockrange.BlockRange(st, fin, n)
+    allocs = query.queryAllocations(rng, CHAINID)
+    if str(CHAINID) in allocs: # in case allocs gives chainid as str
+        allocs = {CHAINID: allocs[str(CHAINID)]}
+    
+    if CHAINID not in allocs:
+        return False
+    
+    sum_allocs = 0.0
+    for nft_addr in allocs[CHAINID]:
+        for LP_addr in allocs[CHAINID][nft_addr]:
+            sum_allocs += allocs[CHAINID][nft_addr][LP_addr]
+    if sum_allocs == 0.0:
+        return False                               
+
+    # all good
+    return True
 
 
 @enforce_types
