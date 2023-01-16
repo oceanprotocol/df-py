@@ -355,7 +355,7 @@ def test_allocation_sampling():
         time.sleep(1)
         forward(5)
 
-    allocations = allocations[str(CHAINID)]
+    allocations = allocations[CHAINID]
 
     for addr in allocate_addrs:
         assert addr in allocations, addr
