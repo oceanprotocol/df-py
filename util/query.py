@@ -126,9 +126,11 @@ def queryVebalances(
             )
 
             result = submitQuery(query, CHAINID)
-            if not "data" in result:
-                raise Exception(f"No data in veOCEANs result: {result}")
-            veOCEANs = result["data"]["veOCEANs"]
+            if "data" in result:
+                assert "veOCEANs" in result["data"]
+                veOCEANs = result["data"]["veOCEANs"]
+            else:
+                return ({}, {}, {})
 
             if len(veOCEANs) == 0:
                 # means there are no records left
@@ -239,7 +241,11 @@ def queryAllocations(
                 block,
             )
             result = submitQuery(query, CHAINID)
-            _allocs = result["data"]["veAllocateUsers"]
+            if "data" in result:
+                assert "veAllocateUsers" in result["data"]
+                _allocs = result["data"]["veAllocateUsers"]
+            else:
+                return {}
 
             if len(_allocs) == 0:
                 # means there are no records left
