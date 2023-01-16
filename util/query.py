@@ -255,7 +255,7 @@ def queryAllocations(
                 LP_addr = allocation["id"].lower()
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"].lower()
-                    chain_id = ve_allocation["chainId"]
+                    chain_id = int(ve_allocation["chainId"])
                     allocated = float(ve_allocation["allocated"])
 
                     if chain_id not in allocs:
