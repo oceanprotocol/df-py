@@ -217,6 +217,20 @@ def _test_queryNftinfo():
     assert len(nfts_block) == 11
 
 
+@enforce_types
+def test_empty_queryAllocations():
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    allocations = query.queryAllocations(rng, CHAINID)
+    assert allocations == {}
+
+
+@enforce_types
+def test_empty_queryVebalances():
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    tup = query.queryVebalances(rng, CHAINID)
+    assert tup == ({}, {}, {})
+
+
 # pylint: disable=too-many-statements
 @enforce_types
 def test_allocation_sampling():
