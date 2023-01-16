@@ -4,14 +4,13 @@ import time
 import pytest
 import brownie
 from enforce_typing import enforce_types
-from pytest import approx, raises
+from pytest import approx
 
 from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
-from util.retry import retryFunction
 
 account0, QUERY_ST = None, 0
 
