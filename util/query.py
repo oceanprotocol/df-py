@@ -239,10 +239,7 @@ def queryAllocations(
                 block,
             )
             result = submitQuery(query, CHAINID)
-            if "data" in result:
-                _allocs = result["data"]["veAllocateUsers"]
-            else:
-                _allocs = {}
+            _allocs = result["data"]["veAllocateUsers"]
 
             if len(_allocs) == 0:
                 # means there are no records left
@@ -550,9 +547,11 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     if chainID == networkutil.DEV_CHAINID:
-        nftvols2 = {basetoken : nftvols[basetoken]
-                    for basetoken in nftvols.keys()
-                    if basetoken != '0xdevelopment'}
+        nftvols2 = {
+            basetoken: nftvols[basetoken]
+            for basetoken in nftvols.keys()
+            if basetoken != "0xdevelopment"
+        }
         return nftvols2
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}

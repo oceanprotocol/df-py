@@ -1,6 +1,8 @@
 import time
+
 import brownie
 from enforce_typing import enforce_types
+import numpy as np
 import pytest
 
 from util import (
@@ -13,7 +15,9 @@ from util import (
     oceantestutil,
     networkutil,
     query,
+    tousd,
 )
+from util.cleancase import modStakes, modNFTvols
 from util.constants import BROWNIE_PROJECT as B
 
 CHAINID = networkutil.DEV_CHAINID
@@ -28,7 +32,8 @@ def test_end_to_end_main(tmp_path):
     _setup()
     _test_without_csvs()
     _test_with_csvs(tmp_path)
-    
+
+
 @enforce_types
 def _test_without_csvs():
     print("test_end-to-end: _test_without_csvs: begin")
@@ -109,11 +114,12 @@ def _test_with_csvs(tmp_path):
 
     print("test_end-to-end: _test_with_csvs: end")
 
+
 @enforce_types
 def _setup():
     print("test_end-to-end: _setup: begin")
     global accounts, ST, FIN
-    
+
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
 
@@ -124,28 +130,57 @@ def _setup():
     ST = len(brownie.network.chain) - 1
     tups = oceantestutil.randomCreateDataNFTWithFREs(5, OCEAN, accounts)
     oceantestutil.randomConsumeFREs(tups, OCEAN)
-    
+
     oceantestutil.randomLockAndAllocate(tups)
 
     # loop until graph query sees both consume & allocation, or timeout
-    for loop_i in range(50):
+    max_loops = 50
+    for loop_i in range(max_loops):
         FIN = len(brownie.network.chain) - 1
         print(f"test_end-to-end: _setup: loop {loop_i} start")
-        assert loop_i < 45, "timeout"
-        found_consume = _foundConsume(OCEAN.address, ST, FIN)
-        found_alloc = False
-        if found_consume:
-            found_alloc = _foundAllocations(ST, FIN)
-        if found_consume and found_alloc:
+        if _dataIsReady(OCEAN.address, ST, FIN):
             break
+        if loop_i == (max_loops - 1):
+            raise AssertionError("timeout")
         brownie.network.chain.sleep(10)
         brownie.network.chain.mine(10)
         time.sleep(2)
 
-    brownie.network.chain.sleep(10)
-    brownie.network.chain.mine(20)
-    time.sleep(2)
     print("test_end-to-end: _setup: done")
+
+
+def _dataIsReady(OCEAN_addr, st, fin) -> bool:
+    OCEAN_addr = OCEAN_addr.lower()
+    n = 25
+    if not _foundConsume(OCEAN_addr, st, fin):
+        return False
+    if not _foundAllocations(st, fin, n):
+        return False
+
+    rng = blockrange.BlockRange(st, fin, n)
+
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
+    nftvols = {CHAINID: V0}
+    nftvols = modNFTvols(nftvols)
+
+    symbols = {CHAINID: SYM0}
+
+    vebals, _, _ = query.queryVebalances(rng, CHAINID)
+
+    allocs = query.queryAllocations(rng, CHAINID)
+    allocs = {CHAINID: allocs[str(CHAINID)]}  # workaround
+
+    stakes = allocations.allocsToStakes(allocs, vebals)
+    stakes = modStakes(stakes)
+
+    rates = {"OCEAN": 0.5, "H2O": 1.618}
+
+    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
+
+    S, _, _ = calcrewards._stakevolDictsToArrays(stakes, nftvols_USD)
+
+    data_is_ready = np.sum(S) > 0.0
+    return data_is_ready
 
 
 @enforce_types
@@ -163,22 +198,19 @@ def _foundConsume(OCEAN_addr, st, fin):
 
 
 @enforce_types
-def _foundAllocations(st, fin):
-    n = 25
+def _foundAllocations(st, fin, n):
     rng = blockrange.BlockRange(st, fin, n)
     allocs = query.queryAllocations(rng, CHAINID)
-    if str(CHAINID) in allocs: # in case allocs gives chainid as str
-        allocs = {CHAINID: allocs[str(CHAINID)]}
-    
+
     if CHAINID not in allocs:
         return False
-    
+
     sum_allocs = 0.0
     for nft_addr in allocs[CHAINID]:
         for LP_addr in allocs[CHAINID][nft_addr]:
             sum_allocs += allocs[CHAINID][nft_addr][LP_addr]
     if sum_allocs == 0.0:
-        return False                               
+        return False
 
     # all good
     return True
