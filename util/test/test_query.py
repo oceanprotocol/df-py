@@ -4,14 +4,13 @@ import time
 import pytest
 import brownie
 from enforce_typing import enforce_types
-from pytest import approx, raises
+from pytest import approx
 
 from util import oceanutil, oceantestutil, networkutil, query
 from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
-from util.retry import retryFunction
 
 account0, QUERY_ST = None, 0
 
@@ -215,6 +214,20 @@ def _test_queryNftinfo():
 
     nfts_block = query.queryNftinfo(137, 29778602)
     assert len(nfts_block) == 11
+
+
+@enforce_types
+def test_empty_queryAllocations():
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    allocs = query.queryAllocations(rng, CHAINID)
+    assert allocs == {}
+
+
+@enforce_types
+def test_empty_queryVebalances():
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    tup = query.queryVebalances(rng, CHAINID)
+    assert tup == ({}, {}, {})
 
 
 # pylint: disable=too-many-statements
@@ -547,44 +560,6 @@ def test_populateNftAssetNames():
     nfts = query._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
-
-
-testfunc_callcount = 0
-
-
-@enforce_types
-def test_retryFunction_query():
-    # pylint: disable=global-variable-undefined
-    global testfunc_callcount
-    testfunc_callcount = 0
-
-    def testquery_fail():
-        # pylint: disable=global-variable-undefined
-        global testfunc_callcount
-        blockRange = None
-        if testfunc_callcount < 2:
-            blockRange = BlockRange(999999, 9999999, 100, 42)
-        else:
-            chainlength = brownie.network.chain.height
-            blockRange = BlockRange(
-                chainlength - 2,
-                chainlength - 1,
-                100,
-                42,
-            )
-        testfunc_callcount += 1
-        return query.queryAllocations(blockRange, CHAINID)
-
-    assert len(retryFunction(testquery_fail, 3, 0.1)) > 0
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        retryFunction(testquery_fail, 2, 0.1)
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        retryFunction(testquery_fail, 1, 0.1)
-    testfunc_callcount = 0
 
 
 @enforce_types
