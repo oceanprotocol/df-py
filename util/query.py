@@ -542,7 +542,8 @@ def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     """
     @description
-      Filters out nfts that are in purgatory and are not in Aquarius
+      For remote chains: filters out nfts in purgatory & not in Aquarius
+      For dev chain, filters out '0xdevelopment' basetoken (hinders tests).
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
@@ -552,8 +553,12 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     if chainID == networkutil.DEV_CHAINID:
-        # can't filter on dev chain:
-        return nftvols
+        nftvols2 = {
+            basetoken: nftvols[basetoken]
+            for basetoken in nftvols.keys()
+            if basetoken != "0xdevelopment"
+        }
+        return nftvols2
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []

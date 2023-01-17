@@ -15,6 +15,10 @@ from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
 def _contracts(key: str):
     """Returns the contract object at the currently connected network"""
     chainID = brownie.network.chain.id
+    if chainID not in CONTRACTS:
+        address_file = networkutil.chainIdToAddressFile(chainID)
+        recordDeployedContracts(address_file)
+
     return CONTRACTS[chainID][key]
 
 
@@ -218,15 +222,6 @@ def createFREFromDatatoken(
 
 def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
-
-
-def create_ve_lock(amount: float, unlock_time: int, from_account):
-    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
-    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
-
-
-def get_ve_balance(account):
-    return veOCEAN().balanceOf(account, brownie.network.chain.time())
 
 
 # =============================================================================

@@ -4,7 +4,6 @@ import brownie
 from enforce_typing import enforce_types
 from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
-from util.random_addresses import get_random_addresses
 
 network = brownie.network
 
@@ -175,10 +174,8 @@ def randomLockAndAllocate(tups: list):
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
 
-    accounts = [
-        network.accounts.at(addr, force=True)
-        for addr in get_random_addresses(len(tups))
-    ]
+    accounts = network.accounts[: len(tups)]
+
     for account in accounts:
         OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
 
