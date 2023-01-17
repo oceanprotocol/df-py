@@ -1,3 +1,4 @@
+import os
 import random
 import time
 
@@ -24,7 +25,11 @@ from util.tok import TokSet
 account0 = None
 
 CHAINID = networkutil.DEV_CHAINID
+ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
 
+
+# =========================================================================
+# heavy on-chain tests: overall test
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
@@ -106,16 +111,27 @@ def test_all(tmp_path):
 
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
 
-    # run actual tests
+    # test single queries
     _test_getSymbols()
     _test_queryNftvolumes(CO2_addr, ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs)
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryNftvolsAndSymbols(CO2_addr, rng)
     _test_queryNftinfo()
+    
+    # test dftool
+    _test_dftool_query(tmp_path, ST, FIN)
+    _test_dftool_nftinfo(tmp_path, FIN)
+    _test_dftool_vebals(tmp_path, ST, FIN)
+    _test_dftool_allocations(tmp_path, ST, FIN)
 
+    # end-to-end tests
     _test_end_to_end_without_csvs(CO2_sym, rng)
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+
+
+# =========================================================================
+# heavy on-chain tests: support functions
 
 
 def _foundConsume(CO2_addr, st, fin):
@@ -127,6 +143,10 @@ def _foundConsume(CO2_addr, st, fin):
 
     # all good
     return True
+
+
+# =========================================================================
+# heavy on-chain tests: test single queries
 
 
 @enforce_types
@@ -215,6 +235,89 @@ def _test_queryNftinfo():
     assert len(nfts_block) == 11
 
 
+# =========================================================================
+# heavy on-chain tests: test dftool
+
+
+@enforce_types
+def _test_dftool_query(tmp_path, ST, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+
+    # insert fake inputs: rate csv file
+    csvs.saveRateCsv("OCEAN", 0.5, CSV_DIR)
+
+    # main cmd
+    NSAMP = 5
+
+    cmd = f"./dftool volsym {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    assert csvs.nftvolsCsvFilenames(CSV_DIR)
+    assert csvs.symbolsCsvFilenames(CSV_DIR)
+
+
+@enforce_types
+def _test_dftool_nftinfo(tmp_path, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+    
+    cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} {FIN}"
+    os.system(cmd)
+
+    assert csvs.nftinfoCsvFilename(CSV_DIR, CHAINID)
+
+
+@enforce_types
+def _test_dftool_vebals(tmp_path, ST, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+    
+    NSAMP = 100
+
+    cmd = f"./dftool vebals {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR)
+    assert os.path.exists(vebals_csv), "vebals csv file not found"
+
+    # test without sampling
+    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    os.system(cmd)
+
+    # test result
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
+    assert os.path.exists(vebals_csv), "vebals_realtime csv not found"
+
+
+@enforce_types
+def _test_dftool_allocations(tmp_path, ST, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+    
+    NSAMP = 100
+
+    cmd = f"./dftool allocations {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
+    assert os.path.exists(allocations_csv), "allocations csv file not found"
+
+    # test without sampling
+    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
+    assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
+
+
+# =========================================================================
+# heavy on-chain tests: end-to-end
+
 @enforce_types
 def _test_end_to_end_without_csvs(CO2_sym, rng):
     (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
@@ -274,6 +377,9 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
     OCEAN_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
+
+# ===========================================================================
+# non-heavy tests for query.py
 
 
 @enforce_types
@@ -621,7 +727,18 @@ def test_populateNftAssetNames():
 
     assert nfts[0].name == "Take a Ballet Lesson"
 
+# ===========================================================================
+# support functions
 
+
+@enforce_types
+def _clear_dir(csv_dir: str):
+    """Remove the files inside csv_dir"""
+    if csv_dir[-1] != "/":
+        csv_dir += "/"
+    cmd = f"rm {csv_dir}*"
+    os.system(cmd)
+    
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)
