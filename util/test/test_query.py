@@ -22,6 +22,8 @@ from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
 
+
+PREV = {}
 account0 = None
 
 CHAINID = networkutil.DEV_CHAINID
@@ -342,6 +344,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
 @enforce_types
 def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     csv_dir = str(tmp_path)
+    _clear_dir(csv_dir)
 
     # 1. simulate "dftool getrate"
     csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
@@ -745,12 +748,27 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
+    global account0, PREV
     networkutil.connect(networkutil.DEV_CHAINID)
-    global account0
     account0 = brownie.network.accounts[0]
     oceanutil.recordDevDeployedContracts()
+
+    for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
+        PREV[envvar] = os.environ.get(envvar)
+
+    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
+    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
+    os.environ["SECRET_SEED"] = "1234"
 
 
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
+
+    global PREV
+    for envvar, envval in PREV.items():
+        if envval is None:
+            del os.environ[envvar]
+        else:
+            os.environ[envvar] = envval
+    PREV = {}

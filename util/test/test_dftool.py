@@ -187,11 +187,9 @@ def teardown_function():
     networkutil.disconnect()
 
     global PREV
-
-    for envvar in ["DFTOOL_KEY", "ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
-        if PREV[envvar] is None:
+    for envvar, envval in PREV.items():
+        if envval is None:
             del os.environ[envvar]
         else:
-            os.environ[envvar] = PREV[envvar]
-
-        del PREV[envvar]
+            os.environ[envvar] = envval
+    PREV = {}
