@@ -118,7 +118,7 @@ def test_all(tmp_path):
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryNftvolsAndSymbols(CO2_addr, rng)
     _test_queryNftinfo()
-    
+
     # test dftool
     _test_dftool_query(tmp_path, ST, FIN)
     _test_dftool_nftinfo(tmp_path, FIN)
@@ -262,7 +262,7 @@ def _test_dftool_query(tmp_path, ST, FIN):
 def _test_dftool_nftinfo(tmp_path, FIN):
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
-    
+
     cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} {FIN}"
     os.system(cmd)
 
@@ -273,7 +273,7 @@ def _test_dftool_nftinfo(tmp_path, FIN):
 def _test_dftool_vebals(tmp_path, ST, FIN):
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
-    
+
     NSAMP = 100
 
     cmd = f"./dftool vebals {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
@@ -296,7 +296,7 @@ def _test_dftool_vebals(tmp_path, ST, FIN):
 def _test_dftool_allocations(tmp_path, ST, FIN):
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
-    
+
     NSAMP = 100
 
     cmd = f"./dftool allocations {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
@@ -317,6 +317,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 
 # =========================================================================
 # heavy on-chain tests: end-to-end
+
 
 @enforce_types
 def _test_end_to_end_without_csvs(CO2_sym, rng):
@@ -377,6 +378,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
     OCEAN_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
+
 
 # ===========================================================================
 # non-heavy tests for query.py
@@ -727,6 +729,7 @@ def test_populateNftAssetNames():
 
     assert nfts[0].name == "Take a Ballet Lesson"
 
+
 # ===========================================================================
 # support functions
 
@@ -738,7 +741,8 @@ def _clear_dir(csv_dir: str):
         csv_dir += "/"
     cmd = f"rm {csv_dir}*"
     os.system(cmd)
-    
+
+
 @enforce_types
 def setup_function():
     networkutil.connect(networkutil.DEV_CHAINID)

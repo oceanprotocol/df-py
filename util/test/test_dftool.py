@@ -1,7 +1,5 @@
 import os
 import subprocess
-import time
-import types
 
 import brownie
 from enforce_typing import enforce_types
@@ -14,6 +12,7 @@ PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+
 
 @enforce_types
 def test_getrate(tmp_path):
@@ -164,7 +163,7 @@ def test_checkpoint_feedistributor():
 
 @enforce_types
 def setup_function():
-    global accounts, PREV, DFTOOL_ACCT
+    global PREV, DFTOOL_ACCT
 
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
@@ -173,10 +172,10 @@ def setup_function():
 
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, toBase18(0.001))
-    
+
     for envvar in ["DFTOOL_KEY", "ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
         PREV[envvar] = os.environ.get(envvar)
-        
+
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
     os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
@@ -188,11 +187,11 @@ def teardown_function():
     networkutil.disconnect()
 
     global PREV
-    
+
     for envvar in ["DFTOOL_KEY", "ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
         if PREV[envvar] is None:
             del os.environ[envvar]
         else:
             os.environ[envvar] = PREV[envvar]
-            
+
         del PREV[envvar]
