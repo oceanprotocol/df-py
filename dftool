@@ -38,17 +38,6 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_MAIN = f"""Data Farming tool, for use by OPF.
 
-OPF steps:
-1. getrate - run per basetoken (OCEAN, H2O)
-2. query - run per CHAINID ({DEV_CHAINID}, 1, 137, ..)
-   allocations - run once
-   vebals - run once
-3. calc - run per rewardtoken (store amt per CHAINID): OCEAN (1+137), EWT (246)..
-4. dispense - run once
-
-Then LP steps:
-5. call DFRewards.claim(), or related
-
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
