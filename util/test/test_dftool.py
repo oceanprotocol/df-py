@@ -37,8 +37,8 @@ def test_calc(tmp_path):
     allocations = {CHAINID: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
     csvs.saveAllocationCsv(allocations, CSV_DIR)
 
-    nftvolts_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
-    csvs.saveNftvolsCsv(nftvolts_at_chain, CSV_DIR, CHAINID)
+    nftvols_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
+    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}
