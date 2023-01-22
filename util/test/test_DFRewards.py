@@ -1,5 +1,3 @@
-import time
-
 import brownie
 from enforce_typing import enforce_types
 
@@ -51,27 +49,17 @@ def test_TOK():
     # a1 claims for itself
     assert TOK.balanceOf(a1) == 0
     df_strategy.claim([TOK.address], {"from": accounts[1]})
+    assert TOK.balanceOf(a1) == 10
 
     # a2 claims for itself too
     assert TOK.balanceOf(a2) == 0
     df_strategy.claim([TOK.address], {"from": accounts[2]})
+    assert TOK.balanceOf(a2) == 20
 
     # a9 claims for a3
     assert TOK.balanceOf(a3) == 0
     df_rewards.claimFor(a3, TOK.address, {"from": accounts[9]})
-
-    for loop_i in range(50):
-        print(f"loop {loop_i} start")
-        assert loop_i < 45, "timeout"
-        if (
-            (TOK.balanceOf(a1) == 10)
-            and (TOK.balanceOf(a2) == 20)
-            and (TOK.balanceOf(a3) == 30)
-        ):  # test to pass
-            break
-        brownie.network.chain.sleep(10)
-        brownie.network.chain.mine(10)
-        time.sleep(2)
+    assert TOK.balanceOf(a3) == 30
 
 
 @enforce_types
@@ -91,16 +79,8 @@ def test_OCEAN():
 
     bal_before = OCEAN.balanceOf(a1)
     df_strategy.claim([OCEAN.address], {"from": accounts[1]})
-
-    for loop_i in range(50):
-        print(f"loop {loop_i} start")
-        assert loop_i < 45, "timeout"
-        bal_after = OCEAN.balanceOf(a1)
-        if (bal_after - bal_before) == 10:  # test to pass
-            break
-        brownie.network.chain.sleep(10)
-        brownie.network.chain.mine(10)
-        time.sleep(2)
+    bal_after = OCEAN.balanceOf(a1)
+    assert (bal_after - bal_before) == 10
 
 
 @enforce_types
@@ -155,6 +135,21 @@ def test_multiple_TOK():
     df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
     assert TOK1.balanceOf(a1) == 10
     assert TOK2.balanceOf(a1) == 15
+
+
+def test_bad_token():
+    badToken = B.Badtoken.deploy(
+        "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
+    )
+    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+
+    tos = [a1, a2, a3]
+    values = [10, 20, 30]
+
+    badToken.approve(df_rewards, sum(values), {"from": accounts[0]})
+
+    with brownie.reverts("Not enough tokens"):
+        df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
 
 
 def test_strategies():
