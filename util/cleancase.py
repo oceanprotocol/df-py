@@ -127,7 +127,6 @@ def assertNFTvols(nftvols: dict):
                 assert nft_addr[:2] == "0x", nft_addr
 
 
-
 @enforce_types
 def modSymbols(symbols: dict) -> dict:
     """symbols - dict of [chainID][basetoken_address] : symbol"""
