@@ -15,7 +15,7 @@ NA, NB = "0xnfta_addr", "0xnftb_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
-OCN_ADDR2, H2O_ADDR2 = "0xocean2", "Oxh2o2"
+OCN_ADDR2, H2O_ADDR2 = "0xocean2", "0xh2o2"
 SYMBOLS = {
     C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
     C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
