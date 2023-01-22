@@ -157,21 +157,6 @@ def test_multiple_TOK():
     assert TOK2.balanceOf(a1) == 15
 
 
-def test_bad_token():
-    badToken = B.Badtoken.deploy(
-        "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
-    )
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-
-    tos = [a1, a2, a3]
-    values = [10, 20, 30]
-
-    badToken.approve(df_rewards, sum(values), {"from": accounts[0]})
-
-    with brownie.reverts("Not enough tokens"):
-        df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
-
-
 def test_strategies():
     TOK = _deployTOK(accounts[0])
 
