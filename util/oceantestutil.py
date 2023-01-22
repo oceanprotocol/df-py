@@ -109,7 +109,7 @@ def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_toke
 
 
 @enforce_types
-def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
+def randomCreateSimpleDataNftWithFREs(num_FRE: int, base_token, accounts):
     # create random num_FRE.
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
@@ -117,7 +117,7 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
             account_i = FRE_i
         else:
             account_i = random.randint(0, len(accounts))
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
+        (data_NFT, DT, exchangeId) = oceanutil.createSimpleDataNftWithFRE(
             accounts[account_i], base_token
         )
         assert oceanutil.FixedPrice().isActive(exchangeId) is True

@@ -17,7 +17,7 @@ from util.tok import TokSet
 from util.base18 import fromBase18
 
 
-class DataNFT:
+class SimpleDataNft:
     def __init__(
         self,
         nft_addr: str,
@@ -304,13 +304,13 @@ def queryAllocations(
     return allocs
 
 
-def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
+def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     """
     @description
       Fetch, filter and return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nftinfo = _queryNftinfo(chainID, endBlock)
@@ -324,13 +324,13 @@ def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
     return nftinfo
 
 
-def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[DataNFT]:
     """
     @description
       Populate the list of NFTs with the asset names
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nft_dids = [nft.did for nft in nftInfo]
@@ -342,13 +342,13 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     return nftInfo
 
 
-def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
+def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     """
     @description
       Return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
     nftinfo = []
     chunk_size = 1000
@@ -377,7 +377,7 @@ def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
             break
 
         for nft in nfts:
-            datanft = DataNFT(
+            datanft = SimpleDataNft(
                 nft["id"],
                 chainID,
                 nft["symbol"],
@@ -512,16 +512,16 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
 
 
 @enforce_types
-def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[DataNFT]:
     """
     @description
       Filter out NFTs that are in purgatory and are not in Aquarius
 
     @arguments
-      nftinfos: list of DataNFT objects
+      nftinfos: list of SimpleDataNft objects
 
     @return
-      filtered_nftinfos: list of filtered DataNFT objects
+      filtered_nftinfos: list of filtered SimpleDataNft objects
     """
     nft_dids = [nft.did for nft in nftinfos]
     nft_dids = _filterToAquariusAssets(nft_dids)
@@ -530,7 +530,7 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
 
 
 @enforce_types
-def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[DataNFT]:
     bad_dids = _didsInPurgatory()
     for nft in nftinfos:
         if nft.did in bad_dids:

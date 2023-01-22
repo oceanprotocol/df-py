@@ -113,16 +113,16 @@ def FeeDistributor():
 
 
 @enforce_types
-def createDataNFTWithFRE(from_account, token):
-    data_NFT = createDataNFT("1", "1", from_account)
-    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+def createSimpleDataNftWithFRE(from_account, token):
+    data_NFT = createSimpleDataNft("1", "1", from_account)
+    DT = createDatatokenFromSimpleDataNft("1", "1", data_NFT, from_account)
 
     exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
 
 
 @enforce_types
-def createDataNFT(name: str, symbol: str, from_account):
+def createSimpleDataNft(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
     template_index = 1
     additional_metadata_updater = ZERO_ADDRESS
@@ -148,7 +148,7 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 
 @enforce_types
-def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
+def createDatatokenFromSimpleDataNft(DT_name: str, DT_symbol: str, data_NFT, from_account):
 
     erc20_template_index = 1
     strings = [
