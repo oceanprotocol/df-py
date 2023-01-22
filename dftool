@@ -36,7 +36,7 @@ CHAINID_EXAMPLES = (
 )
 
 # ========================================================================
-HELP_MAIN = f"""Data Farming tool, for use by OPF.
+HELP_MAIN = """Data Farming tool, for use by OPF.
 
 Usage: dftool getrate|query|calc|dispense|..
 
