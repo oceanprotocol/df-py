@@ -324,7 +324,7 @@ def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     return nftinfo
 
 
-def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[DataNFT]:
+def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Populate the list of NFTs with the asset names
@@ -512,7 +512,7 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
 
 
 @enforce_types
-def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[DataNFT]:
+def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Filter out NFTs that are in purgatory and are not in Aquarius
@@ -530,7 +530,7 @@ def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[DataNFT]:
 
 
 @enforce_types
-def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[DataNFT]:
+def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     bad_dids = _didsInPurgatory()
     for nft in nftinfos:
         if nft.did in bad_dids:

@@ -4,8 +4,8 @@ from enforce_typing import enforce_types
 from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
-    createSimpleDataNft,
-    createDatatokenFromSimpleDataNft,
+    createDataNft,
+    createDatatokenFromDataNft,
     calcDID,
 )
 from util import networkutil, oceantestutil, oceanutil
@@ -36,18 +36,18 @@ def test_OCEANtoken():
 
 
 @enforce_types
-def test_createSimpleDataNft():
+def test_createDataNft():
     recordDeployedContracts(ADDRESS_FILE)
-    data_NFT = createSimpleDataNft("nft_name", "nft_symbol", account0)
+    data_NFT = createDataNft("nft_name", "nft_symbol", account0)
     assert data_NFT.name() == "nft_name"
     assert data_NFT.symbol() == "nft_symbol"
 
 
 @enforce_types
-def test_createDatatokenFromSimpleDataNft():
+def test_createDatatokenFromDataNft():
     recordDeployedContracts(ADDRESS_FILE)
-    data_NFT = createSimpleDataNft("foo", "foo", account0)
-    DT = createDatatokenFromSimpleDataNft("dt_name", "dt_symbol", data_NFT, account0)
+    data_NFT = createDataNft("foo", "foo", account0)
+    DT = createDatatokenFromDataNft("dt_name", "dt_symbol", data_NFT, account0)
     assert DT.name() == "dt_name"
     assert DT.symbol() == "dt_symbol"
 

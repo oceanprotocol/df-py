@@ -61,7 +61,7 @@ def test_all(tmp_path):
     # Create data nfts
     data_nfts = []
     for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createSimpleDataNftWithFRE(account0, CO2)
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNftWithFRE(account0, CO2)
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
@@ -727,7 +727,9 @@ def test_mark_purgatory_nftinfos():
 
 @enforce_types
 def test_populateNftAssetNames():
-    nfts = [query.SimpleDataNft("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")]
+    nfts = [
+        query.SimpleDataNft("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")
+    ]
     nfts = query._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
