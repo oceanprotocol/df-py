@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 import numpy as np
 
 from util import tousd
-from util.cleancase import modStakes, modNFTvols, modRates
+from util.cleancase import modStakes, modNFTvols, modRates, modSymbols
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -136,7 +136,10 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, rates = modStakes(stakes), modNFTvols(nftvols), modRates(rates)
+    stakes = modStakes(stakes)
+    nftvols = modNFTvols(nftvols)
+    symbols = modSymbols(symbols)
+    rates = modRates(rates)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 

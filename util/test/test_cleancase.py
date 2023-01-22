@@ -114,6 +114,25 @@ def test_nftvols():
 
 
 @enforce_types
+def test_symbols():
+    symbols = {
+        1: {"0xoCeAn": "oCeAn", "0xh2o": "H2o"},
+        2: {"0xoceaN": "mOCEan", "0xh2O": "h2O"},
+    }
+    target_symbols = {
+        1: {"0xocean": "OCEAN", "0xh2o": "H2O"},
+        2: {"0xocean": "MOCEAN", "0xh2o": "H2O"},
+    }
+
+    with pytest.raises(AssertionError):
+        cleancase.assertSymbols(symbols)
+
+    mod_symbols = cleancase.modSymbols(symbols)
+    cleancase.assertSymbols(mod_symbols)
+    assert mod_symbols == target_symbols
+
+
+@enforce_types
 def test_rates_main():
     rates = {"oCeAn": 0.25, "h2o": 1.61}
     target_rates = {"OCEAN": 0.25, "H2O": 1.61}
