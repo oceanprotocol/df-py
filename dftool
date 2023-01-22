@@ -341,17 +341,26 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
 
     # do we have the input files?
-    if not csvs.rateCsvFilenames(CSV_DIR):
-        print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
+    alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
+    if not os.path.exists(alloc_fname):
+        print(f"\nNo file {alloc_fname} in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
+
+    vebals_fname = csvs.vebalsCsvFilename(CSV_DIR)  # need for loadStakes()
+    if not os.path.exists(vebals_fname):
+        print(f"\nNo file {vebals_fname} in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
+
+    if not csvs.nftvolsCsvFilenames(CSV_DIR):
+        print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
+
     if not csvs.symbolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
-    if not csvs.allocationCsvFilename(CSV_DIR):
-        print(f"\nNo 'allocation*.csv' file in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
-    if not csvs.vebalsCsvFilename(CSV_DIR):
-        print(f"\nNo 'veocean*.csv' file in '{CSV_DIR}'. Exiting.")
+
+    if not csvs.rateCsvFilenames(CSV_DIR):
+        print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
     # shouldn't already have the output file
