@@ -415,7 +415,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 @enforce_types
 def _queryVolsCreators(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, Dict[str, float]],]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
@@ -427,7 +427,7 @@ def _queryVolsCreators(
     print("_queryVolsCreators(): begin")
 
     vols: Dict[str, Dict[str, float]] = {}
-    creators: Dict[str, Dict[str, float]] = {}
+    creators: Dict[str, float] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -478,6 +478,9 @@ def _queryVolsCreators(
             nft_addr = order["datatoken"]["nft"]["id"].lower()
             creator_addr = order["datatoken"]["nft"]["id"].lower()
 
+            # add creator
+            creators[nft_addr] = creator_addr
+
             # Calculate gas cost
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
@@ -494,7 +497,6 @@ def _queryVolsCreators(
                     vols[native_token_addr][nft_addr] = 0
 
                 vols[native_token_addr][nft_addr] += gasCost
-                creators[nft_addr] = creator_addr
 
             if lastPriceValue == 0:
                 continue

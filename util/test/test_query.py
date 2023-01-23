@@ -220,8 +220,9 @@ def _test_queryVolsCreators(CO2_addr: str, st, fin):
     assert sum(V0[CO2_addr].values()) > 0.0
 
     # test C0 (creators)
-    assert C0
-    V0_nft_addrs = set(nft_addr for token_addr in V0 for nft_addr in V0[token_addr])
+    assert C0, (V0, C0)
+    V0_nft_addrs = set(nft_addr
+                       for token_addr in V0 for nft_addr in V0[token_addr])
     for C0_nft_addr in C0:
         assert C0_nft_addr in V0_nft_addrs
 
