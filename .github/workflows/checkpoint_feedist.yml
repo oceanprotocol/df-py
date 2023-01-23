@@ -40,4 +40,4 @@ jobs:
 
       - name: Run dftool checkpoint_feedist 
         run: |
-          ./dftool checkpoint_feedist 1
+          ./dftool checkpoint_feedist 1 true
