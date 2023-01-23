@@ -357,12 +357,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    tol = OCEAN_avail / 1000.0
-    assert sum_ == pytest.approx(OCEAN_avail, tol), sum_
-
-    dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
-    token_addr = oceanutil.OCEAN_address()
-    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, token_addr, account0)
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
 
 
 @enforce_types
@@ -409,9 +404,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    tol = OCEAN_avail / 1000.0
-    assert sum_ == pytest.approx(OCEAN_avail, tol), sum_
-
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
@@ -419,7 +412,6 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
     OCEAN_addr = oceanutil.OCEAN_address()
-
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
 
 
