@@ -25,18 +25,26 @@ class SimpleDataNft:
         _symbol: str,
         is_purgatory: bool = False,
     ):
-        self.nft_addr = nft_addr
-        self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
-        self.symbol = _symbol
-        self.name = ""
+        self.nft_addr = nft_addr.lower()
+        self.symbol = _symbol.upper()
         self.is_purgatory = is_purgatory
+        self.name = ""
+        self.did = oceanutil.calcDID(nft_addr, chain_id)
 
     def setName(self, name: str):
         self.name = name
 
+    def __eq__(self, x) -> bool:
+        return repr(self) == repr(x)
+
     def __repr__(self):
-        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
+        return (
+            f"SimpleDataNft("
+            f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', "
+            f"{self.is_purgatory}, '{self.name}'"
+            f")"
+        )
 
 
 @enforce_types
