@@ -153,7 +153,7 @@ def test_checkpoint_feedistributor():
     timecursor_before = feeDistributor.time_cursor()
     brownie.network.chain.sleep(60 * 60 * 24 * 7)
     brownie.network.chain.mine()
-    cmd = f"./dftool checkpoint_feedist {CHAINID} false"
+    cmd = f"./dftool checkpoint_feedist {CHAINID}"
     os.system(cmd)
 
     timecursor_after = feeDistributor.time_cursor()
