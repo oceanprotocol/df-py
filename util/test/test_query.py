@@ -61,7 +61,7 @@ def test_all(tmp_path):
     # Create data nfts
     data_nfts = []
     for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNftWithFRE(account0, CO2)
+        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(account0, CO2)
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
