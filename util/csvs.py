@@ -212,6 +212,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
             ]
             writer.writerow(row)
 
+
 @enforce_types
 def loadNftinfoCsvs(csv_dir: str):
     """
@@ -261,7 +262,7 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
             assert chainID2 == chainID, "csv had data from different chain"
             assertIsEthAddr(nft_addr)
 
-            nft = SimpleDataNft(nft_addr, chainID, symbol, is_purgatory)
+            nft = SimpleDataNft(nft_addr, chainID, symbol, is_purgatory, name)
             nftinfo.append(nft)
 
     print(f"Loaded {csv_file}")
@@ -285,6 +286,7 @@ def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
 def chainIDforNftinfoCsv(filename) -> int:
     """Returns chainID for a given nftinfo csv filename"""
     return _lastInt(filename)
+
 
 # ========================================================================
 # nftvols csvs

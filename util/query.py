@@ -24,12 +24,13 @@ class SimpleDataNft:
         chain_id: int,
         _symbol: str,
         is_purgatory: bool = False,
+        name: str = "",
     ):
         self.chain_id = chain_id
         self.nft_addr = nft_addr.lower()
         self.symbol = _symbol.upper()
         self.is_purgatory = is_purgatory
-        self.name = ""
+        self.name = name  # can be any mix of upper and lower case
         self.did = oceanutil.calcDID(nft_addr, chain_id)
 
     def setName(self, name: str):
