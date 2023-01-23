@@ -918,15 +918,10 @@ def do_checkpoint_feedist():
 
 Usage: dftool checkpoint_feedist CHAINID
     CHAINID -- {CHAINID_EXAMPLES}
-    [USE_MULTISIG] -- if set to true, submit tx to multisig
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
-
-    USE_MULTISIG = False
-    if len(sys.argv) == 4:
-        USE_MULTISIG = sys.argv[3] == "true"
 
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
@@ -940,7 +935,11 @@ Usage: dftool checkpoint_feedist CHAINID
     from_account = _getPrivateAccount()
     feedist = FeeDistributor()
 
-    if USE_MULTISIG:
+    try:
+        feedist.checkpoint_total_supply({"from": from_account})
+        feedist.checkpoint_token({"from": from_account})
+    except Exception as e:
+        print(f"Checkpoint failed: {e}, submitting tx to multisig")
         total_supply_encoded = feedist.checkpoint_total_supply.encode_input()
         checkpoint_token_encoded = feedist.checkpoint_token.encode_input(
             {"from": from_account}
@@ -953,10 +952,6 @@ Usage: dftool checkpoint_feedist CHAINID
         # submit transactions to multisig
         send_multisig_tx(multisig_addr, to, total_supply_encoded, value)
         send_multisig_tx(multisig_addr, to, checkpoint_token_encoded, value)
-    else:
-        # Checkpoint
-        feedist.checkpoint_total_supply({"from": from_account})
-        feedist.checkpoint_token({"from": from_account})
 
     print("Checkpointed FeeDistributor")
 
