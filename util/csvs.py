@@ -184,7 +184,6 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
-
     @arguments
         nftinfo -- list of SimpleDataNft
         csv_dir -- directory that holds csv files
@@ -227,7 +226,6 @@ def loadNftinfoCsvs(csv_dir: str):
     """
     @description
       Load all nftinfo csvs (across all chains); return result as single dict
-
     @return
       nftinfo -- list of SimpleDataNft
     """
@@ -244,7 +242,6 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
     """
     @description
       Load nftinfo for this chainID
-
     @return
       nftinfo_at_chain -- list of SimpleDataNft
     """
