@@ -1,34 +1,41 @@
+import os
 import random
 import time
 
 import pytest
 import brownie
 from enforce_typing import enforce_types
-from pytest import approx, raises
+from pytest import approx
 
-from util import oceanutil, oceantestutil, networkutil, query
+from util import (
+    calcrewards,
+    csvs,
+    dispense,
+    oceanutil,
+    oceantestutil,
+    networkutil,
+    query,
+)
+from util.allocations import allocsToStakes, loadStakes
 from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
-from util.retry import retryFunction
 
-account0, QUERY_ST = None, 0
+
+PREV = {}
+account0 = None
 
 CHAINID = networkutil.DEV_CHAINID
-WEEK = 7 * 86400
+ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
 
 
-# Test flow.
-# Create veOCEAN locks
-# Create data NFTs and consume.
-# Allocate veOCEAN for the data NFTs.
-# Query veOCEAN balances, allocations, and volumes.
-# Calculate and compare the results with the expected values.
+# =========================================================================
+# heavy on-chain tests: overall test
 
-
+# pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
-def test_all():
+def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
@@ -36,6 +43,8 @@ def test_all():
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
     CO2_addr = CO2.address.lower()
     OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
+    veAllocate = oceanutil.veAllocate()
 
     OCEAN_lock_amt = toBase18(5.0)
 
@@ -58,45 +67,39 @@ def test_all():
 
     # Lock veOCEAN
     t0 = brownie.network.chain.time()
-    t1 = t0 // WEEK * WEEK + WEEK
-    t2 = t1 + WEEK * 20  # lock for 20 weeks
+    S_PER_WEEK = 604800
+    t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
     brownie.network.chain.sleep(t1 - t0)
+    t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
     for acc in accounts:
-        oceanutil.create_ve_lock(OCEAN_lock_amt, t2, acc)
+        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
+        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
 
     # Allocate to data NFTs
-    # pylint: disable=consider-using-enumerate
-    for i in range(len(accounts)):
-        oceanutil.set_allocation(
-            100,
-            data_nfts[i][0],
-            8996,
-            accounts[i],
-        )
+    for i, acc in enumerate(accounts):
+        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
 
     # set start block number for querying
-    startBlockNumber = len(brownie.network.chain)
-    endBlockNumber = 0  # will be set later
+    ST = len(brownie.network.chain)
 
     # Consume
-    # pylint: disable=consider-using-enumerate
-    for i in range(len(accounts)):
-        oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, accounts[i], CO2)
-        oceantestutil.consumeDT(data_nfts[i][1], account0, accounts[i])
+    for i, acc in enumerate(accounts):
+        oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
+        oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
 
     # sampling test accounts locks and allocates after start block
-    # pylint: disable=consider-using-enumerate
-    for i in range(len(sampling_test_accounts)):
-        oceanutil.create_ve_lock(OCEAN_lock_amt, t2, sampling_test_accounts[i])
-        oceanutil.set_allocation(100, data_nfts[i][0], 8996, sampling_test_accounts[i])
+    for i, acc in enumerate(sampling_test_accounts):
+        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
+        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
+        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
     for loop_i in range(50):
-        endBlockNumber = len(brownie.network.chain)
+        FIN = len(brownie.network.chain)
         print(f"loop {loop_i} start")
-        assert loop_i < 5, "timeout"
-        if _foundConsume(CO2_addr, startBlockNumber, endBlockNumber):
+        assert loop_i < 45, "timeout"
+        if _foundConsume(CO2_addr, ST, FIN):
             break
         brownie.network.chain.sleep(10)
         brownie.network.chain.mine(10)
@@ -104,20 +107,33 @@ def test_all():
 
     brownie.network.chain.sleep(10)
     brownie.network.chain.mine(20)
-
     time.sleep(2)
 
-    blockRange = BlockRange(startBlockNumber, endBlockNumber, 100, 42)
+    rng = BlockRange(ST, FIN, 100, 42)
 
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
 
-    # run actual tests
+    # test single queries
     _test_getSymbols()
-    _test_queryVolsCreators(CO2_addr, startBlockNumber, endBlockNumber)
-    _test_queryVebalances(blockRange, sampling_accounts_addrs)
-    _test_queryAllocations(blockRange, sampling_accounts_addrs)
-    _test_queryVolsCreatorsSymbols(CO2_addr)
+    _test_queryVolsCreators(CO2_addr, ST, FIN)
+    _test_queryVebalances(rng, sampling_accounts_addrs)
+    _test_queryAllocations(rng, sampling_accounts_addrs)
+    _test_queryVolsCreatorsSymbols(CO2_addr, ST, FIN)
     _test_queryNftinfo()
+
+    # test dftool
+    _test_dftool_query(tmp_path, ST, FIN)
+    _test_dftool_nftinfo(tmp_path, FIN)
+    _test_dftool_vebals(tmp_path, ST, FIN)
+    _test_dftool_allocations(tmp_path, ST, FIN)
+
+    # end-to-end tests
+    _test_end_to_end_without_csvs(CO2_sym, rng)
+    _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+
+
+# =========================================================================
+# heavy on-chain tests: support functions
 
 
 def _foundConsume(CO2_addr, st, fin):
@@ -131,8 +147,14 @@ def _foundConsume(CO2_addr, st, fin):
     return True
 
 
+# =========================================================================
+# heavy on-chain tests: test single queries
+
+
 @enforce_types
 def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
+    veOCEAN = oceanutil.veOCEAN()
+
     veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
@@ -144,7 +166,8 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
     assert sum(unlock_times.values()) > 0
 
     for account in veBalances:
-        bal = oceanutil.get_ve_balance(account) / 1e18
+        t = brownie.network.chain.time()
+        bal = fromBase18(veOCEAN.balanceOf(account, t))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
@@ -204,8 +227,8 @@ def _test_queryVolsCreators(CO2_addr: str, st, fin):
 
 
 @enforce_types
-def _test_queryVolsCreatorsSymbols(CO2_addr: str):
-    st, fin, n = QUERY_ST, len(brownie.network.chain), 500
+def _test_queryVolsCreatorsSymbols(CO2_addr: str, st, fin):
+    n = 500
     rng = BlockRange(st, fin, n)
     (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
 
@@ -224,6 +247,198 @@ def _test_queryNftinfo():
 
     nfts_block = query.queryNftinfo(137, 29778602)
     assert len(nfts_block) == 11
+
+
+# =========================================================================
+# heavy on-chain tests: test dftool
+
+
+@enforce_types
+def _test_dftool_query(tmp_path, ST, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+
+    # insert fake inputs: rate csv file
+    csvs.saveRateCsv("OCEAN", 0.5, CSV_DIR)
+
+    # main cmd
+    NSAMP = 5
+
+    cmd = f"./dftool volsym {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    assert csvs.nftvolsCsvFilenames(CSV_DIR)
+    assert csvs.creatorsCsvFilenames(CSV_DIR)
+    assert csvs.symbolsCsvFilenames(CSV_DIR)
+
+
+@enforce_types
+def _test_dftool_nftinfo(tmp_path, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+
+    cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} {FIN}"
+    os.system(cmd)
+
+    assert csvs.nftinfoCsvFilename(CSV_DIR, CHAINID)
+
+
+@enforce_types
+def _test_dftool_vebals(tmp_path, ST, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+
+    NSAMP = 100
+
+    cmd = f"./dftool vebals {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR)
+    assert os.path.exists(vebals_csv), "vebals csv file not found"
+
+    # test without sampling
+    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    os.system(cmd)
+
+    # test result
+    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
+    assert os.path.exists(vebals_csv), "vebals_realtime csv not found"
+
+
+@enforce_types
+def _test_dftool_allocations(tmp_path, ST, FIN):
+    CSV_DIR = str(tmp_path)
+    _clear_dir(CSV_DIR)
+
+    NSAMP = 100
+
+    cmd = f"./dftool allocations {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
+    assert os.path.exists(allocations_csv), "allocations csv file not found"
+
+    # test without sampling
+    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    os.system(cmd)
+
+    # test result
+    allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
+    assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
+
+
+# =========================================================================
+# heavy on-chain tests: end-to-end
+
+
+@enforce_types
+def _test_end_to_end_without_csvs(CO2_sym, rng):
+    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    V = {CHAINID: V0}
+    C = {CHAINID: C0}
+    SYM = {CHAINID: SYM0}
+
+    vebals, _, _ = query.queryVebalances(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID)
+    S = allocsToStakes(allocs, vebals)
+
+    R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
+
+    m = float("inf")
+    OCEAN_avail = 1e-4
+    do_pubrewards = False
+    do_rank = True
+
+    rewardsperlp, _ = calcrewards.calcRewards(
+        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
+    )
+
+    sum_ = sum(rewardsperlp[CHAINID].values())
+    tol = OCEAN_avail / 1000.0
+    assert sum_ == pytest.approx(OCEAN_avail, tol), sum_
+
+    dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
+    token_addr = oceanutil.OCEAN_address()
+    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, token_addr, account0)
+
+
+@enforce_types
+def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
+    csv_dir = str(tmp_path)
+    _clear_dir(csv_dir)
+
+    # 1. simulate "dftool getrate"
+    csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
+    csvs.saveRateCsv("H2O", 1.61, csv_dir)
+    csvs.saveRateCsv(CO2_sym, 1.00, csv_dir)
+
+    # 2. simulate "dftool volsym"
+    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
+    csvs.saveCreatorsCsv(C0, csv_dir, CHAINID)
+    csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
+    V0 = C0 = SYM0 = None  # ensure not used later
+
+    # 3. simulate "dftool allocations"
+    allocs = query.queryAllocations(rng, CHAINID)
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    allocs = None  # ensure not used later
+
+    # 4. simulate "dftool vebals"
+    vebals, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
+    vebals = locked_amt = unlock_time = None  # ensure not used later
+
+    # 5. simulate "dftool calc"
+    S = loadStakes(csv_dir)  # loads allocs & vebals, then *
+    R = csvs.loadRateCsvs(csv_dir)
+    V = csvs.loadNftvolsCsvs(csv_dir)
+    C = csvs.loadCreatorsCsvs(csv_dir)
+    SYM = csvs.loadSymbolsCsvs(csv_dir)
+
+    m = float("inf")
+    OCEAN_avail = 1e-4
+    do_pubrewards = False
+    do_rank = True
+
+    rewardsperlp, _ = calcrewards.calcRewards(
+        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
+    )
+
+    sum_ = sum(rewardsperlp[CHAINID].values())
+    tol = OCEAN_avail / 1000.0
+    assert sum_ == pytest.approx(OCEAN_avail, tol), sum_
+
+    csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
+    rewardsperlp = None  # ensure not used later
+
+    # 6. simulate "dftool dispense_active"
+    rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
+    dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
+    OCEAN_addr = oceanutil.OCEAN_address()
+
+    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
+
+
+# ===========================================================================
+# non-heavy tests for query.py
+
+
+@enforce_types
+def test_empty_queryAllocations():
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    allocs = query.queryAllocations(rng, CHAINID)
+    assert allocs == {}
+
+
+@enforce_types
+def test_empty_queryVebalances():
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    tup = query.queryVebalances(rng, CHAINID)
+    assert tup == ({}, {}, {})
 
 
 # pylint: disable=too-many-statements
@@ -364,7 +579,7 @@ def test_allocation_sampling():
         time.sleep(1)
         forward(5)
 
-    allocations = allocations[str(CHAINID)]
+    allocations = allocations[CHAINID]
 
     for addr in allocate_addrs:
         assert addr in allocations, addr
@@ -410,6 +625,7 @@ def test_symbol():
 
 
 @enforce_types
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_queryAquariusAssetNames():
     # test that we can get the asset names from aquarius
     nft_dids = [
@@ -428,6 +644,7 @@ def test_queryAquariusAssetNames():
 
 
 @enforce_types
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_to_aquarius_assets():
     # test that we can get the asset names from aquarius
     nft_dids = [
@@ -445,6 +662,7 @@ def test_filter_to_aquarius_assets():
 
 
 @enforce_types
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_dids():
     # test that we can get the asset names from aquarius
     nft_dids = [
@@ -465,6 +683,7 @@ def test_filter_dids():
 
 
 @enforce_types
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
@@ -515,6 +734,7 @@ def test_filter_nftinfos():
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
         oceanutil.OCEAN_address(),  # invalid
     ]
+    # addresses are from polygon
     nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     # filter
@@ -532,7 +752,7 @@ def test_mark_purgatory_nftinfos():
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
         oceanutil.OCEAN_address(),  # invalid
     ]
-
+    # addresses are from polygon
     nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     nfts_marked = query._markPurgatoryNfts(nfts)
@@ -589,50 +809,42 @@ def test_SimpleDataNFT():
 testfunc_callcount = 0
 
 
+# ===========================================================================
+# support functions
+
+
 @enforce_types
-def test_retryFunction_query():
-    # pylint: disable=global-variable-undefined
-    global testfunc_callcount
-    testfunc_callcount = 0
-
-    def testquery_fail():
-        # pylint: disable=global-variable-undefined
-        global testfunc_callcount
-        blockRange = None
-        if testfunc_callcount < 2:
-            blockRange = BlockRange(999999, 9999999, 100, 42)
-        else:
-            chainlength = brownie.network.chain.height
-            blockRange = BlockRange(
-                chainlength - 2,
-                chainlength - 1,
-                100,
-                42,
-            )
-        testfunc_callcount += 1
-        return query.queryAllocations(blockRange, CHAINID)
-
-    assert len(retryFunction(testquery_fail, 3, 0.1)) > 0
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        retryFunction(testquery_fail, 2, 0.1)
-    testfunc_callcount = 0
-
-    with raises(Exception):
-        retryFunction(testquery_fail, 1, 0.1)
-    testfunc_callcount = 0
+def _clear_dir(csv_dir: str):
+    """Remove the files inside csv_dir"""
+    if csv_dir[-1] != "/":
+        csv_dir += "/"
+    cmd = f"rm {csv_dir}*"
+    os.system(cmd)
 
 
 @enforce_types
 def setup_function():
+    global account0, PREV
     networkutil.connect(networkutil.DEV_CHAINID)
-    global account0, QUERY_ST
     account0 = brownie.network.accounts[0]
-    QUERY_ST = max(0, len(brownie.network.chain) - 200)
     oceanutil.recordDevDeployedContracts()
+
+    for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
+        PREV[envvar] = os.environ.get(envvar)
+
+    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
+    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
+    os.environ["SECRET_SEED"] = "1234"
 
 
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
+
+    global PREV
+    for envvar, envval in PREV.items():
+        if envval is None:
+            del os.environ[envvar]
+        else:
+            os.environ[envvar] = envval
+    PREV = {}

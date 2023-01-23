@@ -139,9 +139,11 @@ def queryVebalances(
             )
 
             result = submitQuery(query, CHAINID)
-            if not "data" in result:
-                raise Exception(f"No data in veOCEANs result: {result}")
-            veOCEANs = result["data"]["veOCEANs"]
+            if "data" in result:
+                assert "veOCEANs" in result["data"]
+                veOCEANs = result["data"]["veOCEANs"]
+            else:
+                return ({}, {}, {})
 
             if len(veOCEANs) == 0:
                 # means there are no records left
@@ -252,7 +254,12 @@ def queryAllocations(
                 block,
             )
             result = submitQuery(query, CHAINID)
-            _allocs = result["data"]["veAllocateUsers"]
+            if "data" in result:
+                assert "veAllocateUsers" in result["data"]
+                _allocs = result["data"]["veAllocateUsers"]
+            else:
+                return {}
+
             if len(_allocs) == 0:
                 # means there are no records left
                 break
@@ -261,7 +268,7 @@ def queryAllocations(
                 LP_addr = allocation["id"].lower()
                 for ve_allocation in allocation["veAllocation"]:
                     nft_addr = ve_allocation["nftAddress"].lower()
-                    chain_id = ve_allocation["chainId"]
+                    chain_id = int(ve_allocation["chainId"])
                     allocated = float(ve_allocation["allocated"])
 
                     if chain_id not in allocs:
@@ -563,7 +570,8 @@ def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     """
     @description
-      Filters out nfts that are in purgatory and are not in Aquarius
+      For remote chains: filters out nfts in purgatory & not in Aquarius
+      For dev chain, filters out '0xdevelopment' basetoken (hinders tests).
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
@@ -573,8 +581,12 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     if chainID == networkutil.DEV_CHAINID:
-        # can't filter on dev chain:
-        return nftvols
+        nftvols2 = {
+            basetoken: nftvols[basetoken]
+            for basetoken in nftvols.keys()
+            if basetoken != "0xdevelopment"
+        }
+        return nftvols2
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []

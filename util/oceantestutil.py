@@ -175,6 +175,7 @@ def randomLockAndAllocate(tups: list):
     veOCEAN = oceanutil.veOCEAN()
 
     accounts = network.accounts[: len(tups)]
+
     for account in accounts:
         OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
 
@@ -194,7 +195,7 @@ def randomLockAndAllocate(tups: list):
 
         # Approve locking OCEAN
         assert OCEAN.balanceOf(lock_account) != 0
-        OCEAN.approve(veOCEAN, LOCK_AMOUNT, {"from": lock_account})
+        OCEAN.approve(veOCEAN.address, LOCK_AMOUNT, {"from": lock_account})
 
         # Check if there is an active lock
         if veOCEAN.balanceOf(lock_account) == 0:
