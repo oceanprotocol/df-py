@@ -201,9 +201,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
         writer.writerow(row)
 
         for nft in nftinfo:
-            isinpurg = "0"
-            if nft.is_purgatory:
-                isinpurg = "1"
+            isinpurg = "1" if nft.is_purgatory else "0"
             row = [
                 str(chainID),
                 nft.nft_addr.lower(),
@@ -216,9 +214,78 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
 
 
 @enforce_types
+def loadNftinfoCsvs(csv_dir: str):
+    """
+    @description
+      Load all nftinfo csvs (across all chains); return result as single dict
+    @return
+      nftinfo -- list of SimpleDataNft
+    """
+    csv_files = nftinfoCsvFilenames(csv_dir)
+    nftinfo = []
+    for csv_file in csv_files:
+        chainID = chainIDforNftinfoCsv(csv_file)
+        nftinfo += loadNftinfoCsv(csv_dir, chainID)
+    return nftinfo
+
+
+@enforce_types
+def loadNftinfoCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load nftinfo for this chainID
+    @return
+      nftinfo_at_chain -- list of SimpleDataNft
+    """
+    csv_file = nftinfoCsvFilename(csv_dir, chainID)
+    nftinfo = []
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == [
+                    "chainID",
+                    "nft_addr",
+                    "did",
+                    "symbol",
+                    "name",
+                    "is_purgatory",
+                ]
+                continue
+
+            chainID2 = int(row[0])
+            nft_addr = row[1].lower()
+            symbol = row[3].upper()
+            name = row[4]
+            is_purgatory = bool(int(row[5]))
+
+            assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(nft_addr)
+
+            nft = SimpleDataNft(nft_addr, chainID, symbol, is_purgatory, name)
+            nftinfo.append(nft)
+
+    print(f"Loaded {csv_file}")
+
+    return nftinfo
+
+
+@enforce_types
+def nftinfoCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of nftinfo filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "nftinfo*.csv"))
+
+
+@enforce_types
 def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the nftinfo filename"""
     return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
+
+
+@enforce_types
+def chainIDforNftinfoCsv(filename) -> int:
+    """Returns chainID for a given nftinfo csv filename"""
+    return _lastInt(filename)
 
 
 # ========================================================================
