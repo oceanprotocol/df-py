@@ -405,7 +405,6 @@ def chainIDforNftvolsCsv(filename) -> int:
 
 
 # ========================================================================
-<<<<<<< HEAD
 # creators csvs
 
 
