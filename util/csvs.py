@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
-from util.query import DataNFT
+from util.query import SimpleDataNft
 
 
 # ========================================================================
@@ -180,13 +180,13 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
 
 
 @enforce_types
-def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
+def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
 
     @arguments
-        nftinfo -- list of DataNFT
+        nftinfo -- list of SimpleDataNft
         csv_dir -- directory that holds csv files
         chainID -- chainID
     """

@@ -697,7 +697,7 @@ def test_filter_nftinfos():
     ]
 
     # addresses are from polygon
-    nfts = [query.DataNFT(addr, 137, "TEST") for addr in addresses]
+    nfts = [query.SimpleDataNft(addr, 137, "TEST") for addr in addresses]
 
     # filter
     nfts_filtered = query._filterNftinfos(nfts)
@@ -717,7 +717,7 @@ def test_mark_purgatory_nftinfos():
     ]
 
     # addresses are from polygon
-    nfts = [query.DataNFT(addr, 137, "TEST") for addr in addresses]
+    nfts = [query.SimpleDataNft(addr, 137, "TEST") for addr in addresses]
 
     nfts_marked = query._markPurgatoryNfts(nfts)
 
@@ -727,7 +727,9 @@ def test_mark_purgatory_nftinfos():
 
 @enforce_types
 def test_populateNftAssetNames():
-    nfts = [query.DataNFT("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")]
+    nfts = [
+        query.SimpleDataNft("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")
+    ]
     nfts = query._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
