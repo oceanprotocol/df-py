@@ -507,8 +507,6 @@ def chainIDforCreatorsCsv(filename) -> int:
 
 
 # ========================================================================
-=======
->>>>>>> main
 # symbols csvs
 
 
