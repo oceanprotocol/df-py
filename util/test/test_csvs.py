@@ -186,35 +186,6 @@ def test_nftvols_twochains(tmp_path):
 
 
 # =================================================================
-# approved csvs
-
-
-@enforce_types
-def test_chainIDforApprovedCsv():
-    assert csvs.chainIDforApprovedCsv("approved-chain101.csv") == 101
-    assert csvs.chainIDforApprovedCsv("path1/32/approved-chain92.csv") == 92
-
-
-@enforce_types
-def test_approved(tmp_path):
-    csv_dir = str(tmp_path)
-
-    approved_C1 = ["0x123", "0x456"]
-    approved_C2 = ["0x789"]
-
-    csvs.saveApprovedCsv(approved_C1, csv_dir, C1)
-    csvs.saveApprovedCsv(approved_C2, csv_dir, C2)
-
-    loaded_approved_C1 = csvs.loadApprovedCsv(csv_dir, C1)
-    loaded_approved_C2 = csvs.loadApprovedCsv(csv_dir, C2)
-    loaded_approved = csvs.loadApprovedCsvs(csv_dir)
-
-    assert loaded_approved_C1 == approved_C1
-    assert loaded_approved_C2 == approved_C2
-    assert loaded_approved == {C1: approved_C1, C2: approved_C2}
-
-
-# =================================================================
 # symbols csvs
 
 
