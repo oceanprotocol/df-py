@@ -13,7 +13,7 @@ def ratesToAddrRates(
 ) -> dict:
     """
     @description
-      For each rate, assign it the appropriat chainID and token_addr
+      For each rate, assign it the appropriate chainID and token_addr
 
     @arguments
       rates - dict of [token_symbol] : USD_price
