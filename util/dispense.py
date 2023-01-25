@@ -12,7 +12,7 @@ from util.base18 import toBase18
 from util.logger import logger
 from util.multisig import send_multisig_tx
 
-MAX_BATCH_SIZE = 100
+MAX_BATCH_SIZE = 500
 TRY_AGAIN = 3
 
 
