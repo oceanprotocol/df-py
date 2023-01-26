@@ -16,6 +16,8 @@ from util.graphutil import submitQuery
 from util.tok import TokSet
 from util.base18 import fromBase18
 
+MAX_TIME = 4 * 365 * 86400  # max lock time
+
 
 class SimpleDataNft:
     def __init__(
@@ -89,8 +91,6 @@ def queryVebalances(
       locked_amt -- dict of [LP_addr] : locked_amt
       unlock_time -- dict of [LP_addr] : unlock_time
     """
-    MAX_TIME = 4 * 365 * 86400  # max lock time
-
     # [LP_addr] : veBalance
     vebals: Dict[str, float] = {}
 
@@ -490,6 +490,37 @@ def _queryNftvolumes(
 
     print("getVolumes(): done")
     return NFTvols
+
+
+@enforce_types
+def _queryPassiveRewards(chainID, timestamp, addresses) -> Dict[str, float]:
+    """
+    @description
+      Query the chain for passive rewards within the given timestamp range.
+
+    @params
+      chainID -- chain ID
+      timestamp -- timestamp to query
+
+    @return
+      rewards -- dict of [basetoken_addr]:reward_amt
+    """
+    print("getPassiveRewards(): begin")
+    rewards: Dict[str, float] = {}
+
+    TOTAL_REWARD = 37500  # Hardcoded for now
+
+    networkutil.connect(chainID)
+    fee_distributor = oceanutil.FeeDistributor()
+
+    balances = {}
+    rewards = {}
+
+    for addr in addresses:
+        balances[addr] = fee_distributor.ve_for_at(addr, timestamp)
+        rewards[addr] = TOTAL_REWARD * balances[addr] / sum(balances.values())
+
+    return balances, rewards
 
 
 @enforce_types
