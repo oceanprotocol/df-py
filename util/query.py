@@ -493,7 +493,9 @@ def _queryNftvolumes(
 
 
 @enforce_types
-def _queryPassiveRewards(chainID, timestamp, addresses, tot_rewards) -> Dict[str, float]:
+def _queryPassiveRewards(
+    chainID, timestamp, addresses, tot_rewards
+) -> Dict[str, float]:
     """
     @description
       Query the chain for passive rewards within the given timestamp range.

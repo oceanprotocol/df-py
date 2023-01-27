@@ -734,6 +734,7 @@ def test_populateNftAssetNames():
 
     assert nfts[0].name == "Take a Ballet Lesson"
 
+
 @enforce_types
 def test_queryPassiveRewards():
     addresses = [
@@ -742,14 +743,10 @@ def test_queryPassiveRewards():
         "0x002570980aa53893c6981765698b6ebab8ae7ea1",
         "0x006d0f31a00e1f9c017ab039e9d0ba699433a28c",
         "0x006d559fc29090589d02fb71d4142aa58b030013",
-        "0x008ed443f31a4b3aee02fbfe61c7572ddaf3a679"
+        "0x008ed443f31a4b3aee02fbfe61c7572ddaf3a679",
     ]
     tot_reward = 50000
     balances, rewards = query._queryPassiveRewards(1, 1674800059, addresses, tot_reward)
-    
-
-
-
 
 
 # ===========================================================================
