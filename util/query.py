@@ -493,7 +493,7 @@ def _queryNftvolumes(
 
 
 @enforce_types
-def _queryPassiveRewards(chainID, timestamp, addresses) -> Dict[str, float]:
+def _queryPassiveRewards(chainID, timestamp, addresses, tot_rewards) -> Dict[str, float]:
     """
     @description
       Query the chain for passive rewards within the given timestamp range.
@@ -501,14 +501,14 @@ def _queryPassiveRewards(chainID, timestamp, addresses) -> Dict[str, float]:
     @params
       chainID -- chain ID
       timestamp -- timestamp to query
+      addresses -- list of addresses to query
 
     @return
-      rewards -- dict of [basetoken_addr]:reward_amt
+      rewards -- dict of [addr]:reward_amt
+      balances -- dict of [addr]:balance
     """
     print("getPassiveRewards(): begin")
     rewards: Dict[str, float] = {}
-
-    TOTAL_REWARD = 37500  # Hardcoded for now
 
     networkutil.connect(chainID)
     fee_distributor = oceanutil.FeeDistributor()
@@ -518,7 +518,7 @@ def _queryPassiveRewards(chainID, timestamp, addresses) -> Dict[str, float]:
 
     for addr in addresses:
         balances[addr] = fee_distributor.ve_for_at(addr, timestamp)
-        rewards[addr] = TOTAL_REWARD * balances[addr] / sum(balances.values())
+        rewards[addr] = tot_rewards * balances[addr] / sum(balances.values())
 
     return balances, rewards
 
