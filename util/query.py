@@ -493,7 +493,7 @@ def _queryNftvolumes(
 
 
 @enforce_types
-def _queryPassiveRewards(
+def queryPassiveRewards(
     chainID,
     timestamp,
     addresses,
