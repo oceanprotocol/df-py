@@ -130,7 +130,7 @@ def saveVebalsCsv(
 
 
 def loadVebalsCsv(
-    csv_dir: str,
+    csv_dir: str, sampled=True
 ) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
@@ -139,7 +139,7 @@ def loadVebalsCsv(
     @return
       vebals -- dict of [LP_addr] : balance
     """
-    csv_file = vebalsCsvFilename(csv_dir)
+    csv_file = vebalsCsvFilename(csv_dir, sampled)
     vebals: Dict[str, float] = {}
     locked_amts: Dict[str, float] = {}
     unlock_times: Dict[str, int] = {}
