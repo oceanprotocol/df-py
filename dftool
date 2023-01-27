@@ -22,7 +22,7 @@ from util.calcrewards import calcRewards
 from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
-from util.networkutil import DEV_CHAINID
+from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
 from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
@@ -30,6 +30,7 @@ from util.oceanutil import (
     FeeDistributor,
 )
 from util.blocktime import getfinBlock
+from util.multisig import send_multisig_tx
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -939,9 +940,22 @@ Usage: dftool checkpoint_feedist CHAINID
     from_account = _getPrivateAccount()
     feedist = FeeDistributor()
 
-    # Checkpoint
-    feedist.checkpoint_total_supply({"from": from_account})
-    feedist.checkpoint_token({"from": from_account})
+    try:
+        feedist.checkpoint_total_supply({"from": from_account})
+        feedist.checkpoint_token({"from": from_account})
+    # pylint: disable=broad-except
+    except Exception as e:
+        print(f"Checkpoint failed: {e}, submitting tx to multisig")
+        total_supply_encoded = feedist.checkpoint_total_supply.encode_input()
+        checkpoint_token_encoded = feedist.checkpoint_token.encode_input()
+
+        to = feedist.address
+        value = 0
+        multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
+
+        # submit transactions to multisig
+        send_multisig_tx(multisig_addr, to, total_supply_encoded, value)
+        send_multisig_tx(multisig_addr, to, checkpoint_token_encoded, value)
 
     print("Checkpointed FeeDistributor")
 
