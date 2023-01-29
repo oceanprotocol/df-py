@@ -476,7 +476,7 @@ def _queryVolsCreators(
                 continue
             basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
-            creator_addr = order["datatoken"]["nft"]["id"].lower()
+            creator_addr = order["datatoken"]["owner"]["id"].lower()
 
             # add creator
             creators[nft_addr] = creator_addr
