@@ -500,7 +500,7 @@ def queryPassiveRewards(
 ) -> Dict[str, float]:
     """
     @description
-      Query the chain for passive rewards within the given timestamp range.
+      Query the chain for passive rewards at the given timestamp.
 
     @params
       chainID -- chain ID
@@ -508,8 +508,8 @@ def queryPassiveRewards(
       addresses -- list of addresses to query
 
     @return
-      rewards -- dict of [addr]:reward_amt
       balances -- dict of [addr]:balance
+      rewards -- dict of [addr]:reward_amt
     """
     print("getPassiveRewards(): begin")
     rewards: Dict[str, float] = {}
@@ -519,6 +519,8 @@ def queryPassiveRewards(
     fee_distributor = oceanutil.FeeDistributor()
     sum_bals = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
+    print("sum_bals: %s" % sum_bals)
+    print("total_rewards: %s" % total_rewards)
     sum_bals_float = fromBase18(sum_bals)
     total_rewards_float = fromBase18(total_rewards)
 
