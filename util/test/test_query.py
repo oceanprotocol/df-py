@@ -114,13 +114,13 @@ def test_all(tmp_path):
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
 
     # test single queries
+    _test_queryPassiveRewards(sampling_test_accounts)
     _test_getSymbols()
     _test_queryNftvolumes(CO2_addr, ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs)
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryNftvolsAndSymbols(CO2_addr, rng)
     _test_queryNftinfo()
-    _test_queryPassiveRewards(sampling_test_accounts)
 
     # test dftool
     _test_dftool_query(tmp_path, ST, FIN)
@@ -739,10 +739,17 @@ def test_populateNftAssetNames():
 @enforce_types
 def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
-    query.queryPassiveRewards(CHAINID, chain.time(), addresses)
-    WEEK_S = 604800
+    S_PER_WEEK = 604800
     fee_distributor = oceanutil.FeeDistributor()
-    chain.sleep(WEEK_S)
+    oceanutil.OCEANtoken().transfer(
+        fee_distributor.address,
+        toBase18(1000.0),
+        {"from": brownie.accounts[0]},
+    )
+    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+    fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
+    # sleep to next week
+    chain.sleep(S_PER_WEEK - chain.time() % S_PER_WEEK + S_PER_WEEK)
     chain.mine()
     query.queryPassiveRewards(CHAINID, chain.time(), addresses)
 
@@ -753,9 +760,8 @@ def _test_queryPassiveRewards(addresses):
     )
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-    chain.sleep(WEEK_S * 2)
+    chain.sleep(S_PER_WEEK * 2)
     chain.mine()
-    query.queryPassiveRewards(CHAINID, chain.time(), addresses)
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
     balances, rewards = query.queryPassiveRewards(CHAINID, chain.time(), addresses)
