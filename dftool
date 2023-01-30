@@ -928,8 +928,8 @@ Usage: dftool calculate_passive CHAINID AMOUNT DATE CSV_DIR
     DATE = sys.argv[4]
     CSV_DIR = sys.argv[5]
     timestamp = int(timestrToTimestamp(DATE))
-    WEEK = 7 * 86400
-    timestamp = timestamp // WEEK * WEEK
+    S_PER_WEEK = 7 * 86400
+    timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     recordDeployedContracts(ADDRESS_FILE)
 
