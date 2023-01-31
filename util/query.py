@@ -517,21 +517,21 @@ def queryPassiveRewards(
 
     networkutil.connect(chainID)
     fee_distributor = oceanutil.FeeDistributor()
-    sum_bals = fee_distributor.ve_supply(timestamp)
+    ve_supply = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
-    print("sum_bals: %s" % sum_bals)
+    print("ve_supply: %s" % ve_supply)
     print("total_rewards: %s" % total_rewards)
-    sum_bals_float = fromBase18(sum_bals)
+    ve_supply_float = fromBase18(ve_supply)
     total_rewards_float = fromBase18(total_rewards)
 
-    if sum_bals_float == 0:
+    if ve_supply_float == 0:
         return balances, rewards
 
     for addr in addresses:
         balance = fee_distributor.ve_for_at(addr, timestamp)
         balance_float = fromBase18(balance)
         balances[addr] = balance_float
-        rewards[addr] = total_rewards_float * balance_float / sum_bals_float
+        rewards[addr] = total_rewards_float * balance_float / ve_supply_float
 
     return balances, rewards
 
