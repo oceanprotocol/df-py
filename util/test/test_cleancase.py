@@ -150,3 +150,22 @@ def test_rates_0x():
     rates = {"0xOCEAN": 0.1}
     with pytest.raises(AssertionError):
         cleancase.assertRates(rates)
+
+
+@enforce_types
+def test_creators():
+    creators = {
+        1: {"0xNFt1": "0xLp1", "0xNfT2": "0xlP2"},
+        2: {"0xnFT2": "0xlP2n", "0xnfT3": "0xLP3"},
+    }
+    target_creators = {
+        1: {"0xnft1": "0xlp1", "0xnft2": "0xlp2"},
+        2: {"0xnft2": "0xlp2n", "0xnft3": "0xlp3"},
+    }
+
+    with pytest.raises(AssertionError):
+        cleancase.assertCreators(creators)
+
+    mod_creators = cleancase.modCreators(creators)
+    cleancase.assertCreators(mod_creators)
+    assert mod_creators == target_creators
