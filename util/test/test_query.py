@@ -741,25 +741,15 @@ def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
     S_PER_WEEK = 604800
     fee_distributor = oceanutil.FeeDistributor()
-    oceanutil.OCEANtoken().transfer(
+    OCEAN = oceanutil.OCEANtoken()
+    OCEAN.transfer(
         fee_distributor.address,
         toBase18(1000.0),
         {"from": brownie.accounts[0]},
     )
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-    # sleep to next week
-    chain.sleep(S_PER_WEEK - chain.time() % S_PER_WEEK + S_PER_WEEK)
-    chain.mine()
     query.queryPassiveRewards(CHAINID, chain.time(), addresses)
-
-    oceanutil.OCEANtoken().transfer(
-        fee_distributor.address,
-        toBase18(1000.0),
-        {"from": brownie.accounts[0]},
-    )
-    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-    fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
     chain.sleep(S_PER_WEEK * 2)
     chain.mine()
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
@@ -767,7 +757,9 @@ def _test_queryPassiveRewards(addresses):
     balances, rewards = query.queryPassiveRewards(CHAINID, chain.time(), addresses)
     print(balances)
     print(rewards)
-    assert len(balances) == 90
+    assert balances[0] == balances[1]
+    assert rewards[0] == rewards[1]
+    assert rewards[0] > 0
 
 
 # ===========================================================================
