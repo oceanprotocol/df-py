@@ -497,7 +497,7 @@ def queryPassiveRewards(
     chainID,
     timestamp,
     addresses,
-) -> Dict[str, float]:
+) -> Tuple[Dict[str, float], Dict[str, float]]:
     """
     @description
       Query the chain for passive rewards at the given timestamp.
