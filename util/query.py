@@ -441,7 +441,9 @@ def _queryVolsCreators(
               symbol
               nft {
                 id
-                owner
+                owner{
+                  id
+                }
               }
               dispensers {
                 id
