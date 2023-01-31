@@ -513,7 +513,7 @@ def queryPassiveRewards(
     """
     print("getPassiveRewards(): begin")
     rewards: Dict[str, float] = {}
-    balances = {}
+    balances: Dict[str, float] = {}
 
     networkutil.connect(chainID)
     fee_distributor = oceanutil.FeeDistributor()
