@@ -742,18 +742,18 @@ def _test_queryPassiveRewards(addresses):
     S_PER_WEEK = 604800
     fee_distributor = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
+
     OCEAN.transfer(
         fee_distributor.address,
         toBase18(1000.0),
         {"from": brownie.accounts[0]},
     )
-    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-    query.queryPassiveRewards(CHAINID, chain.time(), addresses)
-    chain.sleep(S_PER_WEEK * 2)
+    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+    chain.sleep(S_PER_WEEK * 3)
     chain.mine()
-    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
+    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     balances, rewards = query.queryPassiveRewards(CHAINID, chain.time(), addresses)
     print(balances)
     print(rewards)
