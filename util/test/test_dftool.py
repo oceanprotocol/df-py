@@ -34,14 +34,11 @@ def test_calc(tmp_path):
     OCEAN_addr = oceanutil.OCEAN_address()
 
     # insert fake csvs
-    allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
+    allocations = {CHAINID: {"0xpool_addra": {"0xlp_addr1": 1.0}}}
     csvs.saveAllocationCsv(allocations, CSV_DIR)
 
-    nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1.0}}
+    nftvols_at_chain = {OCEAN_addr: {"0xpool_addra": 1.0}}
     csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
-
-    creators_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.saveCreatorsCsv(creators_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}

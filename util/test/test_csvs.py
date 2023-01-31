@@ -4,6 +4,7 @@ import pytest
 from util import csvs
 from util.query import SimpleDataNft
 
+
 # for shorter lines
 C1, C2 = 1, 137
 PA, PB, PC, PD, PE, PF = "0xpa", "0xpb", "0xpc", "0xpd", "0xpe", "0xpf"  # nfts
@@ -110,9 +111,9 @@ def test_nftinfo(tmp_path):
     # save
     csv_dir = str(tmp_path)
 
-    nft1 = SimpleDataNft(137, RND_ADDRS[0], "DN1", RND_ADDRS[1])
-    nft2 = SimpleDataNft(137, RND_ADDRS[2], "DN2", RND_ADDRS[3])
-    nft3 = SimpleDataNft(1285, RND_ADDRS[4], "DN3", RND_ADDRS[5])
+    nft1 = SimpleDataNft(RND_ADDRS[0], 137, "DN1")
+    nft2 = SimpleDataNft(RND_ADDRS[2], 137, "DN2")
+    nft3 = SimpleDataNft(RND_ADDRS[4], 1285, "DN3")
 
     csvs.saveNftinfoCsv([nft1, nft2], csv_dir, 137)
     csvs.saveNftinfoCsv([nft3], csv_dir, 1285)
@@ -145,8 +146,8 @@ def test_nftinfo(tmp_path):
 
 @enforce_types
 def test_chainIDforNftvolsCsv():
-    assert csvs.chainIDforNftvolsCsv("poolvols-101.csv") == 101
-    assert csvs.chainIDforNftvolsCsv("path1/32/poolvols-92.csv") == 92
+    assert csvs.chainIDforNftvolsCsv("poolvols-chain101.csv") == 101
+    assert csvs.chainIDforNftvolsCsv("path1/32/poolvols-chain92.csv") == 92
 
 
 @enforce_types
@@ -185,44 +186,13 @@ def test_nftvols_twochains(tmp_path):
 
 
 # =================================================================
-# creators csvs
-
-
-@enforce_types
-def test_chainIDforCreatorsCsv():
-    assert csvs.chainIDforCreatorsCsv("creators-101.csv") == 101
-    assert csvs.chainIDforCreatorsCsv("path1/32/creators-92.csv") == 92
-
-
-@enforce_types
-def test_creatorsCsv(tmp_path):
-    csv_dir = str(tmp_path)
-
-    C = {
-        C1: {"0x1": "0xa", "0x2": "0xb", "0x3": "0xa"},
-        C2: {"0x4": "0xa", "0x5": "0xd"},
-    }
-
-    csvs.saveCreatorsCsv(C[C1], csv_dir, C1)
-    csvs.saveCreatorsCsv(C[C2], csv_dir, C2)
-
-    loaded_C_C1 = csvs.loadCreatorsCsv(csv_dir, C1)
-    loaded_C_C2 = csvs.loadCreatorsCsv(csv_dir, C2)
-    loaded_C = csvs.loadCreatorsCsvs(csv_dir)
-
-    assert loaded_C_C1 == C[C1]
-    assert loaded_C_C2 == C[C2]
-    assert loaded_C == C
-
-
-# =================================================================
 # symbols csvs
 
 
 @enforce_types
 def test_chainIDforSymbolsCsv():
-    assert csvs.chainIDforSymbolsCsv("symbols-101.csv") == 101
-    assert csvs.chainIDforSymbolsCsv("path1/32/symbols-92.csv") == 92
+    assert csvs.chainIDforSymbolsCsv("symbols-chain101.csv") == 101
+    assert csvs.chainIDforSymbolsCsv("path1/32/symbols-chain92.csv") == 92
 
 
 @enforce_types

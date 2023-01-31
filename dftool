@@ -11,14 +11,12 @@ from util import (
     allocations,
     blockrange,
     calcrewards,
-    constants,
     csvs,
     dispense,
     getrate,
     networkutil,
     query,
 )
-from util.calcrewards import calcRewards
 from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
@@ -41,13 +39,13 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_MAIN = """Data Farming tool, for use by OPF.
 
-Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
+Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, creators)
+  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
+  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
 
@@ -85,7 +83,7 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_volsym():
-    HELP = f"""Query chain, output nft volumes, symbols, creators
+    HELP = f"""Query chain, output nftvols & symbols
 
 Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
@@ -140,11 +138,8 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     # main work
 
-    (Vi, Ci, SYMi) = retryFunction(
-        query.queryVolsCreatorsSymbols, RETRIES, 10, rng, CHAINID
-    )
+    (Vi, SYMi) = retryFunction(query.queryNftvolsAndSymbols, RETRIES, 10, rng, CHAINID)
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
-    csvs.saveCreatorsCsv(Ci, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool volsym: Done")
@@ -176,9 +171,10 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    # query.queryNftinfo() can be problematic; it's only used for frontend data
+    # this function can be a bit problematic and only used for generating data for frontend
     # retry 3 times with 10s delay by default
     nftinfo = retryFunction(query.queryNftinfo, 3, 10, ENDBLOCK, CHAINID)
+    query.queryNftinfo(CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -360,10 +356,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
         print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
-    if not csvs.creatorsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'creators*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
-
     if not csvs.symbolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
@@ -377,25 +369,28 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
 
     # main work
-    S = allocations.loadStakes(CSV_DIR)
-    V = csvs.loadNftvolsCsvs(CSV_DIR)
-    C = csvs.loadCreatorsCsvs(CSV_DIR)
+    stakes = allocations.loadStakes(CSV_DIR)
+    nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
-    do_pubrewards = constants.DO_PUBREWARDS
-    do_rank = constants.DO_RANK
 
+    DCV_OCEAN = calcrewards.totalDcv(nftvols, SYM, R)
     cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
     prev_week = cur_week - 1
     m = calcrewards.calcDcvMultiplier(prev_week)
-    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-
-    rewperlp, rewinfo = calcRewards(
-        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
+    TOT_OCEAN2 = calcrewards.boundRewardsByDcv(TOT_OCEAN, DCV_OCEAN, prev_week)
+    print(
+        f"Given prev_week=DF{prev_week}, DCV={DCV_OCEAN} OCEAN: "
+        f" multiplier={m}; we bound rewards to {TOT_OCEAN2} OCEAN"
+        f" (original value: {TOT_OCEAN} OCEAN)"
     )
 
-    csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
-    csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
+    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
+        stakes, nftvols, SYM, R, TOT_OCEAN2
+    )
+
+    csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")
+    csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
 

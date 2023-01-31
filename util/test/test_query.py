@@ -115,10 +115,10 @@ def test_all(tmp_path):
 
     # test single queries
     _test_getSymbols()
-    _test_queryVolsCreators(CO2_addr, ST, FIN)
+    _test_queryNftvolumes(CO2_addr, ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs)
     _test_queryAllocations(rng, sampling_accounts_addrs)
-    _test_queryVolsCreatorsSymbols(CO2_addr, ST, FIN)
+    _test_queryNftvolsAndSymbols(CO2_addr, rng)
     _test_queryNftinfo()
 
     # test dftool
@@ -137,10 +137,10 @@ def test_all(tmp_path):
 
 
 def _foundConsume(CO2_addr, st, fin):
-    V0, _ = query._queryVolsCreators(st, fin, CHAINID)
-    if CO2_addr not in V0:
+    DT_vols = query._queryNftvolumes(st, fin, CHAINID)
+    if CO2_addr not in DT_vols:
         return False
-    if sum(V0[CO2_addr].values()) == 0:
+    if sum(DT_vols[CO2_addr].values()) == 0:
         return False
 
     # all good
@@ -212,28 +212,16 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_queryVolsCreators(CO2_addr: str, st, fin):
-    V0, C0 = query._queryVolsCreators(st, fin, CHAINID)
-
-    # test V0 (volumes)
-    assert CO2_addr in V0, (CO2_addr, V0.keys())
-    assert sum(V0[CO2_addr].values()) > 0.0
-
-    # test C0 (creators)
-    assert C0, (V0, C0)
-    V0_nft_addrs = set(nft_addr for token_addr in V0 for nft_addr in V0[token_addr])
-    for C0_nft_addr in C0:
-        assert C0_nft_addr in V0_nft_addrs
+def _test_queryNftvolumes(CO2_addr: str, st, fin):
+    DT_vols = query._queryNftvolumes(st, fin, CHAINID)
+    assert CO2_addr in DT_vols, (CO2_addr, DT_vols.keys())
+    assert sum(DT_vols[CO2_addr].values()) > 0.0
 
 
 @enforce_types
-def _test_queryVolsCreatorsSymbols(CO2_addr: str, st, fin):
-    n = 500
-    rng = BlockRange(st, fin, n)
-    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
-
+def _test_queryNftvolsAndSymbols(CO2_addr: str, rng):
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
     assert CO2_addr in V0
-    assert C0
     assert SYM0
 
 
@@ -269,7 +257,6 @@ def _test_dftool_query(tmp_path, ST, FIN):
 
     # test result
     assert csvs.nftvolsCsvFilenames(CSV_DIR)
-    assert csvs.creatorsCsvFilenames(CSV_DIR)
     assert csvs.symbolsCsvFilenames(CSV_DIR)
 
 
@@ -336,25 +323,19 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 
 @enforce_types
 def _test_end_to_end_without_csvs(CO2_sym, rng):
-    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
     V = {CHAINID: V0}
-    C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
 
     vebals, _, _ = query.queryVebalances(rng, CHAINID)
     allocs = query.queryAllocations(rng, CHAINID)
-    S = allocsToStakes(allocs, vebals)
+    stakes = allocsToStakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
-    m = float("inf")
     OCEAN_avail = 1e-4
-    do_pubrewards = False
-    do_rank = True
 
-    rewardsperlp, _ = calcrewards.calcRewards(
-        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
-    )
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[CHAINID].values())
     assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
@@ -371,44 +352,31 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     csvs.saveRateCsv(CO2_sym, 1.00, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    (V0, SYM0) = query.queryNftvolsAndSymbols(rng, CHAINID)
     csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
-    csvs.saveCreatorsCsv(C0, csv_dir, CHAINID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
-    V0 = C0 = SYM0 = None  # ensure not used later
+    V0 = SYM0 = None  # ensure not used later
 
-    # 3. simulate "dftool allocations"
-    allocs = query.queryAllocations(rng, CHAINID)
-    csvs.saveAllocationCsv(allocs, csv_dir)
-    allocs = None  # ensure not used later
-
-    # 4. simulate "dftool vebals"
     vebals, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID)
     csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
-    vebals = locked_amt = unlock_time = None  # ensure not used later
+    csvs.saveAllocationCsv(allocs, csv_dir)
+    vebals = allocs = locked_amt = unlock_time = None  # ensure not used later
 
-    # 5. simulate "dftool calc"
-    S = loadStakes(csv_dir)  # loads allocs & vebals, then *
+    # 3. simulate "dftool calc"
     R = csvs.loadRateCsvs(csv_dir)
     V = csvs.loadNftvolsCsvs(csv_dir)
-    C = csvs.loadCreatorsCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
-
-    m = float("inf")
+    stakes = loadStakes(csv_dir)  # loads allocs & vebals, then *
     OCEAN_avail = 1e-4
-    do_pubrewards = False
-    do_rank = True
-
-    rewardsperlp, _ = calcrewards.calcRewards(
-        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
-    )
+    rewardsperlp, _ = calcrewards.calcRewards(stakes, V, SYM, R, OCEAN_avail)
 
     sum_ = sum(rewardsperlp[CHAINID].values())
     assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
-    # 6. simulate "dftool dispense_active"
+    # 4. simulate "dftool dispense"
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
     OCEAN_addr = oceanutil.OCEAN_address()
@@ -721,13 +689,15 @@ def test_filter_out_purgatory():
 
 @enforce_types
 def test_filter_nftinfos():
-    addrs = [
+    oceanAddr = oceanutil.OCEAN_address()
+    addresses = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(),  # invalid
+        oceanAddr,  # invalid
     ]
+
     # addresses are from polygon
-    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
+    nfts = [query.SimpleDataNft(addr, 137, "TEST") for addr in addresses]
 
     # filter
     nfts_filtered = query._filterNftinfos(nfts)
@@ -739,13 +709,15 @@ def test_filter_nftinfos():
 
 @enforce_types
 def test_mark_purgatory_nftinfos():
-    addrs = [
+    oceanAddr = oceanutil.OCEAN_address()
+    addresses = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(),  # invalid
+        oceanAddr,  # invalid
     ]
+
     # addresses are from polygon
-    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
+    nfts = [query.SimpleDataNft(addr, 137, "TEST") for addr in addresses]
 
     nfts_marked = query._markPurgatoryNfts(nfts)
 
@@ -755,50 +727,12 @@ def test_mark_purgatory_nftinfos():
 
 @enforce_types
 def test_populateNftAssetNames():
-    nft_addr = "0xbff8242de628cd45173b71022648617968bd0962"
-    nfts = [query.SimpleDataNft(137, nft_addr, "TEST", "0x123")]
+    nfts = [
+        query.SimpleDataNft("0xbff8242de628cd45173b71022648617968bd0962", 137, "TEST")
+    ]
     nfts = query._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
-
-
-@enforce_types
-def test_SimpleDataNFT():
-    # test attributes
-    nft_addr = "0xBff8242de628cd45173b71022648617968bd0962"
-    nft = query.SimpleDataNft(137, nft_addr, "dn1", "0x123AbC")
-    assert nft.chain_id == 137
-    assert nft.nft_addr == nft_addr.lower()
-    assert nft.symbol == "DN1"
-    assert nft.owner_addr == "0x123abc"
-    assert nft.name == ""
-    assert not nft.is_purgatory
-    assert isinstance(nft.did, str)
-
-    # test __eq__
-    nft2 = query.SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
-    assert nft == nft2
-
-    nft3 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
-    assert nft != nft3
-
-    # test __repr__
-    repr1 = repr(nft)
-    repr2 = f"SimpleDataNft(137, '{nft_addr.lower()}', 'DN1', '0x123abc', False, '')"
-    assert repr1 == repr2
-
-    # test setName
-    nft.setName("nAmE1")
-    assert nft.name == "nAmE1"
-    assert "nAmE1" in repr(nft)
-
-    # non-default args in constructor
-    nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
-    assert nft4.is_purgatory
-    assert nft4.name == "namE2"
-
-
-testfunc_callcount = 0
 
 
 # ===========================================================================

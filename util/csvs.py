@@ -184,6 +184,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
+
     @arguments
         nftinfo -- list of SimpleDataNft
         csv_dir -- directory that holds csv files
@@ -196,15 +197,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = [
-            "chainID",
-            "nft_addr",
-            "did",
-            "symbol",
-            "name",
-            "is_purgatory",
-            "owner_addr",
-        ]
+        row = ["chainID", "nft_addr", "did", "symbol", "name", "is_purgatory"]
         writer.writerow(row)
 
         for nft in nftinfo:
@@ -216,7 +209,6 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
                 nft.symbol,
                 nft.name.replace(",", "%@#"),
                 isinpurg,
-                nft.owner_addr,
             ]
             writer.writerow(row)
 
@@ -258,7 +250,6 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
                     "symbol",
                     "name",
                     "is_purgatory",
-                    "owner_addr",
                 ]
                 continue
 
@@ -267,15 +258,11 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
             symbol = row[3].upper()
             name = row[4]
             is_purgatory = bool(int(row[5]))
-            owner_addr = row[6]
 
             assert chainID2 == chainID, "csv had data from different chain"
             assertIsEthAddr(nft_addr)
-            assertIsEthAddr(owner_addr)
 
-            nft = SimpleDataNft(
-                chainID, nft_addr, symbol, owner_addr, is_purgatory, name
-            )
+            nft = SimpleDataNft(nft_addr, chainID, symbol, is_purgatory, name)
             nftinfo.append(nft)
 
     print(f"Loaded {csv_file}")
@@ -401,108 +388,6 @@ def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chainIDforNftvolsCsv(filename) -> int:
     """Returns chainID for a given nftvols csv filename"""
-    return _lastInt(filename)
-
-
-# ========================================================================
-# creators csvs
-
-
-@enforce_types
-def saveCreatorsCsv(creators_at_chain: Dict[str, str], csv_dir: str, chainID: int):
-    """
-    @description
-      Save the nft creators for this chain
-
-    @arguments
-      creators_at_chain -- dict of [nft_addr] : creator_addr
-      csv_dir -- directory that holds csv files
-      chainID -- which chain (network)
-    """
-    assert os.path.exists(csv_dir), csv_dir
-    csv_file = creatorsCsvFilename(csv_dir, chainID)
-    assert not os.path.exists(csv_file), csv_file
-    with open(csv_file, "w") as f:
-        writer = csv.writer(f)
-        writer.writerow(["chainID", "nft_addr", "creator_addr"])
-        for nft_addr, creator_addr in creators_at_chain.items():
-            assertIsEthAddr(nft_addr)
-            assertIsEthAddr(creator_addr)
-            row = [
-                chainID,
-                nft_addr.lower(),
-                creator_addr.lower(),
-            ]
-            writer.writerow(row)
-
-    print(f"Created {csv_file}")
-
-
-@enforce_types
-def loadCreatorsCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
-    """
-    @description
-      Load all creators csvs across all chains
-
-    @return
-      creators -- dict of [chainID][nft_addr] : creator_addr
-    """
-    csv_files = creatorsCsvFilenames(csv_dir)
-    creators: dict = {}
-    for csv_file in csv_files:
-        chainID = chainIDforCreatorsCsv(csv_file)
-        creators[chainID] = loadCreatorsCsv(csv_dir, chainID)
-
-    return creators
-
-
-@enforce_types
-def loadCreatorsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
-    """
-    @description
-      Load creators for this chainID
-
-    @return
-      creators_at_chain -- dict of [nft_addr] : creator_addr
-    """
-    csv_file = creatorsCsvFilename(csv_dir, chainID)
-    creators_at_chain: dict = {}
-    with open(csv_file, "r") as f:
-        reader = csv.reader(f)
-        for row_i, row in enumerate(reader):
-            if row_i == 0:  # header
-                assert row == ["chainID", "nft_addr", "creator_addr"]
-                continue
-
-            chainID2 = int(row[0])
-            nft_addr = row[1].lower()
-            creator_addr = row[2].lower()
-
-            assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(nft_addr)
-            assertIsEthAddr(creator_addr)
-
-            creators_at_chain[nft_addr] = creator_addr
-
-    print(f"Loaded {csv_file}")
-    return creators_at_chain
-
-
-@enforce_types
-def creatorsCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of creators filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "creators*.csv"))
-
-
-@enforce_types
-def creatorsCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the creators filename for a given chainID"""
-    return os.path.join(csv_dir, f"creators-{chainID}.csv")
-
-
-@enforce_types
-def chainIDforCreatorsCsv(filename) -> int:
-    """Returns chainID for a given creators csv filename"""
     return _lastInt(filename)
 
 
