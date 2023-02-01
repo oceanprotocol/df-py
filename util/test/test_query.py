@@ -753,8 +753,8 @@ def _test_queryPassiveRewards(addresses):
     chain.mine()
     feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
     feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-    time = chain.time() // S_PER_WEEK * S_PER_WEEK
-    balances, rewards = query.queryPassiveRewards(CHAINID, time, addresses)
+    timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+    balances, rewards = query.queryPassiveRewards(CHAINID, timestamp, addresses)
     alice = addresses[0]
     bob = addresses[1]
     assert balances[alice] == balances[bob]
