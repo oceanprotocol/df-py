@@ -13,7 +13,7 @@ def ratesToAddrRates(
 ) -> dict:
     """
     @description
-      For each rate, assign it the appropriate chainID and token_addr
+      Converts stake values to be USD-denominated.
 
     @arguments
       rates - dict of [token_symbol] : USD_price
@@ -33,10 +33,10 @@ def ratesToAddrRates(
 
 @enforce_types
 def nftvolsToUsd(
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
+    nftvols: dict,
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
-) -> Dict[int, Dict[str, str]]:
+) -> dict:
     """
     @description
       For a given chain, converts volume values to be USD-denominated.

@@ -171,30 +171,3 @@ def assertRates(rates: dict):
     for base_symb in rates:
         assert base_symb == base_symb.upper(), base_symb
         assert base_symb[:2] != "0x"
-
-
-@enforce_types
-def modCreators(creators: dict) -> dict:
-    """creators - dict of [chainID][nft_addr] : creator_addr"""
-    creators2: dict = {}
-    for chainID in creators:
-        chainID2 = chainID
-        creators2[chainID2] = {}
-        for nft_addr, creator_addr in creators[chainID].items():
-            nft_addr2 = nft_addr.lower()
-            creator_addr2 = creator_addr.lower()
-            creators2[chainID2][nft_addr2] = creator_addr2
-
-    assertCreators(creators2)
-    return creators2
-
-
-@enforce_types
-def assertCreators(creators: dict):
-    """nftvols - dict of [chainID][nft_addr] : creator_addr"""
-    for chainID in creators:
-        for nft_addr, creator_addr in creators[chainID].items():
-            assert nft_addr == nft_addr.lower(), nft_addr
-            assert nft_addr[:2] == "0x", nft_addr
-            assert creator_addr == creator_addr.lower(), creator_addr
-            assert creator_addr[:2] == "0x", creator_addr
