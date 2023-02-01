@@ -113,7 +113,6 @@ def test_all(tmp_path):
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
 
     # test single queries
-    _test_queryPassiveRewards(sampling_accounts_addrs)
     _test_getSymbols()
     _test_queryNftvolumes(CO2_addr, ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs)
@@ -130,6 +129,9 @@ def test_all(tmp_path):
     # end-to-end tests
     _test_end_to_end_without_csvs(CO2_sym, rng)
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+
+    # modifies chain time, test last
+    _test_queryPassiveRewards(sampling_accounts_addrs)
 
 
 # =========================================================================
