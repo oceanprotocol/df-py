@@ -519,8 +519,6 @@ def queryPassiveRewards(
     fee_distributor = oceanutil.FeeDistributor()
     ve_supply = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
-    print("ve_supply: %s" % ve_supply)
-    print("total_rewards: %s" % total_rewards)
     ve_supply_float = fromBase18(ve_supply)
     total_rewards_float = fromBase18(total_rewards)
 
@@ -533,6 +531,7 @@ def queryPassiveRewards(
         balances[addr] = balance_float
         rewards[addr] = total_rewards_float * balance_float / ve_supply_float
 
+    print("getPassiveRewards(): done")
     return balances, rewards
 
 
