@@ -15,3 +15,4 @@ jobs:
       - uses: psf/black@stable
         with:
           options: "--check"
+          version: "21.5b1"
