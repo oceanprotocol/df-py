@@ -919,14 +919,14 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     DATE -- date in format YYYY-MM-DD
     CSV_DIR -- output dir for passive-CHAINID.csv
 """
-    if len(sys.argv) not in [6]:
+    if len(sys.argv) not in [5]:
         print(HELP)
         sys.exit(0)
 
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
-    DATE = sys.argv[4]
-    CSV_DIR = sys.argv[5]
+    DATE = sys.argv[3]
+    CSV_DIR = sys.argv[4]
     timestamp = int(timestrToTimestamp(DATE))
     S_PER_WEEK = 7 * 86400
     timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
