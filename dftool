@@ -945,7 +945,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     vebals, _, _ = csvs.loadVebalsCsv(CSV_DIR, False)
     addresses = list(vebals.keys())
 
-    balances, rewards = query.queryPassiveRewards(CHAINID, timestamp, addresses)
+    balances, rewards = query.queryPassiveRewards(timestamp, addresses)
 
     # save to csv
     csvs.savePassiveCsv(rewards, balances, CSV_DIR)

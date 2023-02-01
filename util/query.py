@@ -494,7 +494,6 @@ def _queryNftvolumes(
 
 @enforce_types
 def queryPassiveRewards(
-    chainID: int,
     timestamp: int,
     addresses: List[str],
 ) -> Tuple[Dict[str, float], Dict[str, float]]:
@@ -503,7 +502,6 @@ def queryPassiveRewards(
       Query the chain for passive rewards at the given timestamp.
 
     @params
-      chainID -- chain ID
       timestamp -- timestamp to query
       addresses -- list of addresses to query
 
@@ -515,7 +513,6 @@ def queryPassiveRewards(
     rewards: Dict[str, float] = {}
     balances: Dict[str, float] = {}
 
-    networkutil.connect(chainID)
     fee_distributor = oceanutil.FeeDistributor()
     ve_supply = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
