@@ -914,7 +914,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT
 def do_calculate_passive():
     HELP = f"""Calculate passive rewards.
 
-Usage: dftool calculate_passive CHAINID AMOUNT DATE CSV_DIR
+Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     CHAINID -- {CHAINID_EXAMPLES}
     DATE -- date in format YYYY-MM-DD
     CSV_DIR -- output dir for passive-CHAINID.csv
