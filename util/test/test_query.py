@@ -113,7 +113,7 @@ def test_all(tmp_path):
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
 
     # test single queries
-    _test_queryPassiveRewards(sampling_test_accounts)
+    _test_queryPassiveRewards(sampling_accounts_addrs)
     _test_getSymbols()
     _test_queryNftvolumes(CO2_addr, ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs)
@@ -738,30 +738,28 @@ def test_populateNftAssetNames():
 @enforce_types
 def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
-    fee_distributor = oceanutil.FeeDistributor()
+    feeDistributor = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
-
-    OCEAN.transfer(
-        fee_distributor.address,
-        toBase18(1000.0),
-        {"from": brownie.accounts[0]},
-    )
-    fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     for _ in range(0, 3):
+        OCEAN.transfer(
+            feeDistributor.address,
+            toBase18(1000.0),
+            {"from": brownie.accounts[0]},
+        )
         chain.sleep(S_PER_WEEK)
         chain.mine()
-        fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-        fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     chain.mine()
-    fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-    fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-    balances, rewards = query.queryPassiveRewards(CHAINID, chain.time(), addresses)
-    print(balances)
-    print(rewards)
-    assert balances[0] == balances[1]
-    assert rewards[0] == rewards[1]
-    assert rewards[0] > 0
+    feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+    feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+    time = chain.time() // S_PER_WEEK * S_PER_WEEK
+    balances, rewards = query.queryPassiveRewards(CHAINID, time, addresses)
+    alice = addresses[0]
+    bob = addresses[1]
+    assert balances[alice] == balances[bob]
+    assert rewards[alice] == rewards[bob]
+    assert rewards[alice] > 0
 
 
 # ===========================================================================
