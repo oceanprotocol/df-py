@@ -750,7 +750,7 @@ def _test_queryPassiveRewards(addresses):
     )
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-   for i in range(0, 3):
+    for _ in range(0, 3):
        chain.sleep(S_PER_WEEK)
        chain.mine()
        fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
