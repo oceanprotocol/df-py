@@ -494,9 +494,9 @@ def _queryNftvolumes(
 
 @enforce_types
 def queryPassiveRewards(
-    chainID,
-    timestamp,
-    addresses,
+    chainID: int,
+    timestamp: int,
+    addresses: List[str],
 ) -> Tuple[Dict[str, float], Dict[str, float]]:
     """
     @description
