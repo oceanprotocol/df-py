@@ -28,7 +28,7 @@ account0 = None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-
+S_PER_WEEK = 604800
 
 # =========================================================================
 # heavy on-chain tests: overall test
@@ -67,7 +67,6 @@ def test_all(tmp_path):
 
     # Lock veOCEAN
     t0 = brownie.network.chain.time()
-    S_PER_WEEK = 604800
     t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
     brownie.network.chain.sleep(t1 - t0)
     t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
@@ -739,7 +738,6 @@ def test_populateNftAssetNames():
 @enforce_types
 def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
-    S_PER_WEEK = 604800
     fee_distributor = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
 
@@ -751,10 +749,10 @@ def _test_queryPassiveRewards(addresses):
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     for _ in range(0, 3):
-       chain.sleep(S_PER_WEEK)
-       chain.mine()
-       fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
-       fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+        chain.sleep(S_PER_WEEK)
+        chain.mine()
+        fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
+        fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
     chain.mine()
     fee_distributor.checkpoint_token({"from": brownie.accounts[0]})
     fee_distributor.checkpoint_total_supply({"from": brownie.accounts[0]})
