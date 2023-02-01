@@ -742,7 +742,8 @@ def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
     feeDistributor = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
-    for _ in range(0, 3):
+
+    def sim_epoch():
         OCEAN.transfer(
             feeDistributor.address,
             toBase18(1000.0),
@@ -752,16 +753,25 @@ def _test_queryPassiveRewards(addresses):
         chain.mine()
         feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
         feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-    chain.mine()
-    feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
-    feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-    timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
-    balances, rewards = query.queryPassiveRewards(CHAINID, timestamp, addresses)
-    alice = addresses[0]
-    bob = addresses[1]
-    assert balances[alice] == balances[bob]
-    assert rewards[alice] == rewards[bob]
-    assert rewards[alice] > 0
+
+    for _ in range(3):
+        sim_epoch()
+
+    alice_last_reward = 0
+    bob_last_reward = 0
+    for _ in range(3):
+        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+        alice = addresses[0]
+        bob = addresses[1]
+        assert balances[alice] == balances[bob]
+        assert rewards[alice] == rewards[bob]
+        assert rewards[alice] > 0
+        assert rewards[alice] > alice_last_reward
+        assert rewards[bob] > bob_last_reward
+        alice_last_reward = rewards[alice]
+        bob_last_reward = rewards[bob]
+        sim_epoch()
 
 
 # ===========================================================================
