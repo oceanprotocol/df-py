@@ -40,8 +40,8 @@ def test_calc(tmp_path):
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1.0}}
     csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
 
-    creators_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.saveCreatorsCsv(creators_at_chain, CSV_DIR, CHAINID)
+    owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
+    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}
