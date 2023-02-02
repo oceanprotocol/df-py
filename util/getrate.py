@@ -63,7 +63,7 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
             return None
         avg = sum([float(x[4]) for x in data]) / len(data)
         return avg
-    # pylint: disable=broad-exception-raised
+    # pylint: disable=broad-exception-caught
     except Exception as e:
         print(f"Error in getBinanceRate: {e}")
         return None

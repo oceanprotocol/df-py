@@ -737,12 +737,12 @@ def queryAquariusAssetNames(
             resp = requests.post(url, data=payload, headers=headers)
             data = json.loads(resp.text)
             did_to_asset_name.update(data)
-        # pylint: disable=broad-exception-raised
+        # pylint: disable=broad-exception-caught
         except Exception as e:
             error_counter += 1
             i -= BATCH_SIZE
             if error_counter > RETRY_ATTEMPTS:
-                # pylint: disable=line-too-long
+                # pylint: disable=line-too-long, broad-exception-raised
                 raise Exception(
                     f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
                 ) from e
