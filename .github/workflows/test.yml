@@ -57,4 +57,12 @@ jobs:
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 
       - name: Test with Brownie
-        run: brownie test util/test -s
+        run: coverage run --omit="*test*" -m pytest -x
+
+      - name: Check coverage
+        run: |
+          cov=$(coverage report | tail -1 | awk '{print $NF}' | tr -d '%')
+          if [ $cov -lt 90 ]; then
+              echo "coverage is too low: $cov"
+              exit 1
+          fi
