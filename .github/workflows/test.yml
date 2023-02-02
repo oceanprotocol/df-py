@@ -58,7 +58,7 @@ jobs:
 
       - name: Test with Brownie
         run: |
-          coverage run --omit="*test*" --source util -m pytest
+          coverage run --omit="*test_*" --source util -m pytest
           coverage report
           coverage xml
 
