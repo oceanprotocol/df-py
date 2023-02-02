@@ -130,7 +130,7 @@ def saveVebalsCsv(
 
 
 def loadVebalsCsv(
-    csv_dir: str,
+    csv_dir: str, sampled=True
 ) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
@@ -139,7 +139,7 @@ def loadVebalsCsv(
     @return
       vebals -- dict of [LP_addr] : balance
     """
-    csv_file = vebalsCsvFilename(csv_dir)
+    csv_file = vebalsCsvFilename(csv_dir, sampled)
     vebals: Dict[str, float] = {}
     locked_amts: Dict[str, float] = {}
     unlock_times: Dict[str, int] = {}
@@ -172,6 +172,43 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
     f = "vebals.csv"
     if not sampled:
         f = "vebals_realtime.csv"
+    return os.path.join(csv_dir, f)
+
+
+# ========================================================================
+# passive csv
+
+
+@enforce_types
+def savePassiveCsv(rewards, balances, csv_dir):
+    """
+    @description
+      Save the passive rewards data csv.
+
+    @arguments
+      rewards -- dict of [LP_addr] : reward
+      balances -- dict of [LP_addr] : balance
+      csv_dir -- directory that holds csv files
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = passiveCsvFilename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["LP_addr", "balance", "reward"]
+        writer.writerow(row)
+        for LP_addr in rewards.keys():
+            assertIsEthAddr(LP_addr)
+            row = [LP_addr.lower(), balances[LP_addr], rewards[LP_addr]]
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def passiveCsvFilename(csv_dir: str) -> str:
+    """Returns the vebals filename"""
+    f = "passive.csv"
     return os.path.join(csv_dir, f)
 
 
