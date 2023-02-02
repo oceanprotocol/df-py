@@ -21,7 +21,7 @@ def retryFunction(f, retries: int = 1, delay=10, *args, **kwargs):
     for i in range(retries):
         try:
             return f(*args, **kwargs)
-        # pylint: disable=broad-except
+        # pylint: disable=broad-exception-raised
         except Exception as e:
             print(f"retry {i}: {e}")
             time.sleep(delay)

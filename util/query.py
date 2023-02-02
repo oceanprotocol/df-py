@@ -737,7 +737,7 @@ def queryAquariusAssetNames(
             resp = requests.post(url, data=payload, headers=headers)
             data = json.loads(resp.text)
             did_to_asset_name.update(data)
-        # pylint: disable=broad-except
+        # pylint: disable=broad-exception-raised
         except Exception as e:
             error_counter += 1
             i -= BATCH_SIZE
