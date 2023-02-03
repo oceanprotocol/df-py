@@ -29,7 +29,8 @@ from util.oceanutil import (
     veAllocate,
     FeeDistributor,
 )
-from util.blocktime import getfinBlock
+
+from util.blocktime import getfinBlock, timestrToTimestamp
 from util.multisig import send_multisig_tx
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
@@ -903,10 +904,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
     AMOUNT = float(sys.argv[3])
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    if ADDRESS_FILE is None:
-        print("ADDRESS_FILE not set")
-        sys.exit(1)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     recordDeployedContracts(ADDRESS_FILE)
     feedist = FeeDistributor()
@@ -914,6 +912,48 @@ Usage: dftool dispense_passive CHAINID AMOUNT
     dispense.dispense_passive(OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
+
+
+# ========================================================================
+@enforce_types
+def do_calculate_passive():
+    HELP = f"""Calculate passive rewards.
+
+Usage: dftool calculate_passive CHAINID DATE CSV_DIR
+    CHAINID -- {CHAINID_EXAMPLES}
+    DATE -- date in format YYYY-MM-DD
+    CSV_DIR -- output dir for passive-CHAINID.csv
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    CHAINID = int(sys.argv[2])
+    networkutil.connect(CHAINID)
+    DATE = sys.argv[3]
+    CSV_DIR = sys.argv[4]
+    timestamp = int(timestrToTimestamp(DATE))
+    S_PER_WEEK = 7 * 86400
+    timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    recordDeployedContracts(ADDRESS_FILE)
+
+    # load vebals csv file
+    passive_fname = csvs.passiveCsvFilename(CSV_DIR)
+    vebals_realtime_fname = csvs.vebalsCsvFilename(CSV_DIR, False)
+    if not os.path.exists(vebals_realtime_fname):
+        print(f"\nNo file {vebals_realtime_fname} in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
+    _exitIfFileExists(passive_fname)
+
+    # get addresses
+    vebals, _, _ = csvs.loadVebalsCsv(CSV_DIR, False)
+    addresses = list(vebals.keys())
+
+    balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+
+    # save to csv
+    csvs.savePassiveCsv(rewards, balances, CSV_DIR)
 
 
 # ========================================================================
@@ -931,10 +971,7 @@ Usage: dftool checkpoint_feedist CHAINID
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
 
-    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
-    if ADDRESS_FILE is None:
-        print("ADDRESS_FILE not set")
-        sys.exit(1)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     recordDeployedContracts(ADDRESS_FILE)
     from_account = _getPrivateAccount()
@@ -943,7 +980,7 @@ Usage: dftool checkpoint_feedist CHAINID
     try:
         feedist.checkpoint_total_supply({"from": from_account})
         feedist.checkpoint_token({"from": from_account})
-    # pylint: disable=broad-except
+    # pylint: disable=broad-exception-caught
     except Exception as e:
         print(f"Checkpoint failed: {e}, submitting tx to multisig")
         total_supply_encoded = feedist.checkpoint_total_supply.encode_input()
@@ -1056,6 +1093,8 @@ def do_main():
         do_checkpoint_feedist()
     elif sys.argv[1] == "dispense_passive":
         do_dispense_passive_rewards()
+    elif sys.argv[1] == "calculate_passive":
+        do_calculate_passive()
 
     # read actions
     elif sys.argv[1] == "acctinfo":

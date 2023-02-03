@@ -1,5 +1,6 @@
 import os
 import subprocess
+import datetime
 
 import brownie
 from enforce_typing import enforce_types
@@ -162,6 +163,61 @@ def test_checkpoint_feedistributor():
     timecursor_after = feeDistributor.time_cursor()
 
     assert timecursor_after > timecursor_before
+
+
+@enforce_types
+def test_calc_passive(tmp_path):
+    accounts = []
+    account0 = brownie.network.accounts[0]
+    OCEAN = oceanutil.OCEANtoken()
+    OCEAN_lock_amt = toBase18(10.0)
+    S_PER_WEEK = 604800
+    chain = brownie.network.chain
+    feeDistributor = oceanutil.FeeDistributor()
+    veOCEAN = oceanutil.veOCEAN()
+    CSV_DIR = str(tmp_path)
+    unlock_time = chain.time() + S_PER_WEEK * 10
+
+    for _ in range(2):
+        acc = brownie.network.accounts.add()
+        account0.transfer(acc, toBase18(0.1))
+        OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
+        # create lock
+        OCEAN.approve(veOCEAN, OCEAN_lock_amt, {"from": acc})
+        veOCEAN.create_lock(OCEAN_lock_amt, unlock_time, {"from": acc})
+        accounts.append(acc)
+
+    for _ in range(3):
+        OCEAN.transfer(
+            feeDistributor.address,
+            toBase18(1000.0),
+            {"from": brownie.accounts[0]},
+        )
+        chain.sleep(S_PER_WEEK)
+        chain.mine()
+        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+
+    fake_vebals = {}
+    locked_amt = {}
+    unlock_times = {}
+    for acc in accounts:
+        fake_vebals[acc.address] = fromBase18(veOCEAN.balanceOf(acc.address))
+        locked_amt[acc.address] = OCEAN_lock_amt
+        unlock_times[acc.address] = unlock_time
+    csvs.saveVebalsCsv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
+    date = chain.time() // S_PER_WEEK * S_PER_WEEK
+    date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
+    cmd = f"./dftool calculate_passive {CHAINID} {date} {CSV_DIR}"
+    os.system(cmd)
+
+    filename = csvs.passiveCsvFilename(CSV_DIR)
+    assert os.path.exists(filename)
+
+    # number of lines must be >=3
+    with open(filename, "r") as f:
+        lines = f.readlines()
+        assert len(lines) >= 3
 
 
 @enforce_types

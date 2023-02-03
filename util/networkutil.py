@@ -68,6 +68,7 @@ def chainIdToMultisigUri(chainID: int) -> str:
 def chainIdToMultisigAddr(chainID: int) -> str:
     """Returns the multisig address for a given chainID"""
     if chainID not in MULTISIG_ADDRS:
+        # pylint: disable=broad-exception-raised
         raise Exception(f"Multisig address not known for chainID {chainID}")
     return MULTISIG_ADDRS[chainID]
 

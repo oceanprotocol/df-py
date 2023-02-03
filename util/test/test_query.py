@@ -28,7 +28,7 @@ account0 = None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-
+S_PER_WEEK = 604800
 
 # =========================================================================
 # heavy on-chain tests: overall test
@@ -67,7 +67,6 @@ def test_all(tmp_path):
 
     # Lock veOCEAN
     t0 = brownie.network.chain.time()
-    S_PER_WEEK = 604800
     t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
     brownie.network.chain.sleep(t1 - t0)
     t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
@@ -130,6 +129,9 @@ def test_all(tmp_path):
     # end-to-end tests
     _test_end_to_end_without_csvs(CO2_sym, rng)
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+
+    # modifies chain time, test last
+    _test_queryPassiveRewards(sampling_accounts_addrs)
 
 
 # =========================================================================
@@ -799,6 +801,41 @@ def test_SimpleDataNFT():
 
 
 testfunc_callcount = 0
+@enforce_types
+def _test_queryPassiveRewards(addresses):
+    chain = brownie.network.chain
+    feeDistributor = oceanutil.FeeDistributor()
+    OCEAN = oceanutil.OCEANtoken()
+
+    def sim_epoch():
+        OCEAN.transfer(
+            feeDistributor.address,
+            toBase18(1000.0),
+            {"from": brownie.accounts[0]},
+        )
+        chain.sleep(S_PER_WEEK)
+        chain.mine()
+        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+
+    for _ in range(3):
+        sim_epoch()
+
+    alice_last_reward = 0
+    bob_last_reward = 0
+    for _ in range(3):
+        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+        alice = addresses[0]
+        bob = addresses[1]
+        assert balances[alice] == balances[bob]
+        assert rewards[alice] == rewards[bob]
+        assert rewards[alice] > 0
+        assert rewards[alice] > alice_last_reward
+        assert rewards[bob] > bob_last_reward
+        alice_last_reward = rewards[alice]
+        bob_last_reward = rewards[bob]
+        sim_epoch()
 
 
 # ===========================================================================
