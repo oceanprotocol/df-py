@@ -17,6 +17,7 @@ def test_retryFunction():
         testfunc_callcount += 1
         if testfunc_callcount == 3:
             return testfunc_callcount + some_arg
+        # pylint: disable=broad-exception-raised
         raise Exception("failed")
 
     some_arg = 1

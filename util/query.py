@@ -16,6 +16,8 @@ from util.graphutil import submitQuery
 from util.tok import TokSet
 from util.base18 import fromBase18
 
+MAX_TIME = 4 * 365 * 86400  # max lock time
+
 
 class SimpleDataNft:
     def __init__(
@@ -89,8 +91,6 @@ def queryVebalances(
       locked_amt -- dict of [LP_addr] : locked_amt
       unlock_time -- dict of [LP_addr] : unlock_time
     """
-    MAX_TIME = 4 * 365 * 86400  # max lock time
-
     # [LP_addr] : veBalance
     vebals: Dict[str, float] = {}
 
@@ -493,6 +493,46 @@ def _queryNftvolumes(
 
 
 @enforce_types
+def queryPassiveRewards(
+    timestamp: int,
+    addresses: List[str],
+) -> Tuple[Dict[str, float], Dict[str, float]]:
+    """
+    @description
+      Query the chain for passive rewards at the given timestamp.
+
+    @params
+      timestamp -- timestamp to query
+      addresses -- list of addresses to query
+
+    @return
+      balances -- dict of [addr]:balance
+      rewards -- dict of [addr]:reward_amt
+    """
+    print("getPassiveRewards(): begin")
+    rewards: Dict[str, float] = {}
+    balances: Dict[str, float] = {}
+
+    fee_distributor = oceanutil.FeeDistributor()
+    ve_supply = fee_distributor.ve_supply(timestamp)
+    total_rewards = fee_distributor.tokens_per_week(timestamp)
+    ve_supply_float = fromBase18(ve_supply)
+    total_rewards_float = fromBase18(total_rewards)
+
+    if ve_supply_float == 0:
+        return balances, rewards
+
+    for addr in addresses:
+        balance = fee_distributor.ve_for_at(addr, timestamp)
+        balance_float = fromBase18(balance)
+        balances[addr] = balance_float
+        rewards[addr] = total_rewards_float * balance_float / ve_supply_float
+
+    print("getPassiveRewards(): done")
+    return balances, rewards
+
+
+@enforce_types
 def _filterDids(nft_dids: List[str]) -> List[str]:
     """
     @description
@@ -697,12 +737,12 @@ def queryAquariusAssetNames(
             resp = requests.post(url, data=payload, headers=headers)
             data = json.loads(resp.text)
             did_to_asset_name.update(data)
-        # pylint: disable=broad-except
+        # pylint: disable=broad-exception-caught
         except Exception as e:
             error_counter += 1
             i -= BATCH_SIZE
             if error_counter > RETRY_ATTEMPTS:
-                # pylint: disable=line-too-long
+                # pylint: disable=line-too-long, broad-exception-raised
                 raise Exception(
                     f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
                 ) from e
