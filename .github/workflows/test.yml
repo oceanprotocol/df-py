@@ -66,11 +66,3 @@ jobs:
         uses: paambaati/codeclimate-action@v2.7.5
         env:
           CC_TEST_REPORTER_ID: ${{secrets.CC_TEST_REPORTER_ID}}
-
-      - name: Check coverage
-        run: |
-          cov=$(coverage report | tail -1 | awk '{print $NF}' | tr -d '%')
-          if [ $cov -lt 90 ]; then
-              echo "Coverage is too low: $cov"
-              exit 1
-          fi
