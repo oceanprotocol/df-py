@@ -35,11 +35,13 @@ def test_getrate_H2O():
     r = getrate.getrate("H2O", "2022-05-13", "2022-05-25")
     assert r == approx(1.50, 0.1)
 
+
 @pytest.mark.skip(reason="Temporarily skipping, fails on GH for some reason")
 @enforce_types
 def test_getrate_BTC():
     r = getrate.getrate("BTC", "2022-01-31", "2022-01-31")
     assert r == approx(37983.15, 0.1)
+
 
 @pytest.mark.skip(reason="Temporarily skipping, fails on GH for some reason")
 @enforce_types
