@@ -179,7 +179,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
 
     # query.queryNftinfo() can be problematic; it's only used for frontend data
     # retry 3 times with 10s delay by default
-    nftinfo = retryFunction(query.queryNftinfo, 3, 10, ENDBLOCK, CHAINID)
+    nftinfo = retryFunction(query.queryNftinfo, 3, 10, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
