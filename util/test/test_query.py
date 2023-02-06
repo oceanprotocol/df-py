@@ -801,6 +801,8 @@ def test_SimpleDataNFT():
 
 
 testfunc_callcount = 0
+
+
 @enforce_types
 def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
