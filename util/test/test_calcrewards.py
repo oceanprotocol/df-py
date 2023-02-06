@@ -6,7 +6,7 @@ import pytest
 from pytest import approx
 
 from util import calcrewards
-from util.calcrewards import calcRewards, TARGET_WPY
+from util.calcrewards import calcRewards, TARGET_WPY, flattenRewards
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
@@ -15,7 +15,7 @@ NA, NB = "0xnfta_addr", "0xnftb_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
-OCN_ADDR2, H2O_ADDR2 = "0xocean2", "Oxh2o2"
+OCN_ADDR2, H2O_ADDR2 = "0xocean2", "0xh2o2"
 SYMBOLS = {
     C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
     C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
@@ -474,6 +474,31 @@ def test_boundRewardsByDcv():
     assert boundRew(100.0, 50.0, 100) == mult(100) * 50.0
     assert boundRew(100.0, 100.0, 100) == mult(100) * 100.0
     assert boundRew(100.0, 1e9, 100) == 100.0
+
+
+@enforce_types
+def test_flattenRewards():
+    rewards = {
+        "C1": {
+            LP1: 100.0,
+            LP2: 200.0,
+        },
+        "C2": {
+            LP1: 300.0,
+        },
+        "C3": {
+            LP1: 500.0,
+            LP2: 600.0,
+            LP3: 700.0,
+        },
+    }
+
+    flat_rewards = flattenRewards(rewards)
+    assert flat_rewards == {
+        LP1: 100.0 + 300.0 + 500.0,
+        LP2: 200.0 + 600.0,
+        LP3: 700.0,
+    }
 
 
 # ========================================================================

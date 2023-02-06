@@ -16,27 +16,38 @@ from util.graphutil import submitQuery
 from util.tok import TokSet
 from util.base18 import fromBase18
 
+MAX_TIME = 4 * 365 * 86400  # max lock time
 
-class DataNFT:
+
+class SimpleDataNft:
     def __init__(
         self,
         nft_addr: str,
         chain_id: int,
         _symbol: str,
         is_purgatory: bool = False,
+        name: str = "",
     ):
-        self.nft_addr = nft_addr
-        self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
-        self.symbol = _symbol
-        self.name = ""
+        self.nft_addr = nft_addr.lower()
+        self.symbol = _symbol.upper()
         self.is_purgatory = is_purgatory
+        self.name = name  # can be any mix of upper and lower case
+        self.did = oceanutil.calcDID(nft_addr, chain_id)
 
     def setName(self, name: str):
         self.name = name
 
+    def __eq__(self, x) -> bool:
+        return repr(self) == repr(x)
+
     def __repr__(self):
-        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
+        return (
+            f"SimpleDataNft("
+            f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', "
+            f"{self.is_purgatory}, '{self.name}'"
+            f")"
+        )
 
 
 @enforce_types
@@ -80,8 +91,6 @@ def queryVebalances(
       locked_amt -- dict of [LP_addr] : locked_amt
       unlock_time -- dict of [LP_addr] : unlock_time
     """
-    MAX_TIME = 4 * 365 * 86400  # max lock time
-
     # [LP_addr] : veBalance
     vebals: Dict[str, float] = {}
 
@@ -126,9 +135,11 @@ def queryVebalances(
             )
 
             result = submitQuery(query, CHAINID)
-            if not "data" in result:
-                raise Exception(f"No data in veOCEANs result: {result}")
-            veOCEANs = result["data"]["veOCEANs"]
+            if "data" in result:
+                assert "veOCEANs" in result["data"]
+                veOCEANs = result["data"]["veOCEANs"]
+            else:
+                return ({}, {}, {})
 
             if len(veOCEANs) == 0:
                 # means there are no records left
@@ -165,18 +176,19 @@ def queryVebalances(
                 balance += totalAmount
 
                 ## set user balance
-                if user["id"] not in vebals:
-                    vebals[user["id"]] = balance
+                LP_addr = user["id"].lower()
+                if LP_addr not in vebals:
+                    vebals[LP_addr] = balance
                 else:
-                    vebals[user["id"]] += balance
+                    vebals[LP_addr] += balance
 
                 ## set locked amount
                 # always get the latest
-                locked_amt[user["id"]] = float(user["lockedAmount"])
+                locked_amt[LP_addr] = float(user["lockedAmount"])
 
                 ## set unlock time
                 # always get the latest
-                unlock_time[user["id"]] = int(user["unlockTime"])
+                unlock_time[LP_addr] = int(user["unlockTime"])
 
             ## increase offset
             offset += chunk_size
@@ -185,8 +197,8 @@ def queryVebalances(
     assert n_blocks_sampled > 0
 
     # get average
-    for user in vebals:
-        vebals[user] /= n_blocks_sampled
+    for LP_addr in vebals:
+        vebals[LP_addr] /= n_blocks_sampled
 
     print("queryVebalances: done")
 
@@ -238,16 +250,21 @@ def queryAllocations(
                 block,
             )
             result = submitQuery(query, CHAINID)
-            _allocs = result["data"]["veAllocateUsers"]
+            if "data" in result:
+                assert "veAllocateUsers" in result["data"]
+                _allocs = result["data"]["veAllocateUsers"]
+            else:
+                return {}
+
             if len(_allocs) == 0:
                 # means there are no records left
                 break
 
             for allocation in _allocs:
-                LP_addr = allocation["id"]
+                LP_addr = allocation["id"].lower()
                 for ve_allocation in allocation["veAllocation"]:
-                    nft_addr = ve_allocation["nftAddress"]
-                    chain_id = ve_allocation["chainId"]
+                    nft_addr = ve_allocation["nftAddress"].lower()
+                    chain_id = int(ve_allocation["chainId"])
                     allocated = float(ve_allocation["allocated"])
 
                     if chain_id not in allocs:
@@ -296,13 +313,13 @@ def queryAllocations(
     return allocs
 
 
-def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
+def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     """
     @description
       Fetch, filter and return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nftinfo = _queryNftinfo(chainID, endBlock)
@@ -316,13 +333,13 @@ def queryNftinfo(chainID, endBlock="latest") -> List[DataNFT]:
     return nftinfo
 
 
-def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Populate the list of NFTs with the asset names
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nft_dids = [nft.did for nft in nftInfo]
@@ -334,13 +351,13 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     return nftInfo
 
 
-def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
+def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     """
     @description
       Return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
     nftinfo = []
     chunk_size = 1000
@@ -369,7 +386,7 @@ def _queryNftinfo(chainID, endBlock) -> List[DataNFT]:
             break
 
         for nft in nfts:
-            datanft = DataNFT(
+            datanft = SimpleDataNft(
                 nft["id"],
                 chainID,
                 nft["symbol"],
@@ -439,7 +456,7 @@ def _queryNftvolumes(
             lastPriceValue = float(order["lastPriceValue"])
             if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
                 continue
-            basetoken_addr = order["lastPriceToken"]["id"]
+            basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
 
             # Calculate gas cost
@@ -447,7 +464,7 @@ def _queryNftvolumes(
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID]
+            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
             if gasCost > 0:
@@ -473,6 +490,46 @@ def _queryNftvolumes(
 
     print("getVolumes(): done")
     return NFTvols
+
+
+@enforce_types
+def queryPassiveRewards(
+    timestamp: int,
+    addresses: List[str],
+) -> Tuple[Dict[str, float], Dict[str, float]]:
+    """
+    @description
+      Query the chain for passive rewards at the given timestamp.
+
+    @params
+      timestamp -- timestamp to query
+      addresses -- list of addresses to query
+
+    @return
+      balances -- dict of [addr]:balance
+      rewards -- dict of [addr]:reward_amt
+    """
+    print("getPassiveRewards(): begin")
+    rewards: Dict[str, float] = {}
+    balances: Dict[str, float] = {}
+
+    fee_distributor = oceanutil.FeeDistributor()
+    ve_supply = fee_distributor.ve_supply(timestamp)
+    total_rewards = fee_distributor.tokens_per_week(timestamp)
+    ve_supply_float = fromBase18(ve_supply)
+    total_rewards_float = fromBase18(total_rewards)
+
+    if ve_supply_float == 0:
+        return balances, rewards
+
+    for addr in addresses:
+        balance = fee_distributor.ve_for_at(addr, timestamp)
+        balance_float = fromBase18(balance)
+        balances[addr] = balance_float
+        rewards[addr] = total_rewards_float * balance_float / ve_supply_float
+
+    print("getPassiveRewards(): done")
+    return balances, rewards
 
 
 @enforce_types
@@ -504,16 +561,16 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
 
 
 @enforce_types
-def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Filter out NFTs that are in purgatory and are not in Aquarius
 
     @arguments
-      nftinfos: list of DataNFT objects
+      nftinfos: list of SimpleDataNft objects
 
     @return
-      filtered_nftinfos: list of filtered DataNFT objects
+      filtered_nftinfos: list of filtered SimpleDataNft objects
     """
     nft_dids = [nft.did for nft in nftinfos]
     nft_dids = _filterToAquariusAssets(nft_dids)
@@ -522,7 +579,7 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
 
 
 @enforce_types
-def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     bad_dids = _didsInPurgatory()
     for nft in nftinfos:
         if nft.did in bad_dids:
@@ -534,7 +591,8 @@ def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     """
     @description
-      Filters out nfts that are in purgatory and are not in Aquarius
+      For remote chains: filters out nfts in purgatory & not in Aquarius
+      For dev chain, filters out '0xdevelopment' basetoken (hinders tests).
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
@@ -544,8 +602,12 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     if chainID == networkutil.DEV_CHAINID:
-        # can't filter on dev chain:
-        return nftvols
+        nftvols2 = {
+            basetoken: nftvols[basetoken]
+            for basetoken in nftvols.keys()
+            if basetoken != "0xdevelopment"
+        }
+        return nftvols2
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []
@@ -675,12 +737,12 @@ def queryAquariusAssetNames(
             resp = requests.post(url, data=payload, headers=headers)
             data = json.loads(resp.text)
             did_to_asset_name.update(data)
-        # pylint: disable=broad-except
+        # pylint: disable=broad-exception-caught
         except Exception as e:
             error_counter += 1
             i -= BATCH_SIZE
             if error_counter > RETRY_ATTEMPTS:
-                # pylint: disable=line-too-long
+                # pylint: disable=line-too-long, broad-exception-raised
                 raise Exception(
                     f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
                 ) from e

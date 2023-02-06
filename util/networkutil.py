@@ -3,7 +3,7 @@ import os
 import brownie
 from enforce_typing import enforce_types
 
-from util.constants import CONTRACTS
+from util.constants import CONTRACTS, MULTISIG_ADDRS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 
@@ -55,6 +55,22 @@ def chainIdToSubgraphUri(chainID: int) -> str:
 
     network_str = chainIdToNetwork(chainID)
     return f"https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
+
+
+@enforce_types
+def chainIdToMultisigUri(chainID: int) -> str:
+    """Returns the multisig API URI for a given chainID"""
+    network_str = chainIdToNetwork(chainID)
+    return f"https://safe-transaction-{network_str}.safe.global"
+
+
+@enforce_types
+def chainIdToMultisigAddr(chainID: int) -> str:
+    """Returns the multisig address for a given chainID"""
+    if chainID not in MULTISIG_ADDRS:
+        # pylint: disable=broad-exception-raised
+        raise Exception(f"Multisig address not known for chainID {chainID}")
+    return MULTISIG_ADDRS[chainID]
 
 
 @enforce_types

@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 import numpy as np
 
 from util import tousd
-from util.cleancase import modStakes, modNFTvols, modRates
+from util.cleancase import modStakes, modNFTvols, modRates, modSymbols
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -72,6 +72,24 @@ def calcDcvMultiplier(DF_week: int) -> float:
 
 
 @enforce_types
+def flattenRewards(rewards: dict) -> dict:
+    """
+    @arguments
+      rewards -- dict of [chainID][LP_addr] : reward_float
+
+    @return
+      flat_rewards -- dict of [LP_addr] : reward_float
+    """
+    flat_rewards = {}
+    for chainID in rewards:
+        for LP_addr in rewards[chainID]:
+            if LP_addr not in flat_rewards:
+                flat_rewards[LP_addr] = 0.0
+            flat_rewards[LP_addr] += rewards[chainID][LP_addr]
+    return flat_rewards
+
+
+@enforce_types
 def boundRewardsByDcv(rewards_OCEAN, DCV_OCEAN, DF_week: int) -> float:
     """
     @description
@@ -118,7 +136,10 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, rates = modStakes(stakes), modNFTvols(nftvols), modRates(rates)
+    stakes = modStakes(stakes)
+    nftvols = modNFTvols(nftvols)
+    symbols = modSymbols(symbols)
+    rates = modRates(rates)
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 

@@ -2,6 +2,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util import csvs
+from util.query import SimpleDataNft
 
 
 # for shorter lines
@@ -12,6 +13,18 @@ OCN_SYMB, H2O_SYMB = "OCN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocn_addr", "0xh2o_addr"  # all lowercase
 OCN_ADDR2, H2O_ADDR2 = "0xOCN_AdDr", "0xh2O_ADDR"  # not all lowercase
 
+RND_ADDRS = [
+    "0xb2983b4821839cB19bFe185c7bEd39751800Bef3",
+    "0x4D2B93CDF953F5E4FB178d6e93A2270402C42DFc",
+    "0x605c7Be77F6C48aD7EC6b92Ead986f0394Ccd458",
+    "0xD8Aa6a412CF9100DD22A306A96200f4Bc0CF03C4",
+    "0x2773ae8443D2515B577130A60BD14A1331BE5E6E",
+    "0x704D89AA7fe67547F72C512cCb633db02d6a3977",
+    "0x5906D2545F2006c085107CE398290aB7c49ED475",
+    "0x1b4eB196cA1BAb19A3E14b53C7343a96981be639",
+    "0xE82aE199F7bf7097BE802433d1680C5695485AeD",
+    "0x637259B3316D7BF2b87B18b03D5b8C90C0e5FEaD",
+]  # 10
 
 # =================================================================
 # allocations csvs
@@ -90,6 +103,44 @@ def test_vebals(tmp_path):
 
 
 # =================================================================
+# nftinfo csvs
+
+
+@enforce_types
+def test_nftinfo(tmp_path):
+    # save
+    csv_dir = str(tmp_path)
+
+    nft1 = SimpleDataNft(RND_ADDRS[0], 137, "DN1")
+    nft2 = SimpleDataNft(RND_ADDRS[2], 137, "DN2")
+    nft3 = SimpleDataNft(RND_ADDRS[4], 1285, "DN3")
+
+    csvs.saveNftinfoCsv([nft1, nft2], csv_dir, 137)
+    csvs.saveNftinfoCsv([nft3], csv_dir, 1285)
+
+    # load - building blocks
+    fnames1 = [csvs.nftinfoCsvFilename(csv_dir, cid) for cid in [137, 1285]]
+    fnames2 = csvs.nftinfoCsvFilenames(csv_dir)
+    assert len(fnames1) == len(fnames2) == 2
+    assert set(fnames1) == set(fnames2)
+
+    cids = [csvs.chainIDforNftinfoCsv(fname) for fname in fnames1]
+    assert set([137, 1285]) == set(cids)
+
+    # load - main
+    nftinfo = csvs.loadNftinfoCsvs(csv_dir)  # list of SimpleDataNft
+    assert len(nftinfo) == 3
+    assert sorted([nft.symbol for nft in nftinfo]) == ["DN1", "DN2", "DN3"]
+    nft1a = [nft for nft in nftinfo if nft.symbol == "DN1"][0]
+    nft2a = [nft for nft in nftinfo if nft.symbol == "DN2"][0]
+    nft3a = [nft for nft in nftinfo if nft.symbol == "DN3"][0]
+
+    assert nft1a == nft1  # leverages SimpleDataNft.__eq__() for thoroughness
+    assert nft2a == nft2
+    assert nft3a == nft3
+
+
+# =================================================================
 # nftvols csvs
 
 
@@ -132,35 +183,6 @@ def test_nftvols_twochains(tmp_path):
     target_V = {C1: V1, C2: V2}
     loaded_V = csvs.loadNftvolsCsvs(csv_dir)
     assert loaded_V == target_V
-
-
-# =================================================================
-# approved csvs
-
-
-@enforce_types
-def test_chainIDforApprovedCsv():
-    assert csvs.chainIDforApprovedCsv("approved-chain101.csv") == 101
-    assert csvs.chainIDforApprovedCsv("path1/32/approved-chain92.csv") == 92
-
-
-@enforce_types
-def test_approved(tmp_path):
-    csv_dir = str(tmp_path)
-
-    approved_C1 = ["0x123", "0x456"]
-    approved_C2 = ["0x789"]
-
-    csvs.saveApprovedCsv(approved_C1, csv_dir, C1)
-    csvs.saveApprovedCsv(approved_C2, csv_dir, C2)
-
-    loaded_approved_C1 = csvs.loadApprovedCsv(csv_dir, C1)
-    loaded_approved_C2 = csvs.loadApprovedCsv(csv_dir, C2)
-    loaded_approved = csvs.loadApprovedCsvs(csv_dir)
-
-    assert loaded_approved_C1 == approved_C1
-    assert loaded_approved_C2 == approved_C2
-    assert loaded_approved == {C1: approved_C1, C2: approved_C2}
 
 
 # =================================================================

@@ -1,15 +1,20 @@
-name: Checkpoint FeeDistributor
+name: Dispense Passive Rewards
 
 on:
   schedule:
-    - cron: "0 0 * * 4"
+    - cron: "0 0 * * 5"
   workflow_dispatch:
+    inputs:
+      amt_of_tokens:
+        description: "Amount of tokens to distribute"
+        required: true
+        default: "10000"
 
 jobs:
-  checkpoint-feedistributor:
-    runs-on: ubuntu-latest
+  dispense-passive:
     env:
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: [3.8]
@@ -34,10 +39,19 @@ jobs:
 
       - name: Set env variables
         run: |
-          echo "DFTOOL_KEY=${{ secrets.CHECKPOINT_PK }}" >> $GITHUB_ENV
+          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
 
-      - name: Run dftool checkpoint_feedist 
+      - name: Distribute test passive rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'workflow_dispatch'
         run: |
-          ./dftool checkpoint_feedist 1
+          ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }}
+      - name: Distribute passive rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool dispense_passive 1 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }}
