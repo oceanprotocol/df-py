@@ -985,8 +985,8 @@ Usage: dftool checkpoint_feedist CHAINID
         multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
 
         # submit transactions to multisig
-        send_multisig_tx(multisig_addr, to, total_supply_encoded, value)
-        send_multisig_tx(multisig_addr, to, checkpoint_token_encoded, value)
+        send_multisig_tx(multisig_addr, to, value, total_supply_encoded)
+        send_multisig_tx(multisig_addr, to, value, checkpoint_token_encoded)
 
     print("Checkpointed FeeDistributor")
 
