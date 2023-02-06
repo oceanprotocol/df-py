@@ -56,6 +56,9 @@ jobs:
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 
+      - name: Make dftool executable
+        run: chmod +x dftool
+
       - name: Test with Brownie
         run: |
           coverage run --omit="*test*" -m pytest util/test
