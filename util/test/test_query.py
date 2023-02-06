@@ -114,10 +114,10 @@ def test_all(tmp_path):
 
     # test single queries
     _test_getSymbols()
-    _test_queryVolsCreators(CO2_addr, ST, FIN)
+    _test_queryVolsOwners(CO2_addr, ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs)
     _test_queryAllocations(rng, sampling_accounts_addrs)
-    _test_queryVolsCreatorsSymbols(CO2_addr, ST, FIN)
+    _test_queryVolsOwnersSymbols(CO2_addr, ST, FIN)
     _test_queryNftinfo()
 
     # test dftool
@@ -139,7 +139,7 @@ def test_all(tmp_path):
 
 
 def _foundConsume(CO2_addr, st, fin):
-    V0, _ = query._queryVolsCreators(st, fin, CHAINID)
+    V0, _ = query._queryVolsOwners(st, fin, CHAINID)
     if CO2_addr not in V0:
         return False
     if sum(V0[CO2_addr].values()) == 0:
@@ -214,14 +214,14 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_queryVolsCreators(CO2_addr: str, st, fin):
-    V0, C0 = query._queryVolsCreators(st, fin, CHAINID)
+def _test_queryVolsOwners(CO2_addr: str, st, fin):
+    V0, C0 = query._queryVolsOwners(st, fin, CHAINID)
 
     # test V0 (volumes)
     assert CO2_addr in V0, (CO2_addr, V0.keys())
     assert sum(V0[CO2_addr].values()) > 0.0
 
-    # test C0 (creators)
+    # test C0 (owners)
     assert C0, (V0, C0)
     V0_nft_addrs = set(nft_addr for token_addr in V0 for nft_addr in V0[token_addr])
     for C0_nft_addr in C0:
@@ -229,10 +229,10 @@ def _test_queryVolsCreators(CO2_addr: str, st, fin):
 
 
 @enforce_types
-def _test_queryVolsCreatorsSymbols(CO2_addr: str, st, fin):
+def _test_queryVolsOwnersSymbols(CO2_addr: str, st, fin):
     n = 500
     rng = BlockRange(st, fin, n)
-    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
     assert C0
@@ -271,7 +271,7 @@ def _test_dftool_query(tmp_path, ST, FIN):
 
     # test result
     assert csvs.nftvolsCsvFilenames(CSV_DIR)
-    assert csvs.creatorsCsvFilenames(CSV_DIR)
+    assert csvs.ownersCsvFilenames(CSV_DIR)
     assert csvs.symbolsCsvFilenames(CSV_DIR)
 
 
@@ -338,7 +338,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 
 @enforce_types
 def _test_end_to_end_without_csvs(CO2_sym, rng):
-    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
     V = {CHAINID: V0}
     C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
@@ -373,9 +373,9 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     csvs.saveRateCsv(CO2_sym, 1.00, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, C0, SYM0) = query.queryVolsCreatorsSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
     csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
-    csvs.saveCreatorsCsv(C0, csv_dir, CHAINID)
+    csvs.saveOwnersCsv(C0, csv_dir, CHAINID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
     V0 = C0 = SYM0 = None  # ensure not used later
 
@@ -393,7 +393,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     S = loadStakes(csv_dir)  # loads allocs & vebals, then *
     R = csvs.loadRateCsvs(csv_dir)
     V = csvs.loadNftvolsCsvs(csv_dir)
-    C = csvs.loadCreatorsCsvs(csv_dir)
+    C = csvs.loadOwnersCsvs(csv_dir)
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     m = float("inf")

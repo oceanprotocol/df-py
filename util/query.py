@@ -54,23 +54,23 @@ class SimpleDataNft:
 
 
 @enforce_types
-def queryVolsCreatorsSymbols(
+def queryVolsOwnersSymbols(
     rng: BlockRange, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str], Dict[str, str]]:
     """
     @description
-      For given block range and chain, return each nft's {vols, creator, symbol}
+      For given block range and chain, return each nft's {vols, owner, symbol}
 
     @return
       nftvols_at_chain -- dict of [nativetoken/basetoken_addr][nft_addr] : vol
-      creators_at_chain -- dict of [nft_addr] : creator_addr
+      owners_at_chain -- dict of [nft_addr] : owner_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
 
     @notes
       A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, Ci = _queryVolsCreators(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     # get all basetokens from Vi
@@ -413,7 +413,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 
 
 @enforce_types
-def _queryVolsCreators(
+def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
     """
@@ -422,12 +422,12 @@ def _queryVolsCreators(
 
     @return
       vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
-      creators (at chain) -- dict of [nft_addr]:vol_amt
+      owners (at chain) -- dict of [nft_addr]:vol_amt
     """
-    print("_queryVolsCreators(): begin")
+    print("_queryVolsOwners(): begin")
 
     vols: Dict[str, Dict[str, float]] = {}
-    creators: Dict[str, float] = {}
+    owners: Dict[str, float] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -478,10 +478,10 @@ def _queryVolsCreators(
                 continue
             basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
-            creator_addr = order["datatoken"]["nft"]["owner"]["id"].lower()
+            owner_addr = order["datatoken"]["nft"]["owner"]["id"].lower()
 
-            # add creator
-            creators[nft_addr] = creator_addr
+            # add owner
+            owners[nft_addr] = owner_addr
 
             # Calculate gas cost
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
@@ -511,8 +511,8 @@ def _queryVolsCreators(
                 vols[basetoken_addr][nft_addr] = 0.0
             vols[basetoken_addr][nft_addr] += lastPriceValue
 
-    print("_queryVolsCreators(): done")
-    return (vols, creators)
+    print("_queryVolsOwners(): done")
+    return (vols, owners)
 
 
 @enforce_types

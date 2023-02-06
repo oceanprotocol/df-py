@@ -194,11 +194,11 @@ def test_two_LPs__one_NFT__one_LP_created():
     # LP1 created NA, so it gets 2x equivalent stake on that
     stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
-    creators = {C1: {NA: LP1}}
+    owners = {C1: {NA: LP1}}
 
     OCEAN_avail = 10.0
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, OCEAN_avail, creators=creators, do_pubrewards=True
+        stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
@@ -212,11 +212,11 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     # LP1 created NA, so it gets 2x equivalent stake on NA (but not NB)
     stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-    creators = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
+    owners = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
 
     OCEAN_avail = 10.0
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, OCEAN_avail, creators=creators, do_pubrewards=True
+        stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
@@ -230,11 +230,11 @@ def test_two_LPs__two_NFTs__two_LPs_created():
     # LP1 created NA, LP2 created NB, they each get 2x equivalent stake
     stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 50e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
-    creators = {C1: {NA: LP1, NB: LP2}}
+    owners = {C1: {NA: LP1, NB: LP2}}
 
     OCEAN_avail = 10.0
     rewardsperlp, rewardsinfo = _calcRewardsC1(
-        stakes, nftvols, OCEAN_avail, creators=creators, do_pubrewards=True
+        stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
     assert sum(rewardsperlp.values()) == pytest.approx(10.0, 0.01)
@@ -821,7 +821,7 @@ def _calcRewardsC1(
     OCEAN_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
     rates: Dict[str, float] = RATES,
-    creators=None,
+    owners=None,
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
@@ -832,7 +832,7 @@ def _calcRewardsC1(
         OCEAN_avail,
         symbols,
         rates,
-        creators,
+        owners,
         DCV_multiplier,
         do_pubrewards,
         do_rank,
@@ -849,19 +849,19 @@ def _calcRewards(
     OCEAN_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
     rates: Dict[str, float] = RATES,
-    creators=None,
+    owners=None,
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
-    if creators is None:
-        creators = _nullCreators(stakes, nftvols, symbols, rates)
+    if owners is None:
+        owners = _nullOwners(stakes, nftvols, symbols, rates)
 
     return calcrewards.calcRewards(
         stakes,
         nftvols,
-        creators,
+        owners,
         symbols,
         rates,
         DCV_multiplier,
@@ -872,13 +872,13 @@ def _calcRewards(
 
 
 @enforce_types
-def _nullCreators(
+def _nullOwners(
     stakes,
     nftvols,
     symbols,
     rates,
 ) -> Dict[int, Dict[str, Union[str, None]]]:
-    """@return - creators -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
+    """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
     stakes, nftvols, symbols, rates = (
         cc.modStakes(stakes),
         cc.modNFTvols(nftvols),
@@ -888,9 +888,9 @@ def _nullCreators(
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
     chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
 
-    creators: Dict[int, Dict[str, Union[str, None]]] = {}
+    owners: Dict[int, Dict[str, Union[str, None]]] = {}
     for (chainID, nft_addr) in chain_nft_tups:
-        if chainID not in creators:
-            creators[chainID] = {}
-        creators[chainID][nft_addr] = ZERO_ADDRESS
-    return creators
+        if chainID not in owners:
+            owners[chainID] = {}
+        owners[chainID][nft_addr] = ZERO_ADDRESS
+    return owners

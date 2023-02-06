@@ -45,7 +45,7 @@ HELP_MAIN = """Data Farming tool, for use by OPF.
 Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, creators)
+  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
   dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
@@ -86,7 +86,7 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_volsym():
-    HELP = f"""Query chain, output nft volumes, symbols, creators
+    HELP = f"""Query chain, output nft volumes, symbols, owners
 
 Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
@@ -142,10 +142,10 @@ SECRET_SEED -- secret integer used to seed the rng
     # main work
 
     (Vi, Ci, SYMi) = retryFunction(
-        query.queryVolsCreatorsSymbols, RETRIES, 10, rng, CHAINID
+        query.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
-    csvs.saveCreatorsCsv(Ci, CSV_DIR, CHAINID)
+    csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool volsym: Done")
@@ -361,8 +361,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
         print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
-    if not csvs.creatorsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'creators*.csv' files in '{CSV_DIR}'. Exiting.")
+    if not csvs.ownersCsvFilenames(CSV_DIR):
+        print(f"\nNo 'owners*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
     if not csvs.symbolsCsvFilenames(CSV_DIR):
@@ -380,7 +380,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     # main work
     S = allocations.loadStakes(CSV_DIR)
     V = csvs.loadNftvolsCsvs(CSV_DIR)
-    C = csvs.loadCreatorsCsvs(CSV_DIR)
+    C = csvs.loadOwnersCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
     do_pubrewards = constants.DO_PUBREWARDS

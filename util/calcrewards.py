@@ -52,7 +52,7 @@ def calcDcvMultiplier(DF_week: int) -> float:
 def calcRewards(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    creators: Dict[int, Dict[str, str]],
+    owners: Dict[int, Dict[str, str]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
     DCV_multiplier: float,
@@ -64,7 +64,7 @@ def calcRewards(
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
-      creators -- dict of [chainID][nft_addr] : creator_addr
+      owners -- dict of [chainID][nft_addr] : owner_addr
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
       DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
@@ -80,19 +80,19 @@ def calcRewards(
       In the return dicts, chainID is the chain of the nft, not the
       chain where rewards go.
     """
-    stakes, nftvols, symbols, rates, creators = (
+    stakes, nftvols, symbols, rates, owners = (
         cc.modStakes(stakes),
         cc.modNFTvols(nftvols),
         cc.modSymbols(symbols),
         cc.modRates(rates),
-        cc.modCreators(creators),
+        cc.modOwners(owners),
     )
 
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
 
     keys_tup = _getKeysTuple(stakes, nftvols_USD)
     S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
-    C = _creatorDictToArray(creators, keys_tup)
+    C = _ownerDictToArray(owners, keys_tup)
 
     R = _calcRewardsUsd(
         S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank
@@ -146,20 +146,20 @@ def _stakeVolDictsToArrays(
 
 
 @enforce_types
-def _creatorDictToArray(
-    creators: Dict[int, Dict[str, str]],
+def _ownerDictToArray(
+    owners: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
 ) -> np.ndarray:
     """
     @arguments
-      creators -- dict of [chainID][nft_addr] : creator_addr
+      owners -- dict of [chainID][nft_addr] : owner_addr
       keys_tup -- tuple of (LP_addrs_list, chain_nft_tups)
 
     @return
       C -- 1d array of [chain_nft j] -- the LP i that created j
 
     @notes
-      If a creator of an nft didn't LP anywhere, then it won't have an LP i.
+      If a owner of an nft didn't LP anywhere, then it won't have an LP i.
       In this case, P[chain_nft j] will be set to -1
     """
     LP_addrs, chain_nft_tups = keys_tup
@@ -167,11 +167,11 @@ def _creatorDictToArray(
 
     C = np.zeros(N_j, dtype=int)
     for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
-        creator_addr = creators[chainID][nft_addr]
-        if creator_addr not in LP_addrs:
+        owner_addr = owners[chainID][nft_addr]
+        if owner_addr not in LP_addrs:
             C[j] = -1
         else:
-            C[j] = LP_addrs.index(creator_addr)
+            C[j] = LP_addrs.index(owner_addr)
 
     return C
 
@@ -205,10 +205,10 @@ def _calcRewardsUsd(
     if np.sum(V_USD) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
 
-    # modify S's: creators get rewarded as if 2x stake on their asset
+    # modify S's: owners get rewarded as if 2x stake on their asset
     if do_pubrewards:
         for j in range(N_j):
-            if C[j] != -1:  # -1 = creator didn't stake
+            if C[j] != -1:  # -1 = owner didn't stake
                 S[C[j], j] *= 2.0
 
     # perc_per_j
