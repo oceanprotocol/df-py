@@ -800,9 +800,6 @@ def test_SimpleDataNFT():
     assert nft4.name == "namE2"
 
 
-testfunc_callcount = 0
-
-
 @enforce_types
 def _test_queryPassiveRewards(addresses):
     chain = brownie.network.chain
