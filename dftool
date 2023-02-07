@@ -78,8 +78,7 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
   dftool initdevwallets CHAINID - Init dev env. Ie. Wallets for testing. (GANACHE ONLY)
-  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
-  
+  dftool manyrandom CHAINID - deploy many random tokens & nfts then + locks fake OCEAN + allocates + consumes (for testing)
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
   dftool help - this message
@@ -662,8 +661,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 # ========================================================================
 @enforce_types
 def do_manyrandom():
-    # UPADATE THIS
-    HELP = f"""Deploy many random datatokens + nfts then consume (for testing)
+    HELP = f"""Deploy many random datatokens + nfts + locks fake OCEAN + allocates + consumes (for testing)
 Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 Uses these envvars:
