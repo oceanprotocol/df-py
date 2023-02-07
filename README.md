@@ -14,9 +14,9 @@ CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispen
 Usage: dftool getrate|query|calc|dispense|..
 
   dftool getrate - get exchange rate
-  dftool query - query chain for stakes & volumes
+  dftool volsym - query chain for stakes & volumes
   dftool calc - calculate rewards
-  dftool dispense - dispense funds
+  dftool dispense_active - dispense funds
   ...
 ```
 
@@ -57,8 +57,7 @@ docker system prune -a --volumes
 
 #run barge
 #-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
-export CONTRACTS_VERSIONS=v1.1.0
-./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph
+./start_ocean.sh --with-thegraph
 ```
 
 ### Install df-py
@@ -131,6 +130,30 @@ black ./
 ```
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
+
+# Removing KeyError in pytest wind-down
+
+When pytest winds down, Brownie emits a KeyError:
+```text
+  File "brownie/project/main.py", line 494, in close
+    _remove_contract(contract)
+  File "brownie/network/state.py", line 586, in _remove_contract
+    del _contract_map[contract.address]
+KeyError: '0x02175de5A7F168517688e3E93f55936C9c2C7A19'
+```
+
+The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted. This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls. We don't have `at()` calls yet get it in df-py (only as of Dec 2022). We don't see the issue in ocean.py.
+
+The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remote_contract()` to the following:
+```python
+def _remove_contract(contract: Any) -> None:
+    try:
+        del _contract_map[contract.address]
+    except:
+        # workaround for brownie issue
+        # https://github.com/eth-brownie/brownie/issues/1144
+        pass
+```
 
 # Usage: Configure Remote Networks
 

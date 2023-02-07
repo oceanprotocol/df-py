@@ -16,46 +16,61 @@ from util.graphutil import submitQuery
 from util.tok import TokSet
 from util.base18 import fromBase18
 
+MAX_TIME = 4 * 365 * 86400  # max lock time
 
-class DataNFT:
+
+@enforce_types
+class SimpleDataNft:
     def __init__(
         self,
-        nft_addr: str,
         chain_id: int,
+        nft_addr: str,
         _symbol: str,
+        owner_addr: str,
         is_purgatory: bool = False,
+        name: str = "",
     ):
-        self.nft_addr = nft_addr
-        self.did = oceanutil.calcDID(nft_addr, chain_id)
         self.chain_id = chain_id
-        self.symbol = _symbol
-        self.name = ""
+        self.nft_addr = nft_addr.lower()
+        self.symbol = _symbol.upper()
+        self.owner_addr = owner_addr.lower()
         self.is_purgatory = is_purgatory
+        self.name = name  # can be any mix of upper and lower case
+        self.did = oceanutil.calcDID(nft_addr, chain_id)
 
     def setName(self, name: str):
         self.name = name
 
-    def __repr__(self):
-        return f"{self.nft_addr} {self.chain_id} {self.name} {self.symbol}"
+    def __eq__(self, x) -> bool:
+        return repr(self) == repr(x)
+
+    def __repr__(self) -> str:
+        return (
+            f"SimpleDataNft("
+            f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', "
+            f"'{self.owner_addr}', {self.is_purgatory}, '{self.name}'"
+            f")"
+        )
 
 
 @enforce_types
-def queryNftvolsAndSymbols(
+def queryVolsOwnersSymbols(
     rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str], Dict[str, str]]:
     """
     @description
-      Return nftvols for the input block range and chain.
+      For given block range and chain, return each nft's {vols, owner, symbol}
 
     @return
-      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
+      nftvols_at_chain -- dict of [nativetoken/basetoken_addr][nft_addr] : vol
+      owners_at_chain -- dict of [nft_addr] : owner_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
 
     @notes
-      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
+      A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered = _queryNftvolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     # get all basetokens from Vi
@@ -64,7 +79,7 @@ def queryNftvolsAndSymbols(
         _symbol = symbol(basetoken)
         basetokens.add(chainID, basetoken, _symbol)
     SYMi = getSymbols(basetokens, chainID)
-    return (Vi, SYMi)
+    return (Vi, Ci, SYMi)
 
 
 @enforce_types
@@ -80,8 +95,6 @@ def queryVebalances(
       locked_amt -- dict of [LP_addr] : locked_amt
       unlock_time -- dict of [LP_addr] : unlock_time
     """
-    MAX_TIME = 4 * 365 * 86400  # max lock time
-
     # [LP_addr] : veBalance
     vebals: Dict[str, float] = {}
 
@@ -126,9 +139,11 @@ def queryVebalances(
             )
 
             result = submitQuery(query, CHAINID)
-            if not "data" in result:
-                raise Exception(f"No data in veOCEANs result: {result}")
-            veOCEANs = result["data"]["veOCEANs"]
+            if "data" in result:
+                assert "veOCEANs" in result["data"]
+                veOCEANs = result["data"]["veOCEANs"]
+            else:
+                return ({}, {}, {})
 
             if len(veOCEANs) == 0:
                 # means there are no records left
@@ -165,18 +180,19 @@ def queryVebalances(
                 balance += totalAmount
 
                 ## set user balance
-                if user["id"] not in vebals:
-                    vebals[user["id"]] = balance
+                LP_addr = user["id"].lower()
+                if LP_addr not in vebals:
+                    vebals[LP_addr] = balance
                 else:
-                    vebals[user["id"]] += balance
+                    vebals[LP_addr] += balance
 
                 ## set locked amount
                 # always get the latest
-                locked_amt[user["id"]] = float(user["lockedAmount"])
+                locked_amt[LP_addr] = float(user["lockedAmount"])
 
                 ## set unlock time
                 # always get the latest
-                unlock_time[user["id"]] = int(user["unlockTime"])
+                unlock_time[LP_addr] = int(user["unlockTime"])
 
             ## increase offset
             offset += chunk_size
@@ -185,8 +201,8 @@ def queryVebalances(
     assert n_blocks_sampled > 0
 
     # get average
-    for user in vebals:
-        vebals[user] /= n_blocks_sampled
+    for LP_addr in vebals:
+        vebals[LP_addr] /= n_blocks_sampled
 
     print("queryVebalances: done")
 
@@ -238,16 +254,21 @@ def queryAllocations(
                 block,
             )
             result = submitQuery(query, CHAINID)
-            _allocs = result["data"]["veAllocateUsers"]
+            if "data" in result:
+                assert "veAllocateUsers" in result["data"]
+                _allocs = result["data"]["veAllocateUsers"]
+            else:
+                return {}
+
             if len(_allocs) == 0:
                 # means there are no records left
                 break
 
             for allocation in _allocs:
-                LP_addr = allocation["id"]
+                LP_addr = allocation["id"].lower()
                 for ve_allocation in allocation["veAllocation"]:
-                    nft_addr = ve_allocation["nftAddress"]
-                    chain_id = ve_allocation["chainId"]
+                    nft_addr = ve_allocation["nftAddress"].lower()
+                    chain_id = int(ve_allocation["chainId"])
                     allocated = float(ve_allocation["allocated"])
 
                     if chain_id not in allocs:
@@ -296,16 +317,17 @@ def queryAllocations(
     return allocs
 
 
-def queryNftinfo(chainID) -> List[DataNFT]:
+@enforce_types
+def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     """
     @description
       Fetch, filter and return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
-    nftinfo = _queryNftinfo(chainID)
+    nftinfo = _queryNftinfo(chainID, endBlock)
 
     if chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
@@ -316,13 +338,14 @@ def queryNftinfo(chainID) -> List[DataNFT]:
     return nftinfo
 
 
-def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
+@enforce_types
+def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Populate the list of NFTs with the asset names
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
 
     nft_dids = [nft.did for nft in nftInfo]
@@ -334,62 +357,77 @@ def _populateNftAssetNames(nftInfo: List[DataNFT]) -> List[DataNFT]:
     return nftInfo
 
 
-def _queryNftinfo(chainID) -> List[DataNFT]:
+@enforce_types
+def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     """
     @description
       Return all NFTs on the chain
 
     @return
-      nftInfo -- list of DataNFT objects
+      nftInfo -- list of SimpleDataNft objects
     """
     nftinfo = []
     chunk_size = 1000
     offset = 0
 
+    if endBlock == "latest":
+        endBlock = networkutil.getLatestBlock(chainID)
+
     while True:
         query = """
       {
-         nfts(first: %d, skip: %d) {
+         nfts(first: %d, skip: %d, block:{number:%d}) {
             id
             symbol
+            owner {
+              id
+            }
         }
       }
       """ % (
             chunk_size,
             offset,
+            endBlock,
         )
         result = submitQuery(query, chainID)
-        nfts = result["data"]["nfts"]
-        if len(nfts) == 0:
+        nft_records = result["data"]["nfts"]
+        if len(nft_records) == 0:
             # means there are no records left
             break
 
-        for nft in nfts:
-            datanft = DataNFT(
-                nft["id"],
-                chainID,
-                nft["symbol"],
+        for nft_record in nft_records:
+            nft_addr = nft_record["id"]
+            _symbol = nft_record["symbol"]
+            owner_addr = nft_record["owner"]["id"]
+            simple_data_nft = SimpleDataNft(
+                chain_id=chainID,
+                nft_addr=nft_addr,
+                _symbol=_symbol,
+                owner_addr=owner_addr,
             )
-            nftinfo.append(datanft)
+            nftinfo.append(simple_data_nft)
 
         offset += chunk_size
 
     return nftinfo
 
 
-def _queryNftvolumes(
+@enforce_types
+def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
-) -> Dict[str, Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
 
     @return
-      nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
+      vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
+      owners (at chain) -- dict of [nft_addr]:vol_amt
     """
-    print("getVolumes(): begin")
+    print("_queryVolsOwners(): begin")
 
-    NFTvols: Dict[str, Dict[str, float]] = {}
+    vols: Dict[str, Dict[str, float]] = {}
+    owners: Dict[str, float] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -403,12 +441,17 @@ def _queryNftvolumes(
               symbol
               nft {
                 id
+                owner{
+                  id
+                }
               }
               dispensers {
                 id
               }
             },
-            lastPriceToken,
+            lastPriceToken{
+              id
+            },
             lastPriceValue,
             block,
             gasPrice,
@@ -433,40 +476,83 @@ def _queryNftvolumes(
             lastPriceValue = float(order["lastPriceValue"])
             if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
                 continue
-            basetoken_addr = order["lastPriceToken"]
+            basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
+            owner_addr = order["datatoken"]["nft"]["owner"]["id"].lower()
+
+            # add owner
+            owners[nft_addr] = owner_addr
 
             # Calculate gas cost
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID]
+            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
             if gasCost > 0:
-                if native_token_addr not in NFTvols:
-                    NFTvols[native_token_addr] = {}
+                if native_token_addr not in vols:
+                    vols[native_token_addr] = {}
 
-                if nft_addr not in NFTvols[native_token_addr]:
-                    NFTvols[native_token_addr][nft_addr] = 0
+                if nft_addr not in vols[native_token_addr]:
+                    vols[native_token_addr][nft_addr] = 0
 
-                NFTvols[native_token_addr][nft_addr] += gasCost
-            # ----
+                vols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
                 continue
 
             # add lastPriceValue
-            if basetoken_addr not in NFTvols:
-                NFTvols[basetoken_addr] = {}
+            if basetoken_addr not in vols:
+                vols[basetoken_addr] = {}
 
-            if nft_addr not in NFTvols[basetoken_addr]:
-                NFTvols[basetoken_addr][nft_addr] = 0.0
-            NFTvols[basetoken_addr][nft_addr] += lastPriceValue
+            if nft_addr not in vols[basetoken_addr]:
+                vols[basetoken_addr][nft_addr] = 0.0
+            vols[basetoken_addr][nft_addr] += lastPriceValue
 
-    print("getVolumes(): done")
-    return NFTvols
+    print("_queryVolsOwners(): done")
+    return (vols, owners)
+
+
+@enforce_types
+def queryPassiveRewards(
+    timestamp: int,
+    addresses: List[str],
+) -> Tuple[Dict[str, float], Dict[str, float]]:
+    """
+    @description
+      Query the chain for passive rewards at the given timestamp.
+
+    @params
+      timestamp -- timestamp to query
+      addresses -- list of addresses to query
+
+    @return
+      balances -- dict of [addr]:balance
+      rewards -- dict of [addr]:reward_amt
+    """
+    print("getPassiveRewards(): begin")
+    rewards: Dict[str, float] = {}
+    balances: Dict[str, float] = {}
+
+    fee_distributor = oceanutil.FeeDistributor()
+    ve_supply = fee_distributor.ve_supply(timestamp)
+    total_rewards = fee_distributor.tokens_per_week(timestamp)
+    ve_supply_float = fromBase18(ve_supply)
+    total_rewards_float = fromBase18(total_rewards)
+
+    if ve_supply_float == 0:
+        return balances, rewards
+
+    for addr in addresses:
+        balance = fee_distributor.ve_for_at(addr, timestamp)
+        balance_float = fromBase18(balance)
+        balances[addr] = balance_float
+        rewards[addr] = total_rewards_float * balance_float / ve_supply_float
+
+    print("getPassiveRewards(): done")
+    return balances, rewards
 
 
 @enforce_types
@@ -498,16 +584,16 @@ def _filterOutPurgatory(nft_dids: List[str]) -> List[str]:
 
 
 @enforce_types
-def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _filterNftinfos(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
       Filter out NFTs that are in purgatory and are not in Aquarius
 
     @arguments
-      nftinfos: list of DataNFT objects
+      nftinfos: list of SimpleDataNft objects
 
     @return
-      filtered_nftinfos: list of filtered DataNFT objects
+      filtered_nftinfos: list of filtered SimpleDataNft objects
     """
     nft_dids = [nft.did for nft in nftinfos]
     nft_dids = _filterToAquariusAssets(nft_dids)
@@ -516,7 +602,7 @@ def _filterNftinfos(nftinfos: List[DataNFT]) -> List[DataNFT]:
 
 
 @enforce_types
-def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
+def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
     bad_dids = _didsInPurgatory()
     for nft in nftinfos:
         if nft.did in bad_dids:
@@ -528,7 +614,8 @@ def _markPurgatoryNfts(nftinfos: List[DataNFT]) -> List[DataNFT]:
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     """
     @description
-      Filters out nfts that are in purgatory and are not in Aquarius
+      For remote chains: filters out nfts in purgatory & not in Aquarius
+      For dev chain, filters out '0xdevelopment' basetoken (hinders tests).
 
     @arguments
       nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
@@ -538,8 +625,12 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
       filtered_nftvols: list of [basetoken_addr][nft_addr]:vol_amt
     """
     if chainID == networkutil.DEV_CHAINID:
-        # can't filter on dev chain:
-        return nftvols
+        nftvols2 = {
+            basetoken: nftvols[basetoken]
+            for basetoken in nftvols.keys()
+            if basetoken != "0xdevelopment"
+        }
+        return nftvols2
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []
@@ -621,6 +712,7 @@ def getSymbols(tokens: TokSet, chainID: int) -> Dict[str, str]:
 _ADDR_TO_SYMBOL = networkutil._ADDRS_TO_SYMBOL  # address : TOKEN_symbol
 
 
+@enforce_types
 def symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
@@ -669,12 +761,12 @@ def queryAquariusAssetNames(
             resp = requests.post(url, data=payload, headers=headers)
             data = json.loads(resp.text)
             did_to_asset_name.update(data)
-        # pylint: disable=broad-except
+        # pylint: disable=broad-exception-caught
         except Exception as e:
             error_counter += 1
             i -= BATCH_SIZE
             if error_counter > RETRY_ATTEMPTS:
-                # pylint: disable=line-too-long
+                # pylint: disable=line-too-long, broad-exception-raised
                 raise Exception(
                     f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
                 ) from e

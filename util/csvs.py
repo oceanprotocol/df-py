@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
-from util.query import DataNFT
+from util.query import SimpleDataNft
 
 
 # ========================================================================
@@ -130,7 +130,7 @@ def saveVebalsCsv(
 
 
 def loadVebalsCsv(
-    csv_dir: str,
+    csv_dir: str, sampled=True
 ) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
@@ -139,7 +139,7 @@ def loadVebalsCsv(
     @return
       vebals -- dict of [LP_addr] : balance
     """
-    csv_file = vebalsCsvFilename(csv_dir)
+    csv_file = vebalsCsvFilename(csv_dir, sampled)
     vebals: Dict[str, float] = {}
     locked_amts: Dict[str, float] = {}
     unlock_times: Dict[str, int] = {}
@@ -176,17 +176,53 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
 
 
 # ========================================================================
+# passive csv
+
+
+@enforce_types
+def savePassiveCsv(rewards, balances, csv_dir):
+    """
+    @description
+      Save the passive rewards data csv.
+
+    @arguments
+      rewards -- dict of [LP_addr] : reward
+      balances -- dict of [LP_addr] : balance
+      csv_dir -- directory that holds csv files
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = passiveCsvFilename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["LP_addr", "balance", "reward"]
+        writer.writerow(row)
+        for LP_addr in rewards.keys():
+            assertIsEthAddr(LP_addr)
+            row = [LP_addr.lower(), balances[LP_addr], rewards[LP_addr]]
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def passiveCsvFilename(csv_dir: str) -> str:
+    """Returns the vebals filename"""
+    f = "passive.csv"
+    return os.path.join(csv_dir, f)
+
+
+# ========================================================================
 # nftinfo csv
 
 
 @enforce_types
-def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
+def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
-
     @arguments
-        nftinfo -- list of DataNFT
+        nftinfo -- list of SimpleDataNft
         csv_dir -- directory that holds csv files
         chainID -- chainID
     """
@@ -197,13 +233,19 @@ def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["chainID", "nft_addr", "did", "symbol", "name", "is_purgatory"]
+        row = [
+            "chainID",
+            "nft_addr",
+            "did",
+            "symbol",
+            "name",
+            "is_purgatory",
+            "owner_addr",
+        ]
         writer.writerow(row)
 
         for nft in nftinfo:
-            isinpurg = "0"
-            if nft.is_purgatory:
-                isinpurg = "1"
+            isinpurg = "1" if nft.is_purgatory else "0"
             row = [
                 str(chainID),
                 nft.nft_addr.lower(),
@@ -211,14 +253,89 @@ def saveNftinfoCsv(nftinfo: List[DataNFT], csv_dir: str, chainID: int):
                 nft.symbol,
                 nft.name.replace(",", "%@#"),
                 isinpurg,
+                nft.owner_addr,
             ]
             writer.writerow(row)
+
+
+@enforce_types
+def loadNftinfoCsvs(csv_dir: str):
+    """
+    @description
+      Load all nftinfo csvs (across all chains); return result as single dict
+    @return
+      nftinfo -- list of SimpleDataNft
+    """
+    csv_files = nftinfoCsvFilenames(csv_dir)
+    nftinfo = []
+    for csv_file in csv_files:
+        chainID = chainIDforNftinfoCsv(csv_file)
+        nftinfo += loadNftinfoCsv(csv_dir, chainID)
+    return nftinfo
+
+
+@enforce_types
+def loadNftinfoCsv(csv_dir: str, chainID: int):
+    """
+    @description
+      Load nftinfo for this chainID
+    @return
+      nftinfo_at_chain -- list of SimpleDataNft
+    """
+    csv_file = nftinfoCsvFilename(csv_dir, chainID)
+    nftinfo = []
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == [
+                    "chainID",
+                    "nft_addr",
+                    "did",
+                    "symbol",
+                    "name",
+                    "is_purgatory",
+                    "owner_addr",
+                ]
+                continue
+
+            chainID2 = int(row[0])
+            nft_addr = row[1].lower()
+            symbol = row[3].upper()
+            name = row[4]
+            is_purgatory = bool(int(row[5]))
+            owner_addr = row[6]
+
+            assert chainID2 == chainID, "csv had data from different chain"
+            assertIsEthAddr(nft_addr)
+            assertIsEthAddr(owner_addr)
+
+            nft = SimpleDataNft(
+                chainID, nft_addr, symbol, owner_addr, is_purgatory, name
+            )
+            nftinfo.append(nft)
+
+    print(f"Loaded {csv_file}")
+
+    return nftinfo
+
+
+@enforce_types
+def nftinfoCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of nftinfo filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "nftinfo*.csv"))
 
 
 @enforce_types
 def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
     """Returns the nftinfo filename"""
     return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
+
+
+@enforce_types
+def chainIDforNftinfoCsv(filename) -> int:
+    """Returns chainID for a given nftinfo csv filename"""
+    return _lastInt(filename)
 
 
 # ========================================================================
@@ -325,103 +442,104 @@ def chainIDforNftvolsCsv(filename) -> int:
 
 
 # ========================================================================
-# approved csvs
+# owners csvs
 
 
 @enforce_types
-def saveApprovedCsv(
-    approved_token_addrs_at_chain: List[str], csv_dir: str, chainID: int
-):
+def saveOwnersCsv(owners_at_chain: Dict[str, str], csv_dir: str, chainID: int):
     """
     @description
-      Save the approved tokens for this chain
+      Save the nft owners for this chain
 
     @arguments
-      approved_token_addrs_at_chain --
+      owners_at_chain -- dict of [nft_addr] : owner_addr
       csv_dir -- directory that holds csv files
       chainID -- which chain (network)
-
-    @note
-      We explicitly do *not* track symbols here, since (C1, addr) is enough, and tracking
-      symbols adds complexity and makes things error-prone. Eg. mOCEAN vs OCEAN.
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = approvedCsvFilename(csv_dir, chainID)
+    csv_file = ownersCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        writer.writerow(["chainID", "token_addr"])
-        for token_addr in approved_token_addrs_at_chain:
-            assertIsEthAddr(token_addr)
-            row = [chainID, token_addr.lower()]
+        writer.writerow(["chainID", "nft_addr", "owner_addr"])
+        for nft_addr, owner_addr in owners_at_chain.items():
+            assertIsEthAddr(nft_addr)
+            assertIsEthAddr(owner_addr)
+            row = [
+                chainID,
+                nft_addr.lower(),
+                owner_addr.lower(),
+            ]
             writer.writerow(row)
 
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadApprovedCsvs(csv_dir: str) -> Dict[int, List[str]]:
+def loadOwnersCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     """
     @description
-      Load all approved tokens across all chains
+      Load all owners csvs across all chains
 
     @return
-      approved_token_addrs -- dict of [chainID] : list_of_addr
+      owners -- dict of [chainID][nft_addr] : owner_addr
     """
-    csv_files = approvedCsvFilenames(csv_dir)
-    approved_token_addrs: dict = {}
+    csv_files = ownersCsvFilenames(csv_dir)
+    owners: dict = {}
     for csv_file in csv_files:
-        chainID = chainIDforApprovedCsv(csv_file)
-        approved_token_addrs[chainID] = loadApprovedCsv(csv_dir, chainID)
+        chainID = chainIDforOwnersCsv(csv_file)
+        owners[chainID] = loadOwnersCsv(csv_dir, chainID)
 
-    return approved_token_addrs
+    return owners
 
 
 @enforce_types
-def loadApprovedCsv(csv_dir: str, chainID: int) -> List[str]:
+def loadOwnersCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
     """
     @description
-      Load approved tokens for this chainID
+      Load owners for this chainID
 
     @return
-      approved_token_addrs_at_chain --
+      owners_at_chain -- dict of [nft_addr] : owner_addr
     """
-    csv_file = approvedCsvFilename(csv_dir, chainID)
-    approved_token_addrs_at_chain: List[str] = []
+    csv_file = ownersCsvFilename(csv_dir, chainID)
+    owners_at_chain: dict = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "token_addr"]
+                assert row == ["chainID", "nft_addr", "owner_addr"]
                 continue
 
             chainID2 = int(row[0])
-            token_addr = row[1].lower()
+            nft_addr = row[1].lower()
+            owner_addr = row[2].lower()
 
             assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(token_addr)
+            assertIsEthAddr(nft_addr)
+            assertIsEthAddr(owner_addr)
 
-            approved_token_addrs_at_chain.append(token_addr)
+            owners_at_chain[nft_addr] = owner_addr
 
     print(f"Loaded {csv_file}")
-    return approved_token_addrs_at_chain
+    return owners_at_chain
 
 
 @enforce_types
-def approvedCsvFilenames(csv_dir: str) -> List[str]:
-    """Returns a list of approved filenames in this directory"""
-    return glob.glob(os.path.join(csv_dir, "approved*.csv"))
+def ownersCsvFilenames(csv_dir: str) -> List[str]:
+    """Returns a list of owners filenames in this directory"""
+    return glob.glob(os.path.join(csv_dir, "owners*.csv"))
 
 
 @enforce_types
-def approvedCsvFilename(csv_dir: str, chainID: int) -> str:
-    """Returns the approved filename for a given chainID"""
-    return os.path.join(csv_dir, f"approved-{chainID}.csv")
+def ownersCsvFilename(csv_dir: str, chainID: int) -> str:
+    """Returns the owners filename for a given chainID"""
+    return os.path.join(csv_dir, f"owners-{chainID}.csv")
 
 
 @enforce_types
-def chainIDforApprovedCsv(filename) -> int:
-    """Returns chainID for a given approved csv filename"""
+def chainIDforOwnersCsv(filename) -> int:
+    """Returns chainID for a given owners csv filename"""
     return _lastInt(filename)
 
 

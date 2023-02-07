@@ -4,7 +4,6 @@ import brownie
 from enforce_typing import enforce_types
 from util import constants, oceanutil
 from util.base18 import toBase18, fromBase18
-from util.random_addresses import get_random_addresses
 
 network = brownie.network
 
@@ -32,10 +31,9 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 def fillAccountsWithToken(token):
     accounts = network.accounts
     for i in range(1, 10):
-        bal_before: int = fromBase18(token.balanceOf(accounts[i]))
-        if bal_before < 1000:
+        bal_before = fromBase18(token.balanceOf(accounts[i]))
+        if bal_before < 1000.0:
             token.transfer(accounts[i], toBase18(1000.0), {"from": accounts[0]})
-        # bal_after: int = fromBase18(token.balanceOf(accounts[i]))
 
     print(f"fillAccountsWithToken({token.symbol()}), balances after:")
     for i in range(10):
@@ -174,11 +172,10 @@ def randomLockAndAllocate(tups: list):
 
     acc1 = network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
 
-    accounts = [
-        network.accounts.at(addr, force=True)
-        for addr in get_random_addresses(len(tups))
-    ]
+    accounts = network.accounts[: len(tups)]
+
     for account in accounts:
         OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
 
@@ -198,15 +195,15 @@ def randomLockAndAllocate(tups: list):
 
         # Approve locking OCEAN
         assert OCEAN.balanceOf(lock_account) != 0
-        OCEAN.approve(oceanutil.veOCEAN().address, LOCK_AMOUNT, {"from": lock_account})
+        OCEAN.approve(veOCEAN.address, LOCK_AMOUNT, {"from": lock_account})
 
         # Check if there is an active lock
-        if oceanutil.veOCEAN().balanceOf(lock_account) == 0:
+        if veOCEAN.balanceOf(lock_account) == 0:
             # Create lock
-            oceanutil.veOCEAN().withdraw({"from": lock_account})
-            oceanutil.veOCEAN().create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+            veOCEAN.withdraw({"from": lock_account})
+            veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
-        assert oceanutil.veOCEAN().balanceOf(lock_account) != 0
+        assert veOCEAN.balanceOf(lock_account) != 0
         allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate().getTotalAllocation(
             lock_account
         )

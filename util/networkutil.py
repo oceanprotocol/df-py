@@ -3,7 +3,7 @@ import os
 import brownie
 from enforce_typing import enforce_types
 
-from util.constants import CONTRACTS
+from util.constants import CONTRACTS, MULTISIG_ADDRS
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 
@@ -58,6 +58,22 @@ def chainIdToSubgraphUri(chainID: int) -> str:
 
 
 @enforce_types
+def chainIdToMultisigUri(chainID: int) -> str:
+    """Returns the multisig API URI for a given chainID"""
+    network_str = chainIdToNetwork(chainID)
+    return f"https://safe-transaction-{network_str}.safe.global"
+
+
+@enforce_types
+def chainIdToMultisigAddr(chainID: int) -> str:
+    """Returns the multisig address for a given chainID"""
+    if chainID not in MULTISIG_ADDRS:
+        # pylint: disable=broad-exception-raised
+        raise Exception(f"Multisig address not known for chainID {chainID}")
+    return MULTISIG_ADDRS[chainID]
+
+
+@enforce_types
 def chainIdToNetwork(chainID: int) -> str:
     """Returns the network name for a given chainID"""
     return _CHAINID_TO_NETWORK[chainID]
@@ -67,6 +83,24 @@ def chainIdToNetwork(chainID: int) -> str:
 def networkToChainId(network: str) -> int:
     """Returns the chainID for a given network name"""
     return _NETWORK_TO_CHAINID[network]
+
+
+@enforce_types
+def getLatestBlock(chainID) -> int:
+    network = brownie.network
+    prev = None
+    if not network.is_connected():
+        connect(chainID)
+    else:
+        prev = network.chain.id
+        if prev != chainID:
+            disconnect()
+            connect(chainID)
+    lastBlock = network.chain.height
+    if prev is not None:
+        disconnect()
+        connect(prev)
+    return lastBlock
 
 
 @enforce_types
