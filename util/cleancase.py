@@ -128,6 +128,32 @@ def assertNFTvols(nftvols: dict):
 
 
 @enforce_types
+def modSymbols(symbols: dict) -> dict:
+    """symbols - dict of [chainID][basetoken_address] : symbol"""
+    symbols2: dict = {}
+    for chainID in symbols:
+        chainID2 = chainID
+        symbols2[chainID2] = {}
+        for base_addr, symbol in symbols[chainID].items():
+            base_addr2 = base_addr.lower()
+            symbol2 = symbol.upper()
+            symbols2[chainID2][base_addr2] = symbol2
+
+    assertSymbols(symbols2)
+    return symbols2
+
+
+@enforce_types
+def assertSymbols(symbols: dict):
+    """nftvols - dict of [chainID][basetoken_address] : symbol"""
+    for chainID in symbols:
+        for base_addr, symbol in symbols[chainID].items():
+            assert base_addr == base_addr.lower(), base_addr
+            assert base_addr[:2] == "0x", base_addr
+            assert symbol == symbol.upper(), symbol
+
+
+@enforce_types
 def modRates(rates: dict) -> dict:
     """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
     rates2 = {}
@@ -145,3 +171,30 @@ def assertRates(rates: dict):
     for base_symb in rates:
         assert base_symb == base_symb.upper(), base_symb
         assert base_symb[:2] != "0x"
+
+
+@enforce_types
+def modOwners(owners: dict) -> dict:
+    """owners - dict of [chainID][nft_addr] : owner_addr"""
+    owners2: dict = {}
+    for chainID in owners:
+        chainID2 = chainID
+        owners2[chainID2] = {}
+        for nft_addr, owner_addr in owners[chainID].items():
+            nft_addr2 = nft_addr.lower()
+            owner_addr2 = owner_addr.lower()
+            owners2[chainID2][nft_addr2] = owner_addr2
+
+    assertOwners(owners2)
+    return owners2
+
+
+@enforce_types
+def assertOwners(owners: dict):
+    """nftvols - dict of [chainID][nft_addr] : owner_addr"""
+    for chainID in owners:
+        for nft_addr, owner_addr in owners[chainID].items():
+            assert nft_addr == nft_addr.lower(), nft_addr
+            assert nft_addr[:2] == "0x", nft_addr
+            assert owner_addr == owner_addr.lower(), owner_addr
+            assert owner_addr[:2] == "0x", owner_addr
