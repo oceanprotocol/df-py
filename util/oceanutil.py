@@ -218,13 +218,10 @@ def createFREFromDatatoken(
 
 # =============================================================================
 # veOCEAN routines
-
-
 def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
 
 
-<<<<<<< HEAD
 def create_lock_ve_ocean(amount: float, unlock_time: int, from_account):
     OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
     veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
@@ -247,8 +244,6 @@ def get_lock_end_ve_ocean(from_account):
     return veOCEAN().locked__end(from_account)
 
 
-=======
->>>>>>> main
 # =============================================================================
 # fee stuff needed for consume
 
