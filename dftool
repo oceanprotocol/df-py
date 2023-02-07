@@ -30,6 +30,14 @@ from util.oceanutil import (
     FeeDistributor,
 )
 
+from util.oceantestutil import (
+    initAccountZeroOCEAN,
+    fillAccountsWithOCEAN,
+    randomCreateDataNFTWithFREs,
+    randomLockAndAllocate,
+    randomConsumeFREs,
+)
+
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.multisig import send_multisig_tx
 
@@ -625,8 +633,6 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
         print(HELP)
         sys.exit(0)
 
-    from util import oceantestutil  # pylint: disable=import-outside-toplevel
-
     # extract inputs
     assert sys.argv[1] == "initdevwallets"
     CHAINID = int(sys.argv[2])
@@ -647,8 +653,8 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.initAccountZeroOCEAN(10000.0)
-    oceantestutil.fillAccountsWithOCEAN()
+    initAccountZeroOCEAN(10000.0)
+    fillAccountsWithOCEAN()
 
     print("dftool initdevwallets: Done.")
 
@@ -666,8 +672,6 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
-
-    from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     # extract inputs
     assert sys.argv[1] == "manyrandom"
@@ -692,9 +696,9 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     OCEAN = OCEANtoken()
 
     num_nfts = 10  # magic number
-    tups = oceantestutil.randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
-    oceantestutil.randomLockAndAllocate(tups)
-    oceantestutil.randomConsumeFREs(tups, OCEAN)
+    tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
+    randomLockAndAllocate(tups)
+    randomConsumeFREs(tups, OCEAN)
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
 
 
