@@ -661,7 +661,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 # ========================================================================
 @enforce_types
 def do_manyrandom():
-    HELP = f"""Deploy many random datatokens + nfts + locks fake OCEAN + allocates + consumes (for testing)
+    HELP = f"""Deploy many random DTs + nfts + locks OCEAN + allocates + consumes (for testing)
 Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 Uses these envvars:
