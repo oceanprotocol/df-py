@@ -117,11 +117,11 @@ def test_manyrandom():
 @enforce_types
 def test_initdevwallets():
     account9 = brownie.network.accounts[9]
-    
+
     OCEAN = oceanutil.OCEANtoken()
-    if( OCEAN.balanceOf(account9.address) == 0.0 ):
+    if OCEAN.balanceOf(account9.address) == 0.0:
         assert fromBase18(OCEAN.balanceOf(account9.address)) == 0.0
-        
+
         cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
         os.system(cmd)
 
