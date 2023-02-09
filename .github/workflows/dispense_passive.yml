@@ -43,6 +43,9 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
 
+      - name: Make dftool executable
+        run: chmod +x dftool
+
       - name: Distribute test passive rewards
         env:
           USE_MULTISIG: true
