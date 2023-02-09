@@ -4,7 +4,6 @@ import datetime
 import os
 import sys
 
-import functools
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
@@ -346,7 +345,7 @@ Usage: dftool get_rate TOKEN_SYMBOL ST FIN CSV_DIR
     _createDirIfNeeded(CSV_DIR)
 
     # main work
-    rate = retryFunction(get_rate.get_rate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
+    rate = retryFunction(getrate.get_rate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
@@ -1168,6 +1167,7 @@ Usage: dftool checkpoint_feedist CHAINID
 
     recordDeployedContracts(ADDRESS_FILE)
     from_account = _getPrivateAccount()
+    feedist = FeeDistributor()
 
     try:
         feedist.checkpoint_total_supply({"from": from_account})
