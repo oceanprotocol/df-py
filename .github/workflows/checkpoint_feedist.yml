@@ -38,6 +38,9 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
 
-      - name: Run dftool checkpoint_feedist 
+      - name: Make dftool executable
+        run: chmod +x dftool
+
+      - name: Run dftool checkpoint_feedist
         run: |
           ./dftool checkpoint_feedist 1
