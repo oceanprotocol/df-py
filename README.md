@@ -11,9 +11,9 @@
 CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend. 
 
 ```text
-Usage: dftool getrate|query|calc|dispense|..
+Usage: dftool get_rate|query|calc|dispense|..
 
-  dftool getrate - get exchange rate
+  dftool get_rate - get exchange rate
   dftool volsym - query chain for stakes & volumes
   dftool calc - calculate rewards
   dftool dispense_active - dispense funds
@@ -195,7 +195,7 @@ Example usage with docker:
 ```
 
 ```shell
-$ ./dfpy_docker getrate OCEAN 2022-01-01 2022-01-02 /app/data
+$ ./dfpy_docker get_rate OCEAN 2022-01-01 2022-01-02 /app/data
 
 Arguments: ST=2022-01-01, FIN=2022-01-02, CSV_DIR=/app/data
 rate = $0.8774 / OCEAN
@@ -238,7 +238,7 @@ cd /app/df-py/
 date=`date -dlast-wednesday '+%Y-%m-%d'`
 now=`date '+%Y-%m-%d'`
 
-/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data && 
+/app/df-py/dfpy_docker get_rate OCEAN $date $now /app/data && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 1 && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 56 && 
 /app/df-py/dfpy_docker query $date latest 1 /app/data 137 && 

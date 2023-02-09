@@ -67,14 +67,14 @@ jobs:
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
 
-      - name: Run dftool getrate
+      - name: Run dftool get_rate
         run: |
-          ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate ETH $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate BNB $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate EWT $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate MOVR $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate MATIC $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool get_rate OCEAN $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool get_rate ETH $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool get_rate BNB $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool get_rate EWT $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool get_rate MOVR $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool get_rate MATIC $date $now $CSV_DIR $RETRY_TIMES
 
       - name: Run dftool volsym
         run: |

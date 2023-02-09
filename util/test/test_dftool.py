@@ -16,13 +16,13 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 
 @enforce_types
-def test_getrate(tmp_path):
+def test_get_rate(tmp_path):
     TOKEN_SYMBOL = "OCEAN"
     ST = "2022-01-01"
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool get_rate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     # test result
@@ -102,8 +102,8 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def test_manyrandom():
-    cmd = f"./dftool manyrandom {CHAINID}"
+def test_many_random():
+    cmd = f"./dftool many_random {CHAINID}"
     output_s = ""
     with subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -122,22 +122,22 @@ def test_noarg_commands():
         "",
         "query",
         "volsym",
-        "getrate",
+        "get_rate",
         "calc",
         "dispense",
         "dispense_active",
         "querymany",
         "compile",
-        "manyrandom",
-        "newdfrewards",
+        "many_random",
+        "new_dfrewards",
         "mine",
-        "newacct",
-        "newtoken",
-        "acctinfo",
-        "chaininfo",
-        "getbalanceveocean",
-        "getlockendveocean"
-        "newveallocate"
+        "new_acct",
+        "new_token",
+        "acct_info",
+        "chain_info",
+        "get_balance_veocean",
+        "get_lock_end_veocean"
+        "new_veallocate"
     ]
     for argv1 in argv1s:
         print(f"Test dftool {argv1}")

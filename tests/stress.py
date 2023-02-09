@@ -122,7 +122,7 @@ def main():
     TOKEN_SYMBOL = "OCEAN"
     ST = "2022-01-01"
     FIN = "2022-02-02"
-    cmd = f"./dftool getrate OCEAN {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool get_rate OCEAN {ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     print("Running dftool calc")

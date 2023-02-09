@@ -8,7 +8,7 @@ import requests
 
 
 @enforce_types
-def getrate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     """
     @description
       Get the exchange rate for a token. Uses Binance. Coingecko is backup.
