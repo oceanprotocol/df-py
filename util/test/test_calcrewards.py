@@ -479,11 +479,11 @@ def test_calcDcvMultiplier():
     assert mult(20) == pytest.approx(0.4665, 0.001)
     assert mult(27) == pytest.approx(0.127, 0.001)
     assert mult(28) == pytest.approx(0.0785, 0.001)
-    assert mult(29) == 0.03
-    assert mult(30) == 0.03
-    assert mult(31) == 0.03
-    assert mult(100) == 0.03
-    assert mult(10000) == 0.03
+    assert mult(29) == 0.001
+    assert mult(30) == 0.001
+    assert mult(31) == 0.001
+    assert mult(100) == 0.001
+    assert mult(10000) == 0.001
 
 
 # ========================================================================
