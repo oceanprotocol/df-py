@@ -11,7 +11,7 @@ from util.constants import (
     AQUARIUS_BASE_URL,
     BROWNIE_PROJECT as B,
     MAX_ALLOCATE,
-    DO_PUBREWARDS
+    DO_PUBREWARDS,
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
@@ -230,7 +230,6 @@ def queryAllocations(
     blocks = rng.getBlocks()
 
     for block_i, block in enumerate(blocks):
-
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
 
@@ -281,10 +280,9 @@ def queryAllocations(
                         allocs[chain_id][nft_addr][LP_addr] = allocated
                     else:
                         allocs[chain_id][nft_addr][LP_addr] += allocated
-                    
+
                     if owners[nft_addr] == LP_addr and DO_PUBREWARDS:
-                      allocs[chain_id][nft_addr][LP_addr] *= 2
-                      
+                        allocs[chain_id][nft_addr][LP_addr] *= 2
 
             offset += chunk_size
         n_blocks_sampled += 1
