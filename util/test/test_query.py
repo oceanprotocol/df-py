@@ -313,9 +313,10 @@ def _test_dftool_vebals(tmp_path, ST, FIN):
 def _test_dftool_allocations(tmp_path, ST, FIN):
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
+    C1 = {"0x1": "0xa", "0x2": "0xb", "0x3": "0xa"}
+    csvs.saveOwnersCsv(C1, CSV_DIR, CHAINID)
 
     NSAMP = 100
-
     cmd = f"./dftool allocations {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
     os.system(cmd)
 
