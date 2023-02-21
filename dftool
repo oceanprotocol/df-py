@@ -223,7 +223,7 @@ SECRET_SEED -- secret integer used to seed the rng
     if not csvs.ownersCsvFilenames(CSV_DIR):
         print("\nOwners don't exist. Call 'dftool volsym' first. Exiting.")
         sys.exit(0)
-    owners = csvs.loadOwnersCsv(CSV_DIR, CHAINID)
+    owners = csvs.loadOwnersCsvs(CSV_DIR)
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR, NSAMP > 1))
