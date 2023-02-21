@@ -220,6 +220,10 @@ SECRET_SEED -- secret integer used to seed the rng
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
+    if not csvs.ownersCsvFilenames(CSV_DIR):
+        print("\Owners don't exist. Call 'dftool volsym' first. Exiting.")
+        sys.exit(0)
+    owners = csvs.loadOwnersCsv(CSV_DIR, CHAINID)
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR, NSAMP > 1))
@@ -230,7 +234,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
-    allocs = retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
+    allocs = retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID, owners)
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")

@@ -11,6 +11,7 @@ from util.constants import (
     AQUARIUS_BASE_URL,
     BROWNIE_PROJECT as B,
     MAX_ALLOCATE,
+    DO_PUBREWARDS
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
@@ -211,7 +212,7 @@ def queryVebalances(
 
 @enforce_types
 def queryAllocations(
-    rng: BlockRange, CHAINID: int
+    rng: BlockRange, CHAINID: int, owners: Dict[str, str]
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
@@ -280,6 +281,10 @@ def queryAllocations(
                         allocs[chain_id][nft_addr][LP_addr] = allocated
                     else:
                         allocs[chain_id][nft_addr][LP_addr] += allocated
+                    
+                    if owners[nft_addr] == LP_addr and DO_PUBREWARDS:
+                      allocs[chain_id][nft_addr][LP_addr] *= 2
+                      
 
             offset += chunk_size
         n_blocks_sampled += 1
