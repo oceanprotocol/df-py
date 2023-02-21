@@ -212,7 +212,7 @@ def queryVebalances(
 
 @enforce_types
 def queryAllocations(
-    rng: BlockRange, CHAINID: int, owners: Dict[int, Dict[str, str]]
+    rng: BlockRange, CHAINID: int, owners: Dict[int, Dict[str, str]], dopubrewards = DO_PUBREWARDS
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
@@ -283,7 +283,7 @@ def queryAllocations(
 
                     if chain_id in owners:
                         if nft_addr in owners[chain_id]:
-                            if owners[chain_id][nft_addr] == LP_addr and DO_PUBREWARDS:
+                            if owners[chain_id][nft_addr] == LP_addr and dopubrewards:
                                 allocs[chain_id][nft_addr][LP_addr] *= 2
 
             offset += chunk_size
