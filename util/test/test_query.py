@@ -567,10 +567,11 @@ def test_allocation_sampling():
     while True:
         try:
             allocations = query.queryAllocations(rng, CHAINID, {})
-        # pylint: disable=bare-except
+        # pylint: disable=broad-exception-caught
         except Exception as exc:
             errors += 1
             if errors == 20:
+                # pylint: disable=broad-exception-raised
                 raise Exception("queryAllocations failed 20 times") from exc
         if allocations is not None and len(allocations) > 0:
             break
