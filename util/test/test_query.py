@@ -182,7 +182,7 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
 
 @enforce_types
 def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
-    allocations = query.queryAllocations(rng, CHAINID)
+    allocations = query.queryAllocations(rng, CHAINID, {})
 
     assert len(allocations) > 0
 
@@ -344,7 +344,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     SYM = {CHAINID: SYM0}
 
     vebals, _, _ = query.queryVebalances(rng, CHAINID)
-    allocs = query.queryAllocations(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID, {})
     S = allocsToStakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
@@ -380,7 +380,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     V0 = C0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
-    allocs = query.queryAllocations(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID, C0)
     csvs.saveAllocationCsv(allocs, csv_dir)
     allocs = None  # ensure not used later
 
@@ -424,7 +424,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
 @enforce_types
 def test_empty_queryAllocations():
     rng = BlockRange(st=0, fin=10, num_samples=1)
-    allocs = query.queryAllocations(rng, CHAINID)
+    allocs = query.queryAllocations(rng, CHAINID, {})
     assert allocs == {}
 
 
@@ -564,7 +564,7 @@ def test_allocation_sampling():
     allocations = None
     while True:
         try:
-            allocations = query.queryAllocations(rng, CHAINID)
+            allocations = query.queryAllocations(rng, CHAINID, {})
         # pylint: disable=bare-except
         except:
             pass
