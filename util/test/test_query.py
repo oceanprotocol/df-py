@@ -378,10 +378,10 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
     csvs.saveOwnersCsv(C0, csv_dir, CHAINID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
-    V0 = C0 = SYM0 = None  # ensure not used later
+    V0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
-    allocs = query.queryAllocations(rng, CHAINID, {})
+    allocs = query.queryAllocations(rng, CHAINID, C0)
     csvs.saveAllocationCsv(allocs, csv_dir)
     allocs = None  # ensure not used later
 
