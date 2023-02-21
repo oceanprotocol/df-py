@@ -381,7 +381,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     V0 = C0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
-    allocs = query.queryAllocations(rng, CHAINID, C0)
+    allocs = query.queryAllocations(rng, CHAINID, {})
     csvs.saveAllocationCsv(allocs, csv_dir)
     allocs = None  # ensure not used later
 
