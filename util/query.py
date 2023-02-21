@@ -229,7 +229,7 @@ def queryAllocations(
     allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
 
     n_blocks = rng.numBlocks()
-    #pylint: disable=too-many-nested-blocks
+    # pylint: disable=too-many-nested-blocks
     n_blocks_sampled = 0
     blocks = rng.getBlocks()
 
