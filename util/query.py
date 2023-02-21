@@ -212,7 +212,10 @@ def queryVebalances(
 
 @enforce_types
 def queryAllocations(
-    rng: BlockRange, CHAINID: int, owners: Dict[int, Dict[str, str]], dopubrewards = DO_PUBREWARDS
+    rng: BlockRange,
+    CHAINID: int,
+    owners: Dict[int, Dict[str, str]],
+    dopubrewards=DO_PUBREWARDS,
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
