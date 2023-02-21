@@ -207,6 +207,7 @@ def _calcRewardsUsd(
 
     # modify S's: owners get rewarded as if 2x stake on their asset
     if do_pubrewards:
+        _ = C
         pass
 
     # perc_per_j
