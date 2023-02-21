@@ -281,8 +281,10 @@ def queryAllocations(
                     else:
                         allocs[chain_id][nft_addr][LP_addr] += allocated
 
-                    if owners[chain_id][nft_addr] == LP_addr and DO_PUBREWARDS:
-                        allocs[chain_id][nft_addr][LP_addr] *= 2
+                    if chain_id in owners:
+                        if nft_addr in owners[chain_id]:
+                            if owners[chain_id][nft_addr] == LP_addr and DO_PUBREWARDS:
+                                allocs[chain_id][nft_addr][LP_addr] *= 2
 
             offset += chunk_size
         n_blocks_sampled += 1
