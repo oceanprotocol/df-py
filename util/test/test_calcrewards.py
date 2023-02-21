@@ -192,7 +192,7 @@ def test_two_nfts_both_with_volume():
 @enforce_types
 def test_two_LPs__one_NFT__one_LP_created():
     # LP1 created NA, so it gets 2x equivalent stake on that
-    stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}}}
+    stakes = {C1: {NA: {LP1: 100e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     owners = {C1: {NA: LP1}}
 
@@ -210,7 +210,7 @@ def test_two_LPs__one_NFT__one_LP_created():
 @enforce_types
 def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     # LP1 created NA, so it gets 2x equivalent stake on NA (but not NB)
-    stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 100e3}}}
+    stakes = {C1: {NA: {LP1: 100e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     owners = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
 
@@ -228,7 +228,7 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
 @enforce_types
 def test_two_LPs__two_NFTs__two_LPs_created():
     # LP1 created NA, LP2 created NB, they each get 2x equivalent stake
-    stakes = {C1: {NA: {LP1: 50e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 50e3}}}
+    stakes = {C1: {NA: {LP1: 100e3, LP2: 100e3}, NB: {LP1: 100e3, LP2: 100e3}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     owners = {C1: {NA: LP1, NB: LP2}}
 
