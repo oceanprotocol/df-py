@@ -562,12 +562,15 @@ def test_allocation_sampling():
     rng = BlockRange(start_block, end_block, end_block - start_block, 42)
 
     allocations = None
+    errors = 0
     while True:
         try:
             allocations = query.queryAllocations(rng, CHAINID, {})
         # pylint: disable=bare-except
         except:
-            pass
+            errors += 1
+            if errors == 20:
+                raise Exception("queryAllocations failed 20 times")
         if allocations is not None and len(allocations) > 0:
             break
         time.sleep(1)
