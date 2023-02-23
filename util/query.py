@@ -331,7 +331,7 @@ def queryAllocations(
                         if owners[chain_id][nft_addr] == LP_addr and dopubrewards:
                             if not LP_addr in allocs_bonus[chain_id][nft_addr]:
                                 allocs_bonus[chain_id][nft_addr][LP_addr] = 0
-                            allocs_bonus[chain_id][nft_addr][LP_addr] += allocated
+                            allocs_bonus[chain_id][nft_addr][LP_addr] = allocs[chain_id][nft_addr][LP_addr]
 
     return (allocs, allocs_bonus)
 
