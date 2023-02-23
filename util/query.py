@@ -227,6 +227,7 @@ def queryAllocations(
 
     # [chain_id][nft_addr][LP_addr] : percent
     allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
+    allocs_bonus: Dict[int, Dict[str, Dict[str, float]]] = {}
 
     n_blocks = rng.numBlocks()
     # pylint: disable=too-many-nested-blocks
@@ -277,18 +278,15 @@ def queryAllocations(
 
                     if chain_id not in allocs:
                         allocs[chain_id] = {}
+                        allocs_bonus[chain_id] = {}
                     if nft_addr not in allocs[chain_id]:
                         allocs[chain_id][nft_addr] = {}
+                        allocs_bonus[chain_id][nft_addr] = {}
 
                     if LP_addr not in allocs[chain_id][nft_addr]:
                         allocs[chain_id][nft_addr][LP_addr] = allocated
                     else:
                         allocs[chain_id][nft_addr][LP_addr] += allocated
-
-                    if chain_id in owners:
-                        if nft_addr in owners[chain_id]:
-                            if owners[chain_id][nft_addr] == LP_addr and dopubrewards:
-                                allocs[chain_id][nft_addr][LP_addr] *= 2
 
             offset += chunk_size
         n_blocks_sampled += 1
@@ -323,7 +321,19 @@ def queryAllocations(
                     continue
                 allocs[chain_id][nft_addr][LP_addr] /= lp_total[LP_addr]
 
-    return allocs
+    # pub rewards
+    # 2x stake
+    for chain_id in allocs:
+        for nft_addr in allocs[chain_id]:
+            for LP_addr in allocs[chain_id][nft_addr]:
+                if chain_id in owners:
+                    if nft_addr in owners[chain_id]:
+                        if owners[chain_id][nft_addr] == LP_addr and dopubrewards:
+                            if not LP_addr in allocs_bonus[chain_id][nft_addr]:
+                                allocs_bonus[chain_id][nft_addr][LP_addr] = 0
+                            allocs_bonus[chain_id][nft_addr][LP_addr] += allocated
+
+    return (allocs, allocs_bonus)
 
 
 @enforce_types
