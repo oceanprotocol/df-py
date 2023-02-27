@@ -20,31 +20,31 @@ def test_getCoingeckoRate_OCEAN_sameday():
 
 @enforce_types
 def test_getrate_OCEAN_sameday():
-    r = getrate.get_rate("OCEAN", "2022-01-20", "2022-01-20")
+    r = getrate.getrate("OCEAN", "2022-01-20", "2022-01-20")
     assert r == approx(0.75, 0.1)
 
 
 @enforce_types
-def test_get_rate_OCEAN_oneweek():
-    r = getrate.get_rate("OCEAN", "2022-01-20", "2022-01-26")
+def test_getrate_OCEAN_oneweek():
+    r = getrate.getrate("OCEAN", "2022-01-20", "2022-01-26")
     assert r == approx(0.65, 0.1)
 
 
 @enforce_types
-def test_get_rate_H2O():
-    r = getrate.get_rate("H2O", "2022-05-13", "2022-05-25")
+def test_getrate_H2O():
+    r = getrate.getrate("H2O", "2022-05-13", "2022-05-25")
     assert r == approx(1.50, 0.1)
 
 
 @pytest.mark.skip(reason="Temporarily skipping, fails on GH for some reason")
 @enforce_types
-def test_get_rate_BTC():
-    r = getrate.get_rate("BTC", "2022-01-31", "2022-01-31")
+def test_getrate_BTC():
+    r = getrate.getrate("BTC", "2022-01-31", "2022-01-31")
     assert r == approx(37983.15, 0.1)
 
 
 @pytest.mark.skip(reason="Temporarily skipping, fails on GH for some reason")
 @enforce_types
 def test_start_after_fin():
-    p = getrate.get_rate("OCEAN", "2021-01-26", "2021-12-20")
+    p = getrate.getrate("OCEAN", "2021-01-26", "2021-12-20")
     assert p == approx(0.89, 0.1)

@@ -7,7 +7,7 @@
 
 Outline:
 - Step 0: Set envvars
-- Step 1, 2, 3: Run get_rate, query, calc
+- Step 1, 2, 3: Run getrate, query, calc
 - Step 4: Run dispense
 - Step 5, 6: Publish csvs, blog post, tweet
 
@@ -45,7 +45,7 @@ export OCEAN_56_addr=0xdce07662ca8ebc241316a15b611c89711414dd1a   #bsc
 export OCEAN_1285_addr=0x99C409E5f62E4bd2AC142f17caFb6810B8F0BAAE #moonriver
 ```
 
-### Step 1, 2, 3: Run get_rate, query, calc
+### Step 1, 2, 3: Run getrate, query, calc
 
 In console, run the following: (can copy & paste):
 ```console
@@ -61,15 +61,15 @@ export SAMPLE_SIZE=50
 export CSV_PATH="./mydata"
 
 # get rate of tokens data's priced in
-dftool get_rate OCEAN $date $now $CSV_PATH #output rate-OCEAN.csv
-dftool get_rate H2O $date $now $CSV_PATH
+dftool getrate OCEAN $date $now $CSV_PATH #output rate-OCEAN.csv
+dftool getrate H2O $date $now $CSV_PATH
 
 # get rate of native tokens
-dftool get_rate ETH $date $now $CSV_PATH
-dftool get_rate MATIC $date $now $CSV_PATH
-dftool get_rate BNB $date $now $CSV_PATH
-dftool get_rate EWT $date $now $CSV_PATH 
-dftool get_rate MOVR $date $now $CSV_PATH
+dftool getrate ETH $date $now $CSV_PATH
+dftool getrate MATIC $date $now $CSV_PATH
+dftool getrate BNB $date $now $CSV_PATH
+dftool getrate EWT $date $now $CSV_PATH 
+dftool getrate MOVR $date $now $CSV_PATH
 
 # query chain, output nftvols & symbols
 dftool volsym $date $now $SAMPLE_SIZE $CSV_PATH 137

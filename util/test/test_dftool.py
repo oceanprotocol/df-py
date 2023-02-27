@@ -16,13 +16,13 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 
 @enforce_types
-def test_get_rate(tmp_path):
+def test_getrate(tmp_path):
     TOKEN_SYMBOL = "OCEAN"
     ST = "2022-01-01"
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool get_rate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     # test result
@@ -122,7 +122,7 @@ def test_noarg_commands():
         "",
         "query",
         "volsym",
-        "get_rate",
+        "getrate",
         "calc",
         "dispense",
         "dispense_active",
