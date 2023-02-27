@@ -142,7 +142,7 @@ def createDataNFT(name: str, symbol: str, from_account):
         owner,
         {"from": from_account},
     )
-    data_NFT_address = tx.events["NFTCreated"]["newtokenAddress"]
+    data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
     data_NFT = B.ERC721Template.at(data_NFT_address)
     return data_NFT
 
@@ -170,7 +170,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     tx = data_NFT.createERC20(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
-    DT_address = tx.events["TokenCreated"]["new_tokenAddress"]
+    DT_address = tx.events["TokenCreated"]["newTokenAddress"]
     DT = B.ERC20Template.at(DT_address)
 
     return DT

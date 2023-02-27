@@ -578,7 +578,7 @@ Usage: dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
-    tx = df_rewards.add_strategy(DFSTRATEGY_ADDR, {"from": from_account})
+    tx = df_rewards.addStrategy(DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyAdded"
 
     print(f"Strategy {DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}")
@@ -610,7 +610,7 @@ Usage: dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
-    tx = df_rewards.retire_strategy(DFSTRATEGY_ADDR, {"from": from_account})
+    tx = df_rewards.retireStrategy(DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyRetired"
     print(f"Strategy {DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}")
 

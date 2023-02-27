@@ -174,7 +174,7 @@ def test_strategies():
         df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
 
     # add strategy
-    df_rewards.add_strategy(df_strategy.address)
+    df_rewards.addStrategy(df_strategy.address)
     assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
 
@@ -191,7 +191,7 @@ def test_strategies():
     assert TOK.balanceOf(df_strategy) == 30
 
     # retire strategy
-    df_rewards.retire_strategy(df_strategy.address)
+    df_rewards.retireStrategy(df_strategy.address)
     assert not df_rewards.isStrategy(df_strategy.address)
 
     with brownie.reverts("Caller must be a strategy"):
@@ -200,10 +200,10 @@ def test_strategies():
 
     with brownie.reverts("Ownable: caller is not the owner"):
         # addresses other than the owner cannot add new strategy
-        df_rewards.add_strategy(df_strategy.address, {"from": accounts[3]})
+        df_rewards.addStrategy(df_strategy.address, {"from": accounts[3]})
 
     # add strategy
-    df_rewards.add_strategy(df_strategy.address)
+    df_rewards.addStrategy(df_strategy.address)
     assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
 
@@ -226,7 +226,7 @@ def _test_claim_and_restake():
 
     df_rewards = B.DFRewards.deploy({"from": deployer})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": deployer})
-    df_rewards.add_strategy(df_strategy.address)
+    df_rewards.addStrategy(df_strategy.address)
 
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
