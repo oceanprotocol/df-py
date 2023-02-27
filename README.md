@@ -20,7 +20,7 @@ Usage: dftool get_rate|query|calc|dispense|..
   ...
 ```
 
-Data flow (left) and csvs (right) ([source](https://docs.google.com/presentation/d/11Nu_emSgw3iYZKDcmnvZC_aOM00MDyYTtTWQP4PYox4/edit#slide=id.p)): 
+Data flow (left) and csvs (right) ([source](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)): 
 
 <div>
 <img src="images/data-flow.png" align="left" height="100" width="130">&emsp;&emsp;
