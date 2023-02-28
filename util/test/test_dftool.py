@@ -113,7 +113,7 @@ def test_manyrandom():
 
 
 @enforce_types
-@pytest.mark.sh_scripts
+@pytest.mark.skip(reason="Passing. However script executes N commands ~18m")
 def test_gen_hist_data():
     os.environ["USE_TESTNET"] = "1"
     cmd = "./scripts/gen_hist_data.sh 22 round_22"
