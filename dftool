@@ -109,7 +109,7 @@ SECRET_SEED -- secret integer used to seed the rng
         RETRIES = int(sys.argv[7])
 
     # extract inputs
-    assert sys.argv[1] == "query" or sys.argv[1] == "volsym"
+    assert sys.argv[1] == "volsym"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
@@ -420,7 +420,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active"
+    assert sys.argv[1] == "dispense_active"
     CSV_DIR = sys.argv[2]
 
     if len(sys.argv) >= 4:
@@ -470,7 +470,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         batch_number=BATCH_NBR,
     )
 
-    print("dftool dispense: Done")
+    print("dftool dispense_active: Done")
 
 
 # ========================================================================
@@ -1051,7 +1051,7 @@ def do_main():
         do_help()
 
     # write actions
-    elif sys.argv[1] == "volsym" or sys.argv[1] == "query":
+    elif sys.argv[1] == "volsym":
         do_volsym()
     elif sys.argv[1] == "nftinfo":
         do_nftinfo()
@@ -1063,7 +1063,7 @@ def do_main():
         do_getrate()
     elif sys.argv[1] == "calc":
         do_calc()
-    elif sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active":
+    elif sys.argv[1] == "dispense_active":
         do_dispense_active()
     elif sys.argv[1] == "compile":
         do_compile()

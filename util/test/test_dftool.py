@@ -120,11 +120,9 @@ def test_noarg_commands():
     # sometimes they do the main work (eg compile).
     argv1s = [
         "",
-        "query",
         "volsym",
         "getrate",
         "calc",
-        "dispense",
         "dispense_active",
         "querymany",
         "compile",
