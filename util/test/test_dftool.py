@@ -118,11 +118,7 @@ def test_manyrandom():
 def test_noarg_commands():
     # Test commands that have no args. They're usually help commands;
     # sometimes they do the main work (eg compile).
-    argv1s = [
-        "",
-        "compile",
-        "newacct"
-    ]
+    argv1s = ["", "compile", "newacct"]
     for argv1 in argv1s:
         cmd = f"./dftool {argv1}"
 
