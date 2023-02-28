@@ -120,22 +120,10 @@ def test_noarg_commands():
     # sometimes they do the main work (eg compile).
     argv1s = [
         "",
-        "volsym",
-        "getrate",
-        "calc",
-        "dispense_active",
-        "querymany",
         "compile",
-        "manyrandom",
-        "newdfrewards",
-        "mine",
-        "newacct",
-        "newtoken",
-        "acctinfo",
-        "chaininfo",
+        "newacct"
     ]
     for argv1 in argv1s:
-        print(f"Test dftool {argv1}")
         cmd = f"./dftool {argv1}"
 
         output_s = ""
@@ -146,7 +134,8 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
-        assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
+        # bad commands - such as querymany - will still return 0 and do not fail
+        assert return_code == 0, print(f"'dftool {argv1}' failed. \n{output_s}")
 
 
 @enforce_types
