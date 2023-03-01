@@ -59,7 +59,7 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool dispense_passive CHAINID AMOUNT
 
   dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many random tokens & nfts then + locks fake OCEAN + allocates + consumes (for testing)
+  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
 
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -616,7 +616,7 @@ Usage: dftool compile
 @enforce_types
 def do_manyrandom():
     # UPADATE THIS
-    HELP = f"""deploy many random tokens & nfts then + locks fake OCEAN + allocates + consumes (for testing)
+    HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
 
 Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
@@ -627,8 +627,6 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
-
-    from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     # extract inputs
     assert sys.argv[1] == "manyrandom"
