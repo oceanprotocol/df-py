@@ -1135,7 +1135,7 @@ def do_main():
     elif sys.argv[1] == "checkpoint_feedist":
         do_checkpoint_feedist()
     elif sys.argv[1] == "initdevwallets":
-        do_initdevwallets()        
+        do_initdevwallets()
     elif sys.argv[1] == "dispense_passive":
         do_dispense_passive_rewards()
     elif sys.argv[1] == "calculate_passive":
