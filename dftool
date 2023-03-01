@@ -30,6 +30,12 @@ from util.oceanutil import (
     FeeDistributor,
 )
 
+from util.oceantestutil import (
+    randomCreateDataNFTWithFREs,
+    randomLockAndAllocate,
+    randomConsumeFREs,
+)
+
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.multisig import send_multisig_tx
 
@@ -53,7 +59,7 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool dispense_passive CHAINID AMOUNT
 
   dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
+  dftool manyrandom CHAINID - deploy many random tokens & nfts then + locks fake OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
 
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -610,7 +616,7 @@ Usage: dftool compile
 @enforce_types
 def do_manyrandom():
     # UPADATE THIS
-    HELP = f"""Deploy many random tokens & nfts then consume (for testing)
+    HELP = f"""deploy many random tokens & nfts then + locks fake OCEAN + allocates + consumes (for testing)
 
 Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
@@ -644,11 +650,14 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
+    OCEAN = OCEANtoken()
+
     num_nfts = 10  # magic number
-    # This fn was deprecated, replace.
-    # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
+    tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
+    randomLockAndAllocate(tups)
+    randomConsumeFREs(tups, OCEAN)
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
+
 
 
 # ========================================================================
