@@ -71,10 +71,12 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
 
+
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
+  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
   dftool help - this message
@@ -614,6 +616,47 @@ Usage: dftool compile
 
 # ========================================================================
 @enforce_types
+def do_initdevwallets():
+    # UPADATE THIS
+    HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+Usage: dftool initdevwallets CHAINID 
+  CHAINID -- {CHAINID_EXAMPLES}
+Uses these envvars:
+ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    from util import oceantestutil  # pylint: disable=import-outside-toplevel
+
+    # extract inputs
+    assert sys.argv[1] == "initdevwallets"
+    CHAINID = int(sys.argv[2])
+    print("dftool initdevwallets: Begin")
+    print(f"Arguments: CHAINID={CHAINID}")
+
+    if CHAINID != DEV_CHAINID:
+        # To support other testnets, they need to initdevwallets()
+        # Consider this a TODO:)
+        print("Only ganache is currently supported. Exiting.")
+        sys.exit(0)
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+
+    # main work
+    recordDeployedContracts(ADDRESS_FILE)
+    oceantestutil.fillAccountsWithOCEAN()
+
+    print("dftool initdevwallets: Done.")
+
+
+# ========================================================================
+@enforce_types
 def do_manyrandom():
     # UPADATE THIS
     HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
@@ -1069,6 +1112,7 @@ ARGV_FNS = {
     "mine" : do_mine,
     "veSetAllocation" : do_veSetAllocation,
     "checkpoint_feedist" : do_checkpoint_feedist,
+    "initdevwallets": do_initdevwallets,
     "manyrandom" : do_manyrandom,
     "newacct" : do_newacct,
     "newtoken" : do_newtoken,
