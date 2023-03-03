@@ -118,8 +118,24 @@ def test_manyrandom():
 def test_noarg_commands():
     # Test commands that have no args. They're usually help commands;
     # sometimes they do the main work (eg compile).
-    argv1s = ["", "compile", "newacct"]
+    argv1s = [
+        "",
+        "volsym",
+        "getrate",
+        "calc",
+        "dispense_active",
+        "querymany",
+        "compile",
+        "manyrandom",
+        "newdfrewards",
+        "mine",
+        "newacct",
+        "newtoken",
+        "acctinfo",
+        "chaininfo",
+    ]
     for argv1 in argv1s:
+        print(f"Test dftool {argv1}")
         cmd = f"./dftool {argv1}"
 
         output_s = ""
@@ -131,7 +147,7 @@ def test_noarg_commands():
 
         return_code = proc.wait()
         # bad commands - such as querymany - will still return 0 and do not fail
-        assert return_code == 0, print(f"'dftool {argv1}' failed. \n{output_s}")
+        assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
 
 
 @enforce_types
