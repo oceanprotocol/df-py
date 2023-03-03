@@ -115,6 +115,20 @@ def test_manyrandom():
 
 
 @enforce_types
+def test_initdevwallets():
+    account9 = brownie.network.accounts[9]
+
+    OCEAN = oceanutil.OCEANtoken()
+    if OCEAN.balanceOf(account9.address) == 0.0:
+        assert fromBase18(OCEAN.balanceOf(account9.address)) == 0.0
+
+        cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
+        os.system(cmd)
+
+        assert fromBase18(OCEAN.balanceOf(account9.address)) > 1.0
+
+
+@enforce_types
 def test_noarg_commands():
     # Test commands that have no args. They're usually help commands;
     # sometimes they do the main work (eg compile).
