@@ -11,6 +11,39 @@ from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
+@enforce_types
+def getRewardAmount(start_dt: datetime, end_dt: datetime) -> int:
+    TOT_SUPPLY = 503370000
+    HALF_LIFE = 4 * 365 * 24 * 60 * 60 # 4 years
+
+    va_start = datetime(2023, 3, 16)
+    vb_start = va_start + timedelta(days=365) # 1 year
+    vc_start = vb_start + timedelta(days=183) # 6 months
+    vd_start = vc_start + timedelta(days=183) # 6 months
+
+    va_supply = TOT_SUPPLY * 0.1
+    vb_supply = TOT_SUPPLY * 0.15 
+    vc_supply = TOT_SUPPLY * 0.25 
+    vd_supply = TOT_SUPPLY * 0.5
+
+    def getrew(supply):
+        return _halflife(supply, end_dt, HALF_LIFE) - _halflife(supply, start_dt, HALF_LIFE)
+
+    va_reward = 0
+    vb_reward = 0
+    vc_reward = 0
+    vd_reward = 0
+
+    if start_dt > va_start:
+        va_reward = getrew(va_supply)
+    if start_dt > vb_start:
+        vb_reward = getrew(vb_supply)
+    if start_dt > vc_start:
+        vc_reward = getrew(vc_supply)
+    if start_dt > vd_start:
+        vd_reward = getrew(vd_supply)
+
+    return va_reward + vb_reward + vc_reward + vd_reward
 
 
 @enforce_types
