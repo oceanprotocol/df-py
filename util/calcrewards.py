@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Union
 
 from enforce_typing import enforce_types
@@ -10,6 +10,17 @@ from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
+
+
+
+@enforce_types
+def _halflife(value, t, h) -> float:
+    t = int(t)
+    h = int(h)
+    value = int(value)
+    p = value >> int(t / h)
+    t %= h
+    return value - p + (p * t) / h / 2
 
 
 @enforce_types
