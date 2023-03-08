@@ -9,7 +9,7 @@ from pytest import approx
 from util import calcrewards, cleancase as cc, constants, tousd
 from util.calcrewards import TARGET_WPY, _rankBasedAllocate
 from util.constants import ZERO_ADDRESS
-
+from util.base18 import fromBase18
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2, C3 = 7, 137, 1285  # chainIDs
@@ -808,6 +808,19 @@ def test_flattenRewards():
         LP2: 200.0 + 600.0,
         LP3: 700.0,
     }
+
+@pytest.mark.parametrize("test_input, expected_output", [
+    (datetime(2023, 3, 16), 120670.89),
+    (datetime(2023, 4, 16), 120670.89),
+    (datetime(2024, 3, 8), 120670.89),
+    (datetime(2024, 3, 15), 301677.226),
+    (datetime(2024, 9, 8), 301677.226),
+    (datetime(2024, 9, 15), 603354.45),
+    (datetime(2025, 3, 8), 603354.45),
+    (datetime(2025, 3, 15), 1206708.9 t)
+])
+def test_getRewardAmount(test_input, expected_output):
+    assert fromBase18(calcrewards.getRewardAmount(test_input)) == approx(expected_output)
 
 
 # ========================================================================
