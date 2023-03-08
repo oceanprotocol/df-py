@@ -71,7 +71,6 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
 
-
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
@@ -1097,11 +1096,9 @@ ARGV_FNS = {
     "help": do_help,
     # write actions
     "compile" : do_compile,
-    "query" : do_volsym,
     "volsym": do_volsym,
     "allocations" : do_allocations,
     "calc" : do_calc,
-    "dispense" : do_dispense_active,
     "dispense_active" : do_dispense_active,
     "dispense_passive" : do_dispense_passive_rewards,
     "calculate_passive" : do_calculate_passive,
