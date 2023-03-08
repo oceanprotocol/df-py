@@ -12,38 +12,46 @@ from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 TARGET_WPY = 0.015717
 
 @enforce_types
-def getRewardAmount(start_dt: datetime, end_dt: datetime) -> int:
+def getRewardAmount(start_dt: datetime) -> float:
+    end_dt = start_dt + timedelta(days=7)
+
+    def getrew(period):
+        period_start = period["start"]
+        end_ts = (end_dt - period_start).total_seconds()
+        start_ts = (start_dt - period_start).total_seconds()
+        return _halflife(period["supply"], end_ts, HALF_LIFE) - _halflife(period["supply"], start_ts, HALF_LIFE)
+
     TOT_SUPPLY = 503370000
     HALF_LIFE = 4 * 365 * 24 * 60 * 60 # 4 years
 
-    va_start = datetime(2023, 3, 16)
-    vb_start = va_start + timedelta(days=365) # 1 year
-    vc_start = vb_start + timedelta(days=183) # 6 months
-    vd_start = vc_start + timedelta(days=183) # 6 months
+    periods = [
+        {
+            'start': datetime(2023, 3, 16),
+            'supply': TOT_SUPPLY * 0.1,
+            'reward': 0
+        },
+        {
+            'start': datetime(2024, 3, 15),
+            'supply': TOT_SUPPLY * 0.15,
+            'reward': 0
+        },
+        {
+            'start': datetime(2024, 9, 15),
+            'supply': TOT_SUPPLY * 0.25,
+            'reward': 0
+        },
+        {
+            'start': datetime(2025, 3, 15),
+            'supply': TOT_SUPPLY * 0.5,
+            'reward': 0
+        }
+    ]
 
-    va_supply = TOT_SUPPLY * 0.1
-    vb_supply = TOT_SUPPLY * 0.15 
-    vc_supply = TOT_SUPPLY * 0.25 
-    vd_supply = TOT_SUPPLY * 0.5
+    for period in periods:
+        if start_dt >= period['start']:
+            period['reward'] = getrew(period)
 
-    def getrew(supply):
-        return _halflife(supply, end_dt, HALF_LIFE) - _halflife(supply, start_dt, HALF_LIFE)
-
-    va_reward = 0
-    vb_reward = 0
-    vc_reward = 0
-    vd_reward = 0
-
-    if start_dt > va_start:
-        va_reward = getrew(va_supply)
-    if start_dt > vb_start:
-        vb_reward = getrew(vb_supply)
-    if start_dt > vc_start:
-        vc_reward = getrew(vc_supply)
-    if start_dt > vd_start:
-        vd_reward = getrew(vd_supply)
-
-    return va_reward + vb_reward + vc_reward + vd_reward
+    return sum(period['reward'] for period in periods)
 
 
 @enforce_types
