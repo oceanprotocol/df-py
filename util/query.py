@@ -19,18 +19,21 @@ from util.base18 import fromBase18
 MAX_TIME = 4 * 365 * 86400  # max lock time
 
 
+@enforce_types
 class SimpleDataNft:
     def __init__(
         self,
-        nft_addr: str,
         chain_id: int,
+        nft_addr: str,
         _symbol: str,
+        owner_addr: str,
         is_purgatory: bool = False,
         name: str = "",
     ):
         self.chain_id = chain_id
         self.nft_addr = nft_addr.lower()
         self.symbol = _symbol.upper()
+        self.owner_addr = owner_addr.lower()
         self.is_purgatory = is_purgatory
         self.name = name  # can be any mix of upper and lower case
         self.did = oceanutil.calcDID(nft_addr, chain_id)
@@ -41,32 +44,33 @@ class SimpleDataNft:
     def __eq__(self, x) -> bool:
         return repr(self) == repr(x)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return (
             f"SimpleDataNft("
             f"{self.chain_id}, '{self.nft_addr}', '{self.symbol}', "
-            f"{self.is_purgatory}, '{self.name}'"
+            f"'{self.owner_addr}', {self.is_purgatory}, '{self.name}'"
             f")"
         )
 
 
 @enforce_types
-def queryNftvolsAndSymbols(
+def queryVolsOwnersSymbols(
     rng: BlockRange, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str], Dict[str, str]]:
     """
     @description
-      Return nftvols for the input block range and chain.
+      For given block range and chain, return each nft's {vols, owner, symbol}
 
     @return
-      nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol
+      nftvols_at_chain -- dict of [nativetoken/basetoken_addr][nft_addr] : vol
+      owners_at_chain -- dict of [nft_addr] : owner_addr
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
 
     @notes
-      A stake or nftvol value is in terms of basetoken (eg OCEAN, H2O).
+      A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered = _queryNftvolumes(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
 
     # get all basetokens from Vi
@@ -75,7 +79,7 @@ def queryNftvolsAndSymbols(
         _symbol = symbol(basetoken)
         basetokens.add(chainID, basetoken, _symbol)
     SYMi = getSymbols(basetokens, chainID)
-    return (Vi, SYMi)
+    return (Vi, Ci, SYMi)
 
 
 @enforce_types
@@ -313,6 +317,7 @@ def queryAllocations(
     return allocs
 
 
+@enforce_types
 def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     """
     @description
@@ -333,6 +338,7 @@ def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
     return nftinfo
 
 
+@enforce_types
 def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     """
     @description
@@ -351,6 +357,7 @@ def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     return nftInfo
 
 
+@enforce_types
 def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     """
     @description
@@ -372,6 +379,9 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
          nfts(first: %d, skip: %d, block:{number:%d}) {
             id
             symbol
+            owner {
+              id
+            }
         }
       }
       """ % (
@@ -380,37 +390,44 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
             endBlock,
         )
         result = submitQuery(query, chainID)
-        nfts = result["data"]["nfts"]
-        if len(nfts) == 0:
+        nft_records = result["data"]["nfts"]
+        if len(nft_records) == 0:
             # means there are no records left
             break
 
-        for nft in nfts:
-            datanft = SimpleDataNft(
-                nft["id"],
-                chainID,
-                nft["symbol"],
+        for nft_record in nft_records:
+            nft_addr = nft_record["id"]
+            _symbol = nft_record["symbol"]
+            owner_addr = nft_record["owner"]["id"]
+            simple_data_nft = SimpleDataNft(
+                chain_id=chainID,
+                nft_addr=nft_addr,
+                _symbol=_symbol,
+                owner_addr=owner_addr,
             )
-            nftinfo.append(datanft)
+            nftinfo.append(simple_data_nft)
 
         offset += chunk_size
 
     return nftinfo
 
 
-def _queryNftvolumes(
+@enforce_types
+def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
-) -> Dict[str, Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
 
     @return
-      nft_vols_at_chain -- dict of [basetoken_addr][nft_addr]:vol_amt
+      vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
+      owners (at chain) -- dict of [nft_addr]:vol_amt
     """
-    print("getVolumes(): begin")
+    print("_queryVolsOwners(): begin")
 
-    NFTvols: Dict[str, Dict[str, float]] = {}
+    vols: Dict[str, Dict[str, float]] = {}
+    owners: Dict[str, float] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -424,6 +441,9 @@ def _queryNftvolumes(
               symbol
               nft {
                 id
+                owner{
+                  id
+                }
               }
               dispensers {
                 id
@@ -458,6 +478,10 @@ def _queryNftvolumes(
                 continue
             basetoken_addr = order["lastPriceToken"]["id"].lower()
             nft_addr = order["datatoken"]["nft"]["id"].lower()
+            owner_addr = order["datatoken"]["nft"]["owner"]["id"].lower()
+
+            # add owner
+            owners[nft_addr] = owner_addr
 
             # Calculate gas cost
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
@@ -468,28 +492,27 @@ def _queryNftvolumes(
 
             # add gas cost value
             if gasCost > 0:
-                if native_token_addr not in NFTvols:
-                    NFTvols[native_token_addr] = {}
+                if native_token_addr not in vols:
+                    vols[native_token_addr] = {}
 
-                if nft_addr not in NFTvols[native_token_addr]:
-                    NFTvols[native_token_addr][nft_addr] = 0
+                if nft_addr not in vols[native_token_addr]:
+                    vols[native_token_addr][nft_addr] = 0
 
-                NFTvols[native_token_addr][nft_addr] += gasCost
-            # ----
+                vols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
                 continue
 
             # add lastPriceValue
-            if basetoken_addr not in NFTvols:
-                NFTvols[basetoken_addr] = {}
+            if basetoken_addr not in vols:
+                vols[basetoken_addr] = {}
 
-            if nft_addr not in NFTvols[basetoken_addr]:
-                NFTvols[basetoken_addr][nft_addr] = 0.0
-            NFTvols[basetoken_addr][nft_addr] += lastPriceValue
+            if nft_addr not in vols[basetoken_addr]:
+                vols[basetoken_addr][nft_addr] = 0.0
+            vols[basetoken_addr][nft_addr] += lastPriceValue
 
-    print("getVolumes(): done")
-    return NFTvols
+    print("_queryVolsOwners(): done")
+    return (vols, owners)
 
 
 @enforce_types
@@ -689,6 +712,7 @@ def getSymbols(tokens: TokSet, chainID: int) -> Dict[str, str]:
 _ADDR_TO_SYMBOL = networkutil._ADDRS_TO_SYMBOL  # address : TOKEN_symbol
 
 
+@enforce_types
 def symbol(addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL

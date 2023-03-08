@@ -11,12 +11,14 @@ from util import (
     allocations,
     blockrange,
     calcrewards,
+    constants,
     csvs,
     dispense,
     getrate,
     networkutil,
     query,
 )
+from util.calcrewards import calcRewards
 from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
@@ -26,6 +28,12 @@ from util.oceanutil import (
     OCEANtoken,
     veAllocate,
     FeeDistributor,
+)
+
+from util.oceantestutil import (
+    randomCreateDataNFTWithFREs,
+    randomLockAndAllocate,
+    randomConsumeFREs,
 )
 
 from util.blocktime import getfinBlock, timestrToTimestamp
@@ -40,18 +48,18 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_MAIN = """Data Farming tool, for use by OPF.
 
-Usage: dftool getrate|query|calc|dispense|..
+Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
 
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (symbols, vols)
+  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (nfts, stakes, .., rates), calc rewards
+  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
 
   dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many random tokens & nfts then consume (for testing)
+  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
 
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
@@ -63,10 +71,12 @@ Usage: dftool getrate|query|calc|dispense|..
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
 
+
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
+  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
   dftool help - this message
@@ -84,7 +94,7 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_volsym():
-    HELP = f"""Query chain, output nftvols & symbols
+    HELP = f"""Query chain, output nft volumes, symbols, owners
 
 Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
@@ -139,8 +149,11 @@ SECRET_SEED -- secret integer used to seed the rng
     recordDeployedContracts(ADDRESS_FILE)
     # main work
 
-    (Vi, SYMi) = retryFunction(query.queryNftvolsAndSymbols, RETRIES, 10, rng, CHAINID)
+    (Vi, Ci, SYMi) = retryFunction(
+        query.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
+    )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
+    csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
     csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool volsym: Done")
@@ -172,7 +185,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    # this function can be a bit problematic and only used for generating data for frontend
+    # query.queryNftinfo() can be problematic; it's only used for frontend data
     # retry 3 times with 10s delay by default
     nftinfo = retryFunction(query.queryNftinfo, 3, 10, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
@@ -356,6 +369,10 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
         print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
 
+    if not csvs.ownersCsvFilenames(CSV_DIR):
+        print(f"\nNo 'owners*.csv' files in '{CSV_DIR}'. Exiting.")
+        sys.exit(0)
+
     if not csvs.symbolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(0)
@@ -369,28 +386,25 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
 
     # main work
-    stakes = allocations.loadStakes(CSV_DIR)
-    nftvols = csvs.loadNftvolsCsvs(CSV_DIR)
+    S = allocations.loadStakes(CSV_DIR)
+    V = csvs.loadNftvolsCsvs(CSV_DIR)
+    C = csvs.loadOwnersCsvs(CSV_DIR)
     SYM = csvs.loadSymbolsCsvs(CSV_DIR)
     R = csvs.loadRateCsvs(CSV_DIR)
+    do_pubrewards = constants.DO_PUBREWARDS
+    do_rank = constants.DO_RANK
 
-    DCV_OCEAN = calcrewards.totalDcv(nftvols, SYM, R)
     cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
     prev_week = cur_week - 1
     m = calcrewards.calcDcvMultiplier(prev_week)
-    TOT_OCEAN2 = calcrewards.boundRewardsByDcv(TOT_OCEAN, DCV_OCEAN, prev_week)
-    print(
-        f"Given prev_week=DF{prev_week}, DCV={DCV_OCEAN} OCEAN: "
-        f" multiplier={m}; we bound rewards to {TOT_OCEAN2} OCEAN"
-        f" (original value: {TOT_OCEAN} OCEAN)"
+    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
+
+    rewperlp, rewinfo = calcRewards(
+        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
     )
 
-    rewardsperlp, rewardsinfo = calcrewards.calcRewards(
-        stakes, nftvols, SYM, R, TOT_OCEAN2
-    )
-
-    csvs.saveRewardsperlpCsv(rewardsperlp, CSV_DIR, "OCEAN")
-    csvs.saveRewardsinfoCsv(rewardsinfo, CSV_DIR, "OCEAN")
+    csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
+    csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
 
@@ -602,9 +616,50 @@ Usage: dftool compile
 
 # ========================================================================
 @enforce_types
+def do_initdevwallets():
+    # UPADATE THIS
+    HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+Usage: dftool initdevwallets CHAINID 
+  CHAINID -- {CHAINID_EXAMPLES}
+Uses these envvars:
+ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    from util import oceantestutil  # pylint: disable=import-outside-toplevel
+
+    # extract inputs
+    assert sys.argv[1] == "initdevwallets"
+    CHAINID = int(sys.argv[2])
+    print("dftool initdevwallets: Begin")
+    print(f"Arguments: CHAINID={CHAINID}")
+
+    if CHAINID != DEV_CHAINID:
+        # To support other testnets, they need to initdevwallets()
+        # Consider this a TODO:)
+        print("Only ganache is currently supported. Exiting.")
+        sys.exit(0)
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+
+    # main work
+    recordDeployedContracts(ADDRESS_FILE)
+    oceantestutil.fillAccountsWithOCEAN()
+
+    print("dftool initdevwallets: Done.")
+
+
+# ========================================================================
+@enforce_types
 def do_manyrandom():
     # UPADATE THIS
-    HELP = f"""Deploy many random tokens & nfts then consume (for testing)
+    HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
 
 Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
@@ -615,8 +670,6 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
-
-    from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     # extract inputs
     assert sys.argv[1] == "manyrandom"
@@ -638,11 +691,14 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
+    OCEAN = OCEANtoken()
+
     num_nfts = 10  # magic number
-    # This fn was deprecated, replace.
-    # oceantestutil.randomDeployTokensAndPoolsThenConsume(num_pools, OCEANtoken())
+    tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
+    randomLockAndAllocate(tups)
+    randomConsumeFREs(tups, OCEAN)
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
+
 
 
 # ========================================================================
@@ -985,8 +1041,8 @@ Usage: dftool checkpoint_feedist CHAINID
         multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
 
         # submit transactions to multisig
-        send_multisig_tx(multisig_addr, to, total_supply_encoded, value)
-        send_multisig_tx(multisig_addr, to, checkpoint_token_encoded, value)
+        send_multisig_tx(multisig_addr, to, value, total_supply_encoded)
+        send_multisig_tx(multisig_addr, to, value, checkpoint_token_encoded)
 
     print("Checkpointed FeeDistributor")
 
@@ -1037,66 +1093,51 @@ def _getPrivateAccount():
     return account
 
 
+ARGV_FNS = {
+    "help": do_help,
+    # write actions
+    "compile" : do_compile,
+    "query" : do_volsym,
+    "volsym": do_volsym,
+    "allocations" : do_allocations,
+    "calc" : do_calc,
+    "dispense" : do_dispense_active,
+    "dispense_active" : do_dispense_active,
+    "dispense_passive" : do_dispense_passive_rewards,
+    "calculate_passive" : do_calculate_passive,
+    "nftinfo" : do_nftinfo,
+    "vebals" : do_vebals,
+    "addstrategy" : do_addstrategy,
+    "retirestrategy" : do_retirestrategy,
+    "mine" : do_mine,
+    "veSetAllocation" : do_veSetAllocation,
+    "checkpoint_feedist" : do_checkpoint_feedist,
+    "initdevwallets": do_initdevwallets,
+    "manyrandom" : do_manyrandom,
+    "newacct" : do_newacct,
+    "newtoken" : do_newtoken,
+    "newVeOcean" : do_newVeOcean,
+    "newVeAllocate" : do_newVeAllocate,
+    "newdfrewards" : do_newdfrewards,
+    "newdfstrategy" : do_newdfstrategy,
+    # read actions
+    "acctinfo" : do_acctinfo,
+    "chaininfo" : do_chaininfo,
+    "getrate" : do_getrate,
+}
+
+
 # ========================================================================
 # main
 @enforce_types
 def do_main():
-    if len(sys.argv) == 1 or sys.argv[1] == "help":
+    if len(sys.argv) == 1 :
         do_help()
-
-    # write actions
-    elif sys.argv[1] == "volsym" or sys.argv[1] == "query":
-        do_volsym()
-    elif sys.argv[1] == "nftinfo":
-        do_nftinfo()
-    elif sys.argv[1] == "allocations":
-        do_allocations()
-    elif sys.argv[1] == "vebals":
-        do_vebals()
-    elif sys.argv[1] == "getrate":
-        do_getrate()
-    elif sys.argv[1] == "calc":
-        do_calc()
-    elif sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active":
-        do_dispense_active()
-    elif sys.argv[1] == "compile":
-        do_compile()
-    elif sys.argv[1] == "manyrandom":
-        do_manyrandom()
-    elif sys.argv[1] == "newdfrewards":
-        do_newdfrewards()
-    elif sys.argv[1] == "newdfstrategy":
-        do_newdfstrategy()
-    elif sys.argv[1] == "addstrategy":
-        do_addstrategy()
-    elif sys.argv[1] == "retirestrategy":
-        do_retirestrategy()
-    elif sys.argv[1] == "mine":
-        do_mine()
-    elif sys.argv[1] == "newacct":
-        do_newacct()
-    elif sys.argv[1] == "newtoken":
-        do_newtoken()
-    elif sys.argv[1] == "newVeOcean":
-        do_newVeOcean()
-    elif sys.argv[1] == "newVeAllocate":
-        do_newVeAllocate()
-    elif sys.argv[1] == "veSetAllocation":
-        do_veSetAllocation()
-    elif sys.argv[1] == "checkpoint_feedist":
-        do_checkpoint_feedist()
-    elif sys.argv[1] == "dispense_passive":
-        do_dispense_passive_rewards()
-    elif sys.argv[1] == "calculate_passive":
-        do_calculate_passive()
-
-    # read actions
-    elif sys.argv[1] == "acctinfo":
-        do_acctinfo()
-    elif sys.argv[1] == "chaininfo":
-        do_chaininfo()
     else:
-        do_help()
+        if sys.argv[1] in ARGV_FNS:
+            ARGV_FNS[sys.argv[1]]()
+        else:
+            do_help()
 
 
 if __name__ == "__main__":

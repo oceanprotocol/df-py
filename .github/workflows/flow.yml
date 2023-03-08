@@ -11,7 +11,6 @@ on:
         default: "10000"
 
 jobs:
-  
   # we already have a test flow in test.yml
   # re-use that flow
   #run-tests:
@@ -21,8 +20,8 @@ jobs:
     env:
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     permissions:
-      contents: 'read'
-      id-token: 'write'
+      contents: "read"
+      id-token: "write"
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -66,6 +65,9 @@ jobs:
           echo "now=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
+
+      - name: Make dftool executable
+        run: chmod +x dftool
 
       - name: Run dftool getrate
         run: |
@@ -126,17 +128,17 @@ jobs:
         run: |
           bash ./scripts/workflow_rename_folder.sh
 
-      - id: 'auth'
+      - id: "auth"
         if: github.event_name == 'schedule'
-        uses: 'google-github-actions/auth@v1'
+        uses: "google-github-actions/auth@v1"
         with:
-          credentials_json: '${{ secrets.GC_SECRET }}'
+          credentials_json: "${{ secrets.GC_SECRET }}"
           #workload_identity_provider: ${{ secrets.GCLOUD_IDENTITY_PROVIDER }}
           #service_account: ${{ secrets.SERVICE_ACCOUNT }}
-          
-      - id: 'upload-folder'
+
+      - id: "upload-folder"
         if: github.event_name == 'schedule'
-        uses: 'google-github-actions/upload-cloud-storage@v1'
+        uses: "google-github-actions/upload-cloud-storage@v1"
         with:
-          path: '/tmp/csv/${{ env.DFWEEK }}'
-          destination: 'df-historical-data'
+          path: "/tmp/csv/${{ env.DFWEEK }}"
+          destination: "df-historical-data"
