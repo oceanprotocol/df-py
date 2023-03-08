@@ -6,6 +6,7 @@ import numpy as np
 import scipy
 
 from util import cleancase as cc, tousd
+from util import oceanutil
 from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
@@ -21,7 +22,7 @@ def getRewardAmount(start_dt: datetime) -> float:
         start_ts = (start_dt - period_start).total_seconds()
         return _halflife(period["supply"], end_ts, HALF_LIFE) - _halflife(period["supply"], start_ts, HALF_LIFE)
 
-    TOT_SUPPLY = 503370000
+    TOT_SUPPLY = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60 # 4 years
 
     periods = [
@@ -54,14 +55,10 @@ def getRewardAmount(start_dt: datetime) -> float:
     return sum(period['reward'] for period in periods)
 
 
+
 @enforce_types
 def _halflife(value, t, h) -> float:
-    t = int(t)
-    h = int(h)
-    value = int(value)
-    p = value >> int(t / h)
-    t %= h
-    return value - p + (p * t) / h / 2
+    return oceanutil.VestingWallet().getAmount(value, t, h)
 
 
 @enforce_types
