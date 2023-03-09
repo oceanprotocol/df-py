@@ -14,45 +14,28 @@ TARGET_WPY = 0.015717
 
 @enforce_types
 def getRewardAmount(start_dt: datetime) -> int:
-    class Period:
-        def __init__(self, start: datetime, supply: float, reward: float):
-            self.start = start
-            self.supply = supply
-            self._reward = reward
-
-        @property
-        def reward(self) -> float:
-            return self._reward
-
-        @reward.setter
-        def reward(self, value: float):
-            self._reward = value
-
-    end_dt = start_dt + timedelta(days=7)
-
-    def getrew(period: Period) -> float:
-        period_start = period.start
-        end_ts = (end_dt - period_start).total_seconds()
-        start_ts = (start_dt - period_start).total_seconds()
-        return _halflife(period.supply, end_ts, HALF_LIFE) - _halflife(
-            period.supply, start_ts, HALF_LIFE
-        )
-
     TOT_SUPPLY = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
+    end_dt = start_dt + timedelta(days=7)
 
-    periods: List[Period] = [
-        Period(start=datetime(2023, 3, 16), supply=TOT_SUPPLY * 0.1, reward=0),
-        Period(start=datetime(2024, 3, 15), supply=TOT_SUPPLY * 0.15, reward=0),
-        Period(start=datetime(2024, 9, 15), supply=TOT_SUPPLY * 0.25, reward=0),
-        Period(start=datetime(2025, 3, 15), supply=TOT_SUPPLY * 0.5, reward=0),
+    periods = [
+        (datetime(2023, 3, 16), TOT_SUPPLY * 0.1),
+        (datetime(2024, 3, 15), TOT_SUPPLY * 0.15),
+        (datetime(2024, 9, 15), TOT_SUPPLY * 0.25),
+        (datetime(2025, 3, 15), TOT_SUPPLY * 0.5),
     ]
 
-    for period in periods:
-        if start_dt >= period.start:
-            period.reward = getrew(period)
+    rewards = [
+        (
+            _halflife(supply, (end_dt - start).total_seconds(), HALF_LIFE)
+            - _halflife(supply, (start_dt - start).total_seconds(), HALF_LIFE)
+        )
+        if start_dt >= start
+        else 0
+        for start, supply in periods
+    ]
 
-    return int(sum(period.reward for period in periods))
+    return int(sum(rewards))
 
 
 @enforce_types
