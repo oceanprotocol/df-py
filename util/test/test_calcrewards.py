@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 from pytest import approx
 
-from util import calcrewards, cleancase as cc, constants, tousd
+from util import calcrewards, networkutil, cleancase as cc, constants, tousd
 from util.calcrewards import TARGET_WPY, _rankBasedAllocate
 from util.constants import ZERO_ADDRESS
 from util.base18 import fromBase18
@@ -825,6 +825,7 @@ def test_flattenRewards():
     ],
 )
 def test_getRewardAmount(test_input, expected_output):
+    networkutil.connect(networkutil.DEV_CHAINID)
     assert fromBase18(calcrewards.getRewardAmount(test_input)) == approx(
         expected_output
     )
