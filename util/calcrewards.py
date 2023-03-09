@@ -18,28 +18,28 @@ def getRewardAmount(start_dt: datetime) -> int:
     end_dt = start_dt + timedelta(days=7)
 
     def getrew(period):
-        period_start = period[0]
+        period_start = period["start"]
         end_ts = (end_dt - period_start).total_seconds()
         start_ts = (start_dt - period_start).total_seconds()
-        return _halflife(period[1], end_ts, HALF_LIFE) - _halflife(
-            period[1], start_ts, HALF_LIFE
+        return _halflife(period["supply"], end_ts, HALF_LIFE) - _halflife(
+            period["supply"], start_ts, HALF_LIFE
         )
 
     TOT_SUPPLY = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
 
     periods = [
-        (datetime(2023, 3, 16), TOT_SUPPLY * 0.1, 0),
-        (datetime(2024, 3, 15), TOT_SUPPLY * 0.15, 0),
-        (datetime(2024, 9, 15), TOT_SUPPLY * 0.25, 0),
-        (datetime(2025, 3, 15), TOT_SUPPLY * 0.5, 0),
+        {"start": datetime(2023, 3, 16), "supply": TOT_SUPPLY * 0.1, "reward": 0},
+        {"start": datetime(2024, 3, 15), "supply": TOT_SUPPLY * 0.15, "reward": 0},
+        {"start": datetime(2024, 9, 15), "supply": TOT_SUPPLY * 0.25, "reward": 0},
+        {"start": datetime(2025, 3, 15), "supply": TOT_SUPPLY * 0.5, "reward": 0},
     ]
 
     for period in periods:
-        if start_dt >= period[0]:
-            period[2] = getrew(period)
-    
-    return int(sum(period[2] for period in periods))
+        if start_dt >= period["start"]:
+            period["reward"] = getrew(period)
+
+    return int(sum(period["reward"] for period in periods))
 
 
 @enforce_types
