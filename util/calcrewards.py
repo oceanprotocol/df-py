@@ -11,11 +11,19 @@ from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
-class Period(NamedTuple):
-    start: datetime
-    supply: float
-    reward: float
+class Period:
+    def __init__(self, start: datetime, supply: float, reward: float):
+        self.start = start
+        self.supply = supply
+        self._reward = reward
 
+    @property
+    def reward(self) -> float:
+        return self._reward
+
+    @reward.setter
+    def reward(self, value: float):
+        self._reward = value
 
 @enforce_types
 def getRewardAmount(start_dt: datetime) -> int:
@@ -44,6 +52,9 @@ def getRewardAmount(start_dt: datetime) -> int:
             period.reward = getrew(period)
 
     return int(sum(period.reward for period in periods))
+
+Property "reward" defined in "Period" is read-only 
+
 
 @enforce_types
 def _halflife(value, t, h) -> float:
