@@ -43,7 +43,7 @@ def getRewardAmount(start_dt: datetime) -> int:
         if start_dt >= period.start:
             period.reward = getrew(period)
 
-    return int(sum(period.reward for period in periods)))
+    return int(sum(period.reward for period in periods))
 
 @enforce_types
 def _halflife(value, t, h) -> float:
