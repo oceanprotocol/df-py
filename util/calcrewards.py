@@ -39,7 +39,7 @@ def getRewardAmount(start_dt: datetime) -> int:
         if start_dt >= period["start"]:
             period["reward"] = getrew(period)
 
-    return sum(period["reward"] for period in periods)
+    return int(sum(period["reward"] for period in periods))
 
 
 @enforce_types
