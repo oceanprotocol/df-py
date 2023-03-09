@@ -14,7 +14,7 @@ TARGET_WPY = 0.015717
 
 
 @enforce_types
-def getRewardAmount(start_dt: datetime) -> float:
+def getRewardAmount(start_dt: datetime) -> int:
     end_dt = start_dt + timedelta(days=7)
 
     def getrew(period):
