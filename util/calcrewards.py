@@ -25,7 +25,7 @@ def getRewardAmount(start_dt: datetime) -> int:
             period["supply"], start_ts, HALF_LIFE
         )
 
-    TOT_SUPPLY = 503370000 * 1e118
+    TOT_SUPPLY = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
 
     periods = [
