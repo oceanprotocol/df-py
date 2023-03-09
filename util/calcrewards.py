@@ -53,8 +53,6 @@ def getRewardAmount(start_dt: datetime) -> int:
 
     return int(sum(period.reward for period in periods))
 
-Property "reward" defined in "Period" is read-only 
-
 
 @enforce_types
 def _halflife(value, t, h) -> float:
