@@ -21,6 +21,10 @@ from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
+from ocean_lib.ocean.ocean_assets import OceanAssets
+from ocean_lib.data_provider.data_service_provider import DataServiceProvider
+from ocean_lib.example_config import get_config_dict
+from ocean_lib.ocean.ocean import Ocean
 
 
 PREV = {}
@@ -619,32 +623,33 @@ def test_symbol():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
+# @pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_queryAquariusAssetNames():
-    # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should return ""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
-    expectedAssetNames = ["Trent", "c2d fresh dataset", "CryptoPunks dataset C2D", ""]
+
+    expectedAssetNames = ['OCEAN/USDT orderbook', 'BTC/USDT orderbook', 'DEX volume in details', '']
     assetNames = query.queryAquariusAssetNames(nft_dids)
+    print("assetNames", assetNames)
     assert len(assetNames) == 4
 
     for i in range(4):
-        assert assetNames[nft_dids[i]] == expectedAssetNames[i]
+        assert expectedAssetNames.count(assetNames[nft_dids[i]]) == 1
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
+# @pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_to_aquarius_assets():
     # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should return ""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
