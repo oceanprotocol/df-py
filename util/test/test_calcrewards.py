@@ -824,9 +824,9 @@ def test_flattenRewards():
         (datetime(2025, 3, 15), 1206708.9),
     ],
 )
-def test_getRewardAmount(test_input, expected_output):
+def test_getRewardAmountForWeekWei(test_input, expected_output):
     networkutil.connect(networkutil.DEV_CHAINID)
-    assert fromBase18(calcrewards.getRewardAmount(test_input)) == approx(
+    assert fromBase18(calcrewards.getRewardAmountForWeekWei(test_input)) == approx(
         expected_output
     )
 
