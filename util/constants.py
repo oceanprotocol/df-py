@@ -6,6 +6,7 @@ AQUARIUS_BASE_URL = "https://v4.aquarius.oceanprotocol.com"
 BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
 
 MAX_ALLOCATE = 10000.0
+ACTIVE_REWARDS_MULTIPLIER = 0.5
 
 DO_PUBREWARDS = True
 
