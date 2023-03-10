@@ -362,7 +362,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, TOT_OCEAN={TOT_OCEAN}, START_DATE={START_DATE}"
     )
-    return
     # do we have the input files?
     alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
     if not os.path.exists(alloc_fname):
