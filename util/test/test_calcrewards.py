@@ -8,7 +8,7 @@ from pytest import approx
 
 from util import calcrewards, networkutil, cleancase as cc, constants, tousd
 from util.calcrewards import TARGET_WPY, _rankBasedAllocate
-from util.constants import ZERO_ADDRESS
+from util.constants import ZERO_ADDRESS, ACTIVE_REWARDS_MULTIPLIER
 from util.base18 import fromBase18
 
 # for shorter lines
@@ -828,6 +828,25 @@ def test_getRewardAmountForWeekWei(test_input, expected_output):
     networkutil.connect(networkutil.DEV_CHAINID)
     assert fromBase18(calcrewards.getRewardAmountForWeekWei(test_input)) == approx(
         expected_output
+    )
+
+@pytest.mark.parametrize(
+    "test_input, expected_output",
+    [
+        (datetime(2023, 3, 16), 120670.89),
+        (datetime(2023, 4, 16), 120670.89),
+        (datetime(2024, 3, 8), 120670.89),
+        (datetime(2024, 3, 15), 301677.226),
+        (datetime(2024, 9, 8), 301677.226),
+        (datetime(2024, 9, 15), 603354.45),
+        (datetime(2025, 3, 8), 603354.45),
+        (datetime(2025, 3, 15), 1206708.9),
+    ],
+)
+def test_getActiveRewardAmountForWeekEth(test_input, expected_output):
+    networkutil.connect(networkutil.DEV_CHAINID)
+    assert calcrewards.getActiveRewardAmountForWeekEth(test_input) == approx(
+        expected_output * ACTIVE_REWARDS_MULTIPLIER
     )
 
 
