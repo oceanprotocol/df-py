@@ -246,13 +246,20 @@ def setup_function():
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, toBase18(0.001))
 
-    for envvar in ["DFTOOL_KEY", "ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
+    for envvar in [
+        "DFTOOL_KEY",
+        "ADDRESS_FILE",
+        "SUBGRAPH_URI",
+        "SECRET_SEED",
+        "WEB3_INFURA_PROJECT_ID",
+    ]:
         PREV[envvar] = os.environ.get(envvar)
 
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
     os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
     os.environ["SECRET_SEED"] = "1234"
+    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
 
 
 @enforce_types
