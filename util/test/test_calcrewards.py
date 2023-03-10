@@ -830,6 +830,7 @@ def test_getRewardAmountForWeekWei(test_input, expected_output):
         expected_output
     )
 
+
 @pytest.mark.parametrize(
     "test_input, expected_output",
     [
