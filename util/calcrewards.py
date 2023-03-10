@@ -6,14 +6,31 @@ import scipy
 
 from util import cleancase as cc, tousd
 from util import oceanutil
-from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
+from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP, ACTIVE_REWARDS_MULTIPLIER
+from util.base18 import fromBase18
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
 
+def getActiveRewardAmountForWeekEth(start_dt: datetime) -> int:
+    """
+    Return the active reward amount for the week in ETH starting at start_dt.
+    This is the amount that will be allocated to active rewards.
+    """
+    total_reward_amount = getRewardAmountForWeekWei(start_dt)
+    active_reward_amount = int(total_reward_amount * ACTIVE_REWARDS_MULTIPLIER)
+    active_reward_amount_eth = fromBase18(active_reward_amount)
+    return active_reward_amount_eth
+
+
 @enforce_types
-def getRewardAmount(start_dt: datetime) -> int:
+def getRewardAmountForWeekWei(start_dt: datetime) -> int:
+    """
+    Return the total reward amount for the week in WEI starting at start_dt.
+    This amount is in accordance with the vesting schedule.
+    Returns 0 if the week is before the start of the vesting schedule.
+    """
     TOT_SUPPLY = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
     end_dt = start_dt + timedelta(days=7)
