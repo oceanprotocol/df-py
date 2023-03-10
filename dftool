@@ -18,7 +18,7 @@ from util import (
     networkutil,
     query,
 )
-from util.calcrewards import calcRewards
+from util.calcrewards import calcRewards, getActiveRewardAmountForWeekEth
 from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
@@ -341,10 +341,13 @@ def do_calc():
 Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
+  ST -- start time -- YYYY-MM-DD
   IGNORED -- Ignored. This argument is kept for compatibility.
 """
-
-    if len(sys.argv) not in [4, 5]:
+    networkutil.connect(5)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    recordDeployedContracts(ADDRESS_FILE)
+    if len(sys.argv) not in [5, 6]:
         print(HELP)
         sys.exit(0)
 
@@ -352,8 +355,14 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
-    print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
+    if TOT_OCEAN == 0:
+        START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
+        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
 
+    print(
+        f"Arguments: CSV_DIR={CSV_DIR}, TOT_OCEAN={TOT_OCEAN}, START_DATE={START_DATE}"
+    )
+    return
     # do we have the input files?
     alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
     if not os.path.exists(alloc_fname):
@@ -698,7 +707,6 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     randomLockAndAllocate(tups)
     randomConsumeFREs(tups, OCEAN)
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
-
 
 
 # ========================================================================
@@ -1096,34 +1104,34 @@ def _getPrivateAccount():
 ARGV_FNS = {
     "help": do_help,
     # write actions
-    "compile" : do_compile,
-    "query" : do_volsym,
+    "compile": do_compile,
+    "query": do_volsym,
     "volsym": do_volsym,
-    "allocations" : do_allocations,
-    "calc" : do_calc,
-    "dispense" : do_dispense_active,
-    "dispense_active" : do_dispense_active,
-    "dispense_passive" : do_dispense_passive_rewards,
-    "calculate_passive" : do_calculate_passive,
-    "nftinfo" : do_nftinfo,
-    "vebals" : do_vebals,
-    "addstrategy" : do_addstrategy,
-    "retirestrategy" : do_retirestrategy,
-    "mine" : do_mine,
-    "veSetAllocation" : do_veSetAllocation,
-    "checkpoint_feedist" : do_checkpoint_feedist,
+    "allocations": do_allocations,
+    "calc": do_calc,
+    "dispense": do_dispense_active,
+    "dispense_active": do_dispense_active,
+    "dispense_passive": do_dispense_passive_rewards,
+    "calculate_passive": do_calculate_passive,
+    "nftinfo": do_nftinfo,
+    "vebals": do_vebals,
+    "addstrategy": do_addstrategy,
+    "retirestrategy": do_retirestrategy,
+    "mine": do_mine,
+    "veSetAllocation": do_veSetAllocation,
+    "checkpoint_feedist": do_checkpoint_feedist,
     "initdevwallets": do_initdevwallets,
-    "manyrandom" : do_manyrandom,
-    "newacct" : do_newacct,
-    "newtoken" : do_newtoken,
-    "newVeOcean" : do_newVeOcean,
-    "newVeAllocate" : do_newVeAllocate,
-    "newdfrewards" : do_newdfrewards,
-    "newdfstrategy" : do_newdfstrategy,
+    "manyrandom": do_manyrandom,
+    "newacct": do_newacct,
+    "newtoken": do_newtoken,
+    "newVeOcean": do_newVeOcean,
+    "newVeAllocate": do_newVeAllocate,
+    "newdfrewards": do_newdfrewards,
+    "newdfstrategy": do_newdfstrategy,
     # read actions
-    "acctinfo" : do_acctinfo,
-    "chaininfo" : do_chaininfo,
-    "getrate" : do_getrate,
+    "acctinfo": do_acctinfo,
+    "chaininfo": do_chaininfo,
+    "getrate": do_getrate,
 }
 
 
@@ -1131,7 +1139,7 @@ ARGV_FNS = {
 # main
 @enforce_types
 def do_main():
-    if len(sys.argv) == 1 :
+    if len(sys.argv) == 1:
         do_help()
     else:
         if sys.argv[1] in ARGV_FNS:
