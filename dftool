@@ -347,7 +347,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     networkutil.connect(5)
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     recordDeployedContracts(ADDRESS_FILE)
-    if len(sys.argv) not in [5, 6]:
+    if len(sys.argv) not in [4, 5, 6]:
         print(HELP)
         sys.exit(0)
 
