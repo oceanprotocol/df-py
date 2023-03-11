@@ -341,7 +341,7 @@ def do_calc():
 Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
-  ST -- start time -- YYYY-MM-DD
+  ST -- week start date -- YYYY-MM-DD
   IGNORED -- Ignored. This argument is kept for compatibility.
 """
     networkutil.connect(5)
@@ -355,6 +355,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
+    START_DATE = None
+
     if TOT_OCEAN == 0:
         START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
         TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
