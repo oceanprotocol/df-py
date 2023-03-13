@@ -341,7 +341,7 @@ def do_calc():
 Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
-  ST -- week start date -- YYYY-MM-DD
+  [ST] -- week start date -- YYYY-MM-DD
   IGNORED -- Ignored. This argument is kept for compatibility.
 """
     networkutil.connect(5)
@@ -956,7 +956,7 @@ def do_dispense_passive_rewards():
 Usage: dftool dispense_passive CHAINID AMOUNT ST
     CHAINID -- {CHAINID_EXAMPLES}
     AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
-    ST -- week start date -- YYYY-MM-DD
+    [ST] -- week start date -- YYYY-MM-DD
 """
     if len(sys.argv) not in [4]:
         print(HELP)
