@@ -970,7 +970,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT ST
 
     if AMOUNT == 0:
         START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
-        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
+        AMOUNT = getActiveRewardAmountForWeekEth(START_DATE)
 
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
