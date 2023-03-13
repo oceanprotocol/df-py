@@ -953,8 +953,10 @@ Usage: dftool chaininfo CHAINID
 def do_dispense_passive_rewards():
     HELP = f"""Dispense passive rewards.
 
-Usage: dftool dispense_passive CHAINID AMOUNT
+Usage: dftool dispense_passive CHAINID AMOUNT ST
     CHAINID -- {CHAINID_EXAMPLES}
+    AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
+    ST -- week start date -- YYYY-MM-DD
 """
     if len(sys.argv) not in [4]:
         print(HELP)
@@ -964,8 +966,12 @@ Usage: dftool dispense_passive CHAINID AMOUNT
     networkutil.connect(CHAINID)
     AMOUNT = float(sys.argv[3])
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-
     recordDeployedContracts(ADDRESS_FILE)
+
+    if AMOUNT == 0:
+        START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
+        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
+
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
     dispense.dispense_passive(OCEAN, feedist, AMOUNT)
