@@ -56,7 +56,24 @@ def getRewardAmountForWeekWei(start_dt: datetime) -> int:
 
 
 @enforce_types
-def _halflife(value, t, h) -> float:
+def _halflife(value, t, h) -> int:
+    """
+    Approximation of halflife function
+    """
+    t = int(t)
+    h = int(h)
+    value = int(value)
+    p = value >> int(t // h)
+    t %= h
+    return int(value - p + (p * t) // h // 2)
+
+
+@enforce_types
+def _halflife_solidity(value, t, h) -> int:
+    """
+    Halflife function in Solidity, requires network connection and
+    deployed VestingWallet contract
+    """
     return oceanutil.VestingWallet().getAmount(value, t, h)
 
 
