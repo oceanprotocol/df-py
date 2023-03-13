@@ -851,6 +851,18 @@ def test_getActiveRewardAmountForWeekEth(test_input, expected_output):
     )
 
 
+@enforce_types
+def test_compareHalflifeFunctions():
+    # compare python and solidity halflife function
+    VALUE = 503370000 * 1e18
+    HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
+    i = HALF_LIFE
+    py_result = calcrewards._halflife(VALUE, i, HALF_LIFE)
+    solidity_result = calcrewards._halflife_solidity(VALUE, i, HALF_LIFE)
+    diff = abs(py_result - solidity_result)
+    assert diff < 1e10, f"diff {diff} at i {i/HALF_LIFE*2}"
+
+
 # ========================================================================
 # Helpers to keep function calls compact, and return vals compact.
 
