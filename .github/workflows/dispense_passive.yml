@@ -42,6 +42,7 @@ jobs:
           echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "date=$(date -dlast-thursday '+%Y-%m-%d')" >> $GITHUB_ENV
 
       - name: Make dftool executable
         run: chmod +x dftool
@@ -57,4 +58,4 @@ jobs:
           USE_MULTISIG: true
         if: github.event_name == 'schedule'
         run: |
-          ./dftool dispense_passive 1 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }}
+          ./dftool dispense_passive 1 0 $date

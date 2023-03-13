@@ -101,7 +101,7 @@ jobs:
 
       - name: Run dftool calc
         run: |
-          ./dftool calc $CSV_DIR ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} OCEAN
+          ./dftool calc $CSV_DIR 0 $date OCEAN
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
