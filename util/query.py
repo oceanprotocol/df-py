@@ -159,39 +159,17 @@ def queryVebalances(
                 # calculate the balance
                 balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
 
-                # calculate delegations
-                ## calculate total amount going
-                totalAmountGoing = 0.0
-                for delegation in user["delegation"]:
-                    totalAmountGoing += float(delegation["amount"])
-
-                ## calculate total amount coming
-                totalAmountComing = 0.0
-                for delegate in user["delegates"]:
-                    totalAmountComing += float(delegate["amount"])
-
-                ## calculate total amount
-                totalAmount = totalAmountComing - totalAmountGoing
-
-                ## convert wei to OCEAN
-                totalAmount = totalAmount / 1e18
-
-                ## add to balance
-                balance += totalAmount
-
-                ## set user balance
+                # set user balance
                 LP_addr = user["id"].lower()
                 if LP_addr not in vebals:
                     vebals[LP_addr] = balance
                 else:
                     vebals[LP_addr] += balance
 
-                ## set locked amount
-                # always get the latest
+                # set locked amount
                 locked_amt[LP_addr] = float(user["lockedAmount"])
 
-                ## set unlock time
-                # always get the latest
+                # set unlock time
                 unlock_time[LP_addr] = int(user["unlockTime"])
 
             ## increase offset
