@@ -1105,7 +1105,7 @@ def _getPrivateAccount():
 ARGV_FNS = {
     # Help Actions
     "help": do_help,
-    
+
     # Init Actions
     "compile" : do_compile,
 
@@ -1117,14 +1117,14 @@ ARGV_FNS = {
     "vebals" : do_vebals,
     "getrate" : do_getrate,
     "calculate_passive" : do_calculate_passive,
-    
-    # Web3 Ops Actions    
+
+    # Web3 Ops Actions
     "dispense_active" : do_dispense_active,
     "checkpoint_feedist" : do_checkpoint_feedist,
     "dispense_passive" : do_dispense_passive_rewards,
     "add_strategy" : do_add_strategy,
     "retire_strategy" : do_retire_strategy,
-    
+
     # Debug Actions
     "init_dev_wallets": do_init_dev_wallets,
     "many_random" : do_many_random,
@@ -1135,10 +1135,10 @@ ARGV_FNS = {
     "new_veallocate" : do_new_veallocate,
     "new_dfrewards" : do_new_dfrewards,
     "new_dfstrategy" : do_new_dfstrategy,
-    
+
     # DFVE User Actions
     "set_veallocate" : do_set_veallocate,
-    
+
     # Read Actions
     "acct_info" : do_acct_info,
     "chain_info" : do_chain_info,
@@ -1149,7 +1149,7 @@ ARGV_FNS = {
 # main
 @enforce_types
 def do_main():
-    if len(sys.argv) == 1 :
+    if len(sys.argv) == 1:
         do_help()
     else:
         if sys.argv[1] in ARGV_FNS:
