@@ -191,7 +191,7 @@ def test_strategies():
     assert TOK.balanceOf(df_strategy) == 30
 
     # retire strategy
-    df_rewards.retire_strategy(df_strategy.address)
+    df_rewards.retireStrategy(df_strategy.address)
     assert not df_rewards.isStrategy(df_strategy.address)
 
     with brownie.reverts("Caller must be a strategy"):
