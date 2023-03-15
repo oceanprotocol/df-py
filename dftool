@@ -50,35 +50,45 @@ HELP_MAIN = """Data Farming tool, for use by OPF.
 
 Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
 
-  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
+  # Help Actions
+  dftool help - this message
+
+  # Init Actions
+  dftool compile - compile contracts
+  
+  # Data Farming query & calc actions
+  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
+  dftool nftinfo CSV_DIR CHAINID [FIN] - Query chain, output nft_info csv
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
+  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
+  dftool calculate_passive CHAINID DATE CSV_DIR - Calculate passive rewards.
+  
+  # Web3 Ops Actions
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
-  dftool dispense_passive CHAINID AMOUNT
-
-  dftool compile - compile contracts
-  dftool many_random CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
-  dftool new_dfRewards CHAINID - deploy new DFRewards contract
-
-  dftool new_dfStrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
+  dftool dispense_passive CHAINID AMOUNT - dispense rewards in OCEAN on chainID
   dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
-  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
-
+  
+  # Debug Actions
+  dftool init_dev_wallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+  dftool many_random CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool new_acct - generate new account
   dftool new_token CHAINID - generate new token (for testing)
+  dftool new_veocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
+  dftool new_veallocate CHAINID - deploy veAllocate (for testing)
+  dftool new_dfrewards CHAINID - deploy new DFRewards contract
+  dftool new_dfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  
+  # DFVE User Actions
+  dftool set_veallocate CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
-  dftool new_veOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool new_veAllocate CHAINID - deploy veAllocate (for testing)
-  dftool set_veAllocate CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
-
-  dftool init_dev_wallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+  # Read Actions
   dftool acct_info CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chain_info CHAINID - info about a network
-  dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -482,10 +492,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 # ========================================================================
 @enforce_types
-def do_new_dfRewards():
+def do_new_dfrewards():
     HELP = f"""Deploy new DFRewards contract.
 
-Usage: dftool new_dfRewards CHAINID
+Usage: dftool new_dfrewards CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 """
     if len(sys.argv) not in [3]:
@@ -493,7 +503,7 @@ Usage: dftool new_dfRewards CHAINID
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_dfRewards"
+    assert sys.argv[1] == "new_dfrewards"
     CHAINID = int(sys.argv[2])
 
     print(f"Arguments: CHAINID={CHAINID}")
@@ -504,15 +514,15 @@ Usage: dftool new_dfRewards CHAINID
     df_rewards = B.DFRewards.deploy({"from": from_account})
     print(f"New DFRewards contract deployed at address: {df_rewards.address}")
 
-    print("dftool new_dfRewards: Done")
+    print("dftool new_dfrewards: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_new_dfStrategy():
+def do_new_dfstrategy():
     HELP = f"""Deploy new DFStrategy contract.
 
-Usage: dftool new_dfStrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
+Usage: dftool new_dfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
   CHAINID -- {CHAINID_EXAMPLES}
   DFREWARDS_ADDR -- DFRewards contract address
   DFSTRATEGY_NAME -- DFStrategy contract name
@@ -521,7 +531,7 @@ Usage: dftool new_dfStrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
         print(HELP)
         sys.exit(0)
 
-    assert sys.argv[1] == "new_dfStrategy"
+    assert sys.argv[1] == "new_dfstrategy"
     CHAINID = int(sys.argv[2])
     DFREWARDS_ADDR = sys.argv[3]
     DFSTRATEGY_NAME = sys.argv[4]
@@ -533,7 +543,7 @@ Usage: dftool new_dfStrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
     df_strategy = B[DFSTRATEGY_NAME].deploy(DFREWARDS_ADDR, {"from": from_account})
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
-    print("dftool new_dfStrategy: Done")
+    print("dftool new_dfstrategy: Done")
 
 
 # ========================================================================
@@ -782,17 +792,17 @@ Usage: dftool new_token CHAINID
 
 # ========================================================================
 @enforce_types
-def do_new_veOcean():
+def do_new_veocean():
     HELP = """Generate new veOcean (for testing).
 
-Usage: dftool new_veOcean CHAINID TOKEN_ADDR
+Usage: dftool new_veocean CHAINID TOKEN_ADDR
 """
     if len(sys.argv) not in [4]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_veOcean"
+    assert sys.argv[1] == "new_veocean"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -815,17 +825,17 @@ Usage: dftool new_veOcean CHAINID TOKEN_ADDR
 
 # ========================================================================
 @enforce_types
-def do_new_veAllocate():
+def do_new_veallocate():
     HELP = """Generate new veAllocate (for testing).
 
-Usage: dftool new_veAllocate CHAINID
+Usage: dftool new_veallocate CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_veAllocate"
+    assert sys.argv[1] == "new_veallocate"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -838,18 +848,18 @@ Usage: dftool new_veAllocate CHAINID
 
 # ========================================================================
 @enforce_types
-def do_set_veAllocate():
+def do_set_veallocate():
     HELP = """Allocate weight to veAllocate contract (for testing).
     Set to 0 to trigger resetAllocation event.
 
-Usage: dftool set_veAllocate CHAINID amount exchangeId
+Usage: dftool set_veallocate CHAINID amount exchangeId
 """
     if len(sys.argv) not in [5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "set_veAllocate"
+    assert sys.argv[1] == "set_veallocate"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -1093,35 +1103,45 @@ def _getPrivateAccount():
 
 
 ARGV_FNS = {
+    # Help Actions
     "help": do_help,
-    # write actions
+    
+    # Init Actions
     "compile" : do_compile,
-    "volsym": do_volsym,
-    "allocations" : do_allocations,
+
+    # Data Farming query & calc actions
     "calc" : do_calc,
-    "dispense_active" : do_dispense_active,
-    "dispense_passive" : do_dispense_passive_rewards,
-    "calculate_passive" : do_calculate_passive,
+    "volsym": do_volsym,
     "nftinfo" : do_nftinfo,
+    "allocations" : do_allocations,
     "vebals" : do_vebals,
+    "getrate" : do_getrate,
+    "calculate_passive" : do_calculate_passive,
+    
+    # Web3 Ops Actions    
+    "dispense_active" : do_dispense_active,
+    "checkpoint_feedist" : do_checkpoint_feedist,
+    "dispense_passive" : do_dispense_passive_rewards,
     "add_strategy" : do_add_strategy,
     "retire_strategy" : do_retire_strategy,
-    "mine" : do_mine,
-    "set_veAllocate" : do_set_veAllocate,
-    "checkpoint_feedist" : do_checkpoint_feedist,
-    # dev actions
+    
+    # Debug Actions
     "init_dev_wallets": do_init_dev_wallets,
     "many_random" : do_many_random,
+    "mine" : do_mine,
     "new_acct" : do_new_acct,
     "new_token" : do_new_token,
-    "new_veOcean" : do_new_veOcean,
-    "new_veAllocate" : do_new_veAllocate,
-    "new_dfRewards" : do_new_dfRewards,
-    "new_dfStrategy" : do_new_dfStrategy,
-    # read actions
+    "new_veocean" : do_new_veocean,
+    "new_veallocate" : do_new_veallocate,
+    "new_dfrewards" : do_new_dfrewards,
+    "new_dfstrategy" : do_new_dfstrategy,
+    
+    # DFVE User Actions
+    "set_veallocate" : do_set_veallocate,
+    
+    # Read Actions
     "acct_info" : do_acct_info,
     "chain_info" : do_chain_info,
-    "getrate" : do_getrate,
 }
 
 
