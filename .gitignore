@@ -6,4 +6,6 @@ build/
 .pytest_cache/
 .env
 .idea/
+.coverage
+.vscode/
 __pycache__

@@ -92,7 +92,7 @@ dftool calc $CSV_PATH 10000 OCEAN
 
 Get a working account. We call it dftool_acct. Either use a previous one, or create a new one. For the latter::
 ```console
-dftool newacct
+dftool new_acct
 ```
 
 Write down dftool_acct private key & address. And, in console:

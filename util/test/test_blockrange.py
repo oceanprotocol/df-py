@@ -70,7 +70,7 @@ def test_available3_samplesN():
 
 
 @enforce_types
-def test_manyRandom():
+def test_many_random():
     for _ in range(100):
         r = BlockRange(st=10, fin=20, num_samples=3).getBlocks()
         assert len(r) == 3

@@ -102,8 +102,8 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def test_manyrandom():
-    cmd = f"./dftool manyrandom {CHAINID}"
+def test_many_random():
+    cmd = f"./dftool many_random {CHAINID}"
     output_s = ""
     with subprocess.Popen(
         cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
@@ -115,14 +115,14 @@ def test_manyrandom():
 
 
 @enforce_types
-def test_initdevwallets():
+def test_init_dev_wallets():
     account9 = brownie.network.accounts[9]
 
     OCEAN = oceanutil.OCEANtoken()
     if OCEAN.balanceOf(account9.address) == 0.0:
         assert fromBase18(OCEAN.balanceOf(account9.address)) == 0.0
 
-        cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
+        cmd = f"./dftool init_dev_wallets {networkutil.DEV_CHAINID}"
         os.system(cmd)
 
         assert fromBase18(OCEAN.balanceOf(account9.address)) > 1.0
@@ -140,13 +140,13 @@ def test_noarg_commands():
         "dispense_active",
         "querymany",
         "compile",
-        "manyrandom",
-        "newdfrewards",
+        "set_veAllocate",
+        "new_dfRewards",
         "mine",
-        "newacct",
-        "newtoken",
-        "acctinfo",
-        "chaininfo",
+        "new_acct",
+        "new_token",
+        "acct_info",
+        "chain_info",
     ]
     for argv1 in argv1s:
         print(f"Test dftool {argv1}")
