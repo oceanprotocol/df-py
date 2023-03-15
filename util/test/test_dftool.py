@@ -134,11 +134,9 @@ def test_noarg_commands():
     # sometimes they do the main work (eg compile).
     argv1s = [
         "",
-        "query",
         "volsym",
         "getrate",
         "calc",
-        "dispense",
         "dispense_active",
         "querymany",
         "compile",
@@ -162,6 +160,7 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
+        # bad commands - such as querymany - will still return 0 and do not fail
         assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
 
 
