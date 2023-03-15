@@ -147,6 +147,9 @@ def test_noarg_commands():
         "newtoken",
         "acctinfo",
         "chaininfo",
+        "get_balance_veocean",
+        "get_lock_end_veocean",
+        "new_veallocate",
     ]
     for argv1 in argv1s:
         print(f"Test dftool {argv1}")

@@ -27,6 +27,11 @@ from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
     veAllocate,
+    create_lock_veocean,
+    increase_amount_veocean,
+    increase_unlock_time_veocean,
+    get_balance_veocean,
+    get_lock_end_veocean,
     FeeDistributor,
 )
 
@@ -815,6 +820,173 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 
 # ========================================================================
 @enforce_types
+def do_create_lock_veocean():
+    HELP = """Lock Ocean (for testing).
+    
+Usage: dftool create_lock_veocean CHAINID amount weeks
+"""
+    if len(sys.argv) not in [5]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "create_lock_veocean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    amount = float(sys.argv[3])
+    print(f"Arguments:\n amount={amount}")
+
+    weeks = int(sys.argv[4])
+    print(f"Arguments:\n weeks={weeks}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+
+        # Lock ocean for a certain number of weeks
+        end_time = brownie.network.chain.time() + WEEK * weeks
+
+        ve_balance = get_balance_veocean(from_account)
+        print(f"before: veOCEAN balance: {ve_balance}")
+
+        create_lock_veocean(amount, end_time, from_account)
+
+        ve_balance = get_balance_veocean(from_account)
+        print(f"after: veOCEAN balance: {ve_balance}")
+
+
+# ========================================================================
+@enforce_types
+def do_increase_unlock_time_veocean():
+    HELP = """Increase the time of Ocean locked inside veOcean (for testing).
+    
+Usage: dftool increase_unlock_time_veocean CHAINID weeks
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "increase_unlock_time_veocean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    weeks = int(sys.argv[3])
+    print(f"Arguments:\n weeks={weeks}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+
+        # Lock ocean for a certain number of weeks
+        end_time = brownie.network.chain.time() + WEEK * weeks
+
+        ve_lock_end = get_lock_end_veocean(from_account)
+        print(f"before: veOCEAN lock end: {ve_lock_end}")
+
+        increase_unlock_time_veocean(end_time, from_account)
+
+        ve_lock_end = get_lock_end_veocean(from_account)
+        print(f"after: veOCEAN lock end: {ve_lock_end}")
+
+
+# ========================================================================
+@enforce_types
+def do_increase_lock_amount_veocean():
+    HELP = """Increase the amount of Ocean locked inside veOcean (for testing).
+    
+Usage: dftool increase_lock_amount_veocean CHAINID amount
+"""
+    if len(sys.argv) not in [4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "increase_lock_amount_veocean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    amount = float(sys.argv[3])
+    print(f"Arguments:\n amount={amount}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+
+        ve_balance = get_balance_veocean(from_account)
+        print(f"before: veOCEAN balance: {ve_balance}")
+
+        increase_amount_veocean(amount, from_account)
+
+        ve_balance = get_balance_veocean(from_account)
+        print(f"after: veOCEAN balance: {ve_balance}")
+
+
+# ========================================================================
+@enforce_types
+def do_get_lock_end_veocean():
+    HELP = """Get end time for veOcean lock (for testing).
+    
+Usage: dftool get_lock_end_veocean CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "get_lock_end_veocean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+
+        ve_lock_end = get_lock_end_veocean(from_account)
+        print(f"veOCEAN lock end time: {ve_lock_end}")
+
+
+# ========================================================================
+@enforce_types
+def do_get_balance_veocean():
+    HELP = """Get veOcean balance on a specific chain (for testing).
+    
+Usage: dftool get_balance_veocean CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "get_balance_veocean"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+        veBalance = get_balance_veocean(from_account)
+        print(f"veOCEAN balance: {veBalance}")
+
+
+# ========================================================================
+@enforce_types
 def do_newVeAllocate():
     HELP = """Generate new veAllocate (for testing).
 
@@ -1107,6 +1279,9 @@ ARGV_FNS = {
     "addstrategy" : do_addstrategy,
     "retirestrategy" : do_retirestrategy,
     "mine" : do_mine,
+    "create_lock_veocean" : do_create_lock_veocean,
+    "increase_unlock_time_veocean" : do_increase_unlock_time_veocean,
+    "increase_lock_amount_veocean" : do_increase_lock_amount_veocean,
     "veSetAllocation" : do_veSetAllocation,
     "checkpoint_feedist" : do_checkpoint_feedist,
     "initdevwallets": do_initdevwallets,
@@ -1120,6 +1295,8 @@ ARGV_FNS = {
     # read actions
     "acctinfo" : do_acctinfo,
     "chaininfo" : do_chaininfo,
+    "get_balance_veocean" : do_get_balance_veocean,
+    "get_lock_end_veocean" : do_get_lock_end_veocean,
     "getrate" : do_getrate,
 }
 
