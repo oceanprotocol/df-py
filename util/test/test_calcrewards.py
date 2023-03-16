@@ -952,7 +952,7 @@ def _nullOwners(
     chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
-    for chainID, nft_addr in chain_nft_tups:
+    for (chainID, nft_addr) in chain_nft_tups:
         if chainID not in owners:
             owners[chainID] = {}
         owners[chainID][nft_addr] = ZERO_ADDRESS
