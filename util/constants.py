@@ -12,6 +12,7 @@ DO_PUBREWARDS = True
 
 DFMAIN_CONSTANTS = {
     # DF week thresholds and reward amounts
+    # Counting starts from 0
     28: 0.0,
     80: 150000.0,  # weekly 150k from weeks 29 to 79
     106: 300000.0,
