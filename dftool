@@ -54,7 +54,7 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
+  dftool calc CSV_DIR TOT_OCEAN [ST] IGNORED - from (rates, volumes, ..), calc rewards
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
 
@@ -952,10 +952,10 @@ Usage: dftool chaininfo CHAINID
 def do_dispense_passive_rewards():
     HELP = f"""Dispense passive rewards.
 
-Usage: dftool dispense_passive CHAINID AMOUNT ST
+Usage: dftool dispense_passive CHAINID AMOUNT [ST]
     CHAINID -- {CHAINID_EXAMPLES}
     AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
-    [ST] -- week start date -- YYYY-MM-DD
+    ST -- week start date -- YYYY-MM-DD
 """
     if len(sys.argv) not in [4]:
         print(HELP)
@@ -1143,7 +1143,7 @@ ARGV_FNS = {
 # main
 @enforce_types
 def do_main():
-    if len(sys.argv) == 1:
+    if len(sys.argv) == 1 :
         do_help()
     else:
         if sys.argv[1] in ARGV_FNS:
