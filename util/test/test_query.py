@@ -628,7 +628,12 @@ def test_queryAquariusAssetNames():
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
 
-    expectedAssetNames = ['OCEAN/USDT orderbook', 'BTC/USDT orderbook', 'DEX volume in details', '']
+    expectedAssetNames = [
+        "OCEAN/USDT orderbook",
+        "BTC/USDT orderbook",
+        "DEX volume in details",
+        "",
+    ]
     assetNames = query.queryAquariusAssetNames(nft_dids)
     print("assetNames", assetNames)
     assert len(assetNames) == 4
