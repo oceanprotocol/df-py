@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from typing import Dict, Tuple, Union
 
 from enforce_typing import enforce_types
@@ -5,7 +6,7 @@ import numpy as np
 import pytest
 from pytest import approx
 
-from util import calcrewards, networkutil, cleancase as cc, constants, tousd
+from util import calcrewards, cleancase as cc, constants, tousd
 from util.calcrewards import TARGET_WPY, _rankBasedAllocate
 from util.constants import ZERO_ADDRESS
 
