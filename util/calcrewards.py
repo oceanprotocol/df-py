@@ -7,7 +7,12 @@ import scipy
 from util import cleancase as cc, tousd
 from util import oceanutil
 from util.base18 import fromBase18, toBase18
-from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP, ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
+from util.constants import (
+    MAX_N_RANK_ASSETS,
+    RANK_SCALE_OP,
+    ACTIVE_REWARDS_MULTIPLIER,
+    DFMAIN_CONSTANTS,
+)
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
