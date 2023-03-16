@@ -65,7 +65,7 @@ def test_calc(tmp_path):
 
 
 @enforce_types
-def test_calc_wo_amount(tmp_path):
+def test_calc_without_amount(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
 
