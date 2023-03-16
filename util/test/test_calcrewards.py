@@ -8,7 +8,7 @@ from pytest import approx
 
 from util import calcrewards, networkutil, cleancase as cc, constants, tousd
 from util.calcrewards import TARGET_WPY, _rankBasedAllocate
-from util.constants import ZERO_ADDRESS, ACTIVE_REWARDS_MULTIPLIER
+from util.constants import ZERO_ADDRESS
 from util.base18 import fromBase18
 
 # for shorter lines
