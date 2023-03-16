@@ -61,10 +61,10 @@ def recordDeployedContracts(address_file: str):
     if "veFeeDistributor" in a:
         C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
 
-    if "VestingWallet" in a:
-        C["VestingWallet"] = B.VestingWallet.at(a["VestingWallet"])
+    if "VestingWalletV0" in a:
+        C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
     elif chainID == networkutil.DEV_CHAINID:
-        C["VestingWallet"] = B.VestingWallet.deploy({"from": brownie.accounts[0]})
+        C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
 
     CONTRACTS[chainID] = C
 
@@ -113,8 +113,8 @@ def FeeDistributor():
     return _contracts("veFeeDistributor")
 
 
-def VestingWallet():
-    return _contracts("VestingWallet")
+def VestingWalletV0():
+    return _contracts("VestingWalletV0")
 
 
 # ===========================================================================

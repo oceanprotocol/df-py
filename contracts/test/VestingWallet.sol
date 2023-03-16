@@ -1,6 +1,6 @@
 pragma solidity 0.8.12;
 
-contract VestingWallet {
+contract VestingWalletV0 {
     // taken from https://github.com/oceanprotocol/vw-cli/blob/main/contracts/VestingWalletHalving.sol
     function getAmount(
         uint256 value,
