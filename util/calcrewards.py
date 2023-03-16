@@ -40,9 +40,9 @@ def getRewardAmountForWeekWei(start_dt: datetime) -> int:
     # Halftime formula after 132
     if dfweek < 80:
         return toBase18(150000.0)
-    elif dfweek < 106:
+    if dfweek < 106:
         return toBase18(300000.0)
-    elif dfweek < 132:
+    if dfweek < 132:
         return toBase18(600000.0)
 
     # Halftime:
