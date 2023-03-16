@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from enforce_typing import enforce_types
 from util import oceanutil
-from util.base18 import fromBase18
+from util.base18 import fromBase18, toBase18
 from util.calcrewards import getDfWeekNumber
 from util.constants import ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
 
