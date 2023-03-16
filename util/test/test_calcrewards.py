@@ -1,4 +1,3 @@
-from datetime import datetime, timedelta
 from typing import Dict, Tuple, Union
 
 from enforce_typing import enforce_types
@@ -9,7 +8,6 @@ from pytest import approx
 from util import calcrewards, networkutil, cleancase as cc, constants, tousd
 from util.calcrewards import TARGET_WPY, _rankBasedAllocate
 from util.constants import ZERO_ADDRESS
-from util.base18 import fromBase18
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
