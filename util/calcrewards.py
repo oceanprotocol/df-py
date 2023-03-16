@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
+
 from enforce_typing import enforce_types
 import numpy as np
 import scipy
