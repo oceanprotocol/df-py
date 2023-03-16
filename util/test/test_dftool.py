@@ -65,6 +65,50 @@ def test_calc(tmp_path):
 
 
 @enforce_types
+def test_calc_wo_amount(tmp_path):
+    CSV_DIR = str(tmp_path)
+    OCEAN_addr = oceanutil.OCEAN_address()
+
+    # insert fake csvs
+    allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
+    csvs.saveAllocationCsv(allocations, CSV_DIR)
+
+    nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1e10}}
+    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
+
+    owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
+    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
+
+    vebals = {"0xlp_addr1": 1e8}
+    locked_amt = {"0xlp_addr1": 10.0}
+    unlock_time = {"0xlp_addr1": 1}
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
+
+    symbols_at_chain = {OCEAN_addr: "OCEAN"}
+    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+
+    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+
+    # main cmd
+    TOT_OCEAN = 0
+    ST = "2023-03-16"  # first week of df main
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {ST}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
+    assert os.path.exists(rewards_csv)
+
+    # get total reward amount
+    rewards = csvs.loadRewardsCsv(CSV_DIR, "OCEAN")
+    total_reward = 0
+    for _, addrs in rewards.items():
+        for _, reward in addrs.items():
+            total_reward += reward
+    assert total_reward == 75000.0
+
+
+@enforce_types
 def test_dispense(tmp_path):
     # values used for inputs or main cmd
     accounts = brownie.network.accounts
