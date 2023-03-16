@@ -10,6 +10,15 @@ ACTIVE_REWARDS_MULTIPLIER = 0.5
 
 DO_PUBREWARDS = True
 
+DFMAIN_CONSTANTS = { 
+    # DF main phase start weeks and reward amounts per week
+    29: 0.0,
+    80: 150000.0,
+    106: 300000.0,
+    132: 600000.0
+    # we use the halflife formula after week 132
+}
+
 # used by _rankBasedAllocate() as part of reward function
 DO_RANK = True
 RANK_SCALE_OP = "LOG"  # can be: LIN, POW2, POW4, LOG, SQRT
