@@ -18,7 +18,8 @@ from util import (
     networkutil,
     query,
 )
-from util.calcrewards import calcRewards, getActiveRewardAmountForWeekEth
+from util.calcrewards import calcRewards
+from util.vesting_schedule import getActiveRewardAmountForWeekEth
 from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
