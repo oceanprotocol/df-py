@@ -52,7 +52,7 @@ jobs:
           USE_MULTISIG: true
         if: github.event_name == 'workflow_dispatch'
         run: |
-          ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }}
+          ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} $date
       - name: Distribute passive rewards
         env:
           USE_MULTISIG: true
