@@ -680,7 +680,7 @@ def test_filter_dids():
 
 
 @enforce_types
-# @pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
+@pytest.mark.skip("FIXME: unskip and get test to pass. See #510")
 def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
