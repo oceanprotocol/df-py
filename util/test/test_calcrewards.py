@@ -812,6 +812,7 @@ def test_flattenRewards():
 
 
 test_params = [
+    (datetime(2023, 3, 9), 0),
     (datetime(2023, 3, 16), 150000.0),
     (datetime(2023, 4, 13), 150000.0),
     (datetime(2023, 6, 15), 150000.0),
