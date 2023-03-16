@@ -11,9 +11,9 @@ ACTIVE_REWARDS_MULTIPLIER = 0.5
 DO_PUBREWARDS = True
 
 DFMAIN_CONSTANTS = {
-    # DF main phase start weeks and reward amounts per week
+    # DF week thresholds and reward amounts
     29: 0.0,
-    80: 150000.0,  # weekly 150k for weeks 29 to 79
+    80: 150000.0,  # weekly 150k from weeks 29 to 79
     106: 300000.0,
     132: 600000.0
     # we use the halflife formula after week 132
