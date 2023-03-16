@@ -6,4 +6,3 @@ pandas
 scipy
 types-requests
 coverage
-ocean-lib

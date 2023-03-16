@@ -21,10 +21,6 @@ from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
-from ocean_lib.ocean.ocean_assets import OceanAssets
-from ocean_lib.data_provider.data_service_provider import DataServiceProvider
-from ocean_lib.example_config import get_config_dict
-from ocean_lib.ocean.ocean import Ocean
 
 
 PREV = {}
