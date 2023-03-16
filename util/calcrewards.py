@@ -7,7 +7,7 @@ import scipy
 from util import cleancase as cc, tousd
 from util import oceanutil
 from util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP, ACTIVE_REWARDS_MULTIPLIER
-from util.base18 import fromBase18
+from util.base18 import fromBase18, toBase18
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -15,7 +15,7 @@ TARGET_WPY = 0.015717
 
 def getActiveRewardAmountForWeekEth(start_dt: datetime) -> int:
     """
-    Return the active reward amount for the week in ETH starting at start_dt.
+    Return the reward amount for the week in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.
     """
     total_reward_amount = getRewardAmountForWeekWei(start_dt)
@@ -31,28 +31,33 @@ def getRewardAmountForWeekWei(start_dt: datetime) -> int:
     This amount is in accordance with the vesting schedule.
     Returns 0 if the week is before the start of the vesting schedule.
     """
+
+    # hardcoded values for linear vesting schedule
+    dfweek = getDfWeekNumber(start_dt) - 1
+
+    # 300,000 in DF80 and after
+    # 600,000 in DF106 and after
+    # Halftime formula after 132
+    if dfweek < 80:
+        return toBase18(150000.0)
+    elif dfweek < 106:
+        return toBase18(300000.0)
+    elif dfweek < 132:
+        return toBase18(600000.0)
+
+    # Halftime:
     TOT_SUPPLY = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
     end_dt = start_dt + timedelta(days=7)
 
-    periods = [
-        (datetime(2023, 3, 16), TOT_SUPPLY * 0.1),
-        (datetime(2024, 3, 15), TOT_SUPPLY * 0.15),
-        (datetime(2024, 9, 15), TOT_SUPPLY * 0.25),
-        (datetime(2025, 3, 15), TOT_SUPPLY * 0.5),
-    ]
-
-    rewards = [
-        (
-            _halflife(supply, (end_dt - start).total_seconds(), HALF_LIFE)
-            - _halflife(supply, (start_dt - start).total_seconds(), HALF_LIFE)
-        )
-        if start_dt >= start
-        else 0
-        for start, supply in periods
-    ]
-
-    return int(sum(rewards))
+    vesting_start_dt = datetime(2025, 3, 13)
+    vesting_tot_amount = TOT_SUPPLY - 32530000
+    reward = _halflife_solidity(
+        vesting_tot_amount, (end_dt - vesting_start_dt).total_seconds(), HALF_LIFE
+    ) - _halflife_solidity(
+        vesting_tot_amount, (start_dt - vesting_start_dt).total_seconds(), HALF_LIFE
+    )
+    return int(reward)
 
 
 @enforce_types
