@@ -63,7 +63,7 @@ def test_compareHalflifeFunctions():
     VALUE = 503370000 * 1e18
     HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
     MONTH = 30 * 24 * 60 * 60
-    for i in range(0, HALF_LIFE * 1.5, MONTH * 4):
+    for i in range(0, int(HALF_LIFE * 1.5), int(MONTH * 4)):
         py_result = vesting_schedule._halflife(VALUE, i, HALF_LIFE)
         solidity_result = vesting_schedule._halflife_solidity(VALUE, i, HALF_LIFE)
         diff = abs(py_result - solidity_result)
