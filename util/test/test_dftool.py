@@ -1,6 +1,7 @@
 import os
 import subprocess
 import datetime
+import pytest
 
 import brownie
 from enforce_typing import enforce_types
@@ -159,6 +160,20 @@ def test_manyrandom():
 
 
 @enforce_types
+@pytest.mark.skip(reason="Passing. However script executes N commands ~18m")
+def test_gen_hist_data():
+    os.environ["USE_TESTNET"] = "1"
+    cmd = "./scripts/gen_hist_data.sh 22 round_22"
+    output_s = ""
+    with subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ) as proc:
+        while proc.poll() is None:
+            output_s += proc.stdout.readline().decode("ascii")
+    return_code = proc.wait()
+    assert return_code == 0, f"Error. \n{output_s}"
+
+
 def test_initdevwallets():
     account9 = brownie.network.accounts[9]
 
