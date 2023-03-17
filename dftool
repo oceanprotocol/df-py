@@ -958,7 +958,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT [ST]
     AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
     ST -- week start date -- YYYY-MM-DD
 """
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
