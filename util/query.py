@@ -456,6 +456,9 @@ def _queryVolsOwners(
         for order in new_orders:
             lastPriceValue = float(order["exchangeId"]["totalSwapValue"])
             if lastPriceValue == 0:
+                # gas calculations for free assets are temporarily disabled
+                # as fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
+                # so continue
                 continue
             basetoken_addr = order["exchangeId"]["baseToken"]["address"].lower()
             nft_addr = order["exchangeId"]["datatoken"]["address"].lower()
@@ -471,7 +474,8 @@ def _queryVolsOwners(
             # deduct 1 wei so it's not profitable for free assets
             # gasCost = fromBase18(gasCostWei - 1)
 
-            # temporarily disable gas cost as fixedRateExchangeSwaps don't have it
+            # temporarily disable gas cost as
+            # fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
             gasCost = 0
 
             # add gas cost value
