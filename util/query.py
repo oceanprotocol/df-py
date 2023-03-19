@@ -416,7 +416,7 @@ def _queryVolsOwners(
             id
             exchangeId {
               id
-              totalSwapValue
+              price
               baseToken {
                 id
                 address
@@ -454,7 +454,7 @@ def _queryVolsOwners(
         if new_orders == []:
             break
         for order in new_orders:
-            lastPriceValue = float(order["exchangeId"]["totalSwapValue"])
+            lastPriceValue = float(order["exchangeId"]["price"])
             if lastPriceValue == 0:
                 # gas calculations for free assets are temporarily disabled
                 # as fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
