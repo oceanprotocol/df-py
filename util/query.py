@@ -412,27 +412,32 @@ def _queryVolsOwners(
     while True:
         query = """
         {
-          orders(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
-            id,
-            datatoken {
+          fixedRateExchangeSwaps(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
+            id
+            exchangeId {
               id
-              symbol
-              nft {
+              totalSwapValue
+              baseToken {
                 id
-                owner{
+                address
+              }
+              datatoken {
+                id
+                symbol
+                address
+                nft {
+                  id
+                  owner{
+                    id
+                  }
+                }
+                dispensers {
                   id
                 }
               }
-              dispensers {
-                id
-              }
-            },
-            lastPriceToken{
-              id
-            },
-            lastPriceValue,
-            block,
-            gasPrice,
+            }
+            block
+            gasPrice
             gasUsed
           }
         }
@@ -446,17 +451,17 @@ def _queryVolsOwners(
         result = submitQuery(query, chainID)
         if "errors" in result:
             raise AssertionError(result)
-        new_orders = result["data"]["orders"]
+        new_orders = result["data"]["fixedRateExchangeSwaps"]
 
         if new_orders == []:
             break
         for order in new_orders:
-            lastPriceValue = float(order["lastPriceValue"])
-            if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
+            lastPriceValue = float(order["exchangeId"]["totalSwapValue"])
+            if lastPriceValue == 0:
                 continue
-            basetoken_addr = order["lastPriceToken"]["id"].lower()
-            nft_addr = order["datatoken"]["nft"]["id"].lower()
-            owner_addr = order["datatoken"]["nft"]["owner"]["id"].lower()
+            basetoken_addr = order["exchangeId"]["baseToken"]["address"].lower()
+            nft_addr = order["exchangeId"]["datatoken"]["address"].lower()
+            owner_addr = order["exchangeId"]["datatoken"]["nft"]["owner"]["id"].lower()
 
             # add owner
             owners[nft_addr] = owner_addr
