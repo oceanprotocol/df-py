@@ -419,12 +419,10 @@ def _queryVolsOwners(
               price
               baseToken {
                 id
-                address
               }
               datatoken {
                 id
                 symbol
-                address
                 nft {
                   id
                   owner{
@@ -460,7 +458,7 @@ def _queryVolsOwners(
                 # as fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
                 # so continue
                 continue
-            basetoken_addr = order["exchangeId"]["baseToken"]["address"].lower()
+            basetoken_addr = order["exchangeId"]["baseToken"]["id"].lower()
             nft_addr = order["exchangeId"]["datatoken"]["nft"]["id"].lower()
             owner_addr = order["exchangeId"]["datatoken"]["nft"]["owner"]["id"].lower()
             native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
