@@ -437,8 +437,6 @@ def _queryVolsOwners(
               }
             }
             block
-            gasPrice
-            gasUsed
           }
         }
         """ % (
@@ -462,16 +460,19 @@ def _queryVolsOwners(
             basetoken_addr = order["exchangeId"]["baseToken"]["address"].lower()
             nft_addr = order["exchangeId"]["datatoken"]["address"].lower()
             owner_addr = order["exchangeId"]["datatoken"]["nft"]["owner"]["id"].lower()
+            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add owner
             owners[nft_addr] = owner_addr
 
             # Calculate gas cost
-            gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
+            # gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
             # deduct 1 wei so it's not profitable for free assets
-            gasCost = fromBase18(gasCostWei - 1)
-            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
+            # gasCost = fromBase18(gasCostWei - 1)
+
+            # temporarily disable gas cost as fixedRateExchangeSwaps don't have it
+            gasCost = 0
 
             # add gas cost value
             if gasCost > 0:
