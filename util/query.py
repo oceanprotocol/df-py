@@ -461,7 +461,7 @@ def _queryVolsOwners(
                 # so continue
                 continue
             basetoken_addr = order["exchangeId"]["baseToken"]["address"].lower()
-            nft_addr = order["exchangeId"]["datatoken"]["nft"]["address"].lower()
+            nft_addr = order["exchangeId"]["datatoken"]["nft"]["id"].lower()
             owner_addr = order["exchangeId"]["datatoken"]["nft"]["owner"]["id"].lower()
             native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
