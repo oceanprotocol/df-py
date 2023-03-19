@@ -457,7 +457,7 @@ def _queryVolsOwners(
             lastPriceValue = float(order["exchangeId"]["totalSwapValue"])
             if lastPriceValue == 0:
                 # gas calculations for free assets are temporarily disabled
-                # as fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
+                # as fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
                 # so continue
                 continue
             basetoken_addr = order["exchangeId"]["baseToken"]["address"].lower()
