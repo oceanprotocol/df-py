@@ -679,7 +679,7 @@ def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
             if not nftaddr in swaps[basetoken]:
                 nftvols[basetoken][nftaddr] = 0
                 continue
-            nftvols[basetoken][nftaddr] = max(
+            nftvols[basetoken][nftaddr] = min(
                 nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
             )
     return nftvols
