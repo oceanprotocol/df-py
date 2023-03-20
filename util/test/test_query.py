@@ -139,7 +139,7 @@ def test_all(tmp_path):
 
 
 def _foundConsume(CO2_addr, st, fin):
-    V0, _ = query._queryVolsOwners(st, fin, CHAINID)
+    V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
     if CO2_addr not in V0:
         return False
     if sum(V0[CO2_addr].values()) == 0:
@@ -215,7 +215,7 @@ def _test_getSymbols():
 
 @enforce_types
 def _test_queryVolsOwners(CO2_addr: str, st, fin):
-    V0, C0 = query._queryVolsOwners(st, fin, CHAINID)
+    V0, C0, _ = query._queryVolsOwners(st, fin, CHAINID)
 
     # test V0 (volumes)
     assert CO2_addr in V0, (CO2_addr, V0.keys())
