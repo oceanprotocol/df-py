@@ -83,8 +83,14 @@ def test_ghost_consume():
     assert V0[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
 
     (V0, _, gasvols) = query._queryVolsOwners(ST, FIN, CHAINID)
+    
+    sumgasvol = 0
+    for b in gasvols:
+        for t in gasvols[b]:
+            sumgasvol += gasvols[b][t]
+
     assert V0[CO2_addr][datanftaddr] > 5000.0
-    assert V0[CO2_addr][datanftaddr] - gasvols[CO2_addr][datanftaddr] == 1000.0
+    assert V0[CO2_addr][datanftaddr] - sumgasvol == 1000.0
 
 
 # pylint: disable=too-many-statements
