@@ -391,6 +391,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 
     return nftinfo
 
+
 @enforce_types
 def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
@@ -492,7 +493,6 @@ def _queryVolsOwners(
 
     print("_queryVolsOwners(): done")
     return (vols, owners)
-
 
 
 @enforce_types
@@ -655,11 +655,15 @@ def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
             nft.is_purgatory = True
     return nftinfos
 
+
 @enforce_types
 def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
-  for basetoken in nftvols:
-    for nftaddr in nftvols[basetoken]:
-      nftvols[basetoken][nftaddr] = max(nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr])
+    for basetoken in nftvols:
+        for nftaddr in nftvols[basetoken]:
+            nftvols[basetoken][nftaddr] = max(
+                nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
+            )
+
 
 @enforce_types
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
