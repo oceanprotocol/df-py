@@ -76,10 +76,17 @@ def test_ghost_consume():
 
     FIN = len(brownie.network.chain)
 
+
+    datanftaddr = data_NFT.address.lower()
     # query volumes
     rng = BlockRange(ST, FIN, 50)
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
-    assert V0[CO2_addr][data_NFT.address.lower()] == approx(1000.0, 5.0)
+    assert V0[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
+
+    (V0, _, gasvols) = query._queryVolsOwners(ST, FIN, CHAINID)
+    assert V0[CO2_addr][datanftaddr] == 20000.0
+
+    assert V0[CO2_addr][datanftaddr] - gasvols[CO2_addr][datanftaddr] == 1000.0
 
 
 # pylint: disable=too-many-statements
