@@ -676,7 +676,7 @@ def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
             nftvols[basetoken][nftaddr] = max(
                 nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
             )
-
+    return nftvols
 
 @enforce_types
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
