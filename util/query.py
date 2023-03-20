@@ -70,10 +70,19 @@ def queryVolsOwnersSymbols(
       A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci, gasvols = _queryVolsOwners(rng.st, rng.fin, chainID)
     swaps = _querySwaps(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
     Vi = _filterbyMaxVolume(Vi, swaps)
+
+    # merge Vi and gasvols
+    for basetoken in gasvols:
+        if basetoken not in Vi:
+            Vi[basetoken] = {}
+        for nft in gasvols[basetoken]:
+            if nft not in Vi[basetoken]:
+                Vi[basetoken][nft] = 0.0
+            Vi[basetoken][nft] += gasvols[basetoken][nft]
 
     # get all basetokens from Vi
     basetokens = TokSet()
@@ -209,7 +218,6 @@ def queryAllocations(
     blocks = rng.getBlocks()
 
     for block_i, block in enumerate(blocks):
-
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
 
@@ -407,6 +415,7 @@ def _queryVolsOwners(
     print("_queryVolsOwners(): begin")
 
     vols: Dict[str, Dict[str, float]] = {}
+    gasvols: Dict[str, Dict[str, float]] = {}
     owners: Dict[str, float] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
@@ -472,13 +481,13 @@ def _queryVolsOwners(
 
             # add gas cost value
             if gasCost > 0:
-                if native_token_addr not in vols:
-                    vols[native_token_addr] = {}
+                if native_token_addr not in gasvols:
+                    gasvols[native_token_addr] = {}
 
-                if nft_addr not in vols[native_token_addr]:
-                    vols[native_token_addr][nft_addr] = 0
+                if nft_addr not in gasvols[native_token_addr]:
+                    gasvols[native_token_addr][nft_addr] = 0
 
-                vols[native_token_addr][nft_addr] += gasCost
+                gasvols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
                 continue
@@ -492,7 +501,7 @@ def _queryVolsOwners(
             vols[basetoken_addr][nft_addr] += lastPriceValue
 
     print("_queryVolsOwners(): done")
-    return (vols, owners)
+    return (vols, owners, gasvols)
 
 
 @enforce_types
@@ -663,7 +672,6 @@ def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
             nftvols[basetoken][nftaddr] = max(
                 nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
             )
-    return nftvols
 
 
 @enforce_types
