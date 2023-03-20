@@ -403,7 +403,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 @enforce_types
 def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float], Dict[str, Dict[str, float]]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
@@ -507,7 +507,7 @@ def _queryVolsOwners(
 @enforce_types
 def _querySwaps(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
+) -> Dict[str, Dict[str, float]]:
     """
     @description
       Query the chain for datanft swaps within the given block range.
