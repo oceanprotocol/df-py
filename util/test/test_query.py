@@ -36,6 +36,13 @@ S_PER_WEEK = 604800
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
+<<<<<<< HEAD
+def test_ghost_consume(tmp_path):
+
+
+# pylint: disable=too-many-statements
+@pytest.mark.timeout(300)
+=======
 def test_ghost_consume():
     # create a datanft
     OCEAN = oceanutil.OCEANtoken()
@@ -91,6 +98,7 @@ def test_ghost_consume():
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
+>>>>>>> 169f39aaebeaee3bc589750cd03ab211226e6f6a
 def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
@@ -383,7 +391,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
     m = float("inf")
-    OCEAN_avail = 1e-4
+    OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
@@ -392,7 +400,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert abs(sum_ - OCEAN_avail) < 0.01
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
 
 
 @enforce_types
@@ -430,7 +438,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     m = float("inf")
-    OCEAN_avail = 1e-4
+    OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
@@ -439,7 +447,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert abs(sum_ - OCEAN_avail) < 0.01
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
