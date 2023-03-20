@@ -33,6 +33,55 @@ S_PER_WEEK = 604800
 # =========================================================================
 # heavy on-chain tests: overall test
 
+
+# pylint: disable=too-many-statements
+@pytest.mark.timeout(300)
+def test_ghost_consume(tmp_path):
+    # create a datanft
+    OCEAN = oceanutil.OCEANtoken()
+    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
+    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
+    CO2_addr = CO2.address.lower()
+    accs = _create_and_fund_random_accounts(1, [OCEAN, CO2], account0, 100000.0)
+    mainacc = accs[0]
+
+    data_NFT = oceanutil.createDataNFT("1", "1", mainacc)
+    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, mainacc)
+    exchangeId = oceanutil.createFREFromDatatoken(DT, CO2, 10.0, mainacc, 1000.0)
+    _lock_and_allocate_ve(accs, [(data_NFT, DT, exchangeId)], toBase18(1000.0))
+
+    # mint
+    DT.mint(mainacc, toBase18(1000.0), {"from": mainacc})
+
+    # set start block number for querying
+    ST = len(brownie.network.chain)
+
+    # real swap one time
+    oceantestutil.buyDTFRE(exchangeId, 1.0, 2000.0, account0, CO2)
+
+    # consume
+    for _ in range(20):
+        oceantestutil.consumeDT(DT, account0, mainacc)
+
+    # keep deploying, until TheGraph node sees volume, or timeout
+    for loop_i in range(50):
+        FIN = len(brownie.network.chain)
+        print(f"loop {loop_i} start")
+        assert loop_i < 45, "timeout"
+        if _foundConsume(CO2_addr, ST, FIN):
+            break
+        brownie.network.chain.sleep(10)
+        brownie.network.chain.mine(10)
+        time.sleep(2)
+
+    FIN = len(brownie.network.chain)
+
+    # query volumes
+    rng = BlockRange(ST, FIN, 50)
+    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    assert V0[CO2_addr][data_NFT.address.lower()] == approx(1000.0, 5.0)
+
+
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
 def test_all(tmp_path):
@@ -43,18 +92,10 @@ def test_all(tmp_path):
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
     CO2_addr = CO2.address.lower()
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = oceanutil.veOCEAN()
-    veAllocate = oceanutil.veAllocate()
 
     OCEAN_lock_amt = toBase18(5.0)
 
-    accounts = []
-    for i in range(7):
-        acc = brownie.network.accounts.add()
-        account0.transfer(acc, toBase18(0.1))
-        CO2.transfer(acc, toBase18(11000.0), {"from": account0})
-        OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
-        accounts.append(acc)
+    accounts = _create_and_fund_random_accounts(7, [OCEAN, CO2], account0)
 
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
 
@@ -65,18 +106,7 @@ def test_all(tmp_path):
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
-    # Lock veOCEAN
-    t0 = brownie.network.chain.time()
-    t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
-    brownie.network.chain.sleep(t1 - t0)
-    t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
-    for acc in accounts:
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
-        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
-
-    # Allocate to data NFTs
-    for i, acc in enumerate(accounts):
-        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
+    _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt)
 
     # set start block number for querying
     ST = len(brownie.network.chain)
@@ -86,11 +116,7 @@ def test_all(tmp_path):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
         oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
 
-    # sampling test accounts locks and allocates after start block
-    for i, acc in enumerate(sampling_test_accounts):
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
-        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
-        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
+    _lock_and_allocate_ve(sampling_test_accounts, data_nfts, OCEAN_lock_amt)
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
@@ -839,6 +865,38 @@ def _test_queryPassiveRewards(addresses):
 
 # ===========================================================================
 # support functions
+
+
+@enforce_types
+def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
+    OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
+    veAllocate = oceanutil.veAllocate()
+
+    t0 = brownie.network.chain.time()
+    t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
+    brownie.network.chain.sleep(t1 - t0)
+    t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
+
+    for acc in accounts:
+        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
+        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
+
+    # Allocate to data NFTs
+    for i, acc in enumerate(accounts):
+        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
+
+
+@enforce_types
+def _create_and_fund_random_accounts(num_accounts, tokens, account0, tokenamt=1000.0):
+    accounts = []
+    for _ in range(num_accounts):
+        acc = brownie.accounts.add()
+        accounts.append(acc)
+        for token in tokens:
+            token.transfer(acc, toBase18(tokenamt), {"from": account0})
+        account0.transfer(acc, toBase18(0.1))
+    return accounts
 
 
 @enforce_types
