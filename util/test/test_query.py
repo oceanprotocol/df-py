@@ -46,6 +46,7 @@ def test_ghost_consume():
     mainacc = accs[0]
 
     data_NFT = oceanutil.createDataNFT("1", "1", mainacc)
+    datanftaddr = data_NFT.address.lower()
     DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, mainacc)
     exchangeId = oceanutil.createFREFromDatatoken(DT, CO2, 10.0, mainacc, 1000.0)
     _lock_and_allocate_ve(accs, [(data_NFT, DT, exchangeId)], toBase18(1000.0))
@@ -68,29 +69,24 @@ def test_ghost_consume():
         FIN = len(brownie.network.chain)
         print(f"loop {loop_i} start")
         assert loop_i < 45, "timeout"
-        if _foundConsume(CO2_addr, ST, FIN):
-            break
+        (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+
+        if CO2_addr in V0 and data_NFT.address.lower() in V0[CO2_addr]:
+            if V0[CO2_addr][datanftaddr] >= 20000.0:
+                break
         brownie.network.chain.sleep(10)
         brownie.network.chain.mine(10)
         time.sleep(2)
 
     FIN = len(brownie.network.chain)
 
-    datanftaddr = data_NFT.address.lower()
     # query volumes
     rng = BlockRange(ST, FIN, 50)
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
 
-    (V0, _, gasvols) = query._queryVolsOwners(ST, FIN, CHAINID)
-
-    sumgasvol = 0
-    for b in gasvols:
-        for t in gasvols[b]:
-            sumgasvol += gasvols[b][t]
-
-    assert V0[CO2_addr][datanftaddr] > 5000.0
-    assert V0[CO2_addr][datanftaddr] - sumgasvol == 1000.0
+    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+    assert V0[CO2_addr][datanftaddr] == 20000.0
 
 
 # pylint: disable=too-many-statements
