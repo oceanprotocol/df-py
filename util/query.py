@@ -559,7 +559,7 @@ def _querySwaps(
         if new_swaps == []:
             break
         for swap in new_swaps:
-            amt = swap["baseTokenAmount"]
+            amt = int(swap["baseTokenAmount"])
             if amt == 0:
                 continue
             nft_addr = swap["exchangeId"]["datatoken"]["nft"]["id"].lower()
