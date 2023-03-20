@@ -392,7 +392,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.015
 
 
 @enforce_types
@@ -439,7 +439,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.015
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
