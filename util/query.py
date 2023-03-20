@@ -71,7 +71,9 @@ def queryVolsOwnersSymbols(
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
     Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
+    swaps = _querySwaps(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
+    Vi = _filterbyMaxVolume(Vi, swaps)
 
     # get all basetokens from Vi
     basetokens = TokSet()
@@ -389,7 +391,6 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 
     return nftinfo
 
-
 @enforce_types
 def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
@@ -412,29 +413,28 @@ def _queryVolsOwners(
     while True:
         query = """
         {
-          fixedRateExchangeSwaps(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
-            id
-            baseTokenAmount
-            block
-            exchangeId {
+          orders(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
+            id,
+            datatoken {
               id
-              baseToken {
+              symbol
+              nft {
                 id
-              }
-              datatoken {
-                id
-                symbol
-                nft {
-                  id
-                  owner{
-                    id
-                  }
-                }
-                dispensers {
+                owner{
                   id
                 }
               }
-            }
+              dispensers {
+                id
+              }
+            },
+            lastPriceToken{
+              id
+            },
+            lastPriceValue,
+            block,
+            gasPrice,
+            gasUsed
           }
         }
         """ % (
@@ -447,34 +447,27 @@ def _queryVolsOwners(
         result = submitQuery(query, chainID)
         if "errors" in result:
             raise AssertionError(result)
-        new_orders = result["data"]["fixedRateExchangeSwaps"]
+        new_orders = result["data"]["orders"]
 
         if new_orders == []:
             break
         for order in new_orders:
-            lastPriceValue = float(order["baseTokenAmount"])
-            if lastPriceValue == 0:
-                # gas calculations for free assets are temporarily disabled
-                # as fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
-                # so continue
+            lastPriceValue = float(order["lastPriceValue"])
+            if len(order["datatoken"]["dispensers"]) == 0 and lastPriceValue == 0:
                 continue
-            basetoken_addr = order["exchangeId"]["baseToken"]["id"].lower()
-            nft_addr = order["exchangeId"]["datatoken"]["nft"]["id"].lower()
-            owner_addr = order["exchangeId"]["datatoken"]["nft"]["owner"]["id"].lower()
-            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
+            basetoken_addr = order["lastPriceToken"]["id"].lower()
+            nft_addr = order["datatoken"]["nft"]["id"].lower()
+            owner_addr = order["datatoken"]["nft"]["owner"]["id"].lower()
 
             # add owner
             owners[nft_addr] = owner_addr
 
             # Calculate gas cost
-            # gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
+            gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
             # deduct 1 wei so it's not profitable for free assets
-            # gasCost = fromBase18(gasCostWei - 1)
-
-            # temporarily disable gas cost as
-            # fixedRateExchangeSwaps don't have gasPrice and gasUsage fields
-            gasCost = 0
+            gasCost = fromBase18(gasCostWei - 1)
+            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
             if gasCost > 0:
@@ -499,6 +492,73 @@ def _queryVolsOwners(
 
     print("_queryVolsOwners(): done")
     return (vols, owners)
+
+
+
+@enforce_types
+def _querySwaps(
+    st_block: int, end_block: int, chainID: int
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
+    """
+    @description
+      Query the chain for datanft swaps within the given block range.
+
+    @return
+      vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
+      owners (at chain) -- dict of [nft_addr]:vol_amt
+    """
+    print("_querySwaps(): begin")
+
+    # base token, nft addr, vol
+    swaps: Dict[str, Dict[str, float]] = {}
+
+    chunk_size = 1000  # max for subgraph = 1000
+    offset = 0
+    while True:
+        query = """
+        {
+          fixedRateExchangeSwaps(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
+            id
+            baseTokenAmount
+            block
+            exchangeId {
+              id
+              datatoken {
+                id
+                symbol
+                nft {
+                  id
+                }
+              }
+            }
+          }
+        }
+        """ % (
+            st_block,
+            end_block,
+            offset,
+            chunk_size,
+        )
+        offset += chunk_size
+        result = submitQuery(query, chainID)
+        if "errors" in result:
+            raise AssertionError(result)
+        new_swaps = result["data"]["fixedRateExchangeSwaps"]
+        if new_swaps == []:
+            break
+        for swap in new_swaps:
+            amt = swap["baseTokenAmount"]
+            if amt == 0:
+                continue
+            nft_addr = swap["exchangeId"]["datatoken"]["nft"]["id"].lower()
+            if basetoken_addr not in swaps:
+                swaps[basetoken_addr] = {}
+            if nft_addr not in swaps[basetoken_addr]:
+                swaps[basetoken_addr][nft_addr] = 0.0
+            swaps[basetoken_addr][nft_addr] += amt
+
+    print("_querySwaps(): done")
+    return swaps
 
 
 @enforce_types
@@ -595,6 +655,11 @@ def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
             nft.is_purgatory = True
     return nftinfos
 
+@enforce_types
+def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
+  for basetoken in nftvols:
+    for nftaddr in nftvols[basetoken]:
+      nftvols[basetoken][nftaddr] = max(nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr])
 
 @enforce_types
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
