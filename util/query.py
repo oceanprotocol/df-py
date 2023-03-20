@@ -673,6 +673,12 @@ def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
 def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
     for basetoken in nftvols:
         for nftaddr in nftvols[basetoken]:
+            if not basetoken in swaps:
+                nftvols[basetoken][nftaddr] = 0
+                continue
+            if not nftaddr in swaps[basetoken]:
+                nftvols[basetoken][nftaddr] = 0
+                continue
             nftvols[basetoken][nftaddr] = max(
                 nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
             )
