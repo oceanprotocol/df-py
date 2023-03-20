@@ -36,7 +36,7 @@ S_PER_WEEK = 604800
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
-def test_ghost_consume(tmp_path):
+def test_ghost_consume():
     # create a datanft
     OCEAN = oceanutil.OCEANtoken()
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
@@ -888,14 +888,14 @@ def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
 
 
 @enforce_types
-def _create_and_fund_random_accounts(num_accounts, tokens, account0, tokenamt=1000.0):
+def _create_and_fund_random_accounts(num_accounts, tokens, mainaccount, tokenamt=1000.0):
     accounts = []
     for _ in range(num_accounts):
         acc = brownie.accounts.add()
         accounts.append(acc)
         for token in tokens:
-            token.transfer(acc, toBase18(tokenamt), {"from": account0})
-        account0.transfer(acc, toBase18(0.1))
+            token.transfer(acc, toBase18(tokenamt), {"from": mainaccount})
+        mainaccount.transfer(acc, toBase18(0.1))
     return accounts
 
 
