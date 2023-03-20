@@ -678,6 +678,7 @@ def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
             )
     return nftvols
 
+
 @enforce_types
 def _filterNftvols(nftvols: dict, chainID: int) -> dict:
     """
