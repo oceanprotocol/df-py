@@ -76,7 +76,6 @@ def test_ghost_consume():
 
     FIN = len(brownie.network.chain)
 
-
     datanftaddr = data_NFT.address.lower()
     # query volumes
     rng = BlockRange(ST, FIN, 50)
@@ -85,7 +84,6 @@ def test_ghost_consume():
 
     (V0, _, gasvols) = query._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][datanftaddr] == 20000.0
-
     assert V0[CO2_addr][datanftaddr] - gasvols[CO2_addr][datanftaddr] == 1000.0
 
 
@@ -895,7 +893,9 @@ def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
 
 
 @enforce_types
-def _create_and_fund_random_accounts(num_accounts, tokens, mainaccount, tokenamt=1000.0):
+def _create_and_fund_random_accounts(
+    num_accounts, tokens, mainaccount, tokenamt=1000.0
+):
     accounts = []
     for _ in range(num_accounts):
         acc = brownie.accounts.add()
