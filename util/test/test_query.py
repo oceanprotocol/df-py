@@ -36,13 +36,6 @@ S_PER_WEEK = 604800
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
-<<<<<<< HEAD
-def test_ghost_consume(tmp_path):
-
-
-# pylint: disable=too-many-statements
-@pytest.mark.timeout(300)
-=======
 def test_ghost_consume():
     # create a datanft
     OCEAN = oceanutil.OCEANtoken()
@@ -98,7 +91,6 @@ def test_ghost_consume():
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
->>>>>>> 169f39aaebeaee3bc589750cd03ab211226e6f6a
 def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
