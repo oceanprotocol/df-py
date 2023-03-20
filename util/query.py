@@ -563,7 +563,7 @@ def _querySwaps(
             if amt == 0:
                 continue
             nft_addr = swap["exchangeId"]["datatoken"]["nft"]["id"].lower()
-            basetoken_addr = ["exchangeId"]["datatoken"]["id"]
+            basetoken_addr = swap["exchangeId"]["datatoken"]["id"].lower()
             if basetoken_addr not in swaps:
                 swaps[basetoken_addr] = {}
             if nft_addr not in swaps[basetoken_addr]:
