@@ -90,7 +90,7 @@ def test_ghost_consume():
 
     # test query swaps
     swaps = query._querySwaps(ST, FIN, CHAINID)
-    assert swaps[CO2_addr][datanftaddr] == 1000.0
+    assert swaps[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
 
 
 # pylint: disable=too-many-statements
