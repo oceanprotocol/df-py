@@ -88,6 +88,10 @@ def test_ghost_consume():
     (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][datanftaddr] == 20000.0
 
+    # test query swaps
+    swaps = query._querySwaps(ST, FIN, CHAINID)
+    assert swaps[CO2_addr][datanftaddr] == 1000.0
+
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
