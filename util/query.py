@@ -70,8 +70,19 @@ def queryVolsOwnersSymbols(
       A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci, gasvols = _queryVolsOwners(rng.st, rng.fin, chainID)
+    swaps = _querySwaps(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
+    Vi = _filterbyMaxVolume(Vi, swaps)
+
+    # merge Vi and gasvols
+    for basetoken in gasvols:
+        if basetoken not in Vi:
+            Vi[basetoken] = {}
+        for nft in gasvols[basetoken]:
+            if nft not in Vi[basetoken]:
+                Vi[basetoken][nft] = 0.0
+            Vi[basetoken][nft] += gasvols[basetoken][nft]
 
     # get all basetokens from Vi
     basetokens = TokSet()
@@ -207,7 +218,6 @@ def queryAllocations(
     blocks = rng.getBlocks()
 
     for block_i, block in enumerate(blocks):
-
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
 
@@ -393,7 +403,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 @enforce_types
 def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float], Dict[str, Dict[str, float]]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
@@ -405,6 +415,7 @@ def _queryVolsOwners(
     print("_queryVolsOwners(): begin")
 
     vols: Dict[str, Dict[str, float]] = {}
+    gasvols: Dict[str, Dict[str, float]] = {}
     owners: Dict[str, float] = {}
 
     chunk_size = 1000  # max for subgraph = 1000
@@ -470,13 +481,13 @@ def _queryVolsOwners(
 
             # add gas cost value
             if gasCost > 0:
-                if native_token_addr not in vols:
-                    vols[native_token_addr] = {}
+                if native_token_addr not in gasvols:
+                    gasvols[native_token_addr] = {}
 
-                if nft_addr not in vols[native_token_addr]:
-                    vols[native_token_addr][nft_addr] = 0
+                if nft_addr not in gasvols[native_token_addr]:
+                    gasvols[native_token_addr][nft_addr] = 0
 
-                vols[native_token_addr][nft_addr] += gasCost
+                gasvols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
                 continue
@@ -490,7 +501,77 @@ def _queryVolsOwners(
             vols[basetoken_addr][nft_addr] += lastPriceValue
 
     print("_queryVolsOwners(): done")
-    return (vols, owners)
+    return (vols, owners, gasvols)
+
+
+@enforce_types
+def _querySwaps(
+    st_block: int, end_block: int, chainID: int
+) -> Dict[str, Dict[str, float]]:
+    """
+    @description
+      Query the chain for datanft swaps within the given block range.
+
+    @return
+      vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
+      owners (at chain) -- dict of [nft_addr]:vol_amt
+    """
+    print("_querySwaps(): begin")
+
+    # base token, nft addr, vol
+    swaps: Dict[str, Dict[str, float]] = {}
+
+    chunk_size = 1000  # max for subgraph = 1000
+    offset = 0
+    while True:
+        query = """
+        {
+          fixedRateExchangeSwaps(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
+            id
+            baseTokenAmount
+            block
+            exchangeId {
+              id
+              baseToken {
+                id
+              }
+              datatoken {
+                id
+                symbol
+                nft {
+                  id
+                }
+              }
+            }
+          }
+        }
+        """ % (
+            st_block,
+            end_block,
+            offset,
+            chunk_size,
+        )
+        offset += chunk_size
+        result = submitQuery(query, chainID)
+        if "errors" in result:
+            raise AssertionError(result)
+        new_swaps = result["data"]["fixedRateExchangeSwaps"]
+        if new_swaps == []:
+            break
+        for swap in new_swaps:
+            amt = float(swap["baseTokenAmount"])
+            if amt == 0:
+                continue
+            nft_addr = swap["exchangeId"]["datatoken"]["nft"]["id"].lower()
+            basetoken_addr = swap["exchangeId"]["baseToken"]["id"].lower()
+            if basetoken_addr not in swaps:
+                swaps[basetoken_addr] = {}
+            if nft_addr not in swaps[basetoken_addr]:
+                swaps[basetoken_addr][nft_addr] = 0.0
+            swaps[basetoken_addr][nft_addr] += amt
+
+    print("_querySwaps(): done")
+    return swaps
 
 
 @enforce_types
@@ -586,6 +667,22 @@ def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
         if nft.did in bad_dids:
             nft.is_purgatory = True
     return nftinfos
+
+
+@enforce_types
+def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
+    for basetoken in nftvols:
+        for nftaddr in nftvols[basetoken]:
+            if not basetoken in swaps:
+                nftvols[basetoken][nftaddr] = 0
+                continue
+            if not nftaddr in swaps[basetoken]:
+                nftvols[basetoken][nftaddr] = 0
+                continue
+            nftvols[basetoken][nftaddr] = min(
+                nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
+            )
+    return nftvols
 
 
 @enforce_types
