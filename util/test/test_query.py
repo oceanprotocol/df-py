@@ -874,6 +874,14 @@ def _test_queryPassiveRewards(addresses):
         sim_epoch()
 
 
+@enforce_types
+def test_filter_by_max_volume():
+    nftvols = {"a": {"b": 1000}}
+    swapvols = {"a": {"b": 100}}
+    filteredvols = query._filterbyMaxVolume(nftvols, swapvols)
+    assert filteredvols["a"]["b"] == 100
+
+
 # ===========================================================================
 # support functions
 
