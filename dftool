@@ -404,9 +404,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     do_pubrewards = constants.DO_PUBREWARDS
     do_rank = constants.DO_RANK
 
-    weektime = datetime.datetime.now()
     prev_week = 0
-    if START_DATE != None:
+    if START_DATE is not None:
         prev_week = calcrewards.getDfWeekNumber(START_DATE)
     else:
         cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
