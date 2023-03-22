@@ -162,7 +162,9 @@
     "veDelegationProxy": "0x257fe2e49530A4B7FC3Ed597465e2931db3f20b7",
     "DFRewards": "0x6fd867E5AEE6D62a24f97939db90C4e67A73A651",
     "DFStrategyV1": "0x1Af3CC30fD18af837f7630Aff12aE2b826bD3c5D",
-    "veFeeEstimate": "0xB3AB945aa7553EbC8Ce234a53b03a1bbA23E8fAB"
+    "veFeeEstimate": "0xB3AB945aa7553EbC8Ce234a53b03a1bbA23E8fAB",
+    "VestingWalletV0": "0x8dfd93FE4dd923caB6C4c501842282f8541dCa87",
+    "Splitter": "0xC0FfEe0BA314dF15d8A31b1379cEDf4A2bd568DC"
   },
   "polygonedge": {
     "chainId": 81001,
