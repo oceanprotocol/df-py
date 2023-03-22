@@ -210,6 +210,7 @@ def _calcRewardsUsd(
 
     # modify S's: owners get rewarded as if 2x stake on their asset
     if do_pubrewards:
+        S = np.copy(S)
         for j in range(N_j):
             if C[j] != -1:  # -1 = owner didn't stake
                 S[C[j], j] *= 2.0
