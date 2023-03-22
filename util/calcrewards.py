@@ -42,10 +42,10 @@ def calcDcvMultiplier(DF_week: int) -> float:
     if DF_week < 9:
         return np.inf
 
-    if 9 <= DF_week < 28:
+    if 9 <= DF_week <= 28:
         return -0.0485 * (DF_week - 9) + 1.0
 
-    if DF_week >= 28:
+    if DF_week >= 29:
         return 0.001
 
     return 0.03
