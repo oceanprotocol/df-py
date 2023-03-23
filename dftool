@@ -19,6 +19,7 @@ from util import (
     query,
 )
 from util.calcrewards import calcRewards
+from util.vesting_schedule import getActiveRewardAmountForWeekEth
 from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
@@ -54,7 +55,7 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
+  dftool calc CSV_DIR TOT_OCEAN [ST] IGNORED - from (rates, volumes, ..), calc rewards
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
 
@@ -70,7 +71,6 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
   dftool newacct - generate new account
   dftool newtoken CHAINID - generate new token (for testing)
-
 
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
@@ -117,7 +117,7 @@ SECRET_SEED -- secret integer used to seed the rng
         RETRIES = int(sys.argv[7])
 
     # extract inputs
-    assert sys.argv[1] == "query" or sys.argv[1] == "volsym"
+    assert sys.argv[1] == "volsym"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
@@ -341,10 +341,13 @@ def do_calc():
 Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
+  [ST] -- week start date -- YYYY-MM-DD
   IGNORED -- Ignored. This argument is kept for compatibility.
 """
-
-    if len(sys.argv) not in [4, 5]:
+    networkutil.connect(5)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    recordDeployedContracts(ADDRESS_FILE)
+    if len(sys.argv) not in [4, 5, 6]:
         print(HELP)
         sys.exit(0)
 
@@ -352,8 +355,15 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
-    print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
+    START_DATE = None
 
+    if TOT_OCEAN == 0:
+        START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
+        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
+
+    print(
+        f"Arguments: CSV_DIR={CSV_DIR}, TOT_OCEAN={TOT_OCEAN}, START_DATE={START_DATE}"
+    )
     # do we have the input files?
     alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
     if not os.path.exists(alloc_fname):
@@ -394,8 +404,12 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     do_pubrewards = constants.DO_PUBREWARDS
     do_rank = constants.DO_RANK
 
-    cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
-    prev_week = cur_week - 1
+    prev_week = 0
+    if START_DATE is not None:
+        prev_week = calcrewards.getDfWeekNumber(START_DATE)
+    else:
+        cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
+        prev_week = cur_week - 1
     m = calcrewards.calcDcvMultiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
 
@@ -428,7 +442,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "dispense" or sys.argv[1] == "dispense_active"
+    assert sys.argv[1] == "dispense_active"
     CSV_DIR = sys.argv[2]
 
     if len(sys.argv) >= 4:
@@ -478,7 +492,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         batch_number=BATCH_NBR,
     )
 
-    print("dftool dispense: Done")
+    print("dftool dispense_active: Done")
 
 
 # ========================================================================
@@ -698,7 +712,6 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     randomLockAndAllocate(tups)
     randomConsumeFREs(tups, OCEAN)
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
-
 
 
 # ========================================================================
@@ -944,10 +957,12 @@ Usage: dftool chaininfo CHAINID
 def do_dispense_passive_rewards():
     HELP = f"""Dispense passive rewards.
 
-Usage: dftool dispense_passive CHAINID AMOUNT
+Usage: dftool dispense_passive CHAINID AMOUNT [ST]
     CHAINID -- {CHAINID_EXAMPLES}
+    AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
+    ST -- week start date -- YYYY-MM-DD
 """
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
@@ -955,8 +970,12 @@ Usage: dftool dispense_passive CHAINID AMOUNT
     networkutil.connect(CHAINID)
     AMOUNT = float(sys.argv[3])
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-
     recordDeployedContracts(ADDRESS_FILE)
+
+    if AMOUNT == 0:
+        START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
+        AMOUNT = getActiveRewardAmountForWeekEth(START_DATE)
+
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
     dispense.dispense_passive(OCEAN, feedist, AMOUNT)
@@ -1097,11 +1116,9 @@ ARGV_FNS = {
     "help": do_help,
     # write actions
     "compile" : do_compile,
-    "query" : do_volsym,
     "volsym": do_volsym,
     "allocations" : do_allocations,
     "calc" : do_calc,
-    "dispense" : do_dispense_active,
     "dispense_active" : do_dispense_active,
     "dispense_passive" : do_dispense_passive_rewards,
     "calculate_passive" : do_calculate_passive,
@@ -1113,17 +1130,17 @@ ARGV_FNS = {
     "veSetAllocation" : do_veSetAllocation,
     "checkpoint_feedist" : do_checkpoint_feedist,
     "initdevwallets": do_initdevwallets,
-    "manyrandom" : do_manyrandom,
-    "newacct" : do_newacct,
-    "newtoken" : do_newtoken,
-    "newVeOcean" : do_newVeOcean,
-    "newVeAllocate" : do_newVeAllocate,
-    "newdfrewards" : do_newdfrewards,
-    "newdfstrategy" : do_newdfstrategy,
+    "manyrandom": do_manyrandom,
+    "newacct": do_newacct,
+    "newtoken": do_newtoken,
+    "newVeOcean": do_newVeOcean,
+    "newVeAllocate": do_newVeAllocate,
+    "newdfrewards": do_newdfrewards,
+    "newdfstrategy": do_newdfstrategy,
     # read actions
-    "acctinfo" : do_acctinfo,
-    "chaininfo" : do_chaininfo,
-    "getrate" : do_getrate,
+    "acctinfo": do_acctinfo,
+    "chaininfo": do_chaininfo,
+    "getrate": do_getrate,
 }
 
 

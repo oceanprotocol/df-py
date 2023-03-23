@@ -61,6 +61,11 @@ def recordDeployedContracts(address_file: str):
     if "veFeeDistributor" in a:
         C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
 
+    if "VestingWalletV0" in a:
+        C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
+    elif chainID == networkutil.DEV_CHAINID:
+        C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
+
     CONTRACTS[chainID] = C
 
 
@@ -106,6 +111,10 @@ def FixedPrice():
 
 def FeeDistributor():
     return _contracts("veFeeDistributor")
+
+
+def VestingWalletV0():
+    return _contracts("VestingWalletV0")
 
 
 # ===========================================================================
@@ -178,10 +187,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
 @enforce_types
 def createFREFromDatatoken(
-    datatoken,
-    base_TOKEN,
-    amount: float,
-    from_account,
+    datatoken, base_TOKEN, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
     datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
@@ -196,7 +202,7 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(1.0),  # fixedRate : exchange rate of base_TOKEN to datatoken
+        toBase18(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]

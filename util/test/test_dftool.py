@@ -1,6 +1,7 @@
 import os
 import subprocess
 import datetime
+import pytest
 
 import brownie
 from enforce_typing import enforce_types
@@ -65,6 +66,50 @@ def test_calc(tmp_path):
 
 
 @enforce_types
+def test_calc_without_amount(tmp_path):
+    CSV_DIR = str(tmp_path)
+    OCEAN_addr = oceanutil.OCEAN_address()
+
+    # insert fake csvs
+    allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
+    csvs.saveAllocationCsv(allocations, CSV_DIR)
+
+    nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1e10}}
+    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
+
+    owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
+    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
+
+    vebals = {"0xlp_addr1": 1e8}
+    locked_amt = {"0xlp_addr1": 10.0}
+    unlock_time = {"0xlp_addr1": 1}
+    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
+
+    symbols_at_chain = {OCEAN_addr: "OCEAN"}
+    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+
+    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+
+    # main cmd
+    TOT_OCEAN = 0
+    ST = "2023-03-16"  # first week of df main
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {ST}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
+    assert os.path.exists(rewards_csv)
+
+    # get total reward amount
+    rewards = csvs.loadRewardsCsv(CSV_DIR, "OCEAN")
+    total_reward = 0
+    for _, addrs in rewards.items():
+        for _, reward in addrs.items():
+            total_reward += reward
+    assert total_reward == 75000.0
+
+
+@enforce_types
 def test_dispense(tmp_path):
     # values used for inputs or main cmd
     accounts = brownie.network.accounts
@@ -115,6 +160,20 @@ def test_manyrandom():
 
 
 @enforce_types
+@pytest.mark.skip(reason="Passing. However script executes N commands ~18m")
+def test_gen_hist_data():
+    os.environ["USE_TESTNET"] = "1"
+    cmd = "./scripts/gen_hist_data.sh 22 round_22"
+    output_s = ""
+    with subprocess.Popen(
+        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    ) as proc:
+        while proc.poll() is None:
+            output_s += proc.stdout.readline().decode("ascii")
+    return_code = proc.wait()
+    assert return_code == 0, f"Error. \n{output_s}"
+
+
 def test_initdevwallets():
     account9 = brownie.network.accounts[9]
 
@@ -134,11 +193,9 @@ def test_noarg_commands():
     # sometimes they do the main work (eg compile).
     argv1s = [
         "",
-        "query",
         "volsym",
         "getrate",
         "calc",
-        "dispense",
         "dispense_active",
         "querymany",
         "compile",
@@ -162,6 +219,7 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
+        # bad commands - such as querymany - will still return 0 and do not fail
         assert return_code == 0, f"'dftool {argv1}' failed. \n{output_s}"
 
 
@@ -246,13 +304,20 @@ def setup_function():
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, toBase18(0.001))
 
-    for envvar in ["DFTOOL_KEY", "ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
+    for envvar in [
+        "DFTOOL_KEY",
+        "ADDRESS_FILE",
+        "SUBGRAPH_URI",
+        "SECRET_SEED",
+        "WEB3_INFURA_PROJECT_ID",
+    ]:
         PREV[envvar] = os.environ.get(envvar)
 
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
     os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
     os.environ["SECRET_SEED"] = "1234"
+    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
 
 
 @enforce_types
