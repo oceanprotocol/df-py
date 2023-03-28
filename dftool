@@ -978,7 +978,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT [ST]
 
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
-    dispense.dispense_passive(OCEAN, feedist, AMOUNT)
+    retryFunction(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
 
