@@ -35,7 +35,7 @@ def getrate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
 
 
 @enforce_types
-def getBinanceRate(token_symbol: str, st: str, fin: str, tryUs: bool = false) -> Union[float, None]:
+def getBinanceRate(token_symbol: str, st: str, fin: str, tryUs: bool = False) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -71,9 +71,8 @@ def getBinanceRate(token_symbol: str, st: str, fin: str, tryUs: bool = false) ->
         if tryUs:
             print(f"Error in binance.us getBinanceRate: {e}")
             return None
-        else:
-            print(f"Error in getBinanceRate: {e}, trying binance.us")
-            return getBinanceRate(token_symbol, st, fin, true)
+        print(f"Error in getBinanceRate: {e}, trying binance.us")
+        return getBinanceRate(token_symbol, st, fin, True)
 
 
 @enforce_types
