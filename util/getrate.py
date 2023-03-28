@@ -60,7 +60,7 @@ def getBinanceRate(
     extension = "com"
     if tryUs:
         extension = "us"
-    req_s = f"https://api.binance.${extension}/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+    req_s = f"https://api.binance.{extension}/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
     try:
         res = requests.get(req_s)
         data = res.json()
