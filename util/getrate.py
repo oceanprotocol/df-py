@@ -35,7 +35,7 @@ def getrate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
 
 
 @enforce_types
-def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def getBinanceRate(token_symbol: str, st: str, fin: str, tryUs: bool = false) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -55,7 +55,10 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     if num_days == 0:  # binance needs >=1 days of data
         st_dt = st_dt - timedelta(days=1)
 
-    req_s = f"https://api.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+    extension = "com"
+    if tryUs:
+        extension = "us"
+    req_s = f"https://api.binance.${extension}/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
     try:
         res = requests.get(req_s)
         data = res.json()
@@ -65,8 +68,12 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
         return avg
     # pylint: disable=broad-exception-caught
     except Exception as e:
-        print(f"Error in getBinanceRate: {e}")
-        return None
+        if tryUs:
+            print(f"Error in binance.us getBinanceRate: {e}")
+            return None
+        else:
+            print(f"Error in getBinanceRate: {e}, trying binance.us")
+            return getBinanceRate(token_symbol, st, fin, true)
 
 
 @enforce_types
