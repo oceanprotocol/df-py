@@ -68,6 +68,12 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
 
+  dftool create_lock_veocean CHAINID amount weeks - Lock Ocean for veOcean (for testing).
+  dftool increase_unlock_time_veocean CHAINID weeks - Increase the time of Ocean locked inside veOcean (for testing).
+  dftool increase_lock_amount_veocean CHAINID amount - Increase the amount of Ocean locked inside veOcean (for testing).
+  dftool get_lock_end_veocean CHAINID - Get end time for veOcean lock (for testing).
+  dftool get_balance_veocean CHAINID - Get veOcean balance on a specific chain (for testing).
+
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
@@ -199,8 +205,6 @@ Usage: dftool nftinfo CSV_DIR CHAINID
 
 
 # ========================================================================
-
-
 @enforce_types
 def do_allocations():
     HELP = f"""Query chain, outputs allocation csv
@@ -250,8 +254,6 @@ SECRET_SEED -- secret integer used to seed the rng
 
 
 # ========================================================================
-
-
 @enforce_types
 def do_vebals():
     HELP = f"""Query chain, outputs veBalances csv
@@ -841,6 +843,10 @@ Usage: dftool create_lock_veocean CHAINID amount weeks
     weeks = int(sys.argv[4])
     print(f"Arguments:\n weeks={weeks}")
 
+    if CHAINID != DEV_CHAINID:
+        print("Only ganache. No room for accident.")
+        sys.exit(0)
+
     # main work
     networkutil.connect(CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
@@ -852,12 +858,12 @@ Usage: dftool create_lock_veocean CHAINID amount weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
 
         ve_balance = get_balance_veocean(from_account)
-        print(f"before: veOCEAN balance: {ve_balance}")
+        print(f"create_lock_veocean before: veOCEAN balance: {ve_balance}")
 
         create_lock_veocean(amount, end_time, from_account)
 
         ve_balance = get_balance_veocean(from_account)
-        print(f"after: veOCEAN balance: {ve_balance}")
+        print(f"create_lock_veocean after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
@@ -879,6 +885,10 @@ Usage: dftool increase_unlock_time_veocean CHAINID weeks
     weeks = int(sys.argv[3])
     print(f"Arguments:\n weeks={weeks}")
 
+    if CHAINID != DEV_CHAINID:
+        print("Only ganache. No room for accident.")
+        sys.exit(0)
+
     # main work
     networkutil.connect(CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
@@ -890,12 +900,12 @@ Usage: dftool increase_unlock_time_veocean CHAINID weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
 
         ve_lock_end = get_lock_end_veocean(from_account)
-        print(f"before: veOCEAN lock end: {ve_lock_end}")
+        print(f"increase_unlock_time_veocean before: veOCEAN lock end: {ve_lock_end}")
 
         increase_unlock_time_veocean(end_time, from_account)
 
         ve_lock_end = get_lock_end_veocean(from_account)
-        print(f"after: veOCEAN lock end: {ve_lock_end}")
+        print(f"increase_unlock_time_veocean after: veOCEAN lock end: {ve_lock_end}")
 
 
 # ========================================================================
@@ -917,6 +927,10 @@ Usage: dftool increase_lock_amount_veocean CHAINID amount
     amount = float(sys.argv[3])
     print(f"Arguments:\n amount={amount}")
 
+    if CHAINID != DEV_CHAINID:
+        print("Only ganache. No room for accident.")
+        sys.exit(0)
+
     # main work
     networkutil.connect(CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
@@ -925,12 +939,44 @@ Usage: dftool increase_lock_amount_veocean CHAINID amount
         from_account = _getPrivateAccount()
 
         ve_balance = get_balance_veocean(from_account)
-        print(f"before: veOCEAN balance: {ve_balance}")
+        print(f"increase_lock_amount_veocean before: veOCEAN balance: {ve_balance}")
 
         increase_amount_veocean(amount, from_account)
 
         ve_balance = get_balance_veocean(from_account)
-        print(f"after: veOCEAN balance: {ve_balance}")
+        print(f"increase_lock_amount_veocean after: veOCEAN balance: {ve_balance}")
+
+
+# ========================================================================
+@enforce_types
+def do_withdraw_ocean_from_vault():
+    HELP = """Withdraws any OCEAN locked inside veOcean.
+    
+Usage: dftool withdraw_ocean_from_vault CHAINID
+"""
+    if len(sys.argv) not in [3]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "withdraw_ocean_from_vault"
+    CHAINID = int(sys.argv[2])
+    print(f"Arguments:\n CHAINID={CHAINID}")
+
+    # main work
+    networkutil.connect(CHAINID)
+    ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
+    if ADDRESS_FILE is not None:
+        recordDeployedContracts(ADDRESS_FILE)
+        from_account = _getPrivateAccount()
+
+        ve_balance = get_balance_veocean(from_account)
+        print(f"increase_lock_amount_veocean before: veOCEAN balance: {ve_balance}")
+
+        increase_amount_veocean(amount, from_account)
+
+        ve_balance = get_balance_veocean(from_account)
+        print(f"increase_lock_amount_veocean after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
@@ -957,7 +1003,7 @@ Usage: dftool get_lock_end_veocean CHAINID
         from_account = _getPrivateAccount()
 
         ve_lock_end = get_lock_end_veocean(from_account)
-        print(f"veOCEAN lock end time: {ve_lock_end}")
+        print(f"get_lock_end_veocean veOCEAN lock end time: {ve_lock_end}")
 
 
 # ========================================================================
@@ -983,7 +1029,7 @@ Usage: dftool get_balance_veocean CHAINID
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         veBalance = get_balance_veocean(from_account)
-        print(f"veOCEAN balance: {veBalance}")
+        print(f"get_balance_veocean veOCEAN balance: {veBalance}")
 
 
 # ========================================================================
@@ -1221,8 +1267,6 @@ Usage: dftool checkpoint_feedist CHAINID
 
 # ========================================================================
 # utilities
-
-
 def _exitIfFileExists(filename: str):
     if os.path.exists(filename):
         print(f"\nFile {filename} exists. Exiting.")
@@ -1283,6 +1327,7 @@ ARGV_FNS = {
     "create_lock_veocean" : do_create_lock_veocean,
     "increase_unlock_time_veocean" : do_increase_unlock_time_veocean,
     "increase_lock_amount_veocean" : do_increase_lock_amount_veocean,
+    "withdraw_ocean_from_vault" : do_withdraw_ocean_from_vault,
     "veSetAllocation" : do_veSetAllocation,
     "checkpoint_feedist" : do_checkpoint_feedist,
     "initdevwallets": do_initdevwallets,
