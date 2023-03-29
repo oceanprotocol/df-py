@@ -717,18 +717,17 @@ def test_filter_dids():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #510")
 def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
-        "0xE34fC06540d7c0D3E849f7480FAe3671be0165C5",
-        "0x5C2acb62aC05099BF4B04dBE5a30C1e697678D54",
-        "0x18DD7bc2612339505B69fd1F083a65D40008C410",
+        "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
+        "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
+        "0x9723488dc1524849a82917a61a38bbe24a8219c1",
         oceanAddr,  # invalid, should filter out this one
     ]
 
-    # these addresses are from rinkeby
-    chainID = 1
+    # these addresses are from polygon
+    chainID = 137
 
     # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
     nftvols = {}
