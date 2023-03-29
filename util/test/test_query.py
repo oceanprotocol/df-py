@@ -656,32 +656,36 @@ def test_symbol():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_queryAquariusAssetNames():
-    # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should return ""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
-    expectedAssetNames = ["Trent", "c2d fresh dataset", "CryptoPunks dataset C2D", ""]
+
+    expectedAssetNames = [
+        "OCEAN/USDT orderbook",
+        "BTC/USDT orderbook",
+        "DEX volume in details",
+        "",
+    ]
     assetNames = query.queryAquariusAssetNames(nft_dids)
+    print("assetNames", assetNames)
     assert len(assetNames) == 4
 
     for i in range(4):
-        assert assetNames[nft_dids[i]] == expectedAssetNames[i]
+        assert expectedAssetNames.count(assetNames[nft_dids[i]]) == 1
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_to_aquarius_assets():
     # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should return ""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
@@ -693,13 +697,12 @@ def test_filter_to_aquarius_assets():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_dids():
     # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should filter out""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
         # ↓ purgatory asset, should filter out""
@@ -714,18 +717,17 @@ def test_filter_dids():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
-        "0xfd97064e1038810c84faeb951097a1e2c8829ae0",
-        "0xa550f42e80bc8a1d17e04223c4d21d650b227197",
-        "0x2b4895e46970d3a2cae203d496d7b9905f707684",
+        "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
+        "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
+        "0x9723488dc1524849a82917a61a38bbe24a8219c1",
         oceanAddr,  # invalid, should filter out this one
     ]
 
-    # these addresses are from rinkeby
-    chainID = 4
+    # these addresses are from polygon
+    chainID = 137
 
     # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
     nftvols = {}
