@@ -173,7 +173,6 @@ def queryVebalances(
 
                     delegated_to = delegation["id"]
                     fraction = delegation["amountFraction"]
-                    delegation_amt = 0
 
                     delegation_amt = min(balance_raw * fraction, balance)
                     balance = balance - delegation_amt
