@@ -171,8 +171,8 @@ def queryVebalances(
                     if delegation["expireTime"] < unixEpochTime:
                         continue
 
-                    delegated_to = delegation["id"]
-                    fraction = delegation["amountFraction"]
+                    delegated_to = delegation["id"].lower()
+                    fraction = float(delegation["amountFraction"])
 
                     delegation_amt = min(balance_raw * fraction, balance)
                     balance = balance - delegation_amt
