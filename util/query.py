@@ -136,6 +136,7 @@ def queryVebalances(
                   delegation {
                     id
                     amountFraction
+                    expireTime
                   }
                 }
               }
@@ -166,9 +167,12 @@ def queryVebalances(
                 # calculate the balance
                 balance_raw = float(user["lockedAmount"]) * timeLeft / MAX_TIME
                 balance = balance_raw
-                for userDelegations in user["delegation"]:
-                    delegated_to = userDelegations["id"]
-                    fraction = userDelegations["amountFraction"]
+                for delegation in user["delegation"]:
+                    if delegation["expireTime"] < unixEpochTime:
+                      continue
+
+                    delegated_to = delegation["id"]
+                    fraction = delegation["amountFraction"]
                     delegation_amt = 0
 
                     delegation_amt = balance_raw * fraction
