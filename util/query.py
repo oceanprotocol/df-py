@@ -135,11 +135,7 @@ def queryVebalances(
                   unlockTime
                   delegation {
                     id
-                    amount
-                  }
-                  delegates {
-                    id
-                    amount
+                    amountFraction
                   }
                 }
               }
@@ -168,7 +164,20 @@ def queryVebalances(
                     continue
 
                 # calculate the balance
-                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
+                balance_raw = float(user["lockedAmount"]) * timeLeft / MAX_TIME
+                balance = balance_raw
+                for userDelegations in user["delegation"]:
+                    delegated_to = userDelegations["id"]
+                    fraction = userDelegations["amountFraction"]
+                    delegation_amt = 0
+
+                    new_balance = balance_raw * (1 - fraction)
+                    delegation_amt = max(balance_raw - new_balance, 0)
+                    balance = max(balance - delegation_amt, 0)
+
+                    if delegated_to not in vebals:
+                        vebals[delegated_to] = 0
+                    vebals[delegated_to] += delegation_amt
 
                 # set user balance
                 LP_addr = user["id"].lower()
