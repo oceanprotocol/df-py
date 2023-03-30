@@ -175,8 +175,8 @@ def queryVebalances(
                     fraction = delegation["amountFraction"]
                     delegation_amt = 0
 
-                    delegation_amt = balance_raw * fraction
-                    balance = max(balance - delegation_amt, 0)
+                    delegation_amt = min(balance_raw * fraction, balance)
+                    balance = balance - delegation_amt
 
                     if delegated_to not in vebals:
                         vebals[delegated_to] = 0
