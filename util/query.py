@@ -171,8 +171,7 @@ def queryVebalances(
                     fraction = userDelegations["amountFraction"]
                     delegation_amt = 0
 
-                    new_balance = balance_raw * (1 - fraction)
-                    delegation_amt = max(balance_raw - new_balance, 0)
+                    delegation_amt = balance_raw * fraction
                     balance = max(balance - delegation_amt, 0)
 
                     if delegated_to not in vebals:
