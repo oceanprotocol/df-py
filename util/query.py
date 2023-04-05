@@ -417,7 +417,7 @@ def _queryVolsOwners(
     vols: Dict[str, Dict[str, float]] = {}
     gasvols: Dict[str, Dict[str, float]] = {}
     owners: Dict[str, float] = {}
-    txgascost: Dict[str, float] = {} # tx hash : gas cost
+    txgascost: Dict[str, float] = {}  # tx hash : gas cost
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -488,7 +488,7 @@ def _queryVolsOwners(
 
                 if nft_addr not in gasvols[native_token_addr]:
                     gasvols[native_token_addr][nft_addr] = 0
-                
+
                 if order["tx"] not in txgascost:
                     txgascost["tx"] = gascost
                     gasvols[native_token_addr][nft_addr] += gasCost
