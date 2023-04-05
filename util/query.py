@@ -490,7 +490,7 @@ def _queryVolsOwners(
                     gasvols[native_token_addr][nft_addr] = 0
 
                 if order["tx"] not in txgascost:
-                    txgascost["tx"] = gasCost
+                    txgascost[order["tx"]] = gasCost
                     gasvols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
