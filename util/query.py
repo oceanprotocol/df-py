@@ -185,16 +185,15 @@ def queryVebalances(
                     delegated_to = delegation["receiver"]["id"].lower()  # address
                     delegation_amt = min(balance_raw * fraction, balance)
                     balance = balance - delegation_amt
-                    if delegated_to not in vebals:
-                        vebals[delegated_to] = 0
+                    vebals.setdefault(delegated_to, 0)
+                    locked_amt.setdefault(delegated_to, 0)
+                    unlock_time.setdefault(delegated_to, 0)
                     vebals[delegated_to] += delegation_amt
 
                 # set user balance
                 LP_addr = user["id"].lower()
-                if LP_addr not in vebals:
-                    vebals[LP_addr] = balance
-                else:
-                    vebals[LP_addr] += balance
+                vebals.setdefault(LP_addr, 0)
+                vebals[LP_addr] += balance
 
                 # set locked amount
                 locked_amt[LP_addr] = float(user["lockedAmount"])
