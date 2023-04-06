@@ -165,7 +165,6 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 @enforce_types
 def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
-
     erc20_template_index = 1
     strings = [
         DT_name,
@@ -238,6 +237,7 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
 
 
+@enforce_types
 def ve_delegate(
     from_account, to_account, percentage: float, tokenid: int, expiry: int = None
 ):
