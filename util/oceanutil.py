@@ -1,7 +1,7 @@
 from collections import namedtuple
 import hashlib
 import json
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Optional
 
 import brownie
 from enforce_typing import enforce_types
@@ -239,7 +239,7 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
 
 @enforce_types
 def ve_delegate(
-    from_account, to_account, percentage: float, tokenid: int, expiry: int
+    from_account, to_account, percentage: float, tokenid: int, expiry: Optional[int]
 ):
     if expiry is None:
         expiry = veOCEAN().locked__end(from_account)
@@ -336,6 +336,7 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
 
 # from ocean.py/ocean_lib/web3_internal/utils.py
 Signature = namedtuple("Signature", ("v", "r", "s"))
+
 
 # from ocean.py/ocean_lib/web3_internal/utils.py
 @enforce_types
