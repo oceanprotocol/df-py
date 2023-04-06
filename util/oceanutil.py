@@ -1,7 +1,7 @@
 from collections import namedtuple
 import hashlib
 import json
-from typing import Any, Dict, List, Tuple, Optional
+from typing import Any, Dict, List, Tuple
 
 import brownie
 from enforce_typing import enforce_types
@@ -239,9 +239,9 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
 
 @enforce_types
 def ve_delegate(
-    from_account, to_account, percentage: float, tokenid: int, expiry: Optional[int]
+    from_account, to_account, percentage: float, tokenid: int, expiry: int = 0
 ):
-    if expiry is None:
+    if expiry == 0:
         expiry = veOCEAN().locked__end(from_account)
     veDelegation().create_boost(
         from_account,
