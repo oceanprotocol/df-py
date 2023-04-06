@@ -239,7 +239,7 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
 
 @enforce_types
 def ve_delegate(
-    from_account, to_account, percentage: float, tokenid: int, expiry: int = None
+    from_account, to_account, percentage: float, tokenid: int, expiry: int
 ):
     if expiry is None:
         expiry = veOCEAN().locked__end(from_account)
