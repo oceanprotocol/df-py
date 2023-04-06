@@ -241,7 +241,7 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
 def ve_delegate(
     from_account, to_account, percentage: float, tokenid: int, expiry: int = None
 ):
-    if expiry == None:
+    if expiry is None:
         expiry = veOCEAN().locked__end(from_account)
     veDelegation().create_boost(
         from_account,
