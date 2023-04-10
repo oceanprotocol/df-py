@@ -209,7 +209,7 @@ def randomLockAndAllocate(tups: list):
         )
         oceanutil.set_allocation(
             int(allc_amt),
-            data_nft,
+            data_nft.address,
             8996,
             lock_account,
         )
