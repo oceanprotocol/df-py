@@ -208,7 +208,7 @@ def randomLockAndAllocate(tups: list):
             lock_account
         )
         oceanutil.set_allocation(
-            allc_amt,
+            int(allc_amt),
             data_nft,
             8996,
             lock_account,
