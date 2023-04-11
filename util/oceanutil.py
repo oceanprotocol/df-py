@@ -61,6 +61,9 @@ def recordDeployedContracts(address_file: str):
     if "veFeeDistributor" in a:
         C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
 
+    if "veDelegation" in a:
+        C["veDelegation"] = B.veDelegation.at(a["veDelegation"])
+
     if "VestingWalletV0" in a:
         C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
     elif chainID == networkutil.DEV_CHAINID:
@@ -103,6 +106,10 @@ def veOCEAN():
 
 def veAllocate():
     return _contracts("veAllocate")
+
+
+def veDelegation():
+    return _contracts("veDelegation")
 
 
 def FixedPrice():
@@ -158,7 +165,6 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 @enforce_types
 def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
-
     erc20_template_index = 1
     strings = [
         DT_name,
@@ -226,12 +232,31 @@ def createFREFromDatatoken(
 # veOCEAN routines
 
 
-def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+@enforce_types
+def set_allocation(amount: int, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+
+
+@enforce_types
+def ve_delegate(
+    from_account, to_account, percentage: float, tokenid: int, expiry: int = 0
+):
+    if expiry == 0:
+        expiry = veOCEAN().locked__end(from_account)
+    veDelegation().create_boost(
+        from_account,
+        to_account,
+        int(percentage * 10000),
+        0,
+        expiry,
+        tokenid,
+        {"from": from_account},
+    )
 
 
 # =============================================================================
 # fee stuff needed for consume
+
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
 @enforce_types
@@ -311,6 +336,7 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
 
 # from ocean.py/ocean_lib/web3_internal/utils.py
 Signature = namedtuple("Signature", ("v", "r", "s"))
+
 
 # from ocean.py/ocean_lib/web3_internal/utils.py
 @enforce_types

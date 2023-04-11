@@ -135,11 +135,12 @@ def queryVebalances(
                   unlockTime
                   delegation {
                     id
+                    receiver {
+                      id
+                    }
                     amount
-                  }
-                  delegates {
-                    id
-                    amount
+                    expireTime
+                    timestamp
                   }
                 }
               }
@@ -161,27 +162,44 @@ def queryVebalances(
                 break
 
             for user in veOCEANs:
-                timeLeft = (
-                    float(user["unlockTime"]) - unixEpochTime
-                )  # time left in seconds
+                unlockTime = int(user["unlockTime"])
+                timeLeft = unlockTime - unixEpochTime  # time left in seconds
                 if timeLeft < 0:  # check if the lock has expired
                     continue
 
                 # calculate the balance
-                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
+                balance_raw = float(user["lockedAmount"]) * timeLeft / MAX_TIME
+                balance = balance_raw
+                for delegation in user["delegation"]:
+                    if int(delegation["expireTime"]) < unixEpochTime:
+                        continue
+
+                    delegated_at = int(delegation["timestamp"])
+                    delegated_at_timeleft = unlockTime - delegated_at
+                    delegated_at_balance = (
+                        float(user["lockedAmount"]) * delegated_at_timeleft / MAX_TIME
+                    )
+                    fraction = (
+                        fromBase18(int(delegation["amount"])) / delegated_at_balance
+                    )
+                    delegated_to = delegation["receiver"]["id"].lower()  # address
+                    delegation_amt = min(balance_raw * fraction, balance)
+                    balance = balance - delegation_amt
+                    vebals.setdefault(delegated_to, 0)
+                    locked_amt.setdefault(delegated_to, 0)
+                    unlock_time.setdefault(delegated_to, 0)
+                    vebals[delegated_to] += delegation_amt
 
                 # set user balance
                 LP_addr = user["id"].lower()
-                if LP_addr not in vebals:
-                    vebals[LP_addr] = balance
-                else:
-                    vebals[LP_addr] += balance
+                vebals.setdefault(LP_addr, 0)
+                vebals[LP_addr] += balance
 
                 # set locked amount
                 locked_amt[LP_addr] = float(user["lockedAmount"])
 
                 # set unlock time
-                unlock_time[LP_addr] = int(user["unlockTime"])
+                unlock_time[LP_addr] = unlockTime
 
             ## increase offset
             offset += chunk_size

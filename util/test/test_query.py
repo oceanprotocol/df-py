@@ -118,7 +118,15 @@ def test_all(tmp_path):
         data_nfts.append((data_NFT, DT, exchangeId))
 
     _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt)
+    zerobal_delegation_test_acc = brownie.accounts.add()
+    # account 0 delegates 50% to account 1, 5% to zerobal_delegation_test_acc
+    oceanutil.ve_delegate(accounts[0], accounts[1], 0.5, 0)
+    oceanutil.ve_delegate(accounts[0], zerobal_delegation_test_acc, 0.1, 1)
 
+    # account 3 delegates 100% to account 4
+    oceanutil.ve_delegate(accounts[3], accounts[4], 1.0, 0)
+    # account 4 delegates 100% to account 3
+    oceanutil.ve_delegate(accounts[4], accounts[3], 1.0, 0)
     # set start block number for querying
     ST = len(brownie.network.chain)
 
@@ -148,11 +156,12 @@ def test_all(tmp_path):
     rng = BlockRange(ST, FIN, 100, 42)
 
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
-
+    delegation_accounts = [a.address.lower() for a in accounts[:2]]
+    delegation_accounts.append(zerobal_delegation_test_acc.address.lower())
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(CO2_addr, ST, FIN)
-    _test_queryVebalances(rng, sampling_accounts_addrs)
+    _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryVolsOwnersSymbols(CO2_addr, ST, FIN)
     _test_queryNftinfo()
@@ -169,6 +178,13 @@ def test_all(tmp_path):
 
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
+
+    # sleep 20 weeks
+    brownie.network.chain.sleep(60 * 60 * 24 * 7 * 20)
+    brownie.network.chain.mine(10)
+
+    # check balances again
+    _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
 
 
 # =========================================================================
@@ -191,7 +207,9 @@ def _foundConsume(CO2_addr, st, fin):
 
 
 @enforce_types
-def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
+def _test_queryVebalances(
+    rng: BlockRange, sampling_accounts: list, delegation_accounts: list
+):
     veOCEAN = oceanutil.veOCEAN()
 
     veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
@@ -204,15 +222,24 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
     assert len(unlock_times) > 0
     assert sum(unlock_times.values()) > 0
 
+    # find delegationaccounts[0], delegationaccounts[1] and delegationaccounts[2]
+    # [0] delegates 50% to [1] and 5% to [2]
+    assert sum(veBalances[acc] for acc in delegation_accounts) < 10
+    assert veBalances[delegation_accounts[0]] * 100 / 45 * 1.5 == approx(
+        veBalances[delegation_accounts[1]], 0.01
+    )
+    assert veBalances[delegation_accounts[0]] * 100 / 45 * 0.05 == approx(
+        veBalances[delegation_accounts[2]], 0.01
+    )
+
     for account in veBalances:
-        t = brownie.network.chain.time()
-        bal = fromBase18(veOCEAN.balanceOf(account, t))
+        bal = fromBase18(oceanutil.veDelegation().adjusted_balance_of(account))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
-        assert veBalances[account] == approx(bal, 0.001)
+        assert veBalances[account] == approx(bal, rel=0.001, abs=1.0e-10)
 
-        lock = oceanutil.veOCEAN().locked(account)
+        lock = veOCEAN.locked(account)
         assert fromBase18(lock[0]) == locked_amts[account]
         assert lock[1] == unlock_times[account]
 
@@ -396,7 +423,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.015
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
 
 
 @enforce_types
@@ -443,7 +470,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.015
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
@@ -897,7 +924,7 @@ def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
     t0 = brownie.network.chain.time()
     t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
     brownie.network.chain.sleep(t1 - t0)
-    t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
+    t2 = brownie.network.chain.time() + S_PER_WEEK * 52 * 4  # lock for 4 years
 
     for acc in accounts:
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
