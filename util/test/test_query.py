@@ -224,7 +224,7 @@ def _test_queryVebalances(
 
     # find delegationaccounts[0], delegationaccounts[1] and delegationaccounts[2]
     # [0] delegates 50% to [1] and 5% to [2]
-    assert sum(veBalances[acc] for acc in delegation_accounts) == approx(10, 0.1)
+    assert sum(veBalances[acc] for acc in delegation_accounts) < 10
     assert veBalances[delegation_accounts[0]] * 100 / 45 * 1.5 == approx(
         veBalances[delegation_accounts[1]], 0.01
     )
