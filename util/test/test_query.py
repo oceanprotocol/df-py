@@ -33,6 +33,7 @@ S_PER_WEEK = 604800
 # =========================================================================
 # heavy on-chain tests: overall test
 
+
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
 def test_all(tmp_path):
@@ -74,7 +75,7 @@ def test_all(tmp_path):
     for i, acc in enumerate(accounts):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
         oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
-    
+
     # ghost consume datanft 0
     ghost_consume_dt = data_nfts[0][0]
     ghost_consume_dt_addr = ghost_consume_dt.address.lower()
