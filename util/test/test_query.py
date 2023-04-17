@@ -77,8 +77,8 @@ def test_all(tmp_path):
         oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
 
     # ghost consume datanft 0
-    ghost_consume_dt = data_nfts[0][0]
-    ghost_consume_dt_addr = ghost_consume_dt.address.lower()
+    ghost_consume_dt = data_nfts[0][1]
+    ghost_consume_nft_addr = data_nfts[0][0].address.lower()
     ghost_consume_dt.mint(account0, toBase18(1000.0), {"from": account0})
     for _ in range(20):
         oceantestutil.consumeDT(ghost_consume_dt, account0, account0)
@@ -109,11 +109,11 @@ def test_all(tmp_path):
 
     # test ghost consume
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
-    assert V0[CO2_addr][ghost_consume_dt_addr] == approx(1000.0, 5.0)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1000.0, 5.0)
     (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
-    assert V0[CO2_addr][ghost_consume_dt_addr] == 20000.0
+    assert V0[CO2_addr][ghost_consume_nft_addr] == 20000.0
     swaps = query._querySwaps(ST, FIN, CHAINID)
-    assert swaps[CO2_addr][ghost_consume_dt_addr] == approx(1000.0, 5.0)
+    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1000.0, 5.0)
 
     # test single queries
     _test_getSymbols()
