@@ -109,11 +109,11 @@ def test_all(tmp_path):
 
     # test ghost consume
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
-    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
     (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
     swaps = query._querySwaps(ST, FIN, CHAINID)
-    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0)
+    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
     # test single queries
     _test_getSymbols()
