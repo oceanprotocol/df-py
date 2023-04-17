@@ -81,7 +81,7 @@ def test_all(tmp_path):
     ghost_consume_dt_addr = ghost_consume_dt.address.lower()
     ghost_consume_dt.mint(account0, toBase18(1000.0), {"from": account0})
     for _ in range(20):
-        oceantestutil.consumeDT(ghost_consume_dt, account0, mainacc)
+        oceantestutil.consumeDT(ghost_consume_dt, account0, account0)
 
     _lock_and_allocate_ve(sampling_test_accounts, data_nfts, OCEAN_lock_amt)
 
