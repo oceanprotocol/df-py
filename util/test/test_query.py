@@ -33,66 +33,6 @@ S_PER_WEEK = 604800
 # =========================================================================
 # heavy on-chain tests: overall test
 
-
-# pylint: disable=too-many-statements
-@pytest.mark.timeout(300)
-def test_ghost_consume():
-    # create a datanft
-    OCEAN = oceanutil.OCEANtoken()
-    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
-    CO2_addr = CO2.address.lower()
-    accs = _create_and_fund_random_accounts(1, [OCEAN, CO2], account0, 100000.0)
-    mainacc = accs[0]
-
-    data_NFT = oceanutil.createDataNFT("1", "1", mainacc)
-    datanftaddr = data_NFT.address.lower()
-    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, mainacc)
-    exchangeId = oceanutil.createFREFromDatatoken(DT, CO2, 10.0, mainacc, 1000.0)
-    _lock_and_allocate_ve(accs, [(data_NFT, DT, exchangeId)], toBase18(1000.0))
-
-    # mint
-    DT.mint(mainacc, toBase18(1000.0), {"from": mainacc})
-
-    # set start block number for querying
-    ST = len(brownie.network.chain)
-
-    # real swap one time
-    oceantestutil.buyDTFRE(exchangeId, 1.0, 2000.0, account0, CO2)
-
-    # consume
-    for _ in range(20):
-        oceantestutil.consumeDT(DT, account0, mainacc)
-
-    # keep deploying, until TheGraph node sees volume, or timeout
-    for loop_i in range(50):
-        FIN = len(brownie.network.chain)
-        print(f"loop {loop_i} start")
-        assert loop_i < 45, "timeout"
-        (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
-
-        if CO2_addr in V0 and data_NFT.address.lower() in V0[CO2_addr]:
-            if V0[CO2_addr][datanftaddr] >= 20000.0:
-                break
-        brownie.network.chain.sleep(10)
-        brownie.network.chain.mine(10)
-        time.sleep(2)
-
-    FIN = len(brownie.network.chain)
-
-    # query volumes
-    rng = BlockRange(ST, FIN, 50)
-    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
-    assert V0[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
-
-    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
-    assert V0[CO2_addr][datanftaddr] == 20000.0
-
-    # test query swaps
-    swaps = query._querySwaps(ST, FIN, CHAINID)
-    assert swaps[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
-
-
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
 def test_all(tmp_path):
@@ -134,6 +74,13 @@ def test_all(tmp_path):
     for i, acc in enumerate(accounts):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
         oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
+    
+    # ghost consume datanft 0
+    ghost_consume_dt = data_nfts[0][0]
+    ghost_consume_dt_addr = ghost_consume_dt.address.lower()
+    ghost_consume_dt.mint(account0, toBase18(1000.0), {"from": account0})
+    for _ in range(20):
+        oceantestutil.consumeDT(ghost_consume_dt, account0, mainacc)
 
     _lock_and_allocate_ve(sampling_test_accounts, data_nfts, OCEAN_lock_amt)
 
@@ -158,6 +105,15 @@ def test_all(tmp_path):
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
     delegation_accounts.append(zerobal_delegation_test_acc.address.lower())
+
+    # test ghost consume
+    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    assert V0[CO2_addr][ghost_consume_dt_addr] == approx(1000.0, 5.0)
+    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+    assert V0[CO2_addr][ghost_consume_dt_addr] == 20000.0
+    swaps = query._querySwaps(ST, FIN, CHAINID)
+    assert swaps[CO2_addr][ghost_consume_dt_addr] == approx(1000.0, 5.0)
+
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(CO2_addr, ST, FIN)
