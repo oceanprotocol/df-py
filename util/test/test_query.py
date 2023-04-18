@@ -107,14 +107,6 @@ def test_all(tmp_path):
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
     delegation_accounts.append(zerobal_delegation_test_acc.address.lower())
 
-    # test ghost consume
-    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
-    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
-    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
-    assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
-    swaps = query._querySwaps(ST, FIN, CHAINID)
-    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
-
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(CO2_addr, ST, FIN)
@@ -132,6 +124,9 @@ def test_all(tmp_path):
     # end-to-end tests
     _test_end_to_end_without_csvs(CO2_sym, rng)
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+
+    # test ghost consume
+    _test_ghost_consume(ST,FIN,rng, CO2_addr, ghost_consume_nft_addr)
 
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
@@ -438,6 +433,50 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
 
 
+@enforce_types
+def _test_queryPassiveRewards(addresses):
+    chain = brownie.network.chain
+    feeDistributor = oceanutil.FeeDistributor()
+    OCEAN = oceanutil.OCEANtoken()
+
+    def sim_epoch():
+        OCEAN.transfer(
+            feeDistributor.address,
+            toBase18(1000.0),
+            {"from": brownie.accounts[0]},
+        )
+        chain.sleep(S_PER_WEEK)
+        chain.mine()
+        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+
+    for _ in range(3):
+        sim_epoch()
+
+    alice_last_reward = 0
+    bob_last_reward = 0
+    for _ in range(3):
+        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+        alice = addresses[0]
+        bob = addresses[1]
+        assert balances[alice] == balances[bob]
+        assert rewards[alice] == rewards[bob]
+        assert rewards[alice] > 0
+        assert rewards[alice] > alice_last_reward
+        assert rewards[bob] > bob_last_reward
+        alice_last_reward = rewards[alice]
+        bob_last_reward = rewards[bob]
+        sim_epoch()
+
+
+def _test_ghost_consume(ST,FIN,rng,CO2_addr,ghost_consume_nft_addr):
+    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
+    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
+    swaps = query._querySwaps(ST, FIN, CHAINID)
+    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 # ===========================================================================
 # non-heavy tests for query.py
 
@@ -821,44 +860,6 @@ def test_SimpleDataNFT():
     nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory
     assert nft4.name == "namE2"
-
-
-@enforce_types
-def _test_queryPassiveRewards(addresses):
-    chain = brownie.network.chain
-    feeDistributor = oceanutil.FeeDistributor()
-    OCEAN = oceanutil.OCEANtoken()
-
-    def sim_epoch():
-        OCEAN.transfer(
-            feeDistributor.address,
-            toBase18(1000.0),
-            {"from": brownie.accounts[0]},
-        )
-        chain.sleep(S_PER_WEEK)
-        chain.mine()
-        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
-        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-
-    for _ in range(3):
-        sim_epoch()
-
-    alice_last_reward = 0
-    bob_last_reward = 0
-    for _ in range(3):
-        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
-        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
-        alice = addresses[0]
-        bob = addresses[1]
-        assert balances[alice] == balances[bob]
-        assert rewards[alice] == rewards[bob]
-        assert rewards[alice] > 0
-        assert rewards[alice] > alice_last_reward
-        assert rewards[bob] > bob_last_reward
-        alice_last_reward = rewards[alice]
-        bob_last_reward = rewards[bob]
-        sim_epoch()
-
 
 @enforce_types
 def test_filter_by_max_volume():
