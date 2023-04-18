@@ -126,7 +126,7 @@ def test_all(tmp_path):
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
 
     # test ghost consume
-    _test_ghost_consume(ST,FIN,rng, CO2_addr, ghost_consume_nft_addr)
+    _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr)
 
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
@@ -470,13 +470,15 @@ def _test_queryPassiveRewards(addresses):
         sim_epoch()
 
 
-def _test_ghost_consume(ST,FIN,rng,CO2_addr,ghost_consume_nft_addr):
+def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
     (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
     swaps = query._querySwaps(ST, FIN, CHAINID)
     assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
+
+
 # ===========================================================================
 # non-heavy tests for query.py
 
@@ -860,6 +862,7 @@ def test_SimpleDataNFT():
     nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory
     assert nft4.name == "namE2"
+
 
 @enforce_types
 def test_filter_by_max_volume():
