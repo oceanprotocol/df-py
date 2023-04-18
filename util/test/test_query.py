@@ -36,65 +36,6 @@ S_PER_WEEK = 604800
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
-def test_ghost_consume():
-    # create a datanft
-    OCEAN = oceanutil.OCEANtoken()
-    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
-    CO2_addr = CO2.address.lower()
-    accs = _create_and_fund_random_accounts(1, [OCEAN, CO2], account0, 100000.0)
-    mainacc = accs[0]
-
-    data_NFT = oceanutil.createDataNFT("1", "1", mainacc)
-    datanftaddr = data_NFT.address.lower()
-    DT = oceanutil.createDatatokenFromDataNFT("1", "1", data_NFT, mainacc)
-    exchangeId = oceanutil.createFREFromDatatoken(DT, CO2, 10.0, mainacc, 1000.0)
-    _lock_and_allocate_ve(accs, [(data_NFT, DT, exchangeId)], toBase18(1000.0))
-
-    # mint
-    DT.mint(mainacc, toBase18(1000.0), {"from": mainacc})
-
-    # set start block number for querying
-    ST = len(brownie.network.chain)
-
-    # real swap one time
-    oceantestutil.buyDTFRE(exchangeId, 1.0, 2000.0, account0, CO2)
-
-    # consume
-    for _ in range(20):
-        oceantestutil.consumeDT(DT, account0, mainacc)
-
-    # keep deploying, until TheGraph node sees volume, or timeout
-    for loop_i in range(50):
-        FIN = len(brownie.network.chain)
-        print(f"loop {loop_i} start")
-        assert loop_i < 45, "timeout"
-        (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
-
-        if CO2_addr in V0 and data_NFT.address.lower() in V0[CO2_addr]:
-            if V0[CO2_addr][datanftaddr] >= 20000.0:
-                break
-        brownie.network.chain.sleep(10)
-        brownie.network.chain.mine(10)
-        time.sleep(2)
-
-    FIN = len(brownie.network.chain)
-
-    # query volumes
-    rng = BlockRange(ST, FIN, 50)
-    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
-    assert V0[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
-
-    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
-    assert V0[CO2_addr][datanftaddr] == 20000.0
-
-    # test query swaps
-    swaps = query._querySwaps(ST, FIN, CHAINID)
-    assert swaps[CO2_addr][datanftaddr] == approx(1000.0, 5.0)
-
-
-# pylint: disable=too-many-statements
-@pytest.mark.timeout(300)
 def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
@@ -135,6 +76,13 @@ def test_all(tmp_path):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
         oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
 
+    # ghost consume datanft 0
+    ghost_consume_dt = data_nfts[0][1]
+    ghost_consume_nft_addr = data_nfts[0][0].address.lower()
+    ghost_consume_dt.mint(account0, toBase18(1000.0), {"from": account0})
+    for _ in range(20):
+        oceantestutil.consumeDT(ghost_consume_dt, account0, account0)
+
     _lock_and_allocate_ve(sampling_test_accounts, data_nfts, OCEAN_lock_amt)
 
     # keep deploying, until TheGraph node sees volume, or timeout
@@ -158,6 +106,7 @@ def test_all(tmp_path):
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
     delegation_accounts.append(zerobal_delegation_test_acc.address.lower())
+
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(CO2_addr, ST, FIN)
@@ -175,6 +124,9 @@ def test_all(tmp_path):
     # end-to-end tests
     _test_end_to_end_without_csvs(CO2_sym, rng)
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+
+    # test ghost consume
+    _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr)
 
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
@@ -479,6 +431,52 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
     OCEAN_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
+
+
+@enforce_types
+def _test_queryPassiveRewards(addresses):
+    chain = brownie.network.chain
+    feeDistributor = oceanutil.FeeDistributor()
+    OCEAN = oceanutil.OCEANtoken()
+
+    def sim_epoch():
+        OCEAN.transfer(
+            feeDistributor.address,
+            toBase18(1000.0),
+            {"from": brownie.accounts[0]},
+        )
+        chain.sleep(S_PER_WEEK)
+        chain.mine()
+        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+
+    for _ in range(3):
+        sim_epoch()
+
+    alice_last_reward = 0
+    bob_last_reward = 0
+    for _ in range(3):
+        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+        alice = addresses[0]
+        bob = addresses[1]
+        assert balances[alice] == balances[bob]
+        assert rewards[alice] == rewards[bob]
+        assert rewards[alice] > 0
+        assert rewards[alice] > alice_last_reward
+        assert rewards[bob] > bob_last_reward
+        alice_last_reward = rewards[alice]
+        bob_last_reward = rewards[bob]
+        sim_epoch()
+
+
+def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
+    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
+    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
+    swaps = query._querySwaps(ST, FIN, CHAINID)
+    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
 
 # ===========================================================================
@@ -864,43 +862,6 @@ def test_SimpleDataNFT():
     nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory
     assert nft4.name == "namE2"
-
-
-@enforce_types
-def _test_queryPassiveRewards(addresses):
-    chain = brownie.network.chain
-    feeDistributor = oceanutil.FeeDistributor()
-    OCEAN = oceanutil.OCEANtoken()
-
-    def sim_epoch():
-        OCEAN.transfer(
-            feeDistributor.address,
-            toBase18(1000.0),
-            {"from": brownie.accounts[0]},
-        )
-        chain.sleep(S_PER_WEEK)
-        chain.mine()
-        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
-        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-
-    for _ in range(3):
-        sim_epoch()
-
-    alice_last_reward = 0
-    bob_last_reward = 0
-    for _ in range(3):
-        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
-        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
-        alice = addresses[0]
-        bob = addresses[1]
-        assert balances[alice] == balances[bob]
-        assert rewards[alice] == rewards[bob]
-        assert rewards[alice] > 0
-        assert rewards[alice] > alice_last_reward
-        assert rewards[bob] > bob_last_reward
-        alice_last_reward = rewards[alice]
-        bob_last_reward = rewards[bob]
-        sim_epoch()
 
 
 @enforce_types
