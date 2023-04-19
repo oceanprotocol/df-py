@@ -200,7 +200,7 @@ def test_create_lock_amount_veocean():
     accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
-    
+
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
@@ -227,14 +227,13 @@ def test_increase_lock_amount_veocean():
     accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
-    
+
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
     os.environ["DFTOOL_KEY"] = alice.private_key
+    veOCEAN = oceanutil.veOCEAN()
 
-    # Dispense funds to alice
-    OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(alice.address, toBase18(200.0), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(alice.address)) == 200.0
 
@@ -260,7 +259,7 @@ def test_increase_unlock_time_veocean():
     accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
-    
+
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
@@ -298,7 +297,7 @@ def test_withdraw_lock_amount_veocean():
     accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
-    
+
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
