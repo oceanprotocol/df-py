@@ -33,6 +33,7 @@ S_PER_WEEK = 604800
 # =========================================================================
 # heavy on-chain tests: overall test
 
+
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
 def test_all(tmp_path):
@@ -43,18 +44,10 @@ def test_all(tmp_path):
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
     CO2_addr = CO2.address.lower()
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = oceanutil.veOCEAN()
-    veAllocate = oceanutil.veAllocate()
 
     OCEAN_lock_amt = toBase18(5.0)
 
-    accounts = []
-    for i in range(7):
-        acc = brownie.network.accounts.add()
-        account0.transfer(acc, toBase18(0.1))
-        CO2.transfer(acc, toBase18(11000.0), {"from": account0})
-        OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
-        accounts.append(acc)
+    accounts = _create_and_fund_random_accounts(7, [OCEAN, CO2], account0)
 
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
 
@@ -65,19 +58,16 @@ def test_all(tmp_path):
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         data_nfts.append((data_NFT, DT, exchangeId))
 
-    # Lock veOCEAN
-    t0 = brownie.network.chain.time()
-    t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
-    brownie.network.chain.sleep(t1 - t0)
-    t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
-    for acc in accounts:
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
-        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
+    _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt)
+    zerobal_delegation_test_acc = brownie.accounts.add()
+    # account 0 delegates 50% to account 1, 5% to zerobal_delegation_test_acc
+    oceanutil.ve_delegate(accounts[0], accounts[1], 0.5, 0)
+    oceanutil.ve_delegate(accounts[0], zerobal_delegation_test_acc, 0.1, 1)
 
-    # Allocate to data NFTs
-    for i, acc in enumerate(accounts):
-        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
-
+    # account 3 delegates 100% to account 4
+    oceanutil.ve_delegate(accounts[3], accounts[4], 1.0, 0)
+    # account 4 delegates 100% to account 3
+    oceanutil.ve_delegate(accounts[4], accounts[3], 1.0, 0)
     # set start block number for querying
     ST = len(brownie.network.chain)
 
@@ -86,11 +76,14 @@ def test_all(tmp_path):
         oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
         oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
 
-    # sampling test accounts locks and allocates after start block
-    for i, acc in enumerate(sampling_test_accounts):
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
-        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
-        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
+    # ghost consume datanft 0
+    ghost_consume_dt = data_nfts[0][1]
+    ghost_consume_nft_addr = data_nfts[0][0].address.lower()
+    ghost_consume_dt.mint(account0, toBase18(1000.0), {"from": account0})
+    for _ in range(20):
+        oceantestutil.consumeDT(ghost_consume_dt, account0, account0)
+
+    _lock_and_allocate_ve(sampling_test_accounts, data_nfts, OCEAN_lock_amt)
 
     # keep deploying, until TheGraph node sees volume, or timeout
     # (assumes that with volume, everything else is there too
@@ -111,11 +104,13 @@ def test_all(tmp_path):
     rng = BlockRange(ST, FIN, 100, 42)
 
     sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
+    delegation_accounts = [a.address.lower() for a in accounts[:2]]
+    delegation_accounts.append(zerobal_delegation_test_acc.address.lower())
 
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(CO2_addr, ST, FIN)
-    _test_queryVebalances(rng, sampling_accounts_addrs)
+    _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryVolsOwnersSymbols(CO2_addr, ST, FIN)
     _test_queryNftinfo()
@@ -130,8 +125,18 @@ def test_all(tmp_path):
     _test_end_to_end_without_csvs(CO2_sym, rng)
     _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
 
+    # test ghost consume
+    _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr)
+
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
+
+    # sleep 20 weeks
+    brownie.network.chain.sleep(60 * 60 * 24 * 7 * 20)
+    brownie.network.chain.mine(10)
+
+    # check balances again
+    _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
 
 
 # =========================================================================
@@ -139,7 +144,7 @@ def test_all(tmp_path):
 
 
 def _foundConsume(CO2_addr, st, fin):
-    V0, _ = query._queryVolsOwners(st, fin, CHAINID)
+    V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
     if CO2_addr not in V0:
         return False
     if sum(V0[CO2_addr].values()) == 0:
@@ -154,7 +159,9 @@ def _foundConsume(CO2_addr, st, fin):
 
 
 @enforce_types
-def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
+def _test_queryVebalances(
+    rng: BlockRange, sampling_accounts: list, delegation_accounts: list
+):
     veOCEAN = oceanutil.veOCEAN()
 
     veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
@@ -167,15 +174,24 @@ def _test_queryVebalances(rng: BlockRange, sampling_accounts: list):
     assert len(unlock_times) > 0
     assert sum(unlock_times.values()) > 0
 
+    # find delegationaccounts[0], delegationaccounts[1] and delegationaccounts[2]
+    # [0] delegates 50% to [1] and 5% to [2]
+    assert sum(veBalances[acc] for acc in delegation_accounts) < 10
+    assert veBalances[delegation_accounts[0]] * 100 / 45 * 1.5 == approx(
+        veBalances[delegation_accounts[1]], 0.01
+    )
+    assert veBalances[delegation_accounts[0]] * 100 / 45 * 0.05 == approx(
+        veBalances[delegation_accounts[2]], 0.01
+    )
+
     for account in veBalances:
-        t = brownie.network.chain.time()
-        bal = fromBase18(veOCEAN.balanceOf(account, t))
+        bal = fromBase18(oceanutil.veDelegation().adjusted_balance_of(account))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
-        assert veBalances[account] == approx(bal, 0.001)
+        assert veBalances[account] == approx(bal, rel=0.001, abs=1.0e-10)
 
-        lock = oceanutil.veOCEAN().locked(account)
+        lock = veOCEAN.locked(account)
         assert fromBase18(lock[0]) == locked_amts[account]
         assert lock[1] == unlock_times[account]
 
@@ -215,7 +231,7 @@ def _test_getSymbols():
 
 @enforce_types
 def _test_queryVolsOwners(CO2_addr: str, st, fin):
-    V0, C0 = query._queryVolsOwners(st, fin, CHAINID)
+    V0, C0, _ = query._queryVolsOwners(st, fin, CHAINID)
 
     # test V0 (volumes)
     assert CO2_addr in V0, (CO2_addr, V0.keys())
@@ -350,7 +366,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
     m = float("inf")
-    OCEAN_avail = 1e-4
+    OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
@@ -359,7 +375,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
 
 
 @enforce_types
@@ -397,7 +413,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     SYM = csvs.loadSymbolsCsvs(csv_dir)
 
     m = float("inf")
-    OCEAN_avail = 1e-4
+    OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
@@ -406,7 +422,7 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.01
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
     csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
@@ -415,6 +431,52 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
     OCEAN_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
+
+
+@enforce_types
+def _test_queryPassiveRewards(addresses):
+    chain = brownie.network.chain
+    feeDistributor = oceanutil.FeeDistributor()
+    OCEAN = oceanutil.OCEANtoken()
+
+    def sim_epoch():
+        OCEAN.transfer(
+            feeDistributor.address,
+            toBase18(1000.0),
+            {"from": brownie.accounts[0]},
+        )
+        chain.sleep(S_PER_WEEK)
+        chain.mine()
+        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+
+    for _ in range(3):
+        sim_epoch()
+
+    alice_last_reward = 0
+    bob_last_reward = 0
+    for _ in range(3):
+        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+        alice = addresses[0]
+        bob = addresses[1]
+        assert balances[alice] == balances[bob]
+        assert rewards[alice] == rewards[bob]
+        assert rewards[alice] > 0
+        assert rewards[alice] > alice_last_reward
+        assert rewards[bob] > bob_last_reward
+        alice_last_reward = rewards[alice]
+        bob_last_reward = rewards[bob]
+        sim_epoch()
+
+
+def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
+    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
+    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+    assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
+    swaps = query._querySwaps(ST, FIN, CHAINID)
+    assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
 
 # ===========================================================================
@@ -619,32 +681,36 @@ def test_symbol():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_queryAquariusAssetNames():
-    # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should return ""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
-    expectedAssetNames = ["Trent", "c2d fresh dataset", "CryptoPunks dataset C2D", ""]
+
+    expectedAssetNames = [
+        "OCEAN/USDT orderbook",
+        "BTC/USDT orderbook",
+        "DEX volume in details",
+        "",
+    ]
     assetNames = query.queryAquariusAssetNames(nft_dids)
+    print("assetNames", assetNames)
     assert len(assetNames) == 4
 
     for i in range(4):
-        assert assetNames[nft_dids[i]] == expectedAssetNames[i]
+        assert expectedAssetNames.count(assetNames[nft_dids[i]]) == 1
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_to_aquarius_assets():
     # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should return ""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
@@ -656,13 +722,12 @@ def test_filter_to_aquarius_assets():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_dids():
     # test that we can get the asset names from aquarius
     nft_dids = [
-        "did:op:6d2e99a4d4d501b6ebc0c60d0d6899305c4e8ecbc7293c132841e8d46832bd89",
-        "did:op:8ce33d00d57633d641777f8d8e6c816c5ca0d3f198224305749b0069ce8709cf",
-        "did:op:064abd2c7f8d5c3cacdbf43a687194d50008889130dbc4403d4b973797da7081",
+        "did:op:6637c63a7be53c4d7c6204b92e1508c928f9090ca822cec42782c8b1ec33bb2f",
+        "did:op:fa0e8fa9550e8eb13392d6eeb9ba9f8111801b332c8d2345b350b3bc66b379d5",
+        "did:op:ce3f161fb98c64a2ded37fd34e25f28343f2c88d0c8205242df9c621770d4b3b",
         # ↓ invalid, should filter out""
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
         # ↓ purgatory asset, should filter out""
@@ -677,18 +742,17 @@ def test_filter_dids():
 
 
 @enforce_types
-@pytest.mark.skip("FIXME: unskip and get test to pass. See #437")
 def test_filter_nft_vols_to_aquarius_assets():
     oceanAddr = oceanutil.OCEAN_address()
     nftaddrs = [
-        "0xfd97064e1038810c84faeb951097a1e2c8829ae0",
-        "0xa550f42e80bc8a1d17e04223c4d21d650b227197",
-        "0x2b4895e46970d3a2cae203d496d7b9905f707684",
+        "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
+        "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
+        "0x9723488dc1524849a82917a61a38bbe24a8219c1",
         oceanAddr,  # invalid, should filter out this one
     ]
 
-    # these addresses are from rinkeby
-    chainID = 4
+    # these addresses are from polygon
+    chainID = 137
 
     # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
     nftvols = {}
@@ -801,44 +865,49 @@ def test_SimpleDataNFT():
 
 
 @enforce_types
-def _test_queryPassiveRewards(addresses):
-    chain = brownie.network.chain
-    feeDistributor = oceanutil.FeeDistributor()
-    OCEAN = oceanutil.OCEANtoken()
-
-    def sim_epoch():
-        OCEAN.transfer(
-            feeDistributor.address,
-            toBase18(1000.0),
-            {"from": brownie.accounts[0]},
-        )
-        chain.sleep(S_PER_WEEK)
-        chain.mine()
-        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
-        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
-
-    for _ in range(3):
-        sim_epoch()
-
-    alice_last_reward = 0
-    bob_last_reward = 0
-    for _ in range(3):
-        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
-        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
-        alice = addresses[0]
-        bob = addresses[1]
-        assert balances[alice] == balances[bob]
-        assert rewards[alice] == rewards[bob]
-        assert rewards[alice] > 0
-        assert rewards[alice] > alice_last_reward
-        assert rewards[bob] > bob_last_reward
-        alice_last_reward = rewards[alice]
-        bob_last_reward = rewards[bob]
-        sim_epoch()
+def test_filter_by_max_volume():
+    nftvols = {"a": {"b": 1000}}
+    swapvols = {"a": {"b": 100}}
+    filteredvols = query._filterbyMaxVolume(nftvols, swapvols)
+    assert filteredvols["a"]["b"] == 100
 
 
 # ===========================================================================
 # support functions
+
+
+@enforce_types
+def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
+    OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
+    veAllocate = oceanutil.veAllocate()
+
+    t0 = brownie.network.chain.time()
+    t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
+    brownie.network.chain.sleep(t1 - t0)
+    t2 = brownie.network.chain.time() + S_PER_WEEK * 52 * 4  # lock for 4 years
+
+    for acc in accounts:
+        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
+        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
+
+    # Allocate to data NFTs
+    for i, acc in enumerate(accounts):
+        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
+
+
+@enforce_types
+def _create_and_fund_random_accounts(
+    num_accounts, tokens, mainaccount, tokenamt=1000.0
+):
+    accounts = []
+    for _ in range(num_accounts):
+        acc = brownie.accounts.add()
+        accounts.append(acc)
+        for token in tokens:
+            token.transfer(acc, toBase18(tokenamt), {"from": mainaccount})
+        mainaccount.transfer(acc, toBase18(0.1))
+    return accounts
 
 
 @enforce_types

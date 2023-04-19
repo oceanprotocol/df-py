@@ -61,6 +61,14 @@ def recordDeployedContracts(address_file: str):
     if "veFeeDistributor" in a:
         C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
 
+    if "veDelegation" in a:
+        C["veDelegation"] = B.veDelegation.at(a["veDelegation"])
+
+    if "VestingWalletV0" in a:
+        C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
+    elif chainID == networkutil.DEV_CHAINID:
+        C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
+
     CONTRACTS[chainID] = C
 
 
@@ -100,12 +108,20 @@ def veAllocate():
     return _contracts("veAllocate")
 
 
+def veDelegation():
+    return _contracts("veDelegation")
+
+
 def FixedPrice():
     return _contracts("FixedPrice")
 
 
 def FeeDistributor():
     return _contracts("veFeeDistributor")
+
+
+def VestingWalletV0():
+    return _contracts("VestingWalletV0")
 
 
 # ===========================================================================
@@ -149,7 +165,6 @@ def createDataNFT(name: str, symbol: str, from_account):
 
 @enforce_types
 def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
-
     erc20_template_index = 1
     strings = [
         DT_name,
@@ -178,10 +193,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
 @enforce_types
 def createFREFromDatatoken(
-    datatoken,
-    base_TOKEN,
-    amount: float,
-    from_account,
+    datatoken, base_TOKEN, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
     datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
@@ -196,7 +208,7 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(1.0),  # fixedRate : exchange rate of base_TOKEN to datatoken
+        toBase18(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]
@@ -220,38 +232,63 @@ def createFREFromDatatoken(
 # veOCEAN routines
 
 
-def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+@enforce_types
+def set_allocation(amount: int, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
 
 
+@enforce_types
 def create_lock_veocean(amount: float, unlock_time: int, from_account):
     OCEANtoken().approve(veOCEAN().address, toBase18(amount), {"from": from_account})
     veOCEAN().create_lock(toBase18(amount), unlock_time, {"from": from_account})
 
 
+@enforce_types
 def get_balance_veocean(account):
     return veOCEAN().balanceOf(account)
 
 
+@enforce_types
 def increase_amount_veocean(amount: float, from_account):
     OCEANtoken().approve(veOCEAN().address, toBase18(amount), {"from": from_account})
     veOCEAN().increase_amount(toBase18(amount), {"from": from_account})
 
 
+@enforce_types
 def increase_unlock_time_veocean(unlock_time: int, from_account):
     return veOCEAN().increase_unlock_time(unlock_time, {"from": from_account})
 
 
+@enforce_types
 def get_lock_end_veocean(from_account):
     return veOCEAN().locked__end(from_account)
 
 
+@enforce_types
 def withdraw_ocean_from_lock(from_account):
     veOCEAN().withdraw({"from": from_account})
 
 
+@enforce_types
+def ve_delegate(
+    from_account, to_account, percentage: float, tokenid: int, expiry: int = 0
+):
+    if expiry == 0:
+        expiry = veOCEAN().locked__end(from_account)
+    veDelegation().create_boost(
+        from_account,
+        to_account,
+        int(percentage * 10000),
+        0,
+        expiry,
+        tokenid,
+        {"from": from_account},
+    )
+
+
 # =============================================================================
 # fee stuff needed for consume
+
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
 @enforce_types

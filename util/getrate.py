@@ -55,7 +55,7 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     if num_days == 0:  # binance needs >=1 days of data
         st_dt = st_dt - timedelta(days=1)
 
-    req_s = f"https://api.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
     try:
         res = requests.get(req_s)
         data = res.json()
