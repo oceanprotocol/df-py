@@ -225,17 +225,17 @@ def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
 
 
 def create_lock_veocean(amount: float, unlock_time: int, from_account):
-    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
-    veOCEAN().create_lock(amount, unlock_time, {"from": from_account})
+    OCEANtoken().approve(veOCEAN().address, toBase18(amount), {"from": from_account})
+    veOCEAN().create_lock(toBase18(amount), unlock_time, {"from": from_account})
 
 
 def get_balance_veocean(account):
-    return veOCEAN().balanceOf(account, brownie.network.chain.time())
+    return veOCEAN().balanceOf(account)
 
 
 def increase_amount_veocean(amount: float, from_account):
-    OCEANtoken().approve(veOCEAN().address, amount, {"from": from_account})
-    veOCEAN().increase_amount(amount, {"from": from_account})
+    OCEANtoken().approve(veOCEAN().address, toBase18(amount), {"from": from_account})
+    veOCEAN().increase_amount(toBase18(amount), {"from": from_account})
 
 
 def increase_unlock_time_veocean(unlock_time: int, from_account):
@@ -244,6 +244,10 @@ def increase_unlock_time_veocean(unlock_time: int, from_account):
 
 def get_lock_end_veocean(from_account):
     return veOCEAN().locked__end(from_account)
+
+
+def withdraw_ocean_from_lock(from_account):
+    veOCEAN().withdraw({"from": from_account})
 
 
 # =============================================================================

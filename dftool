@@ -26,12 +26,14 @@ from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
 from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
+    veOCEAN,
     veAllocate,
     create_lock_veocean,
     increase_amount_veocean,
     increase_unlock_time_veocean,
     get_balance_veocean,
     get_lock_end_veocean,
+    withdraw_ocean_from_lock,
     FeeDistributor,
 )
 
@@ -73,7 +75,8 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool increase_lock_amount_veocean CHAINID amount - Increase the amount of Ocean locked inside veOcean (for testing).
   dftool get_lock_end_veocean CHAINID - Get end time for veOcean lock (for testing).
   dftool get_balance_veocean CHAINID - Get veOcean balance on a specific chain (for testing).
-
+  dftool withdraw_ocean_from_lock CHAINID - Withdraw the underlying OCEAN amount from veOCEAN lock (for testing).
+    
   dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
@@ -707,12 +710,10 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
 
 
-
 # ========================================================================
 @enforce_types
 def do_mine():
     HELP = """Force chain to pass time (ganache only).
-
 Usage: dftool mine BLOCKS [TIMEDELTA]
   BLOCKS -- e.g. 3
   TIMEDELTA -- e.g. 100
@@ -856,14 +857,7 @@ Usage: dftool create_lock_veocean CHAINID amount weeks
 
         # Lock ocean for a certain number of weeks
         end_time = brownie.network.chain.time() + WEEK * weeks
-
-        ve_balance = get_balance_veocean(from_account)
-        print(f"create_lock_veocean before: veOCEAN balance: {ve_balance}")
-
         create_lock_veocean(amount, end_time, from_account)
-
-        ve_balance = get_balance_veocean(from_account)
-        print(f"create_lock_veocean after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
@@ -949,17 +943,17 @@ Usage: dftool increase_lock_amount_veocean CHAINID amount
 
 # ========================================================================
 @enforce_types
-def do_withdraw_ocean_from_vault():
+def do_withdraw_ocean_from_lock():
     HELP = """Withdraws any OCEAN locked inside veOcean.
     
-Usage: dftool withdraw_ocean_from_vault CHAINID
+Usage: dftool withdraw_ocean_from_lock CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "withdraw_ocean_from_vault"
+    assert sys.argv[1] == "withdraw_ocean_from_lock"
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -971,12 +965,12 @@ Usage: dftool withdraw_ocean_from_vault CHAINID
         from_account = _getPrivateAccount()
 
         ve_balance = get_balance_veocean(from_account)
-        print(f"increase_lock_amount_veocean before: veOCEAN balance: {ve_balance}")
+        print(f"withdraw_ocean_from_lock before: veOCEAN balance: {ve_balance}")
 
-        increase_amount_veocean(amount, from_account)
+        withdraw_ocean_from_lock(from_account)
 
         ve_balance = get_balance_veocean(from_account)
-        print(f"increase_lock_amount_veocean after: veOCEAN balance: {ve_balance}")
+        print(f"withdraw_ocean_from_lock after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
@@ -1327,7 +1321,7 @@ ARGV_FNS = {
     "create_lock_veocean" : do_create_lock_veocean,
     "increase_unlock_time_veocean" : do_increase_unlock_time_veocean,
     "increase_lock_amount_veocean" : do_increase_lock_amount_veocean,
-    "withdraw_ocean_from_vault" : do_withdraw_ocean_from_vault,
+    "withdraw_ocean_from_lock" : do_withdraw_ocean_from_lock,
     "veSetAllocation" : do_veSetAllocation,
     "checkpoint_feedist" : do_checkpoint_feedist,
     "initdevwallets": do_initdevwallets,

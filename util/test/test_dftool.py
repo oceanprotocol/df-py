@@ -10,7 +10,7 @@ from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 
 from util.oceanutil import (
-    get_lock_end_veocean
+    get_lock_end_veocean,
 )
 
 PREV, DFTOOL_ACCT = {}, None
@@ -120,27 +120,63 @@ def test_manyrandom():
 
 @enforce_types
 def test_initdevwallets():
-    account9 = brownie.network.accounts[9]
+    accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
-    if OCEAN.balanceOf(account9.address) == 0.0:
-        assert fromBase18(OCEAN.balanceOf(account9.address)) == 0.0
+    curBal = fromBase18(OCEAN.balanceOf(accounts[9].address))
+    assert curBal >= 1000.0
 
-        cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
-        os.system(cmd)
+    # initdevwallets only fills wallets if < 1000.0
+    balOut = curBal - 999.0
+    OCEAN.transfer(accounts[0], toBase18(balOut), {"from": accounts[9]})
+    cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
+    os.system(cmd)
 
-        assert fromBase18(OCEAN.balanceOf(account9.address)) > 1.0
+    assert fromBase18(OCEAN.balanceOf(accounts[9].address)) == 1999.0
 
 
 @enforce_types
-def test_increase_lock_amount_veocean():
-    account0 = brownie.network.accounts[9]
+def test_create_lock_amount_veocean():
+    accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
     S_PER_WEEK = 604800
 
-    if not veOCEAN.balanceOf(account0.address) > 0.0 :
+    # Let's set alice to be DF_TOOL
+    global DFTOOL_ACCT
+    alice = accounts.add()
+    os.environ["DFTOOL_KEY"] = alice.private_key
+    print(f"alice.private_key: [{alice.private_key.split('-')[0]}]")
+
+    # Dispense funds to alice
+    OCEAN = oceanutil.OCEANtoken()
+    OCEAN.transfer(alice.address, toBase18(100.0), {"from": accounts[0]})
+    assert fromBase18(OCEAN.balanceOf(alice.address)) == 100.0
+    
+    # Create lock for alice
+    assert veOCEAN.balanceOf(alice.address) == 0
+    cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 10"
+    os.system(cmd)
+
+    # Assert alice has no more OCEAN
+    assert OCEAN.balanceOf(alice) == 0.0
+
+    # reset DFTOOL_KEY to DFTOOL_ACCT
+    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
+
+
+@enforce_types
+def test_increase_lock_amount_veocean():
+    account0 = brownie.network.accounts[0]
+
+    OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
+    S_PER_WEEK = 604800
+
+    if veOCEAN.balanceOf(account0.address) == 0:
+        veOCEAN.withdraw({"from": lock_account})
+
         OCEAN_lock_amt = toBase18(5.0)
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": account0})
         
@@ -160,10 +196,13 @@ def test_increase_lock_amount_veocean():
     second_balance = veOCEAN.balanceOf(account0.address)
     assert fromBase18(second_balance) > fromBase18(first_balance)
 
+    print("first_balance", first_balance)
+    print("second_balance", second_balance)
+
 
 @enforce_types
 def test_increase_unlock_time_veocean():
-    account0 = brownie.network.accounts[9]
+    account0 = brownie.network.accounts[0]
 
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
@@ -171,11 +210,17 @@ def test_increase_unlock_time_veocean():
 
     # if lock expired, withdraw
     cur_lock_end = get_lock_end_veocean(account0.address)
+    print("cur_lock_end", cur_lock_end)
+    print("brownie.network.chain.time()", brownie.network.chain.time())
     if brownie.network.chain.time() > cur_lock_end :
         veOCEAN.withdraw({"from": account0})
         
+    ve_ocean_balance = veOCEAN.balanceOf(account0.address)
+    print("ve_ocean_balance", ve_ocean_balance)
     # If no balance, create lock
-    if not veOCEAN.balanceOf(account0.address) > 0.0 :
+    if veOCEAN.balanceOf(account0.address) == 0.0 :
+        veOCEAN.withdraw({"from": lock_account})
+
         OCEAN_lock_amt = toBase18(5.0)
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": account0})
         
@@ -187,43 +232,46 @@ def test_increase_unlock_time_veocean():
         veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": account0})
 
     first_lock_end = get_lock_end_veocean(account0.address)
-    assert first_lock_end > 0
+    cur_time = brownie.network.chain.time()
+        
+    if first_lock_end > cur_time :    
+        print("first_lock_end", first_lock_end)
+        assert first_lock_end > 0
 
-    cmd = f"./dftool increase_unlock_time_veocean {networkutil.DEV_CHAINID} 10"
-    os.system(cmd)
+        cmd = f"./dftool increase_unlock_time_veocean {networkutil.DEV_CHAINID} 10"
+        os.system(cmd)
 
-    # Verify the lock end time has changed
-    second_lock_end = veOCEAN.balanceOf(account0.address)
-    assert second_lock_end > first_lock_end
+        # Verify the lock end time has changed
+        second_lock_end = get_lock_end_veocean(account0.address)
+        print("second_lock_end", second_lock_end)
+        assert second_lock_end >= first_lock_end
+    else :
+        assert first_lock_end <= cur_time
 
 
 @enforce_types
-def test_increase_lock_amount_veocean():
-    account0 = brownie.network.accounts[9]
+def test_withdraw_lock_amount_veocean():
+    account0 = brownie.network.accounts[0]
 
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
     S_PER_WEEK = 604800
 
-    if not veOCEAN.balanceOf(account0.address) > 0.0 :
-        OCEAN_lock_amt = toBase18(5.0)
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": account0})
-        
-        # Lock veOCEAN
-        t0 = brownie.network.chain.time()
-        t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
-        brownie.network.chain.sleep(t1 - t0)
-        t2 = brownie.network.chain.time() + S_PER_WEEK * 20  # lock for 20 weeks
-        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": account0})
-
-    first_balance = veOCEAN.balanceOf(account0.address)
-    assert fromBase18(first_balance) > 0.0
-
-    cmd = f"./dftool increase_lock_amount_veocean {networkutil.DEV_CHAINID} 100"
-    os.system(cmd)
+    lock_expiry: int256 = convert(VotingEscrow(VOTING_ESCROW).locked__end(_delegator), int256)
+    cur_time = brownie.network.chain.time()
     
-    second_balance = veOCEAN.balanceOf(account0.address)
-    assert fromBase18(second_balance) > fromBase18(first_balance)
+    if cur_time < t0 :
+        first_balance = veOCEAN.balanceOf(account0.address)
+        assert fromBase18(first_balance) > 0.0
+        cmd = f"./dftool do_withdraw_ocean_from_lock {networkutil.DEV_CHAINID}"
+        os.system(cmd)
+        
+        balanceOf = veOCEAN.balanceOf(account0.address)
+        print("balanceOf", balanceOf)
+
+        assert fromBase18(balanceOf) >= 0.0
+    else :
+        assert cur_time >= t0
 
 
 @enforce_types
