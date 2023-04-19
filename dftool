@@ -931,14 +931,7 @@ Usage: dftool increase_lock_amount_veocean CHAINID amount
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-
-        ve_balance = get_balance_veocean(from_account)
-        print(f"increase_lock_amount_veocean before: veOCEAN balance: {ve_balance}")
-
         increase_amount_veocean(amount, from_account)
-
-        ve_balance = get_balance_veocean(from_account)
-        print(f"increase_lock_amount_veocean after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
