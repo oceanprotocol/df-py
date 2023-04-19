@@ -182,7 +182,7 @@ def test_gen_hist_data():
 def test_initdevwallets():
     accounts = brownie.network.accounts
     OCEAN = oceanutil.OCEANtoken()
-    
+
     # initdevwallets only fills wallets if < 1000.0, transfer everything
     OCEAN.transfer(accounts[0], OCEAN.balanceOf(accounts[9].address), {"from": accounts[9]})
     cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
