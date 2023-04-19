@@ -181,24 +181,20 @@ def test_gen_hist_data():
 
 def test_initdevwallets():
     accounts = brownie.network.accounts
-
     OCEAN = oceanutil.OCEANtoken()
-    curBal = fromBase18(OCEAN.balanceOf(accounts[9].address))
-    assert curBal >= 1000.0
-
-    # initdevwallets only fills wallets if < 1000.0
-    balOut = curBal - 999.0
-    OCEAN.transfer(accounts[0], toBase18(balOut), {"from": accounts[9]})
+    
+    # initdevwallets only fills wallets if < 1000.0, transfer everything
+    OCEAN.transfer(accounts[0], OCEAN.balanceOf(accounts[9].address), {"from": accounts[9]})
     cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
     os.system(cmd)
 
-    assert fromBase18(OCEAN.balanceOf(accounts[9].address)) == 1999.0
+    # shared acct, possible hanging amts
+    assert round(fromBase18(OCEAN.balanceOf(accounts[9].address)),1) == 1000.0
 
 
 @enforce_types
 def test_create_lock_amount_veocean():
     accounts = brownie.network.accounts
-
     OCEAN = oceanutil.OCEANtoken()
 
     # Let's set alice to be DF_TOOL
@@ -225,7 +221,6 @@ def test_create_lock_amount_veocean():
 @enforce_types
 def test_increase_lock_amount_veocean():
     accounts = brownie.network.accounts
-
     OCEAN = oceanutil.OCEANtoken()
 
     # Let's set alice to be DF_TOOL
@@ -256,7 +251,6 @@ def test_increase_lock_amount_veocean():
 @enforce_types
 def test_increase_unlock_time_veocean():
     accounts = brownie.network.accounts
-
     OCEAN = oceanutil.OCEANtoken()
 
     # Let's set alice to be DF_TOOL
@@ -294,7 +288,6 @@ def test_increase_unlock_time_veocean():
 @enforce_types
 def test_withdraw_lock_amount_veocean():
     accounts = brownie.network.accounts
-
     OCEAN = oceanutil.OCEANtoken()
 
     # Let's set alice to be DF_TOOL
