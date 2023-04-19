@@ -184,12 +184,14 @@ def test_initdevwallets():
     OCEAN = oceanutil.OCEANtoken()
 
     # initdevwallets only fills wallets if < 1000.0, transfer everything
-    OCEAN.transfer(accounts[0], OCEAN.balanceOf(accounts[9].address), {"from": accounts[9]})
+    OCEAN.transfer(
+        accounts[0], OCEAN.balanceOf(accounts[9].address), {"from": accounts[9]}
+    )
     cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
     os.system(cmd)
 
     # shared acct, possible hanging amts
-    assert round(fromBase18(OCEAN.balanceOf(accounts[9].address)),1) == 1000.0
+    assert round(fromBase18(OCEAN.balanceOf(accounts[9].address)), 1) == 1000.0
 
 
 @enforce_types
