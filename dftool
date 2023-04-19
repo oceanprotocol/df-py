@@ -890,16 +890,10 @@ Usage: dftool increase_unlock_time_veocean CHAINID weeks
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
 
-        # Lock ocean for a certain number of weeks
-        end_time = brownie.network.chain.time() + WEEK * weeks
-
-        ve_lock_end = get_lock_end_veocean(from_account)
-        print(f"increase_unlock_time_veocean before: veOCEAN lock end: {ve_lock_end}")
-
-        increase_unlock_time_veocean(end_time, from_account)
-
-        ve_lock_end = get_lock_end_veocean(from_account)
-        print(f"increase_unlock_time_veocean after: veOCEAN lock end: {ve_lock_end}")
+        # Extend lock a certain number of weeks
+        t1 = get_lock_end_veocean(from_account)
+        t2 = t1 + (WEEK * weeks)
+        increase_unlock_time_veocean(t2, from_account)
 
 
 # ========================================================================
