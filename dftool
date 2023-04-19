@@ -855,9 +855,17 @@ Usage: dftool create_lock_veocean CHAINID amount weeks
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
 
-        # Lock ocean for a certain number of weeks
-        end_time = brownie.network.chain.time() + WEEK * weeks
-        create_lock_veocean(amount, end_time, from_account)
+        # local chain won't return correct time w/o sleep
+        if CHAINID == DEV_CHAINID:
+            brownie.network.chain.sleep(1)
+        
+        # calculate unlock time
+        t0 = brownie.network.chain.time()
+        t1 = t0 // WEEK * WEEK + WEEK
+        t2 = t1 + (WEEK * weeks)
+
+        # create lock
+        create_lock_veocean(amount, t2, from_account)
 
 
 # ========================================================================
@@ -950,14 +958,7 @@ Usage: dftool withdraw_ocean_from_lock CHAINID
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-
-        ve_balance = get_balance_veocean(from_account)
-        print(f"withdraw_ocean_from_lock before: veOCEAN balance: {ve_balance}")
-
         withdraw_ocean_from_lock(from_account)
-
-        ve_balance = get_balance_veocean(from_account)
-        print(f"withdraw_ocean_from_lock after: veOCEAN balance: {ve_balance}")
 
 
 # ========================================================================
