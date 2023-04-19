@@ -232,8 +232,7 @@ def test_increase_lock_amount_veocean():
     global DFTOOL_ACCT
     alice = accounts.add()
     os.environ["DFTOOL_KEY"] = alice.private_key
-    veOCEAN = oceanutil.veOCEAN()
-
+    
     OCEAN.transfer(alice.address, toBase18(200.0), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(alice.address)) == 200.0
 
