@@ -1000,7 +1000,7 @@ Usage: dftool get_lock_end_veocean CHAINID
         from_account = _getPrivateAccount()
 
         ve_lock_end = get_lock_end_veocean(from_account)
-        print(f"get_lock_end_veocean veOCEAN lock end time: {ve_lock_end}")
+        print(f"[veOCEAN lock_end]:{ve_lock_end}")
 
 
 # ========================================================================
@@ -1026,7 +1026,7 @@ Usage: dftool get_balance_veocean CHAINID
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         veBalance = get_balance_veocean(from_account)
-        print(f"get_balance_veocean veOCEAN balance: {veBalance}")
+        print(f"[veOCEAN balance]:{veBalance}")
 
 
 # ========================================================================
