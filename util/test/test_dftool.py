@@ -20,6 +20,7 @@ CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 WEEK = 7 * 86400
 
+
 @enforce_types
 def test_getrate(tmp_path):
     TOKEN_SYMBOL = "OCEAN"
@@ -199,18 +200,17 @@ def test_create_lock_amount_veocean():
     accounts = brownie.network.accounts
 
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = oceanutil.veOCEAN()
     
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
     os.environ["DFTOOL_KEY"] = alice.private_key
-    
+
     # Dispense funds to alice
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(alice.address, toBase18(100.0), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(alice.address)) == 100.0
-    
+
     # Create lock for alice
     cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 10"
     os.system(cmd)
@@ -225,20 +225,19 @@ def test_create_lock_amount_veocean():
 @enforce_types
 def test_increase_lock_amount_veocean():
     accounts = brownie.network.accounts
-    
+
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = oceanutil.veOCEAN()
     
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
     os.environ["DFTOOL_KEY"] = alice.private_key
-    
+
     # Dispense funds to alice
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(alice.address, toBase18(200.0), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(alice.address)) == 200.0
-    
+
     # Create lock for alice
     cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 10"
     os.system(cmd)
@@ -259,20 +258,19 @@ def test_increase_lock_amount_veocean():
 @enforce_types
 def test_increase_unlock_time_veocean():
     accounts = brownie.network.accounts
-    
+
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = oceanutil.veOCEAN()
     
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
     os.environ["DFTOOL_KEY"] = alice.private_key
-    
+
     # Dispense funds to alice
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(alice.address, toBase18(100.0), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(alice.address)) == 100.0
-    
+
     # Create lock for alice
     cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 10"
     os.system(cmd)
@@ -293,32 +291,31 @@ def test_increase_unlock_time_veocean():
 
     # reset DFTOOL_KEY to DFTOOL_ACCT
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
-    
+
 
 @enforce_types
 def test_withdraw_lock_amount_veocean():
     accounts = brownie.network.accounts
-    
+
     OCEAN = oceanutil.OCEANtoken()
-    veOCEAN = oceanutil.veOCEAN()
     
     # Let's set alice to be DF_TOOL
     global DFTOOL_ACCT
     alice = accounts.add()
     os.environ["DFTOOL_KEY"] = alice.private_key
-    
+
     # Dispense funds to alice
     OCEAN = oceanutil.OCEANtoken()
     OCEAN.transfer(alice.address, toBase18(100.0), {"from": accounts[0]})
     assert fromBase18(OCEAN.balanceOf(alice.address)) == 100.0
-    
+
     # Advance chain to be able to create fresh lock
     weeks = 10
     t0 = brownie.network.chain.time()
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + (WEEK * weeks)
     brownie.network.chain.sleep(t1 - t0)
-    
+
     # Create lock for alice
     cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 {weeks}"
     os.system(cmd)

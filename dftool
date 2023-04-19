@@ -27,7 +27,6 @@ from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
 from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
-    veOCEAN,
     veAllocate,
     create_lock_veocean,
     increase_amount_veocean,
@@ -873,7 +872,7 @@ Usage: dftool create_lock_veocean CHAINID amount weeks
         # local chain won't return correct time w/o sleep
         if CHAINID == DEV_CHAINID:
             brownie.network.chain.sleep(1)
-        
+
         # calculate unlock time
         t0 = brownie.network.chain.time()
         t1 = t0 // WEEK * WEEK + WEEK
