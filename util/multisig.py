@@ -21,6 +21,7 @@ def get_safe_nonce(multisig_address):
             nonce = d["nonce"]
             break
     if nonce == 0:
+        # pylint: disable=broad-exception-raised
         raise Exception("Couldn't get multisig nonce")
     return nonce + 1
 
