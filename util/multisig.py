@@ -11,11 +11,18 @@ from util.constants import BROWNIE_PROJECT as B
 
 def get_safe_nonce(multisig_address):
     BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
-    API_QUERY = "?limit=1&executed=false&queued=true&trusted=true"
+    API_QUERY = "?limit=10&executed=false&queued=true&trusted=true"
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/{API_QUERY}"
     response = requests.request("GET", API_URL)
     data = response.json()
-    return data["results"][0]["nonce"] + 1
+    nonce = None
+    for d in data["results"]:
+        if "nonce" in d:
+            nonce = d["nonce"]
+            break
+    if nonce == 0:
+        raise Exception("Couldn't get multisig nonce")
+    return nonce + 1
 
 
 def send_multisig_tx(multisig_address, to, value, data):
