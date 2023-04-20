@@ -1353,7 +1353,7 @@ ARGV_FNS = {
 # main
 @enforce_types
 def do_main():
-    if len(sys.argv) == 1 :
+    if len(sys.argv) == 1:
         do_help()
     else:
         if sys.argv[1] in ARGV_FNS:

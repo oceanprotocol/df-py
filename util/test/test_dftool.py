@@ -10,9 +10,9 @@ from util import csvs, networkutil, oceanutil, oceantestutil
 from util.base18 import fromBase18, toBase18
 from util.constants import BROWNIE_PROJECT as B
 
-from util.oceanutil import (
-    get_lock_end_veocean,
-)
+# from util.oceanutil import (
+#     get_lock_end_veocean,
+# )
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -179,19 +179,19 @@ def test_gen_hist_data():
     assert return_code == 0, f"Error. \n{output_s}"
 
 
-# def test_initdevwallets():
-#     accounts = brownie.network.accounts
-#     OCEAN = oceanutil.OCEANtoken()
+def test_initdevwallets():
+    accounts = brownie.network.accounts
+    OCEAN = oceanutil.OCEANtoken()
 
-#     # initdevwallets only fills wallets if < 1000.0, transfer everything
-#     OCEAN.transfer(
-#         accounts[0], OCEAN.balanceOf(accounts[9].address), {"from": accounts[9]}
-#     )
-#     cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
-#     os.system(cmd)
+    # initdevwallets only fills wallets if < 1000.0, transfer everything
+    OCEAN.transfer(
+        accounts[0], OCEAN.balanceOf(accounts[9].address), {"from": accounts[9]}
+    )
+    cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
+    os.system(cmd)
 
-#     # shared acct, possible hanging amts
-#     assert round(fromBase18(OCEAN.balanceOf(accounts[9].address)), 1) == 1000.0
+    # shared acct, possible hanging amts
+    assert round(fromBase18(OCEAN.balanceOf(accounts[9].address)), 1) == 1000.0
 
 
 # @enforce_types
