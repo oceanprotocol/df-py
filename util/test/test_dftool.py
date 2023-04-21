@@ -194,30 +194,30 @@ def test_initdevwallets():
     assert round(fromBase18(OCEAN.balanceOf(accounts[9].address)), 1) == 1000.0
 
 
-# @enforce_types
-# def test_create_lock_amount_veocean():
-#     accounts = brownie.network.accounts
-#     OCEAN = oceanutil.OCEANtoken()
+@enforce_types
+def test_create_lock_amount_veocean():
+    accounts = brownie.network.accounts
+    OCEAN = oceanutil.OCEANtoken()
 
-#     # Let's set alice to be DF_TOOL
-#     global DFTOOL_ACCT
-#     alice = accounts.add()
-#     os.environ["DFTOOL_KEY"] = alice.private_key
+    # Let's set alice to be DF_TOOL
+    alice = accounts.add()
+    temp_dftool_key = os.environ["DFTOOL_KEY"]
+    os.environ["DFTOOL_KEY"] = alice.private_key
 
-#     # Dispense funds to alice
-#     OCEAN = oceanutil.OCEANtoken()
-#     OCEAN.transfer(alice.address, toBase18(100.0), {"from": accounts[0]})
-#     assert fromBase18(OCEAN.balanceOf(alice.address)) == 100.0
+    # Dispense funds to alice
+    OCEAN = oceanutil.OCEANtoken()
+    OCEAN.transfer(alice.address, toBase18(100.0), {"from": accounts[0]})
+    assert fromBase18(OCEAN.balanceOf(alice.address)) == 100.0
 
-#     # Create lock for alice
-#     cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 10"
-#     os.system(cmd)
+    # Create lock for alice
+    cmd = f"./dftool create_lock_veocean {networkutil.DEV_CHAINID} 100 10"
+    os.system(cmd)
 
-#     # Assert alice has no more OCEAN
-#     assert OCEAN.balanceOf(alice) == 0.0
+    # Assert alice has no more OCEAN
+    assert OCEAN.balanceOf(alice) == 0.0
 
-#     # reset DFTOOL_KEY to DFTOOL_ACCT
-#     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
+    # reset DFTOOL_KEY to DFTOOL_ACCT
+    os.environ["DFTOOL_KEY"] = temp_dftool_key
 
 
 # @enforce_types
