@@ -184,9 +184,7 @@ def queryVebalances(
                     delegated_at_balance = (
                         float(user["lockedAmount"]) * delegated_at_timeleft / MAX_TIME
                     )
-                    fraction = (
-                        int(delegation["amount"]) / delegated_at_balance
-                    )
+                    fraction = int(delegation["amount"]) / delegated_at_balance
                     delegated_to = delegation["receiver"]["id"].lower()  # address
                     delegation_amt = min(balance_raw * fraction, balance)
                     balance = balance - delegation_amt
