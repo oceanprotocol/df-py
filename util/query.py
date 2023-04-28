@@ -133,14 +133,19 @@ def queryVebalances(
                   id
                   lockedAmount
                   unlockTime
-                  delegation {
+                  delegation(first: 1) {
                     id
                     receiver {
                       id
                     }
                     amount
                     expireTime
-                    timestamp
+                    updates(orderBy:timestamp orderDirection:asc){
+                      timestamp
+                      sender
+                      amount
+                      type
+                    }
                   }
                 }
               }
@@ -174,7 +179,7 @@ def queryVebalances(
                     if int(delegation["expireTime"]) < unixEpochTime:
                         continue
 
-                    delegated_at = int(delegation["timestamp"])
+                    delegated_at = int(delegation["updates"][0]["timestamp"])
                     delegated_at_timeleft = unlockTime - delegated_at
                     delegated_at_balance = (
                         float(user["lockedAmount"]) * delegated_at_timeleft / MAX_TIME
