@@ -133,7 +133,7 @@ def queryVebalances(
                   id
                   lockedAmount
                   unlockTime
-                  delegation(first: 1) {
+                  delegation {
                     id
                     receiver {
                       id
