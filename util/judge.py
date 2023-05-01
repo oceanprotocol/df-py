@@ -81,8 +81,7 @@ def nft_addr_to_pred_vals(nft_addr: str, ocean, alice) -> List[float]:
     try:
         pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, alice.private_key)
         pred_vals = [float(s) for s in pred_vals_str[1:-1].split(",")]
-    except:
-        # import pdb; pdb.set_trace()
+    except:  # pylint: disable=W0702
         return []
 
     return pred_vals
@@ -144,7 +143,7 @@ def print_nmses_results(nmses, bad_nft_addrs):
     print(f"\n{len(nmses)} good entries:")
     print_addresss_nmse(nmses)
 
-    ranking = {k: v for k, v in sorted(nmses.items(), key=lambda item: item[1])}
+    ranking = dict(sorted(nmses.items(), key=lambda item: item[1]))
     print("\nafter ranking:")
     print("-------------")
     print_addresss_nmse(ranking)
