@@ -24,6 +24,7 @@ from util.retry import retryFunction
 from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
 from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
+from util.judge import do_get_nmses, print_nmses_results
 from util.oceanutil import (
     recordDeployedContracts,
     OCEANtoken,
@@ -79,6 +80,9 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chaininfo CHAINID - info about a network
+
+  dftool judge DEADLINE - judge Predict ETH challenge
+
   dftool help - this message
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
@@ -633,7 +637,7 @@ Usage: dftool compile
 def do_initdevwallets():
     # UPADATE THIS
     HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-Usage: dftool initdevwallets CHAINID 
+Usage: dftool initdevwallets CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 Uses these envvars:
 ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
@@ -1068,6 +1072,9 @@ Usage: dftool checkpoint_feedist CHAINID
 
 # ========================================================================
 # utilities
+def do_judge():
+    nmses, bad_nft_addrs = do_get_nmses()
+    print_nmses_results(nmses, bad_nft_addrs)
 
 
 def _exitIfFileExists(filename: str):
@@ -1141,6 +1148,7 @@ ARGV_FNS = {
     "acctinfo": do_acctinfo,
     "chaininfo": do_chaininfo,
     "getrate": do_getrate,
+    "judge": do_judge,
 }
 
 

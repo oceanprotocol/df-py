@@ -8,7 +8,7 @@
 </div>
 <br/>
 
-CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend. 
+CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend.
 
 ```text
 Usage: dftool getrate|query|calc|dispense|..
@@ -20,7 +20,7 @@ Usage: dftool getrate|query|calc|dispense|..
   ...
 ```
 
-Data flow (left) and csvs (right) ([source](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)): 
+Data flow (left) and csvs (right) ([source](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)):
 
 <div>
 <img src="images/data-flow.png" align="left" height="100" width="130">&emsp;&emsp;
@@ -38,7 +38,7 @@ Ensure prerequisites:
 - Python 3.8.5+
 - mypy, pylint, black. `sudo apt install mypy pylint black`
 - solc 0.8.0+ [[Instructions](https://docs.soliditylang.org/en/v0.8.9/installing-solidity.html)]
-- Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge) 
+- Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge)
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`. [[Details](https://github.com/tokenspice/tokenspice/issues/165)]
 
 #### Install & Run Barge
@@ -85,6 +85,10 @@ brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 
 #add pwd to bash path
 export PATH=$PATH:.
+
+#set judges private key and Polygon Scan API Key
+export REMOTE_TEST_PRIVATE_KEY1=<judges key>
+export POLYGONSCAN_API_KEY=<api key>
 
 #compile contracts
 dftool compile
@@ -159,9 +163,9 @@ def _remove_contract(contract: Any) -> None:
 
 Examples so far were on a local chain. Let's do a one-time setup for remote networks. In console:
 ```console
-brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56  
-brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137  
-brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246  
+brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
+brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
+brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
 brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 ```
 
@@ -191,7 +195,7 @@ Which will be located inside of `/root/.dfcsv`
 Example usage with docker:
 
 ```shell
-./dfpy_docker help  # prints help 
+./dfpy_docker help  # prints help
 ```
 
 ```shell
@@ -208,10 +212,10 @@ Since df-py uses brownie to execute a wide range of commands, you may want to in
 You may want to expand brownie's configured networks in the Docker container by editing the `Dockerfile`
 ```
 ...
-RUN brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56  
-RUN brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137  
-RUN brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246  
-RUN brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285  
+RUN brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
+RUN brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
+RUN brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
+RUN brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 ...
 COPY . .
 RUN rm -rf build
@@ -219,7 +223,7 @@ RUN rm -rf build
 
 # Usage: Docker + Contract Addresses
 
-Since df-py has to connect to a broad range of contracts, you may need to configure the docker container to access these. You can [find the latest deployed contracts here](https://github.com/oceanprotocol/contracts/blob/v4main/addresses/address.json).  
+Since df-py has to connect to a broad range of contracts, you may need to configure the docker container to access these. You can [find the latest deployed contracts here](https://github.com/oceanprotocol/contracts/blob/v4main/addresses/address.json).
 You will then have to copy them to your local directory, and configure `dfpy_docker` like so.
 ```
 docker run --env-file ./.env -v /tmp/dfpy:/app/data -v /app/df-py/address.json:/address.json --rm dfpy $@
@@ -238,13 +242,13 @@ cd /app/df-py/
 date=`date -dlast-wednesday '+%Y-%m-%d'`
 now=`date '+%Y-%m-%d'`
 
-/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data && 
-/app/df-py/dfpy_docker query $date latest 1 /app/data 1 && 
-/app/df-py/dfpy_docker query $date latest 1 /app/data 56 && 
-/app/df-py/dfpy_docker query $date latest 1 /app/data 137 && 
-/app/df-py/dfpy_docker query $date latest 1 /app/data 246 && 
-/app/df-py/dfpy_docker query $date latest 1 /app/data 1285 && 
-/app/df-py/dfpy_docker calc /app/data 10000 OCEAN && 
+/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data &&
+/app/df-py/dfpy_docker query $date latest 1 /app/data 1 &&
+/app/df-py/dfpy_docker query $date latest 1 /app/data 56 &&
+/app/df-py/dfpy_docker query $date latest 1 /app/data 137 &&
+/app/df-py/dfpy_docker query $date latest 1 /app/data 246 &&
+/app/df-py/dfpy_docker query $date latest 1 /app/data 1285 &&
+/app/df-py/dfpy_docker calc /app/data 10000 OCEAN &&
 mv /tmp/dfpy/* ~/.dfcsv/
 ```
 
@@ -283,6 +287,6 @@ Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9
   Simpletoken.constructor confirmed   Block: 1   Gas used: 551616 (8.21%)
   Simpletoken deployed at: 0x3194cBDC3dbcd3E11a07892e7bA5c3394048Cc87
 
->>> t.symbol()                                                                                                                                                                                              
+>>> t.symbol()
 'TEST'
 ```
