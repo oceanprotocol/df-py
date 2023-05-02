@@ -92,6 +92,9 @@ export POLYGONSCAN_API_KEY=<api key>
 
 #compile contracts
 dftool compile
+
+# only if you are running from the United States
+# export USE_BINANCE_US=1
 ```
 
 

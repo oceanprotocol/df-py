@@ -64,6 +64,8 @@ jobs:
           coverage run --omit="*test*" -m pytest util/test
           coverage report
           coverage xml
+        env:
+          USE_BINANCE_US: 1
 
       - name: Publish code coverage
         uses: paambaati/codeclimate-action@v2.7.5

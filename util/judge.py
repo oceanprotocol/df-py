@@ -92,7 +92,8 @@ def get_cex_vals(start_dt):
     print_datetime_info("target times", target_uts)
 
     # get actual ETH values
-    cex_x = ccxt.binance().fetch_ohlcv("ETH/USDT", "1h")
+    binance = ccxt.binanceus if os.getenv("USE_BINANCE_US", False) else ccxt.binance
+    cex_x = binance().fetch_ohlcv("ETH/USDT", "1h")
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
     allcex_vals = [xi[4] for xi in cex_x]
     # print_datetime_info("CEX data info", allcex_uts)
