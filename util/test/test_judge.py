@@ -5,7 +5,7 @@ from unittest.mock import Mock, patch
 from predict_eth.helpers import create_alice_wallet, create_ocean_instance
 from requests.models import Response
 
-from util.judge import get_nft_addresses, nft_addr_to_pred_vals
+from util.judge import get_nft_addresses, nft_addr_to_pred_vals, get_cex_vals
 
 
 def test_get_nft_addresses():
@@ -44,7 +44,7 @@ def test_get_pred_vals():
     ocean = create_ocean_instance("polygon-test")
     alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
     assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
-    alice = create_alice_wallet(ocean)  # uses REMOTE_TEST_PRIVATE_KEY1
+    alice = create_alice_wallet(ocean)
 
     pred_vals = nft_addr_to_pred_vals(
         "0x471817de04faa9b616ed7644117d957439717bf9", ocean, alice
@@ -52,3 +52,11 @@ def test_get_pred_vals():
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798
+
+
+def test_get_cex_vals():
+    start_dt = (datetime.today() - timedelta(days=2)).replace(
+        hour=1, minute=0, second=0, microsecond=0
+    )
+    cex_vals = get_cex_vals(start_dt)
+    assert len(cex_vals) == 12
