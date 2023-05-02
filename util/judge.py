@@ -104,7 +104,7 @@ def get_cex_vals(start_dt):
 
 
 def parse_arguments(arguments):
-    if len(arguments) != 3:
+    if len(arguments) != 3 or arguments[1] != "judge":
         print(HELP_JUDGE)
         sys.exit(0)
 
@@ -126,7 +126,7 @@ def parse_arguments(arguments):
     return start_dt, end_dt
 
 
-def print_addresss_nmse(nmses):
+def print_address_nmse(nmses):
     for address, nmse in nmses.items():
         print(f"Address: {address}, NMSE: {nmse}")
 
@@ -141,12 +141,12 @@ def print_nmses_results(nmses, bad_nft_addrs):
         print(f"BAD: {bad_addr}")
 
     print(f"\n{len(nmses)} good entries:")
-    print_addresss_nmse(nmses)
+    print_address_nmse(nmses)
 
     ranking = dict(sorted(nmses.items(), key=lambda item: item[1]))
     print("\nafter ranking:")
     print("-------------")
-    print_addresss_nmse(ranking)
+    print_address_nmse(ranking)
 
     print("\ntop 3:")
     print("-------------")

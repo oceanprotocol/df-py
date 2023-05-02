@@ -1,11 +1,19 @@
 import os
+import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 from predict_eth.helpers import create_alice_wallet, create_ocean_instance
 from requests.models import Response
 
-from util.judge import get_nft_addresses, nft_addr_to_pred_vals, get_cex_vals
+from util.judge import (
+    get_nft_addresses,
+    nft_addr_to_pred_vals,
+    get_cex_vals,
+    parse_arguments,
+    print_address_nmse,
+    print_nmses_results,
+)
 
 
 def test_get_nft_addresses():
@@ -60,3 +68,20 @@ def test_get_cex_vals():
     )
     cex_vals = get_cex_vals(start_dt)
     assert len(cex_vals) == 12
+
+
+def test_parse_arguments():
+    with pytest.raises(SystemExit):
+        parse_arguments(["dftool", "..."])
+
+    with pytest.raises(ValueError):
+        parse_arguments(["dftool", "judge", "..."])
+
+    start_dt, end_dt = parse_arguments(["dftool", "judge", "2021-09-01_12:59"])
+    assert start_dt == datetime(2021, 9, 1, 13, 0)
+    assert end_dt == datetime(2021, 9, 1, 12, 59)
+
+
+def test_prints():
+    print_address_nmse({"0x123": 0.1, "0x456": 0.2})
+    print_nmses_results({"0x123": 0.1, "0x456": 0.2}, ["0x789"])
