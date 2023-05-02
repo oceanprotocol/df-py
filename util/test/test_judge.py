@@ -1,20 +1,14 @@
 import os
-import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
+import pytest
 from predict_eth.helpers import create_alice_wallet, create_ocean_instance
 from requests.models import Response
 
-from util.judge import (
-    do_get_nmses,
-    get_nft_addresses,
-    nft_addr_to_pred_vals,
-    get_cex_vals,
-    parse_arguments,
-    print_address_nmse,
-    print_nmses_results,
-)
+from util.judge import (do_get_nmses, get_cex_vals, get_nft_addresses,
+                        nft_addr_to_pred_vals, parse_arguments,
+                        print_address_nmse, print_nmses_results)
 
 
 def test_get_nft_addresses():
