@@ -1,12 +1,14 @@
-from datetime import datetime as dt, timedelta
 import os
 import sys
+from datetime import datetime as dt
+from datetime import timedelta
 from typing import List
-import requests
 
 import ccxt
+import requests
 from enforce_typing import enforce_types
-
+from ocean_lib.models.data_nft import DataNFT
+from ocean_lib.ocean import crypto
 from predict_eth.helpers import (
     calc_nmse,
     create_alice_wallet,
@@ -16,8 +18,6 @@ from predict_eth.helpers import (
     round_to_nearest_hour,
     target_12h_unixtimes,
 )
-from ocean_lib.models.data_nft import DataNFT
-from ocean_lib.ocean import crypto
 
 # Set network. Change this one line if needed. *Supposed* to be "polygon-test"
 NETWORK_NAME = "polygon-test"  # polygon-test (Mumbai), polygon-main, goerli...
@@ -34,6 +34,7 @@ Usage: dftool judge DEADLINE
 DEADLINE expected in the format YEAR-MONTH-DAY_HOUR:MIN in UTC.
    Eg 2023-04-06_1:00
 DEADLINE refers to the end of the challenge itself, to limit entry retrieval.
+if no DEADLINE is provided, we consider the current time rounded to hour
 
 Hard-coded values: NETWORK_NAME={NETWORK_NAME}, CHAINID={CHAINID}
 Ennvars expected:
@@ -104,22 +105,26 @@ def get_cex_vals(start_dt):
 
 
 def parse_arguments(arguments):
-    if len(arguments) != 3 or arguments[1] != "judge":
+    if len(arguments) not in [2, 3] or arguments[1] != "judge":
         print(HELP_JUDGE)
         sys.exit(0)
 
     # extract inputs
-    ENDTIME_STR = arguments[2]
-
-    end_dt = dt.strptime(ENDTIME_STR, "%Y-%m-%d_%H:%M")
+    end_dt = (
+        dt.now() if len(arguments) < 3 else dt.strptime(arguments[2], "%Y-%m-%d_%H:%M")
+    )
+    start_dt = (
+        round_to_nearest_hour(dt.now())
+        if len(arguments) < 2
+        else round_to_nearest_hour(end_dt + timedelta(minutes=6))
+    )
+    end_dt = start_dt - timedelta(minutes=1)
 
     print("judging: Begin")
-    print(f"Args: DEADLINE={ENDTIME_STR}")
+    end_dt_str = end_dt.strftime("%Y-%m-%d_%H:%M")
+    print(f"Args: DEADLINE={end_dt_str}")
 
     # specify target times
-    start_dt = end_dt + timedelta(minutes=6)
-    start_dt = round_to_nearest_hour(start_dt)  # so that times line up
-
     start_dt_str = start_dt.strftime("%Y-%m-%d_%H:%M")
     print(f"start_dt = DATETIME rounded to nearest hour = {start_dt_str}")
 

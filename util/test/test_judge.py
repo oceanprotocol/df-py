@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
+from freezegun import freeze_time
 from predict_eth.helpers import create_alice_wallet, create_ocean_instance
 from requests.models import Response
 
@@ -79,6 +80,27 @@ def test_parse_arguments():
         parse_arguments(["dftool", "judge", "..."])
 
     start_dt, end_dt = parse_arguments(["dftool", "judge", "2021-09-01_12:59"])
+    assert start_dt == datetime(2021, 9, 1, 13, 0)
+    assert end_dt == datetime(2021, 9, 1, 12, 59)
+
+
+@freeze_time("2021-09-01 12:59")
+def test_parse_arguments_implicit():
+    start_dt, end_dt = parse_arguments(["dftool", "judge"])
+    assert start_dt == datetime(2021, 9, 1, 13, 0)
+    assert end_dt == datetime(2021, 9, 1, 12, 59)
+
+
+@freeze_time("2021-09-01 13:00")
+def test_parse_arguments_rounding_under():
+    start_dt, end_dt = parse_arguments(["dftool", "judge"])
+    assert start_dt == datetime(2021, 9, 1, 13, 0)
+    assert end_dt == datetime(2021, 9, 1, 12, 59)
+
+
+@freeze_time("2021-09-01 13:01")
+def test_parse_arguments_rounding_over():
+    start_dt, end_dt = parse_arguments(["dftool", "judge"])
     assert start_dt == datetime(2021, 9, 1, 13, 0)
     assert end_dt == datetime(2021, 9, 1, 12, 59)
 

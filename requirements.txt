@@ -8,3 +8,4 @@ types-requests
 coverage
 ccxt==3.0.84
 predict-eth
+freezegun
