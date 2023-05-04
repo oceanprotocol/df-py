@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
 
 import pytest
-from freezegun import freeze_time
 from predict_eth.helpers import create_alice_wallet, create_ocean_instance
 from requests.models import Response
 
