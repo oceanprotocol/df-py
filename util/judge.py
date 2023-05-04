@@ -15,7 +15,6 @@ from predict_eth.helpers import (
     create_ocean_instance,
     filter_to_target_uts,
     print_datetime_info,
-    round_to_nearest_hour,
     target_12h_unixtimes,
 )
 
@@ -34,7 +33,6 @@ Usage: dftool judge DEADLINE
 DEADLINE expected in the format YEAR-MONTH-DAY_HOUR:MIN in UTC.
    Eg 2023-04-06_1:00
 DEADLINE refers to the end of the challenge itself, to limit entry retrieval.
-if no DEADLINE is provided, we consider the current time rounded to hour
 
 Hard-coded values: NETWORK_NAME={NETWORK_NAME}, CHAINID={CHAINID}
 Ennvars expected:
@@ -68,7 +66,7 @@ def get_nft_addresses(deadline_dt):
     # 'tokenID': '1', 'tokenName': 'Data NFT 1', 'tokenSymbol': 'DN1'}
 
     filtered_txs = [
-        tx for tx in txs if a_week_before_deadline < tx["timeStamp"] < deadline_dt
+        tx for tx in txs if a_week_before_deadline < tx["timeStamp"] <= deadline_dt
     ]
 
     return [tx["contractAddress"] for tx in filtered_txs]
@@ -92,7 +90,7 @@ def nft_addr_to_pred_vals(nft_addr: str, ocean, alice) -> List[float]:
 
 
 def get_cex_vals(deadline_dt):
-    target_uts = target_12h_unixtimes(deadline_dt)
+    target_uts = target_12h_unixtimes(deadline_dt + timedelta(minutes=1))
     print_datetime_info("target times", target_uts)
 
     # get actual ETH values
@@ -108,16 +106,12 @@ def get_cex_vals(deadline_dt):
 
 
 def parse_arguments(arguments):
-    if len(arguments) not in [2, 3] or arguments[1] != "judge":
+    if len(arguments) != 3 or arguments[1] != "judge":
         print(HELP_JUDGE)
         sys.exit(0)
 
     # extract inputs
-    deadline_dt = (
-        round_to_nearest_hour(dt.now())
-        if len(arguments) < 3
-        else dt.strptime(arguments[2], "%Y-%m-%d_%H:%M")
-    )
+    deadline_dt = dt.strptime(arguments[2], "%Y-%m-%d_%H:%M")
 
     print("judging: Begin")
     deadline_dt_str = deadline_dt.strftime("%Y-%m-%d_%H:%M")

@@ -66,7 +66,7 @@ def test_get_pred_vals():
 
 def test_get_cex_vals():
     deadline_dt = (datetime.today() - timedelta(days=2)).replace(
-        hour=1, minute=0, second=0, microsecond=0
+        hour=12, minute=59, second=0, microsecond=0
     )
     cex_vals = get_cex_vals(deadline_dt)
     assert len(cex_vals) == 12
@@ -83,24 +83,6 @@ def test_parse_arguments():
     assert end_dt == datetime(2021, 9, 1, 12, 59)
 
 
-@freeze_time("2021-09-01 12:59")
-def test_parse_arguments_implicit():
-    end_dt = parse_arguments(["dftool", "judge"])
-    assert end_dt == datetime(2021, 9, 1, 13, 00)
-
-
-@freeze_time("2021-09-01 13:00")
-def test_parse_arguments_rounding_under():
-    end_dt = parse_arguments(["dftool", "judge"])
-    assert end_dt == datetime(2021, 9, 1, 13, 00)
-
-
-@freeze_time("2021-09-01 13:01")
-def test_parse_arguments_rounding_over():
-    end_dt = parse_arguments(["dftool", "judge"])
-    assert end_dt == datetime(2021, 9, 1, 13, 00)
-
-
 def test_prints():
     print_address_nmse({"0x123": 0.1, "0x456": 0.2})
     print_nmses_results({"0x123": 0.1, "0x456": 0.2}, ["0x789"])
@@ -108,7 +90,7 @@ def test_prints():
 
 def test_do_get_nmses():
     with patch("util.judge.parse_arguments") as mock1:
-        mock1.return_value = datetime(2021, 9, 1, 13, 0)
+        mock1.return_value = datetime(2021, 9, 1, 12, 59)
         with patch("util.judge.get_cex_vals") as mock2:
             mock2.return_value = [1.1, 2, 2.9, 4]
             with patch("util.judge.get_nft_addresses") as mock3:
