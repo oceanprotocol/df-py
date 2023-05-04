@@ -45,7 +45,8 @@ Ennvars expected:
 
 
 @enforce_types
-def get_nft_addresses(end_dt):
+def get_nft_addresses(deadline_dt):
+    a_week_before_deadline = deadline_dt - timedelta(weeks=1)
     url = "https://api-testnet.polygonscan.com/api"
     params = {
         "module": "account",
@@ -53,22 +54,24 @@ def get_nft_addresses(end_dt):
         "address": "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E",
         "apikey": os.getenv("POLYGONSCAN_API_KEY"),
     }
-    result = requests.get(url, params=params).json()["result"]
+    txs = requests.get(url, params=params).json()["result"]
 
-    a_week_before_deadline = end_dt.now() - timedelta(weeks=1)
-    addresses = []
+    for tx in txs:
+        tx["timeStamp"] = dt.utcfromtimestamp(int(tx["timeStamp"]))
 
-    for result_item in result:
-        result_item_date = dt.fromtimestamp(int(result_item["timeStamp"]))
+    # each tx is a dict that includes:
+    # {'timeStamp': '1677562009',
+    # 'hash': '0x163991c9fb2c94b7452909a1bd8cf4d298d92dc90ef2e49ab13dc935f0552061',
+    # 'from': '0x04815de815db15a3086425b58981545bec018a6a',
+    # 'contractAddress': '0x458420a012cb7e63ae24ecf83eb21ab7c40d71d8',
+    # 'to': '0xa54abd42b11b7c97538cad7c6a2820419ddf703e',
+    # 'tokenID': '1', 'tokenName': 'Data NFT 1', 'tokenSymbol': 'DN1'}
 
-        if result_item_date < a_week_before_deadline:
-            continue
-        if result_item_date > end_dt:
-            continue
+    filtered_txs = [
+        tx for tx in txs if a_week_before_deadline < tx["timeStamp"] < deadline_dt
+    ]
 
-        addresses.append(result_item["contractAddress"])
-
-    return addresses
+    return [tx["contractAddress"] for tx in filtered_txs]
 
 
 @enforce_types
@@ -88,17 +91,17 @@ def nft_addr_to_pred_vals(nft_addr: str, ocean, alice) -> List[float]:
     return pred_vals
 
 
-def get_cex_vals(start_dt):
-    target_uts = target_12h_unixtimes(start_dt)
+def get_cex_vals(deadline_dt):
+    target_uts = target_12h_unixtimes(deadline_dt)
     print_datetime_info("target times", target_uts)
 
     # get actual ETH values
-    cex_x = ccxt.kraken().fetch_ohlcv("ETH/USDT", "1h")
+    cex_x = ccxt.kraken().fetch_ohlcv("ETH/USDT", "5m")
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
     allcex_vals = [xi[4] for xi in cex_x]
     # print_datetime_info("CEX data info", allcex_uts)
     cex_vals = filter_to_target_uts(target_uts, allcex_uts, allcex_vals)
-    print(f"cex ETH price is ${cex_vals[0]} at start_dt of {start_dt}")
+    print(f"cex ETH price is ${cex_vals[0]} at target time 0")
     print(f"cex_vals: {cex_vals}")
 
     return cex_vals
@@ -110,25 +113,17 @@ def parse_arguments(arguments):
         sys.exit(0)
 
     # extract inputs
-    end_dt = (
-        dt.now() if len(arguments) < 3 else dt.strptime(arguments[2], "%Y-%m-%d_%H:%M")
-    )
-    start_dt = (
+    deadline_dt = (
         round_to_nearest_hour(dt.now())
-        if len(arguments) < 2
-        else round_to_nearest_hour(end_dt + timedelta(minutes=6))
+        if len(arguments) < 3
+        else dt.strptime(arguments[2], "%Y-%m-%d_%H:%M")
     )
-    end_dt = start_dt - timedelta(minutes=1)
 
     print("judging: Begin")
-    end_dt_str = end_dt.strftime("%Y-%m-%d_%H:%M")
-    print(f"Args: DEADLINE={end_dt_str}")
+    deadline_dt_str = deadline_dt.strftime("%Y-%m-%d_%H:%M")
+    print(f"Args: DEADLINE={deadline_dt_str}")
 
-    # specify target times
-    start_dt_str = start_dt.strftime("%Y-%m-%d_%H:%M")
-    print(f"start_dt = DATETIME rounded to nearest hour = {start_dt_str}")
-
-    return start_dt, end_dt
+    return deadline_dt
 
 
 def print_address_nmse(nmses):
@@ -167,10 +162,10 @@ def do_get_nmses():
     assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
     alice = create_alice_wallet(ocean)  # uses REMOTE_TEST_PRIVATE_KEY1
 
-    start_dt, end_dt = parse_arguments(sys.argv)
-    cex_vals = get_cex_vals(start_dt)
+    deadline_dt = parse_arguments(sys.argv)
+    cex_vals = get_cex_vals(deadline_dt)
 
-    entries = get_nft_addresses(end_dt)
+    entries = get_nft_addresses(deadline_dt)
     n = len(entries)
     nmses, bad_nft_addrs = {}, []
 

@@ -65,10 +65,10 @@ def test_get_pred_vals():
 
 
 def test_get_cex_vals():
-    start_dt = (datetime.today() - timedelta(days=2)).replace(
+    deadline_dt = (datetime.today() - timedelta(days=2)).replace(
         hour=1, minute=0, second=0, microsecond=0
     )
-    cex_vals = get_cex_vals(start_dt)
+    cex_vals = get_cex_vals(deadline_dt)
     assert len(cex_vals) == 12
 
 
@@ -79,30 +79,26 @@ def test_parse_arguments():
     with pytest.raises(ValueError):
         parse_arguments(["dftool", "judge", "..."])
 
-    start_dt, end_dt = parse_arguments(["dftool", "judge", "2021-09-01_12:59"])
-    assert start_dt == datetime(2021, 9, 1, 13, 0)
+    end_dt = parse_arguments(["dftool", "judge", "2021-09-01_12:59"])
     assert end_dt == datetime(2021, 9, 1, 12, 59)
 
 
 @freeze_time("2021-09-01 12:59")
 def test_parse_arguments_implicit():
-    start_dt, end_dt = parse_arguments(["dftool", "judge"])
-    assert start_dt == datetime(2021, 9, 1, 13, 0)
-    assert end_dt == datetime(2021, 9, 1, 12, 59)
+    end_dt = parse_arguments(["dftool", "judge"])
+    assert end_dt == datetime(2021, 9, 1, 13, 00)
 
 
 @freeze_time("2021-09-01 13:00")
 def test_parse_arguments_rounding_under():
-    start_dt, end_dt = parse_arguments(["dftool", "judge"])
-    assert start_dt == datetime(2021, 9, 1, 13, 0)
-    assert end_dt == datetime(2021, 9, 1, 12, 59)
+    end_dt = parse_arguments(["dftool", "judge"])
+    assert end_dt == datetime(2021, 9, 1, 13, 00)
 
 
 @freeze_time("2021-09-01 13:01")
 def test_parse_arguments_rounding_over():
-    start_dt, end_dt = parse_arguments(["dftool", "judge"])
-    assert start_dt == datetime(2021, 9, 1, 13, 0)
-    assert end_dt == datetime(2021, 9, 1, 12, 59)
+    end_dt = parse_arguments(["dftool", "judge"])
+    assert end_dt == datetime(2021, 9, 1, 13, 00)
 
 
 def test_prints():
@@ -112,7 +108,7 @@ def test_prints():
 
 def test_do_get_nmses():
     with patch("util.judge.parse_arguments") as mock1:
-        mock1.return_value = (datetime(2021, 9, 1, 13, 0), datetime(2021, 9, 1, 12, 59))
+        mock1.return_value = datetime(2021, 9, 1, 13, 0)
         with patch("util.judge.get_cex_vals") as mock2:
             mock2.return_value = [1.1, 2, 2.9, 4]
             with patch("util.judge.get_nft_addresses") as mock3:
