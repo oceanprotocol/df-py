@@ -96,7 +96,9 @@ def test_do_get_nmses():
                 mock3.return_value = ["0x123", "0x456"]
                 with patch("util.judge.nft_addr_to_pred_vals") as mock4:
                     mock4.side_effect = [[1, 2, 3, 4], [0, 1]]
-                    nmses, bad_nft_addrs = do_get_nmses()
+                    nmses, bad_nft_addrs = do_get_nmses(
+                        ["dftool", "judge", "2021-09-01_12:59"]
+                    )
 
     assert nmses["0x123"]
     assert "0x456" not in nmses

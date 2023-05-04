@@ -150,13 +150,13 @@ def print_nmses_results(nmses, bad_nft_addrs):
 
 
 @enforce_types
-def do_get_nmses():
+def do_get_nmses(arguments):
     ocean = create_ocean_instance(NETWORK_NAME)
     alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
     assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
     alice = create_alice_wallet(ocean)  # uses REMOTE_TEST_PRIVATE_KEY1
 
-    deadline_dt = parse_arguments(sys.argv)
+    deadline_dt = parse_arguments(arguments)
     cex_vals = get_cex_vals(deadline_dt)
 
     entries = get_nft_addresses(deadline_dt)
