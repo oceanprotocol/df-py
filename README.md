@@ -275,6 +275,7 @@ From terminal:
 brownie console
 ```
 
+
 In brownie console:
 ```python
 >>> t = Simpletoken.deploy("TEST", "Test Token", 18, 100, {'from': accounts[0]})
