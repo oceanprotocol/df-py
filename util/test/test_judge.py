@@ -84,7 +84,7 @@ def test_parse_arguments():
 
 def test_prints():
     print_address_nmse({"0x123": 0.1, "0x456": 0.2})
-    print_nmses_results({"0x123": 0.1, "0x456": 0.2}, ["0x789"])
+    print_nmses_results({"0x123": 0.1, "0x456": 0.2})
 
 
 def test_do_get_nmses():
@@ -96,12 +96,9 @@ def test_do_get_nmses():
                 mock3.return_value = ["0x123", "0x456"]
                 with patch("util.judge.nft_addr_to_pred_vals") as mock4:
                     mock4.side_effect = [[1, 2, 3, 4], [0, 1]]
-                    nmses, bad_nft_addrs = do_get_nmses(
+                    nmses = do_get_nmses(
                         ["dftool", "judge", "2021-09-01_12:59"]
                     )
 
     assert nmses["0x123"]
-    assert "0x456" not in nmses
-
-    assert "0x456" in bad_nft_addrs
-    assert "0x123" not in bad_nft_addrs
+    assert nmses["0x456"] == 1.0

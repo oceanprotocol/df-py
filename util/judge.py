@@ -125,16 +125,12 @@ def print_address_nmse(nmses):
         print(f"Address: {address}, NMSE: {nmse}")
 
 
-def print_nmses_results(nmses, bad_nft_addrs):
+def print_nmses_results(nmses):
     print("\n-------------")
     print("Summary:")
     print("-------------")
 
-    print(f"{len(bad_nft_addrs)} bad entries: ")
-    for bad_addr in bad_nft_addrs:
-        print(f"BAD: {bad_addr}")
-
-    print(f"\n{len(nmses)} good entries:")
+    print(f"\n{len(nmses)} entries:")
     print_address_nmse(nmses)
 
     ranking = dict(sorted(nmses.items(), key=lambda item: item[1]))
@@ -161,7 +157,7 @@ def do_get_nmses(arguments):
 
     entries = get_nft_addresses(deadline_dt)
     n = len(entries)
-    nmses, bad_nft_addrs = {}, []
+    nmses = {}
 
     for i, entry in enumerate(entries):
         nft_addr = entry
@@ -173,16 +169,16 @@ def do_get_nmses(arguments):
         pred_vals = nft_addr_to_pred_vals(nft_addr, ocean, alice)  # main call
         print(f"pred_vals: {pred_vals}")
         if len(pred_vals) != len(cex_vals):
-            print("Error: wrong # predicted values. Skipping")
-            bad_nft_addrs.append(nft_addr)
+            print("nmse = 1.0 because improper # pred_vals")
+            nmses[nft_addr] = 1.0
             continue
 
         # calc nmse, plot
         nmse = calc_nmse(cex_vals, pred_vals)
-        print(f"nft_addr={nft_addr}, NMSE = {nmse:.8f}")
+        print(f"nft_addr={nft_addr}, nmse = {nmse}. (May become 1.0, eg if duplicates)")
         # plot_prices(cex_vals, pred_vals)
 
         nmses[nft_addr] = nmse
         print(f"NFT #{i+1}/{n}: Done")
 
-    return nmses, bad_nft_addrs
+    return nmses
