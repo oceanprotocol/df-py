@@ -1050,8 +1050,12 @@ Usage: dftool checkpoint_feedist CHAINID
         multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
 
         # submit transactions to multisig
-        retryFunction(send_multisig_tx, 3, 60, multisig_addr, to, value, total_supply_encoded)
-        retryFunction(send_multisig_tx, 3, 60, multisig_addr, to, value, checkpoint_token_encoded)
+        retryFunction(
+            send_multisig_tx, 3, 60, multisig_addr, to, value, total_supply_encoded
+        )
+        retryFunction(
+            send_multisig_tx, 3, 60, multisig_addr, to, value, checkpoint_token_encoded
+        )
 
     print("Checkpointed FeeDistributor")
 
@@ -1123,20 +1127,20 @@ def _getPrivateAccount():
 ARGV_FNS = {
     "help": do_help,
     # write actions
-    "compile" : do_compile,
+    "compile": do_compile,
     "volsym": do_volsym,
-    "allocations" : do_allocations,
-    "calc" : do_calc,
-    "dispense_active" : do_dispense_active,
-    "dispense_passive" : do_dispense_passive_rewards,
-    "calculate_passive" : do_calculate_passive,
-    "nftinfo" : do_nftinfo,
-    "vebals" : do_vebals,
-    "addstrategy" : do_addstrategy,
-    "retirestrategy" : do_retirestrategy,
-    "mine" : do_mine,
-    "veSetAllocation" : do_veSetAllocation,
-    "checkpoint_feedist" : do_checkpoint_feedist,
+    "allocations": do_allocations,
+    "calc": do_calc,
+    "dispense_active": do_dispense_active,
+    "dispense_passive": do_dispense_passive_rewards,
+    "calculate_passive": do_calculate_passive,
+    "nftinfo": do_nftinfo,
+    "vebals": do_vebals,
+    "addstrategy": do_addstrategy,
+    "retirestrategy": do_retirestrategy,
+    "mine": do_mine,
+    "veSetAllocation": do_veSetAllocation,
+    "checkpoint_feedist": do_checkpoint_feedist,
     "initdevwallets": do_initdevwallets,
     "manyrandom": do_manyrandom,
     "newacct": do_newacct,
@@ -1158,7 +1162,7 @@ ARGV_FNS = {
 # main
 @enforce_types
 def do_main():
-    if len(sys.argv) == 1 :
+    if len(sys.argv) == 1:
         do_help()
     else:
         if sys.argv[1] in ARGV_FNS:
