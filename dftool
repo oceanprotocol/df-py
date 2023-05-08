@@ -1,44 +1,28 @@
 #!/usr/bin/env python
 # pylint: disable=too-many-lines,too-many-statements
 import datetime
+import functools
 import os
 import sys
-import functools
+
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
-from util import (
-    allocations,
-    blockrange,
-    calcrewards,
-    constants,
-    csvs,
-    dispense,
-    getrate,
-    networkutil,
-    query,
-)
-from util.calcrewards import calcRewards
-from util.vesting_schedule import getActiveRewardAmountForWeekEth
-from util.retry import retryFunction
+
+from util import (allocations, blockrange, calcrewards, constants, csvs,
+                  dispense, getrate, networkutil, query)
 from util.base18 import fromBase18
-from util.constants import BROWNIE_PROJECT as B
-from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
-from util.oceanutil import (
-    recordDeployedContracts,
-    OCEANtoken,
-    veAllocate,
-    FeeDistributor,
-)
-
-from util.oceantestutil import (
-    randomCreateDataNFTWithFREs,
-    randomLockAndAllocate,
-    randomConsumeFREs,
-)
-
 from util.blocktime import getfinBlock, timestrToTimestamp
+from util.calcrewards import calcRewards
+from util.constants import BROWNIE_PROJECT as B
 from util.multisig import send_multisig_tx
+from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
+from util.oceantestutil import (randomConsumeFREs, randomCreateDataNFTWithFREs,
+                                randomLockAndAllocate)
+from util.oceanutil import (FeeDistributor, OCEANtoken,
+                            recordDeployedContracts, veAllocate)
+from util.retry import retryFunction
+from util.vesting_schedule import getActiveRewardAmountForWeekEth
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -633,7 +617,7 @@ Usage: dftool compile
 def do_initdevwallets():
     # UPADATE THIS
     HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-Usage: dftool initdevwallets CHAINID 
+Usage: dftool initdevwallets CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 Uses these envvars:
 ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}

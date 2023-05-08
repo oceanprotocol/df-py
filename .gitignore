@@ -9,3 +9,4 @@ build/
 __pycache__
 .coverage
 .vscode/
+setup-local.sh
