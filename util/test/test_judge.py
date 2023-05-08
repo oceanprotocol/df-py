@@ -18,6 +18,18 @@ from util.judge import (
 )
 
 
+known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
+chain_id = 80001
+
+
+def _get_alice_wallet():
+    alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
+    alice_wallet = accounts.add(alice_private_key)
+    assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
+
+    return alice_wallet
+
+
 def test_get_nft_addresses():
     now = datetime.now()
     less_than_a_week_ago = datetime.now() - timedelta(days=6)
@@ -51,15 +63,17 @@ def test_get_nft_addresses():
 
 
 def test_get_pred_vals(tmp_path):
-    alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
-    alice_wallet = accounts.add(alice_private_key)
-    assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
+    alice_wallet = _get_alice_wallet()
 
-    connect(80001)
-    pred_vals = nft_addr_to_pred_vals(
-        "0x471817de04faa9b616ed7644117d957439717bf9", alice_wallet
-    )
+    connect(chain_id)
+    pred_vals = nft_addr_to_pred_vals(known_nft_addr, alice_wallet)
     disconnect()
+
+    # workaround for Brownie teardown bug
+    tmp_loc = os.path.join(tmp_path, "out.txt")
+    args = f"acctinfo 80001 {alice_wallet.address} {known_nft_addr}"
+    cmd = f"./dftool {args}>{tmp_loc} 2>{tmp_loc}"
+    os.system(cmd)
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798
@@ -89,7 +103,9 @@ def test_prints():
     print_nmses_results({"0x123": 0.1, "0x456": 0.2})
 
 
-def test_do_get_nmses():
+def test_do_get_nmses(tmp_path):
+    connect(chain_id)
+
     with patch("util.judge.parse_arguments") as mock1:
         mock1.return_value = datetime(2021, 9, 1, 12, 59)
         with patch("util.judge.get_cex_vals") as mock2:
@@ -98,9 +114,15 @@ def test_do_get_nmses():
                 mock3.return_value = ["0x123", "0x456"]
                 with patch("util.judge.nft_addr_to_pred_vals") as mock4:
                     mock4.side_effect = [[1, 2, 3, 4], [0, 1]]
-                    nmses = do_get_nmses(
-                        ["dftool", "judge", "2021-09-01_12:59"]
-                    )
+                    nmses = do_get_nmses(["dftool", "judge", "2021-09-01_12:59"])
+
+    disconnect()
+
+    tmp_loc = os.path.join(tmp_path, "out.txt")
+    alice_wallet = _get_alice_wallet()
+    args = f"acctinfo {chain_id} {alice_wallet.address} {known_nft_addr}"
+    cmd = f"./dftool {args}>{tmp_loc} 2>{tmp_loc}"
+    os.system(cmd)
 
     assert nmses["0x123"]
     assert nmses["0x456"] == 1.0
