@@ -1078,7 +1078,7 @@ def do_judge_and_dispense():
     deadline_str = datetime.datetime.strftime(deadline, "%Y-%m-%d_%H:%M")
     nmses, bad_nft_addrs = do_get_nmses(["dftool", "judge", deadline_str])
 
-    # TODO: dispense, not print
+    # TO DO: dispense, not print
     print_nmses_results(nmses, bad_nft_addrs)
 
 
