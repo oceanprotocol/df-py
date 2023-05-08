@@ -1,9 +1,10 @@
 import os
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
+from brownie.network import accounts
+from util.networkutil import connect, disconnect
 
 import pytest
-from predict_eth.helpers import create_alice_wallet, create_ocean_instance
 from requests.models import Response
 
 from util.judge import (
@@ -49,15 +50,16 @@ def test_get_nft_addresses():
     assert "0x789" not in nft_addresses
 
 
-def test_get_pred_vals():
-    ocean = create_ocean_instance("polygon-test")
+def test_get_pred_vals(tmp_path):
     alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
+    alice_wallet = accounts.add(alice_private_key)
     assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
-    alice = create_alice_wallet(ocean)
 
+    connect(80001)
     pred_vals = nft_addr_to_pred_vals(
-        "0x471817de04faa9b616ed7644117d957439717bf9", ocean, alice
+        "0x471817de04faa9b616ed7644117d957439717bf9", alice_wallet
     )
+    disconnect()
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798

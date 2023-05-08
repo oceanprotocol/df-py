@@ -1063,11 +1063,13 @@ Usage: dftool checkpoint_feedist CHAINID
 # ========================================================================
 # utilities
 def do_judge():
+    networkutil.connect(80001)
     nmses, bad_nft_addrs = do_get_nmses(sys.argv)
     print_nmses_results(nmses, bad_nft_addrs)
 
 
 def do_judge_and_dispense():
+    networkutil.connect(80001)
     today = datetime.datetime.now()
     offset = (today.weekday() - WEDNESDAY) % 7
     last_wednesday = today - datetime.timedelta(days=offset)

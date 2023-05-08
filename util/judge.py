@@ -2,17 +2,18 @@ import os
 import sys
 from datetime import datetime as dt
 from datetime import timedelta
+from brownie.network import accounts
 from typing import List
+from web3.main import Web3
 
 import ccxt
 import requests
 from enforce_typing import enforce_types
-from ocean_lib.models.data_nft import DataNFT
+from util.oceanutil import getDataNFT, getDataField
+from util.networkutil import connect
 from ocean_lib.ocean import crypto
 from predict_eth.helpers import (
     calc_nmse,
-    create_alice_wallet,
-    create_ocean_instance,
     filter_to_target_uts,
     print_datetime_info,
     target_12h_unixtimes,
@@ -73,13 +74,13 @@ def get_nft_addresses(deadline_dt):
 
 
 @enforce_types
-def nft_addr_to_pred_vals(nft_addr: str, ocean, alice) -> List[float]:
+def nft_addr_to_pred_vals(nft_addr: str, alice) -> List[float]:
     # adapted from "What judges will do" in
     #  https://github.com/oceanprotocol/predict-eth/blob/main/challenges/main4.md
 
     # get predicted ETH values
-    nft = DataNFT(ocean.config_dict, nft_addr)
-    pred_vals_str_enc = nft.get_data("predictions")
+    nft = getDataNFT(nft_addr)
+    pred_vals_str_enc = getDataField(nft, "predictions")
     try:
         pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, alice.private_key)
         pred_vals = [float(s) for s in pred_vals_str[1:-1].split(",")]
@@ -147,10 +148,11 @@ def print_nmses_results(nmses):
 
 @enforce_types
 def do_get_nmses(arguments):
-    ocean = create_ocean_instance(NETWORK_NAME)
     alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
-    assert alice_private_key, "need envvar REMOTE_TEST_PRIVATE_KEY1"
-    alice = create_alice_wallet(ocean)  # uses REMOTE_TEST_PRIVATE_KEY1
+    alice_wallet = accounts.add(alice_private_key)
+    bal = Web3.fromWei(accounts.at(alice_wallet.address).balance(), "ether")
+    print(f"alice_wallet.address={alice_wallet.address}. bal={bal}")
+    assert bal > 0, "Alice needs MATIC"
 
     deadline_dt = parse_arguments(arguments)
     cex_vals = get_cex_vals(deadline_dt)
@@ -166,7 +168,7 @@ def do_get_nmses(arguments):
 
         # get predicted ETH values
         print(f"nft_addr: {nft_addr}")
-        pred_vals = nft_addr_to_pred_vals(nft_addr, ocean, alice)  # main call
+        pred_vals = nft_addr_to_pred_vals(nft_addr, alice_wallet)  # main call
         print(f"pred_vals: {pred_vals}")
         if len(pred_vals) != len(cex_vals):
             print("nmse = 1.0 because improper # pred_vals")
