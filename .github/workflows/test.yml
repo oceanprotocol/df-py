@@ -53,7 +53,6 @@ jobs:
           brownie bake github-actions
           sed -i 's#https://polygon-mainnet.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://polygon-rpc.com/#g; s#https://polygon-mumbai.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://rpc-mumbai.maticvigil.com#g' $HOME/.brownie/network-config.yaml
 
-
       - name: Set up Openzeppelin
         run: |
           brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
