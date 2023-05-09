@@ -8,8 +8,7 @@ import ccxt
 import requests
 from brownie.network import accounts
 from enforce_typing import enforce_types
-from ocean_lib.ocean import crypto
-from predict_eth.helpers import (
+from util.predict_eth_helpers import (
     calc_nmse,
     filter_to_target_uts,
     print_datetime_info,
@@ -17,6 +16,7 @@ from predict_eth.helpers import (
 )
 from web3.main import Web3
 
+from util import crypto
 from util.oceanutil import getDataField, getDataNFT
 
 # Set network. Change this one line if needed. *Supposed* to be "polygon-test"

@@ -132,7 +132,8 @@ When pytest winds down, Brownie emits a KeyError:
 KeyError: '0x02175de5A7F168517688e3E93f55936C9c2C7A19'
 ```
 
-The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted. This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls. We don't have `at()` calls yet get it in df-py (only as of Dec 2022). We don't see the issue in ocean.py.
+The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted.
+This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls.
 
 The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remote_contract()` to the following:
 ```python
@@ -144,6 +145,8 @@ def _remove_contract(contract: Any) -> None:
         # https://github.com/eth-brownie/brownie/issues/1144
         pass
 ```
+
+This rewrite is part of the Github Actions CI setup for tests.
 
 # Setup for Remote Networks
 
@@ -240,9 +243,9 @@ More info:
 
 Here's how to set up this flow.
 
-First, create folders, if they don't yet exist. 
+First, create folders, if they don't yet exist.
 ```console
-mkdir /tmp/dfpy/ 
+mkdir /tmp/dfpy/
 mkdir ~/.dfcsv/ # df-sql reads csvs from here
 ```
 
