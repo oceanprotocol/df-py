@@ -3,30 +3,16 @@
 <div align="center">
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/black.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/mypy.yml/badge.svg"/>
-<img src="https://github.com/oceanprotocol/df-py/actions/workflows/pylint.yml/badge.svg"/>
+<img src="https://github.com/oceanprotocol/d-py/actions/workflows/pylint.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/test.yml/badge.svg"/>
 </div>
 <br/>
 
 CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend.
 
-```text
-Usage: dftool getrate|query|calc|dispense|..
+Usage: in console, type `dftool` to see further commads.
 
-  dftool getrate - get exchange rate
-  dftool volsym - query chain for stakes & volumes
-  dftool calc - calculate rewards
-  dftool dispense_active - dispense funds
-  ...
-```
-
-Data flow (left) and csvs (right) ([source](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)):
-
-<div>
-<img src="images/data-flow.png" align="left" height="100" width="130">&emsp;&emsp;
-<img src="images/csvs.png" height="100" width="130">
-</div>
-<br clear="left"/>
+Data flow and csvs: See "Data Flow in dftool" **[GSlides 2&3](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)**
 
 
 # Installation
@@ -41,7 +27,7 @@ Ensure prerequisites:
 - Any Ocean Barge pre-requisites. See [here](https://github.com/oceanprotocol/barge)
 - nvm 16.13.2, _not_ nvm 17. To install: `nvm install 16.13.2; nvm use 16.13.2`. [[Details](https://github.com/tokenspice/tokenspice/issues/165)]
 
-#### Install & Run Barge
+#### Setup for Local: Install & Run Barge
 
 We use [Ocean Barge](https://github.com/oceanprotocol/barge) to run ganache, deploy contracts to Ganache, and run TheGraph with Ocean subgraphs. The deployed contracts come from github.com/oceanprotocol/contracts. df-py has a local redundant copy in its directory so that brownie easily knows what objects look like.
 
@@ -91,7 +77,7 @@ dftool compile
 ```
 
 
-# Main Usage: CLI
+# CLI
 
 `dftool` is the main tool. In main terminal:
 ```console
@@ -106,7 +92,7 @@ dftool dispense
 
 Then, simply follow the usage directions:)
 
-# Usage: Running Tests
+# Running Tests
 
 In terminal:
 ```console
@@ -131,7 +117,7 @@ black ./
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
-# Removing KeyError in pytest wind-down
+### Gotcha: KeyError in pytest wind-down
 
 When pytest winds down, Brownie emits a KeyError:
 ```text
@@ -155,7 +141,7 @@ def _remove_contract(contract: Any) -> None:
         pass
 ```
 
-# Usage: Configure Remote Networks
+# Setup for Remote Networks
 
 Examples so far were on a local chain. Let's do a one-time setup for remote networks. In console:
 ```console
@@ -167,15 +153,24 @@ brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam
 
 Now, you can use those networks simply by specifying a different chainid in `dftool` calls.
 
-# Usage: Rewards Distribution Ops
+# Rewards Distribution Ops
 
-See [README-dist-ops.md](README-dist-ops.md)
+Happens via regularly-scheduled Github Actions:
 
-# Usage: DFRewards Owner Control Ops
+- Passive: [dispense_passive.yml](.github/workflows/dispense_passive.yml)
+- Active: [flow.yml](.github/workflows/flow.yml)
+
+More info: [README-crons-ops.md](README-crons-ops.md)
+
+# DFRewards Owner Control Ops
 
 See [README-control-ops.md](README-control-ops.md)
 
-# Usage: Via Docker
+# Docker
+
+Here's how to use df-py running inside a Docker container.
+
+### Install & Use Docker Locally
 
 Build the docker image.
 ```shell
@@ -202,10 +197,9 @@ rate = $0.8774 / OCEAN
 Created /app/data/rate-OCEAN.csv
 ```
 
-# Usage: Docker + Brownie Networks
+### Docker Using Remote Networks
 
-Since df-py uses brownie to execute a wide range of commands, you may want to install additional networks in brownie.
-You may want to expand brownie's configured networks in the Docker container by editing the `Dockerfile`
+Expand brownie's configured networks in the Docker container by editing the `Dockerfile` as follows:
 ```
 ...
 RUN brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
@@ -217,23 +211,39 @@ COPY . .
 RUN rm -rf build
 ```
 
-# Usage: Docker + Contract Addresses
+### Docker Using Contract Addresses
 
-Since df-py has to connect to a broad range of contracts, you may need to configure the docker container to access these. You can [find the latest deployed contracts here](https://github.com/oceanprotocol/contracts/blob/v4main/addresses/address.json).
-You will then have to copy them to your local directory, and configure `dfpy_docker` like so.
+Here's how to configure docker to access contracts.
+
+First, [address.json on contracts github](https://github.com/oceanprotocol/contracts/blob/v4main/addresses/address.json) to local.
+
+Then, configure `dfpy_docker` like so:
 ```
 docker run --env-file ./.env -v /tmp/dfpy:/app/data -v /app/df-py/address.json:/address.json --rm dfpy $@
 ```
 
-# Usage: Configuring Data Farming Data Flows + dfpy-sql-backend + df-web
+# End-to-end With SQL and Webapp
 
-`dfpy-sql-backend` consumes data that is generated from `df-py` in order to feed it via an API to `df-web`
-You can [find a very high level diagram for this here](https://github.com/oceanprotocol/dfpy-sql-backend).
+Let's have an end-to-end flow of df-py, df-sql, and df-web.
 
-In order to set this up, we create a new bash script called `getAllRecords-dfpy-sql` and add it to our local crontab. Please note the folders you will have to created, such as `/tmp/dfpy/` and `~/.dfcsv/
+Overall flow:
+- [`df-sql`](https://github.com/oceanprotocol/df-sql) runs `df-py/dftool` to generate csvs, and then serve them up in a SQL API.
+- Then, [`df-web`](https://github.com/oceanprotocol/df-web) consumes this API
 
-### getAllRecords-dfpy-sql.sh
+More info:
+- [High-level diagram](https://user-images.githubusercontent.com/25263018/202422416-e7c8e196-fd7a-4c51-be01-bffe7296b073.png) (from df-sql repo)
+- `df-sql` reads csvs in `~/.dfcsv/`
+
+Here's how to set up this flow.
+
+First, create folders, if they don't yet exist. 
+```console
+mkdir /tmp/dfpy/ 
+mkdir ~/.dfcsv/ # df-sql reads csvs from here
 ```
+
+Then, create a new script named `getAllRecords-df-sql.sh`, and fill it with the following content.
+```text
 cd /app/df-py/
 date=`date -dlast-wednesday '+%Y-%m-%d'`
 now=`date '+%Y-%m-%d'`
@@ -248,41 +258,9 @@ now=`date '+%Y-%m-%d'`
 mv /tmp/dfpy/* ~/.dfcsv/
 ```
 
-We then add this to our crontab
-```
-*/10 * * * * /app/df-py/getAllRecords-dfpy-sql.sh
-```
-
-`dfpy-sql-backend` attempts to read all csv files inside of `~/.dfcsv/`.
-You can adjust this by changing this path in both repositories and redeploying.
-
-# Usage: Hardware Wallets
-
-Here are the steps:
-- Install geth - this will also install clef.
-- Launch clef in terminal 1
-- Connect hw wallet to pc
-- Call brownie.network.accounts.connect_to_clef() function in terminal 2
-- Accept the connection request from terminal 1
-- To access the accounts in hw use: brownie.network.accounts
-
-(Discussion in [this issue](https://github.com/oceanprotocol/df-issues/issues/66).)
-
-# Usage: Brownie Console
-
-From terminal:
+Now, add the script to our crontab:
 ```console
-brownie console
+*/10 * * * * /app/df-py/getAllRecords-df-sql.sh
 ```
 
-In brownie console:
-```python
->>> t = Simpletoken.deploy("TEST", "Test Token", 18, 100, {'from': accounts[0]})
-Transaction sent: 0x3f113379b70d00041068b27733c37c2977354d8c70cb0b30b0af3087fca9c2b8
-  Gas price: 0.0 gwei   Gas limit: 6721975   Nonce: 0
-  Simpletoken.constructor confirmed   Block: 1   Gas used: 551616 (8.21%)
-  Simpletoken deployed at: 0x3194cBDC3dbcd3E11a07892e7bA5c3394048Cc87
-
->>> t.symbol()
-'TEST'
-```
+You can adjust this by changing this path in both repositories and redeploying.
