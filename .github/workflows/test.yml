@@ -57,8 +57,8 @@ jobs:
           sed -zi 's/del \_contract\_map\[contract\.address\]/if contract\.address in \_contract\_map\:\n        del \_contract\_map\[contract\.address\]/' $BROWNIE_STATE_FILE
       - name: Create Brownie paths
         run: |
-           mkdir /home/runner/.solcx
-           mkdir /home/runner/.vvm
+           mkdir -p /home/runner/.solcx
+           mkdir -p /home/runner/.vvm
            mkdir -p /home/runner/.brownie/packages
       - name: Restore Brownie compilers
         id: restore-brownie-compilers
