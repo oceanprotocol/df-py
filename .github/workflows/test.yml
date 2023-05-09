@@ -52,7 +52,7 @@ jobs:
            mkdir -p /home/runner/.brownie/packages
       - name: Restore Brownie compilers
         id: restore-brownie-compilers
-        uses: actions/cache/save@v3
+        uses: actions/cache/restore@v3
         with:
           path: |
             /home/runner/.solcx
