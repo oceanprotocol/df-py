@@ -31,7 +31,13 @@ jobs:
           repository: "oceanprotocol/barge"
           path: "barge"
           ref: 9cc3a9342a47857a0495309e787462d6c60979e6
-
+      - name: Login to Docker Hub
+        if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
+        run: |
+          echo "Login to Docker Hub";echo "$DOCKERHUB_PASSWORD" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
@@ -59,11 +65,6 @@ jobs:
             /home/runner/.vvm
             /home/runner/.brownie/packages
           key: ${{ runner.os }}-brownie-deps
-      - name: Show Brownie folders
-        run: |
-           ls -l /home/runner/.solcx
-           ls -l /home/runner/.vvm
-           ls -l /home/runner/.brownie/packages
       - name: Set up Openzeppelin
         run: |
           [ -d "$HOME/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.2.0" ] && echo "Using OpenZeppelin/openzeppelin-contracts@4.2.0 from cache" || brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
