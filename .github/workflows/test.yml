@@ -50,9 +50,9 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            $HOME/.solcx
-            $HOME/.vvm
-            $HOME/.brownie/packages
+            "$HOME/.solcx"
+            "$HOME/.vvm"
+            "$HOME/.brownie/packages"
           key: ${{ runner.os }}-brownie-deps
       - name: Set up Openzeppelin
         run: |
@@ -78,9 +78,9 @@ jobs:
         uses: actions/cache/save@v3
         with:
           path: |
-            $HOME/.solcx
-            $HOME/.vvm
-            $HOME/.brownie/packages
+            "$HOME/.solcx"
+            "$HOME/.vvm"
+            "$HOME/.brownie/packages"
           key: ${{ runner.os }}-brownie-deps
       - name: Publish code coverage
         uses: paambaati/codeclimate-action@v2.7.5
