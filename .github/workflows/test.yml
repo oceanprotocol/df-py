@@ -52,8 +52,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 	  brownie bake github-actions
-          sed -i 's#https://polygon-mainnet.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://polygon-rpc.com/#g; s#https://polygon-mumbai.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://rpc-mumbai.maticvigil.com#g' $HOME/.brownie/network-config.yaml
-          export BROWNIE_STATE_FILE=$(python -c "import brownie as _; print(_.__path__[0] + '/network/state.py')")
+	  sed -i 's#https://polygon-mainnet.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://polygon-rpc.com/#g; s#https://polygon-mumbai.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://rpc-mumbai.maticvigil.com#g' $HOME/.brownie/network-config.yaml
+	  export BROWNIE_STATE_FILE=$(python -c "import brownie as _; print(_.__path__[0] + '/network/state.py')")
           sed -zi 's/del \_contract\_map\[contract\.address\]/if contract\.address in \_contract\_map\:\n        del \_contract\_map\[contract\.address\]/' $BROWNIE_STATE_FILE
       - name: Create Brownie paths
         run: |
