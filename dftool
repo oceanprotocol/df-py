@@ -42,9 +42,9 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool challenge_df -- get data for Challenge DF
-  dftool predictoor_df -- get data for Predictoor DF
-  dftool calc CSV_DIR TOT_OCEAN [ST] IGNORED - given csvs, calc rewards for Volume + Challenge + Predictoor DF
+  dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
+  dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
+  dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
@@ -330,8 +330,112 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
 
 # ========================================================================
 @enforce_types
+def do_challenge_df_data():
+    HELP = f"""Get data for Challenge DF
+
+Usage: dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
+  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+  CHAINID -- {CHAINID_EXAMPLES}
+  DEADLINE -- submission deadlie. Format is YYYY-MM-DD_HOUR:MIN, in UTC
+  RETRIES -- # times to retry failed queries
+"""
+    if len(sys.argv) not in [2 + 3, 2 + 4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "challenge_df_data"
+    CSV_DIR = sys.argv[2]
+    CHAINID = int(sys.argv[3])
+    DEADLINE = sys.argv[4]
+    RETRIES = 1 if len(sys.argv) == 5 else int(sys.argv[5])
+    print("dftool challenge_df_data: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n DEADLINE={DEADLINE}"
+        f"\n RETRIES={RETRIES}"
+    )
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()
+
+    # check files, prep dir
+    if not os.path.exists(CSV_DIR):
+        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
+        sys.exit(0)
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain
+    recordDeployedContracts(ADDRESS_FILE)
+    
+    # main work
+    challenge_data = retryFunction(
+        query.queryChallengeData, RETRIES, CHAINID, DEADLINE,
+    )
+    csvs.saveChallengeData(challenge_data, CSV_DIR, CHAINID)
+
+    print("dftool challenge_df_data: Done")
+
+# ========================================================================
+@enforce_types
+def do_predictoor_df_data():
+    HELP = f"""Get data for Predictoor DF
+
+Usage: dftool predictoor_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
+  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+  CHAINID -- {CHAINID_EXAMPLES}
+  DEADLINE -- submission deadlie. Format is YYYY-MM-DD_HOUR:MIN, in UTC
+  RETRIES -- # times to retry failed queries
+"""
+    if len(sys.argv) not in [2 + 3, 2 + 4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "predictoor_df_data"
+    CSV_DIR = sys.argv[2]
+    CHAINID = int(sys.argv[3])
+    DEADLINE = sys.argv[4]
+    RETRIES = 1 if len(sys.argv) == 5 else int(sys.argv[5])
+    print("dftool predictoor_df_data: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n DEADLINE={DEADLINE}"
+        f"\n RETRIES={RETRIES}"
+    )
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()
+
+    # check files, prep dir
+    if not os.path.exists(CSV_DIR):
+        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
+        sys.exit(0)
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain
+    recordDeployedContracts(ADDRESS_FILE)
+    
+    # main work
+    predictoor_data = retryFunction(
+        query.queryPredictoorData, RETRIES, CHAINID, DEADLINE,
+    )
+    csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
+
+    print("dftool predictoor_df_data: Done")
+
+# ========================================================================
+@enforce_types
 def do_calc():
-    HELP = """From stakes/vols/rates csvs, output rewards csvs.
+    HELP = """from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
 
 Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
@@ -1118,6 +1222,8 @@ ARGV_FNS = {
     # write actions
     "compile": do_compile,
     "volsym": do_volsym,
+    "challenge_df_data": do_challenge_df,
+    "predictoor_df_data": do_predictoor_df,
     "allocations": do_allocations,
     "calc": do_calc,
     "dispense_active": do_dispense_active,
