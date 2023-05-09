@@ -3,6 +3,7 @@ import json
 import warnings
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
+from web3.main import Web3
 
 import brownie
 from enforce_typing import enforce_types
@@ -176,6 +177,18 @@ def createDataNFT(name: str, symbol: str, from_account):
     data_NFT_address = events["NFTCreated"]["newTokenAddress"]
     data_NFT = B.ERC721Template.at(data_NFT_address)
     return data_NFT
+
+
+def getDataNFT(data_NFT_address):
+    return B.ERC721Template.at(data_NFT_address)
+
+
+def getDataField(data_NFT, field_label: str) -> str:
+    field_label_hash = Web3.keccak(text=field_label)  # to keccak256 hash
+    field_value_hex = data_NFT.getData(field_label_hash)
+    field_value = field_value_hex.decode("ascii")
+
+    return field_value
 
 
 @enforce_types

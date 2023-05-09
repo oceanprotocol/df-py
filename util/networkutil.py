@@ -23,6 +23,7 @@ _RAW_CHAIN_DATA = [
     (1287, "moonbase", "MOVR"),
     (1285, "moonriver", "MOVR"),
     (80001, "mumbai", "MATIC"),
+    (80001, "polygon-test", "MATIC"),
 ]
 
 _CHAINID_TO_NETWORK = {x[0]: x[1] for x in _RAW_CHAIN_DATA}

@@ -4,6 +4,7 @@ import datetime
 import functools
 import os
 import sys
+from calendar import WEDNESDAY
 
 import brownie
 from enforce_typing import enforce_types
@@ -24,6 +25,7 @@ from util.base18 import fromBase18
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.calcrewards import calcRewards
 from util.constants import BROWNIE_PROJECT as B
+from util.judge import do_get_nmses, print_nmses_results
 from util.multisig import send_multisig_tx
 from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
 from util.oceantestutil import (
@@ -80,6 +82,9 @@ HELP_LONG = (
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+
+  dftool judge DEADLINE - judge Predict ETH challenge
+  dftool judge_and_dispense - judge Predict ETH challenge based on "last Wednesday" deadline
 
   dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
@@ -1259,6 +1264,28 @@ Usage: dftool checkpoint_feedist CHAINID
 
 # ========================================================================
 # utilities
+def do_judge():
+    networkutil.connect(80001)
+    nmses = do_get_nmses(sys.argv)
+    print_nmses_results(nmses)
+    networkutil.disconnect()
+
+
+def do_judge_and_dispense():
+    networkutil.connect(80001)
+    today = datetime.datetime.now()
+    offset = (today.weekday() - WEDNESDAY) % 7
+    last_wednesday = today - datetime.timedelta(days=offset)
+
+    deadline = last_wednesday.replace(
+        hour=23, minute=59, second=0, microsecond=0
+    )
+    deadline_str = datetime.datetime.strftime(deadline, "%Y-%m-%d_%H:%M")
+    nmses = do_get_nmses(["dftool", "judge", deadline_str])
+
+    # Consider this a TO DO: dispense, not print
+    print_nmses_results(nmses)
+    networkutil.disconnect()
 
 
 def _exitIfFileExists(filename: str):
@@ -1335,6 +1362,8 @@ ARGV_FNS = {
     "acctinfo": do_acctinfo,
     "chaininfo": do_chaininfo,
     "getrate": do_getrate,
+    "judge": do_judge,
+    "judge_and_dispense": do_judge_and_dispense,
 }
 
 

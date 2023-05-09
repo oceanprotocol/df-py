@@ -51,10 +51,14 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+          brownie bake github-actions
+          sed -i 's#https://polygon-mainnet.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://polygon-rpc.com/#g; s#https://polygon-mumbai.infura.io/v3/$WEB3_INFURA_PROJECT_ID#https://rpc-mumbai.maticvigil.com#g' $HOME/.brownie/network-config.yaml
+          export BROWNIE_STATE_FILE=$(python -c "import brownie as _; print(_.__path__[0] + '/network/state.py')")
+          sed -zi 's/del \_contract\_map\[contract\.address\]/if contract\.address in \_contract\_map\:\n        del \_contract\_map\[contract\.address\]/' $BROWNIE_STATE_FILE
       - name: Create Brownie paths
         run: |
-           mkdir /home/runner/.solcx
-           mkdir /home/runner/.vvm
+           mkdir -p /home/runner/.solcx
+           mkdir -p /home/runner/.vvm
            mkdir -p /home/runner/.brownie/packages
       - name: Restore Brownie compilers
         id: restore-brownie-compilers
@@ -69,9 +73,6 @@ jobs:
         run: |
           [ -d "$HOME/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.2.0" ] && echo "Using OpenZeppelin/openzeppelin-contracts@4.2.0 from cache" || brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
           [ -d "$HOME/.brownie/packages/GNSPS/solidity-bytes-utils@0.8.0" ] && echo "Using GNSPS/solidity-bytes-utils@0.8.0/ from cache" || brownie pm install GNSPS/solidity-bytes-utils@0.8.0
-      - name: Make dftool executable
-        run: chmod +x dftool
-
       - name: Wait for contracts deployment
         working-directory: ${{ github.workspace }}/barge
         run: |
@@ -84,6 +85,9 @@ jobs:
           coverage run --omit="*test*" -m pytest util/test
           coverage report
           coverage xml
+        env:
+          REMOTE_TEST_PRIVATE_KEY1: ${{secrets.REMOTE_TEST_PRIVATE_KEY1}}
+          POLYGONSCAN_API_KEY: ${{secrets.POLYGONSCAN_API_KEY}}
       - name: Save Brownie compilers
         id: cache-brownie-compilers
         uses: actions/cache/save@v3
