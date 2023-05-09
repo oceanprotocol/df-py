@@ -130,7 +130,7 @@ KeyError: '0x02175de5A7F168517688e3E93f55936C9c2C7A19'
 
 The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted. This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls. We don't have `at()` calls yet get it in df-py (only as of Dec 2022). We don't see the issue in ocean.py.
 
-The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remote_contract()` to the following:
+The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remove_contract()` to the following:
 ```python
 def _remove_contract(contract: Any) -> None:
     try:
