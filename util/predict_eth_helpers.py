@@ -65,17 +65,6 @@ def target_12_unixtimes(start_dt: datetime.datetime) -> list:
     return target_uts
 
 
-# helper-functions: higher level
-def load_from_ohlc_data(file_name: str) -> tuple:
-    """Returns (list_of_unixtimes, list_of_close_prices)"""
-    with open(file_name, "r") as file:
-        data_str = file.read().rstrip().replace('"', "")
-    x = eval(data_str)  # list of lists
-    uts = [xi[0] / 1000 for xi in x]
-    vals = [xi[4] for xi in x]
-    return (uts, vals)
-
-
 def filter_to_target_uts(
     target_uts: list, unfiltered_uts: list, unfiltered_vals: list
 ) -> list:
