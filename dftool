@@ -207,12 +207,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
-    print(
-        f"Hardcoded values:\n "
-        f"\n RETRIES={RETRIES}"
-        f"\n DELAY_S={DELAY_S}"
-        "\n"
-    )
+    print(f"Hardcoded values:\n " f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
