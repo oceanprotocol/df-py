@@ -59,6 +59,11 @@ jobs:
             /home/runner/.vvm
             /home/runner/.brownie/packages
           key: ${{ runner.os }}-brownie-deps
+      - name: Show Brownie folders
+        run: |
+           ls -l /home/runner/.solcx
+           ls -l /home/runner/.vvm
+           ls -l /home/runner/.brownie/packages
       - name: Set up Openzeppelin
         run: |
           [ -d "$HOME/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.2.0" ] && echo "Using OpenZeppelin/openzeppelin-contracts@4.2.0 from cache" || brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
