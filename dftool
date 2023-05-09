@@ -140,6 +140,7 @@ SECRET_SEED -- secret integer used to seed the rng
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
         f"\n RETRIES={RETRIES}"
+        "\n"
     )
 
     # extract envvars
@@ -177,10 +178,10 @@ SECRET_SEED -- secret integer used to seed the rng
 @enforce_types
 def do_nftinfo():
     HELP = f"""Query chain, output nft info csv
-Usage: dftool nftinfo CSV_DIR CHAINID
+Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     CSV_DIR -- output dir for nftinfo-CHAINID.csv
     CHAINID -- {CHAINID_EXAMPLES}
-    [FIN] -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
+    FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
@@ -198,6 +199,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
         f"\n ENDBLOCK={ENDBLOCK}"
+        "\n"
     )
 
     # hardcoded values
@@ -205,7 +207,12 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
-    print(f"Hardcoded values:\n " f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}")
+    print(
+        f"Hardcoded values:\n "
+        f"\n RETRIES={RETRIES}"
+        f"\n DELAY_S={DELAY_S}"
+        "\n"
+    )
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
@@ -263,6 +270,7 @@ SECRET_SEED -- secret integer used to seed the rng
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
         f"\n RETRIES={RETRIES}"
+        "\n"
     )
 
     # extract envvars
@@ -322,6 +330,7 @@ SECRET_SEED -- secret integer used to seed the rng
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
         f"\n RETRIES={RETRIES}"
+        "\n"
     )
 
     # extract envvars
@@ -369,7 +378,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
     if len(sys.argv) == 2 + 5:
         RETRIES = int(sys.argv[2 + 4])
     print("dftool getrate: Begin")
-    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}")
+    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}\n")
 
     # check files, prep dir
     _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
@@ -410,6 +419,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
         f"\n CSV_DIR={CSV_DIR}"
         f"\n TOT_OCEAN={TOT_OCEAN}"
         f"\n START_DATE={START_DATE}"
+        "\n"
     )
 
     # condition inputs
@@ -422,7 +432,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
         TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
-            f"START_DATE={START_DATE}"
+            f", START_DATE={START_DATE}"
         )
     elif START_DATE is not None:
         print("TOT_OCEAN was nonzero, so re-calc'd: START_DATE=None")
@@ -538,7 +548,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
         f", DFREWARDS_ADDR={DFREWARDS_ADDR}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", BATCH_NBR={BATCH_NBR}"
+        f", BATCH_NBR={BATCH_NBR}\n"
     )
     assert DFREWARDS_ADDR is not None
     assert TOKEN_ADDR is not None
