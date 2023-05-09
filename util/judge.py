@@ -2,15 +2,12 @@ import os
 import sys
 from datetime import datetime as dt
 from datetime import timedelta
-from brownie.network import accounts
 from typing import List
-from web3.main import Web3
 
 import ccxt
 import requests
+from brownie.network import accounts
 from enforce_typing import enforce_types
-from util.oceanutil import getDataNFT, getDataField
-from util.networkutil import connect
 from ocean_lib.ocean import crypto
 from predict_eth.helpers import (
     calc_nmse,
@@ -18,6 +15,9 @@ from predict_eth.helpers import (
     print_datetime_info,
     target_12h_unixtimes,
 )
+from web3.main import Web3
+
+from util.oceanutil import getDataField, getDataNFT
 
 # Set network. Change this one line if needed. *Supposed* to be "polygon-test"
 NETWORK_NAME = "polygon-test"  # polygon-test (Mumbai), polygon-main, goerli...

@@ -1,10 +1,9 @@
 import os
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch
-from brownie.network import accounts
-from util.networkutil import connect, disconnect
 
 import pytest
+from brownie.network import accounts
 from requests.models import Response
 
 from util.judge import (
@@ -16,7 +15,7 @@ from util.judge import (
     print_address_nmse,
     print_nmses_results,
 )
-
+from util.networkutil import connect, disconnect
 
 known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
 chain_id = 80001
@@ -62,7 +61,7 @@ def test_get_nft_addresses():
     assert "0x789" not in nft_addresses
 
 
-def test_get_pred_vals(tmp_path):
+def test_get_pred_vals():
     alice_wallet = _get_alice_wallet()
 
     connect(chain_id)
@@ -97,7 +96,7 @@ def test_prints():
     print_nmses_results({"0x123": 0.1, "0x456": 0.2})
 
 
-def test_do_get_nmses(tmp_path):
+def test_do_get_nmses():
     connect(chain_id)
 
     with patch("util.judge.parse_arguments") as mock1:
