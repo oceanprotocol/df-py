@@ -1138,11 +1138,10 @@ ARGV_FNS = {
 def do_main():
     if len(sys.argv) == 1:
         do_help()
+    elif sys.argv[1] in ARGV_FNS:
+        ARGV_FNS[sys.argv[1]]()
     else:
-        if sys.argv[1] in ARGV_FNS:
-            ARGV_FNS[sys.argv[1]]()
-        else:
-            do_help()
+        do_help()
 
 
 if __name__ == "__main__":
