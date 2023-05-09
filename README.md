@@ -3,22 +3,14 @@
 <div align="center">
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/black.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/mypy.yml/badge.svg"/>
-<img src="https://github.com/oceanprotocol/df-py/actions/workflows/pylint.yml/badge.svg"/>
+<img src="https://github.com/oceanprotocol/d-py/actions/workflows/pylint.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/test.yml/badge.svg"/>
 </div>
 <br/>
 
 CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend.
 
-```text
-Usage: dftool getrate|query|calc|dispense|..
-
-  dftool getrate - get exchange rate
-  dftool volsym - query chain for stakes & volumes
-  dftool calc - calculate rewards
-  dftool dispense_active - dispense funds
-  ...
-```
+Usage: in console, type `dftool` to see further commads.
 
 Data flow and csvs: See "Data Flow in dftool" **[GSlides 2&3](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)**
 
@@ -85,7 +77,7 @@ dftool compile
 ```
 
 
-# Main Usage: CLI
+# CLI
 
 `dftool` is the main tool. In main terminal:
 ```console
@@ -100,7 +92,7 @@ dftool dispense
 
 Then, simply follow the usage directions:)
 
-# Usage: Running Tests
+# Running Tests
 
 In terminal:
 ```console
@@ -163,7 +155,12 @@ Now, you can use those networks simply by specifying a different chainid in `dft
 
 # Rewards Distribution Ops
 
-See [README-dist-ops.md](README-dist-ops.md)
+Happens via regularly-scheduled Github Actions:
+
+- Passive: [dispense_passive.yml](.github/workflows/dispense_passive.yml)
+- Active: [flow.yml](.github/workflows/flow.yml)
+
+More info: [README-crons-ops.md](README-crons-ops.md)
 
 # DFRewards Owner Control Ops
 
@@ -171,7 +168,9 @@ See [README-control-ops.md](README-control-ops.md)
 
 # Docker
 
-### Docker: Install & Use Locally
+Here's how to use df-py running inside a Docker container.
+
+### Install & Use Docker Locally
 
 Build the docker image.
 ```shell
@@ -198,7 +197,7 @@ rate = $0.8774 / OCEAN
 Created /app/data/rate-OCEAN.csv
 ```
 
-### Docker: Use on Remote Networks
+### Docker Using Remote Networks
 
 Expand brownie's configured networks in the Docker container by editing the `Dockerfile` as follows:
 ```
@@ -212,7 +211,7 @@ COPY . .
 RUN rm -rf build
 ```
 
-### Docker: Contract Addresses
+### Docker Using Contract Addresses
 
 Here's how to configure docker to access contracts.
 
@@ -223,7 +222,7 @@ Then, configure `dfpy_docker` like so:
 docker run --env-file ./.env -v /tmp/dfpy:/app/data -v /app/df-py/address.json:/address.json --rm dfpy $@
 ```
 
-# SQL+Webapp
+# End-to-end With SQL and Webapp
 
 Let's have an end-to-end flow of df-py, df-sql, and df-web.
 
