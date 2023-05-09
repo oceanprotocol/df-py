@@ -67,16 +67,10 @@ def test_get_pred_vals(tmp_path):
 
     connect(chain_id)
     pred_vals = nft_addr_to_pred_vals(known_nft_addr, alice_wallet)
-    disconnect()
-
-    # workaround for Brownie teardown bug
-    tmp_loc = os.path.join(tmp_path, "out.txt")
-    args = f"acctinfo 80001 {alice_wallet.address} {known_nft_addr}"
-    cmd = f"./dftool {args}>{tmp_loc} 2>{tmp_loc}"
-    os.system(cmd)
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798
+    disconnect()
 
 
 def test_get_cex_vals():
@@ -117,12 +111,6 @@ def test_do_get_nmses(tmp_path):
                     nmses = do_get_nmses(["dftool", "judge", "2021-09-01_12:59"])
 
     disconnect()
-
-    tmp_loc = os.path.join(tmp_path, "out.txt")
-    alice_wallet = _get_alice_wallet()
-    args = f"acctinfo {chain_id} {alice_wallet.address} {known_nft_addr}"
-    cmd = f"./dftool {args}>{tmp_loc} 2>{tmp_loc}"
-    os.system(cmd)
 
     assert nmses["0x123"]
     assert nmses["0x456"] == 1.0
