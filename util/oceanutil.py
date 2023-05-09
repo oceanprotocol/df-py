@@ -1,6 +1,7 @@
-from collections import namedtuple
 import hashlib
 import json
+import warnings
+from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
 import brownie
@@ -8,7 +9,8 @@ from enforce_typing import enforce_types
 
 from util import networkutil
 from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
+from util.constants import BROWNIE_PROJECT as B
+from util.constants import CONTRACTS, ZERO_ADDRESS
 
 
 @enforce_types
@@ -137,6 +139,17 @@ def createDataNFTWithFRE(from_account, token):
     return (data_NFT, DT, exchangeId)
 
 
+def _get_events(tx):
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=".*Event log does not contain enough topics for the given ABI.*",
+        )
+        events = tx.events
+
+    return events
+
+
 @enforce_types
 def createDataNFT(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
@@ -158,7 +171,9 @@ def createDataNFT(name: str, symbol: str, from_account):
         owner,
         {"from": from_account},
     )
-    data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
+
+    events = _get_events(tx)
+    data_NFT_address = events["NFTCreated"]["newTokenAddress"]
     data_NFT = B.ERC721Template.at(data_NFT_address)
     return data_NFT
 
@@ -185,7 +200,9 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     tx = data_NFT.createERC20(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
-    DT_address = tx.events["TokenCreated"]["newTokenAddress"]
+
+    events = _get_events(tx)
+    DT_address = events["TokenCreated"]["newTokenAddress"]
     DT = B.ERC20Template.at(DT_address)
 
     return DT
