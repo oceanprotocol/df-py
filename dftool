@@ -9,18 +9,34 @@ import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
-from util import (allocations, blockrange, calcrewards, constants, csvs,
-                  dispense, getrate, networkutil, query)
+from util import (
+    allocations,
+    blockrange,
+    calcrewards,
+    constants,
+    csvs,
+    dispense,
+    getrate,
+    networkutil,
+    query,
+)
 from util.base18 import fromBase18
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.calcrewards import calcRewards
 from util.constants import BROWNIE_PROJECT as B
 from util.multisig import send_multisig_tx
 from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
-from util.oceantestutil import (randomConsumeFREs, randomCreateDataNFTWithFREs,
-                                randomLockAndAllocate)
-from util.oceanutil import (FeeDistributor, OCEANtoken,
-                            recordDeployedContracts, veAllocate)
+from util.oceantestutil import (
+    randomConsumeFREs,
+    randomCreateDataNFTWithFREs,
+    randomLockAndAllocate,
+)
+from util.oceanutil import (
+    FeeDistributor,
+    OCEANtoken,
+    recordDeployedContracts,
+    veAllocate,
+)
 from util.retry import retryFunction
 from util.vesting_schedule import getActiveRewardAmountForWeekEth
 
@@ -48,7 +64,9 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
 """
 
-HELP_LONG = HELP_SHORT + """
+HELP_LONG = (
+    HELP_SHORT
+    + """
   dftool newacct - generate new account
   dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool newtoken CHAINID - generate new token (for testing)
@@ -70,6 +88,7 @@ HELP_LONG = HELP_SHORT + """
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
+)
 
 
 @enforce_types
@@ -113,7 +132,7 @@ SECRET_SEED -- secret integer used to seed the rng
     RETRIES = 1
     if len(sys.argv) == 2 + 6:
         RETRIES = int(sys.argv[7])
-        
+
     print("dftool volsym: Begin")
     print(
         f"Arguments:\n "
@@ -139,7 +158,7 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     recordDeployedContracts(ADDRESS_FILE)
-    
+
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     (Vi, Ci, SYMi) = retryFunction(
@@ -172,7 +191,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
     ENDBLOCK = sys.argv[4] if len(sys.argv) == 5 else "latest"
-        
+
     print("dftool nftinfo: Begin")
     print(
         f"Arguments:\n "
@@ -181,20 +200,16 @@ Usage: dftool nftinfo CSV_DIR CHAINID
         f"\n ENDBLOCK={ENDBLOCK}"
     )
 
-    #hardcoded values
+    # hardcoded values
     # -query.queryNftinfo() can be problematic; it's only used for frontend data
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
-    DELAY_S = 10 
-    print(
-        f"Hardcoded values:\n "
-        f"\n RETRIES={RETRIES}"
-        f"\n DELAY_S={DELAY_S}"
-    )
-    
+    DELAY_S = 10
+    print(f"Hardcoded values:\n " f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}")
+
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
-    
+
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
@@ -204,8 +219,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
-    nftinfo = retryFunction(
-        query.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
+    nftinfo = retryFunction(query.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -241,7 +255,7 @@ SECRET_SEED -- secret integer used to seed the rng
     RETRIES = 1
     if len(sys.argv) == 8:
         RETRIES = int(sys.argv[7])
-        
+
     print("dftool do_allocations: Begin")
     print(
         f"Arguments:\n "
@@ -300,7 +314,7 @@ SECRET_SEED -- secret integer used to seed the rng
     RETRIES = 1
     if len(sys.argv) == 8:
         RETRIES = int(sys.argv[7])
-        
+
     print("dftool vebals: Begin")
     print(
         f"Arguments:\n "
@@ -365,7 +379,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
     rate = retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
-    
+
     print("dftool getrate: Done")
 
 
@@ -389,7 +403,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
     START_DATE = None if len(sys.argv) == 4 else sys.argv[4]
-        
+
     print("dftool calc: Begin")
     print(
         f"Arguments:\n "
@@ -402,16 +416,18 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     if TOT_OCEAN == 0 and START_DATE is None:
         print("TOT_OCEAN == 0, so must give a start date. Exiting.")
         sys.exit(0)
-        
+
     if TOT_OCEAN == 0:
         START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
         TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
-        print(f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
-              f"START_DATE={START_DATE}")
+        print(
+            f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
+            f"START_DATE={START_DATE}"
+        )
     elif START_DATE is not None:
-        print(f"TOT_OCEAN was nonzero, so re-calc'd: START_DATE=None")
+        print("TOT_OCEAN was nonzero, so re-calc'd: START_DATE=None")
         START_DATE = None
-    
+
     # do we have the input files?
     alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
     if not os.path.exists(alloc_fname):
@@ -529,7 +545,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     # brownie setup
     networkutil.connect(CHAINID)
-    
+
     # main work
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
@@ -538,7 +554,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     # "flatten" the rewards dict to dispense all chains in one go
     all_rewards = calcrewards.flattenRewards(rewards)
-    
+
     # dispense
     dispense.dispense(
         all_rewards,
@@ -1175,7 +1191,6 @@ def _getPrivateAccount():
 ARGV_FNS = {
     "help_short": do_help_short,
     "help_long": do_help_long,
-    
     # write actions
     "compile": do_compile,
     "volsym": do_volsym,
