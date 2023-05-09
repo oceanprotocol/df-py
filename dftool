@@ -421,7 +421,7 @@ Usage: dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    SECRET_SEED = _getSecretSeedOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()  # pylint: disable=unused-variable
 
     # check files, prep dir
     if not os.path.exists(CSV_DIR):
@@ -430,16 +430,20 @@ Usage: dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
 
     # brownie setup
     networkutil.connect(CHAINID)
-    chain = brownie.network.chain
+    chain = brownie.network.chain  # pylint: disable=unused-variable
     recordDeployedContracts(ADDRESS_FILE)
-    
+
     # main work
     challenge_data = retryFunction(
-        query.queryChallengeData, RETRIES, CHAINID, DEADLINE,
+        query.queryChallengeData,
+        RETRIES,
+        CHAINID,
+        DEADLINE,
     )
     csvs.saveChallengeData(challenge_data, CSV_DIR, CHAINID)
 
     print("dftool challenge_df_data: Done")
+
 
 # ========================================================================
 @enforce_types
@@ -470,7 +474,7 @@ Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    SECRET_SEED = _getSecretSeedOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()  # pylint: disable=unused-variable
 
     # check files, prep dir
     if not os.path.exists(CSV_DIR):
@@ -479,16 +483,19 @@ Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
 
     # brownie setup
     networkutil.connect(CHAINID)
-    chain = brownie.network.chain
+    chain = brownie.network.chain  # pylint: disable=unused-variable
     recordDeployedContracts(ADDRESS_FILE)
-    
+
     # main work
     predictoor_data = retryFunction(
-        query.queryPredictoorData, RETRIES, CHAINID, 
+        query.queryPredictoorData,
+        RETRIES,
+        CHAINID,
     )
     csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
 
     print("dftool predictoor_df_data: Done")
+
 
 # ========================================================================
 @enforce_types
