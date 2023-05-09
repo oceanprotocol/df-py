@@ -446,10 +446,9 @@ Usage: dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
 def do_predictoor_df_data():
     HELP = f"""Get data for Predictoor DF
 
-Usage: dftool predictoor_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
+Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
   CHAINID -- {CHAINID_EXAMPLES}
-  DEADLINE -- submission deadlie. Format is YYYY-MM-DD_HOUR:MIN, in UTC
   RETRIES -- # times to retry failed queries
 """
     if len(sys.argv) not in [2 + 3, 2 + 4]:
@@ -460,14 +459,12 @@ Usage: dftool predictoor_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
     assert sys.argv[1] == "predictoor_df_data"
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
-    DEADLINE = sys.argv[4]
-    RETRIES = 1 if len(sys.argv) == 5 else int(sys.argv[5])
+    RETRIES = 1 if len(sys.argv) == 4 else int(sys.argv[4])
     print("dftool predictoor_df_data: Begin")
     print(
         f"Arguments:\n "
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
-        f"\n DEADLINE={DEADLINE}"
         f"\n RETRIES={RETRIES}"
     )
 
@@ -487,7 +484,7 @@ Usage: dftool predictoor_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
     
     # main work
     predictoor_data = retryFunction(
-        query.queryPredictoorData, RETRIES, CHAINID, DEADLINE,
+        query.queryPredictoorData, RETRIES, CHAINID, 
     )
     csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
 
@@ -1305,8 +1302,8 @@ ARGV_FNS = {
     # write actions
     "compile": do_compile,
     "volsym": do_volsym,
-    "challenge_df_data": do_challenge_df,
-    "predictoor_df_data": do_predictoor_df,
+    "challenge_df_data": do_challenge_df_data,
+    "predictoor_df_data": do_predictoor_df_data,
     "allocations": do_allocations,
     "calc": do_calc,
     "dispense_active": do_dispense_active,
