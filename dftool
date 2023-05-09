@@ -31,10 +31,13 @@ CHAINID_EXAMPLES = (
 )
 
 # ========================================================================
-HELP_MAIN = """Data Farming tool, for use by OPF.
+HELP_SHORT = """Data Farming tool, for use by OPF.
 
-Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
+Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
 
+  dftool help - full command list
+
+  dftool compile - compile contracts
   dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
@@ -42,36 +45,42 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool calc CSV_DIR TOT_OCEAN [ST] IGNORED - from (rates, volumes, ..), calc rewards
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
+  dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
+"""
 
-  dftool compile - compile contracts
-  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
-  dftool newdfrewards CHAINID - deploy new DFRewards contract
-
-  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
-  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
-  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
-  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
+HELP_LONG = HELP_SHORT + """
+  dftool newacct - generate new account
+  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+  dftool newtoken CHAINID - generate new token (for testing)
+  dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
+  dftool chaininfo CHAINID - info about a network
 
   dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
-  dftool newacct - generate new account
-  dftool newtoken CHAINID - generate new token (for testing)
 
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
   dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
-  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-  dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
-  dftool chaininfo CHAINID - info about a network
-  dftool help - this message
+  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
+  dftool newdfrewards CHAINID - deploy new DFRewards contract
+  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
+  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
+  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
 
 
 @enforce_types
-def do_help():
-    print(HELP_MAIN)
+def do_help_short():
+    print(HELP_SHORT)
+    sys.exit(0)
+
+
+@enforce_types
+def do_help_long():
+    print(HELP_LONG)
     sys.exit(0)
 
 
@@ -1101,7 +1110,9 @@ def _getPrivateAccount():
 
 
 ARGV_FNS = {
-    "help": do_help,
+    "help_short": do_help_short,
+    "help_long": do_help_long,
+    
     # write actions
     "compile": do_compile,
     "volsym": do_volsym,
@@ -1137,11 +1148,11 @@ ARGV_FNS = {
 @enforce_types
 def do_main():
     if len(sys.argv) == 1:
-        do_help()
+        do_help_short()
     elif sys.argv[1] in ARGV_FNS:
         ARGV_FNS[sys.argv[1]]()
     else:
-        do_help()
+        do_help_long()
 
 
 if __name__ == "__main__":
