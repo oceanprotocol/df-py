@@ -42,7 +42,9 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool calc CSV_DIR TOT_OCEAN [ST] IGNORED - from (rates, volumes, ..), calc rewards
+  dftool challenge_df -- get data for Challenge DF
+  dftool predictoor_df -- get data for Predictoor DF
+  dftool calc CSV_DIR TOT_OCEAN [ST] IGNORED - given csvs, calc rewards for Volume + Challenge + Predictoor DF
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
