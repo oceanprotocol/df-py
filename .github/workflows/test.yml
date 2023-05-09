@@ -61,12 +61,27 @@ jobs:
             sleep 10
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
             done
+      - name: Restore Brownie compilers
+        id: restore-brownie-compilers
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            $HOME/.solcx
+            $HOME/.vvm
+          key: ${{ runner.os }}-brownie-deps
       - name: Test with Brownie
         run: |
           coverage run --omit="*test*" -m pytest util/test
           coverage report
           coverage xml
-
+      - name: Save Brownie compilers
+        id: cache-brownie-compilers
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            $HOME/.solcx
+            $HOME/.vvm
+          key: ${{ runner.os }}-brownie-deps
       - name: Publish code coverage
         uses: paambaati/codeclimate-action@v2.7.5
         env:
