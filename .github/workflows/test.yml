@@ -79,6 +79,9 @@ jobs:
             sleep 10
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
             done
+      - name: "Read address.json contents"
+          working-directory: ${{ github.workspace }}
+          run: cat "$HOME/.ocean/ocean-contracts/artifacts/address.json"
       - name: Test with Brownie
         run: |
           coverage run --omit="*test*" -m pytest util/test
