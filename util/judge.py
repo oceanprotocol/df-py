@@ -148,6 +148,13 @@ def print_nmses_results(nmses):
 
 @enforce_types
 def do_get_nmses(arguments):
+    """
+    @arguments
+      arguments -- e.g. ["dftool", "judge", "2021-09-01_12:59"])
+
+    @return
+      nmses -- dict of [nft_addr_str] : nmse_float
+    """
     alice_private_key = os.getenv("REMOTE_TEST_PRIVATE_KEY1")
     alice_wallet = accounts.add(alice_private_key)
     bal = Web3.fromWei(accounts.at(alice_wallet.address).balance(), "ether")

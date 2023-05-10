@@ -1265,6 +1265,7 @@ Usage: dftool checkpoint_feedist CHAINID
 # ========================================================================
 # utilities
 def do_judge():
+    """Judge Predict ETH challenge with deadline given"""
     networkutil.connect(80001)
     nmses = do_get_nmses(sys.argv)
     print_nmses_results(nmses)
@@ -1272,6 +1273,7 @@ def do_judge():
 
 
 def do_judge_and_dispense():
+    """Judge Predict ETH challenge with deadline = previous Wednesday 23:59"""
     networkutil.connect(80001)
     today = datetime.datetime.now()
     offset = (today.weekday() - WEDNESDAY) % 7
