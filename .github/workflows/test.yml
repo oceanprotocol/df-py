@@ -41,9 +41,6 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           bash -x start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > start_ocean.log &    
-        env:
-          CONTRACTS_VERSION: v1.1.3
-          SUBGRAPH_VERSION: v3.0.7
 
       - name: Install dependencies
         working-directory: ${{ github.workspace }}
