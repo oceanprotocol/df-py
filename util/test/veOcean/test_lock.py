@@ -60,8 +60,11 @@ def setup_function():
     global accounts, alice, bob, veOCEAN, OCEAN
     accounts = brownie.network.accounts
 
-    alice = accounts[0]
-    bob = accounts[1]
+    alice = accounts.add()
+    bob = accounts.add()
+
+    accounts[0].transfer(alice, "0.01 ether")
+    accounts[0].transfer(bob, "0.01 ether")
 
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = B.veOcean.deploy(
