@@ -887,8 +887,10 @@ def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
 
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK + WEEK
+    t2 = t1 + 4 * YEAR
+    
     chain.sleep(t1 - t0)
-    t2 = chain.time() + 4 * YEAR
+    chain.mine()
 
     for acc in accounts:
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
