@@ -27,6 +27,7 @@ from util.tok import TokSet
 PREV = {}
 god_acct = None
 chain = None
+OCEAN, CO2 = None, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
@@ -58,12 +59,12 @@ def test_all(tmp_path):
     OCEAN = oceanutil.OCEANtoken()
     OCEAN_lock_amt = toBase18(5.0)
 
-    print("Create and fund random accounts()...")
-    accounts = _create_and_fund_random_accounts(7, [OCEAN, CO2])
-
-    print("Create sampling test accounts, zerobal account...")
-    sampling_test_accounts = [accounts.pop(), accounts.pop()]
-    zerobal_delegation_test_acct = brownie.accounts.add()
+    print("Create & fund accounts...")
+    # god_acct = brownie.accounts[0]
+    accounts = brownie.accounts[1:6] # 5 accounts
+    sampling_test_accounts = brownie.accounts[6:8] # 2 accounts 
+    zerobal_delegation_test_acct = brownie.accounts[8] # 1 account
+    _fund_accts(CO2, accounts + sampling_test_accounts, amt_to_fund=1000.0)
 
     print("Create assets...")
     assets = _create_assets(CO2, n_assets=5)
@@ -926,21 +927,18 @@ def _lock_and_allocate_ve(accounts, assets, OCEAN_lock_amt):
 
 
 @enforce_types
-def _create_and_fund_random_accounts(
-    n_accounts, tokens, token_amt=1000.0
-):
-    new_accts = []
-    for i in range(n_accounts):
-        print(f"  Create and fund account #{i+1}/{n_accounts}...")
-        acct = brownie.accounts.add()
-        new_accts.append(acct)
-        for token in tokens:
-            token.transfer(acct, toBase18(token_amt), {"from": god_acct})
-        god_acct.transfer(acct, toBase18(0.1))
-    return new_accts
+def _fund_accts(CO2, accts_to_fund:list, amt_to_fund:float):
+    amt_to_fund_wei = toBase18(amt_to_fund)
+    for i, acct in enumerate(accts_to_fund):
+        print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
+        assert fromBase18(acct.balance()) > 0.1, f"Acct {i} needs ETH"
+        if OCEAN.balanceOf(acct) < amt_to_fund_wei:
+            OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
+        CO2.transfer(acct, amt_to_fund_wei, {"from": god_acct})
+
 
 @enforce_types
-def _create_assets(self, CO2, n_assets:int) -> list:
+def _create_assets(CO2, n_assets:int) -> list:
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
@@ -961,11 +959,12 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global god_acct, PREV, chain
+    global god_acct, PREV, OCEAN, chain
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     god_acct = brownie.network.accounts[0]
     oceanutil.recordDevDeployedContracts()
+    OCEAN = oceanutil.OCEANtoken()
 
     for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
         PREV[envvar] = os.environ.get(envvar)
