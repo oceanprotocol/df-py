@@ -524,97 +524,97 @@ def test_allocation_sampling():
     start_block = len(brownie.network.chain)
 
     # DAY 0
-    oceanutil.set_allocation(10000, allocate_addrs[0], 8996, alice)  # 100% at 0
-    oceanutil.set_allocation(10000, allocate_addrs[0], 8996, bob)  # 100% at 0
-    oceanutil.set_allocation(1000, allocate_addrs[0], 8996, karen)  # 10% at 0
-    oceanutil.set_allocation(1000, allocate_addrs[0], 8996, james)  # 10% at 0
+    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
+    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, bob)  # 100% at 0
+    oceanutil.set_allocation(1000, allocate_addrs[0], CHAINID, karen)  # 10% at 0
+    oceanutil.set_allocation(1000, allocate_addrs[0], CHAINID, james)  # 10% at 0
 
     forward(100)
 
     # DAY 1
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[0], 8996, bob)  # 0% at 1
-    oceanutil.set_allocation(10000, allocate_addrs[1], 8996, bob)  # 100% at 1
+    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, bob)  # 0% at 1
+    oceanutil.set_allocation(10000, allocate_addrs[1], CHAINID, bob)  # 100% at 1
 
     # Karen allocates 10%
-    oceanutil.set_allocation(1000, allocate_addrs[1], 8996, karen)  # 10% at 1
+    oceanutil.set_allocation(1000, allocate_addrs[1], CHAINID, karen)  # 10% at 1
 
     # James allocates 20%
-    oceanutil.set_allocation(2000, allocate_addrs[0], 8996, james)  # 20% at 1
+    oceanutil.set_allocation(2000, allocate_addrs[0], CHAINID, james)  # 20% at 1
 
     forward(100)
 
     # DAY 2
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[1], 8996, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[2], 8996, bob)
+    oceanutil.set_allocation(0, allocate_addrs[1], CHAINID, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[2], CHAINID, bob)
 
     # Carol allocates 100%
-    oceanutil.set_allocation(10000, allocate_addrs[2], 8996, carol)
+    oceanutil.set_allocation(10000, allocate_addrs[2], CHAINID, carol)
 
     # Karen allocates 20%
-    oceanutil.set_allocation(2000, allocate_addrs[2], 8996, karen)
+    oceanutil.set_allocation(2000, allocate_addrs[2], CHAINID, karen)
 
     # James allocates 30%
-    oceanutil.set_allocation(3000, allocate_addrs[0], 8996, james)
+    oceanutil.set_allocation(3000, allocate_addrs[0], CHAINID, james)
     forward(100)
 
     # DAY 3
 
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[2], 8996, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[3], 8996, bob)
+    oceanutil.set_allocation(0, allocate_addrs[2], CHAINID, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[3], CHAINID, bob)
 
     # James allocates 5%
-    oceanutil.set_allocation(500, allocate_addrs[0], 8996, james)
+    oceanutil.set_allocation(500, allocate_addrs[0], CHAINID, james)
 
     forward(50)
 
     # DAY 3.5
     # Alice allocates 100%
-    oceanutil.set_allocation(0, allocate_addrs[0], 8996, alice)
-    oceanutil.set_allocation(10000, allocate_addrs[3], 8996, alice)
+    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, alice)
+    oceanutil.set_allocation(10000, allocate_addrs[3], CHAINID, alice)
 
     forward(50)
 
     # DAY 4
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[3], 8996, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[4], 8996, bob)
+    oceanutil.set_allocation(0, allocate_addrs[3], CHAINID, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[4], CHAINID, bob)
 
     # James allocates 50%
-    oceanutil.set_allocation(5000, allocate_addrs[0], 8996, james)
+    oceanutil.set_allocation(5000, allocate_addrs[0], CHAINID, james)
 
     forward(100)
 
     # DAY 5
 
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[4], 8996, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[5], 8996, bob)
+    oceanutil.set_allocation(0, allocate_addrs[4], CHAINID, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[5], CHAINID, bob)
 
     # James allocates 0%
-    oceanutil.set_allocation(0, allocate_addrs[0], 8996, james)
+    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, james)
 
     forward(100)
 
     # DAY 6
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[5], 8996, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[6], 8996, bob)
+    oceanutil.set_allocation(0, allocate_addrs[5], CHAINID, bob)
+    oceanutil.set_allocation(10000, allocate_addrs[6], CHAINID, bob)
 
     # Carol allocates 100%
-    oceanutil.set_allocation(0, allocate_addrs[2], 8996, carol)
-    oceanutil.set_allocation(10000, allocate_addrs[6], 8996, carol)
+    oceanutil.set_allocation(0, allocate_addrs[2], CHAINID, carol)
+    oceanutil.set_allocation(10000, allocate_addrs[6], CHAINID, carol)
 
     # Karen allocates 100%
-    oceanutil.set_allocation(0, allocate_addrs[0], 8996, karen)
-    oceanutil.set_allocation(0, allocate_addrs[1], 8996, karen)
-    oceanutil.set_allocation(0, allocate_addrs[2], 8996, karen)
-    oceanutil.set_allocation(10000, allocate_addrs[6], 8996, karen)
+    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, karen)
+    oceanutil.set_allocation(0, allocate_addrs[1], CHAINID, karen)
+    oceanutil.set_allocation(0, allocate_addrs[2], CHAINID, karen)
+    oceanutil.set_allocation(10000, allocate_addrs[6], CHAINID, karen)
 
     # James allocates 100%
-    oceanutil.set_allocation(10000, allocate_addrs[0], 8996, james)
+    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, james)
 
     # FIN
     forward(100)
@@ -893,7 +893,7 @@ def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
 
     # Allocate to data NFTs
     for i, acc in enumerate(accounts):
-        veAllocate.setAllocation(100, data_nfts[i][0], 8996, {"from": acc})
+        veAllocate.setAllocation(100, data_nfts[i][0], CHAINID, {"from": acc})
 
 
 @enforce_types
