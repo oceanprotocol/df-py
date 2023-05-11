@@ -36,10 +36,12 @@ DAY = 86400
 WEEK = 7 * DAY
 YEAR = 365 * DAY
 
+
 class SimpleAsset:
     def __init__(self, tup):
         self.nft, self.dt, self.exchangeId = tup
         assert oceanutil.FixedPrice().isActive(self.exchangeId)
+
 
 # =========================================================================
 # heavy on-chain tests: overall test
@@ -91,7 +93,7 @@ def test_all(tmp_path):
     ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1)
     ve_delegate(accounts[3], accounts[4], 1.0, 0)
     ve_delegate(accounts[4], accounts[3], 1.0, 0)
-    
+
     # set start block number for querying
     ST = len(chain)
 
@@ -123,8 +125,7 @@ def test_all(tmp_path):
     time.sleep(2)
 
     rng = BlockRange(ST, FIN, 100, 42)
-    sampling_accounts_addrs = [a.address.lower()
-                               for a in sampling_accounts]
+    sampling_accounts_addrs = [a.address.lower() for a in sampling_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
     delegation_accounts.append(zerobal_delegation_acct.address.lower())
 
@@ -162,6 +163,7 @@ def test_all(tmp_path):
 
 # =========================================================================
 # heavy on-chain tests: support functions
+
 
 def _foundConsume(CO2_addr, st, fin):
     V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
@@ -506,10 +508,10 @@ def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
     print("_test_ghost_consume()...")
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
-    
+
     (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
-    
+
     swaps = query._querySwaps(ST, FIN, CHAINID)
     assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
@@ -912,7 +914,7 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock(accts:list, OCEAN_lock_amt:float, lock_time):
+def _lock(accts: list, OCEAN_lock_amt: float, lock_time):
     veOCEAN = oceanutil.veOCEAN()
     OCEAN_lock_amt_wei = toBase18(OCEAN_lock_amt)
     for i, acct in enumerate(accts):
@@ -920,8 +922,9 @@ def _lock(accts:list, OCEAN_lock_amt:float, lock_time):
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt_wei, {"from": acct})
         veOCEAN.create_lock(OCEAN_lock_amt_wei, lock_time, {"from": acct})
 
+
 @enforce_types
-def _allocate(accts:list, assets:list):
+def _allocate(accts: list, assets: list):
     veAllocate = oceanutil.veAllocate()
     for i, (acct, asset) in enumerate(zip(accts, assets)):
         print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
@@ -929,7 +932,7 @@ def _allocate(accts:list, assets:list):
 
 
 @enforce_types
-def _fund_accts(CO2, accts_to_fund:list, amt_to_fund:float):
+def _fund_accts(CO2, accts_to_fund: list, amt_to_fund: float):
     amt_to_fund_wei = toBase18(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
@@ -939,7 +942,7 @@ def _fund_accts(CO2, accts_to_fund:list, amt_to_fund:float):
 
 
 @enforce_types
-def _create_assets(CO2, n_assets:int) -> list:
+def _create_assets(CO2, n_assets: int) -> list:
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
