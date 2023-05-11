@@ -75,7 +75,7 @@ jobs:
           for i in $(seq 1 250); do
             sleep 10
             [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
-            done
+          done
       - name: "Read address.json contents"
           working-directory: ${{ github.workspace }}
           run: cat "$HOME/.ocean/ocean-contracts/artifacts/address.json"
