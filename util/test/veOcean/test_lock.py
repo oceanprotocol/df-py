@@ -28,13 +28,13 @@ def test_alice_locks_tokens():
 
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK + WEEK
-    t2 = t1 + YEAR
+    lock_timedelta = YEAR
     chain.sleep(t1 - t0)
     chain.mine()
 
     assert OCEAN.balanceOf(alice) != 0
 
-    veOCEAN.create_lock(TA, t2, {"from": alice})
+    veOCEAN.create_lock(TA, lock_timedelta, {"from": alice})
 
     assert OCEAN.balanceOf(alice) == 0
 
@@ -46,7 +46,7 @@ def test_alice_locks_tokens():
     expectedVotingPower = (TA * YEAR / MAXTIME) / toBase18(1.0)
     assert aliceVotingPower == approx(expectedVotingPower, 0.5)
 
-    chain.sleep(t2 - t1)
+    chain.sleep(lock_timedelta)
     chain.mine()
 
     veOCEAN.withdraw({"from": alice})

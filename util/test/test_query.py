@@ -51,13 +51,14 @@ def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
+    OCEAN = oceanutil.OCEANtoken()
+    OCEAN_lock_amt = 5.0
+    lock_timedelta = 4 * YEAR
+
     print("Deploy CO2 token...")
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
     CO2_addr = CO2.address.lower()
-    
-    OCEAN = oceanutil.OCEANtoken()
-    OCEAN_lock_amt = toBase18(5.0)
 
     print("Create & fund accounts...")
     # god_acct = brownie.accounts[0]
@@ -69,8 +70,17 @@ def test_all(tmp_path):
     print("Create assets...")
     assets = _create_assets(CO2, n_assets=5)
 
-    print("Lock and allocate ve of accounts")
-    _lock_and_allocate_ve(accounts, assets, OCEAN_lock_amt)
+    print("Sleep & mine")
+    t0 = chain.time()
+    t1 = t0 // WEEK * WEEK + WEEK
+    chain.sleep(t1 - t0)
+    chain.mine()
+
+    print("Lock...")
+    _lock(accounts + sampling_test_accounts, OCEAN_lock_amt, lock_timedelta)
+
+    print("Allocate...")
+    _allocate(accounts + sampling_test_accounts, assets, OCEAN_lock_amt)
 
     print("Delegate...")
     # delegations:
@@ -96,9 +106,6 @@ def test_all(tmp_path):
     ghost_consume_asset.dt.mint(god_acct, toBase18(1000.0), {"from": god_acct})
     for _ in range(20):
         oceantestutil.consumeDT(ghost_consume_asset.dt, god_acct, god_acct)
-
-    print("Lock and allocate ve of sampling_test_accounts")
-    _lock_and_allocate_ve(sampling_test_accounts, assets, OCEAN_lock_amt)
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
@@ -905,25 +912,20 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock_and_allocate_ve(accounts, assets, OCEAN_lock_amt):
-    OCEAN = oceanutil.OCEANtoken()
+def _lock(accounts:list, OCEAN_lock_amt:float, lock_timedelta):
     veOCEAN = oceanutil.veOCEAN()
-    veAllocate = oceanutil.veAllocate()
-
-    t0 = chain.time()
-    t1 = t0 // WEEK * WEEK + WEEK
-    t2 = t1 + 4 * YEAR
-
-    chain.sleep(t1 - t0)
-    chain.mine()
-
-    for acc in accounts:
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
-        veOCEAN.create_lock(OCEAN_lock_amt, t2, {"from": acc})
-
-    # Allocate to data NFTs
+    OCEAN_lock_amt_wei = toBase18(OCEAN_lock_amt)
     for i, acc in enumerate(accounts):
-        veAllocate.setAllocation(100, assets[i].nft, CHAINID, {"from": acc})
+        print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accounts)}...")
+        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt_wei, {"from": acc})
+        veOCEAN.create_lock(OCEAN_lock_amt_wei, lock_timedelta, {"from": acc})
+
+@enforce_types
+def _allocate(accounts:list, assets:list):
+    veAllocate = oceanutil.veAllocate()
+    for i, (acc, asset) in enumerate(zip(accounts, assets)):
+        print(f"  Allocate veOCEAN on acct #{i+1}/{len(accounts)}...")
+        veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acc})
 
 
 @enforce_types
