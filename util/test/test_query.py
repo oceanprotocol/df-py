@@ -27,7 +27,7 @@ from util.tok import TokSet
 PREV = {}
 god_acct = None
 chain = None
-OCEAN, CO2 = None, None
+OCEAN, veOCEAN, CO2 = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
@@ -53,12 +53,9 @@ def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    OCEAN = oceanutil.OCEANtoken()
     OCEAN_lock_amt = 5.0
 
     print("Deploy CO2 token...")
-    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
     CO2_addr = CO2.address.lower()
 
     print("Create & fund accounts...")
@@ -66,10 +63,10 @@ def test_all(tmp_path):
     accounts = [brownie.accounts.add() for i in range(5)]
     sampling_accounts = [brownie.accounts.add() for i in range(2)]
     zerobal_delegation_acct = brownie.accounts.add()
-    _fund_accts(CO2, accounts + sampling_accounts, amt_to_fund=1000.0)
+    _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
 
     print("Create assets...")
-    assets = _create_assets(CO2, n_assets=5)
+    assets = _create_assets(n_assets=5)
 
     print("Sleep & mine")
     t0 = chain.time()
@@ -144,8 +141,8 @@ def test_all(tmp_path):
     _test_dftool_allocations(tmp_path, ST, FIN)
 
     # end-to-end tests
-    _test_end_to_end_without_csvs(CO2_sym, rng)
-    _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+    _test_end_to_end_without_csvs(CO2.symbol(), rng)
+    _test_end_to_end_with_csvs(CO2.symbol(), rng, tmp_path)
 
     # test ghost consume
     _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr)
@@ -185,7 +182,6 @@ def _test_queryVebalances(
     rng: BlockRange, sampling_accounts: list, delegation_accounts: list
 ):
     print("_test_queryVebalances()...")
-    veOCEAN = oceanutil.veOCEAN()
 
     veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
@@ -471,7 +467,6 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
 def _test_queryPassiveRewards(addresses):
     print("_test_queryPassiveRewards()...")
     feeDistributor = oceanutil.FeeDistributor()
-    OCEAN = oceanutil.OCEANtoken()
 
     def sim_epoch():
         OCEAN.transfer(
@@ -915,7 +910,6 @@ def test_filter_by_max_volume():
 
 @enforce_types
 def _lock(accts: list, OCEAN_lock_amt: float, lock_time):
-    veOCEAN = oceanutil.veOCEAN()
     OCEAN_lock_amt_wei = toBase18(OCEAN_lock_amt)
     for i, acct in enumerate(accts):
         print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accts)}...")
@@ -932,7 +926,7 @@ def _allocate(accts: list, assets: list):
 
 
 @enforce_types
-def _fund_accts(CO2, accts_to_fund: list, amt_to_fund: float):
+def _fund_accts(accts_to_fund: list, amt_to_fund: float):
     amt_to_fund_wei = toBase18(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
@@ -942,7 +936,7 @@ def _fund_accts(CO2, accts_to_fund: list, amt_to_fund: float):
 
 
 @enforce_types
-def _create_assets(CO2, n_assets: int) -> list:
+def _create_assets(n_assets: int) -> list:
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
@@ -963,12 +957,16 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global god_acct, PREV, OCEAN, chain
+    global god_acct, PREV, OCEAN, veOCEAN, CO2, chain
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     god_acct = brownie.network.accounts[0]
     oceanutil.recordDevDeployedContracts()
+
     OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = oceanutil.veOCEAN()
+    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
+    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
 
     for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
         PREV[envvar] = os.environ.get(envvar)
