@@ -46,7 +46,8 @@ def test_insufficient_gas_reverts():
             addresses, rewards, token_addr, {"from": account0, "gas_limit": 100000}
         )
 
-    assert "out of gas" in str(e_info.value)
+    error_str = str(e_info.value)
+    assert "out of gas" in error_str or "intrinsic gas too low" in error_str
 
 
 @enforce_types
