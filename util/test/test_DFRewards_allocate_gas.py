@@ -49,20 +49,20 @@ def test_insufficient_gas_reverts():
 
 
 @enforce_types
-def _batch_allocate(number: int) -> str:
+def _batch_allocate(n_accounts: int) -> str:
     account0 = brownie.network.accounts[0]
-    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(number)
+    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(n_accounts)
     tx = df_rewards.allocate(addresses, rewards, token_addr, {"from": account0})
     return tx
 
 
 @enforce_types
-def _prep_batch_allocate(number: int) -> Any:
+def _prep_batch_allocate(n_accounts: int) -> Any:
     account0 = brownie.network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": account0})
-    addresses = get_random_addresses(number)
-    rewards = [1 for i in range(number)]
+    addresses = get_random_addresses(n_accounts)
+    rewards = [1 for account_i in range(n_accounts)]
     OCEAN.approve(df_rewards, sum(rewards), {"from": account0})
     return addresses, rewards, OCEAN.address, df_rewards
 
