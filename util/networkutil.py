@@ -1,4 +1,5 @@
 import os
+import warnings
 
 import brownie
 from enforce_typing import enforce_types
@@ -109,7 +110,13 @@ def connect(chainID: int):
     network = brownie.network
     if network.is_connected():
         disconnect()  # call networkutil.disconnect(), *NOT* brownie directly
-    network.connect(chainIdToNetwork(chainID))
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=".*Development network has a block height of*",
+        )
+        network_name = chainIdToNetwork(chainID)
+        network.connect(network_name)
 
 
 @enforce_types

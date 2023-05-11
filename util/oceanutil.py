@@ -42,9 +42,14 @@ def recordDeployedContracts(address_file: str):
     if chainID in CONTRACTS:  # already filled
         return
 
-    network = networkutil.chainIdToNetwork(chainID)
+    network_name = networkutil.chainIdToNetwork(chainID)
     with open(address_file, "r") as json_file:
-        a = json.load(json_file)[network]  # dict of contract_name: address
+        json_dict = json.load(json_file)
+        if network_name not in json_dict:
+            raise ValueError(
+                f"Can't find {network_name} in {address_file}. Barge problems?"
+            )
+        a = json_dict[network_name]  # dict of contract_name: address
 
     C = {}
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
