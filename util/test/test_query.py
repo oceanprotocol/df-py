@@ -25,10 +25,14 @@ from util.tok import TokSet
 
 PREV = {}
 account0 = None
+chain = None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-S_PER_WEEK = 604800
+
+DAY = 86400
+WEEK = 7 * DAY
+YEAR = 365 * DAY
 
 # =========================================================================
 # heavy on-chain tests: overall test
@@ -435,7 +439,6 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
 
 @enforce_types
 def _test_queryPassiveRewards(addresses):
-    chain = brownie.network.chain
     feeDistributor = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
 
@@ -445,7 +448,7 @@ def _test_queryPassiveRewards(addresses):
             toBase18(1000.0),
             {"from": brownie.accounts[0]},
         )
-        chain.sleep(S_PER_WEEK)
+        chain.sleep(WEEK)
         chain.mine()
         feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
         feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
@@ -456,7 +459,7 @@ def _test_queryPassiveRewards(addresses):
     alice_last_reward = 0
     bob_last_reward = 0
     for _ in range(3):
-        timestamp = chain.time() // S_PER_WEEK * S_PER_WEEK
+        timestamp = chain.time() // WEEK * WEEK
         balances, rewards = query.queryPassiveRewards(timestamp, addresses)
         alice = addresses[0]
         bob = addresses[1]
@@ -877,15 +880,15 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
+def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):    
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
     veAllocate = oceanutil.veAllocate()
 
-    t0 = brownie.network.chain.time()
-    t1 = t0 // S_PER_WEEK * S_PER_WEEK + S_PER_WEEK
-    brownie.network.chain.sleep(t1 - t0)
-    t2 = brownie.network.chain.time() + S_PER_WEEK * 52 * 4  # lock for 4 years
+    t0 = chain.time()
+    t1 = t0 // WEEK * WEEK + WEEK
+    chain.sleep(t1 - t0)
+    t2 = chain.time() + 4 * YEAR
 
     for acc in accounts:
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt, {"from": acc})
@@ -921,8 +924,9 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global account0, PREV
+    global account0, PREV, chain
     networkutil.connect(networkutil.DEV_CHAINID)
+    chain = brownie.network.chain
     account0 = brownie.network.accounts[0]
     oceanutil.recordDevDeployedContracts()
 
@@ -936,12 +940,14 @@ def setup_function():
 
 @enforce_types
 def teardown_function():
+    global PREV
+    
     networkutil.disconnect()
 
-    global PREV
     for envvar, envval in PREV.items():
         if envval is None:
             del os.environ[envvar]
         else:
             os.environ[envvar] = envval
+
     PREV = {}
