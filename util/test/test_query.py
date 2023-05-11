@@ -16,6 +16,7 @@ from util import (
     networkutil,
     query,
 )
+from util.oceanutil import ve_delegate
 from util.allocations import allocsToStakes, loadStakes
 from util.base18 import toBase18, fromBase18
 from util.blockrange import BlockRange
@@ -24,7 +25,7 @@ from util.tok import TokSet
 
 
 PREV = {}
-account0 = None
+god_acct = None
 chain = None
 
 CHAINID = networkutil.DEV_CHAINID
@@ -33,6 +34,11 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 DAY = 86400
 WEEK = 7 * DAY
 YEAR = 365 * DAY
+
+class SimpleAsset:
+    def __init__(self, tup):
+        self.nft, self.dt, self.exchangeId = tup
+        assert oceanutil.FixedPrice().isActive(self.exchangeId)
 
 # =========================================================================
 # heavy on-chain tests: overall test
@@ -44,72 +50,75 @@ def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
+    print("Deploy CO2 token...")
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": account0})
+    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
     CO2_addr = CO2.address.lower()
+    
     OCEAN = oceanutil.OCEANtoken()
-
     OCEAN_lock_amt = toBase18(5.0)
 
-    accounts = _create_and_fund_random_accounts(7, [OCEAN, CO2], account0)
+    print("Create and fund random accounts()...")
+    accounts = _create_and_fund_random_accounts(7, [OCEAN, CO2])
 
+    print("Create sampling test accounts, zerobal account...")
     sampling_test_accounts = [accounts.pop(), accounts.pop()]
+    zerobal_delegation_test_acct = brownie.accounts.add()
 
-    # Create data nfts
-    data_nfts = []
-    for i in range(5):
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(account0, CO2)
-        assert oceanutil.FixedPrice().isActive(exchangeId) is True
-        data_nfts.append((data_NFT, DT, exchangeId))
+    print("Create assets...")
+    assets = _create_assets(CO2, n_assets=5)
 
-    _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt)
-    zerobal_delegation_test_acc = brownie.accounts.add()
-    # account 0 delegates 50% to account 1, 5% to zerobal_delegation_test_acc
-    oceanutil.ve_delegate(accounts[0], accounts[1], 0.5, 0)
-    oceanutil.ve_delegate(accounts[0], zerobal_delegation_test_acc, 0.1, 1)
+    print("Lock and allocate ve of accounts")
+    _lock_and_allocate_ve(accounts, assets, OCEAN_lock_amt)
 
-    # account 3 delegates 100% to account 4
-    oceanutil.ve_delegate(accounts[3], accounts[4], 1.0, 0)
-    # account 4 delegates 100% to account 3
-    oceanutil.ve_delegate(accounts[4], accounts[3], 1.0, 0)
+    print("Delegate...")
+    # delegations:
+    #   acct 0: 50% to acct 1, 5% to zerobal_delegation_test_acct
+    #   acct 3: 100% to acct 4
+    #   acct 4: 100% to acct 3
+    ve_delegate(accounts[0], accounts[1], 0.5, 0)
+    ve_delegate(accounts[0], zerobal_delegation_test_acct, 0.1, 1)
+    ve_delegate(accounts[3], accounts[4], 1.0, 0)
+    ve_delegate(accounts[4], accounts[3], 1.0, 0)
+    
     # set start block number for querying
-    ST = len(brownie.network.chain)
+    ST = len(chain)
 
-    # Consume
-    for i, acc in enumerate(accounts):
-        oceantestutil.buyDTFRE(data_nfts[i][2], 1.0, 10000.0, acc, CO2)
-        oceantestutil.consumeDT(data_nfts[i][1], account0, acc)
+    print("Consume...")
+    for i, acct in enumerate(accounts):
+        oceantestutil.buyDTFRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
+        oceantestutil.consumeDT(assets[i].dt, god_acct, acct)
 
-    # ghost consume datanft 0
-    ghost_consume_dt = data_nfts[0][1]
-    ghost_consume_nft_addr = data_nfts[0][0].address.lower()
-    ghost_consume_dt.mint(account0, toBase18(1000.0), {"from": account0})
+    print("Ghost consume...")
+    ghost_consume_asset = assets[0]
+    ghost_consume_nft_addr = ghost_consume_asset.nft.address.lower()
+    ghost_consume_asset.dt.mint(god_acct, toBase18(1000.0), {"from": god_acct})
     for _ in range(20):
-        oceantestutil.consumeDT(ghost_consume_dt, account0, account0)
+        oceantestutil.consumeDT(ghost_consume_asset.dt, god_acct, god_acct)
 
-    _lock_and_allocate_ve(sampling_test_accounts, data_nfts, OCEAN_lock_amt)
+    print("Lock and allocate ve of sampling_test_accounts")
+    _lock_and_allocate_ve(sampling_test_accounts, assets, OCEAN_lock_amt)
 
-    # keep deploying, until TheGraph node sees volume, or timeout
-    # (assumes that with volume, everything else is there too
+    print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
-        FIN = len(brownie.network.chain)
-        print(f"loop {loop_i} start")
+        FIN = len(chain)
+        print(f"  loop {loop_i} start")
         assert loop_i < 45, "timeout"
         if _foundConsume(CO2_addr, ST, FIN):
             break
-        brownie.network.chain.sleep(10)
-        brownie.network.chain.mine(10)
+        chain.sleep(10)
+        chain.mine(10)
         time.sleep(2)
 
-    brownie.network.chain.sleep(10)
-    brownie.network.chain.mine(20)
+    chain.sleep(10)
+    chain.mine(20)
     time.sleep(2)
 
     rng = BlockRange(ST, FIN, 100, 42)
-
-    sampling_accounts_addrs = [a.address.lower() for a in sampling_test_accounts]
+    sampling_accounts_addrs = [a.address.lower()
+                               for a in sampling_test_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
-    delegation_accounts.append(zerobal_delegation_test_acc.address.lower())
+    delegation_accounts.append(zerobal_delegation_test_acct.address.lower())
 
     # test single queries
     _test_getSymbols()
@@ -136,8 +145,8 @@ def test_all(tmp_path):
     _test_queryPassiveRewards(sampling_accounts_addrs)
 
     # sleep 20 weeks
-    brownie.network.chain.sleep(60 * 60 * 24 * 7 * 20)
-    brownie.network.chain.mine(10)
+    chain.sleep(60 * 60 * 24 * 7 * 20)
+    chain.mine(10)
 
     # check balances again
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
@@ -145,7 +154,6 @@ def test_all(tmp_path):
 
 # =========================================================================
 # heavy on-chain tests: support functions
-
 
 def _foundConsume(CO2_addr, st, fin):
     V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
@@ -166,6 +174,7 @@ def _foundConsume(CO2_addr, st, fin):
 def _test_queryVebalances(
     rng: BlockRange, sampling_accounts: list, delegation_accounts: list
 ):
+    print("_test_queryVebalances()...")
     veOCEAN = oceanutil.veOCEAN()
 
     veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
@@ -178,7 +187,7 @@ def _test_queryVebalances(
     assert len(unlock_times) > 0
     assert sum(unlock_times.values()) > 0
 
-    # find delegationaccounts[0], delegationaccounts[1] and delegationaccounts[2]
+    # find delegation_accounts[0], delegation_accounts[1] and delegation_accounts[2]
     # [0] delegates 50% to [1] and 5% to [2]
     assert sum(veBalances[acc] for acc in delegation_accounts) < 10
     assert veBalances[delegation_accounts[0]] * 100 / 45 * 1.5 == approx(
@@ -202,6 +211,7 @@ def _test_queryVebalances(
 
 @enforce_types
 def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
+    print("_test_queryAllocations()...")
     allocations = query.queryAllocations(rng, CHAINID)
 
     assert len(allocations) > 0
@@ -222,6 +232,7 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 
 @enforce_types
 def _test_getSymbols():
+    print("_test_getSymbols()...")
     oceanToken = oceanutil.OCEANtoken()
     tokset = TokSet()
     tokset.add(CHAINID, oceanToken.address.lower(), "OCEAN")
@@ -235,6 +246,7 @@ def _test_getSymbols():
 
 @enforce_types
 def _test_queryVolsOwners(CO2_addr: str, st, fin):
+    print("_test_queryVolsOwners()...")
     V0, C0, _ = query._queryVolsOwners(st, fin, CHAINID)
 
     # test V0 (volumes)
@@ -250,6 +262,7 @@ def _test_queryVolsOwners(CO2_addr: str, st, fin):
 
 @enforce_types
 def _test_queryVolsOwnersSymbols(CO2_addr: str, st, fin):
+    print("_test_queryVolsOwnersSymbols()...")
     n = 500
     rng = BlockRange(st, fin, n)
     (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
@@ -261,6 +274,7 @@ def _test_queryVolsOwnersSymbols(CO2_addr: str, st, fin):
 
 @enforce_types
 def _test_queryNftinfo():
+    print("_test_queryNftinfo()...")
     nfts = query.queryNftinfo(CHAINID)
     assert len(nfts) > 0
 
@@ -277,6 +291,7 @@ def _test_queryNftinfo():
 
 @enforce_types
 def _test_dftool_query(tmp_path, ST, FIN):
+    print("_test_dftool_query()...")
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
 
@@ -297,6 +312,7 @@ def _test_dftool_query(tmp_path, ST, FIN):
 
 @enforce_types
 def _test_dftool_nftinfo(tmp_path, FIN):
+    print("_test_nftinfo()...")
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
 
@@ -308,6 +324,7 @@ def _test_dftool_nftinfo(tmp_path, FIN):
 
 @enforce_types
 def _test_dftool_vebals(tmp_path, ST, FIN):
+    print("_test_vebals()...")
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
 
@@ -331,6 +348,7 @@ def _test_dftool_vebals(tmp_path, ST, FIN):
 
 @enforce_types
 def _test_dftool_allocations(tmp_path, ST, FIN):
+    print("_test_allocations()...")
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
 
@@ -358,6 +376,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 
 @enforce_types
 def _test_end_to_end_without_csvs(CO2_sym, rng):
+    print("_test_end_to_end_without_csvs()...")
     (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
     V = {CHAINID: V0}
     C = {CHAINID: C0}
@@ -384,6 +403,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
 
 @enforce_types
 def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
+    print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
 
@@ -432,13 +452,14 @@ def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
 
     # 6. simulate "dftool dispense_active"
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
-    dfrewards_addr = B.DFRewards.deploy({"from": account0}).address
+    dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
     OCEAN_addr = oceanutil.OCEAN_address()
-    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, account0)
+    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
 
 @enforce_types
 def _test_queryPassiveRewards(addresses):
+    print("_test_queryPassiveRewards()...")
     feeDistributor = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
 
@@ -446,12 +467,12 @@ def _test_queryPassiveRewards(addresses):
         OCEAN.transfer(
             feeDistributor.address,
             toBase18(1000.0),
-            {"from": brownie.accounts[0]},
+            {"from": god_acct},
         )
         chain.sleep(WEEK)
         chain.mine()
-        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
-        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+        feeDistributor.checkpoint_token({"from": god_acct})
+        feeDistributor.checkpoint_total_supply({"from": god_acct})
 
     for _ in range(3):
         sim_epoch()
@@ -474,16 +495,19 @@ def _test_queryPassiveRewards(addresses):
 
 
 def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
+    print("_test_ghost_consume()...")
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
+    
     (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
+    
     swaps = query._querySwaps(ST, FIN, CHAINID)
     assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
 
 # ===========================================================================
-# non-heavy tests for query.py
+# non-heavy tests for query.py. Don't need to lump these into "test_all()"
 
 
 @enforce_types
@@ -504,11 +528,11 @@ def test_empty_queryVebalances():
 @enforce_types
 def test_allocation_sampling():
     alice, bob, carol, karen, james = [brownie.accounts.add() for _ in range(5)]
-    account0.transfer(alice, "1 ether")
-    account0.transfer(bob, "1 ether")
-    account0.transfer(carol, "1 ether")
-    account0.transfer(karen, "1 ether")
-    account0.transfer(james, "1 ether")
+    god_acct.transfer(alice, "1 ether")
+    god_acct.transfer(bob, "1 ether")
+    god_acct.transfer(carol, "1 ether")
+    god_acct.transfer(karen, "1 ether")
+    god_acct.transfer(james, "1 ether")
 
     allocate_addrs = [
         f"0x000000000000000000000000000000000000000{i}" for i in range(1, 8)
@@ -521,10 +545,10 @@ def test_allocation_sampling():
     # James allocates 10% 0-0, 20% 1-0, 30% 2-0, 5% 3-0, 50% 4-0, 0% 5-0, 100% 6-0
 
     def forward(blocks):
-        brownie.network.chain.sleep(1)
-        brownie.network.chain.mine(blocks)
+        chain.sleep(1)
+        chain.mine(blocks)
 
-    start_block = len(brownie.network.chain)
+    start_block = len(chain)
 
     # DAY 0
     oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
@@ -621,7 +645,7 @@ def test_allocation_sampling():
 
     # FIN
     forward(100)
-    end_block = len(brownie.network.chain)
+    end_block = len(chain)
 
     # query
     rng = BlockRange(start_block, end_block, end_block - start_block, 42)
@@ -671,14 +695,14 @@ def test_allocation_sampling():
 
 
 def test_symbol():
-    testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": account0})
+    testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": god_acct})
     assert query.symbol(testToken.address) == "CO2"
 
-    testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": account0})
+    testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": god_acct})
     assert query.symbol(testToken.address) == "ASDASDASD"
 
     testToken = B.Simpletoken.deploy(
-        "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": account0}
+        "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": god_acct}
     )
     assert query.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
 
@@ -880,7 +904,7 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
+def _lock_and_allocate_ve(accounts, assets, OCEAN_lock_amt):
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
     veAllocate = oceanutil.veAllocate()
@@ -898,21 +922,32 @@ def _lock_and_allocate_ve(accounts, data_nfts, OCEAN_lock_amt):
 
     # Allocate to data NFTs
     for i, acc in enumerate(accounts):
-        veAllocate.setAllocation(100, data_nfts[i][0], CHAINID, {"from": acc})
+        veAllocate.setAllocation(100, assets[i].nft, CHAINID, {"from": acc})
 
 
 @enforce_types
 def _create_and_fund_random_accounts(
-    num_accounts, tokens, mainaccount, tokenamt=1000.0
+    n_accounts, tokens, token_amt=1000.0
 ):
-    accounts = []
-    for _ in range(num_accounts):
-        acc = brownie.accounts.add()
-        accounts.append(acc)
+    new_accts = []
+    for i in range(n_accounts):
+        print(f"  Create and fund account #{i+1}/{n_accounts}...")
+        acct = brownie.accounts.add()
+        new_accts.append(acct)
         for token in tokens:
-            token.transfer(acc, toBase18(tokenamt), {"from": mainaccount})
-        mainaccount.transfer(acc, toBase18(0.1))
-    return accounts
+            token.transfer(acct, toBase18(token_amt), {"from": god_acct})
+        god_acct.transfer(acct, toBase18(0.1))
+    return new_accts
+
+@enforce_types
+def _create_assets(self, CO2, n_assets:int) -> list:
+    assets = []
+    for i in range(n_assets):
+        print(f"  Create asset #{i+1}/{n_assets}...")
+        tup = oceanutil.createDataNFTWithFRE(god_acct, CO2)
+        asset = SimpleAsset(tup)
+        assets.append(asset)
+    return assets
 
 
 @enforce_types
@@ -926,10 +961,10 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global account0, PREV, chain
+    global god_acct, PREV, chain
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-    account0 = brownie.network.accounts[0]
+    god_acct = brownie.network.accounts[0]
     oceanutil.recordDevDeployedContracts()
 
     for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
