@@ -28,7 +28,7 @@ account0 = None
 chain = None
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 DAY = 86400
 WEEK = 7 * DAY
@@ -927,7 +927,7 @@ def _clear_dir(csv_dir: str):
 @enforce_types
 def setup_function():
     global account0, PREV, chain
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connect(CHAINID)
     chain = brownie.network.chain
     account0 = brownie.network.accounts[0]
     oceanutil.recordDevDeployedContracts()
