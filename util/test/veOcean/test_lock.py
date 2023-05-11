@@ -21,7 +21,7 @@ TA = toBase18(10.0)
 @enforce_types
 def test_alice_locks_tokens():
     """Lock tokens then check balance."""
-    veOCEAN.checkpoint()
+    veOCEAN.checkpoint({"from": alice})
     OCEAN.approve(veOCEAN.address, TA, {"from": alice})
 
     t0 = chain.time()
@@ -60,8 +60,8 @@ def setup_function():
     global accounts, alice, bob, veOCEAN, OCEAN
     accounts = brownie.network.accounts
 
-    alice = accounts.add()
-    bob = accounts.add()
+    alice = accounts[0]
+    bob = accounts[1]
 
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = B.veOcean.deploy(
