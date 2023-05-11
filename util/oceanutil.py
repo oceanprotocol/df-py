@@ -46,7 +46,9 @@ def recordDeployedContracts(address_file: str):
     with open(address_file, "r") as json_file:
         json_dict = json.load(json_file)
         if network_name not in json_dict:
-            raise ValueError(f"Can't find {network_name} in {address_file}. Barge problems?")
+            raise ValueError(
+                f"Can't find {network_name} in {address_file}. Barge problems?"
+            )
         a = json_dict[network_name]  # dict of contract_name: address
 
     C = {}
