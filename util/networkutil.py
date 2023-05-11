@@ -115,7 +115,8 @@ def connect(chainID: int):
             "ignore",
             message=".*Development network has a block height of*",
         )
-        network.connect(chainIdToNetwork(chainID))
+        network_name = chainIdToNetwork(chainID)
+        network.connect(network_name)
 
 
 @enforce_types
