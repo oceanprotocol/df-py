@@ -250,7 +250,7 @@ You can adjust this by changing this path in both repositories and redeploying.
 
 ## Gotchas and workarounds
 
-This section provides tactics if you encounter issues like `KeyError "development"` or `No contract deployed at {address}`, please see the "Gotchas" section.
+This section provides tactics if you encounter issues like `KeyError "development"` or `No contract deployed at {address}`.
 
 ### Gotcha: No contract deployed at {address}
 
