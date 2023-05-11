@@ -73,8 +73,7 @@ jobs:
         working-directory: ${{ github.workspace }}/barge
         run: |
           for i in $(seq 1 250); do
-            sleep 10
-            [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
+            sleep 10 && [ -f "$HOME/.ocean/ocean-contracts/artifacts/ready" ] && break
           done
       - name: "Read address.json contents"
           working-directory: ${{ github.workspace }}
