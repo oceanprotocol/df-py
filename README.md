@@ -122,32 +122,7 @@ black ./
 
 Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
 
-### Gotcha: KeyError in pytest wind-down
-
-When pytest winds down, Brownie emits a KeyError:
-```text
-  File "brownie/project/main.py", line 494, in close
-    _remove_contract(contract)
-  File "brownie/network/state.py", line 586, in _remove_contract
-    del _contract_map[contract.address]
-KeyError: '0x02175de5A7F168517688e3E93f55936C9c2C7A19'
-```
-
-The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted.
-This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls.
-
-The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remove_contract()` to the following:
-```python
-def _remove_contract(contract: Any) -> None:
-    try:
-        del _contract_map[contract.address]
-    except:
-        # workaround for brownie issue
-        # https://github.com/eth-brownie/brownie/issues/1144
-        pass
-```
-
-This rewrite is part of the Github Actions CI setup for tests.
+If you encounter issues like `KeyError "development"` or `No contract deployed at {address}`, please see the "Gotchas" section.
 
 # Setup for Remote Networks
 
@@ -272,3 +247,69 @@ Now, add the script to our crontab:
 ```
 
 You can adjust this by changing this path in both repositories and redeploying.
+
+## Gotchas and workarounds
+
+This section provides tactics if you encounter issues like `KeyError "development"` or `No contract deployed at {address}`, please see the "Gotchas" section.
+
+### Gotcha: No contract deployed at {address}
+
+If you run a test and get an error like:
+```text
+INTERNALERROR>   File "/home/trentmc/code/df-py/util/test/conftest.py", line 24, in pytest_sessionstart
+INTERNALERROR>     networkutil.connect(networkutil.DEV_CHAINID)
+...
+INTERNALERROR>   File "/home/trentmc/code/df-py/venv/lib/python3.10/site-packages/brownie/network/contract.py", line 708, in __init__
+INTERNALERROR>     raise ContractNotFound(f"No contract deployed at {address}")
+INTERNALERROR> brownie.exceptions.ContractNotFound: No contract deployed at 0xD4869d508120A2Cd02b62e72CFbC09b2Fe296D76
+```
+
+Then your problem is: brownie is trying to load previously-deployed contracts from its cache, from a previous run.
+
+How to fix:
+1. In barge console: shut down barge
+
+2. In work console: in work directory:
+```console
+rm -rf /build
+rm ~/.brownie/deployments.db
+rm ~/.brownie/cache.db
+```
+
+### Gotcha: KeyError "development"
+
+If you run a test and get an error like `KeyError: "development"`
+
+Then your problem is: barge wasn't able to deploy contracts to ganache. Then it couldn't update `~/.ocean/ocean-contracts/artifacts/address.json` with a new sub-dict holding all the addresses at `"development"` chain (ganache). See [#562](https://github.com/oceanprotocol/df-py/issues/562).
+
+How to fix:
+- Tactic: in barge console: `./cleanup.sh`
+- Tactic: in any console: `rm -rf ~/.ocean`
+- More tactics at [barge README](https://github.com/oceanprotocol/barge)
+
+### Gotcha: KeyError in pytest wind-down
+
+When pytest winds down, Brownie emits a KeyError:
+```text
+  File "brownie/project/main.py", line 494, in close
+    _remove_contract(contract)
+  File "brownie/network/state.py", line 586, in _remove_contract
+    del _contract_map[contract.address]
+KeyError: '0x02175de5A7F168517688e3E93f55936C9c2C7A19'
+```
+
+The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted.
+This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls.
+
+The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remove_contract()` to the following:
+```python
+def _remove_contract(contract: Any) -> None:
+    try:
+        del _contract_map[contract.address]
+    except:
+        # workaround for brownie issue
+        # https://github.com/eth-brownie/brownie/issues/1144
+        pass
+```
+
+This rewrite is part of the Github Actions CI setup for tests.
