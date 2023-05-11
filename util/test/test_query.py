@@ -79,7 +79,7 @@ def test_all(tmp_path):
     _lock(accounts + sampling_accounts, OCEAN_lock_amt, t2)
 
     print("Allocate...")
-    _allocate(accounts + sampling_accounts, assets, OCEAN_lock_amt)
+    _allocate(accounts + sampling_accounts, assets)
 
     print("Delegate...")
     # delegations:
@@ -909,7 +909,7 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock(accts: list, OCEAN_lock_amt: float, lock_time):
+def _lock(accts: list, OCEAN_lock_amt: float, lock_time:int):
     OCEAN_lock_amt_wei = toBase18(OCEAN_lock_amt)
     for i, acct in enumerate(accts):
         print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accts)}...")
