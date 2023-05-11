@@ -53,7 +53,6 @@ def test_all(tmp_path):
 
     OCEAN = oceanutil.OCEANtoken()
     OCEAN_lock_amt = 5.0
-    lock_timedelta = 4 * YEAR
 
     print("Deploy CO2 token...")
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
@@ -62,10 +61,10 @@ def test_all(tmp_path):
 
     print("Create & fund accounts...")
     # god_acct = brownie.accounts[0]
-    accounts = brownie.accounts[1:6] # 5 accounts
-    sampling_test_accounts = brownie.accounts[6:8] # 2 accounts 
-    zerobal_delegation_test_acct = brownie.accounts[8] # 1 account
-    _fund_accts(CO2, accounts + sampling_test_accounts, amt_to_fund=1000.0)
+    accounts = [brownie.accounts.add() for i in range(5)]
+    sampling_accounts = [brownie.accounts.add() for i in range(2)]
+    zerobal_delegation_acct = brownie.accounts.add()
+    _fund_accts(CO2, accounts + sampling_accounts, amt_to_fund=1000.0)
 
     print("Create assets...")
     assets = _create_assets(CO2, n_assets=5)
@@ -73,22 +72,23 @@ def test_all(tmp_path):
     print("Sleep & mine")
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK + WEEK
+    t2 = t1 + 4 * YEAR
     chain.sleep(t1 - t0)
     chain.mine()
 
     print("Lock...")
-    _lock(accounts + sampling_test_accounts, OCEAN_lock_amt, lock_timedelta)
+    _lock(accounts + sampling_accounts, OCEAN_lock_amt, t2)
 
     print("Allocate...")
-    _allocate(accounts + sampling_test_accounts, assets, OCEAN_lock_amt)
+    _allocate(accounts + sampling_accounts, assets, OCEAN_lock_amt)
 
     print("Delegate...")
     # delegations:
-    #   acct 0: 50% to acct 1, 5% to zerobal_delegation_test_acct
+    #   acct 0: 50% to acct 1, 5% to zerobal_delegation_acct
     #   acct 3: 100% to acct 4
     #   acct 4: 100% to acct 3
     ve_delegate(accounts[0], accounts[1], 0.5, 0)
-    ve_delegate(accounts[0], zerobal_delegation_test_acct, 0.1, 1)
+    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1)
     ve_delegate(accounts[3], accounts[4], 1.0, 0)
     ve_delegate(accounts[4], accounts[3], 1.0, 0)
     
@@ -124,9 +124,9 @@ def test_all(tmp_path):
 
     rng = BlockRange(ST, FIN, 100, 42)
     sampling_accounts_addrs = [a.address.lower()
-                               for a in sampling_test_accounts]
+                               for a in sampling_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
-    delegation_accounts.append(zerobal_delegation_test_acct.address.lower())
+    delegation_accounts.append(zerobal_delegation_acct.address.lower())
 
     # test single queries
     _test_getSymbols()
@@ -912,20 +912,20 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock(accounts:list, OCEAN_lock_amt:float, lock_timedelta):
+def _lock(accts:list, OCEAN_lock_amt:float, lock_time):
     veOCEAN = oceanutil.veOCEAN()
     OCEAN_lock_amt_wei = toBase18(OCEAN_lock_amt)
-    for i, acc in enumerate(accounts):
-        print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accounts)}...")
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt_wei, {"from": acc})
-        veOCEAN.create_lock(OCEAN_lock_amt_wei, lock_timedelta, {"from": acc})
+    for i, acct in enumerate(accts):
+        print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accts)}...")
+        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt_wei, {"from": acct})
+        veOCEAN.create_lock(OCEAN_lock_amt_wei, lock_time, {"from": acct})
 
 @enforce_types
-def _allocate(accounts:list, assets:list):
+def _allocate(accts:list, assets:list):
     veAllocate = oceanutil.veAllocate()
-    for i, (acc, asset) in enumerate(zip(accounts, assets)):
-        print(f"  Allocate veOCEAN on acct #{i+1}/{len(accounts)}...")
-        veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acc})
+    for i, (acct, asset) in enumerate(zip(accts, assets)):
+        print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
+        veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acct})
 
 
 @enforce_types
@@ -933,9 +933,8 @@ def _fund_accts(CO2, accts_to_fund:list, amt_to_fund:float):
     amt_to_fund_wei = toBase18(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
-        assert fromBase18(acct.balance()) > 0.1, f"Acct {i} needs ETH"
-        if OCEAN.balanceOf(acct) < amt_to_fund_wei:
-            OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
+        god_acct.transfer(acct, "0.1 ether")
+        OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
         CO2.transfer(acct, amt_to_fund_wei, {"from": god_acct})
 
 
