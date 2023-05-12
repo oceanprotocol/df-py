@@ -22,7 +22,6 @@ TA = to_wei(10.0)
 
 
 @enforce_types
-@pytest.mark.skip(reason="unskip once #575 fixed")
 def test_alice_locks_tokens():
     """Lock tokens then check balance."""
     veOCEAN.checkpoint({"from": alice})
