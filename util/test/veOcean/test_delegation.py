@@ -4,7 +4,7 @@ from brownie import convert
 
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 
 accounts = None
 alice = None
@@ -15,7 +15,7 @@ OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = toBase18(10.0)
+TA = to_wei(10.0)
 
 
 @enforce_types

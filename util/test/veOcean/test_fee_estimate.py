@@ -4,7 +4,7 @@ import pytest
 
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18, fromBase18
+from util.base18 import to_wei, from_wei
 from datetime import datetime
 
 accounts = None
@@ -16,7 +16,7 @@ DAY = 86400
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = toBase18(10000.0)
+TA = to_wei(10000.0)
 DAY = 86400
 
 
@@ -48,13 +48,13 @@ def test_rewards():
     opffees = 10.0
     t0 = chain.time()
 
-    OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": alice})
-    OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": bob})
+    OCEAN.approve(veOCEAN.address, to_wei(100.0), {"from": alice})
+    OCEAN.approve(veOCEAN.address, to_wei(100.0), {"from": bob})
 
     # Alice locks OCEAN, Bob locks Ocean
     lock_time = t0 + 4 * 365 * 86400 - 15 * 60  # 4 years - 15 mins
-    veOCEAN.create_lock(toBase18(100.0), lock_time, {"from": alice})
-    veOCEAN.create_lock(toBase18(100.0), lock_time, {"from": bob})
+    veOCEAN.create_lock(to_wei(100.0), lock_time, {"from": alice})
+    veOCEAN.create_lock(to_wei(100.0), lock_time, {"from": bob})
 
     # make sure estimate returns 0, no reverts
     estimate = fee_estimate.estimateClaim(alice)
@@ -64,7 +64,7 @@ def test_rewards():
     chain.sleep(WEEK)
 
     # top-up feeDistributor with some rewards, call checkpoint_token & checkpoint_total_supply
-    OCEAN.transfer(fee_distributor.address, toBase18(opffees), {"from": accounts[0]})
+    OCEAN.transfer(fee_distributor.address, to_wei(opffees), {"from": accounts[0]})
     fee_distributor.checkpoint_token()
     fee_distributor.checkpoint_total_supply()
 

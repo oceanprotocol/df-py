@@ -4,7 +4,7 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 from util import vesting_schedule, networkutil
-from util.base18 import fromBase18
+from util.base18 import from_wei
 from util.constants import ACTIVE_REWARDS_MULTIPLIER
 
 test_params = [
@@ -44,7 +44,7 @@ test_params = [
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getRewardAmountForWeekWei(test_input, expected_output):
     networkutil.connect(networkutil.DEV_CHAINID)
-    assert fromBase18(vesting_schedule.getRewardAmountForWeekWei(test_input)) == approx(
+    assert from_wei(vesting_schedule.getRewardAmountForWeekWei(test_input)) == approx(
         expected_output
     )
 

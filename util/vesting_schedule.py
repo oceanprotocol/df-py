@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 from enforce_typing import enforce_types
 from util import oceanutil
-from util.base18 import fromBase18, toBase18
+from util.base18 import from_wei, to_wei
 from util.calcrewards import getDfWeekNumber
 from util.constants import ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
 
@@ -13,7 +13,7 @@ def getActiveRewardAmountForWeekEth(start_dt: datetime) -> int:
     """
     total_reward_amount = getRewardAmountForWeekWei(start_dt)
     active_reward_amount = int(total_reward_amount * ACTIVE_REWARDS_MULTIPLIER)
-    active_reward_amount_eth = fromBase18(active_reward_amount)
+    active_reward_amount_eth = from_wei(active_reward_amount)
     return active_reward_amount_eth
 
 
@@ -30,7 +30,7 @@ def getRewardAmountForWeekWei(start_dt: datetime) -> int:
 
     for start_week, value in DFMAIN_CONSTANTS.items():
         if dfweek < start_week:
-            return toBase18(value)
+            return to_wei(value)
 
     # halflife
     TOT_SUPPLY = 503370000 * 1e18
