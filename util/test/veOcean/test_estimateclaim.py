@@ -73,9 +73,7 @@ def test_rewards():
 
         # every week, OPC adds rewards
         print(f"\t OPF is adding {opffees} OCEAN as rewards")
-        OCEAN.transfer(
-            fee_distributor.address, to_wei(opffees), {"from": accounts[0]}
-        )
+        OCEAN.transfer(fee_distributor.address, to_wei(opffees), {"from": accounts[0]})
         with brownie.reverts("Call checkpoint function"):
             fee_estimate.estimateClaimAcc(alice)
         fee_distributor.checkpoint_total_supply()
