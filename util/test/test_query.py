@@ -130,10 +130,7 @@ def test_all(tmp_path):
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(CO2_addr, ST, FIN)
-    return  # skip until tests passing again
-    _test_queryVebalances(  # pylint: disable=unreachable
-        rng, sampling_accounts_addrs, delegation_accounts
-    )
+    _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryVolsOwnersSymbols(CO2_addr, ST, FIN)
     _test_queryNftinfo()
