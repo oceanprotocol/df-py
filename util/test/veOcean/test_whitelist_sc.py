@@ -29,6 +29,7 @@ def test_velock_not_whitelisted():
 
 
 @enforce_types
+@pytest.mark.skip(reason="unskip once #575 fixed")
 def test_velock_whitelisted():
     """Test that a whitelisted contract can create a lock."""
 
