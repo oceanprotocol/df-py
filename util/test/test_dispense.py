@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util import dispense, networkutil, oceanutil
-from util.base18 import fromBase18
+from util.base18 import from_wei
 from util.constants import BROWNIE_PROJECT as B
 from util import oceantestutil
 
@@ -25,15 +25,15 @@ def test_small_batch():
     )
 
     # a1 claims for itself
-    bal_before = fromBase18(OCEAN.balanceOf(a1))
+    bal_before = from_wei(OCEAN.balanceOf(a1))
     df_strategy.claim([OCEAN.address], {"from": accounts[1]})
-    bal_after = fromBase18(OCEAN.balanceOf(a1))
+    bal_after = from_wei(OCEAN.balanceOf(a1))
     assert (bal_after - bal_before) == pytest.approx(0.1)
 
     # a9 claims on behalf of a1
-    bal_before = fromBase18(OCEAN.balanceOf(a3))
+    bal_before = from_wei(OCEAN.balanceOf(a3))
     df_rewards.claimFor(a3, OCEAN.address, {"from": accounts[9]})
-    bal_after = fromBase18(OCEAN.balanceOf(a3))
+    bal_after = from_wei(OCEAN.balanceOf(a3))
     assert (bal_after - bal_before) == pytest.approx(0.3)
 
 

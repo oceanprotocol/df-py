@@ -7,7 +7,7 @@ import brownie
 from enforce_typing import enforce_types
 
 from util import csvs, networkutil, oceanutil, oceantestutil
-from util.base18 import fromBase18, toBase18
+from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
 
 PREV, DFTOOL_ACCT = {}, None
@@ -121,8 +121,8 @@ def test_dispense(tmp_path):
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
     OCEAN = oceanutil.OCEANtoken()
-    OCEAN.transfer(DFTOOL_ACCT, toBase18(TOT_OCEAN), {"from": accounts[0]})
-    assert fromBase18(OCEAN.balanceOf(DFTOOL_ACCT.address)) == TOT_OCEAN
+    OCEAN.transfer(DFTOOL_ACCT, to_wei(TOT_OCEAN), {"from": accounts[0]})
+    assert from_wei(OCEAN.balanceOf(DFTOOL_ACCT.address)) == TOT_OCEAN
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
     rewards = {
@@ -142,8 +142,8 @@ def test_dispense(tmp_path):
     os.system(cmd)
 
     # test result
-    assert fromBase18(df_rewards.claimable(address1, OCEAN_ADDR)) == 700.0
-    assert fromBase18(df_rewards.claimable(address2, OCEAN_ADDR)) == 100.0
+    assert from_wei(df_rewards.claimable(address1, OCEAN_ADDR)) == 700.0
+    assert from_wei(df_rewards.claimable(address2, OCEAN_ADDR)) == 100.0
 
 
 @enforce_types
@@ -179,12 +179,12 @@ def test_initdevwallets():
 
     OCEAN = oceanutil.OCEANtoken()
     if OCEAN.balanceOf(account9.address) == 0.0:
-        assert fromBase18(OCEAN.balanceOf(account9.address)) == 0.0
+        assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
 
         cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
         os.system(cmd)
 
-        assert fromBase18(OCEAN.balanceOf(account9.address)) > 1.0
+        assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
 
 
 @enforce_types
@@ -242,7 +242,7 @@ def test_calc_passive(tmp_path):
     accounts = []
     account0 = brownie.network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
-    OCEAN_lock_amt = toBase18(10.0)
+    OCEAN_lock_amt = to_wei(10.0)
     S_PER_WEEK = 604800
     chain = brownie.network.chain
     feeDistributor = oceanutil.FeeDistributor()
@@ -252,7 +252,7 @@ def test_calc_passive(tmp_path):
 
     for _ in range(2):
         acc = brownie.network.accounts.add()
-        account0.transfer(acc, toBase18(0.1))
+        account0.transfer(acc, to_wei(0.1))
         OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
         # create lock
         OCEAN.approve(veOCEAN, OCEAN_lock_amt, {"from": acc})
@@ -262,7 +262,7 @@ def test_calc_passive(tmp_path):
     for _ in range(3):
         OCEAN.transfer(
             feeDistributor.address,
-            toBase18(1000.0),
+            to_wei(1000.0),
             {"from": brownie.accounts[0]},
         )
         chain.sleep(S_PER_WEEK)
@@ -274,7 +274,7 @@ def test_calc_passive(tmp_path):
     locked_amt = {}
     unlock_times = {}
     for acc in accounts:
-        fake_vebals[acc.address] = fromBase18(veOCEAN.balanceOf(acc.address))
+        fake_vebals[acc.address] = from_wei(veOCEAN.balanceOf(acc.address))
         locked_amt[acc.address] = OCEAN_lock_amt
         unlock_times[acc.address] = unlock_time
     csvs.saveVebalsCsv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
@@ -302,7 +302,7 @@ def setup_function():
     oceantestutil.fillAccountsWithOCEAN()
 
     DFTOOL_ACCT = accounts.add()
-    accounts[0].transfer(DFTOOL_ACCT, toBase18(0.001))
+    accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
 
     for envvar in [
         "DFTOOL_KEY",

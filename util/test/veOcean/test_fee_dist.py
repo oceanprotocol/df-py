@@ -4,7 +4,7 @@ from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 
 accounts = None
 alice = None
@@ -14,7 +14,7 @@ OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = toBase18(10.0)
+TA = to_wei(10.0)
 DAY = 86400
 
 
@@ -68,7 +68,7 @@ def test_alice_locks_tokens_after():
         estimate = None
     fee_distributor.claim({"from": alice})  # alice claims rewards
     after_f = OCEAN.balanceOf(fee_distributor)
-    assert abs(after_f - before_f) < toBase18(0.01)
+    assert abs(after_f - before_f) < to_wei(0.01)
     if estimate is not None:
         assert abs(after_f - before_f) == estimate
 
