@@ -14,7 +14,7 @@ from util.constants import (
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
-from util.base18 import fromBase18
+from util.base18 import from_wei
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
 
@@ -499,7 +499,7 @@ def _queryVolsOwners(
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
             # deduct 1 wei so it's not profitable for free assets
-            gasCost = fromBase18(gasCostWei - 1)
+            gasCost = from_wei(gasCostWei - 1)
             native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
@@ -623,15 +623,15 @@ def queryPassiveRewards(
     fee_distributor = oceanutil.FeeDistributor()
     ve_supply = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
-    ve_supply_float = fromBase18(ve_supply)
-    total_rewards_float = fromBase18(total_rewards)
+    ve_supply_float = from_wei(ve_supply)
+    total_rewards_float = from_wei(total_rewards)
 
     if ve_supply_float == 0:
         return balances, rewards
 
     for addr in addresses:
         balance = fee_distributor.ve_for_at(addr, timestamp)
-        balance_float = fromBase18(balance)
+        balance_float = from_wei(balance)
         balances[addr] = balance_float
         rewards[addr] = total_rewards_float * balance_float / ve_supply_float
 

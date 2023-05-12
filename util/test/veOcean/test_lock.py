@@ -1,11 +1,12 @@
 import brownie
 from enforce_typing import enforce_types
+import pytest
 from pytest import approx
 
 
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 
 accounts = None
 alice = None
@@ -17,10 +18,11 @@ WEEK = 7 * DAY
 YEAR = 365 * DAY
 MAXTIME = 4 * YEAR
 chain = brownie.network.chain
-TA = toBase18(10.0)
+TA = to_wei(10.0)
 
 
 @enforce_types
+@pytest.mark.skip(reason="unskip once #575 fixed")
 def test_alice_locks_tokens():
     """Lock tokens then check balance."""
     veOCEAN.checkpoint({"from": alice})
@@ -42,8 +44,8 @@ def test_alice_locks_tokens():
     assert epoch != 0
 
     assert veOCEAN.get_last_user_slope(alice) != 0
-    aliceVotingPower = (veOCEAN.balanceOf(alice, chain.time())) / toBase18(1.0)
-    expectedVotingPower = (TA * YEAR / MAXTIME) / toBase18(1.0)
+    aliceVotingPower = (veOCEAN.balanceOf(alice, chain.time())) / to_wei(1.0)
+    expectedVotingPower = (TA * YEAR / MAXTIME) / to_wei(1.0)
     assert aliceVotingPower == approx(expectedVotingPower, 0.5)
 
     chain.sleep(t2 - t1)

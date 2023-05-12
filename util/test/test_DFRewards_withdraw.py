@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 
 from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 
 accounts = None
 
@@ -25,16 +25,16 @@ def test_erc20_withdraw_random():
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
-    random_token.transfer(df_rewards, toBase18(100.0), {"from": accounts[1]})
+    random_token.transfer(df_rewards, to_wei(100.0), {"from": accounts[1]})
 
     assert random_token.balanceOf(accounts[0]) == 0
 
     # Withdraw random token
     df_rewards.withdrawERCToken(
-        toBase18(100.0), random_token.address, {"from": accounts[0]}
+        to_wei(100.0), random_token.address, {"from": accounts[0]}
     )
 
-    assert random_token.balanceOf(accounts[0]) == toBase18(100.0)
+    assert random_token.balanceOf(accounts[0]) == to_wei(100.0)
 
 
 @enforce_types
@@ -46,22 +46,22 @@ def test_erc20_withdraw_main():
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
-    TOK.transfer(df_rewards, toBase18(40.0), {"from": accounts[0]})
+    TOK.transfer(df_rewards, to_wei(40.0), {"from": accounts[0]})
 
     tos = [accounts[1].address]
-    values = [toBase18(10.0)]
+    values = [to_wei(10.0)]
     TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
     with brownie.reverts("Cannot withdraw allocated token"):
-        df_rewards.withdrawERCToken(toBase18(50.0), TOK.address, {"from": accounts[0]})
+        df_rewards.withdrawERCToken(to_wei(50.0), TOK.address, {"from": accounts[0]})
 
     with brownie.reverts("Ownable: caller is not the owner"):
-        df_rewards.withdrawERCToken(toBase18(20.0), TOK.address, {"from": accounts[1]})
+        df_rewards.withdrawERCToken(to_wei(20.0), TOK.address, {"from": accounts[1]})
 
-    df_rewards.withdrawERCToken(toBase18(40.0), TOK.address, {"from": accounts[0]})
+    df_rewards.withdrawERCToken(to_wei(40.0), TOK.address, {"from": accounts[0]})
     with brownie.reverts("Cannot withdraw allocated token"):
-        df_rewards.withdrawERCToken(toBase18(1.0), TOK.address, {"from": accounts[0]})
+        df_rewards.withdrawERCToken(to_wei(1.0), TOK.address, {"from": accounts[0]})
     df_strategy.claim([TOK.address], {"from": accounts[1]})
 
     TOK.transfer(df_rewards, 100, {"from": accounts[0]})
@@ -70,7 +70,7 @@ def test_erc20_withdraw_main():
 
 @enforce_types
 def _deployTOK(account):
-    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
+    return B.Simpletoken.deploy("TOK", "TOK", 18, to_wei(100.0), {"from": account})
 
 
 @enforce_types

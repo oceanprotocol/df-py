@@ -9,7 +9,7 @@ import brownie
 from enforce_typing import enforce_types
 
 from util import networkutil
-from util.base18 import toBase18
+from util.base18 import to_wei
 from util.constants import BROWNIE_PROJECT as B
 from util.constants import CONTRACTS, ZERO_ADDRESS
 
@@ -210,8 +210,8 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(100000.0),  # cap. Note contract will hardcod this to max_int
-        toBase18(0.0),  # pub mkt fee amt
+        to_wei(100000.0),  # cap. Note contract will hardcod this to max_int
+        to_wei(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
 
@@ -231,7 +231,7 @@ def createFREFromDatatoken(
     datatoken, base_TOKEN, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
-    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
+    datatoken.approve(FixedPrice().address, to_wei(amount), {"from": from_account})
 
     addresses = [
         base_TOKEN.address,  # baseToken
@@ -243,7 +243,7 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
+        to_wei(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]

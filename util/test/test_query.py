@@ -19,7 +19,7 @@ from util import (
 )
 from util.oceanutil import ve_delegate
 from util.allocations import allocsToStakes, loadStakes
-from util.base18 import toBase18, fromBase18
+from util.base18 import to_wei, from_wei
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
@@ -103,7 +103,7 @@ def test_all(tmp_path):
     print("Ghost consume...")
     ghost_consume_asset = assets[0]
     ghost_consume_nft_addr = ghost_consume_asset.nft.address.lower()
-    ghost_consume_asset.dt.mint(god_acct, toBase18(1000.0), {"from": god_acct})
+    ghost_consume_asset.dt.mint(god_acct, to_wei(1000.0), {"from": god_acct})
     for _ in range(20):
         oceantestutil.consumeDT(ghost_consume_asset.dt, god_acct, god_acct)
 
@@ -205,14 +205,14 @@ def _test_queryVebalances(
     )
 
     for account in veBalances:
-        bal = fromBase18(oceanutil.veDelegation().adjusted_balance_of(account))
+        bal = from_wei(oceanutil.veDelegation().adjusted_balance_of(account))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
         assert veBalances[account] == approx(bal, rel=0.001, abs=1.0e-10)
 
         lock = veOCEAN.locked(account)
-        assert fromBase18(lock[0]) == locked_amts[account]
+        assert from_wei(lock[0]) == locked_amts[account]
         assert lock[1] == unlock_times[account]
 
 
@@ -472,7 +472,7 @@ def _test_queryPassiveRewards(addresses):
     def sim_epoch():
         OCEAN.transfer(
             feeDistributor.address,
-            toBase18(1000.0),
+            to_wei(1000.0),
             {"from": god_acct},
         )
         chain.sleep(WEEK)
@@ -911,7 +911,7 @@ def test_filter_by_max_volume():
 
 @enforce_types
 def _lock(accts: list, OCEAN_lock_amt: float, lock_time: int):
-    OCEAN_lock_amt_wei = toBase18(OCEAN_lock_amt)
+    OCEAN_lock_amt_wei = to_wei(OCEAN_lock_amt)
     for i, acct in enumerate(accts):
         print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accts)}...")
         OCEAN.approve(veOCEAN.address, OCEAN_lock_amt_wei, {"from": acct})
@@ -928,7 +928,7 @@ def _allocate(accts: list, assets: list):
 
 @enforce_types
 def _fund_accts(accts_to_fund: list, amt_to_fund: float):
-    amt_to_fund_wei = toBase18(amt_to_fund)
+    amt_to_fund_wei = to_wei(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
         god_acct.transfer(acct, "0.1 ether")
