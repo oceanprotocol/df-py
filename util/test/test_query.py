@@ -19,7 +19,7 @@ from util import (
 )
 from util.oceanutil import ve_delegate
 from util.allocations import allocsToStakes, loadStakes
-from util.base18 import to_wei, from_wei
+from util.base18 import to_wei, from_wei, str_with_wei
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
 from util.tok import TokSet
@@ -28,7 +28,8 @@ from util.tok import TokSet
 PREV = {}
 god_acct = None
 chain = None
-OCEAN, veOCEAN, CO2 = None, None, None
+OCEAN, veOCEAN = None, None
+CO2, CO2_addr, CO2_sym = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
@@ -54,19 +55,15 @@ def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    OCEAN_lock_amt = 5.0
+    _deployCO2()
 
-    print("Deploy CO2 token...")
-    CO2_addr = CO2.address.lower()
-
-    print("Create & fund accounts...")
-    # god_acct = brownie.accounts[0]
+    print("Create accts...")
     accounts = [brownie.accounts.add() for i in range(5)]
     sampling_accounts = [brownie.accounts.add() for i in range(2)]
     zerobal_delegation_acct = brownie.accounts.add()
+    
     _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
 
-    print("Create assets...")
     assets = _create_assets(n_assets=5)
 
     print("Sleep & mine")
@@ -76,24 +73,19 @@ def test_all(tmp_path):
     chain.sleep(t1 - t0)
     chain.mine()
 
-    print("Lock...")
-    _lock(accounts + sampling_accounts, OCEAN_lock_amt, t2)
+    ST = len(chain)
+    print(f"ST = start block for querying = {ST}")
 
-    print("Allocate...")
+    lock_amt = 5.0
+    _lock(accounts + sampling_accounts, lock_amt, t2)
+
     _allocate(accounts + sampling_accounts, assets)
 
     print("Delegate...")
-    # delegations:
-    #   acct 0: 50% to acct 1, 5% to zerobal_delegation_acct
-    #   acct 3: 100% to acct 4
-    #   acct 4: 100% to acct 3
-    ve_delegate(accounts[0], accounts[1], 0.5, 0)
-    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1)
-    ve_delegate(accounts[3], accounts[4], 1.0, 0)
-    ve_delegate(accounts[4], accounts[3], 1.0, 0)
-
-    # set start block number for querying
-    ST = len(chain)
+    ve_delegate(accounts[0], accounts[1], 0.5, 0) # 0 -> 1 50%
+    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1) # 0 -> zerobal 5%
+    ve_delegate(accounts[3], accounts[4], 1.0, 0) # 3 -> 4 100%
+    ve_delegate(accounts[4], accounts[3], 1.0, 0) # 4 -> 3 100%
 
     print("Consume...")
     for i, acct in enumerate(accounts):
@@ -112,7 +104,9 @@ def test_all(tmp_path):
         FIN = len(chain)
         print(f"  loop {loop_i} start")
         assert loop_i < 45, "timeout"
-        if _foundConsume(CO2_addr, ST, FIN):
+        # this test assumes that all actions before consume will
+        # be on the graph too. Eg veOCEAN allocation or delegation
+        if _foundConsume(ST, FIN):
             break
         chain.sleep(10)
         chain.mine(10)
@@ -129,10 +123,10 @@ def test_all(tmp_path):
 
     # test single queries
     _test_getSymbols()
-    _test_queryVolsOwners(CO2_addr, ST, FIN)
+    _test_queryVolsOwners(ST, FIN)
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
     _test_queryAllocations(rng, sampling_accounts_addrs)
-    _test_queryVolsOwnersSymbols(CO2_addr, ST, FIN)
+    _test_queryVolsOwnersSymbols(ST, FIN)
     _test_queryNftinfo()
 
     # test dftool
@@ -142,11 +136,11 @@ def test_all(tmp_path):
     _test_dftool_allocations(tmp_path, ST, FIN)
 
     # end-to-end tests
-    _test_end_to_end_without_csvs(CO2.symbol(), rng)
-    _test_end_to_end_with_csvs(CO2.symbol(), rng, tmp_path)
+    _test_end_to_end_without_csvs(rng)
+    _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
 
     # test ghost consume
-    _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr)
+    _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr)
 
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
@@ -162,8 +156,14 @@ def test_all(tmp_path):
 # =========================================================================
 # heavy on-chain tests: support functions
 
+def _deployCO2():
+    print("Deploy CO2 token...")
+    global CO2, CO2_addr, CO2_sym
+    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
+    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
+    CO2_addr = CO2.address.lower()
 
-def _foundConsume(CO2_addr, st, fin):
+def _foundConsume(st, fin):
     V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
     if CO2_addr not in V0:
         return False
@@ -252,7 +252,7 @@ def _test_getSymbols():
 
 
 @enforce_types
-def _test_queryVolsOwners(CO2_addr: str, st, fin):
+def _test_queryVolsOwners(st, fin):
     print("_test_queryVolsOwners()...")
     V0, C0, _ = query._queryVolsOwners(st, fin, CHAINID)
 
@@ -268,7 +268,7 @@ def _test_queryVolsOwners(CO2_addr: str, st, fin):
 
 
 @enforce_types
-def _test_queryVolsOwnersSymbols(CO2_addr: str, st, fin):
+def _test_queryVolsOwnersSymbols(st, fin):
     print("_test_queryVolsOwnersSymbols()...")
     n = 500
     rng = BlockRange(st, fin, n)
@@ -382,7 +382,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 
 
 @enforce_types
-def _test_end_to_end_without_csvs(CO2_sym, rng):
+def _test_end_to_end_without_csvs(rng):
     print("_test_end_to_end_without_csvs()...")
     (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
     V = {CHAINID: V0}
@@ -409,7 +409,7 @@ def _test_end_to_end_without_csvs(CO2_sym, rng):
 
 
 @enforce_types
-def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
+def _test_end_to_end_with_csvs(rng, tmp_path):
     print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
@@ -500,7 +500,7 @@ def _test_queryPassiveRewards(addresses):
         sim_epoch()
 
 
-def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
+def _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr):
     print("_test_ghost_consume()...")
     (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
@@ -517,17 +517,58 @@ def _test_ghost_consume(ST, FIN, rng, CO2_addr, ghost_consume_nft_addr):
 
 
 @enforce_types
-def test_empty_queryAllocations():
+def test_queryAllocations_empty():
     rng = BlockRange(st=0, fin=10, num_samples=1)
     allocs = query.queryAllocations(rng, CHAINID)
     assert allocs == {}
 
 
 @enforce_types
-def test_empty_queryVebalances():
+def test_queryVebalances_empty():
     rng = BlockRange(st=0, fin=10, num_samples=1)
     tup = query.queryVebalances(rng, CHAINID)
     assert tup == ({}, {}, {})
+
+
+@enforce_types
+def test_queryVebalances_some():
+    # While test_all covers this, being so big it's hard to debug individually
+    
+    acct0, acct1 = [brownie.accounts.add() for i in range(2)]
+    _fund_accts([acct0], amt_to_fund=1000.0)
+
+    print("Sleep & mine")
+    t0 = chain.time()
+    t1 = t0 // WEEK * WEEK + WEEK
+    t2 = t1 + 4 * YEAR
+    chain.sleep(t1 - t0)
+    chain.mine()
+
+    ST = len(chain)
+    print(f"ST = start block for querying = {ST}")
+
+    lock_amt = 5.0
+    _lock([acct0], lock_amt, t2) #only account 0 locks
+
+    print("Delegate...")
+    ve_delegate(acct0, acct1, 0.1, tokenid=0) # 0 -> 1 10%
+
+    # loop for a while
+    for loop_i in range(100):
+        print("=" * 80)
+        print(f"loop_i = {loop_i}")
+        print("sleep & mine...")
+        chain.sleep(10)
+        chain.mine(10)
+        time.sleep(2)
+
+        FIN = len(chain)
+        rng = BlockRange(st=ST, fin=FIN, num_samples=10000)
+        print(f"ST={ST}, FIN={FIN}, rng = {rng}")
+        
+        tup = query.queryVebalances(rng, CHAINID)
+        print(f"tup={tup}") # THE BIG Q: Why is this empty???
+        #import pdb; pdb.set_trace() # FIXME
 
 
 # pylint: disable=too-many-statements
@@ -910,16 +951,23 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def _lock(accts: list, OCEAN_lock_amt: float, lock_time: int):
-    OCEAN_lock_amt_wei = to_wei(OCEAN_lock_amt)
+def _lock(accts: list, lock_amt: float, lock_time: int):
+    print("Lock...")
+    lock_amt_wei = to_wei(lock_amt)
     for i, acct in enumerate(accts):
-        print(f"  Lock OCEAN -> veOCEAN on acct #{i+1}/{len(accts)}...")
-        OCEAN.approve(veOCEAN.address, OCEAN_lock_amt_wei, {"from": acct})
-        veOCEAN.create_lock(OCEAN_lock_amt_wei, lock_time, {"from": acct})
+        s = str_with_wei(lock_amt_wei)
+        print(f"  Lock {s} OCEAN on acct #{i+1}/{len(accts)}...")
+        print(f"    chain.time() = {chain.time()}")
+        print(f"    lock_time =    {lock_time}")
+        print(f"    chain.time() <= lock_time? {chain.time() <= lock_time}")
+        veOCEAN.checkpoint({"from": acct})
+        OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
+        veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
 
 
 @enforce_types
 def _allocate(accts: list, assets: list):
+    print("Allocate...")
     veAllocate = oceanutil.veAllocate()
     for i, (acct, asset) in enumerate(zip(accts, assets)):
         print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
@@ -928,16 +976,19 @@ def _allocate(accts: list, assets: list):
 
 @enforce_types
 def _fund_accts(accts_to_fund: list, amt_to_fund: float):
+    print("Fund accts...")
     amt_to_fund_wei = to_wei(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
         god_acct.transfer(acct, "0.1 ether")
         OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
-        CO2.transfer(acct, amt_to_fund_wei, {"from": god_acct})
+        if CO2 is not None:
+            CO2.transfer(acct, amt_to_fund_wei, {"from": god_acct})
 
 
 @enforce_types
 def _create_assets(n_assets: int) -> list:
+    print("Create assets...")
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
@@ -958,7 +1009,7 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global god_acct, PREV, OCEAN, veOCEAN, CO2, chain
+    global god_acct, PREV, OCEAN, veOCEAN, chain
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     god_acct = brownie.network.accounts[0]
@@ -966,8 +1017,6 @@ def setup_function():
 
     OCEAN = oceanutil.OCEANtoken()
     veOCEAN = oceanutil.veOCEAN()
-    CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
 
     for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
         PREV[envvar] = os.environ.get(envvar)
