@@ -30,7 +30,6 @@ jobs:
         with:
           repository: "oceanprotocol/barge"
           path: "barge"
-          ref: 9cc3a9342a47857a0495309e787462d6c60979e6
 
       - name: Login to Docker Hub
         if: ${{ env.DOCKERHUB_PASSWORD && env.DOCKERHUB_USERNAME }}
