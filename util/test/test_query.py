@@ -415,7 +415,7 @@ def _test_end_to_end_without_csvs(rng):
 
 
 @enforce_types
-def _test_end_to_end_with_csvs(rng, tmp_path):
+def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
     print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
@@ -534,47 +534,6 @@ def test_queryVebalances_empty():
     rng = BlockRange(st=0, fin=10, num_samples=1)
     tup = query.queryVebalances(rng, CHAINID)
     assert tup == ({}, {}, {})
-
-
-@enforce_types
-def test_queryVebalances_some():
-    # While test_all covers this, being so big it's hard to debug individually
-
-    acct0, acct1 = [brownie.accounts.add() for i in range(2)]
-    _fund_accts([acct0], amt_to_fund=1000.0)
-
-    print("Sleep & mine")
-    t0 = chain.time()
-    t1 = t0 // WEEK * WEEK + WEEK
-    t2 = t1 + 4 * YEAR
-    chain.sleep(t1 - t0)
-    chain.mine()
-
-    ST = len(chain)
-    print(f"ST = start block for querying = {ST}")
-
-    lock_amt = 5.0
-    _lock([acct0], lock_amt, t2)  # only account 0 locks
-
-    print("Delegate...")
-    ve_delegate(acct0, acct1, 0.1, tokenid=0)  # 0 -> 1 10%
-
-    # loop for a while
-    for loop_i in range(100):
-        print("=" * 80)
-        print(f"loop_i = {loop_i}")
-        print("sleep & mine...")
-        chain.sleep(10)
-        chain.mine(10)
-        time.sleep(2)
-
-        FIN = len(chain)
-        rng = BlockRange(st=ST, fin=FIN, num_samples=10000)
-        print(f"ST={ST}, FIN={FIN}, rng = {rng}")
-
-        tup = query.queryVebalances(rng, CHAINID)
-        print(f"tup={tup}")  # THE BIG Q: Why is this empty???
-        # import pdb; pdb.set_trace() # FIXME
 
 
 # pylint: disable=too-many-statements
