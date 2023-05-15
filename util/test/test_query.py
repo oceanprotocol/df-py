@@ -61,7 +61,7 @@ def test_all(tmp_path):
     accounts = [brownie.accounts.add() for i in range(5)]
     sampling_accounts = [brownie.accounts.add() for i in range(2)]
     zerobal_delegation_acct = brownie.accounts.add()
-    
+
     _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
 
     assets = _create_assets(n_assets=5)
@@ -160,12 +160,14 @@ def test_all(tmp_path):
 # =========================================================================
 # heavy on-chain tests: support functions
 
+
 def _deployCO2():
     print("Deploy CO2 token...")
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
     CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
     CO2_addr = CO2.address.lower()
+
 
 def _foundConsume(st, fin):
     V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
@@ -537,7 +539,7 @@ def test_queryVebalances_empty():
 @enforce_types
 def test_queryVebalances_some():
     # While test_all covers this, being so big it's hard to debug individually
-    
+
     acct0, acct1 = [brownie.accounts.add() for i in range(2)]
     _fund_accts([acct0], amt_to_fund=1000.0)
 
@@ -552,10 +554,10 @@ def test_queryVebalances_some():
     print(f"ST = start block for querying = {ST}")
 
     lock_amt = 5.0
-    _lock([acct0], lock_amt, t2) #only account 0 locks
+    _lock([acct0], lock_amt, t2)  # only account 0 locks
 
     print("Delegate...")
-    ve_delegate(acct0, acct1, 0.1, tokenid=0) # 0 -> 1 10%
+    ve_delegate(acct0, acct1, 0.1, tokenid=0)  # 0 -> 1 10%
 
     # loop for a while
     for loop_i in range(100):
@@ -569,10 +571,10 @@ def test_queryVebalances_some():
         FIN = len(chain)
         rng = BlockRange(st=ST, fin=FIN, num_samples=10000)
         print(f"ST={ST}, FIN={FIN}, rng = {rng}")
-        
+
         tup = query.queryVebalances(rng, CHAINID)
-        print(f"tup={tup}") # THE BIG Q: Why is this empty???
-        #import pdb; pdb.set_trace() # FIXME
+        print(f"tup={tup}")  # THE BIG Q: Why is this empty???
+        # import pdb; pdb.set_trace() # FIXME
 
 
 # pylint: disable=too-many-statements
