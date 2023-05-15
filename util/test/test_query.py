@@ -1,4 +1,5 @@
 # mypy: disable-error-code="attr-defined"
+# pylint: disable=too-many-lines
 import os
 import random
 import time
@@ -141,7 +142,7 @@ def test_all(tmp_path):
 
     # end-to-end tests
     _test_end_to_end_without_csvs(rng)
-    _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path)
+    _test_end_to_end_with_csvs(rng, tmp_path)
 
     # test ghost consume
     _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr)
@@ -415,7 +416,7 @@ def _test_end_to_end_without_csvs(rng):
 
 
 @enforce_types
-def _test_end_to_end_with_csvs(CO2_sym, rng, tmp_path):
+def _test_end_to_end_with_csvs(rng, tmp_path):
     print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
