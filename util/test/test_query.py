@@ -971,6 +971,69 @@ def test_process_single_delegation():
     assert delegation_amt == approx(2.4931526)
     assert delegated_to == "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"
 
+
+@enforce_types
+def test_process_delegations():
+    delegations = [
+        {
+            "id": "0x5bf62eb768543eb872e4bf932c17e1b765a16f45-0x643c6de82231585d510c9fe915dcdef1c807121e000000000000000000000000",
+            "amount": "2.49315066506849681",
+            "expireTime": "1813190400",
+            "lockedAmount": "5",
+            "timeLeftUnlock": 125798399,
+            "delegator": {"id": "0x643c6de82231585d510c9fe915dcdef1c807121e"},
+            "receiver": {"id": "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"},
+            "updates": [
+                {
+                    "timestamp": 1687392001,
+                    "sender": "0x643c6de82231585d510c9fe915dcdef1c807121e",
+                    "amount": "2.49315066506849681",
+                    "type": 0,
+                }
+            ],
+        },
+        {
+            "id": "0x5bf62eb768543eb872e4bf932c17e1b765a16f45-0x643c6de82231585d510c9fe915dcdef1c807121e000000000000000000000001",
+            "amount": "0.249315066506849681",
+            "expireTime": "1813190400",
+            "lockedAmount": "5",
+            "timeLeftUnlock": 125798399,
+            "delegator": {"id": "0x643c6de82231585d510c9fe915dcdef1c807121e"},
+            "receiver": {"id": "0xcc34ca233293bdd9e50aca149d019a62fc881b90"},
+            "updates": [
+                {
+                    "timestamp": 1687392001,
+                    "sender": "0x643c6de82231585d510c9fe915dcdef1c807121e",
+                    "amount": "0.249315066506849681",
+                    "type": 0,
+                }
+            ],
+        },
+    ]
+
+    balance_veocean_start = 5.0
+    balance_veocean = 5.0
+    unixEpochTime = 1687392001
+    timeLeft = 125798500
+
+    delegation_amts = []
+    delegated_tos = []
+
+    for delegation in delegations:
+        balance_veocean, delegation_amt, delegated_to = query._process_delegation(
+            delegation, balance_veocean, unixEpochTime, timeLeft
+        )
+        delegation_amts.append(delegation_amt)
+        delegated_tos.append(delegated_to)
+
+    assert balance_veocean == balance_veocean_start - sum(delegation_amts)
+    assert delegation_amts == approx([2.4931526, 0.2493151])
+    assert delegated_tos == [
+        "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d",
+        "0xcc34ca233293bdd9e50aca149d019a62fc881b90",
+    ]
+
+
 # ===========================================================================
 # support functions
 
