@@ -946,6 +946,31 @@ def test_filter_by_max_volume():
     assert filteredvols["a"]["b"] == 100
 
 
+@enforce_types
+def test_process_single_delegation():
+    # Prepare test data
+    delegation = {
+        "id": "0x5bf62eb768543eb872e4bf932c17e1b765a16f45-0x643c6de82231585d510c9fe915dcdef1c807121e000000000000000000000000",
+        "amount": "2.49315066506849681",
+        "expireTime": "1813190400",
+        "lockedAmount": "5",
+        "timeLeftUnlock": 125798399,
+        "delegator": {"id": "0x643c6de82231585d510c9fe915dcdef1c807121e"},
+        "receiver": {"id": "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"},
+    }
+    balance_veocean_start = 5.0
+    balance_veocean = 5.0
+    unixEpochTime = 1687392001
+    timeLeft = 125798500
+
+    balance_veocean, delegation_amt, delegated_to = query._process_delegation(
+        delegation, balance_veocean, unixEpochTime, timeLeft
+    )
+
+    assert balance_veocean == balance_veocean_start - delegation_amt
+    assert delegation_amt == approx(2.4931526)
+    assert delegated_to == "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"
+
 # ===========================================================================
 # support functions
 
