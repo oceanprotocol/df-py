@@ -18,13 +18,14 @@ def getBlockNumberThursday(chain) -> int:
 
 @enforce_types
 def getNextThursdayTimestamp() -> int:
-    d = date.today()
-    if d.strftime("%a") == "Thu":
-        d += timedelta(1)  # add a day so it doesn't return today
+    dd = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    if dd.strftime("%a") == "Thu":
+        dd += timedelta(days=1)  # add a day so it doesn't return today
 
-    while d.strftime("%a") != "Thu":
-        d += timedelta(1)
-    return int(d.strftime("%s"))
+    while dd.strftime("%a") != "Thu":
+        dd += timedelta(days=1)
+
+    return int(dd.timestamp())
 
 
 @enforce_types
