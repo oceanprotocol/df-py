@@ -94,6 +94,40 @@ def queryVolsOwnersSymbols(
 
 
 @enforce_types
+def _process_delegation(
+    delegation, balance: float, unix_epoch_time: int, time_left_unlock: int
+):
+    """
+    @description
+      Process a single delegation
+    @param
+      delegation -- dict of delegation
+      balance -- float of current balance
+      unixEpochTime -- int of current block time
+      timeLeftUnlock -- int of time for the users veOCEANs to be unlocked
+    @return
+      balance -- float of current balance
+      delegation_amt -- float of amount delegated
+      delegated_to -- str of address delegated to
+    """
+    if int(delegation["expireTime"]) < unix_epoch_time:
+        return balance, 0, ""
+
+    time_left_to_unlock_past = int(delegation["timeLeftUnlock"])
+    delegated_amt_past = float(delegation["amount"])
+
+    # amount of tokens delegated currently
+    delegation_amt = time_left_unlock * delegated_amt_past / time_left_to_unlock_past
+
+    # receiver address
+    delegated_to = delegation["receiver"]["id"].lower()
+
+    balance = balance - delegation_amt
+
+    return balance, delegation_amt, delegated_to
+
+
+@enforce_types
 def queryVebalances(
     rng: BlockRange, CHAINID: int
 ) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
