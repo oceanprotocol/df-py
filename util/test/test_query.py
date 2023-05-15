@@ -82,8 +82,7 @@ def test_all(tmp_path):
     print("Delegate...")
     ve_delegate(accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
     print(f"  {accounts[0].address} -> {accounts[1].address} 50%")
-    ve_delegate(accounts[0], zerobal_delegation_acct,
-                0.1, 1)  # 0 -> zerobal 5%
+    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1)  # 0 -> zerobal 5%
     print(f"  {accounts[0].address} -> {zerobal_delegation_acct.address} 10%")
     ve_delegate(accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
     print(f"  {accounts[3].address} -> {accounts[4].address} 100%")
@@ -278,8 +277,7 @@ def _test_queryVolsOwners(st, fin):
 
     # test C0 (owners)
     assert C0, (V0, C0)
-    V0_nft_addrs = set(
-        nft_addr for token_addr in V0 for nft_addr in V0[token_addr])
+    V0_nft_addrs = set(nft_addr for token_addr in V0 for nft_addr in V0[token_addr])
     for C0_nft_addr in C0:
         assert C0_nft_addr in V0_nft_addrs
 
@@ -392,8 +390,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 
     # test result
     allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
-    assert os.path.exists(
-        allocations_csv), "allocations_realtime csv not found"
+    assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
 
 
 # =========================================================================
@@ -480,8 +477,7 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
     rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
     OCEAN_addr = oceanutil.OCEAN_address()
-    dispense.dispense(rewardsperlp[CHAINID],
-                      dfrewards_addr, OCEAN_addr, god_acct)
+    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
 
 @enforce_types
@@ -553,8 +549,7 @@ def test_queryVebalances_empty():
 # pylint: disable=too-many-statements
 @enforce_types
 def test_allocation_sampling():
-    alice, bob, carol, karen, james = [
-        brownie.accounts.add() for _ in range(5)]
+    alice, bob, carol, karen, james = [brownie.accounts.add() for _ in range(5)]
     god_acct.transfer(alice, "1 ether")
     god_acct.transfer(bob, "1 ether")
     god_acct.transfer(carol, "1 ether")
@@ -578,30 +573,23 @@ def test_allocation_sampling():
     start_block = len(chain)
 
     # DAY 0
-    oceanutil.set_allocation(
-        10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
-    oceanutil.set_allocation(
-        10000, allocate_addrs[0], CHAINID, bob)  # 100% at 0
-    oceanutil.set_allocation(
-        1000, allocate_addrs[0], CHAINID, karen)  # 10% at 0
-    oceanutil.set_allocation(
-        1000, allocate_addrs[0], CHAINID, james)  # 10% at 0
+    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
+    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, bob)  # 100% at 0
+    oceanutil.set_allocation(1000, allocate_addrs[0], CHAINID, karen)  # 10% at 0
+    oceanutil.set_allocation(1000, allocate_addrs[0], CHAINID, james)  # 10% at 0
 
     forward(100)
 
     # DAY 1
     # Bob removes and re-adds 100%
     oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, bob)  # 0% at 1
-    oceanutil.set_allocation(
-        10000, allocate_addrs[1], CHAINID, bob)  # 100% at 1
+    oceanutil.set_allocation(10000, allocate_addrs[1], CHAINID, bob)  # 100% at 1
 
     # Karen allocates 10%
-    oceanutil.set_allocation(
-        1000, allocate_addrs[1], CHAINID, karen)  # 10% at 1
+    oceanutil.set_allocation(1000, allocate_addrs[1], CHAINID, karen)  # 10% at 1
 
     # James allocates 20%
-    oceanutil.set_allocation(
-        2000, allocate_addrs[0], CHAINID, james)  # 20% at 1
+    oceanutil.set_allocation(2000, allocate_addrs[0], CHAINID, james)  # 20% at 1
 
     forward(100)
 
@@ -732,8 +720,7 @@ def test_symbol():
     testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": god_acct})
     assert query.symbol(testToken.address) == "CO2"
 
-    testToken = B.Simpletoken.deploy(
-        "ASDASDASD", "", 18, 1e26, {"from": god_acct})
+    testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": god_acct})
     assert query.symbol(testToken.address) == "ASDASDASD"
 
     testToken = B.Simpletoken.deploy(
