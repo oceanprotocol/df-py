@@ -73,19 +73,23 @@ def test_all(tmp_path):
     chain.sleep(t1 - t0)
     chain.mine()
 
-    ST = len(chain)
-    print(f"ST = start block for querying = {ST}")
-
     lock_amt = 5.0
     _lock(accounts + sampling_accounts, lock_amt, t2)
 
     _allocate(accounts + sampling_accounts, assets)
 
     print("Delegate...")
-    ve_delegate(accounts[0], accounts[1], 0.5, 0) # 0 -> 1 50%
-    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1) # 0 -> zerobal 5%
-    ve_delegate(accounts[3], accounts[4], 1.0, 0) # 3 -> 4 100%
-    ve_delegate(accounts[4], accounts[3], 1.0, 0) # 4 -> 3 100%
+    ve_delegate(accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
+    print(f"  {accounts[0].address} -> {accounts[1].address} 50%")
+    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1)  # 0 -> zerobal 5%
+    print(f"  {accounts[0].address} -> {zerobal_delegation_acct.address} 10%")
+    ve_delegate(accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
+    print(f"  {accounts[3].address} -> {accounts[4].address} 100%")
+    ve_delegate(accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
+    print(f"  {accounts[4].address} -> {accounts[3].address} 100%")
+
+    ST = len(chain)
+    print(f"ST = start block for querying = {ST}")
 
     print("Consume...")
     for i, acct in enumerate(accounts):
