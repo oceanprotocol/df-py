@@ -43,25 +43,23 @@ Ennvars expected:
 """
 
 
-def get_gql_client(chain_id):
+def get_gql_client(network_name: str):
+    if network_name != NETWORK_NAME:
+        raise NotImplementedError("Only polygon-test (Mumbai) is supported for now.")
+
     prefix = "https://v4.subgraph.mumbai.oceanprotocol.com"
     url = f"{prefix}/subgraphs/name/oceanprotocol/ocean-subgraph"
     transport = AIOHTTPTransport(url=url)
 
     # TODO: sleep until sync if necessary?
-    try:
-        client = Client(transport=transport, fetch_schema_from_transport=True)
-    except Exception:
-        return None
-
-    return client
+    return Client(transport=transport, fetch_schema_from_transport=True)
 
 
 @enforce_types
 def get_nft_addresses(deadline_dt):
     a_week_before_deadline = deadline_dt - timedelta(weeks=1)
 
-    client = get_gql_client(CHAINID)
+    client = get_gql_client(NETWORK_NAME)
     query = gql(
         """
         {nftTransferHistories(where: {newOwner: "0xa54abd42b11b7c97538cad7c6a2820419ddf703e"}) {

@@ -1,10 +1,9 @@
 import os
 from datetime import datetime, timedelta
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from brownie.network import accounts
-from requests.models import Response
 
 from util.judge import (
     do_get_nmses,
