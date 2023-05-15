@@ -32,8 +32,6 @@ def test_get_nft_addresses():
     now = datetime.now()
     less_than_a_week_ago = datetime.now() - timedelta(days=6)
     one_day_ago = datetime.now() - timedelta(days=1)
-    more_than_a_week_ago = datetime.now() - timedelta(days=8)
-    over_deadline = now + timedelta(minutes=1)
 
     with patch("gql.Client.execute") as mock:
         mock.return_value = {
@@ -43,19 +41,12 @@ def test_get_nft_addresses():
                     "oldOwner": {"id": "0x1233"},
                 },
                 {"timestamp": one_day_ago.timestamp(), "oldOwner": {"id": "0x1234"}},
-                {
-                    "timestamp": more_than_a_week_ago.timestamp(),
-                    "oldOwner": {"id": "0x456"},
-                },
-                {"timestamp": over_deadline.timestamp(), "oldOwner": {"id": "0x789"}},
             ]
         }
         nft_addresses = get_nft_addresses(now)
 
     assert "0x1233" in nft_addresses
     assert "0x1234" in nft_addresses
-    assert "0x456" not in nft_addresses
-    assert "0x789" not in nft_addresses
 
 
 def test_get_pred_vals():

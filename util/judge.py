@@ -51,7 +51,6 @@ def get_gql_client(network_name: str):
     url = f"{prefix}/subgraphs/name/oceanprotocol/ocean-subgraph"
     transport = AIOHTTPTransport(url=url)
 
-    # TODO: sleep until sync if necessary?
     return Client(transport=transport, fetch_schema_from_transport=True)
 
 
@@ -60,9 +59,18 @@ def get_nft_addresses(deadline_dt):
     a_week_before_deadline = deadline_dt - timedelta(weeks=1)
 
     client = get_gql_client(NETWORK_NAME)
+    where = """where: {newOwner: "0xa54abd42b11b7c97538cad7c6a2820419ddf703e","""
+    where += f"""
+        timestamp_gt: {a_week_before_deadline.timestamp()},
+        timestamp_lte: {deadline_dt.timestamp()}
+    """
+    where += "}"
+
     query = gql(
         """
-        {nftTransferHistories(where: {newOwner: "0xa54abd42b11b7c97538cad7c6a2820419ddf703e"}) {
+        {nftTransferHistories("""
+        + where
+        + """) {
           id, timestamp, oldOwner {
             id
           }, newOwner {
@@ -74,15 +82,7 @@ def get_nft_addresses(deadline_dt):
 
     txs = client.execute(query)["nftTransferHistories"]
 
-    for tx in txs:
-        tx["timestamp"] = dt.utcfromtimestamp(int(tx["timestamp"]))
-        tx["contractAddress"] = tx["oldOwner"]["id"]
-
-    filtered_txs = [
-        tx for tx in txs if a_week_before_deadline < tx["timestamp"] <= deadline_dt
-    ]
-
-    return [tx["contractAddress"] for tx in filtered_txs]
+    return [tx["oldOwner"]["id"] for tx in txs]
 
 
 @enforce_types
