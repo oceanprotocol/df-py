@@ -5,9 +5,10 @@ from datetime import timedelta
 from typing import List
 
 import ccxt
-import requests
 from brownie.network import accounts
 from enforce_typing import enforce_types
+from gql import Client, gql
+from gql.transport.aiohttp import AIOHTTPTransport
 from web3.main import Web3
 
 from util import crypto
@@ -38,36 +39,49 @@ DEADLINE refers to the end of the challenge itself, to limit entry retrieval.
 Hard-coded values: NETWORK_NAME={NETWORK_NAME}, CHAINID={CHAINID}
 Ennvars expected:
    REMOTE_TEST_PRIVATE_KEY1 (for judges' account)
-   POLYGONSCAN_API_KEY
 
 """
+
+
+def get_gql_client(chain_id):
+    prefix = "https://v4.subgraph.mumbai.oceanprotocol.com"
+    url = f"{prefix}/subgraphs/name/oceanprotocol/ocean-subgraph"
+    transport = AIOHTTPTransport(url=url)
+
+    # TODO: sleep until sync if necessary?
+    try:
+        client = Client(transport=transport, fetch_schema_from_transport=True)
+    except Exception:
+        return None
+
+    return client
 
 
 @enforce_types
 def get_nft_addresses(deadline_dt):
     a_week_before_deadline = deadline_dt - timedelta(weeks=1)
-    url = "https://api-testnet.polygonscan.com/api"
-    params = {
-        "module": "account",
-        "action": "tokennfttx",
-        "address": "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E",
-        "apikey": os.getenv("POLYGONSCAN_API_KEY"),
-    }
-    txs = requests.get(url, params=params).json()["result"]
+
+    client = get_gql_client(CHAINID)
+    query = gql(
+        """
+        {nftTransferHistories(where: {newOwner: "0xa54abd42b11b7c97538cad7c6a2820419ddf703e"}) {
+          id, timestamp, oldOwner {
+            id
+          }, newOwner {
+            id
+          }
+        }}
+    """
+    )
+
+    txs = client.execute(query)["nftTransferHistories"]
 
     for tx in txs:
-        tx["timeStamp"] = dt.utcfromtimestamp(int(tx["timeStamp"]))
-
-    # each tx is a dict that includes:
-    # {'timeStamp': '1677562009',
-    # 'hash': '0x163991c9fb2c94b7452909a1bd8cf4d298d92dc90ef2e49ab13dc935f0552061',
-    # 'from': '0x04815de815db15a3086425b58981545bec018a6a',
-    # 'contractAddress': '0x458420a012cb7e63ae24ecf83eb21ab7c40d71d8',
-    # 'to': '0xa54abd42b11b7c97538cad7c6a2820419ddf703e',
-    # 'tokenID': '1', 'tokenName': 'Data NFT 1', 'tokenSymbol': 'DN1'}
+        tx["timestamp"] = dt.utcfromtimestamp(int(tx["timestamp"]))
+        tx["contractAddress"] = tx["oldOwner"]["id"]
 
     filtered_txs = [
-        tx for tx in txs if a_week_before_deadline < tx["timeStamp"] <= deadline_dt
+        tx for tx in txs if a_week_before_deadline < tx["timestamp"] <= deadline_dt
     ]
 
     return [tx["contractAddress"] for tx in filtered_txs]

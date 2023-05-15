@@ -36,23 +36,21 @@ def test_get_nft_addresses():
     more_than_a_week_ago = datetime.now() - timedelta(days=8)
     over_deadline = now + timedelta(minutes=1)
 
-    with patch("requests.get") as mock:
-        the_response = Mock(spec=Response)
-        the_response.json.return_value = {
-            "result": [
+    with patch("gql.Client.execute") as mock:
+        mock.return_value = {
+            "nftTransferHistories": [
                 {
-                    "timeStamp": less_than_a_week_ago.timestamp(),
-                    "contractAddress": "0x1233",
+                    "timestamp": less_than_a_week_ago.timestamp(),
+                    "oldOwner": {"id": "0x1233"},
                 },
-                {"timeStamp": one_day_ago.timestamp(), "contractAddress": "0x1234"},
+                {"timestamp": one_day_ago.timestamp(), "oldOwner": {"id": "0x1234"}},
                 {
-                    "timeStamp": more_than_a_week_ago.timestamp(),
-                    "contractAddress": "0x456",
+                    "timestamp": more_than_a_week_ago.timestamp(),
+                    "oldOwner": {"id": "0x456"},
                 },
-                {"timeStamp": over_deadline.timestamp(), "contractAddress": "0x789"},
+                {"timestamp": over_deadline.timestamp(), "oldOwner": {"id": "0x789"}},
             ]
         }
-        mock.return_value = the_response
         nft_addresses = get_nft_addresses(now)
 
     assert "0x1233" in nft_addresses
