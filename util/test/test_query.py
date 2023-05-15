@@ -915,7 +915,7 @@ def test_filter_by_max_volume():
 def test_process_single_delegation():
     # Prepare test data
     delegation = {
-        "id": "0x5bf62eb768543eb872e4bf932c17e1b765a16f45-0x643c6de82231585d510c9fe915dcdef1c807121e000000000000000000000000",
+        "id": "x",
         "amount": "2.49315066506849681",
         "expireTime": "1813190400",
         "lockedAmount": "5",
@@ -941,7 +941,7 @@ def test_process_single_delegation():
 def test_process_delegations():
     delegations = [
         {
-            "id": "0x5bf62eb768543eb872e4bf932c17e1b765a16f45-0x643c6de82231585d510c9fe915dcdef1c807121e000000000000000000000000",
+            "id": "x",
             "amount": "2.49315066506849681",
             "expireTime": "1813190400",
             "lockedAmount": "5",
@@ -958,7 +958,7 @@ def test_process_delegations():
             ],
         },
         {
-            "id": "0x5bf62eb768543eb872e4bf932c17e1b765a16f45-0x643c6de82231585d510c9fe915dcdef1c807121e000000000000000000000001",
+            "id": "x",
             "amount": "0.249315066506849681",
             "expireTime": "1813190400",
             "lockedAmount": "5",
