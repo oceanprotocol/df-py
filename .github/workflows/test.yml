@@ -39,7 +39,8 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
-        env: SUBGRAPH_VERSION=main
+        env:
+          SUBGRAPH_VERSION: main
         run: |
           bash -x start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > start_ocean.log &
 
