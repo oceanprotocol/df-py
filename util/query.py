@@ -144,10 +144,10 @@ def queryVebalances(
     vebals: Dict[str, float] = {}
 
     # [LP_addr] : locked_amt
-    locked_amt: Dict[str, float] = {}
+    locked_amts: Dict[str, float] = {}
 
     # [LP_addr] : lock_time
-    unlock_time: Dict[str, int] = {}
+    unlock_times: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
@@ -174,6 +174,8 @@ def queryVebalances(
                     }
                     amount
                     expireTime
+                    timeLeftUnlock
+                    lockedAmount
                     updates(orderBy:timestamp orderDirection:asc){
                       timestamp
                       sender
@@ -201,14 +203,22 @@ def queryVebalances(
                 break
 
             for user in veOCEANs:
-                unlockTime = int(user["unlockTime"])
-                timeLeft = unlockTime - unixEpochTime  # time left in seconds
-                if timeLeft < 0:  # check if the lock has expired
+                ve_unlock_time = int(user["unlockTime"])
+                time_left_to_unlock = (
+                    ve_unlock_time - unixEpochTime
+                )  # time left in seconds
+                if time_left_to_unlock < 0:  # check if the lock has expired
                     continue
 
-                # calculate the balance
-                balance_raw = float(user["lockedAmount"]) * timeLeft / MAX_TIME
-                balance = balance_raw
+                # initial balance before accounting in delegations
+                balance_init = (
+                    float(user["lockedAmount"]) * time_left_to_unlock / MAX_TIME
+                )
+
+                # this will the balance after accounting in delegations
+                # see the calculations below
+                balance = balance_init
+
                 for delegation in user["delegation"]:
                     balance, delegation_amt, delegated_to = _process_delegation(
                         delegation, balance, unixEpochTime, time_left_to_unlock
@@ -222,18 +232,20 @@ def queryVebalances(
                     unlock_times.setdefault(delegated_to, 0)
                     vebals[delegated_to] += delegation_amt
 
+                if balance < 0:
+                    raise ValueError("balance < 0, something is wrong")
                 # set user balance
                 LP_addr = user["id"].lower()
                 vebals.setdefault(LP_addr, 0)
                 vebals[LP_addr] += balance
 
                 # set locked amount
-                locked_amt[LP_addr] = float(user["lockedAmount"])
+                locked_amts[LP_addr] = float(user["lockedAmount"])
 
                 # set unlock time
-                unlock_time[LP_addr] = unlockTime
+                unlock_times[LP_addr] = ve_unlock_time
 
-            ## increase offset
+            # increase offset
             offset += chunk_size
         n_blocks_sampled += 1
 
@@ -245,7 +257,7 @@ def queryVebalances(
 
     print("queryVebalances: done")
 
-    return vebals, locked_amt, unlock_time
+    return vebals, locked_amts, unlock_times
 
 
 @enforce_types
