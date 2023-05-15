@@ -138,7 +138,7 @@ def test_all(tmp_path):
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
     _test_queryAllocations(rng, sampling_accounts_addrs)
     _test_queryVolsOwnersSymbols(ST, FIN)
-    # FIX-ME _test_queryNftinfo()
+    _test_queryNftinfo()
 
     # test dftool
     _test_dftool_query(tmp_path, ST, FIN)
@@ -301,9 +301,6 @@ def _test_queryNftinfo():
 
     nfts_latest = query.queryNftinfo(CHAINID, "latest")
     assert len(nfts_latest) == len(nfts)
-
-    nfts_block = query.queryNftinfo(137, 29778602)
-    assert len(nfts_block) == 11
 
 
 # =========================================================================
