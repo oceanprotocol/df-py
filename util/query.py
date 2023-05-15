@@ -210,21 +210,16 @@ def queryVebalances(
                 balance_raw = float(user["lockedAmount"]) * timeLeft / MAX_TIME
                 balance = balance_raw
                 for delegation in user["delegation"]:
-                    if int(delegation["expireTime"]) < unixEpochTime:
+                    balance, delegation_amt, delegated_to = _process_delegation(
+                        delegation, balance, unixEpochTime, time_left_to_unlock
+                    )
+
+                    if delegation_amt == 0:
                         continue
 
-                    delegated_at = int(delegation["updates"][0]["timestamp"])
-                    delegated_at_timeleft = unlockTime - delegated_at
-                    delegated_at_balance = (
-                        float(user["lockedAmount"]) * delegated_at_timeleft / MAX_TIME
-                    )
-                    fraction = float(delegation["amount"]) / delegated_at_balance
-                    delegated_to = delegation["receiver"]["id"].lower()  # address
-                    delegation_amt = min(balance_raw * fraction, balance)
-                    balance = balance - delegation_amt
                     vebals.setdefault(delegated_to, 0)
-                    locked_amt.setdefault(delegated_to, 0)
-                    unlock_time.setdefault(delegated_to, 0)
+                    locked_amts.setdefault(delegated_to, 0)
+                    unlock_times.setdefault(delegated_to, 0)
                     vebals[delegated_to] += delegation_amt
 
                 # set user balance
