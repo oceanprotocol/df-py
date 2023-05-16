@@ -45,24 +45,38 @@ def test_insufficient_gas_reverts():
         df_rewards.allocate(
             addresses, rewards, token_addr, {"from": account0, "gas_limit": 100000}
         )
-    assert str(e_info.value) == "base fee exceeds gas limit"
+
+    error_str = str(e_info.value)
+    assert "out of gas" in error_str or "intrinsic gas too low" in error_str
 
 
 @enforce_types
-def _batch_allocate(number: int) -> str:
+def _batch_allocate(n_accounts: int) -> str:
     account0 = brownie.network.accounts[0]
-    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(number)
+    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(n_accounts)
     tx = df_rewards.allocate(addresses, rewards, token_addr, {"from": account0})
     return tx
 
 
 @enforce_types
-def _prep_batch_allocate(number: int) -> Any:
+def _prep_batch_allocate(n_accounts: int) -> Any:
+    """
+    @description
+      Create 'n_accounts' random accounts, give each an OCEAN allowance.
+      To help testing of df_rewards
+
+    @return
+      addresses -- list[address_str]
+      rewards -- [1, 1, ..., n_accounts-1] -- reward in OCEAN per account
+      OCEAN_address - str
+      df_rewards -- DFRewards contract, controlled by account0.
+        Account0 approves it to spend sum(rewards)
+    """
     account0 = brownie.network.accounts[0]
     OCEAN = oceanutil.OCEANtoken()
     df_rewards = B.DFRewards.deploy({"from": account0})
-    addresses = get_random_addresses(number)
-    rewards = [1 for i in range(number)]
+    addresses = get_random_addresses(n_accounts)
+    rewards = [1 for account_i in range(n_accounts)]
     OCEAN.approve(df_rewards, sum(rewards), {"from": account0})
     return addresses, rewards, OCEAN.address, df_rewards
 

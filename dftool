@@ -21,7 +21,7 @@ from util import (
     networkutil,
     query,
 )
-from util.base18 import fromBase18
+from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.calcrewards import calcRewards
 from util.constants import BROWNIE_PROJECT as B
@@ -1110,7 +1110,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     if TOKEN_ADDR is not None:
         token = B.Simpletoken.at(TOKEN_ADDR)
         balance = token.balanceOf(ACCOUNT_ADDR)
-        print(f"  {fromBase18(balance)} {token.symbol()}")
+        print(f"  {from_wei(balance)} {token.symbol()}")
 
     # Give balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
@@ -1118,7 +1118,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
         recordDeployedContracts(ADDRESS_FILE)
         OCEAN = OCEANtoken()
         if OCEAN.address != TOKEN_ADDR:
-            print(f"  {fromBase18(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
+            print(f"  {from_wei(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
 
 
 # ========================================================================

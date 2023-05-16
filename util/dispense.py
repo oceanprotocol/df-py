@@ -8,7 +8,7 @@ from enforce_typing import enforce_types
 
 from util.networkutil import chainIdToMultisigAddr
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 from util.logger import logger
 from util.multisig import send_multisig_tx
 
@@ -52,7 +52,7 @@ def dispense(
     TOK = B.Simpletoken.at(token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
     to_addrs = list(rewards.keys())
-    values = [toBase18(rewards[to_addr]) for to_addr in to_addrs]
+    values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]
 
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
@@ -114,7 +114,7 @@ def dispense(
 
 
 def dispense_passive(ocean, feedistributor, amount):
-    amount_wei = toBase18(amount)
+    amount_wei = to_wei(amount)
     transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
     checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
     checkpoint_token_data = feedistributor.checkpoint_token.encode_input()

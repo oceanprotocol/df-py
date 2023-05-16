@@ -2,7 +2,7 @@ import brownie
 from enforce_typing import enforce_types
 
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 from util import networkutil, oceanutil
 
 accounts, a1, a2, a3 = None, None, None, None
@@ -32,7 +32,7 @@ def test_lostETH():
 @enforce_types
 def test_TOK():
     TOK = _deployTOK(accounts[9])
-    TOK.transfer(accounts[0].address, toBase18(100.0), {"from": accounts[9]})
+    TOK.transfer(accounts[0].address, to_wei(100.0), {"from": accounts[9]})
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
@@ -139,7 +139,7 @@ def test_multiple_TOK():
 
 def test_bad_token():
     badToken = B.Badtoken.deploy(
-        "BAD", "BAD", 18, toBase18(10000.0), {"from": accounts[0]}
+        "BAD", "BAD", 18, to_wei(10000.0), {"from": accounts[0]}
     )
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
@@ -265,7 +265,7 @@ def _test_claim_and_restake():
 
 @enforce_types
 def _deployTOK(account):
-    return B.Simpletoken.deploy("TOK", "TOK", 18, toBase18(100.0), {"from": account})
+    return B.Simpletoken.deploy("TOK", "TOK", 18, to_wei(100.0), {"from": account})
 
 
 @enforce_types

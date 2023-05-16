@@ -1,11 +1,11 @@
 import brownie
 from enforce_typing import enforce_types
+import pytest
 from pytest import approx
-
 
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18
+from util.base18 import to_wei
 
 deployer = None
 veLocker = None
@@ -15,7 +15,7 @@ OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = toBase18(10.0)
+TA = to_wei(10.0)
 
 
 @enforce_types
@@ -49,8 +49,8 @@ def test_velock_whitelisted():
     assert epoch != 0
 
     assert veOCEAN.get_last_user_slope(veLocker) != 0
-    veLockerVotingPower = (veOCEAN.balanceOf(veLocker, chain.time())) / toBase18(1.0)
-    expectedVotingPower = (TA * WEEK / MAXTIME) / toBase18(1.0)
+    veLockerVotingPower = (veOCEAN.balanceOf(veLocker, chain.time())) / to_wei(1.0)
+    expectedVotingPower = (TA * WEEK / MAXTIME) / to_wei(1.0)
     assert veLockerVotingPower == approx(expectedVotingPower, 0.5)
 
 

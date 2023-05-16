@@ -73,9 +73,8 @@ brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 #add pwd to bash path
 export PATH=$PATH:.
 
-#set judges private key and Polygon Scan API Key
+#set judges private key
 export REMOTE_TEST_PRIVATE_KEY1=<judges key>
-export POLYGONSCAN_API_KEY=<api key>
 
 #compile contracts
 dftool compile
@@ -250,7 +249,7 @@ You can adjust this by changing this path in both repositories and redeploying.
 
 ## Gotchas and workarounds
 
-This section provides tactics if you encounter issues like `KeyError "development"` or `No contract deployed at {address}`, please see the "Gotchas" section.
+This section provides tactics if you encounter issues like `KeyError "development"` or `No contract deployed at {address}`.
 
 ### Gotcha: No contract deployed at {address}
 

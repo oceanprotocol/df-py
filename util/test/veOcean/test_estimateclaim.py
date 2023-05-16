@@ -4,7 +4,7 @@ import pytest
 
 from util import networkutil, oceanutil
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import toBase18, fromBase18
+from util.base18 import to_wei, from_wei
 from datetime import datetime
 
 accounts = None
@@ -16,7 +16,7 @@ DAY = 86400
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 chain = brownie.network.chain
-TA = toBase18(10000.0)
+TA = to_wei(10000.0)
 DAY = 86400
 
 
@@ -46,14 +46,14 @@ def test_rewards():
     t0 = chain.time()
 
     # each actor adds 100 Ocean tokens in week 0
-    OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": alice})
-    OCEAN.approve(veOCEAN.address, toBase18(100.0), {"from": bob})
+    OCEAN.approve(veOCEAN.address, to_wei(100.0), {"from": alice})
+    OCEAN.approve(veOCEAN.address, to_wei(100.0), {"from": bob})
 
     # each actor has different lock times
     alice_lock_time = t0 + 4 * 365 * 86400 - 15 * 60  # 4 years - 15 mins
     bob_lock_time = t0 + 2 * 365 * 86400 - 15 * 60  # 2 years - 15 mins
-    veOCEAN.create_lock(toBase18(100.0), alice_lock_time, {"from": alice})
-    veOCEAN.create_lock(toBase18(100.0), bob_lock_time, {"from": bob})
+    veOCEAN.create_lock(to_wei(100.0), alice_lock_time, {"from": alice})
+    veOCEAN.create_lock(to_wei(100.0), bob_lock_time, {"from": bob})
 
     alice_total_withdraws = 0
     bob_total_withdraws = 0
@@ -73,9 +73,7 @@ def test_rewards():
 
         # every week, OPC adds rewards
         print(f"\t OPF is adding {opffees} OCEAN as rewards")
-        OCEAN.transfer(
-            fee_distributor.address, toBase18(opffees), {"from": accounts[0]}
-        )
+        OCEAN.transfer(fee_distributor.address, to_wei(opffees), {"from": accounts[0]})
         with brownie.reverts("Call checkpoint function"):
             fee_estimate.estimateClaimAcc(alice)
         fee_distributor.checkpoint_total_supply()
@@ -86,8 +84,8 @@ def test_rewards():
         print(f"\t veOcean epoch: {epoch}")
 
         # fetch user data for all actors
-        estimateAlice1w = fromBase18(fee_estimate.estimateClaim(alice))
-        estimateBob1w = fromBase18(fee_estimate.estimateClaim(bob))
+        estimateAlice1w = from_wei(fee_estimate.estimateClaim(alice))
+        estimateBob1w = from_wei(fee_estimate.estimateClaim(bob))
         epoch_alice = fee_distributor.user_epoch_of(alice)
         epoch_bob = fee_distributor.user_epoch_of(bob)
         time_cursor_alice = fee_distributor.time_cursor_of(alice)
@@ -103,9 +101,9 @@ def test_rewards():
             f"\t Alice estimates claim:{estimateAlice1w}, Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice} = {time_cursor_alice_nice}"
         )
         # Alice claims every week
-        initialAlice = fromBase18(OCEAN.balanceOf(alice))
+        initialAlice = from_wei(OCEAN.balanceOf(alice))
         fee_distributor.claim({"from": alice})  # alice claims rewards
-        afterAlice = fromBase18(OCEAN.balanceOf(alice))
+        afterAlice = from_wei(OCEAN.balanceOf(alice))
         alice_claimed = afterAlice - initialAlice
         alice_total_withdraws = alice_total_withdraws + alice_claimed
         epoch_alice = fee_distributor.user_epoch_of(alice)
@@ -124,9 +122,9 @@ def test_rewards():
             f"\t Bob estimates claim:{estimateBob1w}, Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob} = {time_cursor_bob_nice}"
         )
         if i % 2 == 0:
-            initialBob = fromBase18(OCEAN.balanceOf(bob))
+            initialBob = from_wei(OCEAN.balanceOf(bob))
             fee_distributor.claim({"from": bob})  # bob claims rewards
-            afterBob = fromBase18(OCEAN.balanceOf(bob))
+            afterBob = from_wei(OCEAN.balanceOf(bob))
             bob_claimed = afterBob - initialBob
             bob_total_withdraws = bob_total_withdraws + bob_claimed
             epoch_bob = fee_distributor.user_epoch_of(bob)
@@ -147,10 +145,10 @@ def test_rewards():
             print(f"\t Bob increases the lock time")
             assert bob_claimed == pytest.approx(estimateBob1w, 0.0000001)
 
-        fee_distributor_ocean_balance = fromBase18(
+        fee_distributor_ocean_balance = from_wei(
             OCEAN.balanceOf(fee_distributor.address)
         )
-        fee_distributor_token_last_balance = fromBase18(
+        fee_distributor_token_last_balance = from_wei(
             fee_distributor.token_last_balance()
         )
         print(f"\n\t fee_distributor_ocean_balance:{fee_distributor_ocean_balance}")
