@@ -56,10 +56,8 @@ Then, open a new terminal and:
 git clone https://github.com/oceanprotocol/df-py.git
 cd df-py
 
-#create a virtual environment
+#create & activate virtual env't
 python -m venv venv
-
-#activate env
 source venv/bin/activate
 
 #install dependencies
