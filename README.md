@@ -131,6 +131,12 @@ brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=
 brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 ```
 
+Or using an Infura ID, here is an example for polygon:
+```
+export WEB3_INFURA_PROJECT_ID=***
+brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
+```
+
 Now, you can use those networks simply by specifying a different chainid in `dftool` calls.
 
 # Rewards Distribution Ops
