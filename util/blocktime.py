@@ -18,7 +18,9 @@ def getBlockNumberThursday(chain) -> int:
 
 @enforce_types
 def getNextThursdayTimestamp() -> int:
-    dd = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0)
+    dd = datetime.now(timezone.utc)
+    dd = dd.replace(hour=0, minute=0, second=0, microsecond=0)
+
     if dd.strftime("%a") == "Thu":
         dd += timedelta(days=1)  # add a day so it doesn't return today
 
