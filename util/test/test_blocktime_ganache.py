@@ -96,7 +96,7 @@ def test_timestampToBlock():
 @enforce_types
 def test_get_next_thursday():
     next_thursday = getNextThursdayTimestamp()
-    date = datetime.fromtimestamp(next_thursday)
+    date = datetime.utcfromtimestamp(next_thursday)
 
     assert date.isoweekday() == 4
 
@@ -140,7 +140,7 @@ def test_getstfinBlocks():
     assert fin > 0
 
     # get by datetime YYYY-MM-DD
-    now_date = datetime.fromtimestamp(chain[-1].timestamp)
+    now_date = datetime.utcfromtimestamp(chain[-1].timestamp)
     now_date = now_date.strftime("%Y-%m-%d")
     (st, fin) = getstfinBlocks(chain, "0", now_date)
     assert st == 0
