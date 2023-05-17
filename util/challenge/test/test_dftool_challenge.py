@@ -8,22 +8,27 @@ from util.challenge import judge
 from util import csvs
 
 
+@enforce_types
 def test1(tmp_path):
     _test(tmp_path, DEADLINE=None, RETRIES=None)
 
 
+@enforce_types
 def test2(tmp_path):
     _test(tmp_path, DEADLINE="None", RETRIES=None)
 
 
+@enforce_types
 def test3(tmp_path):
     _test(tmp_path, DEADLINE="None", RETRIES=2)
 
 
+@enforce_types
 def test4(tmp_path):
     _test(tmp_path, DEADLINE="2023-05-03_23:59", RETRIES=None)
 
 
+@enforce_types
 def test5(tmp_path):
     _test(tmp_path, DEADLINE="2023-05-03_23:59", RETRIES=2)
 

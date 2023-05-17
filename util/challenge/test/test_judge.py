@@ -2,15 +2,17 @@ import os
 from datetime import date, datetime, timedelta, timezone
 from unittest.mock import patch
 
-import pytest
 from brownie.network import accounts
+from enforce_typing import enforce_types
 import numpy as np
+import pytest
 
 from util import networkutil
 from util.base18 import from_wei
 from util.challenge import judge
 
 
+@enforce_types
 def test_get_txs():
     now = datetime.now()
     less_than_a_week_ago = datetime.now() - timedelta(days=6)
@@ -46,6 +48,7 @@ def test_get_txs():
     assert from_addrs == ["0xfrom1", "0xfrom2"]
 
 
+@enforce_types
 def test_nft_addr_to_pred_vals():
     mumbai_chainid = 80001
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
@@ -59,6 +62,7 @@ def test_nft_addr_to_pred_vals():
     networkutil.disconnect()
 
 
+@enforce_types
 def test_get_cex_vals():
     deadline_dt = (datetime.today() - timedelta(days=2)).replace(
         hour=12, minute=59, second=0, microsecond=0
@@ -67,12 +71,14 @@ def test_get_cex_vals():
     assert len(cex_vals) == 12
 
 
+@enforce_types
 def test_parse_deadline_str1():
     dt = judge.parse_deadline_str("2023-05-03_23:59")
     dt_target = datetime(2023, 5, 3, 23, 59)
     assert dt == dt_target
         
-    
+
+@enforce_types    
 def test_parse_deadline_str2():
     dt = judge.parse_deadline_str("None")
 
@@ -84,6 +90,7 @@ def test_parse_deadline_str2():
     assert dt.microsecond == 0
 
 
+@enforce_types
 def test_print_results():
     from_addrs = ["0xfrom1", "0xfrom2"]
     nft_addrs = ["0xnft1", "0xnft2"]
@@ -92,11 +99,13 @@ def test_print_results():
     judge.print_results(challenge_data)
 
 
+@enforce_types
 def test_get_judge_acct():
     judge_acct = judge.get_judge_acct()
     assert judge_acct.address == judge.JUDGE_ADDRESS
 
 
+@enforce_types
 def test_get_challenge_data():    
     dt = datetime(2021, 9, 1, 12, 59)
     judge_acct = judge.get_judge_acct()

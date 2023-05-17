@@ -75,9 +75,9 @@ def _get_txs(deadline_dt) -> list:
 
 @enforce_types
 def _date(tx):
-    # must include "utc" in "fromtimestamp", to account for time zone diff
-    return datetime.utcfromtimestamp(int(tx["timestamp"]))
-
+    ut = int(tx["timestamp"])
+    return helpers.ut_to_dt(ut)
+    
 @enforce_types
 def _nft_addr(tx):
     return tx["nft"]["id"]
@@ -103,7 +103,11 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
 
 @enforce_types
 def _get_cex_vals(deadline_dt):
-    target_uts = helpers.target_12h_unixtimes(deadline_dt + timedelta(minutes=1))
+    assert deadline_dt.tzinfo == timezone.utc, "must be in UTC"
+    start_dt = deadline_dt + timedelta(minutes=1)
+    target_dts = [start_dt + timedelta(minutes=_min)
+                  for _min in range(5, 65, 5)]
+    target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
     cex_x = ccxt.kraken().fetch_ohlcv("ETH/USDT", "5m")
@@ -128,7 +132,7 @@ def parse_deadline_str(deadline_str: str) -> datetime:
       judge_acct -- brownie account
 
     @return
-      deadline_dt -- datetime object
+      deadline_dt -- datetime object, in UTC
     """
     if deadline_str == "None":
         today = datetime.now(timezone.utc)
@@ -138,9 +142,10 @@ def parse_deadline_str(deadline_str: str) -> datetime:
         prev_wed = today - timedelta(days=offset)
         deadline_dt = prev_wed.replace(
             hour=23, minute=59, second=0, microsecond=0)
-        return deadline_dt
-    
-    deadline_dt = datetime.strptime(deadline_str, "%Y-%m-%d_%H:%M")
+    else:
+        deadline_dt = datetime.strptime(deadline_str, "%Y-%m-%d_%H:%M")
+
+    assert deadline_dt.tzinfo == timezone.utc, "must be in UTC"
     return deadline_dt
 
 
@@ -213,7 +218,7 @@ def get_challenge_data(deadline_dt: datetime, judge_acct) \
     -> Tuple[List[str], List[str], list]:
     """
     @arguments
-      deadline_dt -- submission deadline
+      deadline_dt -- submission deadline, in UTC
       judge_acct -- brownie account, must have JUDGE_ADDR
 
     @return -- three lists, all ordered with lowest nmse first
@@ -221,7 +226,9 @@ def get_challenge_data(deadline_dt: datetime, judge_acct) \
       nft_addrs -- list of [tx_i] : nft_addr_str
       nmses -- list of [tx_i] : nmse_float_or_int
     """
+    assert deadline_dt.tzinfo == timezone.utc, "deadline must be in UTC"
     assert judge_acct.address.lower() == JUDGE_ADDRESS.lower()
+    print(f"get_challenge_data: start. deadline_dt={deadline_dt}")
     
     cex_vals = _get_cex_vals(deadline_dt)
 
@@ -269,6 +276,7 @@ def get_challenge_data(deadline_dt: datetime, judge_acct) \
     print_results(challenge_data)
 
     # return
+    print(f"get_challenge_data(): done. {len(nmses)} results")
     return challenge_data
 
 
