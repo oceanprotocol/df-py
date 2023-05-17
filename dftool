@@ -440,17 +440,17 @@ Uses these envvars:
         print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
         sys.exit(0)
 
-    # brownie setup
-    networkutil.connect(CHAINID)
-    recordDeployedContracts(ADDRESS_FILE)
-    judge_acct = judge.get_judge_acct()
-
-    # main work
-    deadline_dt = judge.parse_deadline_str(DEADLINE)
-
-    if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
+    if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR: 
         challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
+
     else:  # main path
+        # brownie setup
+        networkutil.connect(CHAINID)
+        recordDeployedContracts(ADDRESS_FILE)
+        judge_acct = judge.get_judge_acct()
+
+        # main work
+        deadline_dt = judge.parse_deadline_str(DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
     csvs.saveChallengeDataCsv(challenge_data, CSV_DIR)
