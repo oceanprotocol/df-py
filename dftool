@@ -51,7 +51,7 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_MAIN = """Data Farming tool, for use by OPF.
 
-Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
+Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
 
   # Help Actions
   dftool help - full command list
@@ -197,7 +197,7 @@ Usage: dftool nft_info CSV_DIR CHAINID [FIN]
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "nft_info"
+    assert sys.argv[1] in ["nft_info", "nftinfo"]
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
     ENDBLOCK = sys.argv[4] if len(sys.argv) == 5 else "latest"
@@ -374,7 +374,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "get_rate"
+    assert sys.argv[1] in ["get_rate", "getrate"]
     TOKEN_SYMBOL = sys.argv[2]
     ST, FIN = sys.argv[3], sys.argv[4]
     CSV_DIR = sys.argv[5]
@@ -702,7 +702,7 @@ Usage: dftool new_dfrewards CHAINID
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_dfrewards"
+    assert sys.argv[1] in ["new_dfrewards", "newdfrewards"]
     CHAINID = int(sys.argv[2])
 
     print(f"Arguments: CHAINID={CHAINID}")
@@ -730,7 +730,7 @@ Usage: dftool new_dfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
         print(HELP)
         sys.exit(0)
 
-    assert sys.argv[1] == "new_dfstrategy"
+    assert sys.argv[1] in ["new_dfstrategy", "newdfstrategy"]
     CHAINID = int(sys.argv[2])
     DFREWARDS_ADDR = sys.argv[3]
     DFSTRATEGY_NAME = sys.argv[4]
@@ -759,7 +759,7 @@ Usage: dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
         print(HELP)
         sys.exit(0)
 
-    assert sys.argv[1] == "add_strategy"
+    assert sys.argv[1] in ["add_strategy", "addstrategy"]
     CHAINID = int(sys.argv[2])
     DFREWARDS_ADDR = sys.argv[3]
     DFSTRATEGY_ADDR = sys.argv[4]
@@ -791,7 +791,7 @@ Usage: dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
         print(HELP)
         sys.exit(0)
 
-    assert sys.argv[1] == "retire_strategy"
+    assert sys.argv[1] in ["retire_strategy", "retirestrategy"]
     CHAINID = int(sys.argv[2])
     DFREWARDS_ADDR = sys.argv[3]
     DFSTRATEGY_ADDR = sys.argv[4]
@@ -839,7 +839,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     # extract inputs
-    assert sys.argv[1] == "init_dev_wallets"
+    assert sys.argv[1] in ["init_dev_wallets", "initdevwallets"]
     CHAINID = int(sys.argv[2])
     print("dftool init_dev_wallets: Begin")
     print(f"Arguments: CHAINID={CHAINID}")
@@ -880,7 +880,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "many_random"
+    assert sys.argv[1] in ["many_random", "manyrandom"]
     CHAINID = int(sys.argv[2])
     print("dftool many_random: Begin")
     print(f"Arguments: CHAINID={CHAINID}")
@@ -954,7 +954,7 @@ Usage: dftool new_acct
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_acct"
+    assert sys.argv[1] in ["new_acct", "newacct"]
 
     # main work
     networkutil.connect(DEV_CHAINID)
@@ -977,7 +977,7 @@ Usage: dftool new_token CHAINID
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_token"
+    assert sys.argv[1] in ["new_token", "newtoken"]
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -1000,7 +1000,7 @@ Usage: dftool new_veocean CHAINID TOKEN_ADDR
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_veocean"
+    assert sys.argv[1] in ["new_veocean", "newVeOcean"]
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -1033,7 +1033,7 @@ Usage: dftool new_veallocate CHAINID
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "new_veallocate"
+    assert sys.argv[1] in ["new_veallocate", "newVeAllocate"]
     CHAINID = int(sys.argv[2])
     print(f"Arguments:\n CHAINID={CHAINID}")
 
@@ -1096,7 +1096,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "acct_info"
+    assert sys.argv[1] in ["acct_info", "acctinfo"]
     CHAINID = int(sys.argv[2])
     ACCOUNT_ADDR = sys.argv[3]
     TOKEN_ADDR = sys.argv[4] if len(sys.argv) >= 5 else None
@@ -1136,7 +1136,7 @@ Usage: dftool chain_info CHAINID
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "chain_info"
+    assert sys.argv[1] in ["chain_info", "chaininfo"]
     CHAINID = int(sys.argv[2])
 
     # do work
@@ -1380,6 +1380,27 @@ ARGV_FNS = {
     # Mischellaneous
     "challenge_df_data": do_challenge_df_data,
     "predictoor_df_data": do_predictoor_df_data,
+
+    # temporary old names for compatibility
+    #
+    # TODO: these need to be removed after deprecation from related repos
+    # The correction needs to be done in in dftool as well, in lines like:
+    # assert sys.argv[1] in ["get_rate", "getrate"]
+    #
+    "getrate": do_get_rate,
+    "manyrandom": do_many_random,
+    "newacct": do_new_acct,
+    "newtoken": do_new_token,
+    "newVeOcean": do_new_veocean,
+    "newVeAllocate": do_new_veallocate,
+    "newdfrewards": do_new_dfrewards,
+    "newdfstrategy": do_new_dfstrategy,
+    "acctinfo": do_acct_info,
+    "chaininfo": do_chain_info,
+    "initdevwallets": do_init_dev_wallets,
+    "nftinfo": do_nft_info,
+    "addstrategy": do_add_strategy,
+    "retirestrategy": do_retire_strategy
 }
 
 
