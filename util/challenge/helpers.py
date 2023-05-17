@@ -16,17 +16,6 @@ def ut_to_dt(ut: int) -> datetime.datetime:
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     return dt
 
-def round_to_nearest_hour(dt: datetime.datetime) -> datetime.datetime:
-    return dt.replace(
-        second=0, microsecond=0, minute=0, hour=dt.hour
-    ) + datetime.timedelta(hours=dt.minute // 30)
-
-
-def round_to_nearest_timeframe(dt: datetime.datetime) -> datetime.datetime:
-    return dt.replace(
-        second=0, microsecond=0, minute=(dt.minute // 5) * 5, hour=dt.hour
-    )
-
 
 def pretty_time(dt: datetime.datetime) -> str:
     return dt.strftime("%Y/%m/%d, %H:%M:%S")
@@ -59,7 +48,6 @@ def filter_to_target_uts(
     return filtered_vals
 
 
-# helpers: prediction performance
 def calc_nmse(y, yhat) -> float:
     assert len(y) == len(yhat)
     mse_xy = np.sum(np.square(np.asarray(y) - np.asarray(yhat)))

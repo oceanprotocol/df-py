@@ -103,10 +103,19 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
 
 @enforce_types
 def _get_cex_vals(deadline_dt):
+    now = datetime.now(timezone.utc)
+    newest_cex_dt = deadline_dt + timedelta(minutes=(1+12*5))
+    print("get_cex_vals: start")
+    print(f"  now           = {now} (UTC)")
+    print(f"  deadline_dt   = {deadline_dt} (UTC)")
+    print(f"  newest_cex_dt = {newest_cex_dt} (UTC)")
     assert deadline_dt.tzinfo == timezone.utc, "must be in UTC"
+    assert deadline_dt <= now, "deadline must be past"
+    assert newest_cex_dt <= now, "cex vals must be past"
+    
     start_dt = deadline_dt + timedelta(minutes=1)
     target_dts = [start_dt + timedelta(minutes=_min)
-                  for _min in range(5, 65, 5)]
+                  for _min in range(5, 5+12*5, 5)]
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
@@ -118,9 +127,10 @@ def _get_cex_vals(deadline_dt):
     helpers.print_datetime_info("CEX data info", allcex_uts)
 
     cex_vals = helpers.filter_to_target_uts(target_uts, allcex_uts, allcex_vals)
-    print(f"cex ETH price is ${cex_vals[0]} at target time 0")
-    print(f"cex_vals: {cex_vals}")
+    print(f"  cex ETH price is ${cex_vals[0]} at target time 0")
+    print(f"  cex_vals: {cex_vals}")
 
+    print("get_cex_vals: done")
     return cex_vals
 
 
@@ -229,9 +239,9 @@ def get_challenge_data(deadline_dt: datetime, judge_acct) \
       nft_addrs -- list of [tx_i] : nft_addr_str
       nmses -- list of [tx_i] : nmse_float_or_int
     """
+    print(f"get_challenge_data: start. deadline_dt={deadline_dt}")
     assert deadline_dt.tzinfo == timezone.utc, "deadline must be in UTC"
     assert judge_acct.address.lower() == JUDGE_ADDRESS.lower()
-    print(f"get_challenge_data: start. deadline_dt={deadline_dt}")
     
     cex_vals = _get_cex_vals(deadline_dt)
 
