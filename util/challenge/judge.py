@@ -260,7 +260,7 @@ def get_challenge_data(
     from_addrs = [_from_addr(tx) for tx in txs]
 
     n = len(nft_addrs)
-    nmses = [None] * n  # fill this in
+    nmses = [1.0] * n  # fill this in
     for i in range(n):
         tx, nft_addr, from_addr = txs[i], nft_addrs[i], from_addrs[i]
 

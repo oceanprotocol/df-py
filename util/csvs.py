@@ -230,11 +230,11 @@ def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
             if row_i == 0:
                 assert row == ["from_addr", "nft_addr", "nmse"]
                 continue
-            from_addr, nft_addr, nmse = row
+            from_addr, nft_addr, nmse_s = row
 
             from_addr = from_addr.lower()
             nft_addr = nft_addr.lower()
-            nmse = float(nmse)
+            nmse = float(nmse_s)
 
             assertIsEthAddr(from_addr)
             assertIsEthAddr(nft_addr)
