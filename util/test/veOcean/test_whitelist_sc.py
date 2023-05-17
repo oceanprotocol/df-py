@@ -29,7 +29,6 @@ def test_velock_not_whitelisted():
 
 
 @enforce_types
-@pytest.mark.skip(reason="Skip until #575 fixed")
 def test_velock_whitelisted():
     """Test that a whitelisted contract can create a lock."""
 
@@ -50,7 +49,8 @@ def test_velock_whitelisted():
     assert epoch != 0
 
     assert veOCEAN.get_last_user_slope(veLocker) != 0
-    veLockerVotingPower = (veOCEAN.balanceOf(veLocker, chain.time())) / to_wei(1.0)
+    chain_time = chain[-1].timestamp
+    veLockerVotingPower = (veOCEAN.balanceOf(veLocker, chain_time)) / to_wei(1.0)
     expectedVotingPower = (TA * WEEK / MAXTIME) / to_wei(1.0)
     assert veLockerVotingPower == approx(expectedVotingPower, 0.5)
 

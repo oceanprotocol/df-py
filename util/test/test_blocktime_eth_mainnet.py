@@ -32,7 +32,7 @@ def test_timestrToBlock_eth_1():
     block = chain[-5000].number
 
     # convert ts to YYYY-MM-DD_HH:MM
-    dt = datetime.fromtimestamp(ts)
+    dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
     guess = timestrToBlock(chain, dt_str, True)
@@ -44,7 +44,7 @@ def test_timestrToBlock_eth_1():
 def test_timestrToBlock_eth_2():
     expected = 15735470
     ts = 1665619200
-    dt = datetime.fromtimestamp(ts)
+    dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
     guess = timestrToBlock(chain, dt_str, True)
