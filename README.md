@@ -71,7 +71,9 @@ brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 #add pwd to bash path
 export PATH=$PATH:.
 
-#set judge private key (needed for challenge DF, incl. tests)
+#set judge private key
+#  - get at private repo https://github.com/oceanprotocol/private-keys
+#  - CI automatically sees it via Github Actions Secrets
 export JUDGE_PRIVATE_KEY=<judge key>
 
 #compile contracts

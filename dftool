@@ -58,8 +58,8 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES] - query chain, output volumes, symbols, owners
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  dftool challenge_df_data CSV_DIR CHAINID [DEADLINE] [RETRIES]
-  dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
+  dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
+  dftool predictoor_data CSV_DIR CHAINID [RETRIES]
   dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
@@ -119,8 +119,8 @@ Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   RETRIES -- # times to retry failed queries
 
 Uses these envvars:
-ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-SECRET_SEED -- secret integer used to seed the rng
+  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+  SECRET_SEED -- secret integer used to seed the rng
 """
     if len(sys.argv) not in [2 + 5, 2 + 6]:
         print(HELP)
@@ -137,7 +137,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     print("dftool volsym: Begin")
     print(
-        f"Arguments:\n "
+        f"Arguments: "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
@@ -197,7 +197,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
 
     print("dftool nftinfo: Begin")
     print(
-        f"Arguments:\n "
+        f"Arguments: "
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
         f"\n ENDBLOCK={ENDBLOCK}"
@@ -209,7 +209,12 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
-    print(f"Hardcoded values:\n " f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
+    print(
+        f"Hardcoded values:"
+        f"\n RETRIES={RETRIES}"
+        f"\n DELAY_S={DELAY_S}"
+        "\n"
+    )
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
@@ -245,7 +250,7 @@ Usage: dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   RETRIES -- # times to retry failed queries
 
 Uses these envvars:
-SECRET_SEED -- secret integer used to seed the rng
+  SECRET_SEED -- secret integer used to seed the rng
 """
     if len(sys.argv) not in [7, 8]:
         print(HELP)
@@ -262,7 +267,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     print("dftool do_allocations: Begin")
     print(
-        f"Arguments:\n "
+        f"Arguments: "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
@@ -305,7 +310,7 @@ Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   RETRIES -- # times to retry failed queries
 
 Uses these envvars:
-SECRET_SEED -- secret integer used to seed the rng
+  SECRET_SEED -- secret integer used to seed the rng
 """
     if len(sys.argv) not in [7, 8]:
         print(HELP)
@@ -322,7 +327,7 @@ SECRET_SEED -- secret integer used to seed the rng
 
     print("dftool vebals: Begin")
     print(
-        f"Arguments:\n "
+        f"Arguments: "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
@@ -391,37 +396,48 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
 
 # ========================================================================
 @enforce_types
-def do_challenge_df_data():
+def do_challenge_data():
+    # hardcoded values
+    CHAINID = 80001 # only on mumbai
+
     HELP = f"""Get data for Challenge DF
 
-Usage: dftool challenge_df_data CSV_DIR CHAINID [DEADLINE] [RETRIES]
+Usage: dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  CHAINID -- {CHAINID_EXAMPLES}
   DEADLINE -- submission deadline. 
     Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
     Example for Round 5: 2023-05-03_23:59
   RETRIES -- # times to retry failed queries
 
+Hardcoded values:
+  CHAINID = {CHAINID}
+
 Uses these envvars:
-ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=CHAINID)}
+  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=CHAINID)}
 """
-    if len(sys.argv) not in [2 + 3, 2 + 4]:
+    if len(sys.argv) not in [2 + 1, 2 + 2, 2+3]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "challenge_df_data"
+    assert sys.argv[1] == "challenge_data"
     CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
-    DEADLINE = sys.argv[4]
-    RETRIES = 1 if len(sys.argv) == 5 else int(sys.argv[5])
-    print("dftool challenge_df_data: Begin")
+    DEADLINE = "None" if len(sys.argv) <= 3 else sys.argv[3]
+    RETRIES = 1 if len(sys.argv) <= 4 else int(sys.argv[4])
+    print("dftool challenge_data: Begin\n")
+    
     print(
-        f"Arguments:\n"
+        f"Arguments:"
         f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
         f"\n DEADLINE={DEADLINE}"
         f"\n RETRIES={RETRIES}"
+        "\n"
+    )
+
+    print(
+        f"Hardcoded values:"
+        f"\n CHAINID={CHAINID}"
+        "\n"
     )
 
     # extract envvars
@@ -435,24 +451,27 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     # brownie setup
     networkutil.connect(CHAINID)
     recordDeployedContracts(ADDRESS_FILE)
-    judge_acct = FIXME
+    judge_acct = judge.get_judge_acct()
 
     # main work
     deadline_dt = judge.parse_deadline_str(DEADLINE)
-    nmses = judge.get_nmses(deadline_dt, judge_acct)
-    judge.print_nmses_results(nmses)
-    challenge_data = [nmses]
-    csvs.saveChallengeData(challenge_data, CSV_DIR, CHAINID)
+    
+    if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
+        challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
+    else: # main path
+        challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
-    print("dftool challenge_df_data: Done")
+    csvs.saveChallengeDataCsv(challenge_data, csv_dir)
+
+    print("dftool challenge_data: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_predictoor_df_data():
+def do_predictoor_data():
     HELP = f"""Get data for Predictoor DF
 
-Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
+Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
   CHAINID -- {CHAINID_EXAMPLES}
   RETRIES -- # times to retry failed queries
@@ -462,13 +481,13 @@ Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "predictoor_df_data"
+    assert sys.argv[1] == "predictoor_data"
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
     RETRIES = 1 if len(sys.argv) == 4 else int(sys.argv[4])
-    print("dftool predictoor_df_data: Begin")
+    print("dftool predictoor_data: Begin")
     print(
-        f"Arguments:\n "
+        f"Arguments: "
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
         f"\n RETRIES={RETRIES}"
@@ -490,13 +509,13 @@ Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
 
     # main work
     predictoor_data = retryFunction(
-        query.queryPredictoorData,
+        query.queryPredictoor_Data,
         RETRIES,
         CHAINID,
     )
-    csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
+    csvs.savePredictoor_Data(predictoor_data, CSV_DIR, CHAINID)
 
-    print("dftool predictoor_df_data: Done")
+    print("dftool predictoor_data: Done")
 
 
 # ========================================================================
@@ -522,7 +541,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
 
     print("dftool calc: Begin")
     print(
-        f"Arguments:\n "
+        f"Arguments: "
         f"\n CSV_DIR={CSV_DIR}"
         f"\n TOT_OCEAN={TOT_OCEAN}"
         f"\n START_DATE={START_DATE}"
@@ -822,10 +841,12 @@ Usage: dftool compile
 def do_initdevwallets():
     # UPADATE THIS
     HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+
 Usage: dftool initdevwallets CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
+
 Uses these envvars:
-ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 """
     if len(sys.argv) not in [3]:
         print(HELP)
@@ -868,7 +889,7 @@ Usage: dftool manyrandom CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 
 Uses these envvars:
-ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
 """
     if len(sys.argv) not in [3]:
         print(HELP)
@@ -1310,8 +1331,8 @@ ARGV_FNS = {
     # write actions
     "compile": do_compile,
     "volsym": do_volsym,
-    "challenge_df_data": do_challenge_df_data,
-    "predictoor_df_data": do_predictoor_df_data,
+    "challenge_data": do_challenge_data,
+    "predictoor_data": do_predictoor_data,
     "allocations": do_allocations,
     "calc": do_calc,
     "dispense_active": do_dispense_active,

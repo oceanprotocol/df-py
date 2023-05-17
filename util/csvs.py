@@ -176,6 +176,84 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
 
 
 # ========================================================================
+# challenge_df_data
+
+def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
+    """
+    @description
+      Save challenge data csv.
+
+    @arguments
+      challenge_data -- tuple of (from_addrs, nft_addrs, nmses), 
+        all ordered with lowest nmse first
+      csv_dir -- 
+    """
+    (from_addrs, nft_addrs, nmses) = challenge_data
+    assert len(from_addrs) == len(nft_addrs) == len(nmses)
+    assert sorted(nmses) == nmses
+    
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = challengeDataCsvFilename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["from_addr", "nft_addr", "nmse"]
+        writer.writerow(row)
+        for (from_addr, nft_addr, nmse) in zip(from_addrs, nft_addrs, nmses):
+            assertIsEthAddr(from_addr)
+            assertIsEthAddr(nft_addr)
+            row = [
+                from_addr.lower(),
+                nft_addr.lower(),
+                f"{nmse:.3e}",
+            ]
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+
+def loadChallengeDataCsv(csv_dir: str) \
+    -> Tuple[List[str], List[str], list]:
+    """
+    @description
+      Load challenge data csv
+
+    @return
+      challenge_data -- tuple of (from_addrs, nft_addrs, nmses), 
+        all ordered with lowest nmse first
+    """
+    csv_file = challengeDataCsvFilename(csv_dir)
+    from_addrs, nft_addrs, nmses = [], [], []
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:
+                assert row == ["from_addr", "nft_addr", "nmse"]
+                continue
+            from_addr, nft_addr, nmse = row
+
+            from_addr = from_addr.lower()
+            nft_addr = nft_addr.lower()
+            nmse = float(nmse)
+
+            assertIsEthAddr(from_addr)
+            assertIsEthAddr(nft_addr)
+
+            from_addrs.append(from_addr)
+            nft_addrs.append(nft_addr)
+            nmses.append(nmse)
+    assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
+
+    print(f"Loaded {csv_file}")
+    return (from_addrs, nft_addrs, nmses)
+
+
+@enforce_types
+def challengeDataCsvFilename(csv_dir: str) -> str:
+    f = "challenge.csv"
+    return os.path.join(csv_dir, f)
+
+# ========================================================================
 # passive csv
 
 
