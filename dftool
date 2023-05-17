@@ -1383,7 +1383,8 @@ ARGV_FNS = {
 
     # temporary old names for compatibility
     #
-    # TODO: these need to be removed after deprecation from related repos
+    # Consider this a TODO
+    # These mappings need to be removed after deprecation from related repos.
     # The correction needs to be done in in dftool as well, in lines like:
     # assert sys.argv[1] in ["get_rate", "getrate"]
     #
