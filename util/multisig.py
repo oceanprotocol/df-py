@@ -72,5 +72,6 @@ def send_multisig_tx(multisig_address, to, value, data):
     headers = {"Content-Type": "application/json"}
 
     response = requests.request(
-        "POST", API_URL, headers=headers, data=json_payload, timeout=30)
+        "POST", API_URL, headers=headers, data=json_payload, timeout=30
+    )
     print(response.text.encode("utf8"))

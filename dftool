@@ -1252,7 +1252,7 @@ Usage: dftool checkpoint_feedist CHAINID
         feedist.checkpoint_total_supply({"from": from_account})
         feedist.checkpoint_token({"from": from_account})
 
-    except Exception as e: # pylint: disable=broad-exception-caught
+    except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Checkpoint failed: {e}, submitting tx to multisig")
         total_supply_encoded = feedist.checkpoint_total_supply.encode_input()
         checkpoint_token_encoded = feedist.checkpoint_token.encode_input()
