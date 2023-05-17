@@ -1,3 +1,4 @@
+import brownie
 from enforce_typing import enforce_types
 
 from util import crypto
@@ -5,7 +6,7 @@ from util import crypto
 
 @enforce_types
 def test_asym_encrypt_decrypt():
-    alice = FIXME
+    alice = brownie.accounts.add()
 
     privkey = alice.private_key  # str
     pubkey = crypto.calc_pubkey(privkey)  # str

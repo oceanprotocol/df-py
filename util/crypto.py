@@ -3,7 +3,9 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 from ecies import decrypt as asymmetric_decrypt
+from ecies import encrypt as asymmetric_encrypt
 from enforce_typing import enforce_types
+from eth_keys import keys
 from eth_utils import decode_hex
 
 
