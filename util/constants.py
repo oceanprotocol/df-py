@@ -6,8 +6,19 @@ AQUARIUS_BASE_URL = "https://v4.aquarius.oceanprotocol.com"
 BROWNIE_PROJECT = brownie.project.load("./", name="MyProject")
 
 MAX_ALLOCATE = 10000.0
+ACTIVE_REWARDS_MULTIPLIER = 0.5
 
 DO_PUBREWARDS = True
+
+DFMAIN_CONSTANTS = {
+    # DF week thresholds and reward amounts
+    # Counting starts from 0
+    28: 0.0,
+    80: 150000.0,  # weekly 150k from weeks 29 to 79
+    106: 300000.0,
+    132: 600000.0
+    # we use the halflife formula after week 132
+}
 
 # used by _rankBasedAllocate() as part of reward function
 DO_RANK = True

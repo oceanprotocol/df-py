@@ -3,7 +3,7 @@ import brownie
 
 from enforce_typing import enforce_types
 from util import constants, oceanutil
-from util.base18 import toBase18, fromBase18
+from util.base18 import to_wei, from_wei
 
 network = brownie.network
 
@@ -13,7 +13,7 @@ NUM_CONSUMES = 3  # 100
 
 # ve constants
 NUM_LOCKS = 3
-LOCK_AMOUNT = toBase18(1000.0)
+LOCK_AMOUNT = to_wei(1000.0)
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
 NUM_ALLOCATES = 3
@@ -31,13 +31,13 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 def fillAccountsWithToken(token):
     accounts = network.accounts
     for i in range(1, 10):
-        bal_before = fromBase18(token.balanceOf(accounts[i]))
+        bal_before = from_wei(token.balanceOf(accounts[i]))
         if bal_before < 1000.0:
-            token.transfer(accounts[i], toBase18(1000.0), {"from": accounts[0]})
+            token.transfer(accounts[i], to_wei(1000.0), {"from": accounts[0]})
 
     print(f"fillAccountsWithToken({token.symbol()}), balances after:")
     for i in range(10):
-        amt = fromBase18(token.balanceOf(accounts[i]))
+        amt = from_wei(token.balanceOf(accounts[i]))
         print(f"  Account #{i} has {amt} {token.symbol()}")
 
 
@@ -72,10 +72,10 @@ def randomAddStake(pool, pub_account_i: int, token):
 
 @enforce_types
 def addStake(pool, TOKEN_stake: float, from_account, token):
-    token.approve(pool.address, toBase18(TOKEN_stake), {"from": from_account})
+    token.approve(pool.address, to_wei(TOKEN_stake), {"from": from_account})
 
-    token_amt_in = toBase18(TOKEN_stake)
-    min_pool_amt_out = toBase18(MIN_POOL_BPTS_OUT_FROM_STAKE)  # magic number
+    token_amt_in = to_wei(TOKEN_stake)
+    min_pool_amt_out = to_wei(MIN_POOL_BPTS_OUT_FROM_STAKE)  # magic number
 
     # assert tokenAmountIn <= poolBalanceOfToken * MAX_IN_RATIO, "ERR_MAX_IN_RATIO
     pool.joinswapExternAmountIn(token_amt_in, min_pool_amt_out, {"from": from_account})
@@ -83,7 +83,7 @@ def addStake(pool, TOKEN_stake: float, from_account, token):
 
 @enforce_types
 def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
-    base_token.approve(pool.address, toBase18(max_TOKEN), {"from": from_account})
+    base_token.approve(pool.address, to_wei(max_TOKEN), {"from": from_account})
 
     tokenInOutMarket = [
         base_token.address,  # token in address
@@ -91,14 +91,14 @@ def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_toke
         constants.ZERO_ADDRESS,  # market fee  address
     ]
     amountsInOutMaxFee = [
-        toBase18(max_TOKEN),  # max TOKEN in
-        toBase18(DT_buy_amt),  # target DT out
-        toBase18(AVG_DT_TOKEN_RATE * 10),  # max price
+        to_wei(max_TOKEN),  # max TOKEN in
+        to_wei(DT_buy_amt),  # target DT out
+        to_wei(AVG_DT_TOKEN_RATE * 10),  # max price
         0,  # swap market fee
     ]
 
     # the following test will pass until lotsa activity
-    spot_price = fromBase18(pool.getSpotPrice(base_token.address, DT.address, 0))
+    spot_price = from_wei(pool.getSpotPrice(base_token.address, DT.address, 0))
     assert AVG_DT_TOKEN_RATE / 5 <= spot_price <= AVG_DT_TOKEN_RATE * 5
 
     # spotPriceBefore = calcSpotPrice(..)
@@ -129,14 +129,14 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
 @enforce_types
 def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
     base_token.approve(
-        oceanutil.FixedPrice().address, toBase18(max_TOKEN), {"from": from_account}
+        oceanutil.FixedPrice().address, to_wei(max_TOKEN), {"from": from_account}
     )
 
     feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
     oceanutil.FixedPrice().buyDT(
         exchangeId,
-        toBase18(DT_buy_amt),
-        toBase18(max_TOKEN),
+        to_wei(DT_buy_amt),
+        to_wei(max_TOKEN),
         feesInfo[1],
         feesInfo[0],
         {"from": from_account},
@@ -208,8 +208,8 @@ def randomLockAndAllocate(tups: list):
             lock_account
         )
         oceanutil.set_allocation(
-            allc_amt,
-            data_nft,
+            int(allc_amt),
+            data_nft.address,
             8996,
             lock_account,
         )

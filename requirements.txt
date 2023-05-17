@@ -3,6 +3,11 @@ enforce_typing
 mypy
 numpy
 pandas
+pytest
+requests
 scipy
 types-requests
 coverage
+ccxt==3.0.84
+eciespy
+gql

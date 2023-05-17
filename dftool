@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 # pylint: disable=too-many-lines,too-many-statements
 import datetime
+import functools
 import os
 import sys
-import functools
+from calendar import WEDNESDAY
+
 import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
+
 from util import (
     allocations,
     blockrange,
@@ -18,26 +21,26 @@ from util import (
     networkutil,
     query,
 )
+from util.base18 import from_wei
+from util.blocktime import getfinBlock, timestrToTimestamp
 from util.calcrewards import calcRewards
-from util.retry import retryFunction
-from util.base18 import fromBase18
 from util.constants import BROWNIE_PROJECT as B
+from util.judge import do_get_nmses, print_nmses_results
+from util.multisig import send_multisig_tx
 from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
-from util.oceanutil import (
-    recordDeployedContracts,
-    OCEANtoken,
-    veAllocate,
-    FeeDistributor,
-)
-
 from util.oceantestutil import (
+    randomConsumeFREs,
     randomCreateDataNFTWithFREs,
     randomLockAndAllocate,
-    randomConsumeFREs,
 )
-
-from util.blocktime import getfinBlock, timestrToTimestamp
-from util.multisig import send_multisig_tx
+from util.oceanutil import (
+    FeeDistributor,
+    OCEANtoken,
+    recordDeployedContracts,
+    veAllocate,
+)
+from util.retry import retryFunction
+from util.vesting_schedule import getActiveRewardAmountForWeekEth
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -48,30 +51,30 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_MAIN = """Data Farming tool, for use by OPF.
 
-Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
+Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
 
   # Help Actions
-  dftool help - this message
+  dftool help - full command list
 
-  # Init Actions
+  # Init actions
   dftool compile - compile contracts
-  
+
   # Data Farming query & calc actions
-  dftool calc CSV_DIR TOT_OCEAN IGNORED - from (rates, volumes, ..), calc rewards
-  dftool volsym ST FIN NSAMP CSV_DIR CHAINID - query chain, get (volumes, symbols, owners)
-  dftool nftinfo CSV_DIR CHAINID [FIN] - Query chain, output nft_info csv
-  dftool allocations ST FIN NSAMP CSV_DIR CHAINID
-  dftool vebals ST FIN NSAMP CSV_DIR CHAINID
-  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR - get exchange rate
-  dftool calculate_passive CHAINID DATE CSV_DIR - Calculate passive rewards.
-  
+  dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
+  dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES] - query chain, output volumes, symbols, owners
+  dftool nft_info CSV_DIR CHAINID -- Query chain, output nft info csv
+  dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
+  dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
+  dftool calculate_passive CHAINID DATE CSV_DIR
+  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
+
   # Web3 Ops Actions
-  dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] - from rewards, dispense funds
+  dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
+  dftool dispense_passive CHAINID AMOUNT
   dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
-  dftool dispense_passive CHAINID AMOUNT - dispense rewards in OCEAN on chainID
   dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
-  
+
   # Debug Actions
   dftool init_dev_wallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool many_random CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
@@ -82,13 +85,22 @@ Usage: dftool getrate|volsym|.. ARG1 ARG2 ..
   dftool new_veallocate CHAINID - deploy veAllocate (for testing)
   dftool new_dfrewards CHAINID - deploy new DFRewards contract
   dftool new_dfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
-  
-  # DFVE User Actions
-  dftool set_veallocate CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
-  # Read Actions
+  # DFVE User Actions
+  dftool set_veallocate CHAINID amount exchangeId
+
+  # Predict ETH Judge actions
+  dftool judge DEADLINE - judge Predict ETH challenge
+  dftool judge_and_dispense - judge Predict ETH challenge based on "last Wednesday" deadline
+
+  # Read actions
   dftool acct_info CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chain_info CHAINID - info about a network
+
+  # Mischellaneous
+  dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
+  dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
+
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -103,15 +115,15 @@ def do_help():
 # ========================================================================
 @enforce_types
 def do_volsym():
-    HELP = f"""Query chain, output nft volumes, symbols, owners
+    HELP = f"""Query chain, output volumes, symbols, owners
 
-Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID
+Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
-  [RETRIES] -- optional, # times to retry failed queries
+  RETRIES -- # times to retry failed queries
 
 Uses these envvars:
 ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
@@ -121,21 +133,23 @@ SECRET_SEED -- secret integer used to seed the rng
         print(HELP)
         sys.exit(0)
 
-    RETRIES = 1
-    if len(sys.argv) == 2 + 6:
-        RETRIES = int(sys.argv[7])
-
     # extract inputs
     assert sys.argv[1] == "volsym"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
+    RETRIES = 1
+    if len(sys.argv) == 2 + 6:
+        RETRIES = int(sys.argv[7])
+
     print("dftool volsym: Begin")
     print(
         f"Arguments:\n "
         f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
         f"\n CSV_DIR={CSV_DIR}"
         f"\n CHAINID={CHAINID}"
+        f"\n RETRIES={RETRIES}"
+        "\n"
     )
 
     # extract envvars
@@ -153,11 +167,10 @@ SECRET_SEED -- secret integer used to seed the rng
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-
     recordDeployedContracts(ADDRESS_FILE)
-    # main work
 
+    # main work
+    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     (Vi, Ci, SYMi) = retryFunction(
         query.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
     )
@@ -172,34 +185,55 @@ SECRET_SEED -- secret integer used to seed the rng
 
 
 @enforce_types
-def do_nftinfo():
+def do_nft_info():
     HELP = f"""Query chain, output nft info csv
-Usage: dftool nftinfo CSV_DIR CHAINID
+Usage: dftool nft_info CSV_DIR CHAINID [FIN]
     CSV_DIR -- output dir for nftinfo-CHAINID.csv
     CHAINID -- {CHAINID_EXAMPLES}
-    [FIN] -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
+    FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
     # extract inputs
-    assert sys.argv[1] == "nftinfo"
+    assert sys.argv[1] == "nft_info"
     CSV_DIR = sys.argv[2]
     CHAINID = int(sys.argv[3])
     ENDBLOCK = sys.argv[4] if len(sys.argv) == 5 else "latest"
-    networkutil.connect(CHAINID)
-    chain = brownie.network.chain
-    ENDBLOCK = getfinBlock(chain, ENDBLOCK)
+
+    print("dftool nft_info: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n ENDBLOCK={ENDBLOCK}"
+        "\n"
+    )
+
+    # hardcoded values
+    # -query.queryNftinfo() can be problematic; it's only used for frontend data
+    # -so retry 3 times with 10s delay by default
+    RETRIES = 3
+    DELAY_S = 10
+    print(f"Hardcoded values:\n " f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
+
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
 
-    # query.queryNftinfo() can be problematic; it's only used for frontend data
-    # retry 3 times with 10s delay by default
-    nftinfo = retryFunction(query.queryNftinfo, 3, 10, CHAINID, ENDBLOCK)
+    # brownie setup
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain
+
+    # update ENDBLOCK
+    ENDBLOCK = getfinBlock(chain, ENDBLOCK)
+    print("Updated ENDBLOCK, new value = {ENDBLOCK}")
+
+    # main work
+    nftinfo = retryFunction(query.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
-    print("dftool nftinfo: Done")
+    print("dftool nft_info: Done")
 
 
 # ========================================================================
@@ -209,13 +243,13 @@ Usage: dftool nftinfo CSV_DIR CHAINID
 def do_allocations():
     HELP = f"""Query chain, outputs allocation csv
 
-Usage: dftool allocations ST FIN NSAMP CSV_DIR CHAINID
+Usage: dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
-  [RETRIES] -- # times to retry failed queries
+  RETRIES -- # times to retry failed queries
 
 Uses these envvars:
 SECRET_SEED -- secret integer used to seed the rng
@@ -224,15 +258,24 @@ SECRET_SEED -- secret integer used to seed the rng
         print(HELP)
         sys.exit(0)
 
-    RETRIES = 1
-    if len(sys.argv) == 8:
-        RETRIES = int(sys.argv[7])
-
     # extract inputs
     assert sys.argv[1] == "allocations"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
+    RETRIES = 1
+    if len(sys.argv) == 8:
+        RETRIES = int(sys.argv[7])
+
+    print("dftool do_allocations: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n RETRIES={RETRIES}"
+        "\n"
+    )
 
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
@@ -245,8 +288,8 @@ SECRET_SEED -- secret integer used to seed the rng
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
+    # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-
     allocs = retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
@@ -260,13 +303,13 @@ SECRET_SEED -- secret integer used to seed the rng
 def do_vebals():
     HELP = f"""Query chain, outputs veBalances csv
 
-Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID
+Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
   FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
   NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
   CSV_DIR -- output dir for stakes-CHAINID.csv, etc
   CHAINID -- {CHAINID_EXAMPLES}
-  [RETRIES] -- # times to retry failed queries
+  RETRIES -- # times to retry failed queries
 
 Uses these envvars:
 SECRET_SEED -- secret integer used to seed the rng
@@ -275,15 +318,24 @@ SECRET_SEED -- secret integer used to seed the rng
         print(HELP)
         sys.exit(0)
 
-    RETRIES = 1
-    if len(sys.argv) == 8:
-        RETRIES = int(sys.argv[7])
-
     # extract inputs
     assert sys.argv[1] == "vebals"
     ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
     CSV_DIR = sys.argv[5]
     CHAINID = int(sys.argv[6])
+    RETRIES = 1
+    if len(sys.argv) == 8:
+        RETRIES = int(sys.argv[7])
+
+    print("dftool vebals: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n RETRIES={RETRIES}"
+        "\n"
+    )
 
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
@@ -307,30 +359,30 @@ SECRET_SEED -- secret integer used to seed the rng
 
 # ========================================================================
 @enforce_types
-def do_getrate():
-    HELP = """Get exchange rate, and output rate csv.
+def do_get_rate():
+    HELP = """Get exchange rate, and output rate csv
 
-Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
+Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
   TOKEN_SYMBOL -- e.g. OCEAN, H2O
   ST -- start time -- YYYY-MM-DD
   FIN -- end time -- YYYY-MM-DD
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  [RETRIES] -- # times to retry failed queries
+  RETRIES -- # times to retry failed queries
 """
     if len(sys.argv) not in [2 + 4, 2 + 5]:
         print(HELP)
         sys.exit(0)
 
-    RETRIES = 1
-    if len(sys.argv) == 2 + 5:
-        RETRIES = int(sys.argv[2 + 4])
-
     # extract inputs
-    assert sys.argv[1] == "getrate"
+    assert sys.argv[1] == "get_rate"
     TOKEN_SYMBOL = sys.argv[2]
     ST, FIN = sys.argv[3], sys.argv[4]
     CSV_DIR = sys.argv[5]
-    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}")
+    RETRIES = 1
+    if len(sys.argv) == 2 + 5:
+        RETRIES = int(sys.argv[2 + 4])
+    print("dftool getrate: Begin")
+    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}\n")
 
     # check files, prep dir
     _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
@@ -341,19 +393,129 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
+    print("dftool getrate: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_challenge_df_data():
+    HELP = f"""Get data for Challenge DF
+
+Usage: dftool challenge_df_data CSV_DIR CHAINID DEADLINE [RETRIES]
+  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+  CHAINID -- {CHAINID_EXAMPLES}
+  DEADLINE -- submission deadlie. Format is YYYY-MM-DD_HOUR:MIN, in UTC
+  RETRIES -- # times to retry failed queries
+"""
+    if len(sys.argv) not in [2 + 3, 2 + 4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "challenge_df_data"
+    CSV_DIR = sys.argv[2]
+    CHAINID = int(sys.argv[3])
+    DEADLINE = sys.argv[4]
+    RETRIES = 1 if len(sys.argv) == 5 else int(sys.argv[5])
+    print("dftool challenge_df_data: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n DEADLINE={DEADLINE}"
+        f"\n RETRIES={RETRIES}"
+    )
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()  # pylint: disable=unused-variable
+
+    # check files, prep dir
+    if not os.path.exists(CSV_DIR):
+        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
+        sys.exit(0)
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain  # pylint: disable=unused-variable
+    recordDeployedContracts(ADDRESS_FILE)
+
+    # main work
+    challenge_data = retryFunction(
+        query.queryChallengeData,
+        RETRIES,
+        CHAINID,
+        DEADLINE,
+    )
+    csvs.saveChallengeData(challenge_data, CSV_DIR, CHAINID)
+
+    print("dftool challenge_df_data: Done")
+
+
+# ========================================================================
+@enforce_types
+def do_predictoor_df_data():
+    HELP = f"""Get data for Predictoor DF
+
+Usage: dftool predictoor_df_data CSV_DIR CHAINID [RETRIES]
+  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+  CHAINID -- {CHAINID_EXAMPLES}
+  RETRIES -- # times to retry failed queries
+"""
+    if len(sys.argv) not in [2 + 3, 2 + 4]:
+        print(HELP)
+        sys.exit(0)
+
+    # extract inputs
+    assert sys.argv[1] == "predictoor_df_data"
+    CSV_DIR = sys.argv[2]
+    CHAINID = int(sys.argv[3])
+    RETRIES = 1 if len(sys.argv) == 4 else int(sys.argv[4])
+    print("dftool predictoor_df_data: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n CHAINID={CHAINID}"
+        f"\n RETRIES={RETRIES}"
+    )
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    SECRET_SEED = _getSecretSeedOrExit()  # pylint: disable=unused-variable
+
+    # check files, prep dir
+    if not os.path.exists(CSV_DIR):
+        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
+        sys.exit(0)
+
+    # brownie setup
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain  # pylint: disable=unused-variable
+    recordDeployedContracts(ADDRESS_FILE)
+
+    # main work
+    predictoor_data = retryFunction(
+        query.queryPredictoorData,
+        RETRIES,
+        CHAINID,
+    )
+    csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
+
+    print("dftool predictoor_df_data: Done")
+
 
 # ========================================================================
 @enforce_types
 def do_calc():
-    HELP = """From stakes/vols/rates csvs, output rewards csvs.
+    HELP = """from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
 
-Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
+Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
-  IGNORED -- Ignored. This argument is kept for compatibility.
+  START_DATE -- week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0
+  IGNORED -- Ignored. Kept here for compatibility.
 """
-
-    if len(sys.argv) not in [4, 5]:
+    if len(sys.argv) not in [4, 5, 6]:
         print(HELP)
         sys.exit(0)
 
@@ -361,7 +523,32 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
-    print(f"Arguments:\n TOT_OCEAN={TOT_OCEAN}, CSV_DIR={CSV_DIR}")
+    START_DATE = None if len(sys.argv) == 4 else sys.argv[4]
+
+    print("dftool calc: Begin")
+    print(
+        f"Arguments:\n "
+        f"\n CSV_DIR={CSV_DIR}"
+        f"\n TOT_OCEAN={TOT_OCEAN}"
+        f"\n START_DATE={START_DATE}"
+        "\n"
+    )
+
+    # condition inputs
+    if TOT_OCEAN == 0 and START_DATE is None:
+        print("TOT_OCEAN == 0, so must give a start date. Exiting.")
+        sys.exit(0)
+
+    if TOT_OCEAN == 0:
+        START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
+        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
+        print(
+            f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
+            f", START_DATE={START_DATE}"
+        )
+    elif START_DATE is not None:
+        print("TOT_OCEAN was nonzero, so re-calc'd: START_DATE=None")
+        START_DATE = None
 
     # do we have the input files?
     alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
@@ -394,6 +581,11 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
 
+    # brownie setup
+    networkutil.connect(5)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    recordDeployedContracts(ADDRESS_FILE)
+
     # main work
     S = allocations.loadStakes(CSV_DIR)
     V = csvs.loadNftvolsCsvs(CSV_DIR)
@@ -403,8 +595,12 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
     do_pubrewards = constants.DO_PUBREWARDS
     do_rank = constants.DO_RANK
 
-    cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
-    prev_week = cur_week - 1
+    prev_week = 0
+    if START_DATE is None:
+        cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
+        prev_week = cur_week - 1
+    else:
+        prev_week = calcrewards.getDfWeekNumber(START_DATE)
     m = calcrewards.calcDcvMultiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
 
@@ -421,7 +617,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [IGNORED]
 # ========================================================================
 @enforce_types
 def do_dispense_active():
-    HELP = f"""From rewards csv, dispense funds to chain.
+    HELP = f"""From rewards csv, dispense funds to chain
 
 Usage: dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
   CSV_DIR -- input directory for csv rewards file
@@ -464,13 +660,15 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     print(
         f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
         f", DFREWARDS_ADDR={DFREWARDS_ADDR}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", BATCH_NBR={BATCH_NBR}"
+        f", BATCH_NBR={BATCH_NBR}\n"
     )
     assert DFREWARDS_ADDR is not None
     assert TOKEN_ADDR is not None
 
-    # main work
+    # brownie setup
     networkutil.connect(CHAINID)
+
+    # main work
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
@@ -478,6 +676,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     # "flatten" the rewards dict to dispense all chains in one go
     all_rewards = calcrewards.flattenRewards(rewards)
+
     # dispense
     dispense.dispense(
         all_rewards,
@@ -626,9 +825,9 @@ Usage: dftool compile
 # ========================================================================
 @enforce_types
 def do_init_dev_wallets():
-    # UPADATE THIS
+    # UPDATE THIS
     HELP = f"""dftool init_dev_wallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-Usage: dftool init_dev_wallets CHAINID 
+Usage: dftool initdevwallets CHAINID
   CHAINID -- {CHAINID_EXAMPLES}
 Uses these envvars:
 ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
@@ -667,7 +866,7 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
 # ========================================================================
 @enforce_types
 def do_many_random():
-    # UPADATE THIS
+    # UPDATE THIS
     HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
 
 Usage: dftool many_random CHAINID
@@ -709,11 +908,10 @@ ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainI
     print(f"dftool many_random: Done. {num_nfts} new nfts created.")
 
 
-
 # ========================================================================
 @enforce_types
 def do_mine():
-    HELP = """Force chain to pass time (ganache only).
+    HELP = """Force chain to pass time (ganache only)
 
 Usage: dftool mine BLOCKS [TIMEDELTA]
   BLOCKS -- e.g. 3
@@ -914,7 +1112,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
     if TOKEN_ADDR is not None:
         token = B.Simpletoken.at(TOKEN_ADDR)
         balance = token.balanceOf(ACCOUNT_ADDR)
-        print(f"  {fromBase18(balance)} {token.symbol()}")
+        print(f"  {from_wei(balance)} {token.symbol()}")
 
     # Give balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
@@ -922,7 +1120,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
         recordDeployedContracts(ADDRESS_FILE)
         OCEAN = OCEANtoken()
         if OCEAN.address != TOKEN_ADDR:
-            print(f"  {fromBase18(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
+            print(f"  {from_wei(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
 
 
 # ========================================================================
@@ -951,12 +1149,14 @@ Usage: dftool chain_info CHAINID
 # ========================================================================
 @enforce_types
 def do_dispense_passive_rewards():
-    HELP = f"""Dispense passive rewards.
+    HELP = f"""Dispense passive rewards
 
-Usage: dftool dispense_passive CHAINID AMOUNT
+Usage: dftool dispense_passive CHAINID AMOUNT [ST]
     CHAINID -- {CHAINID_EXAMPLES}
+    AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
+    ST -- week start date -- YYYY-MM-DD
 """
-    if len(sys.argv) not in [4]:
+    if len(sys.argv) not in [4, 5]:
         print(HELP)
         sys.exit(0)
 
@@ -964,11 +1164,15 @@ Usage: dftool dispense_passive CHAINID AMOUNT
     networkutil.connect(CHAINID)
     AMOUNT = float(sys.argv[3])
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-
     recordDeployedContracts(ADDRESS_FILE)
+
+    if AMOUNT == 0:
+        START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
+        AMOUNT = getActiveRewardAmountForWeekEth(START_DATE)
+
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
-    dispense.dispense_passive(OCEAN, feedist, AMOUNT)
+    retryFunction(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
 
@@ -976,7 +1180,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT
 # ========================================================================
 @enforce_types
 def do_calculate_passive():
-    HELP = f"""Calculate passive rewards.
+    HELP = f"""Calculate passive rewards
 
 Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     CHAINID -- {CHAINID_EXAMPLES}
@@ -1018,7 +1222,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
 # ========================================================================
 @enforce_types
 def do_checkpoint_feedist():
-    HELP = f"""Checkpoint FeeDistributor contract.
+    HELP = f"""Checkpoint FeeDistributor contract
 
 Usage: dftool checkpoint_feedist CHAINID
     CHAINID -- {CHAINID_EXAMPLES}
@@ -1050,14 +1254,40 @@ Usage: dftool checkpoint_feedist CHAINID
         multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
 
         # submit transactions to multisig
-        send_multisig_tx(multisig_addr, to, value, total_supply_encoded)
-        send_multisig_tx(multisig_addr, to, value, checkpoint_token_encoded)
+        retryFunction(
+            send_multisig_tx, 3, 60, multisig_addr, to, value, total_supply_encoded
+        )
+        retryFunction(
+            send_multisig_tx, 3, 60, multisig_addr, to, value, checkpoint_token_encoded
+        )
 
     print("Checkpointed FeeDistributor")
 
 
 # ========================================================================
 # utilities
+def do_judge():
+    networkutil.connect(80001)
+    nmses = do_get_nmses(sys.argv)
+    print_nmses_results(nmses)
+    networkutil.disconnect()
+
+
+def do_judge_and_dispense():
+    networkutil.connect(80001)
+    today = datetime.datetime.now()
+    offset = (today.weekday() - WEDNESDAY) % 7
+    last_wednesday = today - datetime.timedelta(days=offset)
+
+    deadline = last_wednesday.replace(
+        hour=23, minute=59, second=0, microsecond=0
+    )
+    deadline_str = datetime.datetime.strftime(deadline, "%Y-%m-%d_%H:%M")
+    nmses = do_get_nmses(["dftool", "judge", deadline_str])
+
+    # Consider this a TO DO: dispense, not print
+    print_nmses_results(nmses)
+    networkutil.disconnect()
 
 
 def _exitIfFileExists(filename: str):
@@ -1103,45 +1333,53 @@ def _getPrivateAccount():
 
 
 ARGV_FNS = {
-    # Help Actions
+    # Help actions
     "help": do_help,
 
-    # Init Actions
-    "compile" : do_compile,
+    # Init actions
+    "compile": do_compile,
 
     # Data Farming query & calc actions
-    "calc" : do_calc,
+    "calc": do_calc,
     "volsym": do_volsym,
-    "nftinfo" : do_nftinfo,
-    "allocations" : do_allocations,
-    "vebals" : do_vebals,
-    "getrate" : do_getrate,
-    "calculate_passive" : do_calculate_passive,
+    "nft_info": do_nft_info,
+    "allocations": do_allocations,
+    "vebals": do_vebals,
+    "calculate_passive": do_calculate_passive,
+    "get_rate": do_get_rate,
 
     # Web3 Ops Actions
-    "dispense_active" : do_dispense_active,
-    "checkpoint_feedist" : do_checkpoint_feedist,
-    "dispense_passive" : do_dispense_passive_rewards,
-    "add_strategy" : do_add_strategy,
-    "retire_strategy" : do_retire_strategy,
+    "dispense_active": do_dispense_active,
+    "dispense_passive": do_dispense_passive_rewards,
+    "checkpoint_feedist": do_checkpoint_feedist,
+    "add_strategy": do_add_strategy,
+    "retire_strategy": do_retire_strategy,
 
     # Debug Actions
     "init_dev_wallets": do_init_dev_wallets,
-    "many_random" : do_many_random,
-    "mine" : do_mine,
-    "new_acct" : do_new_acct,
-    "new_token" : do_new_token,
-    "new_veocean" : do_new_veocean,
-    "new_veallocate" : do_new_veallocate,
-    "new_dfrewards" : do_new_dfrewards,
-    "new_dfstrategy" : do_new_dfstrategy,
+    "many_random": do_many_random,
+    "mine": do_mine,
+    "new_acct": do_new_acct,
+    "new_token": do_new_token,
+    "new_veocean": do_new_veocean,
+    "new_veallocate": do_new_veallocate,
+    "new_dfrewards": do_new_dfrewards,
+    "new_dfstrategy": do_new_dfstrategy,
 
     # DFVE User Actions
-    "set_veallocate" : do_set_veallocate,
+    "set_veallocate": do_set_veallocate,
 
-    # Read Actions
-    "acct_info" : do_acct_info,
-    "chain_info" : do_chain_info,
+    # Predict ETH Judge actions
+    "judge": do_judge,
+    "judge_and_dispense": do_judge_and_dispense,
+
+    # Read actions
+    "acct_info": do_acct_info,
+    "chain_info": do_chain_info,
+
+    # Mischellaneous
+    "challenge_df_data": do_challenge_df_data,
+    "predictoor_df_data": do_predictoor_df_data,
 }
 
 

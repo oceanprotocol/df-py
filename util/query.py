@@ -14,7 +14,7 @@ from util.constants import (
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
-from util.base18 import fromBase18
+from util.base18 import from_wei
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
 
@@ -70,8 +70,19 @@ def queryVolsOwnersSymbols(
       A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, Ci = _queryVolsOwners(rng.st, rng.fin, chainID)
+    Vi_unfiltered, Ci, gasvols = _queryVolsOwners(rng.st, rng.fin, chainID)
+    swaps = _querySwaps(rng.st, rng.fin, chainID)
     Vi = _filterNftvols(Vi_unfiltered, chainID)
+    Vi = _filterbyMaxVolume(Vi, swaps)
+
+    # merge Vi and gasvols
+    for basetoken in gasvols:
+        if basetoken not in Vi:
+            Vi[basetoken] = {}
+        for nft in gasvols[basetoken]:
+            if nft not in Vi[basetoken]:
+                Vi[basetoken][nft] = 0.0
+            Vi[basetoken][nft] += gasvols[basetoken][nft]
 
     # get all basetokens from Vi
     basetokens = TokSet()
@@ -80,6 +91,40 @@ def queryVolsOwnersSymbols(
         basetokens.add(chainID, basetoken, _symbol)
     SYMi = getSymbols(basetokens, chainID)
     return (Vi, Ci, SYMi)
+
+
+@enforce_types
+def _process_delegation(
+    delegation, balance: float, unix_epoch_time: int, time_left_unlock: int
+):
+    """
+    @description
+      Process a single delegation
+    @param
+      delegation -- dict of delegation
+      balance -- float of current balance
+      unixEpochTime -- int of current block time
+      timeLeftUnlock -- int of time for the users veOCEANs to be unlocked
+    @return
+      balance -- float of current balance
+      delegation_amt -- float of amount delegated
+      delegated_to -- str of address delegated to
+    """
+    if int(delegation["expireTime"]) < unix_epoch_time:
+        return balance, 0, ""
+
+    time_left_to_unlock_past = int(delegation["timeLeftUnlock"])
+    delegated_amt_past = float(delegation["amount"])
+
+    # amount of tokens delegated currently
+    delegation_amt = time_left_unlock * delegated_amt_past / time_left_to_unlock_past
+
+    # receiver address
+    delegated_to = delegation["receiver"]["id"].lower()
+
+    balance = balance - delegation_amt
+
+    return balance, delegation_amt, delegated_to
 
 
 @enforce_types
@@ -99,10 +144,10 @@ def queryVebalances(
     vebals: Dict[str, float] = {}
 
     # [LP_addr] : locked_amt
-    locked_amt: Dict[str, float] = {}
+    locked_amts: Dict[str, float] = {}
 
     # [LP_addr] : lock_time
-    unlock_time: Dict[str, int] = {}
+    unlock_times: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
     n_blocks = rng.numBlocks()
@@ -124,11 +169,19 @@ def queryVebalances(
                   unlockTime
                   delegation {
                     id
+                    receiver {
+                      id
+                    }
                     amount
-                  }
-                  delegates {
-                    id
-                    amount
+                    expireTime
+                    timeLeftUnlock
+                    lockedAmount
+                    updates(orderBy:timestamp orderDirection:asc){
+                      timestamp
+                      sender
+                      amount
+                      type
+                    }
                   }
                 }
               }
@@ -150,29 +203,49 @@ def queryVebalances(
                 break
 
             for user in veOCEANs:
-                timeLeft = (
-                    float(user["unlockTime"]) - unixEpochTime
+                ve_unlock_time = int(user["unlockTime"])
+                time_left_to_unlock = (
+                    ve_unlock_time - unixEpochTime
                 )  # time left in seconds
-                if timeLeft < 0:  # check if the lock has expired
+                if time_left_to_unlock < 0:  # check if the lock has expired
                     continue
 
-                # calculate the balance
-                balance = float(user["lockedAmount"]) * timeLeft / MAX_TIME
+                # initial balance before accounting in delegations
+                balance_init = (
+                    float(user["lockedAmount"]) * time_left_to_unlock / MAX_TIME
+                )
 
+                # this will the balance after accounting in delegations
+                # see the calculations below
+                balance = balance_init
+
+                for delegation in user["delegation"]:
+                    balance, delegation_amt, delegated_to = _process_delegation(
+                        delegation, balance, unixEpochTime, time_left_to_unlock
+                    )
+
+                    if delegation_amt == 0:
+                        continue
+
+                    vebals.setdefault(delegated_to, 0)
+                    locked_amts.setdefault(delegated_to, 0)
+                    unlock_times.setdefault(delegated_to, 0)
+                    vebals[delegated_to] += delegation_amt
+
+                if balance < 0:
+                    raise ValueError("balance < 0, something is wrong")
                 # set user balance
                 LP_addr = user["id"].lower()
-                if LP_addr not in vebals:
-                    vebals[LP_addr] = balance
-                else:
-                    vebals[LP_addr] += balance
+                vebals.setdefault(LP_addr, 0)
+                vebals[LP_addr] += balance
 
                 # set locked amount
-                locked_amt[LP_addr] = float(user["lockedAmount"])
+                locked_amts[LP_addr] = float(user["lockedAmount"])
 
                 # set unlock time
-                unlock_time[LP_addr] = int(user["unlockTime"])
+                unlock_times[LP_addr] = ve_unlock_time
 
-            ## increase offset
+            # increase offset
             offset += chunk_size
         n_blocks_sampled += 1
 
@@ -184,7 +257,7 @@ def queryVebalances(
 
     print("queryVebalances: done")
 
-    return vebals, locked_amt, unlock_time
+    return vebals, locked_amts, unlock_times
 
 
 @enforce_types
@@ -207,7 +280,6 @@ def queryAllocations(
     blocks = rng.getBlocks()
 
     for block_i, block in enumerate(blocks):
-
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
             print(f"  {(block_i+1) / float(n_blocks) * 100.0:.1f}% done")
 
@@ -393,7 +465,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 @enforce_types
 def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
-) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float]]:
+) -> Tuple[Dict[str, Dict[str, float]], Dict[str, float], Dict[str, Dict[str, float]]]:
     """
     @description
       Query the chain for datanft volumes within the given block range.
@@ -405,7 +477,9 @@ def _queryVolsOwners(
     print("_queryVolsOwners(): begin")
 
     vols: Dict[str, Dict[str, float]] = {}
+    gasvols: Dict[str, Dict[str, float]] = {}
     owners: Dict[str, float] = {}
+    txgascost: Dict[str, float] = {}  # tx hash : gas cost
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -433,7 +507,8 @@ def _queryVolsOwners(
             lastPriceValue,
             block,
             gasPrice,
-            gasUsed
+            gasUsed,
+            tx
           }
         }
         """ % (
@@ -465,18 +540,20 @@ def _queryVolsOwners(
             gasCostWei = int(order["gasPrice"]) * int(order["gasUsed"])
 
             # deduct 1 wei so it's not profitable for free assets
-            gasCost = fromBase18(gasCostWei - 1)
+            gasCost = from_wei(gasCostWei - 1)
             native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
             if gasCost > 0:
-                if native_token_addr not in vols:
-                    vols[native_token_addr] = {}
+                if native_token_addr not in gasvols:
+                    gasvols[native_token_addr] = {}
 
-                if nft_addr not in vols[native_token_addr]:
-                    vols[native_token_addr][nft_addr] = 0
+                if nft_addr not in gasvols[native_token_addr]:
+                    gasvols[native_token_addr][nft_addr] = 0
 
-                vols[native_token_addr][nft_addr] += gasCost
+                if order["tx"] not in txgascost:
+                    txgascost[order["tx"]] = gasCost
+                    gasvols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
                 continue
@@ -490,7 +567,77 @@ def _queryVolsOwners(
             vols[basetoken_addr][nft_addr] += lastPriceValue
 
     print("_queryVolsOwners(): done")
-    return (vols, owners)
+    return (vols, owners, gasvols)
+
+
+@enforce_types
+def _querySwaps(
+    st_block: int, end_block: int, chainID: int
+) -> Dict[str, Dict[str, float]]:
+    """
+    @description
+      Query the chain for datanft swaps within the given block range.
+
+    @return
+      vols (at chain) -- dict of [nativetoken/basetoken_addr][nft_addr]:vol_amt
+      owners (at chain) -- dict of [nft_addr]:vol_amt
+    """
+    print("_querySwaps(): begin")
+
+    # base token, nft addr, vol
+    swaps: Dict[str, Dict[str, float]] = {}
+
+    chunk_size = 1000  # max for subgraph = 1000
+    offset = 0
+    while True:
+        query = """
+        {
+          fixedRateExchangeSwaps(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
+            id
+            baseTokenAmount
+            block
+            exchangeId {
+              id
+              baseToken {
+                id
+              }
+              datatoken {
+                id
+                symbol
+                nft {
+                  id
+                }
+              }
+            }
+          }
+        }
+        """ % (
+            st_block,
+            end_block,
+            offset,
+            chunk_size,
+        )
+        offset += chunk_size
+        result = submitQuery(query, chainID)
+        if "errors" in result:
+            raise AssertionError(result)
+        new_swaps = result["data"]["fixedRateExchangeSwaps"]
+        if new_swaps == []:
+            break
+        for swap in new_swaps:
+            amt = float(swap["baseTokenAmount"])
+            if amt == 0:
+                continue
+            nft_addr = swap["exchangeId"]["datatoken"]["nft"]["id"].lower()
+            basetoken_addr = swap["exchangeId"]["baseToken"]["id"].lower()
+            if basetoken_addr not in swaps:
+                swaps[basetoken_addr] = {}
+            if nft_addr not in swaps[basetoken_addr]:
+                swaps[basetoken_addr][nft_addr] = 0.0
+            swaps[basetoken_addr][nft_addr] += amt
+
+    print("_querySwaps(): done")
+    return swaps
 
 
 @enforce_types
@@ -517,15 +664,15 @@ def queryPassiveRewards(
     fee_distributor = oceanutil.FeeDistributor()
     ve_supply = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
-    ve_supply_float = fromBase18(ve_supply)
-    total_rewards_float = fromBase18(total_rewards)
+    ve_supply_float = from_wei(ve_supply)
+    total_rewards_float = from_wei(total_rewards)
 
     if ve_supply_float == 0:
         return balances, rewards
 
     for addr in addresses:
         balance = fee_distributor.ve_for_at(addr, timestamp)
-        balance_float = fromBase18(balance)
+        balance_float = from_wei(balance)
         balances[addr] = balance_float
         rewards[addr] = total_rewards_float * balance_float / ve_supply_float
 
@@ -586,6 +733,22 @@ def _markPurgatoryNfts(nftinfos: List[SimpleDataNft]) -> List[SimpleDataNft]:
         if nft.did in bad_dids:
             nft.is_purgatory = True
     return nftinfos
+
+
+@enforce_types
+def _filterbyMaxVolume(nftvols: dict, swaps: dict) -> dict:
+    for basetoken in nftvols:
+        for nftaddr in nftvols[basetoken]:
+            if not basetoken in swaps:
+                nftvols[basetoken][nftaddr] = 0
+                continue
+            if not nftaddr in swaps[basetoken]:
+                nftvols[basetoken][nftaddr] = 0
+                continue
+            nftvols[basetoken][nftaddr] = min(
+                nftvols[basetoken][nftaddr], swaps[basetoken][nftaddr]
+            )
+    return nftvols
 
 
 @enforce_types

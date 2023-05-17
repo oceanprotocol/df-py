@@ -187,7 +187,8 @@ disable=D203, D204, D213, D215, D400, D401, D404, D406, D407, D408, D409, D413,
         unspecified-encoding,
 	consider-using-dict-items,
         consider-using-generator,
-	dangerous-default-value
+	dangerous-default-value,
+	unidiomatic-typecheck
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

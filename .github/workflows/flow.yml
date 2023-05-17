@@ -51,7 +51,7 @@ jobs:
           brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
           brownie networks add mumbai mumbai host=https://matic-mumbai.chainstacklabs.com chainid=80001
           brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
-          brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
+          brownie networks add polygon polygon host=https://rpc.ankr.com/polygon chainid=137
           brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
           brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 
@@ -101,7 +101,7 @@ jobs:
 
       - name: Run dftool calc
         run: |
-          ./dftool calc $CSV_DIR ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} OCEAN
+          ./dftool calc $CSV_DIR 0 $date OCEAN
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3

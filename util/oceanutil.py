@@ -1,14 +1,17 @@
-from collections import namedtuple
 import hashlib
 import json
+import warnings
+from collections import namedtuple
 from typing import Any, Dict, List, Tuple
+from web3.main import Web3
 
 import brownie
 from enforce_typing import enforce_types
 
 from util import networkutil
-from util.base18 import toBase18
-from util.constants import BROWNIE_PROJECT as B, CONTRACTS, ZERO_ADDRESS
+from util.base18 import to_wei
+from util.constants import BROWNIE_PROJECT as B
+from util.constants import CONTRACTS, ZERO_ADDRESS
 
 
 @enforce_types
@@ -39,9 +42,14 @@ def recordDeployedContracts(address_file: str):
     if chainID in CONTRACTS:  # already filled
         return
 
-    network = networkutil.chainIdToNetwork(chainID)
+    network_name = networkutil.chainIdToNetwork(chainID)
     with open(address_file, "r") as json_file:
-        a = json.load(json_file)[network]  # dict of contract_name: address
+        json_dict = json.load(json_file)
+        if network_name not in json_dict:
+            raise ValueError(
+                f"Can't find {network_name} in {address_file}. Barge problems?"
+            )
+        a = json_dict[network_name]  # dict of contract_name: address
 
     C = {}
     C["Ocean"] = B.Simpletoken.at(a["Ocean"])
@@ -60,6 +68,14 @@ def recordDeployedContracts(address_file: str):
 
     if "veFeeDistributor" in a:
         C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
+
+    if "veDelegation" in a:
+        C["veDelegation"] = B.veDelegation.at(a["veDelegation"])
+
+    if "VestingWalletV0" in a:
+        C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
+    elif chainID == networkutil.DEV_CHAINID:
+        C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
 
     CONTRACTS[chainID] = C
 
@@ -100,12 +116,20 @@ def veAllocate():
     return _contracts("veAllocate")
 
 
+def veDelegation():
+    return _contracts("veDelegation")
+
+
 def FixedPrice():
     return _contracts("FixedPrice")
 
 
 def FeeDistributor():
     return _contracts("veFeeDistributor")
+
+
+def VestingWalletV0():
+    return _contracts("VestingWalletV0")
 
 
 # ===========================================================================
@@ -119,6 +143,17 @@ def createDataNFTWithFRE(from_account, token):
 
     exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
+
+
+def _get_events(tx):
+    with warnings.catch_warnings():
+        warnings.filterwarnings(
+            "ignore",
+            message=".*Event log does not contain enough topics for the given ABI.*",
+        )
+        events = tx.events
+
+    return events
 
 
 @enforce_types
@@ -142,14 +177,27 @@ def createDataNFT(name: str, symbol: str, from_account):
         owner,
         {"from": from_account},
     )
-    data_NFT_address = tx.events["NFTCreated"]["newTokenAddress"]
+
+    events = _get_events(tx)
+    data_NFT_address = events["NFTCreated"]["newTokenAddress"]
     data_NFT = B.ERC721Template.at(data_NFT_address)
     return data_NFT
 
 
+def getDataNFT(data_NFT_address):
+    return B.ERC721Template.at(data_NFT_address)
+
+
+def getDataField(data_NFT, field_label: str) -> str:
+    field_label_hash = Web3.keccak(text=field_label)  # to keccak256 hash
+    field_value_hex = data_NFT.getData(field_label_hash)
+    field_value = field_value_hex.decode("ascii")
+
+    return field_value
+
+
 @enforce_types
 def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
-
     erc20_template_index = 1
     strings = [
         DT_name,
@@ -162,15 +210,17 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
         ZERO_ADDRESS,  # pub mkt fee token addr
     ]
     uints = [
-        toBase18(100000.0),  # cap. Note contract will hardcod this to max_int
-        toBase18(0.0),  # pub mkt fee amt
+        to_wei(100000.0),  # cap. Note contract will hardcod this to max_int
+        to_wei(0.0),  # pub mkt fee amt
     ]
     _bytes: List[Any] = []
 
     tx = data_NFT.createERC20(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
-    DT_address = tx.events["TokenCreated"]["newTokenAddress"]
+
+    events = _get_events(tx)
+    DT_address = events["TokenCreated"]["newTokenAddress"]
     DT = B.ERC20Template.at(DT_address)
 
     return DT
@@ -178,13 +228,10 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
 @enforce_types
 def createFREFromDatatoken(
-    datatoken,
-    base_TOKEN,
-    amount: float,
-    from_account,
+    datatoken, base_TOKEN, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
-    datatoken.approve(FixedPrice().address, toBase18(amount), {"from": from_account})
+    datatoken.approve(FixedPrice().address, to_wei(amount), {"from": from_account})
 
     addresses = [
         base_TOKEN.address,  # baseToken
@@ -196,7 +243,7 @@ def createFREFromDatatoken(
     uints = [
         base_TOKEN.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
-        toBase18(1.0),  # fixedRate : exchange rate of base_TOKEN to datatoken
+        to_wei(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
     ]
@@ -220,12 +267,31 @@ def createFREFromDatatoken(
 # veOCEAN routines
 
 
-def set_allocation(amount: float, nft_addr: str, chainID: int, from_account):
+@enforce_types
+def set_allocation(amount: int, nft_addr: str, chainID: int, from_account):
     veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+
+
+@enforce_types
+def ve_delegate(
+    from_account, to_account, percentage: float, tokenid: int, expiry: int = 0
+):
+    if expiry == 0:
+        expiry = veOCEAN().locked__end(from_account)
+    veDelegation().create_boost(
+        from_account,
+        to_account,
+        int(percentage * 10000),
+        0,
+        expiry,
+        tokenid,
+        {"from": from_account},
+    )
 
 
 # =============================================================================
 # fee stuff needed for consume
+
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ConsumeFees
 @enforce_types
@@ -305,6 +371,7 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
 
 # from ocean.py/ocean_lib/web3_internal/utils.py
 Signature = namedtuple("Signature", ("v", "r", "s"))
+
 
 # from ocean.py/ocean_lib/web3_internal/utils.py
 @enforce_types
