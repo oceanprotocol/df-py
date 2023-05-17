@@ -12,7 +12,7 @@ def dt_to_ut(dt: datetime.datetime) -> int:
 def ut_to_dt(ut: int) -> datetime.datetime:
     """unixtime to datetime"""
     dt = datetime.datetime.utcfromtimestamp(ut)
-    dt = dt.replace(tzinfo=timezone.utc) # make it aware it's in UTC
+    dt = dt.replace(tzinfo=timezone.utc)
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     return dt
 
@@ -49,7 +49,8 @@ def filter_to_target_uts(
     for i, target_ut in enumerate(target_uts):
         time_diffs = np.abs(np.asarray(unfiltered_uts) - target_ut)
         tol_s = 1  # should always align within e.g. 1 second
-        target_ut_s = pretty_time(ut_to_dt(target_ut))
+        target_dt = ut_to_dt(target_ut)
+        target_ut_s = pretty_time(target_dt)
         assert (
             min(time_diffs) <= tol_s
         ), f"Unfiltered times is missing target time: {target_ut_s}"

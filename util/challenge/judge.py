@@ -110,7 +110,9 @@ def _get_cex_vals(deadline_dt):
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    cex_x = ccxt.kraken().fetch_ohlcv("ETH/USDT", "5m")
+    ex = ccxt.binance()
+    from_dt_str = ex.parse8601(deadline_dt.strftime('%Y-%m-%d %H:%M:00'))
+    cex_x = ex.fetch_ohlcv('ETH/USDT', '5m', since=from_dt_str, limit=500)
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
     allcex_vals = [xi[4] for xi in cex_x]
     helpers.print_datetime_info("CEX data info", allcex_uts)
@@ -137,13 +139,14 @@ def parse_deadline_str(deadline_str: str) -> datetime:
     if deadline_str == "None":
         today = datetime.now(timezone.utc)
         today = today.replace(hour=0, minute=0, second=0, microsecond=0)
-    
+
         offset = (today.weekday() - WEDNESDAY) % 7
         prev_wed = today - timedelta(days=offset)
         deadline_dt = prev_wed.replace(
             hour=23, minute=59, second=0, microsecond=0)
     else:
         deadline_dt = datetime.strptime(deadline_str, "%Y-%m-%d_%H:%M")
+        deadline_dt = deadline_dt.replace(tzinfo=timezone.utc)
 
     assert deadline_dt.tzinfo == timezone.utc, "must be in UTC"
     return deadline_dt

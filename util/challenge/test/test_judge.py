@@ -14,15 +14,16 @@ from util.challenge import judge
 
 @enforce_types
 def test_get_txs():
-    now = datetime.now()
-    less_than_a_week_ago = datetime.now() - timedelta(days=6)
-    one_day_ago = datetime.now() - timedelta(days=1)
+    now = datetime.now().replace(tzinfo=timezone.utc)
+    
+    six_days_ago = now - timedelta(days=6)
+    one_day_ago = now - timedelta(days=1)
 
     with patch("gql.Client.execute") as mock:
         mock.return_value = {
             "nftTransferHistories": [
                 {
-                    "timestamp": less_than_a_week_ago.timestamp(),
+                    "timestamp": six_days_ago.timestamp(),
                     "nft": {"id": "0xnft1"},
                     "oldOwner": {"id": "0xfrom1"},
                 },
@@ -63,10 +64,17 @@ def test_nft_addr_to_pred_vals():
 
 
 @enforce_types
-def test_get_cex_vals():
-    deadline_dt = (datetime.today() - timedelta(days=2)).replace(
-        hour=12, minute=59, second=0, microsecond=0
-    )
+def test_get_cex_vals1():
+    today = datetime.today().replace(tzinfo=timezone.utc)
+    deadline_dt = (today - timedelta(days=2))
+    deadline_dt = deadline_dt.replace(
+        hour=12, minute=59, second=0, microsecond=0)
+    cex_vals = judge._get_cex_vals(deadline_dt)
+    assert len(cex_vals) == 12
+
+@enforce_types
+def test_get_cex_vals2():
+    deadline_dt = datetime(2023, 5, 3, 23, 59, tzinfo=timezone.utc)
     cex_vals = judge._get_cex_vals(deadline_dt)
     assert len(cex_vals) == 12
 
@@ -74,7 +82,7 @@ def test_get_cex_vals():
 @enforce_types
 def test_parse_deadline_str1():
     dt = judge.parse_deadline_str("2023-05-03_23:59")
-    dt_target = datetime(2023, 5, 3, 23, 59)
+    dt_target = datetime(2023, 5, 3, 23, 59, tzinfo=timezone.utc)
     assert dt == dt_target
         
 
@@ -107,7 +115,7 @@ def test_get_judge_acct():
 
 @enforce_types
 def test_get_challenge_data():    
-    dt = datetime(2021, 9, 1, 12, 59)
+    dt = datetime(2021, 9, 1, 12, 59, tzinfo=timezone.utc)
     judge_acct = judge.get_judge_acct()
 
     with patch("util.challenge.judge._get_cex_vals") as mock1:
