@@ -38,6 +38,7 @@ def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
     # build base cmd
     base_dir = str(tmp_path)
     CSV_DIR = os.path.join(base_dir, judge.DFTOOL_TEST_FAKE_CSVDIR)
+    os.mkdir(CSV_DIR)
     cmd = f"./dftool challenge_data {CSV_DIR}"
 
     # tack on 1 or 2 args to cmd as needed
@@ -56,13 +57,22 @@ def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
     print(f"CMD: {cmd}")
     os.system(cmd)
 
+    # targets
+    (
+        target_from_addrs,
+        target_nft_addrs,
+        target_nmses,
+    ) = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
+
     # test result
-    challenge_data = csvs.loadChallengeDataCsv(CSV_DIR)
-    (from_addrs, nft_addrs, nmses) = challenge_data
+    (from_addrs, nft_addrs, nmses) = csvs.loadChallengeDataCsv(CSV_DIR)
+
     assert len(from_addrs) == len(nft_addrs) == len(nmses)
     assert sorted(nmses) == nmses
 
-    assert challenge_data == judge.DFTOOL_FAKE_CHALLENGE_DATA
+    assert from_addrs == target_from_addrs
+    assert nft_addrs == target_nft_addrs
+    assert nmses == target_nmses
 
 
 @enforce_types

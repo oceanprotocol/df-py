@@ -21,11 +21,11 @@ JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
 
 # for testing dftool
 DFTOOL_TEST_FAKE_CSVDIR = "fakedir_dftool"
-DFTOOL_TEST_FAKE_CHALLENGE_DATA = [
+DFTOOL_TEST_FAKE_CHALLENGE_DATA = (
     ["0xfrom1", "0xfrom2"],
     ["0xnft1", "0xnft2"],
     [0.2, 1.0],
-]
+)
 
 
 def _get_gql_client():
