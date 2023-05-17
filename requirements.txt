@@ -1,5 +1,9 @@
+coverage
+ccxt==3.0.84
+eciespy
 eth-brownie
 enforce_typing
+gql
 mypy
 numpy
 pandas
@@ -7,7 +11,3 @@ pytest
 requests
 scipy
 types-requests
-coverage
-ccxt==3.0.84
-eciespy
-gql

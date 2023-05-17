@@ -71,8 +71,8 @@ brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 #add pwd to bash path
 export PATH=$PATH:.
 
-#set judges private key
-export REMOTE_TEST_PRIVATE_KEY1=<judges key>
+#set judge private key (needed for challenge DF, incl. tests)
+export JUDGE_PRIVATE_KEY=<judge key>
 
 #compile contracts
 dftool compile
@@ -129,6 +129,7 @@ brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
 brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
 brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
 brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
+brownie networks add mumbai mumbai host=https://polygon-mumbai.blockpi.network/v1/rpc/public chainid=80001
 ```
 
 Now, you can use those networks simply by specifying a different chainid in `dftool` calls.
