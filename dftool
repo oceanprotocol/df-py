@@ -209,12 +209,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
-    print(
-        f"Hardcoded values:"
-        f"\n RETRIES={RETRIES}"
-        f"\n DELAY_S={DELAY_S}"
-        "\n"
-    )
+    print(f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
@@ -398,7 +393,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
 @enforce_types
 def do_challenge_data():
     # hardcoded values
-    CHAINID = 80001 # only on mumbai
+    CHAINID = 80001  # only on mumbai
 
     HELP = f"""Get data for Challenge DF
 
@@ -415,7 +410,7 @@ Hardcoded values:
 Uses these envvars:
   ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=CHAINID)}
 """
-    if len(sys.argv) not in [2 + 1, 2 + 2, 2+3]:
+    if len(sys.argv) not in [2 + 1, 2 + 2, 2 + 3]:
         print(HELP)
         sys.exit(0)
 
@@ -425,7 +420,7 @@ Uses these envvars:
     DEADLINE = "None" if len(sys.argv) <= 3 else sys.argv[3]
     RETRIES = 1 if len(sys.argv) <= 4 else int(sys.argv[4])
     print("dftool challenge_data: Begin\n")
-    
+
     print(
         f"Arguments:"
         f"\n CSV_DIR={CSV_DIR}"
@@ -434,11 +429,7 @@ Uses these envvars:
         "\n"
     )
 
-    print(
-        f"Hardcoded values:"
-        f"\n CHAINID={CHAINID}"
-        "\n"
-    )
+    print(f"Hardcoded values:" f"\n CHAINID={CHAINID}" "\n")
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
@@ -455,10 +446,10 @@ Uses these envvars:
 
     # main work
     deadline_dt = judge.parse_deadline_str(DEADLINE)
-    
+
     if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
         challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
-    else: # main path
+    else:  # main path
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
     csvs.saveChallengeDataCsv(challenge_data, csv_dir)
@@ -1282,6 +1273,7 @@ Usage: dftool checkpoint_feedist CHAINID
 
 # ========================================================================
 # utilities
+
 
 def _exitIfFileExists(filename: str):
     if os.path.exists(filename):

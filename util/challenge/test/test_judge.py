@@ -15,7 +15,7 @@ from util.challenge import judge
 @enforce_types
 def test_get_txs():
     now = datetime.now().replace(tzinfo=timezone.utc)
-    
+
     six_days_ago = now - timedelta(days=6)
     one_day_ago = now - timedelta(days=1)
 
@@ -30,7 +30,7 @@ def test_get_txs():
                 {
                     "timestamp": one_day_ago.timestamp(),
                     "nft": {"id": "0xnft2"},
-                    "oldOwner": {"id": "0xfrom2"}
+                    "oldOwner": {"id": "0xfrom2"},
                 },
             ]
         }
@@ -53,7 +53,7 @@ def test_get_txs():
 def test_nft_addr_to_pred_vals():
     mumbai_chainid = 80001
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
-    
+
     networkutil.connect(mumbai_chainid)
     judge_acct = judge.get_judge_acct()
     pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
@@ -66,11 +66,11 @@ def test_nft_addr_to_pred_vals():
 @enforce_types
 def test_get_cex_vals1():
     today = datetime.today().replace(tzinfo=timezone.utc)
-    deadline_dt = (today - timedelta(days=2))
-    deadline_dt = deadline_dt.replace(
-        hour=12, minute=59, second=0, microsecond=0)
+    deadline_dt = today - timedelta(days=2)
+    deadline_dt = deadline_dt.replace(hour=12, minute=59, second=0, microsecond=0)
     cex_vals = judge._get_cex_vals(deadline_dt)
     assert len(cex_vals) == 12
+
 
 @enforce_types
 def test_get_cex_vals2():
@@ -84,14 +84,14 @@ def test_parse_deadline_str1():
     dt = judge.parse_deadline_str("2023-05-03_23:59")
     dt_target = datetime(2023, 5, 3, 23, 59, tzinfo=timezone.utc)
     assert dt == dt_target
-        
 
-@enforce_types    
+
+@enforce_types
 def test_parse_deadline_str2():
     dt = judge.parse_deadline_str("None")
 
-    assert (datetime.now(timezone.utc) - dt) < timedelta(days=7) # within 1 wk
-    assert dt.weekday() == 2 # Mon is 0, Tue is 1, Wed is 2
+    assert (datetime.now(timezone.utc) - dt) < timedelta(days=7)  # within 1 wk
+    assert dt.weekday() == 2  # Mon is 0, Tue is 1, Wed is 2
     assert dt.hour == 23
     assert dt.minute == 59
     assert dt.second == 0
@@ -114,7 +114,7 @@ def test_get_judge_acct():
 
 
 @enforce_types
-def test_get_challenge_data():    
+def test_get_challenge_data():
     dt = datetime(2021, 9, 1, 12, 59, tzinfo=timezone.utc)
     judge_acct = judge.get_judge_acct()
 
@@ -123,15 +123,18 @@ def test_get_challenge_data():
         assert len(cex_vals) == 12
         mock1.return_value = cex_vals
         with patch("util.challenge.judge._get_txs") as mock2:
-            tx1 = {'timestamp': 1683790437.215631,
-                   'nft': {'id': '0xnft1'},
-                   'oldOwner': {'id': '0xfrom1'}
-                   }
-            tx2 = {'timestamp': 1684222437.215636,
-                   'nft': {'id': '0xnft2'},
-                   'oldOwner': {'id': '0xfrom2'}}
+            tx1 = {
+                "timestamp": 1683790437.215631,
+                "nft": {"id": "0xnft1"},
+                "oldOwner": {"id": "0xfrom1"},
+            }
+            tx2 = {
+                "timestamp": 1684222437.215636,
+                "nft": {"id": "0xnft2"},
+                "oldOwner": {"id": "0xfrom2"},
+            }
             mock2.return_value = [tx1, tx2]
-            
+
             with patch("util.challenge.judge._nft_addr_to_pred_vals") as mock3:
                 # 0x123 has correct length. 0x456 doesn't, so its nmse = 1.0
                 predvals_0x123 = list(0.11 + np.arange(0.0, 12.0, 1.0))
@@ -142,12 +145,10 @@ def test_get_challenge_data():
                 challenge_data = judge.get_challenge_data(dt, judge_acct)
 
     (from_addrs, nft_addrs, nmses) = challenge_data
-    
+
     assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
     assert nmses[0] != 1.0
     assert nmses[1] == 1.0
 
     assert from_addrs == ["0xfrom1", "0xfrom2"]
     assert nft_addrs == ["0xnft1", "0xnft2"]
-
-

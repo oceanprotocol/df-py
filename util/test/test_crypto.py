@@ -6,7 +6,7 @@ from util import crypto
 @enforce_types
 def test_asym_encrypt_decrypt():
     alice = FIXME
-    
+
     privkey = alice.private_key  # str
     pubkey = crypto.calc_pubkey(privkey)  # str
 
@@ -16,4 +16,3 @@ def test_asym_encrypt_decrypt():
 
     value2 = crypto.asym_decrypt(value_enc, privkey)
     assert value2 == value
-

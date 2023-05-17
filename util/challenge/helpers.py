@@ -3,11 +3,13 @@ from datetime import timezone
 
 import numpy as np
 
+
 def dt_to_ut(dt: datetime.datetime) -> int:
     """datetime to unixtime"""
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     ut = int(dt.timestamp())
     return ut
+
 
 def ut_to_dt(ut: int) -> datetime.datetime:
     """unixtime to datetime"""

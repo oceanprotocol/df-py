@@ -34,8 +34,8 @@ def test5(tmp_path):
 
 
 @enforce_types
-def _test(tmp_path, DEADLINE:Optional[str], RETRIES:Optional[int]):
-    #build base cmd
+def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
+    # build base cmd
     base_dir = str(tmp_path)
     CSV_DIR = os.path.join(base_dir, judge.DFTOOL_TEST_FAKE_CSVDIR)
     cmd = f"./dftool challenge_data {CSV_DIR}"
@@ -52,11 +52,11 @@ def _test(tmp_path, DEADLINE:Optional[str], RETRIES:Optional[int]):
     else:
         raise AssertionError("shouldn't end up here")
 
-    #main call
+    # main call
     print(f"CMD: {cmd}")
     os.system(cmd)
 
-    # test result    
+    # test result
     challenge_data = csvs.loadChallengeDataCsv(CSV_DIR)
     (from_addrs, nft_addrs, nmses) = challenge_data
     assert len(from_addrs) == len(nft_addrs) == len(nmses)
@@ -64,7 +64,7 @@ def _test(tmp_path, DEADLINE:Optional[str], RETRIES:Optional[int]):
 
     assert challenge_data == judge.DFTOOL_FAKE_CHALLENGE_DATA
 
-    
+
 @enforce_types
 def test_challenge_help():
     cmd = f"./dftool challenge_data"

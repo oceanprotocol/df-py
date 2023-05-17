@@ -178,20 +178,21 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
 # ========================================================================
 # challenge_df_data
 
+
 def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
     """
     @description
       Save challenge data csv.
 
     @arguments
-      challenge_data -- tuple of (from_addrs, nft_addrs, nmses), 
+      challenge_data -- tuple of (from_addrs, nft_addrs, nmses),
         all ordered with lowest nmse first
-      csv_dir -- 
+      csv_dir --
     """
     (from_addrs, nft_addrs, nmses) = challenge_data
     assert len(from_addrs) == len(nft_addrs) == len(nmses)
     assert sorted(nmses) == nmses
-    
+
     assert os.path.exists(csv_dir), csv_dir
     csv_file = challengeDataCsvFilename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
@@ -212,14 +213,13 @@ def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
     print(f"Created {csv_file}")
 
 
-def loadChallengeDataCsv(csv_dir: str) \
-    -> Tuple[List[str], List[str], list]:
+def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
     """
     @description
       Load challenge data csv
 
     @return
-      challenge_data -- tuple of (from_addrs, nft_addrs, nmses), 
+      challenge_data -- tuple of (from_addrs, nft_addrs, nmses),
         all ordered with lowest nmse first
     """
     csv_file = challengeDataCsvFilename(csv_dir)
@@ -252,6 +252,7 @@ def loadChallengeDataCsv(csv_dir: str) \
 def challengeDataCsvFilename(csv_dir: str) -> str:
     f = "challenge.csv"
     return os.path.join(csv_dir, f)
+
 
 # ========================================================================
 # passive csv

@@ -6,6 +6,7 @@ from ecies import decrypt as asymmetric_decrypt
 from enforce_typing import enforce_types
 from eth_utils import decode_hex
 
+
 @enforce_types
 def calc_pubkey(privkey: str) -> str:
     privkey_obj = keys.PrivateKey(decode_hex(privkey))
