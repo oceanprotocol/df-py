@@ -13,7 +13,7 @@ def get_safe_nonce(multisig_address):
     BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
     API_QUERY = "?limit=10&executed=false&queued=true&trusted=true"
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/{API_QUERY}"
-    response = requests.request("GET", API_URL)
+    response = requests.request("GET", API_URL, timeout=30)
     data = response.json()
     nonce = None
     for d in data["results"]:
@@ -71,5 +71,7 @@ def send_multisig_tx(multisig_address, to, value, data):
     json_payload = json.dumps(payload)
     headers = {"Content-Type": "application/json"}
 
-    response = requests.request("POST", API_URL, headers=headers, data=json_payload)
+    response = requests.request(
+        "POST", API_URL, headers=headers, data=json_payload, timeout=30
+    )
     print(response.text.encode("utf8"))

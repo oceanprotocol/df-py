@@ -91,14 +91,43 @@ def test_allocations_twochains(tmp_path):
 def test_vebals(tmp_path):
     csv_dir = str(tmp_path)
 
+    # save
     vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
     locked_amt = {LP1: 10.0, LP2: 20.0, LP3: 3.0}
     unlock_time = {LP1: 1, LP2: 1, LP3: 3}
     csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
+
+    # load & compare
     loaded_vebals, locked_amts, unlock_times = csvs.loadVebalsCsv(csv_dir)
     assert loaded_vebals == vebals
     assert locked_amts == locked_amt
     assert unlock_times == unlock_time
+
+
+# =================================================================
+# challenge data csvs
+
+
+@enforce_types
+def test_challenge_data(tmp_path):
+    csv_dir = str(tmp_path)
+
+    # filename
+    assert "challenge.csv" in csvs.challengeDataCsvFilename(csv_dir)
+
+    # save
+    from_addrs = ["0xfrom1", "0xfrom2"]
+    nft_addrs = ["0xnft1", "0xnft2"]
+    nmses = [0.2, 1.0]
+    challenge_data = (from_addrs, nft_addrs, nmses)
+    csvs.saveChallengeDataCsv(challenge_data, csv_dir)
+
+    # load & compare
+    challenge_data2 = csvs.loadChallengeDataCsv(csv_dir)
+    (from_addrs2, nft_addrs2, nmses2) = challenge_data2
+    assert from_addrs2 == from_addrs
+    assert nft_addrs2 == nft_addrs
+    assert nmses2 == nmses
 
 
 # =================================================================
