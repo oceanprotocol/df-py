@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # pylint: disable=too-many-lines,too-many-statements
+import datetime
 import functools
 import os
 import sys
@@ -452,7 +453,7 @@ Uses these envvars:
     else:  # main path
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
-    csvs.saveChallengeDataCsv(challenge_data, csv_dir)
+    csvs.saveChallengeDataCsv(challenge_data, CSV_DIR)
 
     print("dftool challenge_data: Done")
 
@@ -1250,8 +1251,8 @@ Usage: dftool checkpoint_feedist CHAINID
     try:
         feedist.checkpoint_total_supply({"from": from_account})
         feedist.checkpoint_token({"from": from_account})
-    # pylint: disable=broad-exception-caught
-    except Exception as e:
+
+    except Exception as e: # pylint: disable=broad-exception-caught
         print(f"Checkpoint failed: {e}, submitting tx to multisig")
         total_supply_encoded = feedist.checkpoint_total_supply.encode_input()
         checkpoint_token_encoded = feedist.checkpoint_token.encode_input()
