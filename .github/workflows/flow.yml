@@ -133,16 +133,22 @@ jobs:
           bash ./scripts/workflow_rename_folder.sh
 
       - id: "auth"
-        if: github.event_name == 'schedule'
         uses: "google-github-actions/auth@v1"
         with:
           credentials_json: "${{ secrets.GC_SECRET }}"
           #workload_identity_provider: ${{ secrets.GCLOUD_IDENTITY_PROVIDER }}
           #service_account: ${{ secrets.SERVICE_ACCOUNT }}
+      
+      - name: Set upload destination
+        run: |
+          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+            echo "DESTINATION=df-historical-data" >> $GITHUB_ENV
+          else
+            echo "DESTINATION=df-historical-data-test" >> $GITHUB_ENV
+          fi
 
       - id: "upload-folder"
-        if: github.event_name == 'schedule'
         uses: "google-github-actions/upload-cloud-storage@v1"
         with:
           path: "/tmp/csv/${{ env.DFWEEK }}"
-          destination: "df-historical-data"
+          destination: "${{ env.DESTINATION }}"
