@@ -8,7 +8,7 @@ import brownie
 from enforce_typing import enforce_types
 from typing import List
 
-from util import csvs, networkutil, oceanutil, oceantestutil
+from util import csvs, dftool_module, networkutil, oceanutil, oceantestutil
 from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
 
@@ -191,11 +191,11 @@ def test_initdevwallets():
 
 @enforce_types
 def test_noarg_commands():
-    # Test commands that have no args. They're usually help commands;
-    # sometimes they do the main work (eg compile)
-    subargs = _get_subargs_in_dftool()
+    # Test commands that have no args
+    subargs = _get_HELP_SHORT_subargs_in_dftool() #key args only, for speed
+    subargs = [""] + ["badarg"] + subargs
     for subarg in subargs:
-        print(f"Test dftool {subarg}")
+        print(f"CMD: dftool {subarg}")
         cmd = f"./dftool {subarg}"
 
         output_s = ""
@@ -209,34 +209,25 @@ def test_noarg_commands():
         # bad commands - such as querymany - will still return 0 and do not fail
         assert return_code == 0, f"'dftool {subarg}' failed. \n{output_s}"
 
+
 @enforce_types
-def _get_subargs_in_dftool() -> List[str]:
-    """Return e.g. ["help", "compile", "getrate", "volsym", ...]"""
-    fname = _get_dftool_fname()
+def _get_HELP_SHORT_subargs_in_dftool() -> List[str]:
+    """Return e.g. ["help", "compile", "getrate", "volsym", ...]
+    """
+    s_lines = dftool_module.HELP_SHORT.split("\n")
 
-    with open(fname, "r") as f:
-        s_lines = f.read().split("\n")
-
-    subargs = [""]
+    subargs = []
     for s_line in s_lines:
-        if "def do" in s_line:
-            subarg = s_line.replace("def do_","").replace("():","")
-            subargs.append(subarg)
+        if "Usage:" in s_line:
+            continue
+        if "dftool " not in s_line:
+            continue
+        subarg = s_line.lstrip().split(" ")[1] # e.g. "compile"
+        subargs.append(subarg)
 
     assert "compile" in subargs #postcondition
     return subargs
-    
 
-@enforce_types
-def _get_dftool_fname() -> str:
-    """Return filename of dftool, including its path"""
-    cur_fname = __file__
-    cur_dir = os.path.split(cur_fname)[0] # e.g. "~/code/df-py/util/test"
-    base_dir = os.path.join(cur_dir, "../..") 
-    dftool_fname = os.path.join(base_dir, "dftool")
-    assert os.path.exists(dftool_fname) # postcondition
-    return dftool_fname
-    
 
 @enforce_types
 def test_checkpoint_feedistributor():
