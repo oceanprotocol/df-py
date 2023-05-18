@@ -3,6 +3,10 @@ name: Dispense Active Rewards
 on:
   schedule:
     - cron: "0 0 * * 4"
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       amt_of_tokens:
@@ -113,7 +117,7 @@ jobs:
       - name: Distribute test active rewards
         env:
           USE_MULTISIG: true
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name != 'schedule'
         run: |
           ./dftool dispense_active $CSV_DIR 5 0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 0xCfDdA22C9837aE76E0faA845354f33C62E03653a
 
