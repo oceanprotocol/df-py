@@ -54,7 +54,6 @@ jobs:
           brownie networks add polygon polygon host=https://rpc.ankr.com/polygon chainid=137
           brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
           brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
-          brownie networks add mumbai mumbai host=https://polygon-mumbai.blockpi.network/v1/rpc/public chainid=80001
 
       - name: Set env variables
         run: |
