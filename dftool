@@ -1329,7 +1329,7 @@ def _getPrivateAccount():
 # ========================================================================
 # main
 @enforce_types
-def do_main():
+def _do_main():
     if len(sys.argv) == 1:
         do_help_short()
         return
@@ -1344,4 +1344,4 @@ def do_main():
 
 
 if __name__ == "__main__":
-    do_main()
+    _do_main()
