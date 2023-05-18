@@ -95,6 +95,11 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 
 @enforce_types
+def do_help():
+    do_help_long()
+
+
+@enforce_types
 def do_help_short():
     print(HELP_SHORT)
     sys.exit(0)
@@ -1271,6 +1276,9 @@ Usage: dftool checkpoint_feedist CHAINID
 
     print("Checkpointed FeeDistributor")
 
+    
+
+
 
 # ========================================================================
 # utilities
@@ -1318,51 +1326,21 @@ def _getPrivateAccount():
     return account
 
 
-ARGV_FNS = {
-    "help_short": do_help_short,
-    "help_long": do_help_long,
-    # write actions
-    "compile": do_compile,
-    "volsym": do_volsym,
-    "challenge_data": do_challenge_data,
-    "predictoor_data": do_predictoor_data,
-    "allocations": do_allocations,
-    "calc": do_calc,
-    "dispense_active": do_dispense_active,
-    "dispense_passive": do_dispense_passive_rewards,
-    "calculate_passive": do_calculate_passive,
-    "nftinfo": do_nftinfo,
-    "vebals": do_vebals,
-    "addstrategy": do_addstrategy,
-    "retirestrategy": do_retirestrategy,
-    "mine": do_mine,
-    "veSetAllocation": do_veSetAllocation,
-    "checkpoint_feedist": do_checkpoint_feedist,
-    "initdevwallets": do_initdevwallets,
-    "manyrandom": do_manyrandom,
-    "newacct": do_newacct,
-    "newtoken": do_newtoken,
-    "newVeOcean": do_newVeOcean,
-    "newVeAllocate": do_newVeAllocate,
-    "newdfrewards": do_newdfrewards,
-    "newdfstrategy": do_newdfstrategy,
-    # read actions
-    "acctinfo": do_acctinfo,
-    "chaininfo": do_chaininfo,
-    "getrate": do_getrate,
-}
-
-
 # ========================================================================
 # main
 @enforce_types
 def do_main():
     if len(sys.argv) == 1:
         do_help_short()
-    elif sys.argv[1] in ARGV_FNS:
-        ARGV_FNS[sys.argv[1]]()
-    else:
+        return
+    
+    func_name = f"do_{sys.argv[1]}"
+    func = globals().get(func_name)
+    if func is None:
         do_help_long()
+        return
+
+    func()
 
 
 if __name__ == "__main__":
