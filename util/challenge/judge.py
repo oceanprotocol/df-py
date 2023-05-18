@@ -1,7 +1,6 @@
 # adapted from https://github.com/oceanprotocol/predict-eth-judge/blob/main/pej
 
 import os
-import sys
 from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
@@ -51,16 +50,16 @@ def _get_txs(deadline_dt) -> list:
              timestamp_gt: {a_week_before_deadline.timestamp()},
              timestamp_lte: {deadline_dt.timestamp()}
             }}
-) 
+)
     {{
-        id, 
-        timestamp, 
+        id,
+        timestamp,
         nft {{
-            id 
-        }},  
+            id
+        }},
         oldOwner {{
-            id 
-        }}, 
+            id
+        }},
         newOwner {{
             id
         }}
@@ -123,9 +122,9 @@ def _get_cex_vals(deadline_dt):
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    ex = ccxt.binance()
-    from_dt_str = ex.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
-    cex_x = ex.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
+    kraken = ccxt.kraken()
+    from_dt_str = kraken.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
+    cex_x = kraken.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
     allcex_vals = [xi[4] for xi in cex_x]
     helpers.print_datetime_info("CEX data info", allcex_uts)
