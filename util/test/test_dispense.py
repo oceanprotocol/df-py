@@ -89,7 +89,7 @@ def test_batch_number():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     global accounts, a1, a2, a3
     accounts = brownie.network.accounts
     a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
