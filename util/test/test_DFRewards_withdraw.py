@@ -13,7 +13,7 @@ accounts = None
 def test_transfer_eth_reverts():
     """sending native tokens to dfrewards contract should revert"""
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    
+
     with pytest.raises(ValueError) as e:
         # transfer native eth to dfrewards contract
         accounts[0].transfer(df_rewards, "1 ether")
@@ -62,13 +62,13 @@ def test_erc20_withdraw_main():
 
     with pytest.raises(ValueError) as e:
         df_rewards.withdrawERCToken(to_wei(20.0), TOK.address, {"from": accounts[1]})
-    assert "Ownable: caller is not the owner"
+    assert "Ownable: caller is not the owner" in str(e)
 
     df_rewards.withdrawERCToken(to_wei(40.0), TOK.address, {"from": accounts[0]})
     with pytest.raises(ValueError) as e:
         df_rewards.withdrawERCToken(to_wei(1.0), TOK.address, {"from": accounts[0]})
-    assert "Cannot withdraw allocated token"
-    
+    assert "Cannot withdraw allocated token" in str(e)
+
     df_strategy.claim([TOK.address], {"from": accounts[1]})
 
     TOK.transfer(df_rewards, 100, {"from": accounts[0]})

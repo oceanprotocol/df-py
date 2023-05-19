@@ -80,7 +80,7 @@ def recordDeployedContracts(address_file: str):
     CONTRACTS[chainID] = C
 
 
-def OCEAN(): # alias
+def OCEAN():  # alias
     return OCEANtoken()
 
 
@@ -138,6 +138,7 @@ def VestingWalletV0():
 
 # ===========================================================================
 # Creating Ocean objects: data NFT, datatoken, FRE contract
+
 
 @enforce_types
 def mintOCEAN():

@@ -115,7 +115,8 @@ def getLatestBlock(chainID) -> int:
 @enforce_types
 def connectDev():
     connect(DEV_CHAINID)
-    
+
+
 @enforce_types
 def connect(chainID: int):
     network = brownie.network

@@ -1,9 +1,9 @@
 import os
 import subprocess
-import pytest
+from typing import List
 
 from enforce_typing import enforce_types
-from typing import List
+import pytest
 
 from util import csvs, dftool_module
 
@@ -37,11 +37,10 @@ def test_gen_hist_data():
     assert return_code == 0, f"Error. \n{output_s}"
 
 
-
 @enforce_types
 def test_noarg_commands():
     # Test commands that have no args
-    subargs = _get_HELP_SHORT_subargs_in_dftool() #key args only, for speed
+    subargs = _get_HELP_SHORT_subargs_in_dftool()  # key args only, for speed
     subargs = [""] + ["badarg"] + subargs
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")
@@ -61,8 +60,7 @@ def test_noarg_commands():
 
 @enforce_types
 def _get_HELP_SHORT_subargs_in_dftool() -> List[str]:
-    """Return e.g. ["help", "compile", "getrate", "volsym", ...]
-    """
+    """Return e.g. ["help", "compile", "getrate", "volsym", ...]"""
     s_lines = dftool_module.HELP_SHORT.split("\n")
 
     subargs = []
@@ -71,9 +69,8 @@ def _get_HELP_SHORT_subargs_in_dftool() -> List[str]:
             continue
         if "dftool " not in s_line:
             continue
-        subarg = s_line.lstrip().split(" ")[1] # e.g. "compile"
+        subarg = s_line.lstrip().split(" ")[1]  # e.g. "compile"
         subargs.append(subarg)
 
-    assert "compile" in subargs #postcondition
+    assert "compile" in subargs  # postcondition
     return subargs
-

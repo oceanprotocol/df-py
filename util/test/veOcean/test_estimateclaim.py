@@ -77,13 +77,13 @@ def test_rewards():
         with pytest.raises(ValueError) as e:
             fee_estimate.estimateClaimAcc(alice)
         assert "Call checkpoint function" in str(e)
-        
+
         fee_distributor.checkpoint_total_supply()
-        
+
         with pytest.raises(ValueError) as e:
             fee_estimate.estimateClaimAcc(alice)
         assert "Call checkpoint function" in str(e)
-            
+
         fee_distributor.checkpoint_token()
         epoch = veOCEAN.epoch()
         print(f"\t veOcean epoch: {epoch}")
@@ -193,4 +193,3 @@ def setup_function():
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-

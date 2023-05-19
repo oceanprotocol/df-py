@@ -1275,9 +1275,6 @@ Usage: dftool checkpoint_feedist CHAINID
 
     print("Checkpointed FeeDistributor")
 
-    
-
-
 
 # ========================================================================
 # utilities
@@ -1330,7 +1327,7 @@ def _do_main():
     if len(sys.argv) == 1:
         do_help_short()
         return
-    
+
     func_name = f"do_{sys.argv[1]}"
     func = globals().get(func_name)
     if func is None:

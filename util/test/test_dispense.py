@@ -88,25 +88,25 @@ def test_batch_number():
 
 
 @enforce_types
-def _assertBalanceApprox(token, address:str, target_bal:float, tries:int):
+def _assertBalanceApprox(token, address: str, target_bal: float, tries: int):
     """Test for a balance, but with retries so that ganache can catch up"""
-    for i in range(tries):
+    for _ in range(tries):
         bal = from_wei(token.balanceOf(address))
         if bal == pytest.approx(target_bal):
             return
-        chain.sleep(1)
-        chain.mine(1)
+        chain.sleep(1)  # type: ignore[attr-defined]
+        chain.mine(1)  # type: ignore[attr-defined]
         time.sleep(1)
     assert bal == pytest.approx(target_bal)
 
-    
+
 @enforce_types
 def setup_function():
     networkutil.connectDev()
     global chain, accounts, a1, a2, a3
     chain = brownie.network.chain
     accounts = brownie.network.accounts
-    a1, a2, a3 = [accounts[i].address for i in [1,2,3]]
+    a1, a2, a3 = [accounts[i].address for i in [1, 2, 3]]
     oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 

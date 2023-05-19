@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util.constants import BROWNIE_PROJECT as B
-from util.base18 import from_wei, to_wei
+from util.base18 import to_wei
 from util import networkutil, oceanutil
 
 chain, accounts = None, None
@@ -66,6 +66,7 @@ def test_TOK():
     df_rewards.claimFor(addr3, TOK.address, {"from": accounts[9]})
     _assertBalanceOf(TOK, addr3, 30, tries=10)
 
+
 @enforce_types
 def test_OCEAN():
     oceanutil.recordDevDeployedContracts()
@@ -100,9 +101,7 @@ def test_multiple_TOK():
     TOK2.approve(df_rewards, sum(values) + 15, {"from": acct0})
 
     df_rewards.allocate(tos, values, TOK1.address, {"from": acct0})
-    df_rewards.allocate(
-        tos, [x + 5 for x in values], TOK2.address, {"from": acct0}
-    )
+    df_rewards.allocate(tos, [x + 5 for x in values], TOK2.address, {"from": acct0})
 
     TOK_addrs = [TOK1.address, TOK2.address]
     assert df_strategy.claimables(addr1, TOK_addrs) == [10, 15]
@@ -142,9 +141,7 @@ def test_multiple_TOK():
 
 @enforce_types
 def test_bad_token():
-    BADTOK = B.Badtoken.deploy(
-        "BAD", "BAD", 18, to_wei(10000.0), {"from": acct0}
-    )
+    BADTOK = B.Badtoken.deploy("BAD", "BAD", 18, to_wei(10000.0), {"from": acct0})
     df_rewards = B.DFRewards.deploy({"from": acct0})
 
     tos = [addr1, addr2, addr3]
@@ -173,12 +170,12 @@ def test_strategies():
     assert TOK.balanceOf(df_strategy) == 0
 
     # tx origin must be addr1
-    with pytest.raises(ValueError) as e: 
+    with pytest.raises(ValueError) as e:
         df_strategy.claim(TOK.address, addr1, {"from": acct2})
     assert "Caller doesn't match" in str(e)
 
     # non strategy addresses cannot claim
-    with pytest.raises(ValueError) as e: 
+    with pytest.raises(ValueError) as e:
         df_strategy.claim(TOK.address, addr1, {"from": acct1})
     assert "Caller must be a strategy" in str(e)
 
@@ -204,7 +201,7 @@ def test_strategies():
     assert not df_rewards.isStrategy(df_strategy.address)
 
     # addresses other than the owner cannot add new strategy
-    with pytest.raises(ValueError) as e: 
+    with pytest.raises(ValueError) as e:
         df_rewards.addStrategy(df_strategy.address, {"from": acct3})
     assert "Ownable: caller is not the owner" in str(e)
 
@@ -265,14 +262,14 @@ def _deployTOK(account):
 
 
 @enforce_types
-def _assertBalanceOf(token, address:str, target_bal:int, tries:int):
+def _assertBalanceOf(token, address: str, target_bal: int, tries: int):
     """Test for a balance, but with retries so that ganache can catch up"""
-    for i in range(tries):
+    for _ in range(tries):
         bal = token.balanceOf(address)
         if bal == target_bal:
             return
-        chain.sleep(1)
-        chain.mine(1)
+        chain.sleep(1)  # type: ignore[attr-defined]
+        chain.mine(1)  # type: ignore[attr-defined]
         time.sleep(1)
     assert bal == target_bal
 
@@ -280,10 +277,8 @@ def _assertBalanceOf(token, address:str, target_bal:int, tries:int):
 @enforce_types
 def setup_module():
     networkutil.connectDev()
-    
-    global chain, accounts, \
-        acct0, acct1, acct2, acct3, \
-        addr0, addr1, addr2, addr3
+
+    global chain, accounts, acct0, acct1, acct2, acct3, addr0, addr1, addr2, addr3
 
     chain, accounts = brownie.chain, brownie.network.accounts
     acct0, acct1, acct2, acct3 = accounts[:4]

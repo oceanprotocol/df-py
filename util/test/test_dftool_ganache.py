@@ -50,7 +50,6 @@ def test_calc(tmp_path):
     assert os.path.exists(rewards_csv)
 
 
-
 @enforce_types
 def test_calc_without_amount(tmp_path):
     CSV_DIR = str(tmp_path)
@@ -213,7 +212,7 @@ def test_calc_passive(tmp_path):
         lines = f.readlines()
         assert len(lines) >= 3
 
-    
+
 def test_initdevwallets():
     account9 = brownie.network.accounts[9]
 

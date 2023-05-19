@@ -320,8 +320,6 @@ def test_rewardsperlp_main(tmp_path):
             assert isinstance(value, float)
 
 
-
-
 # =================================================================
 # helper funcs
 @enforce_types

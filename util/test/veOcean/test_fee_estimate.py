@@ -130,7 +130,6 @@ def setup_function():
     OCEAN.transfer(david, TA, {"from": accounts[0]})
 
 
-
 @enforce_types
 def teardown_function():
     networkutil.disconnect()

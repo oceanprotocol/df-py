@@ -685,7 +685,7 @@ def test_allocation_sampling():
         time.sleep(1)
         forward(5)
         loop_i += 1
-        if loop_i > 60 * 5: #5 min
+        if loop_i > 60 * 5:  # 5 min
             break
 
     allocations = allocations[CHAINID]
