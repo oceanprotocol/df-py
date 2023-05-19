@@ -829,7 +829,7 @@ def _didsInPurgatory() -> List[str]:
       dids -- list of str
     """
     url = "https://raw.githubusercontent.com/oceanprotocol/list-purgatory/main/list-assets.json"
-    resp = requests.get(url)
+    resp = requests.get(url, timeout=30)
 
     # list of {'did' : 'did:op:6F7...', 'reason':'..'}
     data = json.loads(resp.text)
@@ -899,7 +899,7 @@ def queryAquariusAssetNames(
         payload = json.dumps({"didList": nft_dids[i : i + BATCH_SIZE]})
 
         try:
-            resp = requests.post(url, data=payload, headers=headers)
+            resp = requests.post(url, data=payload, headers=headers, timeout=30)
             data = json.loads(resp.text)
             did_to_asset_name.update(data)
         # pylint: disable=broad-exception-caught
