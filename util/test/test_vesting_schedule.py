@@ -43,7 +43,7 @@ test_params = [
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getRewardAmountForWeekWei(test_input, expected_output):
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     assert from_wei(vesting_schedule.getRewardAmountForWeekWei(test_input)) == approx(
         expected_output
     )
@@ -51,7 +51,7 @@ def test_getRewardAmountForWeekWei(test_input, expected_output):
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getActiveRewardAmountForWeekEth(test_input, expected_output):
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     assert vesting_schedule.getActiveRewardAmountForWeekEth(test_input) == approx(
         expected_output * ACTIVE_REWARDS_MULTIPLIER
     )

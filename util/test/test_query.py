@@ -673,6 +673,7 @@ def test_allocation_sampling():
     rng = BlockRange(start_block, end_block, end_block - start_block, 42)
 
     allocations = None
+    loop_i = 0
     while True:
         try:
             allocations = query.queryAllocations(rng, CHAINID)
@@ -683,6 +684,9 @@ def test_allocation_sampling():
             break
         time.sleep(1)
         forward(5)
+        loop_i += 1
+        if loop_i > 60 * 5: #5 min
+            break
 
     allocations = allocations[CHAINID]
 

@@ -64,9 +64,9 @@ def test_calcDID():
 def setup_function():
     networkutil.connect(CHAINID)
     global account0, account3
-    account0 = brownie.network.accounts[0]
-    account3 = brownie.network.accounts[3]
-    oceanutil.recordDeployedContracts(ADDRESS_FILE)
+    accounts = brownie.network.accounts
+    account0, account3 = accounts[0], accounts[3]
+    oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
 

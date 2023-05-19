@@ -74,11 +74,16 @@ def test_rewards():
         # every week, OPC adds rewards
         print(f"\t OPF is adding {opffees} OCEAN as rewards")
         OCEAN.transfer(fee_distributor.address, to_wei(opffees), {"from": accounts[0]})
-        with brownie.reverts("Call checkpoint function"):
+        with pytest.raises(ValueError) as e:
             fee_estimate.estimateClaimAcc(alice)
+        assert "Call checkpoint function" in str(e)
+        
         fee_distributor.checkpoint_total_supply()
-        with brownie.reverts("Call checkpoint function"):
+        
+        with pytest.raises(ValueError) as e:
             fee_estimate.estimateClaimAcc(alice)
+        assert "Call checkpoint function" in str(e)
+            
         fee_distributor.checkpoint_token()
         epoch = veOCEAN.epoch()
         print(f"\t veOcean epoch: {epoch}")
@@ -165,7 +170,7 @@ def test_rewards():
 @enforce_types
 def setup_function():
     global accounts, alice, bob, charlie, david, veOCEAN, OCEAN, feeDistributor
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
 
@@ -183,3 +188,9 @@ def setup_function():
     OCEAN.transfer(bob, TA, {"from": accounts[0]})
     OCEAN.transfer(charlie, TA, {"from": accounts[0]})
     OCEAN.transfer(david, TA, {"from": accounts[0]})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
+

@@ -1,3 +1,5 @@
+import time
+
 import brownie
 from enforce_typing import enforce_types
 import pytest
@@ -7,7 +9,7 @@ from util.base18 import from_wei
 from util.constants import BROWNIE_PROJECT as B
 from util import oceantestutil
 
-accounts, a1, a2, a3 = None, None, None, None
+chain, accounts, a1, a2, a3 = None, None, None, None, None
 
 
 @enforce_types
@@ -27,14 +29,12 @@ def test_small_batch():
     # a1 claims for itself
     bal_before = from_wei(OCEAN.balanceOf(a1))
     df_strategy.claim([OCEAN.address], {"from": accounts[1]})
-    bal_after = from_wei(OCEAN.balanceOf(a1))
-    assert (bal_after - bal_before) == pytest.approx(0.1)
+    _assertBalanceApprox(OCEAN, a1, bal_before + 0.1, tries=10)
 
     # a9 claims on behalf of a1
     bal_before = from_wei(OCEAN.balanceOf(a3))
     df_rewards.claimFor(a3, OCEAN.address, {"from": accounts[9]})
-    bal_after = from_wei(OCEAN.balanceOf(a3))
-    assert (bal_after - bal_before) == pytest.approx(0.3)
+    _assertBalanceApprox(OCEAN, a3, bal_before + 0.3, tries=10)
 
 
 @enforce_types
@@ -88,13 +88,26 @@ def test_batch_number():
 
 
 @enforce_types
+def _assertBalanceApprox(token, address:str, target_bal:float, tries:int):
+    """Test for a balance, but with retries so that ganache can catch up"""
+    for i in range(tries):
+        bal = from_wei(token.balanceOf(address))
+        if bal == pytest.approx(target_bal):
+            return
+        chain.sleep(1)
+        chain.mine(1)
+        time.sleep(1)
+    assert bal == pytest.approx(target_bal)
+
+    
+@enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
-    global accounts, a1, a2, a3
+    networkutil.connectDev()
+    global chain, accounts, a1, a2, a3
+    chain = brownie.network.chain
     accounts = brownie.network.accounts
-    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
-    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
+    a1, a2, a3 = [accounts[i].address for i in [1,2,3]]
+    oceanutil.recordDevDeployedContracts()
     oceantestutil.fillAccountsWithOCEAN()
 
 

@@ -320,14 +320,24 @@ def test_rewardsperlp_main(tmp_path):
             assert isinstance(value, float)
 
 
+
+
+# =================================================================
+# helper funcs
+@enforce_types
+def test_assertIsEthAddr():
+    csvs.assertIsEthAddr("0xFOO")
+    csvs.assertIsEthAddr("0x967da4048cd07ab37855c090aaf366e4ce1b9f48")
+    with pytest.raises(AssertionError):
+        csvs.assertIsEthAddr("FOO")
+
+
 # ========================================================================
 # rewardsinfo csvs
 
 
 @enforce_types
-def test_rewardsinfo(
-    tmp_path, network_setup_and_teardown
-):  # pylint: disable=unused-argument
+def test_rewardsinfo(tmp_path):
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},
@@ -363,16 +373,3 @@ def test_rewardsinfo(
     loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
     csv = loaded_rewards.read()
     assert csv == target_rewards
-
-
-# =================================================================
-# helper funcs
-@enforce_types
-def test_assertIsEthAddr():
-    csvs.assertIsEthAddr("0xFOO")
-    csvs.assertIsEthAddr("0x967da4048cd07ab37855c090aaf366e4ce1b9f48")
-    with pytest.raises(AssertionError):
-        csvs.assertIsEthAddr("FOO")
-
-
-# =================================================================

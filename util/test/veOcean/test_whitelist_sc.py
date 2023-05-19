@@ -24,8 +24,9 @@ def test_velock_not_whitelisted():
     smartWalletChecker.setAllowedContract(veLocker, False, {"from": deployer})
     assert smartWalletChecker.check(veLocker) == False
 
-    with brownie.reverts("Smart contract depositors not allowed"):
+    with pytest.raises(ValueError) as e:
         veLocker.create_lock(TA, chain.time() + WEEK * 2, {"from": deployer})
+    assert "Smart contract depositors not allowed" in str(e)
 
 
 @enforce_types
@@ -57,7 +58,7 @@ def test_velock_whitelisted():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     oceanutil.recordDevDeployedContracts()
     global deployer, veOCEAN, OCEAN, veLocker, smartWalletChecker
     deployer = brownie.network.accounts[0]
@@ -73,3 +74,8 @@ def setup_function():
     # apply smart wallet checker
     veOCEAN.commit_smart_wallet_checker(smartWalletChecker.address, {"from": deployer})
     veOCEAN.apply_smart_wallet_checker({"from": deployer})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

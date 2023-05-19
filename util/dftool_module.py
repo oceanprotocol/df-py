@@ -944,7 +944,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
     print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
 
     # main work
-    networkutil.connect(DEV_CHAINID)
+    networkutil.connectDev()
     chain = brownie.network.chain
     if TIMEDELTA is None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
@@ -969,7 +969,7 @@ Usage: dftool newacct
     assert sys.argv[1] == "newacct"
 
     # main work
-    networkutil.connect(DEV_CHAINID)
+    networkutil.connectDev()
     account = brownie.network.accounts.add()
     print("Generated new account:")
     print(f" private_key = {account.private_key}")

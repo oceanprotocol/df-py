@@ -1,5 +1,6 @@
 import brownie
 from enforce_typing import enforce_types
+import pytest
 
 from util import networkutil
 from util.constants import BROWNIE_PROJECT as B
@@ -12,9 +13,11 @@ accounts = None
 def test_transfer_eth_reverts():
     """sending native tokens to dfrewards contract should revert"""
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    with brownie.reverts("Cannot send ether to nonpayable function"):
+    
+    with pytest.raises(ValueError) as e:
         # transfer native eth to dfrewards contract
         accounts[0].transfer(df_rewards, "1 ether")
+    assert "Cannot send ether to nonpayable function" in str(e)
 
 
 @enforce_types
@@ -53,15 +56,19 @@ def test_erc20_withdraw_main():
     TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
 
-    with brownie.reverts("Cannot withdraw allocated token"):
+    with pytest.raises(ValueError) as e:
         df_rewards.withdrawERCToken(to_wei(50.0), TOK.address, {"from": accounts[0]})
+    assert "Cannot withdraw allocated token" in str(e)
 
-    with brownie.reverts("Ownable: caller is not the owner"):
+    with pytest.raises(ValueError) as e:
         df_rewards.withdrawERCToken(to_wei(20.0), TOK.address, {"from": accounts[1]})
+    assert "Ownable: caller is not the owner"
 
     df_rewards.withdrawERCToken(to_wei(40.0), TOK.address, {"from": accounts[0]})
-    with brownie.reverts("Cannot withdraw allocated token"):
+    with pytest.raises(ValueError) as e:
         df_rewards.withdrawERCToken(to_wei(1.0), TOK.address, {"from": accounts[0]})
+    assert "Cannot withdraw allocated token"
+    
     df_strategy.claim([TOK.address], {"from": accounts[1]})
 
     TOK.transfer(df_rewards, 100, {"from": accounts[0]})
@@ -74,12 +81,12 @@ def _deployTOK(account):
 
 
 @enforce_types
-def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+def setup_module():
+    networkutil.connectDev()
     global accounts
     accounts = brownie.network.accounts
 
 
 @enforce_types
-def teardown_function():
+def teardown_module():
     brownie.network.disconnect()

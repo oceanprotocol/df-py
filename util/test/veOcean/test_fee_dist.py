@@ -194,7 +194,7 @@ def test_alice_claims_after_lock_ends():
 @enforce_types
 def setup_function():
     global accounts, alice, bob, veOCEAN, OCEAN, feeDistributor
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
 
@@ -208,3 +208,8 @@ def setup_function():
 
     OCEAN.transfer(alice, TA, {"from": accounts[0]})
     OCEAN.transfer(bob, TA, {"from": accounts[0]})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

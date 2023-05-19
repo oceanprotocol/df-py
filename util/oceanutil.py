@@ -80,6 +80,10 @@ def recordDeployedContracts(address_file: str):
     CONTRACTS[chainID] = C
 
 
+def OCEAN(): # alias
+    return OCEANtoken()
+
+
 def OCEANtoken():
     return _contracts("Ocean")
 
@@ -134,6 +138,11 @@ def VestingWalletV0():
 
 # ===========================================================================
 # Creating Ocean objects: data NFT, datatoken, FRE contract
+
+@enforce_types
+def mintOCEAN():
+    acct0 = brownie.network.accounts[0]
+    OCEANtoken().mint(acct0, 1e24, {"from": acct0})
 
 
 @enforce_types
