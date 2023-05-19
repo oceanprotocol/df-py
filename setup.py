@@ -50,7 +50,15 @@ setup(
     license="Apache Software License 2.0",
     include_package_data=True,
     packages=find_packages(
-        include=["util", "build", "contracts", "data", "interfaces", "reports", "scripts"]
+        include=[
+            "util",
+            "build",
+            "contracts",
+            "data",
+            "interfaces",
+            "reports",
+            "scripts",
+        ]
     ),
     setup_requires=setup_requirements,
     test_suite="tests",
