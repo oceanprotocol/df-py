@@ -149,7 +149,7 @@ def test_getstfinBlocks():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     oceanutil.recordDevDeployedContracts()
     global chain
     chain = brownie.network.chain
