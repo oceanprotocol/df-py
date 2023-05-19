@@ -12,3 +12,4 @@ pytest
 requests
 scipy
 types-requests
+bumpversion
