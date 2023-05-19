@@ -2,7 +2,7 @@
 
 ## Overview
 
-This system includes a set of cron jobs to keep df-sql up to date. These scripts are executed at defined intervals. The scripts carry out tasks such as calculating reward amounts for the current round, fetching NFT information, and updating cloud-based data.
+Here are the cronjobs and scripts that are used to keep df-sql up to date. These scripts are executed at defined intervals. The scripts carry out tasks such as calculating reward amounts for the current round, fetching NFT information, and updating cloud data.
 
 Below, is the outline of the purpose and workings of each cron job and script.
 
