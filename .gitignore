@@ -10,3 +10,6 @@ __pycache__
 .coverage
 .vscode/
 setup-local.sh
+
+.eggs/
+util.egg-info/
