@@ -46,7 +46,7 @@ def _deployToken():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     global accounts
     accounts = brownie.network.accounts
 
