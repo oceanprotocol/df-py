@@ -25,3 +25,8 @@ def setup_function():
     oceanutil.recordDevDeployedContracts()
     global accounts
     accounts = brownie.network.accounts
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

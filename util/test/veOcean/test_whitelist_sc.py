@@ -73,3 +73,8 @@ def setup_function():
     # apply smart wallet checker
     veOCEAN.commit_smart_wallet_checker(smartWalletChecker.address, {"from": deployer})
     veOCEAN.apply_smart_wallet_checker({"from": deployer})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
