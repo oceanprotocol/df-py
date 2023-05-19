@@ -277,8 +277,8 @@ def _assertBalanceOf(token, address: str, target_bal: int, tries: int):
 @enforce_types
 def setup_module():
     networkutil.connectDev()
-
-    global chain, accounts, acct0, acct1, acct2, acct3, addr0, addr1, addr2, addr3
+    global chain, accounts
+    global acct0, acct1, acct2, acct3, addr0, addr1, addr2, addr3
 
     chain, accounts = brownie.chain, brownie.network.accounts
     acct0, acct1, acct2, acct3 = accounts[:4]

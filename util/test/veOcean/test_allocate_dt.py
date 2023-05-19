@@ -119,15 +119,16 @@ def test_batch_reverts():
 
 
 @enforce_types
-def setup_function():
-    global accounts, veAllocate
-    accounts = brownie.network.accounts
-    veAllocate = oceanutil.veAllocate()
-
-
-@enforce_types
 def _rnd_addr() -> str:
     base_s = "0x0000000000000000000000000000000000"  # 6 chars short
     six_rnd_chars = str(random.randint(0, 1000000)).zfill(6)
     addr = base_s + six_rnd_chars
     return addr
+
+
+@enforce_types
+def setup_function():
+    networkutil.connectDev()
+    global accounts, veAllocate
+    accounts = brownie.network.accounts
+    veAllocate = oceanutil.veAllocate()
