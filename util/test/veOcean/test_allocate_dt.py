@@ -111,3 +111,8 @@ def setup_function():
     global accounts, veAllocate
     accounts = brownie.network.accounts
     veAllocate = B.veAllocate.deploy({"from": accounts[0]})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

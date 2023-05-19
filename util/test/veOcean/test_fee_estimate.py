@@ -128,3 +128,8 @@ def setup_function():
     OCEAN.transfer(bob, TA, {"from": accounts[0]})
     OCEAN.transfer(charlie, TA, {"from": accounts[0]})
     OCEAN.transfer(david, TA, {"from": accounts[0]})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
