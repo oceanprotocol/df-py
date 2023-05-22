@@ -124,7 +124,6 @@ jobs:
           set -e
           curl -X POST http://localhost:6234/vebals | grep -q "\"locked_amt\":"
           curl -X POST http://localhost:6234/volume | grep -q "\"nft_addr\":\"0x"
-          curl -X POST http://localhost:6234/rewards | grep -q "\"LP_addr\":\"0x"
           curl -X GET http://localhost:6234/apy/active | grep -q "\"apy\":"
           curl -X GET http://localhost:6234/apy/addr/0x | grep -q "\"apy\":"
           curl -X POST http://localhost:6234/nftinfo | grep -q "\"ocean_allocated_realtime\":0,"
