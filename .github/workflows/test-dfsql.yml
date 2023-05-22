@@ -79,7 +79,7 @@ jobs:
 
       - name: Add polygon network
         run: |
-          brownie networks add polygon polygon host=https://rpc.ankr.com/polygon chainid=137
+          brownie networks add polygon polygon host=https://polygon.llamarpc.com chainid=137
   
       - name: Run dftool getrate
         run: |
