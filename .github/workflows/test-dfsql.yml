@@ -44,4 +44,67 @@ jobs:
         env:
           SUBGRAPH_VERSION: main
         run: |
-          docker-compose up
+          docker-compose up &
+        
+      - name: Create Brownie paths
+        run: |
+            mkdir -p /home/runner/.solcx
+            mkdir -p /home/runner/.vvm
+            mkdir -p /home/runner/.brownie/packages
+
+      - name: Restore Brownie compilers
+        id: restore-brownie-compilers
+        uses: actions/cache/restore@v3
+        with:
+            path: |
+              /home/runner/.solcx
+              /home/runner/.vvm
+              /home/runner/.brownie/packages
+            key: ${{ runner.os }}-brownie-deps
+
+      - name: Set env variables
+        run: |
+            echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
+            echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
+            echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+            echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
+            echo "date=2023-05-10" >> $GITHUB_ENV
+            echo "now=2023-05-12" >> $GITHUB_ENV
+            echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
+            echo "RETRY_TIMES=5" >> $GITHUB_ENV
+  
+      - name: Run dftool getrate
+        run: |
+            ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
+            ./dftool getrate ETH $date $now $CSV_DIR $RETRY_TIMES
+            ./dftool getrate BNB $date $now $CSV_DIR $RETRY_TIMES
+            ./dftool getrate EWT $date $now $CSV_DIR $RETRY_TIMES
+            ./dftool getrate MOVR $date $now $CSV_DIR $RETRY_TIMES
+            ./dftool getrate MATIC $date $now $CSV_DIR $RETRY_TIMES
+  
+      - name: Run dftool volsym
+        run: |
+            ./dftool volsym $date $now 2 $CSV_DIR 1 $RETRY_TIMES
+            ./dftool volsym $date $now 2 $CSV_DIR 137 $RETRY_TIMES
+  
+      - name: Run dftool vebals
+        run: |
+            ./dftool vebals $date $now 2 $CSV_DIR 1 $RETRY_TIMES
+  
+      - name: Run dftool allocations
+        run: |
+            ./dftool allocations $date $now 2 $CSV_DIR 1 $RETRY_TIMES
+  
+      - name: Run sed
+        run: |
+            cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
+            sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
+  
+      - name: Run dftool calc
+        run: |
+            ./dftool calc $CSV_DIR 0 $date OCEAN
+          
+      - name: Move csvs to df-sql dir
+        run: |
+            mv /tmp/csv/* ~/.dfcsv
+  
