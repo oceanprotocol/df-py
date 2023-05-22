@@ -30,7 +30,10 @@ jobs:
         with:
           repository: "oceanprotocol/df-sql"
           path: "df-sql"
-
+      
+      - name: Create CSV dir
+        run: |
+          mkdir ~/.dfcsv
       - name: Setup df-sql env file
         run: |
           touch df-sql/.env
