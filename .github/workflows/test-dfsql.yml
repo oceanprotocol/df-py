@@ -122,6 +122,8 @@ jobs:
       - name: Test queries
         run: |
           set -e
+          curl -X POST http://localhost:6234/vebals
+          curl -X POST http://localhost:6234/volume
           curl -X POST http://localhost:6234/vebals | grep -q "\"locked_amt\":"
           curl -X POST http://localhost:6234/volume | grep -q "\"nft_addr\":\"0x"
           curl -X GET http://localhost:6234/apy/active | grep -q "\"apy\":"
