@@ -1,5 +1,7 @@
 FROM python:3.8
 USER root
+
+COPY . /app/df-py
 WORKDIR /app/df-py
 
 RUN python3.8 -m pip install --upgrade pip
