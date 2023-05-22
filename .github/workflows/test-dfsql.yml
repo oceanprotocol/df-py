@@ -72,8 +72,8 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
-          echo "date=2023-04-20" >> $GITHUB_ENV
-          echo "now=2023-04-27" >> $GITHUB_ENV
+          echo "date=2023-01-20" >> $GITHUB_ENV
+          echo "now=2023-01-27" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
 
