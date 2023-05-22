@@ -1,0 +1,39 @@
+name: Test with df-sql
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python {{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/checkout@v2
+        name: Checkout df-sql
+        with:
+          repository: "oceanprotocol/df-sql"
+          path: "df-sql"
+
+      - name: Run df-sql
+        working-directory: ${{ github.workspace }}/df-sql
+        env:
+          SUBGRAPH_VERSION: main
+        run: |
+          docker-compose up
