@@ -37,11 +37,7 @@ jobs:
 
       - name: Setup df-sql env file
         run: |
-          touch df-sql/.env
-          echo "MYSQL_HOST=mysql" >> df-sql/.env
-          echo "MYSQL_USERNAME=root" >> df-sql/.env
-          echo "MYSQL_PASS=my-secret-pw" >> df-sql/.env
-          echo "MYSQL_DB=testdb" >> df-sql/.env
+          mv df-sql/.env.sample df-sql/.env
 
       - name: Run df-sql
         working-directory: ${{ github.workspace }}/df-sql
