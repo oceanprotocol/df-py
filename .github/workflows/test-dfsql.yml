@@ -76,8 +76,8 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
-          echo "date=2023-05-10" >> $GITHUB_ENV
-          echo "now=2023-05-12" >> $GITHUB_ENV
+          echo "date=2023-04-25" >> $GITHUB_ENV
+          echo "now=2023-04-27" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
   
@@ -122,4 +122,11 @@ jobs:
       - name: Test queries
         run: |
           set -e
-          curl -X POST http://localhost:6234/nftinfo | grep -q "\"nft_addr\":\"0x"
+          curl -X POST http://localhost:6234/vebals | grep -q "\"locked_amt\":"
+          curl -X POST https://localhost:6234/volume | grep -q "\"nft_addr\":\"0x"
+          curl -X POST https://localhost:6234/rewards | grep -q "\"LP_addr\":\"0x"
+          curl -X GET https://localhost:6234/apy/active | grep -q "\"apy\":"
+          curl -X GET https://localhost:6234/apy/addr/0x | grep -q "\"apy\":"
+          curl -X POST https://localhost:6234/nftinfo | grep -q "\"ocean_allocated_realtime\":0,"
+          curl -X POST https://localhost:6234/allocations | grep -q "\"ocean_amt\":"
+          curl -X POST https://localhost:6234/rewardsSummary | grep -q "\"curating_amt\":"
