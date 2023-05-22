@@ -41,8 +41,6 @@ jobs:
 
       - name: Run df-sql
         working-directory: ${{ github.workspace }}/df-sql
-        env:
-          SUBGRAPH_VERSION: main
         run: |
           docker-compose up &
         
