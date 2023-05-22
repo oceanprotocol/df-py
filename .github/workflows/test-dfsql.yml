@@ -102,6 +102,10 @@ jobs:
         run: |
           ./dftool allocations $date $now 2 $CSV_DIR 1 $RETRY_TIMES
   
+      - name: Run dftool nftinfo
+        run: |
+          ./dftool nftinfo $CSV_DIR 1 $now
+
       - name: Run sed
         run: |
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
@@ -129,3 +133,4 @@ jobs:
           curl -X POST http://localhost:6234/nftinfo | grep -q "\"ocean_allocated_realtime\":0,"
           curl -X POST http://localhost:6234/allocations | grep -q "\"ocean_amt\":"
           curl -X POST http://localhost:6234/rewardsSummary | grep -q "\"curating_amt\":"
+          curl -X POST http://localhost:6234/rewards | grep -q "\"LP_addr\":\"0x"
