@@ -113,7 +113,7 @@ jobs:
   
       - name: Run dftool calc
         run: |
-          ./dftool calc $CSV_DIR 0 $date OCEAN
+          ./dftool calc $CSV_DIR 100000000 $date OCEAN
           
       - name: Move csvs to df-sql dir
         run: |
