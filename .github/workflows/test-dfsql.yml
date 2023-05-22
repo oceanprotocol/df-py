@@ -34,6 +34,7 @@ jobs:
       - name: Create CSV dir
         run: |
           mkdir ~/.dfcsv
+
       - name: Setup df-sql env file
         run: |
           touch df-sql/.env
