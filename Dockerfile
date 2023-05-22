@@ -1,8 +1,10 @@
 FROM python:3.8
 USER root
 WORKDIR /app/df-py
-COPY requirements.txt requirements.txt
-RUN pip3 install -r requirements.txt
+
+RUN python3.8 -m pip install --upgrade pip
+RUN python3.8 -m pip install .
+
 RUN brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
 RUN brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 RUN brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
