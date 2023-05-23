@@ -1,0 +1,132 @@
+name: Test with df-sql
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_call:
+
+env:
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python {{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/checkout@v2
+        name: Checkout df-sql
+        with:
+          repository: "oceanprotocol/df-sql"
+          path: "df-sql"
+      
+      - name: Create CSV dir
+        run: |
+          mkdir ~/.dfcsv
+
+      - name: Setup df-sql env file
+        run: |
+          mv df-sql/.env.sample df-sql/.env
+
+      - name: Run df-sql
+        working-directory: ${{ github.workspace }}/df-sql
+        run: |
+          docker-compose up &
+
+      - name: Install dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --quiet
+  
+      - name: Create Brownie paths
+        run: |
+          mkdir -p /home/runner/.solcx
+          mkdir -p /home/runner/.vvm
+          mkdir -p /home/runner/.brownie/packages
+
+      - name: Restore Brownie compilers
+        id: restore-brownie-compilers
+        uses: actions/cache/restore@v3
+        with:
+            path: |
+              /home/runner/.solcx
+              /home/runner/.vvm
+              /home/runner/.brownie/packages
+            key: ${{ runner.os }}-brownie-deps
+
+      - name: Set env variables
+        run: |
+          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
+          echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
+          echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
+          echo "TEST_START_DATE=2023-01-20" >> $GITHUB_ENV
+          echo "TEST_END_DATE=2023-01-27" >> $GITHUB_ENV
+          echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
+          echo "RETRY_TIMES=5" >> $GITHUB_ENV
+
+      - name: Add polygon network
+        run: |
+          brownie networks add polygon polygon host=https://polygon.llamarpc.com chainid=137
+  
+      - name: Run dftool getrate
+        run: |
+          ./dftool getrate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR $RETRY_TIMES
+  
+      - name: Run dftool volsym
+        run: |
+          ./dftool volsym $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool volsym $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 137 $RETRY_TIMES
+  
+      - name: Run dftool vebals
+        run: |
+          ./dftool vebals $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 $RETRY_TIMES
+  
+      - name: Run dftool allocations
+        run: |
+          ./dftool allocations $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 $RETRY_TIMES
+  
+      - name: Run dftool nftinfo
+        run: |
+          ./dftool nftinfo $CSV_DIR 1 $TEST_END_DATE
+
+      - name: Run sed
+        run: |
+          cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
+          sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
+  
+      - name: Run dftool calc
+        run: |
+          ./dftool calc $CSV_DIR 100000000 $TEST_START_DATE OCEAN
+          
+      - name: Move csvs to df-sql dir
+        run: |
+          mv /tmp/csv/* ~/.dfcsv
+        
+      - name: Wait a minute for df-sql to sync
+        run: |
+          sleep $(($(date -d "+ 1 minute + 5 seconds" +%s) - $(date +%s)))
+      
+      - name: Test queries
+        run: |
+          set -e
+          curl -X POST http://localhost:6234/vebals | grep -q "\"locked_amt\":"
+          curl -X POST http://localhost:6234/volume | grep -q "\"nft_addr\":\"0x"
+          curl -X GET http://localhost:6234/apy/active | grep -q "\"apy\":"
+          curl -X GET http://localhost:6234/apy/addr/0x | grep -q "\"apy\":"
+          curl -X POST http://localhost:6234/nftinfo | grep -q "\"ocean_allocated_realtime\":0,"
+          curl -X POST http://localhost:6234/allocations | grep -q "\"ocean_amt\":"
+          curl -X POST http://localhost:6234/rewards | grep -q "\"LP_addr\":\"0x"
+          curl -X POST http://localhost:6234/rewardsSummary | grep -q "\"curating_amt\":"
