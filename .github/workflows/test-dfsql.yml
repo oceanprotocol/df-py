@@ -72,8 +72,8 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
-          echo "date=2023-01-20" >> $GITHUB_ENV
-          echo "now=2023-01-27" >> $GITHUB_ENV
+          echo "TEST_START_DATE=2023-01-20" >> $GITHUB_ENV
+          echo "TEST_END_DATE=2023-01-27" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
 
@@ -83,24 +83,24 @@ jobs:
   
       - name: Run dftool getrate
         run: |
-          ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool getrate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR $RETRY_TIMES
   
       - name: Run dftool volsym
         run: |
-          ./dftool volsym $date $now 2 $CSV_DIR 1 $RETRY_TIMES
-          ./dftool volsym $date $now 2 $CSV_DIR 137 $RETRY_TIMES
+          ./dftool volsym $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool volsym $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 137 $RETRY_TIMES
   
       - name: Run dftool vebals
         run: |
-          ./dftool vebals $date $now 2 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool vebals $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 $RETRY_TIMES
   
       - name: Run dftool allocations
         run: |
-          ./dftool allocations $date $now 2 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool allocations $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 $RETRY_TIMES
   
       - name: Run dftool nftinfo
         run: |
-          ./dftool nftinfo $CSV_DIR 1 $now
+          ./dftool nftinfo $CSV_DIR 1 $TEST_END_DATE
 
       - name: Run sed
         run: |
@@ -109,7 +109,7 @@ jobs:
   
       - name: Run dftool calc
         run: |
-          ./dftool calc $CSV_DIR 100000000 $date OCEAN
+          ./dftool calc $CSV_DIR 100000000 $TEST_START_DATE OCEAN
           
       - name: Move csvs to df-sql dir
         run: |
