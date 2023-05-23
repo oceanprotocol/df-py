@@ -117,7 +117,7 @@ jobs:
         
       - name: Wait a minute for df-sql to sync
         run: |
-          sleep 60
+          sleep $(($(date -d "+ 1 minute + 5 seconds" +%s) - $(date +%s)))
       
       - name: Test queries
         run: |
