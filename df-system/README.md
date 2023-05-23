@@ -66,7 +66,7 @@ These scripts are not directly called by cron jobs; instead, they are executed a
 
 Executes commands inside a Docker container using the image `dfpy`.
 
-Called by: [`all.sh`,](#allsh) [`nftinfo.sh`](#nftinfosh)
+Called by: [`all.sh`](#allsh), [`nftinfo.sh`](#nftinfosh)
 
 - Loads environment variables from an .env file located in the df-py directory.
 - Mounts two volumes into the container, one for CSV output and one for the address file.
