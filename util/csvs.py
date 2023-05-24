@@ -148,8 +148,7 @@ def loadVebalsCsv(
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["LP_addr", "balance",
-                               "locked_amt", "unlock_time"]
+                assert row == ["LP_addr", "balance", "locked_amt", "unlock_time"]
                 continue
             LP_addr, _balance, _locked_amt, _unlock_time = row
 
@@ -533,8 +532,7 @@ def loadNftvolsCsv(csv_dir: str, chainID: int):
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "basetoken_addr",
-                               "nft_addr", "vol_amt"]
+                assert row == ["chainID", "basetoken_addr", "nft_addr", "vol_amt"]
                 continue
 
             chainID2 = int(row[0])

@@ -74,8 +74,7 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
 
             # only count predictions if the round is Paying
             prediction = Prediction(slot, payout, contract_addr)
-            predictoors.setdefault(
-                predictoor_addr, Predictoor(predictoor_addr))
+            predictoors.setdefault(predictoor_addr, Predictoor(predictoor_addr))
             predictoors[predictoor_addr].add_prediction(prediction)
 
     return predictoors
