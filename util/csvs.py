@@ -264,7 +264,7 @@ def savePredictoorData(
     predictoor_data: Dict[str, Predictoor], csv_dir: str, chainid: int
 ):
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = predictoorDataFilename(csv_dir)
+    csv_file = predictoorDataFilename(csv_dir.chainid)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
