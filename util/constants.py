@@ -33,3 +33,6 @@ MULTISIG_ADDRS = {
 
 # filled in by oceanutil.py
 CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
+
+# predictoor
+MIN_PREDICTIONS = 25
