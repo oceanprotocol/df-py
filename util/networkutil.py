@@ -24,9 +24,16 @@ _RAW_CHAIN_DATA = [
     (1287, "moonbase", "MOVR"),
     (1285, "moonriver", "MOVR"),
     (80001, "mumbai", "MATIC"),
-    (80001, "polygon-test", "MATIC"),
 ]
 
+# chainids and names must be unique. Token symbols don't need to be
+__chainids_list = [x[0] for x in _RAW_CHAIN_DATA]
+assert len(__chainids_list) == len(set(__chainids_list)), "need unique chainids"
+
+__names_list = [x[1] for x in _RAW_CHAIN_DATA]
+assert len(__names_list) == len(set(__names_list)), "need unique names"
+
+# mappings used later
 _CHAINID_TO_NETWORK = {x[0]: x[1] for x in _RAW_CHAIN_DATA}
 _CHAINID_TO_NATIVE_TOKEN = {x[0]: x[2] for x in _RAW_CHAIN_DATA}
 _CHAINID_TO_ADDRS = {x: f"0x{y}" for x, y in _CHAINID_TO_NETWORK.items()}
@@ -103,6 +110,11 @@ def getLatestBlock(chainID) -> int:
         disconnect()
         connect(prev)
     return lastBlock
+
+
+@enforce_types
+def connectDev():
+    connect(DEV_CHAINID)
 
 
 @enforce_types

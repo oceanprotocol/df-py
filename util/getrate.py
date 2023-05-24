@@ -57,7 +57,7 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
 
     req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
     try:
-        res = requests.get(req_s)
+        res = requests.get(req_s, timeout=30)
         data = res.json()
         if data == []:
             return None
@@ -95,7 +95,7 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
         raise ValueError(f"Couldn't find Coingecko ID for {token_symbol}")
     req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"  # pylint: disable=line-too-long
     print("URL", req_s)
-    res = requests.get(req_s)
+    res = requests.get(req_s, timeout=30)
     data = res.json()["prices"]
     if data == []:
         return None

@@ -43,7 +43,8 @@ def test_alice_locks_tokens():
     assert epoch != 0
 
     assert veOCEAN.get_last_user_slope(alice) != 0
-    aliceVotingPower = (veOCEAN.balanceOf(alice, chain.time())) / to_wei(1.0)
+    chain_time = chain[-1].timestamp
+    aliceVotingPower = (veOCEAN.balanceOf(alice, chain_time)) / to_wei(1.0)
     expectedVotingPower = (TA * YEAR / MAXTIME) / to_wei(1.0)
     assert aliceVotingPower == approx(expectedVotingPower, 0.5)
 
@@ -54,12 +55,13 @@ def test_alice_locks_tokens():
     assert OCEAN.balanceOf(alice) == TA
 
     assert veOCEAN.get_last_user_slope(alice) == 0
-    assert veOCEAN.balanceOf(alice, chain.time()) == 0
+    chain_time = chain[-1].timestamp
+    assert veOCEAN.balanceOf(alice, chain_time) == 0
 
 
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     oceanutil.recordDevDeployedContracts()
     global accounts, alice, bob, veOCEAN, OCEAN
     accounts = brownie.network.accounts
@@ -77,3 +79,8 @@ def setup_function():
 
     OCEAN.transfer(alice, TA, {"from": accounts[0]})
     OCEAN.transfer(bob, TA, {"from": accounts[0]})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

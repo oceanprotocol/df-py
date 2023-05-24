@@ -17,7 +17,7 @@ def test_2():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(networkutil.DEV_CHAINID)
+    networkutil.connectDev()
     oceanutil.recordDevDeployedContracts()
 
 

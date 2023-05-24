@@ -71,8 +71,10 @@ brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 #add pwd to bash path
 export PATH=$PATH:.
 
-#set judges private key
-export REMOTE_TEST_PRIVATE_KEY1=<judges key>
+#set judge private key
+#  - get at private repo https://github.com/oceanprotocol/private-keys
+#  - CI automatically sees it via Github Actions Secrets
+export JUDGE_PRIVATE_KEY=<judge key>
 
 #compile contracts
 dftool compile
@@ -129,6 +131,7 @@ brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
 brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
 brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
 brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
+brownie networks add mumbai mumbai host=https://polygon-mumbai.blockpi.network/v1/rpc/public chainid=80001
 ```
 
 Or using an Infura ID, here is an example for polygon:
@@ -260,7 +263,7 @@ This section provides tactics if you encounter issues like `KeyError "developmen
 If you run a test and get an error like:
 ```text
 INTERNALERROR>   File "/home/trentmc/code/df-py/util/test/conftest.py", line 24, in pytest_sessionstart
-INTERNALERROR>     networkutil.connect(networkutil.DEV_CHAINID)
+INTERNALERROR>     networkutil.connectDev()
 ...
 INTERNALERROR>   File "/home/trentmc/code/df-py/venv/lib/python3.10/site-packages/brownie/network/contract.py", line 708, in __init__
 INTERNALERROR>     raise ContractNotFound(f"No contract deployed at {address}")
