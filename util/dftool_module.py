@@ -17,8 +17,9 @@ from util import (
     dispense,
     getrate,
     networkutil,
-    query,
+    query
 )
+from util.predictoor.query import queryPredictoors
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.calcrewards import calcRewards
@@ -59,7 +60,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
-  dftool predictoor_data CSV_DIR CHAINID [RETRIES]
+  dftool predictoor_data CSV_DIR START_DATE END_DATE [RETRIES]
   dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
@@ -214,7 +215,8 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
-    print(f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
+    print(
+        f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
@@ -228,7 +230,8 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
-    nftinfo = retryFunction(query.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
+    nftinfo = retryFunction(query.queryNftinfo, RETRIES,
+                            DELAY_S, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -404,7 +407,7 @@ def do_challenge_data():
 
 Usage: dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  DEADLINE -- submission deadline. 
+  DEADLINE -- submission deadline.
     Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
     Example for Round 5: 2023-05-03_23:59
   RETRIES -- # times to retry failed queries
@@ -467,8 +470,10 @@ Uses these envvars:
 def do_predictoor_data():
     HELP = f"""Get data for Predictoor DF
 
-Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
+Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+  START_DATE -- query range start date
+  END_DATE -- query range end date
   CHAINID -- {CHAINID_EXAMPLES}
   RETRIES -- # times to retry failed queries
 """
@@ -479,19 +484,22 @@ Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
     # extract inputs
     assert sys.argv[1] == "predictoor_data"
     CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
-    RETRIES = 1 if len(sys.argv) == 4 else int(sys.argv[4])
+    START_DATE = sys.argv[3]
+    END_DATE = sys.argv[4]
+    CHAINID = int(sys.argv[5])
+    RETRIES = 1 if len(sys.argv) == 7 else int(sys.argv[6])
     print("dftool predictoor_data: Begin")
     print(
         f"Arguments: "
         f"\n CSV_DIR={CSV_DIR}"
+        f"\n START_DATE={START_DATE}"
+        f"\n END_DATE={END_DATE}"
         f"\n CHAINID={CHAINID}"
         f"\n RETRIES={RETRIES}"
     )
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    SECRET_SEED = _getSecretSeedOrExit()  # pylint: disable=unused-variable
 
     # check files, prep dir
     if not os.path.exists(CSV_DIR):
@@ -500,22 +508,20 @@ Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
 
     # brownie setup
     networkutil.connect(CHAINID)
-    chain = brownie.network.chain  # pylint: disable=unused-variable
     recordDeployedContracts(ADDRESS_FILE)
 
     # main work
     predictoor_data = retryFunction(
-        query.queryPredictoor_Data,
+        queryPredictoors,
         RETRIES,
         CHAINID,
     )
-    csvs.savePredictoor_Data(predictoor_data, CSV_DIR, CHAINID)
-
+    csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
     print("dftool predictoor_data: Done")
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_calc():
     HELP = """from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
 
@@ -625,7 +631,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_dispense_active():
     HELP = f"""From rewards csv, dispense funds to chain
 
@@ -700,7 +706,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_newdfrewards():
     HELP = f"""Deploy new DFRewards contract
 
@@ -727,7 +733,7 @@ Usage: dftool newdfrewards CHAINID
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_newdfstrategy():
     HELP = f"""Deploy new DFStrategy contract
 
@@ -749,14 +755,16 @@ Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
 
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    df_strategy = B[DFSTRATEGY_NAME].deploy(DFREWARDS_ADDR, {"from": from_account})
-    print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
+    df_strategy = B[DFSTRATEGY_NAME].deploy(
+        DFREWARDS_ADDR, {"from": from_account})
+    print(
+        f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
     print("dftool newdfstrategy: Done")
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_addstrategy():
     HELP = f"""Add a strategy to DFRewards contract
 
@@ -782,13 +790,14 @@ Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
     tx = df_rewards.addStrategy(DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyAdded"
 
-    print(f"Strategy {DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}")
+    print(
+        f"Strategy {DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}")
 
     print("dftool addstrategy: Done")
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_retirestrategy():
     HELP = f"""Retire a strategy from DFRewards contract
 
@@ -813,13 +822,14 @@ Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
     df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
     tx = df_rewards.retireStrategy(DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyRetired"
-    print(f"Strategy {DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}")
+    print(
+        f"Strategy {DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}")
 
     print("dftool addstrategy: Done")
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_compile():
     HELP = """Compile contracts
 
@@ -833,7 +843,7 @@ Usage: dftool compile
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_initdevwallets():
     # UPADATE THIS
     HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
@@ -876,7 +886,7 @@ Uses these envvars:
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_manyrandom():
     # UPDATE THIS
     HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
@@ -914,14 +924,15 @@ Uses these envvars:
     OCEAN = OCEANtoken()
 
     num_nfts = 10  # magic number
-    tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
+    tups = randomCreateDataNFTWithFREs(
+        num_nfts, OCEAN, brownie.network.accounts)
     randomLockAndAllocate(tups)
     randomConsumeFREs(tups, OCEAN)
     print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_mine():
     HELP = """Force chain to pass time (ganache only)
 
@@ -955,7 +966,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_newacct():
     HELP = """Generate new account
 
@@ -978,7 +989,7 @@ Usage: dftool newacct
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_newtoken():
     HELP = """Generate new token (for testing)
 
@@ -996,12 +1007,13 @@ Usage: dftool newtoken CHAINID
     # main work
     networkutil.connect(CHAINID)
     from_account = _getPrivateAccount()
-    token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
+    token = B.Simpletoken.deploy(
+        "TST", "Test Token", 18, 1e21, {"from": from_account})
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_newVeOcean():
     HELP = """Generate new veOcean (for testing)
 
@@ -1034,7 +1046,7 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_newVeAllocate():
     HELP = """Generate new veAllocate (for testing)
 
@@ -1057,7 +1069,7 @@ Usage: dftool newVeAllocate CHAINID
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_veSetAllocation():
     HELP = """Allocate weight to veAllocate contract (for testing).
     Set to 0 to trigger resetAllocation event.
@@ -1092,7 +1104,7 @@ Usage: dftool veSetAllocation CHAINID amount exchangeId
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_acctinfo():
     HELP = f"""Info about an account
 
@@ -1136,7 +1148,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_chaininfo():
     HELP = f"""Info about a network
 
@@ -1159,7 +1171,7 @@ Usage: dftool chaininfo CHAINID
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_dispense_passive_rewards():
     HELP = f"""Dispense passive rewards
 
@@ -1190,7 +1202,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT [ST]
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_calculate_passive():
     HELP = f"""Calculate passive rewards
 
@@ -1232,7 +1244,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
 
 
 # ========================================================================
-@enforce_types
+@ enforce_types
 def do_checkpoint_feedist():
     HELP = f"""Checkpoint FeeDistributor contract
 
@@ -1313,7 +1325,7 @@ def _getSecretSeedOrExit() -> int:
     return int(SECRET_SEED)
 
 
-@enforce_types
+@ enforce_types
 def _getPrivateAccount():
     private_key = os.getenv("DFTOOL_KEY")
     assert private_key is not None, "Need to set envvar DFTOOL_KEY"
@@ -1322,7 +1334,7 @@ def _getPrivateAccount():
     return account
 
 
-@enforce_types
+@ enforce_types
 def _do_main():
     if len(sys.argv) == 1:
         do_help_short()
