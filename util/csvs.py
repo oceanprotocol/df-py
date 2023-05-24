@@ -6,6 +6,7 @@ from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
 from util.query import SimpleDataNft
+from util.predictoor.models import Predictoor
 
 
 # ========================================================================
@@ -147,7 +148,8 @@ def loadVebalsCsv(
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["LP_addr", "balance", "locked_amt", "unlock_time"]
+                assert row == ["LP_addr", "balance",
+                               "locked_amt", "unlock_time"]
                 continue
             LP_addr, _balance, _locked_amt, _unlock_time = row
 
@@ -200,7 +202,7 @@ def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
         writer = csv.writer(f)
         row = ["from_addr", "nft_addr", "nmse"]
         writer.writerow(row)
-        for (from_addr, nft_addr, nmse) in zip(from_addrs, nft_addrs, nmses):
+        for from_addr, nft_addr, nmse in zip(from_addrs, nft_addrs, nmses):
             assertIsEthAddr(from_addr)
             assertIsEthAddr(nft_addr)
             row = [
@@ -251,6 +253,56 @@ def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
 @enforce_types
 def challengeDataCsvFilename(csv_dir: str) -> str:
     f = "challenge.csv"
+    return os.path.join(csv_dir, f)
+
+
+# ========================================================================
+# predictoor csv
+
+
+@enforce_types
+def savePredictoorData(
+    predictoor_data: Dict[str, Predictoor], csv_dir: str, chainid: int
+):
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = predictoorDataFilename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+
+    with open(csv_file, "w") as f:
+        writer = csv.writer(f)
+        row = ["predictoor_addr", "accuracy"]
+        writer.writerow(row)
+        for predictoor in predictoor_data.values():
+            accuracy = predictoor.get_accuracy()
+            predictoor_addr = predictoor.address
+            assertIsEthAddr(predictoor_addr)
+            row = [predictoor_addr.lower(), accuracy]
+            writer.writerow(row)
+    print(f"Created {csv_file}")
+
+
+@enforce_types
+def loadPredictoorData(csv_dir: str, chainid: int) -> Dict[str, float]:
+    csv_file = predictoorDataFilename(csv_dir, chainid)
+    predictoor_data = {}
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:
+                assert row == ["predictoor_addr", "accuracy"]
+                continue
+            predictoor_addr, accuracy_s = row
+            predictoor_addr = predictoor_addr.lower()
+            accuracy = float(accuracy_s)
+            assertIsEthAddr(predictoor_addr)
+            predictoor_data[predictoor_addr] = accuracy
+    print(f"Loaded {csv_file}")
+    return predictoor_data
+
+
+@enforce_types
+def predictoorDataFilename(csv_dir, chainid):
+    f = f"predictoordata_{chainid}"
     return os.path.join(csv_dir, f)
 
 
@@ -481,7 +533,8 @@ def loadNftvolsCsv(csv_dir: str, chainID: int):
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "basetoken_addr", "nft_addr", "vol_amt"]
+                assert row == ["chainID", "basetoken_addr",
+                               "nft_addr", "vol_amt"]
                 continue
 
             chainID2 = int(row[0])
