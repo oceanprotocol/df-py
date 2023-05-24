@@ -63,7 +63,7 @@ jobs:
       - name: Add networks to brownie
         run: |
           brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
-          brownie networks add mumbai mumbai host=https://matic-mumbai.chainstacklabs.com chainid=80001
+          brownie networks add mumbai mumbai host=https://polygon-mumbai.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=80001 explorer=https://api.etherscan.io/api provider=infura
           brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
           brownie networks add polygon polygon host=https://polygon.llamarpc.com chainid=137
           brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
