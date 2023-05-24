@@ -45,17 +45,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt --quiet
 
+      - name: Restore Brownie compilers
+        id: restore-brownie-compilers
+        uses: actions/cache/restore@v3
+        with:
+          path: |
+            /home/runner/.solcx
+            /home/runner/.vvm
+            /home/runner/.brownie/packages
+          key: ${{ runner.os }}-brownie-deps
+
       - name: Set up Openzeppelin
         run: |
-          brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
-          brownie pm install GNSPS/solidity-bytes-utils@0.8.0
+          [ -d "$HOME/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.2.0" ] && echo "Using OpenZeppelin/openzeppelin-contracts@4.2.0 from cache" || brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
+          [ -d "$HOME/.brownie/packages/GNSPS/solidity-bytes-utils@0.8.0" ] && echo "Using GNSPS/solidity-bytes-utils@0.8.0/ from cache" || brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 
       - name: Add networks to brownie
         run: |
           brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
           brownie networks add mumbai mumbai host=https://matic-mumbai.chainstacklabs.com chainid=80001
           brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
-          brownie networks add polygon polygon host=https://rpc.ankr.com/polygon chainid=137
+          brownie networks add polygon polygon host=https://polygon.llamarpc.com chainid=137
           brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
           brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 
@@ -152,3 +162,13 @@ jobs:
         with:
           path: "/tmp/csv/${{ env.DFWEEK }}"
           destination: "${{ env.DESTINATION }}"
+
+      - name: Save Brownie compilers
+        id: cache-brownie-compilers
+        uses: actions/cache/save@v3
+        with:
+          path: |
+            /home/runner/.solcx
+            /home/runner/.vvm
+            /home/runner/.brownie/packages
+          key: ${{ runner.os }}-brownie-deps
