@@ -1,3 +1,4 @@
+from typing import Dict
 from enforce_typing import enforce_types
 from util.constants import MIN_PREDICTIONS
 
@@ -10,7 +11,7 @@ class Prediction:
         self.contract_addr = contract_addr
 
     @property
-    def correct(self) -> bool:
+    def is_correct(self) -> bool:
         """
         Returns true if the prediction is correct, false otherwise.
         """
@@ -22,7 +23,7 @@ class Prediction:
 class Predictoor:
     @enforce_types
     def __init__(self, address: str):
-        self.predictions = []
+        self.predictions: Dict[str, Prediction] = []
         self.address = address
 
     @enforce_types
@@ -43,5 +44,6 @@ class Predictoor:
         n_predictions = len(self.predictions)
         if n_predictions < MIN_PREDICTIONS:
             return 0
-        n_correct = sum(1 for prediction in self.predictions if prediction.correct)
+        n_correct = sum(
+            1 for prediction in self.predictions if prediction.is_correct)
         return n_correct / n_predictions
