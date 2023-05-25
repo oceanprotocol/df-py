@@ -51,6 +51,5 @@ class Predictoor:
         n_predictions = len(self.predictions)
         if n_predictions < MIN_PREDICTIONS:
             return 0
-        n_correct = sum(
-            1 for prediction in self.predictions if prediction.is_correct)
+        n_correct = sum(1 for prediction in self.predictions if prediction.is_correct)
         return n_correct / n_predictions
