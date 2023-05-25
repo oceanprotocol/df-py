@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import List
 from enforce_typing import enforce_types
 from util.constants import MIN_PREDICTIONS
 
@@ -30,7 +30,7 @@ class Prediction:
 class Predictoor:
     @enforce_types
     def __init__(self, address: str):
-        self.predictions: Dict[str, Prediction] = []
+        self.predictions: List[Prediction] = []
         self.address = address
 
     @enforce_types
