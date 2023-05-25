@@ -20,10 +20,23 @@ class Prediction:
         return self.payout > 0
 
     @classmethod
-    def from_query_result(cls, prediction: Dict) -> "Prediction":
-        contract_addr = prediction["slot"]["predictContract"]
-        slot = int(prediction["slot"]["slot"])
-        payout = float(prediction["payout"])
+    def from_query_result(cls, prediction_dict: Dict) -> "Prediction":
+        """
+        @description
+            Creates a Prediction object from a dictionary returned by a subgraph query.
+        @params
+            prediction_dict: A dictionary containing the prediction data.
+        @return
+            A Prediction object.
+        @raises
+            ValueError: If the input dictionary is invalid.
+        """
+        try:
+            contract_addr = prediction_dict["slot"]["predictContract"]
+            slot = int(prediction_dict["slot"]["slot"])
+            payout = float(prediction_dict["payout"])
+        except (KeyError, TypeError, ValueError):
+            raise ValueError("Invalid prediction dictionary")
         return cls(slot, payout, contract_addr)
 
 
