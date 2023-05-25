@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, Optional, Tuple
 
 from util.graphutil import submitQuery
 from util.predictoor.models import Predictoor, Prediction
@@ -59,21 +59,17 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
         if len(predictions) == 0:
             break
 
-        for prediction in predictions:
-            predictoor_addr = prediction["user"]["id"]
-            contract_addr = prediction["slot"]["predictContract"]
-            payout = float(prediction["payout"])
-            slot = int(prediction["slot"]["slot"])
+        for prediction_dict in predictions:
+            predictoor_addr = prediction_dict["user"]["id"]
 
             # 0 - Pending
             # 1 - Paying
             # 2 - Canceled
-            status = prediction["slot"]["status"]
+            status = prediction_dict["slot"]["status"]
             if status != 1:
                 break
 
-            # only count predictions if the round is Paying
-            prediction = Prediction(slot, payout, contract_addr)
+            prediction = Prediction.from_query_result(prediction_dict)
             predictoors.setdefault(predictoor_addr, Predictoor(predictoor_addr))
             predictoors[predictoor_addr].add_prediction(prediction)
 

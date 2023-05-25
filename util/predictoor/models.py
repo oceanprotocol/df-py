@@ -5,8 +5,8 @@ from util.constants import MIN_PREDICTIONS
 
 class Prediction:
     @enforce_types
-    def __init__(self, block: int, payout: float, contract_addr: str):
-        self.block = block
+    def __init__(self, slot: int, payout: float, contract_addr: str):
+        self.slot = slot
         self.payout = payout
         self.contract_addr = contract_addr
 
@@ -18,6 +18,13 @@ class Prediction:
         # We assume that the prediction is wrong if the payout is 0.
         # Only predictions where the true value for their slot is submitted are being counted, so this is a safe assumption.
         return self.payout > 0
+
+    @classmethod
+    def from_query_result(cls, prediction: Dict) -> "Prediction":
+        contract_addr = prediction["slot"]["predictContract"]
+        slot = int(prediction["slot"]["slot"])
+        payout = float(prediction["payout"])
+        return cls(slot, payout, contract_addr)
 
 
 class Predictoor:
