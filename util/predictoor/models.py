@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from enforce_typing import enforce_types
 from util.constants import MIN_PREDICTIONS
 
