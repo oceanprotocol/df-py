@@ -1,6 +1,5 @@
 from typing import List, Dict
 from enforce_typing import enforce_types
-from util.constants import MIN_PREDICTIONS
 
 
 class Prediction:
@@ -40,35 +39,40 @@ class Prediction:
         return cls(slot, payout, contract_addr)
 
 
-class Predictoor:
+class PredictoorBase:
+    def __init__(self, address: str, prediction_count: int, correct_prediction_count: int, accuracy: float):
+        self._address = address
+        self._prediction_count = prediction_count
+        self._correct_prediction_count = correct_prediction_count
+        self._accuracy = accuracy
+
+    @property
+    def address(self):
+        return self._address
+
+    @property
+    def prediction_count(self):
+        return self._prediction_count
+
+    @property
+    def correct_prediction_count(self):
+        return self._correct_prediction_count
+
+    @property
+    def accuracy(self):
+        return self._accuracy
+
+
+class Predictoor(PredictoorBase):
     @enforce_types
     def __init__(self, address: str):
+        super().__init__(address, 0, 0, 0)
         self._predictions: List[Prediction] = []
-        self.address = address
 
     @enforce_types
     def add_prediction(self, prediction: Prediction):
-        """
-        Adds a prediction to the list of predictions for this Predictoor.
-        @params
-            prediction (Prediction) -- The prediction to add.
-        """
         self._predictions.append(prediction)
-
-    def get_accuracy(self) -> float:
-        """
-        Returns the accuracy of this Predictoor, defined as the proportion of correct predictions out of all predictions made.
-        @return
-            accuracy (float) -- The accuracy of this Predictoor.
-        """
-        n_predictions = len(self._predictions)
-        if n_predictions == 0:
-            return 0
-        n_correct = sum(1 for prediction in self._predictions if prediction.is_correct)
-        return n_correct / n_predictions
-
-    def get_prediction_count(self) -> int:
-        return len(self._predictions)
-
-    def get_correct_prediction_count(self) -> int:
-        return sum(1 for p in self._predictions if p.is_correct)
+        self._prediction_count += 1
+        if prediction.is_correct:
+            self._correct_prediction_count += 1
+        self._accuracy = self._correct_prediction_count / self._prediction_count
