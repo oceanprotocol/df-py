@@ -35,4 +35,4 @@ MULTISIG_ADDRS = {
 CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 # predictoor
-MIN_PREDICTIONS = 25
+MIN_PREDICTIONS = 1818
