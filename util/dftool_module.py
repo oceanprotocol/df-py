@@ -101,13 +101,13 @@ def do_help():
 @enforce_types
 def do_help_short():
     print(HELP_SHORT)
-    sys.exit(1)
+    sys.exit(0)
 
 
 @enforce_types
 def do_help_long():
     print(HELP_LONG)
-    sys.exit(1)
+    sys.exit(0)
 
 
 # ========================================================================
