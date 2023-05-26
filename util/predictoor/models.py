@@ -62,8 +62,9 @@ class Predictoor:
             accuracy (float) -- The accuracy of this Predictoor.
         """
         n_predictions = len(self._predictions)
-        n_correct = sum(
-            1 for prediction in self._predictions if prediction.is_correct)
+        if n_predictions == 0:
+            return 0
+        n_correct = sum(1 for prediction in self._predictions if prediction.is_correct)
         return n_correct / n_predictions
 
     def get_prediction_count(self) -> int:
