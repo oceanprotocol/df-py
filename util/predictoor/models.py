@@ -71,4 +71,4 @@ class Predictoor:
         return len(self._predictions)
 
     def get_correct_prediction_count(self) -> int:
-        return sum(1 for p in self._predictions if p.is_correct())
+        return sum(1 for p in self._predictions if p.is_correct)
