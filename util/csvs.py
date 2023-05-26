@@ -269,13 +269,20 @@ def savePredictoorData(
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["predictoor_addr", "accuracy"]
+        row = ["predictoor_addr", "accuracy", "n_preds", "n_correct_preds"]
         writer.writerow(row)
         for predictoor in predictoor_data.values():
             accuracy = predictoor.get_accuracy()
             predictoor_addr = predictoor.address
+            n_preds = predictoor.get_prediction_count()
+            n_correct_preds = predictoor.get_correct_prediction_count()
             assertIsEthAddr(predictoor_addr)
-            row = [predictoor_addr.lower(), str(accuracy)]
+            row = [
+                predictoor_addr.lower(),
+                str(accuracy),
+                str(n_preds),
+                str(n_correct_preds),
+            ]
             writer.writerow(row)
     print(f"Created {csv_file}")
 

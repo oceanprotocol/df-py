@@ -43,7 +43,7 @@ class Prediction:
 class Predictoor:
     @enforce_types
     def __init__(self, address: str):
-        self.predictions: List[Prediction] = []
+        self._predictions: List[Prediction] = []
         self.address = address
 
     @enforce_types
@@ -53,7 +53,7 @@ class Predictoor:
         @params
             prediction (Prediction) -- The prediction to add.
         """
-        self.predictions.append(prediction)
+        self._predictions.append(prediction)
 
     def get_accuracy(self) -> float:
         """
@@ -61,8 +61,14 @@ class Predictoor:
         @return
             accuracy (float) -- The accuracy of this Predictoor.
         """
-        n_predictions = len(self.predictions)
+        n_predictions = len(self._predictions)
         if n_predictions < MIN_PREDICTIONS:
             return 0
-        n_correct = sum(1 for prediction in self.predictions if prediction.is_correct)
+        n_correct = sum(1 for prediction in self._predictions if prediction.is_correct)
         return n_correct / n_predictions
+
+    def get_prediction_count(self) -> int:
+        return len(self._predictions)
+
+    def get_correct_prediction_count(self) -> int:
+        return sum(1 for p in self._predictions if p.is_correct())
