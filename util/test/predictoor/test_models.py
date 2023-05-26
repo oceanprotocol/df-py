@@ -40,9 +40,8 @@ def test_predictoor_get_accuracy():
     predictoor = Predictoor("0x123")
     assert predictoor.get_accuracy() == 0
 
-    # accuracy is 0 if there are less than MIN_PREDICTIONS predictions
     predictoor.add_prediction(Prediction(5, 0.5, "0x123"))
-    assert predictoor.get_accuracy() == 0
+    assert predictoor.get_accuracy() == 1
 
     # accuracy is correctly calculated
     # all predictions correct

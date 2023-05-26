@@ -35,6 +35,6 @@ def test_queryPredictoors(mock_submitQuery):
     assert predictoors["0x2"].get_prediction_count() == 1
     assert predictoors["0x1"].get_correct_prediction_count() == 1
     assert predictoors["0x2"].get_correct_prediction_count() == 0
-    assert predictoors["0x1"].get_accuracy() == 0
+    assert predictoors["0x1"].get_accuracy() == 1
     assert predictoors["0x2"].get_accuracy() == 0
     mock_submitQuery.assert_called()
