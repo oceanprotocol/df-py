@@ -295,11 +295,18 @@ def loadPredictoorData(csv_dir: str, chainid: int) -> Dict[str, float]:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["predictoor_addr", "accuracy"]
+                assert row == [
+                    "predictoor_addr",
+                    "accuracy",
+                    "n_preds",
+                    "n_correct_preds",
+                ]
                 continue
-            predictoor_addr, accuracy_s = row
+            predictoor_addr, accuracy_s, n_preds_s, n_correct_preds_s = row
             predictoor_addr = predictoor_addr.lower()
             accuracy = float(accuracy_s)
+            n_preds = int(n_preds_s)
+            n_correct_preds = int(n_correct_preds_s)
             assertIsEthAddr(predictoor_addr)
             predictoor_data[predictoor_addr] = accuracy
     print(f"Loaded {csv_file}")
