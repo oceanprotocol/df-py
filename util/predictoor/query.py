@@ -31,6 +31,7 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
     while True:
         # pylint: disable=line-too-long
         query = """
+        {
             predictPredictions(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
                 id,
                 slot{
@@ -44,6 +45,7 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
                 payout
                 block
             }
+        }
         """ % (
             st_block,
             end_block,
@@ -52,6 +54,7 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
         )
         offset += chunk_size
         result = submitQuery(query, chainID)
+        print(result)
         if "error" in result:
             raise AssertionError(result)
 
