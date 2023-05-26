@@ -30,8 +30,7 @@ def test_prediction_from_query_result():
     assert prediction.payout == 1.23
     assert prediction.contract_addr == "0x1"
     with pytest.raises(ValueError):
-        prediction_dict = {
-            "slot": {"predictContract": "0x123"}, "payout": "invalid"}
+        prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
         Prediction.from_query_result(prediction_dict)
 
 
@@ -51,8 +50,7 @@ def test_prediction_from_query_result():
         ([Prediction(2, 1.0, "0x123") for i in range(100)], 1),
         ([Prediction(2, 0.0, "0x123") for i in range(100)], 0),
         (
-            [Prediction(2, 1.0 if i % 2 == 0 else 0.0, "0x123")
-             for i in range(100)],
+            [Prediction(2, 1.0 if i % 2 == 0 else 0.0, "0x123") for i in range(100)],
             0.5,
         ),
     ],

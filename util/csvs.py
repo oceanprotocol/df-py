@@ -148,8 +148,7 @@ def loadVebalsCsv(
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["LP_addr", "balance",
-                               "locked_amt", "unlock_time"]
+                assert row == ["LP_addr", "balance", "locked_amt", "unlock_time"]
                 continue
             LP_addr, _balance, _locked_amt, _unlock_time = row
 
@@ -273,10 +272,10 @@ def savePredictoorData(
         row = ["predictoor_addr", "accuracy", "n_preds", "n_correct_preds"]
         writer.writerow(row)
         for predictoor in predictoor_data.values():
-            accuracy = predictoor.get_accuracy()
+            accuracy = predictoor.accuracy
             predictoor_addr = predictoor.address
-            n_preds = predictoor.get_prediction_count()
-            n_correct_preds = predictoor.get_correct_prediction_count()
+            n_preds = predictoor.prediction_count
+            n_correct_preds = predictoor.correct_prediction_count
             assertIsEthAddr(predictoor_addr)
             row = [
                 predictoor_addr.lower(),
@@ -311,7 +310,8 @@ def loadPredictoorData(csv_dir: str, chainid: int) -> Dict[str, PredictoorBase]:
             assertIsEthAddr(predictoor_addr)
 
             predictoor = PredictoorBase(
-                predictoor_addr, n_preds, n_correct_preds, accuracy)
+                predictoor_addr, n_preds, n_correct_preds, accuracy
+            )
 
             predictoor_data[predictoor_addr] = predictoor
 
@@ -552,8 +552,7 @@ def loadNftvolsCsv(csv_dir: str, chainID: int):
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "basetoken_addr",
-                               "nft_addr", "vol_amt"]
+                assert row == ["chainID", "basetoken_addr", "nft_addr", "vol_amt"]
                 continue
 
             chainID2 = int(row[0])

@@ -40,7 +40,13 @@ class Prediction:
 
 
 class PredictoorBase:
-    def __init__(self, address: str, prediction_count: int, correct_prediction_count: int, accuracy: float):
+    def __init__(
+        self,
+        address: str,
+        prediction_count: int,
+        correct_prediction_count: int,
+        accuracy: float,
+    ):
         self._address = address
         self._prediction_count = prediction_count
         self._correct_prediction_count = correct_prediction_count
