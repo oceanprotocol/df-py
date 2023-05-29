@@ -20,10 +20,10 @@ def test_prediction_is_correct():
 def test_prediction_from_query_result():
     prediction_dict = {
         "slot": {
-            "predictContract": "0x1",
+            "predictContract": {"id": "0x1"},
             "slot": "123",
         },
-        "payout": "1.23",
+        "payout": {"payout": "1.23"},
     }
     prediction = Prediction.from_query_result(prediction_dict)
     assert prediction.slot == 123
