@@ -44,7 +44,7 @@ def test_noarg_commands():
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ['help', 'compile']
+    fail_gracefully = ["help", "compile"]
 
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")
@@ -58,7 +58,9 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
-        assert return_code == (0 if subarg in fail_gracefully else 1), f"'dftool {subarg}' failed. \n{output_s}"
+        assert return_code == (
+            0 if subarg in fail_gracefully else 1
+        ), f"'dftool {subarg}' failed. \n{output_s}"
 
 
 @enforce_types
