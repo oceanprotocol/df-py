@@ -33,10 +33,10 @@ def create_mock_response(statuses: List[str], payouts: List[float], users: List[
 def test_queryPredictoors(mock_submitQuery):
     _statuses = ["Pending", "Paying", "Canceled"]
     _weights = [1, 4, 1]
-    _count = 1
+    _count = 100
 
-    users = [f"0x{i}000000000000000000000000000000000000000" for i in range(_count)]
-    user_predictions = {user: {"total": 0, "correct": 0} for user in users}
+    users = [f"0x{i}" for i in range(_count)]
+    stats = {user: {"total": 0, "correct": 0} for user in users}
 
     def generate_responses(n: int):
         responses = []
@@ -49,29 +49,28 @@ def test_queryPredictoors(mock_submitQuery):
             # update stats
             for user, status, payout in zip(users, statuses, payouts):
                 if status == "Paying":
-                    user_predictions[user]["total"] += 1
+                    stats[user]["total"] += 1
                     if payout > 0:
-                        user_predictions[user]["correct"] += 1
+                        stats[user]["correct"] += 1
 
         responses.append(
             create_mock_response([], [], [])
         )  # empty response to simulate end of data
         return responses
 
-    responses = generate_responses(10)
+    responses = generate_responses(100)
     mock_submitQuery.side_effect = responses
 
     predictoors = queryPredictoors(1, 2, 1)
 
-    for user, predictions in user_predictions.items():
-        if user in predictoors:
-            predictor = predictoors[user]
-            assert predictor.prediction_count == predictions["total"]
-            assert predictor.correct_prediction_count == predictions["correct"]
-            assert (
-                predictor.accuracy == predictions["correct"] / predictions["total"]
-                if predictions["total"] > 0
-                else 0
-            )
+    for user in users:
+        if stats[user]["total"] == 0:
+            assert user not in responses
+            continue
+        user_total = stats[user]["total"]
+        user_correct = stats[user]["correct"]
+        assert predictoors[user].prediction_count == user_total
+        assert predictoors[user].correct_prediction_count == user_correct
+        assert predictoors[user].accuracy == user_correct / user_total
 
     mock_submitQuery.assert_called()
