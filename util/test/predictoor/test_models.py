@@ -47,8 +47,8 @@ def test_prediction_from_query_result():
             ],
             2 / 3,
         ),
-        ([Prediction(2, 1.0, "0x123") for i in range(100)], 1),
-        ([Prediction(2, 0.0, "0x123") for i in range(100)], 0),
+        ([Prediction(2, 1.0, "0x123") for _ in range(100)], 1),
+        ([Prediction(2, 0.0, "0x123") for _ in range(100)], 0),
         (
             [Prediction(2, 1.0 if i % 2 == 0 else 0.0, "0x123") for i in range(100)],
             0.5,
