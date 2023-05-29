@@ -1164,7 +1164,7 @@ Usage: dftool chaininfo CHAINID
 
 # ========================================================================
 @enforce_types
-def do_dispense_passive_rewards():
+def do_dispense_passive():
     HELP = f"""Dispense passive rewards
 
 Usage: dftool dispense_passive CHAINID AMOUNT [ST]
