@@ -1,12 +1,12 @@
-import brownie
-from enforce_typing import enforce_types
-import pytest
+from unittest.mock import patch
 
-from util import dispense, networkutil, oceanutil
+import brownie
+import pytest
+from enforce_typing import enforce_types
+
+from util import dispense, networkutil, oceantestutil, oceanutil
 from util.base18 import from_wei
 from util.constants import BROWNIE_PROJECT as B
-from util import oceantestutil
-from unittest.mock import patch
 
 accounts, a1, a2, a3 = None, None, None, None
 
