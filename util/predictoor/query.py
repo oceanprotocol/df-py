@@ -36,7 +36,9 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
                 id,
                 slot{
                     status,
-                    predictContract
+                    predictContract {
+                        id
+                    }
                     slot
                 },
                 user {
@@ -54,7 +56,6 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
         )
         offset += chunk_size
         result = submitQuery(query, chainID)
-        print(result)
         if "error" in result:
             raise AssertionError(result)
 
@@ -69,7 +70,7 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
             # 1 - Paying
             # 2 - Canceled
             status = prediction_dict["slot"]["status"]
-            if status != 1:
+            if status != "Paying":
                 break
 
             prediction = Prediction.from_query_result(prediction_dict)
