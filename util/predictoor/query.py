@@ -71,7 +71,7 @@ def queryPredictoors(st_block: int, end_block: int, chainID: int):
             # 2 - Canceled
             status = prediction_dict["slot"]["status"]
             if status != "Paying":
-                break
+                continue
 
             prediction = Prediction.from_query_result(prediction_dict)
             predictoors.setdefault(predictoor_addr, Predictoor(predictoor_addr))
