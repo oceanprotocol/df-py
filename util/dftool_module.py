@@ -99,15 +99,15 @@ def do_help():
 
 
 @enforce_types
-def do_help_short():
+def do_help_short(status_code=0):
     print(HELP_SHORT)
-    sys.exit(0)
+    sys.exit(status_code)
 
 
 @enforce_types
-def do_help_long():
+def do_help_long(status_code=0):
     print(HELP_LONG)
-    sys.exit(0)
+    sys.exit(status_code)
 
 
 # ========================================================================
@@ -129,7 +129,7 @@ Uses these envvars:
 """
     if len(sys.argv) not in [2 + 5, 2 + 6]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "volsym"
@@ -157,10 +157,10 @@ Uses these envvars:
     # check files, prep dir
     if not os.path.exists(CSV_DIR):
         print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
     if not csvs.rateCsvFilenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -192,7 +192,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "nftinfo"
@@ -254,7 +254,7 @@ Uses these envvars:
 """
     if len(sys.argv) not in [7, 8]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "allocations"
@@ -314,7 +314,7 @@ Uses these envvars:
 """
     if len(sys.argv) not in [7, 8]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "vebals"
@@ -369,7 +369,7 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
 """
     if len(sys.argv) not in [2 + 4, 2 + 5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "getrate"
@@ -404,7 +404,7 @@ def do_challenge_data():
 
 Usage: dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  DEADLINE -- submission deadline. 
+  DEADLINE -- submission deadline.
     Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
     Example for Round 5: 2023-05-03_23:59
   RETRIES -- # times to retry failed queries
@@ -417,7 +417,7 @@ Uses these envvars:
 """
     if len(sys.argv) not in [2 + 1, 2 + 2, 2 + 3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "challenge_data"
@@ -442,7 +442,7 @@ Uses these envvars:
     # check files, prep dir
     if not os.path.exists(CSV_DIR):
         print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
         challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
@@ -474,7 +474,7 @@ Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
 """
     if len(sys.argv) not in [2 + 3, 2 + 4]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "predictoor_data"
@@ -496,7 +496,7 @@ Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
     # check files, prep dir
     if not os.path.exists(CSV_DIR):
         print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -527,7 +527,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
 """
     if len(sys.argv) not in [4, 5, 6]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "calc"
@@ -547,7 +547,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     # condition inputs
     if TOT_OCEAN == 0 and START_DATE is None:
         print("TOT_OCEAN == 0, so must give a start date. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     if TOT_OCEAN == 0:
         START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
@@ -564,28 +564,28 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
     if not os.path.exists(alloc_fname):
         print(f"\nNo file {alloc_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     vebals_fname = csvs.vebalsCsvFilename(CSV_DIR)  # need for loadStakes()
     if not os.path.exists(vebals_fname):
         print(f"\nNo file {vebals_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     if not csvs.nftvolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     if not csvs.ownersCsvFilenames(CSV_DIR):
         print(f"\nNo 'owners*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     if not csvs.symbolsCsvFilenames(CSV_DIR):
         print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     if not csvs.rateCsvFilenames(CSV_DIR):
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     # shouldn't already have the output file
     _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
@@ -640,7 +640,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 """
     if len(sys.argv) not in [4 + 0, 4 + 1, 4 + 2, 4 + 3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "dispense_active"
@@ -709,7 +709,7 @@ Usage: dftool newdfrewards CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "newdfrewards"
@@ -738,7 +738,7 @@ Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
 """
     if len(sys.argv) not in [5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     assert sys.argv[1] == "newdfstrategy"
     CHAINID = int(sys.argv[2])
@@ -767,7 +767,7 @@ Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 """
     if len(sys.argv) not in [5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     assert sys.argv[1] == "addstrategy"
     CHAINID = int(sys.argv[2])
@@ -799,7 +799,7 @@ Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 """
     if len(sys.argv) not in [5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     assert sys.argv[1] == "retirestrategy"
     CHAINID = int(sys.argv[2])
@@ -827,7 +827,7 @@ Usage: dftool compile
 """
     if len(sys.argv) not in [2]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     os.system("brownie compile")
 
@@ -846,7 +846,7 @@ Uses these envvars:
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     from util import oceantestutil  # pylint: disable=import-outside-toplevel
 
@@ -860,7 +860,7 @@ Uses these envvars:
         # To support other testnets, they need to initdevwallets()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
@@ -889,7 +889,7 @@ Uses these envvars:
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "manyrandom"
@@ -901,7 +901,7 @@ Uses these envvars:
         # To support other testnets, they need to fillAccountsWithOcean()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
@@ -931,7 +931,7 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 """
     if len(sys.argv) not in [3, 4]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "mine"
@@ -963,7 +963,7 @@ Usage: dftool newacct
 """
     if len(sys.argv) not in [2]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "newacct"
@@ -986,7 +986,7 @@ Usage: dftool newtoken CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "newtoken"
@@ -1009,7 +1009,7 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 """
     if len(sys.argv) not in [4]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "newVeOcean"
@@ -1042,7 +1042,7 @@ Usage: dftool newVeAllocate CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "newVeAllocate"
@@ -1066,7 +1066,7 @@ Usage: dftool veSetAllocation CHAINID amount exchangeId
 """
     if len(sys.argv) not in [5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "veSetAllocation"
@@ -1105,7 +1105,7 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "acctinfo"
@@ -1145,7 +1145,7 @@ Usage: dftool chaininfo CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "chaininfo"
@@ -1160,7 +1160,7 @@ Usage: dftool chaininfo CHAINID
 
 # ========================================================================
 @enforce_types
-def do_dispense_passive_rewards():
+def do_dispense_passive():
     HELP = f"""Dispense passive rewards
 
 Usage: dftool dispense_passive CHAINID AMOUNT [ST]
@@ -1170,7 +1170,7 @@ Usage: dftool dispense_passive CHAINID AMOUNT [ST]
 """
     if len(sys.argv) not in [4, 5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
@@ -1201,7 +1201,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
 """
     if len(sys.argv) not in [5]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
@@ -1218,7 +1218,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     vebals_realtime_fname = csvs.vebalsCsvFilename(CSV_DIR, False)
     if not os.path.exists(vebals_realtime_fname):
         print(f"\nNo file {vebals_realtime_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
     _exitIfFileExists(passive_fname)
 
     # get addresses
@@ -1241,7 +1241,7 @@ Usage: dftool checkpoint_feedist CHAINID
 """
     if len(sys.argv) not in [3]:
         print(HELP)
-        sys.exit(0)
+        sys.exit(1)
 
     CHAINID = int(sys.argv[2])
     networkutil.connect(CHAINID)
@@ -1283,7 +1283,7 @@ Usage: dftool checkpoint_feedist CHAINID
 def _exitIfFileExists(filename: str):
     if os.path.exists(filename):
         print(f"\nFile {filename} exists. Exiting.")
-        sys.exit(0)
+        sys.exit(1)
 
 
 def _createDirIfNeeded(dir_: str):
@@ -1300,7 +1300,7 @@ def _getAddressEnvvarOrExit() -> str:
             "\nNeed to set envvar ADDRESS_FILE. Exiting. "
             f"\nEg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}"
         )
-        sys.exit(0)
+        sys.exit(1)
     return ADDRESS_FILE
 
 
@@ -1309,7 +1309,7 @@ def _getSecretSeedOrExit() -> int:
     print(f"Envvar:\n SECRET_SEED={SECRET_SEED}")
     if SECRET_SEED is None:
         print("\nNeed to set envvar SECRET_SEED. Exiting. \nEg: export SECRET_SEED=1")
-        sys.exit(0)
+        sys.exit(1)
     return int(SECRET_SEED)
 
 
@@ -1325,13 +1325,13 @@ def _getPrivateAccount():
 @enforce_types
 def _do_main():
     if len(sys.argv) == 1:
-        do_help_short()
+        do_help_short(1)
         return
 
     func_name = f"do_{sys.argv[1]}"
     func = globals().get(func_name)
     if func is None:
-        do_help_long()
+        do_help_long(1)
         return
 
     func()
