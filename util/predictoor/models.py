@@ -75,10 +75,15 @@ class Predictoor(PredictoorBase):
         super().__init__(address, 0, 0, 0)
         self._predictions: List[Prediction] = []
 
+    @property
+    def accuracy(self) -> float:
+        if self._prediction_count == 0:
+            return 0
+        return self._correct_prediction_count / self._prediction_count
+
     @enforce_types
     def add_prediction(self, prediction: Prediction):
         self._predictions.append(prediction)
         self._prediction_count += 1
         if prediction.is_correct:
             self._correct_prediction_count += 1
-        self._accuracy = self._correct_prediction_count / self._prediction_count
