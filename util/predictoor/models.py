@@ -1,7 +1,6 @@
 from typing import List, Dict
 from enforce_typing import enforce_types
 
-
 class Prediction:
     @enforce_types
     def __init__(self, slot: int, payout: float, contract_addr: str):
@@ -31,9 +30,9 @@ class Prediction:
             ValueError: If the input dictionary is invalid.
         """
         try:
-            contract_addr = prediction_dict["slot"]["predictContract"]
+            contract_addr = prediction_dict["slot"]["predictContract"]["id"]
             slot = int(prediction_dict["slot"]["slot"])
-            payout = float(prediction_dict["payout"])
+            payout = float(prediction_dict["payout"]["payout"])
         except (KeyError, TypeError, ValueError):
             raise ValueError("Invalid prediction dictionary")
         return cls(slot, payout, contract_addr)
