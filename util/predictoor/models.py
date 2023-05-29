@@ -1,6 +1,7 @@
 from typing import List, Dict
 from enforce_typing import enforce_types
 
+
 class Prediction:
     @enforce_types
     def __init__(self, slot: int, payout: float, contract_addr: str):
