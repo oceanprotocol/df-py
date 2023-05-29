@@ -42,6 +42,10 @@ def test_noarg_commands():
     # Test commands that have no args
     subargs = _get_HELP_SHORT_subargs_in_dftool()  # key args only, for speed
     subargs = [""] + ["badarg"] + subargs
+
+    # these commands are intended to have no parameters
+    fail_gracefully = ['help', 'compile']
+
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")
         cmd = f"./dftool {subarg}"
@@ -54,8 +58,7 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
-        # bad commands - such as querymany - will still return 0 and do not fail
-        assert return_code == 0, f"'dftool {subarg}' failed. \n{output_s}"
+        assert return_code == (0 if subarg in fail_gracefully else 1), f"'dftool {subarg}' failed. \n{output_s}"
 
 
 @enforce_types

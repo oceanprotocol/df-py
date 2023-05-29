@@ -99,15 +99,15 @@ def do_help():
 
 
 @enforce_types
-def do_help_short():
+def do_help_short(status_code=0):
     print(HELP_SHORT)
-    sys.exit(0)
+    sys.exit(status_code)
 
 
 @enforce_types
-def do_help_long():
+def do_help_long(status_code=0):
     print(HELP_LONG)
-    sys.exit(0)
+    sys.exit(status_code)
 
 
 # ========================================================================
@@ -404,7 +404,7 @@ def do_challenge_data():
 
 Usage: dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
   CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  DEADLINE -- submission deadline. 
+  DEADLINE -- submission deadline.
     Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
     Example for Round 5: 2023-05-03_23:59
   RETRIES -- # times to retry failed queries
@@ -1325,13 +1325,13 @@ def _getPrivateAccount():
 @enforce_types
 def _do_main():
     if len(sys.argv) == 1:
-        do_help_short()
+        do_help_short(1)
         return
 
     func_name = f"do_{sys.argv[1]}"
     func = globals().get(func_name)
     if func is None:
-        do_help_long()
+        do_help_long(1)
         return
 
     func()
