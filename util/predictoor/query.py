@@ -60,6 +60,8 @@ def queryPredictoors(
         result = submitQuery(query, chainID)
         if "error" in result:
             raise AssertionError(result)
+        if "data" not in result:
+            raise AssertionError(result)
 
         predictions = result["data"]["predictPredictions"]
         if len(predictions) == 0:
