@@ -9,6 +9,7 @@ from util.predictoor.query import queryPredictoors
 CHAINID = networkutil.DEV_CHAINID
 chain = None
 
+
 @enforce_types
 def create_mock_response(statuses: List[str], payouts: List[float], users: List[str]):
     return {
@@ -82,7 +83,7 @@ def test_queryPredictoors(mock_submitQuery):
 
 @enforce_types
 def test_queryPredictoors_request():
-    ST = 0 
+    ST = 0
     FIN = chain[-1].number
     predictoors = queryPredictoors(ST, FIN, CHAINID)
     assert predictoors
@@ -94,8 +95,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
+
 @enforce_types
 def teardown_function():
     networkutil.disconnect()
-
-

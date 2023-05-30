@@ -4,7 +4,9 @@ from util.graphutil import submitQuery
 from util.predictoor.models import Predictoor, Prediction
 
 
-def queryPredictoors(st_block: int, end_block: int, chainID: int) -> Dict[str, Predictoor]:
+def queryPredictoors(
+    st_block: int, end_block: int, chainID: int
+) -> Dict[str, Predictoor]:
     """
     @description
         Queries the predictPredictions GraphQL endpoint for a given
