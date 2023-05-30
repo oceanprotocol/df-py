@@ -51,6 +51,20 @@ def test_calc(tmp_path):
 
 
 @enforce_types
+def test_predictoor_data(tmp_path):
+    CSV_DIR = str(tmp_path)
+    ST = 0
+    FIN = "latest"
+
+    cmd = f"./dftool predictoor_data {CSV_DIR} {ST} {FIN} {CHAINID}"
+    os.system(cmd)
+
+    # test result
+    predictoor_data_csv = csvs.predictoorDataFilename(CSV_DIR, CHAINID)
+    assert os.path.exists(predictoor_data_csv)
+
+
+@enforce_types
 def test_calc_without_amount(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
