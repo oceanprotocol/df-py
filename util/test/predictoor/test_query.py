@@ -24,6 +24,7 @@ def create_mock_response(statuses: List[str], payouts: List[float], users: List[
                         },
                         "slot": "5520",
                     },
+                    "token": {"nft": {"owner": {"id": "0x0"}}},
                     "user": {"id": user},
                     "payout": {"payout": str(payout)},
                     "block": 5459,

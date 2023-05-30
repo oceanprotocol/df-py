@@ -36,3 +36,4 @@ CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 # predictoor
 MIN_PREDICTIONS = 1818
+DEPLOYER_ADDRS = ["0x0"]

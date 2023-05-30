@@ -2,7 +2,7 @@ from typing import Dict, Optional, Tuple
 
 from util.graphutil import submitQuery
 from util.predictoor.models import Predictoor, Prediction
-
+from util.constants import DEPLOYER_ADDRS
 
 def queryPredictoors(
     st_block: int, end_block: int, chainID: int
@@ -46,6 +46,13 @@ def queryPredictoors(
                 user {
                     id
                 }
+                token {
+                    nft {
+                        owner {
+                            id
+                        }
+                    }
+                }
                 payout
                 block
             }
@@ -68,6 +75,9 @@ def queryPredictoors(
             break
 
         for prediction_dict in predictions:
+            owner = prediction_dict["token"]["nft"]["owner"]
+            if owner not in DEPLOYER_ADDRS:
+                continue
             predictoor_addr = prediction_dict["user"]["id"]
 
             # 0 - Pending
