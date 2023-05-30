@@ -1,9 +1,13 @@
 import random
+import brownie
 from unittest.mock import patch
 from enforce_typing import enforce_types
 from typing import List
+from util import networkutil
 from util.predictoor.query import queryPredictoors
 
+CHAINID = networkutil.DEV_CHAINID
+chain = None
 
 @enforce_types
 def create_mock_response(statuses: List[str], payouts: List[float], users: List[str]):
@@ -74,3 +78,24 @@ def test_queryPredictoors(mock_submitQuery):
         assert predictoors[user].accuracy == user_correct / user_total
 
     mock_submitQuery.assert_called()
+
+
+@enforce_types
+def test_queryPredictoors_request():
+    ST = 0 
+    FIN = chain[-1].number
+    predictoors = queryPredictoors(ST, FIN, CHAINID)
+    assert predictoors
+
+
+@enforce_types
+def setup_function():
+    global chain
+    networkutil.connect(CHAINID)
+    chain = brownie.network.chain
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
+
+
