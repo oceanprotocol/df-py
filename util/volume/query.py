@@ -8,14 +8,14 @@ from enforce_typing import enforce_types
 from util import networkutil, oceanutil
 from util.blockrange import BlockRange
 from util.constants import (
+    AQUARIUS_BASE_URL,
     BROWNIE_PROJECT as B,
     MAX_ALLOCATE,
 )
 from util.graphutil import submitQuery
 from util.tok import TokSet
 from util.base18 import from_wei
-from util.aquarius.model import SimpleDataNft
-from util.aquarius.query import queryAquariusAssetNames
+from util.volume.model import SimpleDataNft
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
 
@@ -829,3 +829,55 @@ def symbol(addr: str):
         _symbol = _symbol.upper()  # follow lower-upper rules
         _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]
+
+
+@enforce_types
+def queryAquariusAssetNames(
+    nft_dids: List[str],
+) -> Dict[str, str]:
+    """
+    @description
+      Return mapping of did -> asset name
+
+    @params
+      nft_dids -- array of dids
+
+    @return
+      did_to_asset_name -- dict of [did] : asset_name
+    """
+
+    # Remove duplicates
+    nft_dids = list(set(nft_dids))
+
+    # make a post request to Aquarius
+    url = f"{AQUARIUS_BASE_URL}/api/aquarius/assets/names"
+
+    headers = {"Content-Type": "application/json"}
+
+    did_to_asset_name = {}
+
+    BATCH_SIZE = 9042
+    RETRY_ATTEMPTS = 3
+
+    error_counter = 0
+    # Send in chunks
+    for i in range(0, len(nft_dids), BATCH_SIZE):
+        # Aquarius expects "didList": ["did:op:...", ...]
+        payload = json.dumps({"didList": nft_dids[i : i + BATCH_SIZE]})
+
+        try:
+            resp = requests.post(url, data=payload, headers=headers, timeout=30)
+            data = json.loads(resp.text)
+            did_to_asset_name.update(data)
+        # pylint: disable=broad-exception-caught
+        except Exception as e:
+            error_counter += 1
+            i -= BATCH_SIZE
+            if error_counter > RETRY_ATTEMPTS:
+                # pylint: disable=line-too-long, broad-exception-raised
+                raise Exception(
+                    f"Failed to get asset names from Aquarius after {RETRY_ATTEMPTS} attempts. Error: {e}"
+                ) from e
+        error_counter = 0
+
+    return did_to_asset_name

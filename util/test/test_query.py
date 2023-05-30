@@ -18,8 +18,7 @@ from util import (
     networkutil,
 )
 from util.volume import query
-from util.aquarius.model import SimpleDataNft
-from util.aquarius.query import queryAquariusAssetNames
+from util.volume.model import SimpleDataNft
 from util.oceanutil import ve_delegate
 from util.allocations import allocsToStakes, loadStakes
 from util.base18 import to_wei, from_wei, str_with_wei
@@ -747,7 +746,7 @@ def test_queryAquariusAssetNames():
         "DEX volume in details",
         "",
     ]
-    assetNames = queryAquariusAssetNames(nft_dids)
+    assetNames = query.queryAquariusAssetNames(nft_dids)
     print("assetNames", assetNames)
     assert len(assetNames) == 4
 
