@@ -2,11 +2,11 @@ import csv
 import glob
 import os
 import re
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Tuple, Union
 from enforce_typing import enforce_types
 
 from util.query import SimpleDataNft
-from util.predictoor.models import PredictoorBase
+from util.predictoor.models import Predictoor, PredictoorBase
 
 
 # ========================================================================
@@ -261,7 +261,9 @@ def challengeDataCsvFilename(csv_dir: str) -> str:
 
 @enforce_types
 def savePredictoorData(
-    predictoor_data: Dict[str, PredictoorBase], csv_dir: str, chainid: int
+    predictoor_data: Dict[str, Union[PredictoorBase, Predictoor]],
+    csv_dir: str,
+    chainid: int,
 ):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = predictoorDataFilename(csv_dir, chainid)
