@@ -5,7 +5,7 @@ import re
 from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
-from util.query import SimpleDataNft
+from util.aquarius.model import SimpleDataNft
 
 
 # ========================================================================

@@ -2,7 +2,7 @@ from enforce_typing import enforce_types
 import pytest
 
 from util import csvs
-from util.query import SimpleDataNft
+from util.aquarius.model import SimpleDataNft
 
 # for shorter lines
 C1, C2 = 1, 137

@@ -17,8 +17,8 @@ from util import (
     dispense,
     getrate,
     networkutil,
-    query,
 )
+from util.volume import query
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.calcrewards import calcRewards

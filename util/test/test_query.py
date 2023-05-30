@@ -16,8 +16,10 @@ from util import (
     oceanutil,
     oceantestutil,
     networkutil,
-    query,
 )
+from util.volume import query
+from util.aquarius.model import SimpleDataNft
+from util.aquarius.query import queryAquariusAssetNames
 from util.oceanutil import ve_delegate
 from util.allocations import allocsToStakes, loadStakes
 from util.base18 import to_wei, from_wei, str_with_wei
@@ -745,7 +747,7 @@ def test_queryAquariusAssetNames():
         "DEX volume in details",
         "",
     ]
-    assetNames = query.queryAquariusAssetNames(nft_dids)
+    assetNames = queryAquariusAssetNames(nft_dids)
     print("assetNames", assetNames)
     assert len(assetNames) == 4
 
@@ -842,7 +844,7 @@ def test_filter_nftinfos():
         oceanutil.OCEAN_address(),  # invalid
     ]
     # addresses are from polygon
-    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
+    nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     # filter
     nfts_filtered = query._filterNftinfos(nfts)
@@ -860,7 +862,7 @@ def test_mark_purgatory_nftinfos():
         oceanutil.OCEAN_address(),  # invalid
     ]
     # addresses are from polygon
-    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
+    nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     nfts_marked = query._markPurgatoryNfts(nfts)
 
@@ -871,7 +873,7 @@ def test_mark_purgatory_nftinfos():
 @enforce_types
 def test_populateNftAssetNames():
     nft_addr = "0xbff8242de628cd45173b71022648617968bd0962"
-    nfts = [query.SimpleDataNft(137, nft_addr, "TEST", "0x123")]
+    nfts = [SimpleDataNft(137, nft_addr, "TEST", "0x123")]
     nfts = query._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
@@ -881,7 +883,7 @@ def test_populateNftAssetNames():
 def test_SimpleDataNFT():
     # test attributes
     nft_addr = "0xBff8242de628cd45173b71022648617968bd0962"
-    nft = query.SimpleDataNft(137, nft_addr, "dn1", "0x123AbC")
+    nft = SimpleDataNft(137, nft_addr, "dn1", "0x123AbC")
     assert nft.chain_id == 137
     assert nft.nft_addr == nft_addr.lower()
     assert nft.symbol == "DN1"
@@ -891,10 +893,10 @@ def test_SimpleDataNFT():
     assert isinstance(nft.did, str)
 
     # test __eq__
-    nft2 = query.SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
+    nft2 = SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
     assert nft == nft2
 
-    nft3 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
+    nft3 = SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
     assert nft != nft3
 
     # test __repr__
@@ -908,7 +910,7 @@ def test_SimpleDataNFT():
     assert "nAmE1" in repr(nft)
 
     # non-default args in constructor
-    nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
+    nft4 = SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory
     assert nft4.name == "namE2"
 
