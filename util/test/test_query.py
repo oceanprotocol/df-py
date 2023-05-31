@@ -9,16 +9,15 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from util import calcrewards, csvs, dispense, networkutil, oceantestutil, oceanutil
-from util.allocations import allocsToStakes, loadStakes
+from util import csvs, dispense, networkutil, oceantestutil, oceanutil
 from util.base18 import from_wei, str_with_wei, to_wei
 from util.blockrange import BlockRange
 from util.constants import BROWNIE_PROJECT as B
 from util.constants import MAX_ALLOCATE
 from util.oceanutil import ve_delegate
-from util.tok import TokSet
-from util.volume import query
-from util.volume.model import SimpleDataNft
+from util.volume import calcrewards, query
+from util.volume.allocations import allocsToStakes, loadStakes
+from util.volume.model import SimpleDataNft, TokSet
 
 PREV = {}
 god_acct = None

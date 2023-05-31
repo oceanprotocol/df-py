@@ -8,20 +8,9 @@ import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
-from util import (
-    allocations,
-    blockrange,
-    calcrewards,
-    constants,
-    csvs,
-    dispense,
-    getrate,
-    networkutil,
-)
-from util.volume import query
+from util import blockrange, constants, csvs, dispense, getrate, networkutil
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp
-from util.calcrewards import calcRewards
 from util.challenge import judge
 from util.constants import BROWNIE_PROJECT as B
 from util.multisig import send_multisig_tx
@@ -38,7 +27,9 @@ from util.oceanutil import (
     veAllocate,
 )
 from util.retry import retryFunction
-from util.vesting_schedule import getActiveRewardAmountForWeekEth
+from util.volume import allocations, calcrewards, query
+from util.volume.calcrewards import calcRewards
+from util.volume.vesting_schedule import getActiveRewardAmountForWeekEth
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 

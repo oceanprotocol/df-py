@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
-from util.networkutil import _CHAINID_TO_ADDRS
 
-from util.tousd import ratesToAddrRates, nftvolsToUsd
+from util.networkutil import _CHAINID_TO_ADDRS
+from util.volume.tousd import nftvolsToUsd, ratesToAddrRates
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}

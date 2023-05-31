@@ -1,14 +1,26 @@
 from datetime import datetime, timedelta
 from typing import Dict, Tuple, Union
 
-from enforce_typing import enforce_types
 import numpy as np
 import pytest
+from enforce_typing import enforce_types
 from pytest import approx
 
-from util import calcrewards, cleancase as cc, constants, tousd
-from util.calcrewards import TARGET_WPY, _rankBasedAllocate
+from util import constants
 from util.constants import ZERO_ADDRESS
+from util.volume import cleancase as cc
+from util.volume import tousd
+from util.volume.calcrewards import (
+    TARGET_WPY,
+    _getChainNftTups,
+    _getLpAddrs,
+    _getNftAddrs,
+    _rankBasedAllocate,
+    calcDcvMultiplier,
+    calcRewards,
+    flattenRewards,
+    getDfWeekNumber,
+)
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
@@ -424,7 +436,7 @@ def test_divide_by_zero():
 
 @enforce_types
 def test_getDFWeekNumber():
-    wkNbr = calcrewards.getDfWeekNumber
+    wkNbr = getDfWeekNumber
 
     # test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
     assert wkNbr(datetime(2022, 9, 28)) == -1  # Wed
@@ -466,7 +478,7 @@ def test_getDFWeekNumber():
 
 @enforce_types
 def test_calcDcvMultiplier():
-    mult = calcrewards.calcDcvMultiplier
+    mult = calcDcvMultiplier
     assert mult(-10) == np.inf
     assert mult(-1) == np.inf
     assert mult(0) == np.inf
@@ -763,7 +775,7 @@ def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
 @enforce_types
 def test_getNftAddrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
-    nft_addrs = calcrewards._getNftAddrs(nftvols_USD)
+    nft_addrs = _getNftAddrs(nftvols_USD)
     assert isinstance(nft_addrs, list)
     assert sorted(nft_addrs) == sorted([NA, NB, NC])
 
@@ -780,7 +792,7 @@ def test_getLpAddrs():
             NC: {LP4: 1.0},
         },
     }
-    LP_addrs = calcrewards._getLpAddrs(stakes)
+    LP_addrs = _getLpAddrs(stakes)
     assert isinstance(LP_addrs, list)
     assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
 
@@ -802,7 +814,7 @@ def test_flattenRewards():
         },
     }
 
-    flat_rewards = calcrewards.flattenRewards(rewards)
+    flat_rewards = flattenRewards(rewards)
     assert flat_rewards == {
         LP1: 100.0 + 300.0 + 500.0,
         LP2: 200.0 + 600.0,
@@ -858,7 +870,7 @@ def _calcRewards(
     if owners is None:
         owners = _nullOwners(stakes, nftvols, symbols, rates)
 
-    return calcrewards.calcRewards(
+    return calcRewards(
         stakes,
         nftvols,
         owners,
@@ -886,7 +898,7 @@ def _nullOwners(
         cc.modRates(rates),
     )
     nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
-    chain_nft_tups = calcrewards._getChainNftTups(stakes, nftvols_USD)
+    chain_nft_tups = _getChainNftTups(stakes, nftvols_USD)
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
     for (chainID, nft_addr) in chain_nft_tups:

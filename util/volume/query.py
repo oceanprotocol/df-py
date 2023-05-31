@@ -1,21 +1,18 @@
 import json
 from typing import Dict, List, Tuple
 
-import requests
 import brownie
+import requests
 from enforce_typing import enforce_types
 
 from util import networkutil, oceanutil
-from util.blockrange import BlockRange
-from util.constants import (
-    AQUARIUS_BASE_URL,
-    BROWNIE_PROJECT as B,
-    MAX_ALLOCATE,
-)
-from util.graphutil import submitQuery
-from util.tok import TokSet
 from util.base18 import from_wei
-from util.volume.model import SimpleDataNft
+from util.blockrange import BlockRange
+from util.constants import AQUARIUS_BASE_URL
+from util.constants import BROWNIE_PROJECT as B
+from util.constants import MAX_ALLOCATE
+from util.graphutil import submitQuery
+from util.volume.model import SimpleDataNft, TokSet
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
 
