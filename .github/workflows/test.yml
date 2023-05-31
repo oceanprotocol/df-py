@@ -42,7 +42,7 @@ jobs:
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
         run: |
-          bash -x start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --predictoor --with-pdr-trueval --with-pdr-trader --with-pdr-predictoor --with-pdr-publisher > start_ocean.log &
+          bash -x start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --predictoor > start_ocean.log &
 
       - name: Install dependencies
         working-directory: ${{ github.workspace }}
