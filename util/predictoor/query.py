@@ -5,6 +5,7 @@ from util.predictoor.models import Predictoor, Prediction
 from util.constants import DEPLOYER_ADDRS
 from util.networkutil import DEV_CHAINID
 
+
 def queryPredictoors(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Predictoor]:
