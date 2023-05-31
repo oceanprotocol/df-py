@@ -4,28 +4,21 @@ import os
 import random
 import time
 
-import pytest
 import brownie
+import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from util import (
-    calcrewards,
-    csvs,
-    dispense,
-    oceanutil,
-    oceantestutil,
-    networkutil,
-)
+from util import calcrewards, csvs, dispense, networkutil, oceantestutil, oceanutil
+from util.allocations import allocsToStakes, loadStakes
+from util.base18 import from_wei, str_with_wei, to_wei
+from util.blockrange import BlockRange
+from util.constants import BROWNIE_PROJECT as B
+from util.constants import MAX_ALLOCATE
+from util.oceanutil import ve_delegate
+from util.tok import TokSet
 from util.volume import query
 from util.volume.model import SimpleDataNft
-from util.oceanutil import ve_delegate
-from util.allocations import allocsToStakes, loadStakes
-from util.base18 import to_wei, from_wei, str_with_wei
-from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
-from util.tok import TokSet
-
 
 PREV = {}
 god_acct = None
@@ -52,7 +45,7 @@ class SimpleAsset:
 
 
 # pylint: disable=too-many-statements
-#@pytest.mark.timeout(300)
+@pytest.mark.timeout(300)
 def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
