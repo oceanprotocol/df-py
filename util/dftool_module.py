@@ -8,10 +8,11 @@ import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
-from util import blockrange, constants, csvs, dispense, getrate, networkutil
+from util import blockrange, constants, dispense, getrate, networkutil
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp
 from util.challenge import judge
+from util.challenge.csvs import saveChallengeDataCsv
 from util.constants import BROWNIE_PROJECT as B
 from util.multisig import send_multisig_tx
 from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
@@ -27,7 +28,7 @@ from util.oceanutil import (
     veAllocate,
 )
 from util.retry import retryFunction
-from util.volume import allocations, calcrewards, query
+from util.volume import allocations, calcrewards, csvs, query
 from util.volume.calcrewards import calcRewards
 from util.volume.vesting_schedule import getActiveRewardAmountForWeekEth
 
@@ -448,7 +449,7 @@ Uses these envvars:
         deadline_dt = judge.parse_deadline_str(DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
-    csvs.saveChallengeDataCsv(challenge_data, CSV_DIR)
+    saveChallengeDataCsv(challenge_data, CSV_DIR)
 
     print("dftool challenge_data: Done")
 

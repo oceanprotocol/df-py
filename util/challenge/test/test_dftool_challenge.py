@@ -1,11 +1,9 @@
 import os
-
-from enforce_typing import enforce_types
-import pytest
 from typing import Optional
 
-from util.challenge import judge
-from util import csvs
+from enforce_typing import enforce_types
+
+from util.challenge import csvs, judge
 
 
 @enforce_types

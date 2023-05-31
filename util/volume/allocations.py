@@ -1,7 +1,6 @@
 from enforce_typing import enforce_types
 
-from util import csvs
-from util.volume import cleancase
+from util.volume import cleancase, csvs
 
 
 @enforce_types

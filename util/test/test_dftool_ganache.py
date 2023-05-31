@@ -5,9 +5,10 @@ import subprocess
 import brownie
 from enforce_typing import enforce_types
 
-from util import csvs, networkutil, oceanutil, oceantestutil
+from util import networkutil, oceantestutil, oceanutil
 from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
+from util.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
 

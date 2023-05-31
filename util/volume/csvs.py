@@ -1,12 +1,12 @@
 import csv
 import glob
 import os
-import re
 from typing import Any, Dict, List, Tuple
+
 from enforce_typing import enforce_types
 
+from util.csv_helpers import _lastInt, assertIsEthAddr
 from util.volume.model import SimpleDataNft
-
 
 # ========================================================================
 # allocation csvs
@@ -172,85 +172,6 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
     f = "vebals.csv"
     if not sampled:
         f = "vebals_realtime.csv"
-    return os.path.join(csv_dir, f)
-
-
-# ========================================================================
-# challenge_df_data
-
-
-def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
-    """
-    @description
-      Save challenge data csv.
-
-    @arguments
-      challenge_data -- tuple of (from_addrs, nft_addrs, nmses),
-        all ordered with lowest nmse first
-      csv_dir --
-    """
-    (from_addrs, nft_addrs, nmses) = challenge_data
-    assert len(from_addrs) == len(nft_addrs) == len(nmses)
-    assert sorted(nmses) == nmses
-
-    assert os.path.exists(csv_dir), csv_dir
-    csv_file = challengeDataCsvFilename(csv_dir)
-    assert not os.path.exists(csv_file), csv_file
-    with open(csv_file, "w") as f:
-        writer = csv.writer(f)
-        row = ["from_addr", "nft_addr", "nmse"]
-        writer.writerow(row)
-        for (from_addr, nft_addr, nmse) in zip(from_addrs, nft_addrs, nmses):
-            assertIsEthAddr(from_addr)
-            assertIsEthAddr(nft_addr)
-            row = [
-                from_addr.lower(),
-                nft_addr.lower(),
-                f"{nmse:.3e}",
-            ]
-            writer.writerow(row)
-
-    print(f"Created {csv_file}")
-
-
-def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
-    """
-    @description
-      Load challenge data csv
-
-    @return
-      challenge_data -- tuple of (from_addrs, nft_addrs, nmses),
-        all ordered with lowest nmse first
-    """
-    csv_file = challengeDataCsvFilename(csv_dir)
-    from_addrs, nft_addrs, nmses = [], [], []
-    with open(csv_file, "r") as f:
-        reader = csv.reader(f)
-        for row_i, row in enumerate(reader):
-            if row_i == 0:
-                assert row == ["from_addr", "nft_addr", "nmse"]
-                continue
-            from_addr, nft_addr, nmse_s = row
-
-            from_addr = from_addr.lower()
-            nft_addr = nft_addr.lower()
-            nmse = float(nmse_s)
-
-            assertIsEthAddr(from_addr)
-            assertIsEthAddr(nft_addr)
-
-            from_addrs.append(from_addr)
-            nft_addrs.append(nft_addr)
-            nmses.append(nmse)
-    assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
-
-    print(f"Loaded {csv_file}")
-    return (from_addrs, nft_addrs, nmses)
-
-
-@enforce_types
-def challengeDataCsvFilename(csv_dir: str) -> str:
-    f = "challenge.csv"
     return os.path.join(csv_dir, f)
 
 
@@ -904,20 +825,3 @@ def saveRewardsinfoCsv(
 @enforce_types
 def rewardsinfoCsvFilename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewardsinfo-{token_symbol.upper()}.csv")
-
-
-# =======================================================================
-# helper funcs
-
-
-@enforce_types
-def assertIsEthAddr(s: str):
-    # just a basic check
-    assert s[:2] == "0x", s
-
-
-@enforce_types
-def _lastInt(s: str) -> int:
-    """Return the last integer in the given str"""
-    nbr_strs = re.findall("[0-9]+", s)
-    return int(nbr_strs[-1])
