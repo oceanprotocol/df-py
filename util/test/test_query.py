@@ -843,7 +843,6 @@ def test_filter_nftinfos():
     ]
     # addresses are from polygon
     nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
-
     # filter
     nfts_filtered = query._filterNftinfos(nfts)
 
