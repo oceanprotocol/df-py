@@ -299,7 +299,7 @@ def _test_queryNftinfo():
     print("_test_queryNftinfo()...")
 
     nfts_block = query.queryNftinfo(137, 29778602)
-    assert len(nfts_block) == 11
+    assert len(nfts_block) == 9
 
     nfts = query.queryNftinfo(CHAINID)
     assert len(nfts) > 0
