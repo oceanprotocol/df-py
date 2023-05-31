@@ -1,7 +1,6 @@
 import pytest
 from enforce_typing import enforce_types
 
-from util.challenge import csvs as challenge_csvs
 from util.volume import csvs
 from util.volume.model import SimpleDataNft
 
@@ -103,32 +102,6 @@ def test_vebals(tmp_path):
     assert loaded_vebals == vebals
     assert locked_amts == locked_amt
     assert unlock_times == unlock_time
-
-
-# =================================================================
-# challenge data csvs
-
-
-@enforce_types
-def test_challenge_data(tmp_path):
-    csv_dir = str(tmp_path)
-
-    # filename
-    assert "challenge.csv" in challenge_csvs.challengeDataCsvFilename(csv_dir)
-
-    # save
-    from_addrs = ["0xfrom1", "0xfrom2"]
-    nft_addrs = ["0xnft1", "0xnft2"]
-    nmses = [0.2, 1.0]
-    challenge_data = (from_addrs, nft_addrs, nmses)
-    challenge_csvs.saveChallengeDataCsv(challenge_data, csv_dir)
-
-    # load & compare
-    challenge_data2 = challenge_csvs.loadChallengeDataCsv(csv_dir)
-    (from_addrs2, nft_addrs2, nmses2) = challenge_data2
-    assert from_addrs2 == from_addrs
-    assert nft_addrs2 == nft_addrs
-    assert nmses2 == nmses
 
 
 # =================================================================
