@@ -440,8 +440,6 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
             endBlock,
         )
         result = submitQuery(query, chainID)
-        if "data" not in result:
-            raise AssertionError(result)
         nft_records = result["data"]["nfts"]
         if len(nft_records) == 0:
             # means there are no records left
