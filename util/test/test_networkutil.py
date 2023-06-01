@@ -32,4 +32,4 @@ def test_networkToChainId():
 def test_getLatestBlock():
     networkutil.connectDev()
     latest = networkutil.getLatestBlock(networkutil.DEV_CHAINID)
-    assert latest == network.chain[-1].number
+    assert latest == len(network.chain) - 1
