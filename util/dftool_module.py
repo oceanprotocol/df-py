@@ -171,7 +171,7 @@ Uses these envvars:
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     (Vi, Ci, SYMi) = retryFunction(
-        query.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
+        query.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
@@ -475,7 +475,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
   CHAINID -- {CHAINID_EXAMPLES}
   RETRIES -- # times to retry failed queries
 """
-    if len(sys.argv) not in [2 + 3, 2 + 4]:
+    if len(sys.argv) not in [2 + 4, 2 + 5]:
         print(HELP)
         sys.exit(1)
 
@@ -485,7 +485,8 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
     ST = sys.argv[3]
     FIN = sys.argv[4]
     CHAINID = int(sys.argv[5])
-    RETRIES = 1 if len(sys.argv) == 7 else int(sys.argv[6])
+    print(sys.argv, len(sys.argv))
+    RETRIES = 1 if len(sys.argv) == 6 else int(sys.argv[6])
     print("dftool predictoor_data: Begin")
     print(
         f"Arguments: "
@@ -496,18 +497,13 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
         f"\n RETRIES={RETRIES}"
     )
 
-    # extract envvars
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-
     # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
+    _createDirIfNeeded(CSV_DIR)
+    _exitIfFileExists(csvs.predictoorDataFilename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-    recordDeployedContracts(ADDRESS_FILE)
 
     st_block, fin_block = getstfinBlocks(chain, ST, FIN)
 
@@ -515,6 +511,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
     predictoor_data = retryFunction(
         queryPredictoors,
         RETRIES,
+        10,
         st_block,
         fin_block,
         CHAINID,
