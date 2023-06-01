@@ -323,7 +323,7 @@ def loadPredictoorData(csv_dir: str, chainid: int) -> Dict[str, PredictoorBase]:
 
 @enforce_types
 def predictoorDataFilename(csv_dir, chainid):
-    f = f"predictoordata_{chainid}"
+    f = f"predictoordata_{chainid}.csv"
     return os.path.join(csv_dir, f)
 
 
