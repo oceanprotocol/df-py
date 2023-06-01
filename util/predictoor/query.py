@@ -42,18 +42,18 @@ def queryPredictoors(
                     status,
                     predictContract {
                         id
+                        token {
+                            nft {
+                                owner {
+                                    id
+                                }
+                            }
+                        }
                     }
                     slot
                 },
                 user {
                     id
-                }
-                token {
-                    nft {
-                        owner {
-                            id
-                        }
-                    }
                 }
                 payout
                 block
@@ -77,7 +77,7 @@ def queryPredictoors(
             break
 
         for prediction_dict in predictions:
-            owner = prediction_dict["token"]["nft"]["owner"]
+            owner = prediction_dict["slot"]["predictContract"]["token"]["nft"]["owner"]
             if chainID != DEV_CHAINID:
                 if owner not in DEPLOYER_ADDRS:
                     continue

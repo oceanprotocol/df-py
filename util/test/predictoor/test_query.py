@@ -20,11 +20,11 @@ def create_mock_response(statuses: List[str], payouts: List[float], users: List[
                     "slot": {
                         "status": status,
                         "predictContract": {
-                            "id": "0x1733696512e69cd0c4430f909dcbf54c54c15441"
+                            "id": "0x1733696512e69cd0c4430f909dcbf54c54c15441",
+                            "token": {"nft": {"owner": {"id": "0x0"}}},
                         },
                         "slot": "5520",
                     },
-                    "token": {"nft": {"owner": {"id": "0x0"}}},
                     "user": {"id": user},
                     "payout": {"payout": str(payout)},
                     "block": 5459,
@@ -67,7 +67,7 @@ def test_queryPredictoors(mock_submitQuery):
     responses = generate_responses(100)
     mock_submitQuery.side_effect = responses
 
-    predictoors = queryPredictoors(1, 2, 1)
+    predictoors = queryPredictoors(1, 2, CHAINID)
 
     for user in users:
         if stats[user]["total"] == 0:
