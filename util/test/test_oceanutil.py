@@ -24,7 +24,6 @@ def test_recordDeployedContracts():
     assert oceanutil.ERC721Template()
     assert oceanutil.ERC20Template()
     assert oceanutil.factoryRouter()
-    assert oceanutil.Staking()
     assert oceanutil.ERC721Factory()
 
 
