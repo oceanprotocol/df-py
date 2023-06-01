@@ -41,8 +41,10 @@ jobs:
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
       - name: Run Barge
         working-directory: ${{ github.workspace }}/barge
+        env:
+          SUBGRAPH_VERSION: main
         run: |
-          bash -x start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph --predictoor > start_ocean.log &
+          bash -x start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph > start_ocean.log &
 
       - name: Install dependencies
         working-directory: ${{ github.workspace }}
