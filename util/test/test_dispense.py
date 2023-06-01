@@ -1,11 +1,12 @@
-import brownie
-from enforce_typing import enforce_types
-import pytest
+from unittest.mock import patch
 
-from util import dispense, networkutil, oceanutil
+import brownie
+import pytest
+from enforce_typing import enforce_types
+
+from util import dispense, networkutil, oceantestutil, oceanutil
 from util.base18 import from_wei
 from util.constants import BROWNIE_PROJECT as B
-from util import oceantestutil
 
 accounts, a1, a2, a3 = None, None, None, None
 
@@ -85,6 +86,16 @@ def test_batch_number():
     assert df_rewards.claimable(accounts[batch_size + 1], TOK.address) > 0
     assert df_rewards.claimable(accounts[batch_size + 2], TOK.address) > 0
     assert df_rewards.claimable(accounts[batch_size + 3], TOK.address) == 0
+
+
+def test_dispense_passive():
+    feedist = oceanutil.FeeDistributor()
+    OCEAN = oceanutil.OCEANtoken()
+    with patch("util.dispense.chainIdToMultisigAddr"):
+        with patch("util.dispense.send_multisig_tx") as mock:
+            dispense.dispense_passive(OCEAN, feedist, 1)
+
+    assert mock.call_count == 3
 
 
 @enforce_types
