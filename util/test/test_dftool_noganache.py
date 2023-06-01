@@ -1,9 +1,10 @@
 import os
 import subprocess
 from typing import List
+from unittest.mock import patch
 
-from enforce_typing import enforce_types
 import pytest
+from enforce_typing import enforce_types
 
 from util import csvs, dftool_module
 
@@ -40,7 +41,7 @@ def test_gen_hist_data():
 @enforce_types
 def test_noarg_commands():
     # Test commands that have no args
-    subargs = _get_HELP_SHORT_subargs_in_dftool()  # key args only, for speed
+    subargs = _get_HELP_subargs_in_dftool("HELP_SHORT")  # key args only, for speed
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
@@ -64,9 +65,10 @@ def test_noarg_commands():
 
 
 @enforce_types
-def _get_HELP_SHORT_subargs_in_dftool() -> List[str]:
+def _get_HELP_subargs_in_dftool(help_type) -> List[str]:
     """Return e.g. ["help", "compile", "getrate", "volsym", ...]"""
-    s_lines = dftool_module.HELP_SHORT.split("\n")
+    help_content = getattr(dftool_module, help_type)
+    s_lines = help_content.split("\n")
 
     subargs = []
     for s_line in s_lines:
@@ -79,3 +81,15 @@ def _get_HELP_SHORT_subargs_in_dftool() -> List[str]:
 
     assert "compile" in subargs  # postcondition
     return subargs
+
+
+@enforce_types
+def test_functions_exist():
+    functions = _get_HELP_subargs_in_dftool("HELP_LONG")
+    functions.remove("help")  # maps to help_short
+
+    for function in functions:
+        with patch("util.dftool_module.do_" + function):
+            # patch can only overwrite existing functions
+            # so that ensures the function exists
+            pass
