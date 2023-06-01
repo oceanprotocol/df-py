@@ -1,4 +1,6 @@
 import brownie
+from typing import List
+
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
@@ -36,4 +38,4 @@ CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 # predictoor
 MIN_PREDICTIONS = 1818
-DEPLOYER_ADDRS = []
+DEPLOYER_ADDRS: List[str] = []
