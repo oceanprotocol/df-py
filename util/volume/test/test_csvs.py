@@ -2,7 +2,7 @@ import pytest
 from enforce_typing import enforce_types
 
 from util.volume import csvs
-from util.volume.model import SimpleDataNft
+from util.volume.models import SimpleDataNft
 
 # for shorter lines
 C1, C2 = 1, 137

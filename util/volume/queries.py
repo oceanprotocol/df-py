@@ -12,7 +12,7 @@ from util.constants import AQUARIUS_BASE_URL
 from util.constants import BROWNIE_PROJECT as B
 from util.constants import MAX_ALLOCATE
 from util.graphutil import submitQuery
-from util.volume.model import SimpleDataNft, TokSet
+from util.volume.models import SimpleDataNft, TokSet
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
 

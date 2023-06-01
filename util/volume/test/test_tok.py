@@ -1,7 +1,7 @@
 import pytest
 from enforce_typing import enforce_types
 
-from util.volume.model import Tok, TokSet
+from util.volume.models import Tok, TokSet
 
 
 @enforce_types

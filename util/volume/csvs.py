@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 
 from util.csv_helpers import _lastInt, assertIsEthAddr
-from util.volume.model import SimpleDataNft
+from util.volume.models import SimpleDataNft
 
 # ========================================================================
 # allocation csvs

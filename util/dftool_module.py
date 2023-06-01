@@ -28,7 +28,7 @@ from util.oceanutil import (
     veAllocate,
 )
 from util.retry import retryFunction
-from util.volume import allocations, calcrewards, csvs, query
+from util.volume import allocations, calcrewards, csvs, queries
 from util.volume.calcrewards import calcRewards
 from util.volume.vesting_schedule import getActiveRewardAmountForWeekEth
 
@@ -162,7 +162,7 @@ Uses these envvars:
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     (Vi, Ci, SYMi) = retryFunction(
-        query.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
+        queries.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
@@ -202,7 +202,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     )
 
     # hardcoded values
-    # -query.queryNftinfo() can be problematic; it's only used for frontend data
+    # -queries.queryNftinfo() can be problematic; it's only used for frontend data
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
@@ -220,7 +220,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
-    nftinfo = retryFunction(query.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
+    nftinfo = retryFunction(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -280,7 +280,7 @@ Uses these envvars:
 
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    allocs = retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
+    allocs = retryFunction(queries.queryAllocations, RETRIES, 10, rng, CHAINID)
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
@@ -340,7 +340,7 @@ Uses these envvars:
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
     balances, locked_amt, unlock_time = retryFunction(
-        query.queryVebalances, RETRIES, 10, rng, CHAINID
+        queries.queryVebalances, RETRIES, 10, rng, CHAINID
     )
     csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
@@ -497,7 +497,7 @@ Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
 
     # main work
     predictoor_data = retryFunction(
-        query.queryPredictoor_Data,
+        queries.queryPredictoor_Data,
         RETRIES,
         CHAINID,
     )
@@ -1217,7 +1217,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     vebals, _, _ = csvs.loadVebalsCsv(CSV_DIR, False)
     addresses = list(vebals.keys())
 
-    balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+    balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
 
     # save to csv
     csvs.savePassiveCsv(rewards, balances, CSV_DIR)
