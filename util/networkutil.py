@@ -105,7 +105,7 @@ def getLatestBlock(chainID) -> int:
         if prev != chainID:
             disconnect()
             connect(chainID)
-    lastBlock = network.chain[-1].number 
+    lastBlock = network.chain[-1].number
     if prev is not None:
         disconnect()
         connect(prev)
