@@ -51,6 +51,7 @@ def test_calc(tmp_path):
 
 
 @enforce_types
+@pytest.mark.skip(reason="Requires predictoor support in subgraph")
 def test_predictoor_data(tmp_path):
     CSV_DIR = str(tmp_path)
     ST = 0

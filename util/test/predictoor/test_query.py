@@ -1,5 +1,6 @@
 import random
 import brownie
+import pytest
 from unittest.mock import patch
 from enforce_typing import enforce_types
 from typing import List
@@ -82,7 +83,7 @@ def test_queryPredictoors(mock_submitQuery):
     mock_submitQuery.assert_called()
 
 
-@enforce_types
+@pytest.mark.skip(reason="Requires predictoor support in subgraph")
 def test_queryPredictoors_request():
     ST = 0
     FIN = chain[-1].number
