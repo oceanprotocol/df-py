@@ -1,9 +1,9 @@
 import datetime
 import os
-import pytest
 import subprocess
 
 import brownie
+import pytest
 from enforce_typing import enforce_types
 
 from util import csvs, networkutil, oceanutil, oceantestutil
