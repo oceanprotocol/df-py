@@ -154,14 +154,6 @@ Uses these envvars:
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
-    if not csvs.rateCsvFilenames(CSV_DIR):
-        print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
-        sys.exit(1)
-
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain

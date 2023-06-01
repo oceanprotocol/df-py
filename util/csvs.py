@@ -433,7 +433,9 @@ def saveNftvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
       csv_dir -- directory that holds csv files
       chainID -- which network
     """
-    assert os.path.exists(csv_dir), csv_dir
+    assert os.path.exists(csv_dir), "Directory {csv_dir} doesn't exist."
+    assert rateCsvFilenames(csv_dir), "Rates in {csv_dir} don't exist. Call 'dftool getrate' first."
+
     csv_file = nftvolsCsvFilename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     nftvols = nftvols_at_chain
