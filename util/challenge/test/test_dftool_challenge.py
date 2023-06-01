@@ -3,7 +3,15 @@ from typing import Optional
 
 from enforce_typing import enforce_types
 
-from util.challenge import csvs, judge
+from util.challenge import csvs
+
+# for testing dftool
+DFTOOL_TEST_FAKE_CSVDIR = "fakedir_dftool"
+DFTOOL_TEST_FAKE_CHALLENGE_DATA = (
+    ["0xfrom1", "0xfrom2"],
+    ["0xnft1", "0xnft2"],
+    [0.2, 1.0],
+)
 
 
 @enforce_types
@@ -35,7 +43,7 @@ def test5(tmp_path):
 def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
     # build base cmd
     base_dir = str(tmp_path)
-    CSV_DIR = os.path.join(base_dir, judge.DFTOOL_TEST_FAKE_CSVDIR)
+    CSV_DIR = os.path.join(base_dir, DFTOOL_TEST_FAKE_CSVDIR)
     os.mkdir(CSV_DIR)
     cmd = f"./dftool challenge_data {CSV_DIR}"
 
@@ -60,7 +68,7 @@ def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
         target_from_addrs,
         target_nft_addrs,
         target_nmses,
-    ) = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
+    ) = DFTOOL_TEST_FAKE_CHALLENGE_DATA
 
     # test result
     (from_addrs, nft_addrs, nmses) = csvs.loadChallengeDataCsv(CSV_DIR)
