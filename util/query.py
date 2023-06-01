@@ -421,7 +421,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     offset = 0
 
     if endBlock == "latest":
-        endBlock = networkutil.getLatestBlock(chainID)
+        endBlock = networkutil.getLatestBlock(chainID) - 2
 
     while True:
         query = """
