@@ -1,5 +1,5 @@
-import brownie
 from typing import List
+import brownie
 
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
