@@ -158,6 +158,9 @@ def test_all(tmp_path):
     chain.sleep(60 * 60 * 24 * 7 * 20)
     chain.mine(10)
 
+    # wait for subgraph to sync
+    time.sleep(5);
+
     # check balances again
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
 
