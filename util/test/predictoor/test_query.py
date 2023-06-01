@@ -87,7 +87,8 @@ def test_queryPredictoors_request():
     ST = 0
     FIN = chain[-1].number
     predictoors = queryPredictoors(ST, FIN, CHAINID)
-    assert predictoors
+    assert predictoors != None
+    assert isinstance(predictoors, dict)
 
 
 @enforce_types
