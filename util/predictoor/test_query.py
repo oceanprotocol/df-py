@@ -5,7 +5,7 @@ from unittest.mock import patch
 from enforce_typing import enforce_types
 from typing import List
 from util import networkutil
-from util.predictoor.query import queryPredictoors
+from util.predictoor.queries import queryPredictoors
 
 CHAINID = networkutil.DEV_CHAINID
 chain = None
