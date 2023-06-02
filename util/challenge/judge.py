@@ -111,9 +111,9 @@ def _get_cex_vals(deadline_dt):
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    kraken = ccxt.kraken()
-    from_dt_str = kraken.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
-    cex_x = kraken.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
+    binance = ccxt.binanceus()
+    from_dt_str = binance.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
+    cex_x = binance.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
     allcex_vals = [xi[4] for xi in cex_x]
     helpers.print_datetime_info("CEX data info", allcex_uts)
