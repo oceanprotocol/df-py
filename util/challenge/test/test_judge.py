@@ -1,18 +1,13 @@
-import os
-from datetime import date, datetime, timedelta, timezone
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from brownie.network import accounts
 from enforce_typing import enforce_types
 import numpy as np
-import pytest
 
 from util import networkutil
-from util.base18 import from_wei
 from util.challenge import judge
 
 
-@enforce_types
 def test_get_txs():
     now = datetime.now().replace(tzinfo=timezone.utc)
 
