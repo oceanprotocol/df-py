@@ -1,6 +1,5 @@
 import pytest
-from util.predictoor.models import Prediction
-from util.predictoor.models import Predictoor
+from util.predictoor.models import Prediction, Predictoor
 
 
 def test_prediction_init():
@@ -12,9 +11,9 @@ def test_prediction_init():
 
 def test_prediction_is_correct():
     prediction = Prediction(123, 1.23, "0x1")
-    assert prediction.is_correct is True
+    assert prediction.is_correct
     prediction = Prediction(123, 0.0, "0x1")
-    assert prediction.is_correct is False
+    assert not prediction.is_correct
 
 
 def test_prediction_from_query_result():
