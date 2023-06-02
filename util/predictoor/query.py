@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict
 
 from util.graphutil import submitQuery
 from util.predictoor.models import Predictoor, Prediction
