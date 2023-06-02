@@ -133,8 +133,8 @@ def connect(chainID: int):
         except KeyError as e:
             if network_name != "mumbai":
                 raise e
-            else:
-                network.connect("polygon-test")
+
+            network.connect("polygon-test")
 
 
 @enforce_types
