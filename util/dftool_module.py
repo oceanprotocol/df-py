@@ -20,7 +20,7 @@ from util import (
     query,
 )
 from util.predictoor import csvs as predictoor_csvs
-from util.predictoor.queries import queryPredictoors
+from util.predictoor.query import queryPredictoors
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp, getstfinBlocks
 from util.calcrewards import calcRewards
