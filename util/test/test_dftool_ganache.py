@@ -2,16 +2,16 @@ import datetime
 import os
 import subprocess
 import sys
+from unittest.mock import patch
 
 import brownie
 import pytest
 from enforce_typing import enforce_types
-from unittest.mock import patch
 
 from util import csvs, networkutil, oceanutil, oceantestutil
 from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
-from util.dftool_module import _do_main
+from util.dftool_module import do_predictoor_data
 from util.predictoor.predictoor_testutil import create_mock_responses
 from util.predictoor import csvs as predictoor_csvs
 
@@ -68,7 +68,7 @@ def test_predictoor_data(tmp_path):
     with patch.object(sys, "argv", testargs):
         with patch("util.predictoor.query.submitQuery") as mock_submitQuery:
             mock_submitQuery.side_effect = mock_query_response
-            _do_main()
+            do_predictoor_data()
 
     # test result
     predictoor_data_csv = predictoor_csvs.predictoorDataFilename(CSV_DIR, CHAINID)
