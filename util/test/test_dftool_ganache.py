@@ -5,7 +5,6 @@ import sys
 from unittest.mock import patch
 
 import brownie
-import pytest
 from enforce_typing import enforce_types
 
 from util import csvs, networkutil, oceanutil, oceantestutil
