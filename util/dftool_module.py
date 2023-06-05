@@ -19,7 +19,7 @@ from util import (
     networkutil,
     query,
 )
-from util.predictoor import csvs as predictoor_csvs
+from util.predictoor.csvs import savePredictoorData
 from util.predictoor.query import queryPredictoors
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp, getstfinBlocks
@@ -517,7 +517,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
         fin_block,
         CHAINID,
     )
-    predictoor_csvs.savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
+    savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
     print("dftool predictoor_data: Done")
 
 
