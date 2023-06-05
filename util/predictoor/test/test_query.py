@@ -19,7 +19,7 @@ def test_queryPredictoors(mock_submitQuery):
 
     for user in users:
         if stats[user]["total"] == 0:
-            assert user not in responses
+            assert user not in predictoors
             continue
         user_total = stats[user]["total"]
         user_correct = stats[user]["correct"]
