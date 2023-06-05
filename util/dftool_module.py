@@ -19,7 +19,7 @@ from util import (
     networkutil,
     query,
 )
-from util.predictoor.csvs import savePredictoorData
+from util.predictoor.csvs import savePredictoorData, predictoorDataFilename
 from util.predictoor.query import queryPredictoors
 from util.base18 import from_wei
 from util.blocktime import getfinBlock, timestrToTimestamp, getstfinBlocks
@@ -500,7 +500,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 
     # check files, prep dir
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(predictoor_csvs.predictoorDataFilename(CSV_DIR, CHAINID))
+    _exitIfFileExists(predictoorDataFilename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
