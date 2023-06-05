@@ -73,12 +73,8 @@ jobs:
 
       - name: Add networks to brownie
         run: |
-          brownie networks add moonbase moonbase host=https://rpc.api.moonbase.moonbeam.network chainid=1287
           brownie networks add mumbai mumbai host=https://polygon-mumbai.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=80001 explorer=https://api.etherscan.io/api provider=infura
-          brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
           brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
-          brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
-          brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 
       - name: Make dftool executable
         run: chmod +x dftool
@@ -87,18 +83,12 @@ jobs:
         run: |
           ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
           ./dftool getrate ETH $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate BNB $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate EWT $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate MOVR $date $now $CSV_DIR $RETRY_TIMES
           ./dftool getrate MATIC $date $now $CSV_DIR $RETRY_TIMES
 
       - name: Run dftool volsym
         run: |
           ./dftool volsym $date $now 200 $CSV_DIR 1 $RETRY_TIMES
-          ./dftool volsym $date $now 200 $CSV_DIR 56 $RETRY_TIMES
           ./dftool volsym $date $now 200 $CSV_DIR 137 $RETRY_TIMES
-          ./dftool volsym $date $now 200 $CSV_DIR 246 $RETRY_TIMES
-          ./dftool volsym $date $now 200 $CSV_DIR 1285 $RETRY_TIMES
 
       - name: Run dftool vebals
         run: |
