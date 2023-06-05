@@ -13,7 +13,7 @@ from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
 from util.dftool_module import do_predictoor_data
 from util.predictoor.predictoor_testutil import create_mock_responses
-from util.predictoor import csvs as predictoor_csvs
+from util.predictoor.csvs import loadPredictoorData, predictoorDataFilename
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -71,10 +71,10 @@ def test_predictoor_data(tmp_path):
             do_predictoor_data()
 
     # test result
-    predictoor_data_csv = predictoor_csvs.predictoorDataFilename(CSV_DIR, CHAINID)
+    predictoor_data_csv = predictoorDataFilename(CSV_DIR, CHAINID)
     assert os.path.exists(predictoor_data_csv)
 
-    predictoors = predictoor_csvs.loadPredictoorData(CSV_DIR, CHAINID)
+    predictoors = loadPredictoorData(CSV_DIR, CHAINID)
     for user in users:
         if stats[user]["total"] == 0:
             assert user not in predictoors
@@ -97,7 +97,7 @@ def test_predictoor_data_without_mock(tmp_path):
     os.system(cmd)
 
     # test result
-    predictoor_data_csv = predictoor_csvs.predictoorDataFilename(CSV_DIR, CHAINID)
+    predictoor_data_csv = predictoorDataFilename(CSV_DIR, CHAINID)
     assert os.path.exists(predictoor_data_csv)
 
 
