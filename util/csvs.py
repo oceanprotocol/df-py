@@ -200,7 +200,7 @@ def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
         writer = csv.writer(f)
         row = ["from_addr", "nft_addr", "nmse"]
         writer.writerow(row)
-        for from_addr, nft_addr, nmse in zip(from_addrs, nft_addrs, nmses):
+        for (from_addr, nft_addr, nmse) in zip(from_addrs, nft_addrs, nmses):
             assertIsEthAddr(from_addr)
             assertIsEthAddr(nft_addr)
             row = [
