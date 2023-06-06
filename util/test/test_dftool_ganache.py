@@ -66,7 +66,7 @@ def test_predictoor_data(tmp_path):
     mock_query_response, users, stats = create_mock_responses(100)
 
     with patch.object(sys, "argv", testargs):
-        with patch("util.predictoor.query.submitQuery") as mock_submitQuery:
+        with patch("util.predictoor.queries.submitQuery") as mock_submitQuery:
             mock_submitQuery.side_effect = mock_query_response
             do_predictoor_data()
 

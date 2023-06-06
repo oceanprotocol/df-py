@@ -3,14 +3,14 @@ import pytest
 from unittest.mock import patch
 from enforce_typing import enforce_types
 from util import networkutil
-from util.predictoor.query import queryPredictoors
+from util.predictoor.queries import queryPredictoors
 from util.predictoor.predictoor_testutil import create_mock_responses
 
 CHAINID = networkutil.DEV_CHAINID
 chain = None
 
 
-@patch("util.predictoor.query.submitQuery")
+@patch("util.predictoor.queries.submitQuery")
 def test_queryPredictoors(mock_submitQuery):
     responses, users, stats = create_mock_responses(100)
     mock_submitQuery.side_effect = responses
