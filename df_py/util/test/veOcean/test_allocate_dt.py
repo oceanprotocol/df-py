@@ -1,9 +1,10 @@
+import functools
+
 import brownie
 from enforce_typing import enforce_types
-from df_py.util import networkutil, oceanutil
 
+from df_py.util import networkutil, oceanutil
 from df_py.util.constants import BROWNIE_PROJECT as B
-import functools
 
 accounts = None
 veAllocate = None

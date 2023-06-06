@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 
-from df_py.util import oceanutil, networkutil
+from df_py.util import networkutil, oceanutil
 
 
 @enforce_types

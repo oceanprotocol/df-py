@@ -1,7 +1,6 @@
-from enforce_typing import enforce_types
-
-import pytest
 import brownie
+import pytest
+from enforce_typing import enforce_types
 
 from df_py.util import networkutil
 from df_py.util.oceanutil import OCEANtoken, recordDevDeployedContracts

@@ -11,8 +11,8 @@ import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
 
-from df_py.util import crypto, oceanutil
 from df_py.challenge import helpers
+from df_py.util import crypto, oceanutil
 from df_py.util.graphutil import get_gql_client
 
 # this is the address that contestants encrypt their data to, and send to

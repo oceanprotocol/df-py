@@ -1,12 +1,14 @@
 #  type: ignore
 # pylint: skip-file
 
+import inspect
+
 #######################################
 # this part is required to access "util"
 import os
 import random
 import sys
-import inspect
+
 
 # to prevent brownie from printing in loops
 class HiddenPrints:
@@ -24,16 +26,17 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 #######################################
 
+import json
+import time
+
 # %%
 ## Actual code starts here
 import brownie
-import time
-from df_py.util import oceanutil, oceantestutil, networkutil
+from tqdm import tqdm
+
+from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.volume.queries import getApprovedTokens
-from tqdm import tqdm
-import json
-
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)

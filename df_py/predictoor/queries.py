@@ -1,8 +1,8 @@
 from typing import Dict
 
-from df_py.util.graphutil import submitQuery
-from df_py.predictoor.models import Predictoor, Prediction
+from df_py.predictoor.models import Prediction, Predictoor
 from df_py.util.constants import DEPLOYER_ADDRS
+from df_py.util.graphutil import submitQuery
 from df_py.util.networkutil import DEV_CHAINID
 
 

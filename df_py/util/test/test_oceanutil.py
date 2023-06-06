@@ -1,14 +1,14 @@
 import brownie
 from enforce_typing import enforce_types
 
+from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.oceanutil import (
-    recordDeployedContracts,
     OCEANtoken,
+    calcDID,
     createDataNFT,
     createDatatokenFromDataNFT,
-    calcDID,
+    recordDeployedContracts,
 )
-from df_py.util import networkutil, oceantestutil, oceanutil
 
 account0, account3 = None, None
 

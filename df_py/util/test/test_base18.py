@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 
-from df_py.util.base18 import from_wei, to_wei, str_with_wei
+from df_py.util.base18 import from_wei, str_with_wei, to_wei
 
 
 def test_wei():

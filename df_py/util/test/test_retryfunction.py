@@ -1,5 +1,6 @@
 from enforce_typing import enforce_types
 from pytest import raises
+
 from df_py.util.retry import retryFunction
 
 testfunc_callcount = 0

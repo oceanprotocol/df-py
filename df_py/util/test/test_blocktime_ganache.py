@@ -1,19 +1,19 @@
 from datetime import datetime
 from math import ceil
-import pytest
-from pytest import approx
 
 import brownie
+import pytest
 from enforce_typing import enforce_types
+from pytest import approx
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.blocktime import (
     getBlockNumberThursday,
     getNextThursdayTimestamp,
     getstfinBlocks,
+    timestampToBlock,
     timestrToBlock,
     timestrToTimestamp,
-    timestampToBlock,
 )
 
 chain = None

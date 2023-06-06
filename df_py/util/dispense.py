@@ -6,11 +6,11 @@ from typing import Dict, Optional
 import brownie
 from enforce_typing import enforce_types
 
-from df_py.util.networkutil import chainIdToMultisigAddr
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.base18 import to_wei
+from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
+from df_py.util.networkutil import chainIdToMultisigAddr
 
 MAX_BATCH_SIZE = 500
 TRY_AGAIN = 3

@@ -1,6 +1,7 @@
-import os
 import csv
+import os
 from typing import Dict, Union
+
 from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Predictoor, PredictoorBase

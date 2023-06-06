@@ -1,11 +1,10 @@
 from pprint import pprint
-from enforce_typing import enforce_types
 
 import brownie
+from enforce_typing import enforce_types
 
-from df_py.util import networkutil, oceanutil
+from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.graphutil import submitQuery
-from df_py.util import oceantestutil
 
 CHAINID = networkutil.DEV_CHAINID
 

@@ -1,4 +1,5 @@
 import pytest
+
 from df_py.predictoor.models import Prediction, Predictoor
 
 

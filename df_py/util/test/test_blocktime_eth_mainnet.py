@@ -1,10 +1,10 @@
-from datetime import datetime
 import os
 import types
-import brownie
+from datetime import datetime
 
-from pytest import approx
+import brownie
 from enforce_typing import enforce_types
+from pytest import approx
 
 from df_py.util import networkutil
 from df_py.util.blocktime import (

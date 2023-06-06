@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
-from enforce_typing import enforce_types
 import numpy as np
+from enforce_typing import enforce_types
 
-from df_py.util import networkutil
 from df_py.challenge import judge
+from df_py.util import networkutil
 
 
 def test_get_txs():

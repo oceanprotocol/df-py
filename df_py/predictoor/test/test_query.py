@@ -1,10 +1,12 @@
+from unittest.mock import patch
+
 import brownie
 import pytest
-from unittest.mock import patch
 from enforce_typing import enforce_types
-from df_py.util import networkutil
-from df_py.predictoor.queries import queryPredictoors
+
 from df_py.predictoor.predictoor_testutil import create_mock_responses
+from df_py.predictoor.queries import queryPredictoors
+from df_py.util import networkutil
 
 CHAINID = networkutil.DEV_CHAINID
 chain = None

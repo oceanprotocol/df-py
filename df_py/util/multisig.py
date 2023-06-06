@@ -1,7 +1,8 @@
-import os
 import json
-import requests
+import os
+
 import brownie
+import requests
 from brownie import web3
 
 # from web3 import Web3

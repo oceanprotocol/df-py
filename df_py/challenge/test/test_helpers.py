@@ -1,8 +1,8 @@
 import datetime
 from datetime import timezone
 
-from enforce_typing import enforce_types
 import pytest
+from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
 

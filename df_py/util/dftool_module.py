@@ -8,13 +8,13 @@ import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
+from df_py.challenge import judge
+from df_py.challenge.csvs import saveChallengeDataCsv
+from df_py.predictoor.csvs import predictoorDataFilename, savePredictoorData
+from df_py.predictoor.queries import queryPredictoors
 from df_py.util import blockrange, constants, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
-from df_py.predictoor.queries import queryPredictoors
-from df_py.predictoor.csvs import savePredictoorData, predictoorDataFilename
-from df_py.challenge import judge
-from df_py.challenge.csvs import saveChallengeDataCsv
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import DEV_CHAINID, chainIdToMultisigAddr

@@ -1,6 +1,8 @@
 import sys
+
 import numpy
 from enforce_typing import enforce_types
+
 from df_py.util.blocktime import getstfinBlocks
 
 

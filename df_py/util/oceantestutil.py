@@ -1,9 +1,10 @@
 import random
-import brownie
 
+import brownie
 from enforce_typing import enforce_types
+
 from df_py.util import constants, oceanutil
-from df_py.util.base18 import to_wei, from_wei
+from df_py.util.base18 import from_wei, to_wei
 
 network = brownie.network
 

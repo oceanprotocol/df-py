@@ -1,9 +1,9 @@
 import brownie
 from enforce_typing import enforce_types
 
-from df_py.util.constants import BROWNIE_PROJECT as B
-from df_py.util.base18 import to_wei
 from df_py.util import networkutil, oceanutil
+from df_py.util.base18 import to_wei
+from df_py.util.constants import BROWNIE_PROJECT as B
 
 accounts, a1, a2, a3 = None, None, None, None
 

@@ -4,9 +4,9 @@ import brownie
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import networkutil, oceanutil, oceantestutil
-from df_py.util.random_addresses import get_random_addresses
+from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.constants import BROWNIE_PROJECT as B
+from df_py.util.random_addresses import get_random_addresses
 
 
 @enforce_types

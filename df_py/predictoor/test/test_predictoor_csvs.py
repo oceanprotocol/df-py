@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Predictoor, Prediction
 from df_py.predictoor import csvs
+from df_py.predictoor.models import Prediction, Predictoor
 
 
 @enforce_types

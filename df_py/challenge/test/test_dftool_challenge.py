@@ -4,9 +4,9 @@ from typing import Optional
 import brownie
 from enforce_typing import enforce_types
 
+from df_py.challenge import csvs, judge
 from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
-from df_py.challenge import csvs, judge
 
 PREV, DFTOOL_ACCT = {}, None
 

@@ -1,5 +1,6 @@
 import random
 from typing import List
+
 from enforce_typing import enforce_types
 
 

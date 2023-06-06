@@ -3,10 +3,10 @@ import json
 import warnings
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
-from web3.main import Web3
 
 import brownie
 from enforce_typing import enforce_types
+from web3.main import Web3
 
 from df_py.util import networkutil
 from df_py.util.base18 import to_wei
