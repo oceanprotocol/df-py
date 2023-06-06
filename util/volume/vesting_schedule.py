@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
+
 from enforce_typing import enforce_types
+
 from util import oceanutil
 from util.base18 import from_wei, to_wei
-from util.calcrewards import getDfWeekNumber
 from util.constants import ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
+from util.volume.calcrewards import getDfWeekNumber
 
 
 def getActiveRewardAmountForWeekEth(start_dt: datetime) -> int:

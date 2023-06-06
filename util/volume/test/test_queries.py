@@ -4,27 +4,20 @@ import os
 import random
 import time
 
-import pytest
 import brownie
+import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from util import (
-    calcrewards,
-    csvs,
-    dispense,
-    oceanutil,
-    oceantestutil,
-    networkutil,
-    query,
-)
-from util.oceanutil import ve_delegate
-from util.allocations import allocsToStakes, loadStakes
-from util.base18 import to_wei, from_wei, str_with_wei
+from util import dispense, networkutil, oceantestutil, oceanutil
+from util.base18 import from_wei, str_with_wei, to_wei
 from util.blockrange import BlockRange
-from util.constants import BROWNIE_PROJECT as B, MAX_ALLOCATE
-from util.tok import TokSet
-
+from util.constants import BROWNIE_PROJECT as B
+from util.constants import MAX_ALLOCATE
+from util.oceanutil import ve_delegate
+from util.volume import calcrewards, csvs, queries
+from util.volume.allocations import allocsToStakes, loadStakes
+from util.volume.models import SimpleDataNft, TokSet
 
 PREV = {}
 god_acct = None
@@ -179,7 +172,7 @@ def _deployCO2():
 
 
 def _foundConsume(st, fin):
-    V0, _, _ = query._queryVolsOwners(st, fin, CHAINID)
+    V0, _, _ = queries._queryVolsOwners(st, fin, CHAINID)
     if CO2_addr not in V0:
         return False
     if sum(V0[CO2_addr].values()) == 0:
@@ -199,7 +192,7 @@ def _test_queryVebalances(
 ):
     print("_test_queryVebalances()...")
 
-    veBalances, locked_amts, unlock_times = query.queryVebalances(rng, CHAINID)
+    veBalances, locked_amts, unlock_times = queries.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
 
@@ -234,7 +227,7 @@ def _test_queryVebalances(
 @enforce_types
 def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
     print("_test_queryAllocations()...")
-    allocations = query.queryAllocations(rng, CHAINID)
+    allocations = queries.queryAllocations(rng, CHAINID)
 
     assert len(allocations) > 0
 
@@ -258,7 +251,7 @@ def _test_getSymbols():
     oceanToken = oceanutil.OCEANtoken()
     tokset = TokSet()
     tokset.add(CHAINID, oceanToken.address.lower(), "OCEAN")
-    symbols_at_chain = query.getSymbols(
+    symbols_at_chain = queries.getSymbols(
         tokset, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
 
@@ -268,8 +261,8 @@ def _test_getSymbols():
 
 @enforce_types
 def _test_queryVolsOwners(st, fin):
-    print("_test_queryVolsOwners()...")
-    V0, C0, _ = query._queryVolsOwners(st, fin, CHAINID)
+    print("_test_queriesVolsOwners()...")
+    V0, C0, _ = queries._queryVolsOwners(st, fin, CHAINID)
 
     # test V0 (volumes)
     assert CO2_addr in V0, (CO2_addr, V0.keys())
@@ -287,7 +280,7 @@ def _test_queryVolsOwnersSymbols(st, fin):
     print("_test_queryVolsOwnersSymbols()...")
     n = 500
     rng = BlockRange(st, fin, n)
-    (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
     assert C0
@@ -298,13 +291,13 @@ def _test_queryVolsOwnersSymbols(st, fin):
 def _test_queryNftinfo():
     print("_test_queryNftinfo()...")
 
-    nfts_block = query.queryNftinfo(137, 29778602)
+    nfts_block = queries.queryNftinfo(137, 29778602)
     assert len(nfts_block) == 9
 
-    nfts = query.queryNftinfo(CHAINID)
+    nfts = queries.queryNftinfo(CHAINID)
     assert len(nfts) > 0
 
-    nfts_latest = query.queryNftinfo(CHAINID, "latest")
+    nfts_latest = queries.queryNftinfo(CHAINID, "latest")
     assert len(nfts_latest) == len(nfts)
 
 
@@ -400,13 +393,13 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
 @enforce_types
 def _test_end_to_end_without_csvs(rng):
     print("_test_end_to_end_without_csvs()...")
-    (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     V = {CHAINID: V0}
     C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
 
-    vebals, _, _ = query.queryVebalances(rng, CHAINID)
-    allocs = query.queryAllocations(rng, CHAINID)
+    vebals, _, _ = queries.queryVebalances(rng, CHAINID)
+    allocs = queries.queryAllocations(rng, CHAINID)
     S = allocsToStakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
@@ -436,19 +429,19 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
     csvs.saveRateCsv(CO2_sym, 1.00, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, C0, SYM0) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
     csvs.saveOwnersCsv(C0, csv_dir, CHAINID)
     csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
     V0 = C0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
-    allocs = query.queryAllocations(rng, CHAINID)
+    allocs = queries.queryAllocations(rng, CHAINID)
     csvs.saveAllocationCsv(allocs, csv_dir)
     allocs = None  # ensure not used later
 
     # 4. simulate "dftool vebals"
-    vebals, locked_amt, unlock_time = query.queryVebalances(rng, CHAINID)
+    vebals, locked_amt, unlock_time = queries.queryVebalances(rng, CHAINID)
     csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
     vebals = locked_amt = unlock_time = None  # ensure not used later
 
@@ -503,7 +496,7 @@ def _test_queryPassiveRewards(addresses):
     bob_last_reward = 0
     for _ in range(3):
         timestamp = chain.time() // WEEK * WEEK
-        balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+        balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
         alice = addresses[0]
         bob = addresses[1]
         assert balances[alice] == balances[bob]
@@ -518,13 +511,13 @@ def _test_queryPassiveRewards(addresses):
 
 def _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr):
     print("_test_ghost_consume()...")
-    (V0, _, _) = query.queryVolsOwnersSymbols(rng, CHAINID)
+    (V0, _, _) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
-    (V0, _, _) = query._queryVolsOwners(ST, FIN, CHAINID)
+    (V0, _, _) = queries._queryVolsOwners(ST, FIN, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
 
-    swaps = query._querySwaps(ST, FIN, CHAINID)
+    swaps = queries._querySwaps(ST, FIN, CHAINID)
     assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
 
@@ -535,14 +528,14 @@ def _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr):
 @enforce_types
 def test_queryAllocations_empty():
     rng = BlockRange(st=0, fin=10, num_samples=1)
-    allocs = query.queryAllocations(rng, CHAINID)
+    allocs = queries.queryAllocations(rng, CHAINID)
     assert allocs == {}
 
 
 @enforce_types
 def test_queryVebalances_empty():
     rng = BlockRange(st=0, fin=10, num_samples=1)
-    tup = query.queryVebalances(rng, CHAINID)
+    tup = queries.queryVebalances(rng, CHAINID)
     assert tup == ({}, {}, {})
 
 
@@ -675,7 +668,7 @@ def test_allocation_sampling():
     allocations = None
     while True:
         try:
-            allocations = query.queryAllocations(rng, CHAINID)
+            allocations = queries.queryAllocations(rng, CHAINID)
         # pylint: disable=bare-except
         except:
             pass
@@ -718,15 +711,15 @@ def test_allocation_sampling():
 
 def test_symbol():
     testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": god_acct})
-    assert query.symbol(testToken.address) == "CO2"
+    assert queries.symbol(testToken.address) == "CO2"
 
     testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": god_acct})
-    assert query.symbol(testToken.address) == "ASDASDASD"
+    assert queries.symbol(testToken.address) == "ASDASDASD"
 
     testToken = B.Simpletoken.deploy(
         "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": god_acct}
     )
-    assert query.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
+    assert queries.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
 
 
 @enforce_types
@@ -745,7 +738,7 @@ def test_queryAquariusAssetNames():
         "DEX volume in details",
         "",
     ]
-    assetNames = query.queryAquariusAssetNames(nft_dids)
+    assetNames = queries.queryAquariusAssetNames(nft_dids)
     print("assetNames", assetNames)
     assert len(assetNames) == 4
 
@@ -764,7 +757,7 @@ def test_filter_to_aquarius_assets():
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
 
-    filtered_dids = query._filterToAquariusAssets(nft_dids)
+    filtered_dids = queries._filterToAquariusAssets(nft_dids)
 
     assert len(filtered_dids) == 3
     assert nft_dids[3] not in filtered_dids
@@ -783,7 +776,7 @@ def test_filter_dids():
         "did:op:01bf34f4e44e0c0549c34bf241940d397fca57aa6107b481789845464866d7b7",
     ]
 
-    filtered_dids = query._filterDids(nft_dids)
+    filtered_dids = queries._filterDids(nft_dids)
 
     assert len(filtered_dids) == 3
     assert nft_dids[3] not in filtered_dids
@@ -810,7 +803,7 @@ def test_filter_nft_vols_to_aquarius_assets():
         nftvols[oceanAddr][nftaddr] = 1.0
 
     # filter out non-market assets
-    nftvols_filtered = query._filterNftvols(nftvols, chainID)
+    nftvols_filtered = queries._filterNftvols(nftvols, chainID)
     assert len(nftvols_filtered) == 1
     assert len(nftvols_filtered[oceanAddr]) == 3
 
@@ -829,7 +822,7 @@ def test_filter_out_purgatory():
     ]
 
     # filter out purgatory
-    dids_filtered = query._filterOutPurgatory(dids)
+    dids_filtered = queries._filterOutPurgatory(dids)
     assert len(dids_filtered) == 1
     assert dids[1] in dids_filtered
 
@@ -842,10 +835,10 @@ def test_filter_nftinfos():
         oceanutil.OCEAN_address(),  # invalid
     ]
     # addresses are from polygon
-    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
+    nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
     # filter
-    nfts_filtered = query._filterNftinfos(nfts)
+    nfts_filtered = queries._filterNftinfos(nfts)
 
     assert len(nfts_filtered) == 2
     assert nfts[0] in nfts_filtered
@@ -860,9 +853,9 @@ def test_mark_purgatory_nftinfos():
         oceanutil.OCEAN_address(),  # invalid
     ]
     # addresses are from polygon
-    nfts = [query.SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
+    nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
 
-    nfts_marked = query._markPurgatoryNfts(nfts)
+    nfts_marked = queries._markPurgatoryNfts(nfts)
 
     assert len(nfts_marked) == 3
     assert nfts_marked[1].is_purgatory is True
@@ -871,8 +864,8 @@ def test_mark_purgatory_nftinfos():
 @enforce_types
 def test_populateNftAssetNames():
     nft_addr = "0xbff8242de628cd45173b71022648617968bd0962"
-    nfts = [query.SimpleDataNft(137, nft_addr, "TEST", "0x123")]
-    nfts = query._populateNftAssetNames(nfts)
+    nfts = [SimpleDataNft(137, nft_addr, "TEST", "0x123")]
+    nfts = queries._populateNftAssetNames(nfts)
 
     assert nfts[0].name == "Take a Ballet Lesson"
 
@@ -881,7 +874,7 @@ def test_populateNftAssetNames():
 def test_SimpleDataNFT():
     # test attributes
     nft_addr = "0xBff8242de628cd45173b71022648617968bd0962"
-    nft = query.SimpleDataNft(137, nft_addr, "dn1", "0x123AbC")
+    nft = SimpleDataNft(137, nft_addr, "dn1", "0x123AbC")
     assert nft.chain_id == 137
     assert nft.nft_addr == nft_addr.lower()
     assert nft.symbol == "DN1"
@@ -891,10 +884,10 @@ def test_SimpleDataNFT():
     assert isinstance(nft.did, str)
 
     # test __eq__
-    nft2 = query.SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
+    nft2 = SimpleDataNft(137, nft_addr, "Dn1", "0x123abC")
     assert nft == nft2
 
-    nft3 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
+    nft3 = SimpleDataNft(137, nft_addr, "DN2", "0x123abc")
     assert nft != nft3
 
     # test __repr__
@@ -908,7 +901,7 @@ def test_SimpleDataNFT():
     assert "nAmE1" in repr(nft)
 
     # non-default args in constructor
-    nft4 = query.SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
+    nft4 = SimpleDataNft(137, nft_addr, "DN2", "0x123abc", True, "namE2")
     assert nft4.is_purgatory
     assert nft4.name == "namE2"
 
@@ -917,7 +910,7 @@ def test_SimpleDataNFT():
 def test_filter_by_max_volume():
     nftvols = {"a": {"b": 1000}}
     swapvols = {"a": {"b": 100}}
-    filteredvols = query._filterbyMaxVolume(nftvols, swapvols)
+    filteredvols = queries._filterbyMaxVolume(nftvols, swapvols)
     assert filteredvols["a"]["b"] == 100
 
 
@@ -938,7 +931,7 @@ def test_process_single_delegation():
     unixEpochTime = 1687392001
     timeLeft = 125798500
 
-    balance_veocean, delegation_amt, delegated_to = query._process_delegation(
+    balance_veocean, delegation_amt, delegated_to = queries._process_delegation(
         delegation, balance_veocean, unixEpochTime, timeLeft
     )
 
@@ -995,7 +988,7 @@ def test_process_delegations():
     delegated_tos = []
 
     for delegation in delegations:
-        balance_veocean, delegation_amt, delegated_to = query._process_delegation(
+        balance_veocean, delegation_amt, delegated_to = queries._process_delegation(
             delegation, balance_veocean, unixEpochTime, timeLeft
         )
         delegation_amts.append(delegation_amt)

@@ -3,7 +3,6 @@
 
 from enforce_typing import enforce_types
 
-
 FAKE_CHAINID = 99
 FAKE_TOKEN_ADDR = "0xfake_token"
 

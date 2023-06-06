@@ -128,7 +128,13 @@ def connect(chainID: int):
             message=".*Development network has a block height of*",
         )
         network_name = chainIdToNetwork(chainID)
-        network.connect(network_name)
+        try:
+            network.connect(network_name)
+        except KeyError as e:
+            if network_name != "mumbai":
+                raise e
+
+            network.connect("polygon-test")
 
 
 @enforce_types

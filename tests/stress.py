@@ -30,7 +30,7 @@ import brownie
 import time
 from util import oceanutil, oceantestutil, networkutil
 from util.constants import BROWNIE_PROJECT as B
-from util.query import getApprovedTokens
+from util.volume.queries import getApprovedTokens
 from tqdm import tqdm
 import json
 

@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
 
-from util import csvs
-from util.allocations import allocsToStakes, loadStakes
+from util.volume import csvs
+from util.volume.allocations import allocsToStakes, loadStakes
 
 # for shorter lines
 C1, C2 = 7, 137

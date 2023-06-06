@@ -4,7 +4,7 @@ from typing import Dict, Union
 from enforce_typing import enforce_types
 
 from util.predictoor.models import Predictoor, PredictoorBase
-from util.csvs import assertIsEthAddr
+from util.csv_helpers import assertIsEthAddr
 
 
 @enforce_types

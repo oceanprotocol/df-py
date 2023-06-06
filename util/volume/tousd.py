@@ -2,8 +2,8 @@ from typing import Dict
 
 from enforce_typing import enforce_types
 
-from util import cleancase
 from util.networkutil import _CHAINID_TO_ADDRS, _CHAINID_TO_NATIVE_TOKEN
+from util.volume import cleancase
 
 
 @enforce_types

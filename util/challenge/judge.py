@@ -6,14 +6,14 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
 import ccxt
+import gql
+import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
-import gql
-from gql.transport.aiohttp import AIOHTTPTransport
-import numpy as np
 
 from util import crypto, oceanutil
 from util.challenge import helpers
+from util.graphutil import get_gql_client
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
@@ -25,17 +25,6 @@ DFTOOL_TEST_FAKE_CHALLENGE_DATA = (
     ["0xnft1", "0xnft2"],
     [0.2, 1.0],
 )
-
-
-def _get_gql_client():
-    # note: only supports mumbai right now
-
-    prefix = "https://v4.subgraph.mumbai.oceanprotocol.com"
-    url = f"{prefix}/subgraphs/name/oceanprotocol/ocean-subgraph"
-    transport = AIOHTTPTransport(url=url)
-
-    client = gql.Client(transport=transport, fetch_schema_from_transport=True)
-    return client
 
 
 @enforce_types
@@ -67,7 +56,7 @@ def _get_txs(deadline_dt) -> list:
 }}"""
 
     query = gql.gql(query_s)
-    gql_client = _get_gql_client()
+    gql_client = get_gql_client()
     result = gql_client.execute(query)
     txs = result["nftTransferHistories"]
 
@@ -122,9 +111,9 @@ def _get_cex_vals(deadline_dt):
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    kraken = ccxt.kraken()
-    from_dt_str = kraken.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
-    cex_x = kraken.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
+    binance = ccxt.binanceus()
+    from_dt_str = binance.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
+    cex_x = binance.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
     allcex_vals = [xi[4] for xi in cex_x]
     helpers.print_datetime_info("CEX data info", allcex_uts)

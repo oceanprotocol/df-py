@@ -8,23 +8,13 @@ import brownie
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
-from util import (
-    allocations,
-    blockrange,
-    calcrewards,
-    constants,
-    csvs,
-    dispense,
-    getrate,
-    networkutil,
-    query,
-)
+from util import blockrange, constants, dispense, getrate, networkutil
+from util.base18 import from_wei
+from util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
 from util.predictoor.queries import queryPredictoors
 from util.predictoor.csvs import savePredictoorData, predictoorDataFilename
-from util.base18 import from_wei
-from util.blocktime import getfinBlock, timestrToTimestamp, getstfinBlocks
-from util.calcrewards import calcRewards
 from util.challenge import judge
+from util.challenge.csvs import saveChallengeDataCsv
 from util.constants import BROWNIE_PROJECT as B
 from util.multisig import send_multisig_tx
 from util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
@@ -40,7 +30,9 @@ from util.oceanutil import (
     veAllocate,
 )
 from util.retry import retryFunction
-from util.vesting_schedule import getActiveRewardAmountForWeekEth
+from util.volume import allocations, calcrewards, csvs, queries
+from util.volume.calcrewards import calcRewards
+from util.volume.vesting_schedule import getActiveRewardAmountForWeekEth
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -172,7 +164,7 @@ Uses these envvars:
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     (Vi, Ci, SYMi) = retryFunction(
-        query.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
+        queries.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
@@ -212,7 +204,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     )
 
     # hardcoded values
-    # -query.queryNftinfo() can be problematic; it's only used for frontend data
+    # -queries.queryNftinfo() can be problematic; it's only used for frontend data
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
@@ -230,7 +222,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
-    nftinfo = retryFunction(query.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
+    nftinfo = retryFunction(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
     csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -290,7 +282,7 @@ Uses these envvars:
 
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    allocs = retryFunction(query.queryAllocations, RETRIES, 10, rng, CHAINID)
+    allocs = retryFunction(queries.queryAllocations, RETRIES, 10, rng, CHAINID)
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
@@ -350,7 +342,7 @@ Uses these envvars:
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
 
     balances, locked_amt, unlock_time = retryFunction(
-        query.queryVebalances, RETRIES, 10, rng, CHAINID
+        queries.queryVebalances, RETRIES, 10, rng, CHAINID
     )
     csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
@@ -459,7 +451,7 @@ Uses these envvars:
         deadline_dt = judge.parse_deadline_str(DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
-    csvs.saveChallengeDataCsv(challenge_data, CSV_DIR)
+    saveChallengeDataCsv(challenge_data, CSV_DIR)
 
     print("dftool challenge_data: Done")
 
@@ -1232,7 +1224,7 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     vebals, _, _ = csvs.loadVebalsCsv(CSV_DIR, False)
     addresses = list(vebals.keys())
 
-    balances, rewards = query.queryPassiveRewards(timestamp, addresses)
+    balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
 
     # save to csv
     csvs.savePassiveCsv(rewards, balances, CSV_DIR)

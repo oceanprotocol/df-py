@@ -3,9 +3,11 @@ from datetime import datetime
 import pytest
 from enforce_typing import enforce_types
 from pytest import approx
-from util import vesting_schedule, networkutil
+
+from util import networkutil
 from util.base18 import from_wei
 from util.constants import ACTIVE_REWARDS_MULTIPLIER
+from util.volume import vesting_schedule
 
 test_params = [
     (datetime(2023, 3, 9), 0),

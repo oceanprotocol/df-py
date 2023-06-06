@@ -1,11 +1,17 @@
 import os
-
-from enforce_typing import enforce_types
-import pytest
 from typing import Optional
 
-from util.challenge import judge
-from util import csvs
+import brownie
+from enforce_typing import enforce_types
+
+from util import networkutil, oceantestutil, oceanutil
+from util.base18 import to_wei
+from util.challenge import csvs, judge
+
+PREV, DFTOOL_ACCT = {}, None
+
+CHAINID = networkutil.DEV_CHAINID
+ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 
 @enforce_types
@@ -77,5 +83,44 @@ def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
 
 @enforce_types
 def test_challenge_help():
-    cmd = f"./dftool challenge_data"
+    cmd = "./dftool challenge_data"
     os.system(cmd)
+
+
+@enforce_types
+def setup_function():
+    global PREV, DFTOOL_ACCT
+
+    networkutil.connect(CHAINID)
+    accounts = brownie.network.accounts
+    oceanutil.recordDevDeployedContracts()
+    oceantestutil.fillAccountsWithOCEAN()
+
+    DFTOOL_ACCT = accounts.add()
+    accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
+
+    for envvar in [
+        "DFTOOL_KEY",
+        "ADDRESS_FILE",
+        "SECRET_SEED",
+        "WEB3_INFURA_PROJECT_ID",
+    ]:
+        PREV[envvar] = os.environ.get(envvar)
+
+    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
+    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
+    os.environ["SECRET_SEED"] = "1234"
+    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
+
+    global PREV
+    for envvar, envval in PREV.items():
+        if envval is None:
+            del os.environ[envvar]
+        else:
+            os.environ[envvar] = envval
+    PREV = {}
