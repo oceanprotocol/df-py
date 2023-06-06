@@ -90,7 +90,7 @@ def test_functions_exist():
     functions.remove("help")  # maps to help_short
 
     for function in functions:
-        with patch("util.dftool_module.do_" + function):
+        with patch("dftool_module.do_" + function):
             # patch can only overwrite existing functions
             # so that ensures the function exists
             pass
