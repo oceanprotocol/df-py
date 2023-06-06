@@ -106,7 +106,7 @@ def test_all(tmp_path):
     for loop_i in range(50):
         FIN = len(chain)
         print(f"  loop {loop_i} start")
-        # assert loop_i < 45, "timeout"
+        assert loop_i < 45, "timeout"
         # this test assumes that all actions before consume will
         # be on the graph too. Eg veOCEAN allocation or delegation
         if _foundConsume(ST, FIN):
