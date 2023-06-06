@@ -1,4 +1,6 @@
+from typing import List
 import brownie
+
 
 ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
@@ -33,3 +35,7 @@ MULTISIG_ADDRS = {
 
 # filled in by oceanutil.py
 CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
+
+# predictoor
+MIN_PREDICTIONS = 1818
+DEPLOYER_ADDRS: List[str] = []

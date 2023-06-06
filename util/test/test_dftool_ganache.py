@@ -1,6 +1,8 @@
 import datetime
 import os
 import subprocess
+import sys
+from unittest.mock import patch
 
 import brownie
 from enforce_typing import enforce_types
@@ -8,6 +10,9 @@ from enforce_typing import enforce_types
 from util import networkutil, oceantestutil, oceanutil
 from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
+from util.dftool_module import do_predictoor_data
+from util.predictoor.csvs import loadPredictoorData, predictoorDataFilename
+from util.predictoor.predictoor_testutil import create_mock_responses
 from util.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
@@ -49,6 +54,36 @@ def test_calc(tmp_path):
     # test result
     rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
     assert os.path.exists(rewards_csv)
+
+
+@enforce_types
+def test_predictoor_data(tmp_path):
+    CSV_DIR = str(tmp_path)
+    ST = 0
+    FIN = "latest"
+
+    testargs = ["dftool", "predictoor_data", CSV_DIR, ST, FIN, CHAINID]
+    mock_query_response, users, stats = create_mock_responses(100)
+
+    with patch.object(sys, "argv", testargs):
+        with patch("util.predictoor.queries.submitQuery") as mock_submitQuery:
+            mock_submitQuery.side_effect = mock_query_response
+            do_predictoor_data()
+
+    # test result
+    predictoor_data_csv = predictoorDataFilename(CSV_DIR, CHAINID)
+    assert os.path.exists(predictoor_data_csv)
+
+    predictoors = loadPredictoorData(CSV_DIR, CHAINID)
+    for user in users:
+        if stats[user]["total"] == 0:
+            assert user not in predictoors
+            continue
+        user_total = stats[user]["total"]
+        user_correct = stats[user]["correct"]
+        assert predictoors[user].prediction_count == user_total
+        assert predictoors[user].correct_prediction_count == user_correct
+        assert predictoors[user].accuracy == user_correct / user_total
 
 
 @enforce_types
