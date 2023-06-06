@@ -23,6 +23,7 @@ DAY = 86400
 
 @enforce_types
 def test_rewards():
+    # pylint: disable=line-too-long
     """Tests over 52 weeks for multiple users & cases if FeeEstimate.estimateClaim equals with the amount that you get after claim"""
 
     fee_distributor = B.FeeDistributor.deploy(
@@ -99,6 +100,7 @@ def test_rewards():
         )
 
         print(
+            # pylint: disable=line-too-long
             f"\t Alice estimates claim:{estimateAlice1w}, Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice} = {time_cursor_alice_nice}"
         )
         # Alice claims every week
@@ -114,12 +116,14 @@ def test_rewards():
         )
         # compare it
         print(
+            # pylint: disable=line-too-long
             f"\t Alice claimed:{alice_claimed}, After claim:  Alice's epoch:{epoch_alice}, Alice's time cursor:{time_cursor_alice} = {time_cursor_alice_nice}"
         )
         assert alice_claimed == pytest.approx(estimateAlice1w, 0.0000001)
 
         # Bob claims every 2 weeks
         print(
+            # pylint: disable=line-too-long
             f"\t Bob estimates claim:{estimateBob1w}, Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob} = {time_cursor_bob_nice}"
         )
         if i % 2 == 0:
@@ -135,6 +139,7 @@ def test_rewards():
             )
             # compare it
             print(
+                # pylint: disable=line-too-long
                 f"\t Bob claimed:{bob_claimed}, after claim Bob's epoch:{epoch_bob}, Bob's time cursor:{time_cursor_bob} = {time_cursor_bob_nice}"
             )
             assert bob_claimed == pytest.approx(estimateBob1w, 0.0000001)

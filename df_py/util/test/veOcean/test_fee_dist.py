@@ -74,6 +74,7 @@ def test_alice_locks_tokens_after():
 
 @enforce_types
 def test_alice_locks_tokens_exact():
+    # pylint: disable=line-too-long
     """Alice locks tokens exactly at the time of fee distribution checkpoint. Alice then claim rewards."""
 
     veOCEAN.checkpoint()

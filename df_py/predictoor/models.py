@@ -16,7 +16,8 @@ class Prediction:
         Returns true if the prediction is correct, false otherwise.
         """
         # We assume that the prediction is wrong if the payout is 0.
-        # Only predictions where the true value for their slot is submitted are being counted, so this is a safe assumption.
+        # Only predictions where the true value for their slot is submitted
+        # are being counted, so this is a safe assumption.
         return self.payout > 0
 
     @classmethod

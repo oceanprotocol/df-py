@@ -95,6 +95,7 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
 @enforce_types
 def _get_cex_vals(deadline_dt):
     now = datetime.now(timezone.utc)
+    # pylint: disable=superfluous-parens
     newest_cex_dt = deadline_dt + timedelta(minutes=(1 + 12 * 5))
     print("get_cex_vals: start")
     print(f"  now           = {now} (UTC)")
