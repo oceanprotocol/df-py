@@ -51,7 +51,7 @@ setup(
     include_package_data=True,
     packages=find_packages(
         include=[
-            "util",
+            "df_py",
             "build",
             "contracts",
             "data",
