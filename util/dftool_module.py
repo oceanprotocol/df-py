@@ -19,8 +19,10 @@ from util import (
     networkutil,
     query,
 )
+from util.predictoor.queries import queryPredictoors
+from util.predictoor.csvs import savePredictoorData, predictoorDataFilename
 from util.base18 import from_wei
-from util.blocktime import getfinBlock, timestrToTimestamp
+from util.blocktime import getfinBlock, timestrToTimestamp, getstfinBlocks
 from util.calcrewards import calcRewards
 from util.challenge import judge
 from util.constants import BROWNIE_PROJECT as B
@@ -59,7 +61,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
-  dftool predictoor_data CSV_DIR CHAINID [RETRIES]
+  dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
   dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
@@ -170,7 +172,7 @@ Uses these envvars:
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     (Vi, Ci, SYMi) = retryFunction(
-        query.queryVolsOwnersSymbols, RETRIES, 10, rng, CHAINID
+        query.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
@@ -467,50 +469,55 @@ Uses these envvars:
 def do_predictoor_data():
     HELP = f"""Get data for Predictoor DF
 
-Usage: dftool predictoor_data CSV_DIR CHAINID [RETRIES]
-  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
+Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
+  ST -- start time -- YYYY-MM-DD
+  FIN -- end time -- YYYY-MM-DD
+  CSV_DIR -- output directory for predictoordata_CHAINID.csv file
   CHAINID -- {CHAINID_EXAMPLES}
   RETRIES -- # times to retry failed queries
 """
-    if len(sys.argv) not in [2 + 3, 2 + 4]:
+    if len(sys.argv) not in [2 + 4, 2 + 5]:
         print(HELP)
         sys.exit(1)
 
     # extract inputs
     assert sys.argv[1] == "predictoor_data"
     CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
-    RETRIES = 1 if len(sys.argv) == 4 else int(sys.argv[4])
+    ST = sys.argv[3]
+    FIN = sys.argv[4]
+    CHAINID = int(sys.argv[5])
+    print(sys.argv, len(sys.argv))
+    RETRIES = 1 if len(sys.argv) == 6 else int(sys.argv[6])
     print("dftool predictoor_data: Begin")
     print(
         f"Arguments: "
         f"\n CSV_DIR={CSV_DIR}"
+        f"\n START_DATE={ST}"
+        f"\n END_DATE={FIN}"
         f"\n CHAINID={CHAINID}"
         f"\n RETRIES={RETRIES}"
     )
 
-    # extract envvars
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-    SECRET_SEED = _getSecretSeedOrExit()  # pylint: disable=unused-variable
-
     # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
+    _createDirIfNeeded(CSV_DIR)
+    _exitIfFileExists(predictoorDataFilename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
-    chain = brownie.network.chain  # pylint: disable=unused-variable
-    recordDeployedContracts(ADDRESS_FILE)
+    chain = brownie.network.chain
+
+    st_block, fin_block = getstfinBlocks(chain, ST, FIN)
 
     # main work
     predictoor_data = retryFunction(
-        query.queryPredictoor_Data,
+        queryPredictoors,
         RETRIES,
+        10,
+        st_block,
+        fin_block,
         CHAINID,
     )
-    csvs.savePredictoor_Data(predictoor_data, CSV_DIR, CHAINID)
-
+    savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
     print("dftool predictoor_data: Done")
 
 
