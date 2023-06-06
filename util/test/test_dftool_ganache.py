@@ -5,7 +5,6 @@ import sys
 from unittest.mock import patch
 
 import brownie
-import pytest
 from enforce_typing import enforce_types
 
 from util import csvs, networkutil, oceanutil, oceantestutil
@@ -13,7 +12,7 @@ from util.base18 import from_wei, to_wei
 from util.constants import BROWNIE_PROJECT as B
 from util.dftool_module import do_predictoor_data
 from util.predictoor.predictoor_testutil import create_mock_responses
-from util.predictoor import csvs as predictoor_csvs
+from util.predictoor.csvs import loadPredictoorData, predictoorDataFilename
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -71,10 +70,10 @@ def test_predictoor_data(tmp_path):
             do_predictoor_data()
 
     # test result
-    predictoor_data_csv = predictoor_csvs.predictoorDataFilename(CSV_DIR, CHAINID)
+    predictoor_data_csv = predictoorDataFilename(CSV_DIR, CHAINID)
     assert os.path.exists(predictoor_data_csv)
 
-    predictoors = predictoor_csvs.loadPredictoorData(CSV_DIR, CHAINID)
+    predictoors = loadPredictoorData(CSV_DIR, CHAINID)
     for user in users:
         if stats[user]["total"] == 0:
             assert user not in predictoors
@@ -84,21 +83,6 @@ def test_predictoor_data(tmp_path):
         assert predictoors[user].prediction_count == user_total
         assert predictoors[user].correct_prediction_count == user_correct
         assert predictoors[user].accuracy == user_correct / user_total
-
-
-@enforce_types
-@pytest.mark.skip(reason="Requires predictoor support in subgraph")
-def test_predictoor_data_without_mock(tmp_path):
-    CSV_DIR = str(tmp_path)
-    ST = 0
-    FIN = "latest"
-
-    cmd = f"./dftool predictoor_data {CSV_DIR} {ST} {FIN} {CHAINID}"
-    os.system(cmd)
-
-    # test result
-    predictoor_data_csv = predictoor_csvs.predictoorDataFilename(CSV_DIR, CHAINID)
-    assert os.path.exists(predictoor_data_csv)
 
 
 @enforce_types
