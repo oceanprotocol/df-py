@@ -26,9 +26,8 @@ def test_dt_to_ut__timezone():
     error_str = str(e_info.value)
     assert error_str == "must be in UTC"
 
-    ut = helpers.dt_to_ut(aware_dt)
-
-    ut = helpers.dt_to_ut(now_aware_dt)
+    _ = helpers.dt_to_ut(aware_dt)
+    _ = helpers.dt_to_ut(now_aware_dt)
 
 
 @enforce_types

@@ -63,7 +63,7 @@ def test_alice_locks_tokens_after():
     before_f = OCEAN.balanceOf(fee_distributor)
     try:
         estimate = fee_estimate.estimateClaim(alice)
-    except:
+    except:  # pylint: disable=bare-except
         estimate = None
     fee_distributor.claim({"from": alice})  # alice claims rewards
     after_f = OCEAN.balanceOf(fee_distributor)
@@ -118,7 +118,7 @@ def test_alice_locks_tokens_exact():
     alice_before = OCEAN.balanceOf(alice)
     try:
         estimate = fee_estimate.estimateClaim(alice)
-    except:
+    except:  # pylint: disable=bare-except
         estimate = None
 
     fee_distributor.claim({"from": alice})  # alice claims rewards
@@ -178,7 +178,7 @@ def test_alice_claims_after_lock_ends():
     alice_balance_ocean_before = OCEAN.balanceOf(alice)
     try:
         estimate = fee_estimate.estimateClaim(alice)
-    except:
+    except:  # pylint: disable=bare-except
         estimate = None
     fee_distributor.claim({"from": alice})  # alice claims rewards
     alice_balance_ocean_after = OCEAN.balanceOf(alice)

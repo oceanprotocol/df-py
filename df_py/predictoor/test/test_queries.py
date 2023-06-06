@@ -37,7 +37,7 @@ def test_queryPredictoors_request():
     ST = 0
     FIN = chain[-1].number
     predictoors = queryPredictoors(ST, FIN, CHAINID)
-    assert predictoors != None
+    assert predictoors is not None
     assert isinstance(predictoors, dict)
 
 

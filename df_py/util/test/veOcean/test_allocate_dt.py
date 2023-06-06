@@ -1,9 +1,7 @@
-import functools
-
 import brownie
 from enforce_typing import enforce_types
 
-from df_py.util import networkutil, oceanutil
+from df_py.util import networkutil
 from df_py.util.constants import BROWNIE_PROJECT as B
 
 accounts = None
@@ -57,7 +55,7 @@ def test_getveBatchAllocation():
     nftaddr1 = accounts[0].address
     nftaddr2 = accounts[1].address
 
-    tx = veAllocate.setBatchAllocation(
+    _ = veAllocate.setBatchAllocation(
         [50, 50], [nftaddr1, nftaddr2], [1, 1], {"from": accounts[0]}
     )
     assert veAllocate.getveAllocation(accounts[0], nftaddr1, 1) == 50

@@ -143,7 +143,7 @@ def test_rewards():
         if i % 4 == 0:
             bob_lock_time = veOCEAN.locked__end(bob)
             veOCEAN.increase_unlock_time(bob_lock_time + WEEK + 2, {"from": bob})
-            print(f"\t Bob increases the lock time")
+            print("\t Bob increases the lock time")
             assert bob_claimed == pytest.approx(estimateBob1w, 0.0000001)
 
         fee_distributor_ocean_balance = from_wei(

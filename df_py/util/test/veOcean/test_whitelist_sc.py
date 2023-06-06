@@ -22,7 +22,7 @@ TA = to_wei(10.0)
 def test_velock_not_whitelisted():
     """Test that a smart contract cannot create a lock if they are not whitelisted."""
     smartWalletChecker.setAllowedContract(veLocker, False, {"from": deployer})
-    assert smartWalletChecker.check(veLocker) == False
+    assert not smartWalletChecker.check(veLocker)
 
     with brownie.reverts("Smart contract depositors not allowed"):
         veLocker.create_lock(TA, chain.time() + WEEK * 2, {"from": deployer})
@@ -34,7 +34,7 @@ def test_velock_whitelisted():
 
     # Assert that the contract is whitelisted
     smartWalletChecker.setAllowedContract(veLocker, True, {"from": deployer})
-    assert smartWalletChecker.check(veLocker) == True
+    assert smartWalletChecker.check(veLocker)
 
     t0 = chain.time()
     t1 = t0 // WEEK * WEEK + WEEK
