@@ -91,8 +91,8 @@ def test_batch_number():
 def test_dispense_passive():
     feedist = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
-    with patch("util.dispense.chainIdToMultisigAddr"):
-        with patch("util.dispense.send_multisig_tx") as mock:
+    with patch("df_py.util.dispense.chainIdToMultisigAddr"):
+        with patch("df_py.util.dispense.send_multisig_tx") as mock:
             dispense.dispense_passive(OCEAN, feedist, 1)
 
     assert mock.call_count == 3
