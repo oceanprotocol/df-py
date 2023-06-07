@@ -48,6 +48,7 @@ def test_predictoordata(tmp_path):
             == original_predictoor.correct_prediction_count
         )
 
+
 @enforce_types
 def test_loadAllPredictoorData(tmp_path):
     # create multiple CSVs for each chain_id
@@ -60,7 +61,9 @@ def test_loadAllPredictoorData(tmp_path):
             p = Predictoor(f"0x{i}00000000000000000000000000000000000000{chainid}")
             for j in range(5):
                 p.add_prediction(
-                    Prediction(i, j % 2 * 1.0, "0x0000000000000000000000000000000000000000")
+                    Prediction(
+                        i, j % 2 * 1.0, "0x0000000000000000000000000000000000000000"
+                    )
                 )
             predictoors[p.address] = p
 
@@ -96,7 +99,9 @@ def test_predictoorrewards(tmp_path):
     # generate random rewards
     predictoor_rewards = {}
     for i in range(5):
-        predictoor_rewards[f"0x{i}000000000000000000000000000000000000000"] = (i + 1) * 10.0
+        predictoor_rewards[f"0x{i}000000000000000000000000000000000000000"] = (
+            i + 1
+        ) * 10.0
 
     csv_dir = str(tmp_path)
     csvs.savePredictoorRewards(predictoor_rewards, csv_dir)
