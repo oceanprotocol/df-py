@@ -43,6 +43,26 @@ test_params = [
 ]
 
 
+def test_getActiveRewardAmountForWeekEthByStream():
+    start_dt = datetime(2022, 1, 1)
+    substream = "predictoor"
+    assert (
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, substream)
+        == 0
+    )
+
+    start_dt = datetime(2025, 1, 1)
+    substream = "predictoor"
+    assert (
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, substream)
+        > 0
+    )
+
+    substream = "invalid_substream"
+    with pytest.raises(ValueError):
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, substream)
+
+
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getRewardAmountForWeekWei(test_input, expected_output):
     networkutil.connectDev()
