@@ -7,8 +7,11 @@ from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
 from df_py.volume.calcrewards import getDfWeekNumber
 
+
 @enforce_types
-def getActiveRewardAmountForWeekEthByStream(start_dt: datetime, substream: str) -> float:
+def getActiveRewardAmountForWeekEthByStream(
+    start_dt: datetime, substream: str
+) -> float:
     """
     Return the reward amount for the week and substream in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.
@@ -16,12 +19,13 @@ def getActiveRewardAmountForWeekEthByStream(start_dt: datetime, substream: str) 
     total_reward_amount = getActiveRewardAmountForWeekEth(start_dt)
 
     # Week number will be needed for calculating reward in the future
-    # dfweek = getDfWeekNumber(start_dt) - 1 
+    # dfweek = getDfWeekNumber(start_dt) - 1
 
     if substream == "predictoor":
-        return total_reward_amount * 0.01 # 0.1% of rewards
+        return total_reward_amount * 0.01  # 0.1% of rewards
     else:
         raise ValueError("Unrecognized substream: {}".format(substream))
+
 
 @enforce_types
 def getActiveRewardAmountForWeekEth(start_dt: datetime) -> float:
