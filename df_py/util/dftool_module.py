@@ -32,7 +32,7 @@ from df_py.util.oceanutil import (
 from df_py.util.retry import retryFunction
 from df_py.volume import allocations, calcrewards, csvs, queries
 from df_py.volume.calcrewards import calcRewards
-from df_py.volume.vesting_schedule import getActiveRewardAmountForWeekEth
+from df_py.util.vesting_schedule import getActiveRewardAmountForWeekEth
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 

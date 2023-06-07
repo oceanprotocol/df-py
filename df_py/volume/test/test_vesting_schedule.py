@@ -7,7 +7,7 @@ from pytest import approx
 from df_py.util import networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER
-from df_py.volume import vesting_schedule
+from df_py.util import vesting_schedule
 
 test_params = [
     (datetime(2023, 3, 9), 0),
