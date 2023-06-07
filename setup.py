@@ -20,7 +20,6 @@ install_requirements = [
     "eciespy",
     "eth-brownie",
     "enforce_typing",
-    "gql",
     "mypy",
     "numpy",
     "pandas",

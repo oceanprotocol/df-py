@@ -6,14 +6,12 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Tuple
 
 import ccxt
-import gql
 import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
-from df_py.util import crypto, oceanutil
-from df_py.util.graphutil import get_gql_client
+from df_py.util import crypto, oceanutil, graphutil, networkutil
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
@@ -55,9 +53,7 @@ def _get_txs(deadline_dt) -> list:
      }}
 }}"""
 
-    query = gql.gql(query_s)
-    gql_client = get_gql_client()
-    result = gql_client.execute(query)
+    result = graphutil.submitQuery(query_s, networkutil.networkToChainId("mumbai"))
     txs = result["nftTransferHistories"]
 
     return txs
