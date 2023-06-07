@@ -4,7 +4,11 @@ from enforce_typing import enforce_types
 
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
-from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
+from df_py.util.constants import (
+    ACTIVE_REWARDS_MULTIPLIER,
+    DFMAIN_CONSTANTS,
+    PREDICTOOR_RELEASE_WEEK,
+)
 from df_py.volume.calcrewards import getDfWeekNumber
 
 
@@ -18,11 +22,10 @@ def getActiveRewardAmountForWeekEthByStream(
     """
     total_reward_amount = getActiveRewardAmountForWeekEth(start_dt)
 
-    # Week number will be needed for calculating reward in the future
-    # dfweek = getDfWeekNumber(start_dt) - 1
+    dfweek = getDfWeekNumber(start_dt) - 1
 
     if substream == "predictoor":
-        return total_reward_amount * 0.01  # 0.1% of rewards
+        return total_reward_amount * 0.01 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
     else:
         raise ValueError("Unrecognized substream: {}".format(substream))
 
