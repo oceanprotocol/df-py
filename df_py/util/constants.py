@@ -39,3 +39,4 @@ CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 # predictoor
 MIN_PREDICTIONS = 1818
 DEPLOYER_ADDRS: List[str] = []
+PREDICTOOR_RELEASE_WEEK = 42  # change me when released
