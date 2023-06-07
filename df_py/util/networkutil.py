@@ -15,14 +15,8 @@ _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 _RAW_CHAIN_DATA = [
     (8996, "development", "OCEAN"),
     (1, "mainnet", "ETH"),
-    (3, "ropsten", "ETH"),
-    (4, "rinkeby", "ETH"),
     (5, "goerli", "ETH"),
-    (56, "bsc", "BNB"),
     (137, "polygon", "MATIC"),
-    (246, "energyweb", "EWT"),
-    (1287, "moonbase", "MOVR"),
-    (1285, "moonriver", "MOVR"),
     (80001, "mumbai", "MATIC"),
 ]
 

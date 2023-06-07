@@ -44,7 +44,7 @@ The all.sh script is used to run the full df-py flow and calculate rewards amoun
 
 This script retrieves NFT information and moves the corresponding CSV files. It works in the following steps:
 
-- NFT Info Retrieval: For each of the specified chain ID (1, 56, 137, 246, 1285), it retrieves information of all NFTs on that chain by running the `dftool nftinfo` command.
+- NFT Info Retrieval: For each of the specified chain ID (1, 137), it retrieves information of all NFTs on that chain by running the `dftool nftinfo` command.
 - Move CSV Files: It then moves the generated CSV files containing NFT info from the /tmp/dfpy/ directory to the ~/.dfcsv/ directory.
 
 ### updatecloud.sh
