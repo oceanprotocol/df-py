@@ -138,5 +138,5 @@ def loadPredictoorRewards(csv_dir: str) -> Dict[str, float]:
 
 @enforce_types
 def predictoorRewardsFilename(csv_dir):
-    f = f"predictoor_rewards.csv"
+    f = "predictoor_rewards.csv"
     return os.path.join(csv_dir, f)
