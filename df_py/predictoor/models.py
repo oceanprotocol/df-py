@@ -36,8 +36,8 @@ class Prediction:
             contract_addr = prediction_dict["slot"]["predictContract"]["id"]
             slot = int(prediction_dict["slot"]["slot"])
             payout = float(prediction_dict["payout"]["payout"])
-        except (KeyError, TypeError, ValueError):
-            raise ValueError("Invalid prediction dictionary")
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("Invalid prediction dictionary") from exc
         return cls(slot, payout, contract_addr)
 
 
