@@ -1,0 +1,79 @@
+import brownie
+from enforce_typing import enforce_types
+from pytest import approx
+
+from df_py.util import networkutil, oceanutil
+from df_py.util.base18 import to_wei
+from df_py.util.constants import BROWNIE_PROJECT as B
+
+deployer = None
+veLocker = None
+veOCEAN = None
+smartWalletChecker = None
+OCEAN = None
+WEEK = 7 * 86400
+MAXTIME = 4 * 365 * 86400  # 4 years
+chain = brownie.network.chain
+TA = to_wei(10.0)
+
+
+@enforce_types
+def test_velock_not_whitelisted():
+    """Test that a smart contract cannot create a lock if they are not whitelisted."""
+    smartWalletChecker.setAllowedContract(veLocker, False, {"from": deployer})
+    assert not smartWalletChecker.check(veLocker)
+
+    with brownie.reverts("Smart contract depositors not allowed"):
+        veLocker.create_lock(TA, chain.time() + WEEK * 2, {"from": deployer})
+
+
+@enforce_types
+def test_velock_whitelisted():
+    """Test that a whitelisted contract can create a lock."""
+
+    # Assert that the contract is whitelisted
+    smartWalletChecker.setAllowedContract(veLocker, True, {"from": deployer})
+    assert smartWalletChecker.check(veLocker)
+
+    t0 = chain.time()
+    t1 = t0 // WEEK * WEEK + WEEK
+    t2 = t1 + WEEK
+    chain.sleep(t1 - t0)
+
+    assert OCEAN.balanceOf(veLocker) != 0
+    veLocker.create_lock(TA, t2, {"from": deployer})
+    assert OCEAN.balanceOf(veLocker) == 0
+
+    epoch = veOCEAN.user_point_epoch(veLocker)
+    assert epoch != 0
+
+    assert veOCEAN.get_last_user_slope(veLocker) != 0
+    chain_time = chain[-1].timestamp
+    veLockerVotingPower = (veOCEAN.balanceOf(veLocker, chain_time)) / to_wei(1.0)
+    expectedVotingPower = (TA * WEEK / MAXTIME) / to_wei(1.0)
+    assert veLockerVotingPower == approx(expectedVotingPower, 0.5)
+
+
+@enforce_types
+def setup_function():
+    networkutil.connectDev()
+    oceanutil.recordDevDeployedContracts()
+    global deployer, veOCEAN, OCEAN, veLocker, smartWalletChecker
+    deployer = brownie.network.accounts[0]
+
+    OCEAN = oceanutil.OCEANtoken()
+    veOCEAN = B.veOcean.deploy(
+        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
+    )
+    veLocker = B.veLocker.deploy(veOCEAN, OCEAN, {"from": deployer})
+    OCEAN.transfer(veLocker, TA, {"from": deployer})
+    smartWalletChecker = B.SmartWalletChecker.deploy({"from": deployer})
+
+    # apply smart wallet checker
+    veOCEAN.commit_smart_wallet_checker(smartWalletChecker.address, {"from": deployer})
+    veOCEAN.apply_smart_wallet_checker({"from": deployer})
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
