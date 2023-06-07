@@ -1,5 +1,8 @@
 import csv
 import os
+import glob
+import re
+
 from typing import Dict, Union
 
 from enforce_typing import enforce_types
@@ -8,6 +11,7 @@ from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.csv_helpers import assertIsEthAddr
 
 
+# ------------------------------- PREDICTOOR DATA -------------------------------
 @enforce_types
 def savePredictoorData(
     predictoor_data: Dict[str, Union[PredictoorBase, Predictoor]],
@@ -67,6 +71,19 @@ def loadPredictoorData(csv_dir: str, chainid: int) -> Dict[str, PredictoorBase]:
             predictoor_data[predictoor_addr] = predictoor
 
     print(f"Loaded {csv_file}")
+    return predictoor_data
+
+def loadAllPredictoorData(csv_dir: str) -> Dict[str, PredictoorBase]:
+    predictoor_data = {}
+
+    csv_files = glob.glob(os.path.join(csv_dir, 'predictoordata_*.csv'))
+    for csv_file in csv_files:
+        # extract chainid from filename
+        match = re.search(r'predictoordata_(\d+)\.csv$', csv_file)
+        if match:
+            chainid = int(match.group(1))
+            predictoor_data.update(loadPredictoorData(csv_dir, chainid))
+
     return predictoor_data
 
 
