@@ -77,10 +77,10 @@ def loadPredictoorData(csv_dir: str, chainid: int) -> Dict[str, PredictoorBase]:
 def loadAllPredictoorData(csv_dir: str) -> Dict[str, PredictoorBase]:
     predictoor_data = {}
 
-    csv_files = glob.glob(os.path.join(csv_dir, "predictoordata_*.csv"))
+    csv_files = glob.glob(os.path.join(csv_dir, "predictoordata-*.csv"))
     for csv_file in csv_files:
         # extract chainid from filename
-        match = re.search(r"predictoordata_(\d+)\.csv$", csv_file)
+        match = re.search(r"predictoordata-(\d+)\.csv$", csv_file)
         if match:
             chainid = int(match.group(1))
             predictoor_data.update(loadPredictoorData(csv_dir, chainid))
@@ -90,7 +90,7 @@ def loadAllPredictoorData(csv_dir: str) -> Dict[str, PredictoorBase]:
 
 @enforce_types
 def predictoorDataFilename(csv_dir, chainid):
-    f = f"predictoordata_{chainid}.csv"
+    f = f"predictoordata-{chainid}.csv"
     return os.path.join(csv_dir, f)
 
 
