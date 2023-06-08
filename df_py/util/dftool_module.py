@@ -712,7 +712,7 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     # dispense
     dispense.dispense(
-        all_rewards,
+        rewards,
         DFREWARDS_ADDR,
         TOKEN_ADDR,
         from_account,
