@@ -99,11 +99,11 @@ def predictoorDataFilename(csv_dir, chainid):
 
 @enforce_types
 def savePredictoorRewards(
-    predictoor_rewards: Dict[str, float],
-    csv_dir: str,
+    predictoor_rewards: Dict[str, float], csv_dir: str, token_symbol: str = "OCEAN"
 ):
+    token_symbol = token_symbol.upper()
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = predictoorRewardsFilename(csv_dir)
+    csv_file = predictoorRewardsFilename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
@@ -112,14 +112,16 @@ def savePredictoorRewards(
         writer.writerow(row)
         for predictoor_addr, reward in predictoor_rewards.items():
             assertIsEthAddr(predictoor_addr)
-            row = [predictoor_addr.lower(), str(reward)]
+            row = [predictoor_addr.lower(), str(reward), token_symbol]
             writer.writerow(row)
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def loadPredictoorRewards(csv_dir: str) -> Dict[str, float]:
-    csv_file = predictoorRewardsFilename(csv_dir)
+def loadPredictoorRewards(
+    csv_dir: str, token_symbol: str = "OCEAN"
+) -> Dict[str, float]:
+    csv_file = predictoorRewardsFilename(csv_dir, token_symbol)
     predictoor_rewards = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -139,6 +141,6 @@ def loadPredictoorRewards(csv_dir: str) -> Dict[str, float]:
 
 
 @enforce_types
-def predictoorRewardsFilename(csv_dir):
-    f = "predictoor_rewards.csv"
+def predictoorRewardsFilename(csv_dir, token_symbol):
+    f = f"predictoor_rewards-{token_symbol.upper()}.csv"
     return os.path.join(csv_dir, f)
