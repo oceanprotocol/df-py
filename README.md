@@ -127,10 +127,7 @@ If you encounter issues like `KeyError "development"` or `No contract deployed a
 
 Examples so far were on a local chain. Let's do a one-time setup for remote networks. In console:
 ```console
-brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
 brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
-brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
-brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 brownie networks add mumbai mumbai host=https://polygon-mumbai.blockpi.network/v1/rpc/public chainid=80001
 ```
 
@@ -191,10 +188,7 @@ Created /app/data/rate-OCEAN.csv
 Expand brownie's configured networks in the Docker container by editing the `Dockerfile` as follows:
 ```
 ...
-RUN brownie networks add bsc bsc host=https://bsc-dataseed1.binance.org chainid=56
 RUN brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
-RUN brownie networks add energyweb energyweb host=https://rpc.energyweb.org chainid=246
-RUN brownie networks add moonriver moonriver host=https://rpc.api.moonriver.moonbeam.network chainid=1285
 ...
 COPY . .
 RUN rm -rf build
@@ -239,10 +233,7 @@ now=`date '+%Y-%m-%d'`
 
 /app/df-py/dfpy_docker getrate OCEAN $date $now /app/data &&
 /app/df-py/dfpy_docker query $date latest 1 /app/data 1 &&
-/app/df-py/dfpy_docker query $date latest 1 /app/data 56 &&
 /app/df-py/dfpy_docker query $date latest 1 /app/data 137 &&
-/app/df-py/dfpy_docker query $date latest 1 /app/data 246 &&
-/app/df-py/dfpy_docker query $date latest 1 /app/data 1285 &&
 /app/df-py/dfpy_docker calc /app/data 10000 OCEAN &&
 mv /tmp/dfpy/* ~/.dfcsv/
 ```
