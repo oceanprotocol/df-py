@@ -142,6 +142,14 @@ def existing_path(s):
     return s
 
 
+def autocreate_path(s):
+    if not os.path.exists(s):
+        print(f"Directory {s} did not exist, so created it")
+        os.mkdir(s)
+
+    return s
+
+
 def print_arguments(arguments):
     arguments_dict = arguments.__dict__
     command = arguments_dict.pop("command", None)
@@ -164,10 +172,7 @@ def do_volsym():
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
     )
-    parser.add_argument(
-        "command",
-        choices=["volsym"],
-    )
+    parser.add_argument("command", choices=["volsym"])
     parser.add_argument(
         "ST",
         type=block_or_valid_date,
@@ -233,30 +238,25 @@ def do_volsym():
 
 @enforce_types
 def do_nftinfo():
-    HELP = f"""Query chain, output nft info csv
-Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
-    CSV_DIR -- output dir for nftinfo-CHAINID.csv
-    CHAINID -- {CHAINID_EXAMPLES}
-    FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-"""
-    if len(sys.argv) not in [4, 5]:
-        print(HELP)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Query chain, output nft info csv")
+    parser.add_argument("command", choices=["nftinfo"])
+    parser.add_argument(
+        "CSV_DIR", type=autocreate_path, help="output dir for nftinfo-CHAINID.csv, etc"
+    )
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument(
+        "--FIN",
+        default="latest",
+        type=block_or_valid_date,
+        help="last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest",
+        required=False,
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # extract inputs
-    assert sys.argv[1] == "nftinfo"
-    CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
-    ENDBLOCK = sys.argv[4] if len(sys.argv) == 5 else "latest"
-
-    print("dftool nftinfo: Begin")
-    print(
-        f"Arguments: "
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n ENDBLOCK={ENDBLOCK}"
-        "\n"
-    )
+    CSV_DIR, CHAINID, ENDBLOCK = arguments.CSV_DIR, arguments.CHAINID, arguments.FIN
 
     # hardcoded values
     # -queries.queryNftinfo() can be problematic; it's only used for frontend data
@@ -264,9 +264,6 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     RETRIES = 3
     DELAY_S = 10
     print(f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
-
-    # create dir if not exists
-    _createDirIfNeeded(CSV_DIR)
 
     # brownie setup
     networkutil.connect(CHAINID)

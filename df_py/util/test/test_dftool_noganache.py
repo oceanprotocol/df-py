@@ -47,6 +47,8 @@ def test_noarg_commands():
 
     # these commands are intended to have no parameters
     fail_gracefully = ["help", "compile"]
+    # TODO: in order for tests to pass until we convert to argparse fully
+    uses_argparse = ["volsym", "nftinfo"]
 
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")
@@ -60,8 +62,15 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
-        assert return_code == (
-            0 if subarg in fail_gracefully else 1
+        if subarg in fail_gracefully:
+            expected_return_code = 0
+        elif subarg in uses_argparse:
+            expected_return_code = 2
+        else:
+            expected_return_code = 1
+
+        assert (
+            return_code == expected_return_code
         ), f"'dftool {subarg}' failed. \n{output_s}"
 
 

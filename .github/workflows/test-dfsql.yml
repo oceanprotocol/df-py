@@ -100,7 +100,7 @@ jobs:
   
       - name: Run dftool nftinfo
         run: |
-          ./dftool nftinfo $CSV_DIR 1 $TEST_END_DATE
+          ./dftool nftinfo $CSV_DIR 1 --FIN $TEST_END_DATE
 
       - name: Run sed
         run: |
