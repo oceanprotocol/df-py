@@ -5,7 +5,6 @@ import os
 import sys
 
 import brownie
-from df_py.predictoor.calcrewards import calcPredictoorRewards
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
@@ -18,6 +17,7 @@ from df_py.predictoor.csvs import (
     savePredictoorData,
 )
 from df_py.predictoor.queries import queryPredictoors
+from df_py.predictoor.calcrewards import calcPredictoorRewards
 from df_py.util import blockrange, constants, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
