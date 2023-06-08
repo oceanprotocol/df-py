@@ -573,7 +573,10 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         )
 
     # brownie setup
-    networkutil.connect(5)
+
+    # Vesting wallet is deployed on Goerli
+    # it is used to calculate the reward amount for given week / start date
+    networkutil.connect(5) 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     recordDeployedContracts(ADDRESS_FILE)
 
