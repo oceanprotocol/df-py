@@ -5,9 +5,16 @@ import sys
 from unittest.mock import patch
 
 import brownie
+from df_py.predictoor.models import Prediction, Predictoor
 from enforce_typing import enforce_types
 
-from df_py.predictoor.csvs import loadPredictoorData, predictoorDataFilename
+from df_py.predictoor.csvs import (
+    loadPredictoorData,
+    loadPredictoorRewards,
+    predictoorDataFilename,
+    predictoorRewardsFilename,
+    savePredictoorData,
+)
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
@@ -86,6 +93,57 @@ def test_predictoor_data(tmp_path):
         assert predictoors[user].prediction_count == user_total
         assert predictoors[user].correct_prediction_count == user_correct
         assert predictoors[user].accuracy == user_correct / user_total
+
+
+@enforce_types
+def test_calc_predictoor_substream(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    csv_template = """predictoor_addr,accuracy,n_preds,n_correct_preds
+0x0000000000000000000000000000000000000001,0.5,1818,909
+0x1000000000000000000000000000000000000001,0.5,234,909
+0x2000000000000000000000000000000000000001,0.5,1818,909
+0x3000000000000000000000000000000000000001,0.5,754,909
+0x4000000000000000000000000000000000000001,0.5,1818,909    
+"""
+    for i in range(1, 5):  # chainids
+        predictoor_data_csv = predictoorDataFilename(CSV_DIR, i)
+        with open(predictoor_data_csv, "w") as f:
+            f.write(csv_template)
+
+    # main cmd
+    SUBSTREAM = "predictoor"
+
+    # TEST WITH TOT_OCEAN > 0
+    TOT_OCEAN = 1000.0
+    ST = "2023-03-16"  # first week of df main
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {ST} {SUBSTREAM}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = predictoorRewardsFilename(CSV_DIR, "OCEAN")
+    assert os.path.exists(rewards_csv)
+
+    # get total reward amount
+    rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+    total_reward = sum(rewards.values())
+    assert total_reward == 1000.0
+
+    # delete rewards csv
+    os.remove(rewards_csv)
+
+    # TEST WITH TOT_OCEAN = 0, DATE WITH NONZERO REWARDS
+    TOT_OCEAN = 0
+    ST = "2025-03-16"  # some date where predictoor rewards are nonzero
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {ST} {SUBSTREAM}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = predictoorRewardsFilename(CSV_DIR, "OCEAN")
+    assert os.path.exists(rewards_csv)
+    rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+    total_reward = sum(rewards.values())
+    assert total_reward > 0
 
 
 @enforce_types
