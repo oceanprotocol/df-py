@@ -12,7 +12,6 @@ from df_py.challenge import judge
 from df_py.challenge.csvs import saveChallengeDataCsv
 from df_py.predictoor.csvs import (
     loadAllPredictoorData,
-    loadPredictoorRewards,
     predictoorDataFilename,
     predictoorRewardsFilename,
     savePredictoorData,
