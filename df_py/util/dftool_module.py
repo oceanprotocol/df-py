@@ -65,7 +65,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
   dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
-  dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
+  dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
@@ -556,6 +556,9 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         "\n"
     )
 
+    if START_DATE is not None:
+        START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
+
     # condition inputs
     if TOT_OCEAN == 0 and START_DATE is None:
         print("TOT_OCEAN == 0, so must give a start date. Exiting.")
@@ -580,13 +583,11 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         required_files = [
             csvs.allocationCsvFilename(CSV_DIR),
             csvs.vebalsCsvFilename(CSV_DIR),
-            csvs.nftvolsCsvFilenames(CSV_DIR),
-            csvs.ownersCsvFilenames(CSV_DIR),
-            csvs.symbolsCsvFilenames(CSV_DIR),
-            csvs.rateCsvFilenames(CSV_DIR),
-            csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"),
-            csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"),
-        ]
+            *csvs.nftvolsCsvFilenames(CSV_DIR),
+            *csvs.ownersCsvFilenames(CSV_DIR),
+            *csvs.symbolsCsvFilenames(CSV_DIR),
+            *csvs.rateCsvFilenames(CSV_DIR),
+        ] 
 
         for fname in required_files:
             if not os.path.exists(fname):
