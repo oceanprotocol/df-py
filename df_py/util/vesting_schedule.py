@@ -26,7 +26,7 @@ def getActiveRewardAmountForWeekEthByStream(
 
     if substream == "predictoor":
         return total_reward_amount * 0.01 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
-    
+
     raise ValueError("Unrecognized substream: {}".format(substream))
 
 
