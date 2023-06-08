@@ -141,6 +141,6 @@ def loadPredictoorRewards(
 
 
 @enforce_types
-def predictoorRewardsFilename(csv_dir, token_symbol):
+def predictoorRewardsFilename(csv_dir, token_symbol: str = "OCEAN"):
     f = f"predictoor_rewards-{token_symbol.upper()}.csv"
     return os.path.join(csv_dir, f)
