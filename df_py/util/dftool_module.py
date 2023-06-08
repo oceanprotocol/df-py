@@ -5,6 +5,7 @@ import os
 import sys
 
 import brownie
+from df_py import predictoor
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
@@ -12,9 +13,11 @@ from df_py.challenge import judge
 from df_py.challenge.csvs import saveChallengeDataCsv
 from df_py.predictoor.csvs import (
     loadAllPredictoorData,
+    loadPredictoorRewards,
     predictoorDataFilename,
     predictoorRewardsFilename,
     savePredictoorData,
+    savePredictoorRewards,
 )
 from df_py.predictoor.queries import queryPredictoors
 from df_py.predictoor.calcrewards import calcPredictoorRewards
@@ -531,6 +534,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
   START_DATE -- week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0
+  SUBSTREAM_NAME -- Name of the substream, default is "volume"
   IGNORED -- Ignored. Kept here for compatibility.
 """
     if len(sys.argv) not in [4, 5, 6]:
@@ -541,7 +545,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     assert sys.argv[1] == "calc"
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
-    START_DATE = None if len(sys.argv) == 4 else sys.argv[4]
+    START_DATE = sys.argv[4]
+    SUBSTREAM_NAME = "volume" if len(sys.argv) == 5 else sys.argv[5]
 
     print("dftool calc: Begin")
     print(
@@ -564,99 +569,79 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
             f", START_DATE={START_DATE}"
         )
-    elif START_DATE is not None:
-        print("TOT_OCEAN was nonzero, so re-calc'd: START_DATE=None")
-        START_DATE = None
-
-    # do we have the input files?
-    alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
-    if not os.path.exists(alloc_fname):
-        print(f"\nNo file {alloc_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
-
-    vebals_fname = csvs.vebalsCsvFilename(CSV_DIR)  # need for loadStakes()
-    if not os.path.exists(vebals_fname):
-        print(f"\nNo file {vebals_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
-
-    if not csvs.nftvolsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
-
-    if not csvs.ownersCsvFilenames(CSV_DIR):
-        print(f"\nNo 'owners*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
-
-    if not csvs.symbolsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
-
-    if not csvs.rateCsvFilenames(CSV_DIR):
-        print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
-
-    predictoors = loadAllPredictoorData(CSV_DIR)
-    if len(predictoors) != 0:
-        _exitIfFileExists(predictoorRewardsFilename(CSV_DIR))
-
-    # shouldn't already have the output file
-    _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
-    _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
 
     # brownie setup
     networkutil.connect(5)
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     recordDeployedContracts(ADDRESS_FILE)
 
-    rewperaddress = {}  # rewards per address
+    if SUBSTREAM_NAME == "volume":
+        # substract predictoor rewards from total rewards
+        if predictoorRewardsFilename(CSV_DIR, "OCEAN"):
+            predictoor_rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+            sum_predictoor_rewards = sum(predictoor_rewards.values())
+            TOT_OCEAN -= sum_predictoor_rewards
+
+        # do we have the input files?
+        required_files = [
+            csvs.allocationCsvFilename(CSV_DIR),
+            csvs.vebalsCsvFilename(CSV_DIR),
+            csvs.nftvolsCsvFilenames(CSV_DIR),
+            csvs.ownersCsvFilenames(CSV_DIR),
+            csvs.symbolsCsvFilenames(CSV_DIR),
+            csvs.rateCsvFilenames(CSV_DIR),
+            csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"),
+            csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"),
+        ]
+
+        for fname in required_files:
+            if not os.path.exists(fname):
+                print(f"\nNo file {fname} in '{CSV_DIR}'. Exiting.")
+                sys.exit(1)
+
+        # shouldn't already have the output file
+        _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
+
+        # DF volume work
+        S = allocations.loadStakes(CSV_DIR)
+        V = csvs.loadNftvolsCsvs(CSV_DIR)
+        C = csvs.loadOwnersCsvs(CSV_DIR)
+        SYM = csvs.loadSymbolsCsvs(CSV_DIR)
+        R = csvs.loadRateCsvs(CSV_DIR)
+        do_pubrewards = constants.DO_PUBREWARDS
+        do_rank = constants.DO_RANK
+
+        prev_week = 0
+        if START_DATE is None:
+            cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
+            prev_week = cur_week - 1
+        else:
+            prev_week = calcrewards.getDfWeekNumber(START_DATE)
+        m = calcrewards.calcDcvMultiplier(prev_week)
+        print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
+
+        rewperlp, rewinfo = calcRewards(
+            S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
+        )
+
+        csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
+        csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
 
     # challenge df goes here ----------
 
-    # DF predictoor work
-    if len(predictoors) != 0:
+    if SUBSTREAM_NAME == "predictoor":
+        predictoors = loadAllPredictoorData(CSV_DIR)
+        if len(predictoors) == 0:
+            print("No predictoors found")
+            sys.exit(1)
+        _exitIfFileExists(predictoorRewardsFilename(CSV_DIR, "OCEAN"))
         # get substream rewards
         tokens_avail = getActiveRewardAmountForWeekEthByStream(START_DATE, "predictoor")
 
-        # Reduce total tokens
-        TOT_OCEAN -= tokens_avail
-
         # calculate rewards
         predictoor_rewards = calcPredictoorRewards(predictoors, tokens_avail)
-
-        # update main dict
-        for addr in predictoor_rewards:
-            rewperaddress.setdefault(addr, 0)
-            rewperaddress[addr] += predictoor_rewards[addr]
-
-    # DF volume work
-    S = allocations.loadStakes(CSV_DIR)
-    V = csvs.loadNftvolsCsvs(CSV_DIR)
-    C = csvs.loadOwnersCsvs(CSV_DIR)
-    SYM = csvs.loadSymbolsCsvs(CSV_DIR)
-    R = csvs.loadRateCsvs(CSV_DIR)
-    do_pubrewards = constants.DO_PUBREWARDS
-    do_rank = constants.DO_RANK
-
-    prev_week = 0
-    if START_DATE is None:
-        cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
-        prev_week = cur_week - 1
-    else:
-        prev_week = calcrewards.getDfWeekNumber(START_DATE)
-    m = calcrewards.calcDcvMultiplier(prev_week)
-    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-
-    rewperlp, rewinfo = calcRewards(
-        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
-    )
-
-    # Update main dict
-    for addr in rewperlp:
-        rewperaddress.setdefault(addr, 0)
-        rewperaddress[addr] += rewperlp[addr]
-
-    csvs.saveRewardsperlpCsv(rewperaddress, CSV_DIR, "OCEAN")
-    csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
+        savePredictoorRewards(predictoor_rewards, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
 
