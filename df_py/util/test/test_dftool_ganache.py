@@ -5,7 +5,6 @@ import sys
 from unittest.mock import patch
 
 import brownie
-from df_py.predictoor.models import Prediction, Predictoor
 from enforce_typing import enforce_types
 
 from df_py.predictoor.csvs import (
@@ -13,7 +12,6 @@ from df_py.predictoor.csvs import (
     loadPredictoorRewards,
     predictoorDataFilename,
     predictoorRewardsFilename,
-    savePredictoorData,
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import networkutil, oceantestutil, oceanutil
