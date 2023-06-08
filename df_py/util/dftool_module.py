@@ -5,12 +5,18 @@ import os
 import sys
 
 import brownie
+from df_py.predictoor.calcrewards import calcPredictoorRewards
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
 from df_py.challenge.csvs import saveChallengeDataCsv
-from df_py.predictoor.csvs import predictoorDataFilename, savePredictoorData
+from df_py.predictoor.csvs import (
+    loadAllPredictoorData,
+    predictoorDataFilename,
+    predictoorRewardsFilename,
+    savePredictoorData,
+)
 from df_py.predictoor.queries import queryPredictoors
 from df_py.util import blockrange, constants, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
@@ -32,7 +38,10 @@ from df_py.util.oceanutil import (
 from df_py.util.retry import retryFunction
 from df_py.volume import allocations, calcrewards, csvs, queries
 from df_py.volume.calcrewards import calcRewards
-from df_py.util.vesting_schedule import getActiveRewardAmountForWeekEth
+from df_py.util.vesting_schedule import (
+    getActiveRewardAmountForWeekEth,
+    getActiveRewardAmountForWeekEthByStream,
+)
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -586,6 +595,10 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
         print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
         sys.exit(1)
 
+    predictoors = loadAllPredictoorData(CSV_DIR)
+    if len(predictoors) != 0:
+        _exitIfFileExists(predictoorRewardsFilename(CSV_DIR))
+
     # shouldn't already have the output file
     _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
     _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
@@ -595,7 +608,27 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     recordDeployedContracts(ADDRESS_FILE)
 
-    # main work
+    rewperaddress = {}  # rewards per address
+
+    # challenge df goes here ----------
+
+    # DF predictoor work
+    if len(predictoors) != 0:
+        # get substream rewards
+        tokens_avail = getActiveRewardAmountForWeekEthByStream(START_DATE, "predictoor")
+
+        # Reduce total tokens
+        TOT_OCEAN -= tokens_avail
+
+        # calculate rewards
+        predictoor_rewards = calcPredictoorRewards(predictoors, tokens_avail)
+
+        # update main dict
+        for addr in predictoor_rewards:
+            rewperaddress.setdefault(addr, 0)
+            rewperaddress[addr] += predictoor_rewards[addr]
+
+    # DF volume work
     S = allocations.loadStakes(CSV_DIR)
     V = csvs.loadNftvolsCsvs(CSV_DIR)
     C = csvs.loadOwnersCsvs(CSV_DIR)
@@ -617,7 +650,12 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
         S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
     )
 
-    csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
+    # Update main dict
+    for addr in rewperlp:
+        rewperaddress.setdefault(addr, 0)
+        rewperaddress[addr] += rewperlp[addr]
+
+    csvs.saveRewardsperlpCsv(rewperaddress, CSV_DIR, "OCEAN")
     csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
