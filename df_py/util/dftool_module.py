@@ -567,10 +567,11 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         # brownie setup
 
         # Vesting wallet contract is used to calculate the reward amount for given week / start date
-        # we need to deploy one locally
-        networkutil.connect(networkutil.DEV_CHAINID)
-        ADDRESS_FILE = _getAddressEnvvarOrExit()
-        recordDeployedContracts(ADDRESS_FILE)
+        # currently only deployed on Goerli
+        networkutil.connect(5)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        address_path = os.path.join(current_dir, '..', '.github', 'workflows', 'data', 'address.json')
+        recordDeployedContracts(address_path)
         TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, SUBSTREAM_NAME)
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
