@@ -578,7 +578,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
             f", START_DATE={START_DATE}"
         )
 
-
     if SUBSTREAM_NAME == "volume":
 
         # do we have the input files?
