@@ -578,8 +578,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
         # substract predictoor rewards from total rewards
         if predictoorRewardsFilename(CSV_DIR, "OCEAN"):
             predictoor_rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
-            sum_predictoor_rewards = sum(predictoor_rewards.values())
-            TOT_OCEAN -= sum_predictoor_rewards
+            TOT_OCEAN -= sum(predictoor_rewards.values())
 
         # do we have the input files?
         required_files = [
