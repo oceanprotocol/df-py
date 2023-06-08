@@ -529,7 +529,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 def do_calc():
     HELP = """from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
 
-Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
+Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
   START_DATE -- week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0
