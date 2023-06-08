@@ -16,7 +16,7 @@ from df_py.predictoor.csvs import (
     predictoorRewardsFilename,
     savePredictoorData,
     savePredictoorRewards,
-    loadPredictoorRewards
+    loadPredictoorRewards,
 )
 from df_py.predictoor.queries import queryPredictoors
 from df_py.predictoor.calcrewards import calcPredictoorRewards
@@ -571,7 +571,9 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         # currently only deployed on Goerli
         networkutil.connect(5)
         current_dir = os.path.dirname(os.path.abspath(__file__))
-        address_path = os.path.join(current_dir, '..', '.github', 'workflows', 'data', 'address.json')
+        address_path = os.path.join(
+            current_dir, "..", ".github", "workflows", "data", "address.json"
+        )
         recordDeployedContracts(address_path)
         TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, SUBSTREAM_NAME)
         print(
@@ -580,7 +582,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         )
 
     if SUBSTREAM_NAME == "volume":
-
         # do we have the input files?
         required_files = [
             csvs.allocationCsvFilename(CSV_DIR),
@@ -699,11 +700,15 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
-    
+
     rewards = {}
-    rewards = calcrewards.load_rewards(csvs.rewardsperlpCsvFilename, csvs.loadRewardsCsv, CSV_DIR, "OCEAN", rewards)
-    rewards = calcrewards.load_rewards(predictoorRewardsFilename, loadPredictoorRewards, CSV_DIR, "OCEAN", rewards)
-    # aggregate challenge df rewards here
+    rewards = calcrewards.load_rewards(
+        csvs.rewardsperlpCsvFilename, csvs.loadRewardsCsv, CSV_DIR, "OCEAN", rewards
+    )
+    rewards = calcrewards.load_rewards(
+        predictoorRewardsFilename, loadPredictoorRewards, CSV_DIR, "OCEAN", rewards
+    )
+    # aggregate challenge df rewards here
 
     # dispense
     dispense.dispense(

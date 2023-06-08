@@ -442,6 +442,7 @@ def flattenRewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
             flat_rewards[LP_addr] += rewards[chainID][LP_addr]
     return flat_rewards
 
+
 def load_rewards(fs_checker, load_function, CSV_DIR, token_symbol, rewards):
     if fs_checker(CSV_DIR, token_symbol):
         reward_data = load_function(CSV_DIR, token_symbol)
