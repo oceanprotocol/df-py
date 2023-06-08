@@ -565,7 +565,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         sys.exit(1)
 
     if TOT_OCEAN == 0:
-        START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
         TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, SUBSTREAM_NAME)
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
