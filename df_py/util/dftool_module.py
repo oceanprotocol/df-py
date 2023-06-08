@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
+import argparse
 import datetime
 import functools
 import os
@@ -104,54 +105,106 @@ def do_help_long(status_code=0):
     sys.exit(status_code)
 
 
+def block_or_valid_date(s):
+    if s == "latest":
+        return s
+
+    try:
+        return int(s)
+    except ValueError:
+        pass
+
+    try:
+        datetime.datetime.strptime(s, "%Y-%m-%d")
+        # TODO: we could process the arguments here and
+        # feed them to functions directly, e.g. return datetime...
+        return s
+    except ValueError:
+        pass
+
+    try:
+        datetime.datetime.strptime(s, "%Y-%m-%d_%H:%M")
+        # TODO: we could process the arguments here and
+        # feed them to functions directly, e.g. return datetime...
+        return s
+    except ValueError:
+        pass
+
+    msg = "not a valid date or block number: {0!r}".format(s)
+    raise argparse.ArgumentTypeError(msg)
+
+
+def existing_path(s):
+    if not os.path.exists(s):
+        msg = f"Directory {s} doesn't exist."
+        raise argparse.ArgumentTypeError(msg)
+
+    return s
+
+
+def print_arguments(arguments):
+    arguments_dict = arguments.__dict__
+    command = arguments_dict.pop("command", None)
+
+    print(f"dftool {command}: Begin")
+    print("Arguments:")
+
+    for arg_k, arg_v in arguments_dict.items():
+        print(f"{arg_k}={arg_v}")
+
+
 # ========================================================================
 @enforce_types
 def do_volsym():
-    HELP = f"""Query chain, output volumes, symbols, owners
-
-Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-  SECRET_SEED -- secret integer used to seed the rng
-"""
-    if len(sys.argv) not in [2 + 5, 2 + 6]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "volsym"
-    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
-    CSV_DIR = sys.argv[5]
-    CHAINID = int(sys.argv[6])
-    RETRIES = 1
-    if len(sys.argv) == 2 + 6:
-        RETRIES = int(sys.argv[7])
-
-    print("dftool volsym: Begin")
-    print(
-        f"Arguments: "
-        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = argparse.ArgumentParser(
+        description="Query chain, output volumes, symbols, owners",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog=f"""Uses these envvars:
+          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          \nSECRET_SEED -- secret integer used to seed the rng
+        """,
     )
+    parser.add_argument(
+        "command",
+        choices=["volsym"],
+    )
+    parser.add_argument(
+        "ST",
+        type=block_or_valid_date,
+        help="first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
+    )
+    parser.add_argument(
+        "FIN",
+        type=block_or_valid_date,
+        help="last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
+    )
+    parser.add_argument(
+        "NSAMP",
+        type=int,
+        help="blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]",
+    )
+    parser.add_argument(
+        "CSV_DIR", type=existing_path, help="output dir for stakes-CHAINID.csv, etc"
+    )
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     SECRET_SEED = _getSecretSeedOrExit()
 
+    CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
+
     # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
     if not csvs.rateCsvFilenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(1)
@@ -162,9 +215,11 @@ Uses these envvars:
     recordDeployedContracts(ADDRESS_FILE)
 
     # main work
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
+    rng = blockrange.create_range(
+        chain, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
+    )
     (Vi, Ci, SYMi) = retryFunction(
-        queries.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
+        queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)

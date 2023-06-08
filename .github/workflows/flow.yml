@@ -87,8 +87,8 @@ jobs:
 
       - name: Run dftool volsym
         run: |
-          ./dftool volsym $date $now 200 $CSV_DIR 1 $RETRY_TIMES
-          ./dftool volsym $date $now 200 $CSV_DIR 137 $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 137 --RETRIES $RETRY_TIMES
 
       - name: Run dftool vebals
         run: |
