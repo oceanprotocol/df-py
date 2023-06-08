@@ -112,7 +112,7 @@ def savePredictoorRewards(
         writer.writerow(row)
         for predictoor_addr, reward in predictoor_rewards.items():
             assertIsEthAddr(predictoor_addr)
-            row = [predictoor_addr.lower(), str(reward), token_symbol]
+            row = [predictoor_addr.lower(), str(reward)]
             writer.writerow(row)
     print(f"Created {csv_file}")
 
