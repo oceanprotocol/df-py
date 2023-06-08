@@ -5,7 +5,6 @@ import os
 import sys
 
 import brownie
-from df_py import predictoor
 from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
