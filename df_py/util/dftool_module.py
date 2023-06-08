@@ -161,43 +161,55 @@ def print_arguments(arguments):
         print(f"{arg_k}={arg_v}")
 
 
+class StartFinArgumentParser(argparse.ArgumentParser):
+    def __init__(self, description, epilog, command_name, csv_name):
+        super().__init__(
+            description=description,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog=epilog,
+        )
+        self.add_argument("command", choices=[command_name])
+        self.add_argument(
+            "ST",
+            type=block_or_valid_date,
+            help="first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
+        )
+        self.add_argument(
+            "FIN",
+            type=block_or_valid_date,
+            help="last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest",
+        )
+        self.add_argument(
+            "NSAMP",
+            type=int,
+            help="blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]",
+        )
+        self.add_argument(
+            "CSV_DIR",
+            type=existing_path,
+            help=f"output dir for {csv_name}-CHAINID.csv, etc",
+        )
+        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument(
+            "--RETRIES",
+            default=1,
+            type=int,
+            help="# times to retry failed queries",
+            required=False,
+        )
+
+
 # ========================================================================
 @enforce_types
 def do_volsym():
-    parser = argparse.ArgumentParser(
+    parser = StartFinArgumentParser(
         description="Query chain, output volumes, symbols, owners",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=f"""Uses these envvars:
           \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
-    )
-    parser.add_argument("command", choices=["volsym"])
-    parser.add_argument(
-        "ST",
-        type=block_or_valid_date,
-        help="first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
-    )
-    parser.add_argument(
-        "FIN",
-        type=block_or_valid_date,
-        help="last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
-    )
-    parser.add_argument(
-        "NSAMP",
-        type=int,
-        help="blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]",
-    )
-    parser.add_argument(
-        "CSV_DIR", type=existing_path, help="output dir for stakes-CHAINID.csv, etc"
-    )
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
-    parser.add_argument(
-        "--RETRIES",
-        default=1,
-        type=int,
-        help="# times to retry failed queries",
-        required=False,
+        command_name="volsym",
+        csv_name="stakes",
     )
 
     arguments = parser.parse_args()
@@ -285,47 +297,24 @@ def do_nftinfo():
 
 @enforce_types
 def do_allocations():
-    HELP = f"""Query chain, outputs allocation csv
-
-Usage: dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-
-Uses these envvars:
-  SECRET_SEED -- secret integer used to seed the rng
-"""
-    if len(sys.argv) not in [7, 8]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "allocations"
-    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
-    CSV_DIR = sys.argv[5]
-    CHAINID = int(sys.argv[6])
-    RETRIES = 1
-    if len(sys.argv) == 8:
-        RETRIES = int(sys.argv[7])
-
-    print("dftool do_allocations: Begin")
-    print(
-        f"Arguments: "
-        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = StartFinArgumentParser(
+        description="Query chain, outputs allocation csv",
+        epilog="""Uses these envvars:
+          \nSECRET_SEED -- secret integer used to seed the rng
+        """,
+        command_name="allocations",
+        csv_name="stakes",
     )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    CSV_DIR, NSAMP, CHAINID = arguments.CSV_DIR, arguments.NSAMP, arguments.CHAINID
 
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
     # create dir if not exists
-    _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
@@ -333,8 +322,12 @@ Uses these envvars:
     chain = brownie.network.chain
 
     # main work
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    allocs = retryFunction(queries.queryAllocations, RETRIES, 10, rng, CHAINID)
+    rng = blockrange.create_range(
+        chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
+    )
+    allocs = retryFunction(
+        queries.queryAllocations, arguments.RETRIES, 10, rng, CHAINID
+    )
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
@@ -345,56 +338,34 @@ Uses these envvars:
 
 @enforce_types
 def do_vebals():
-    HELP = f"""Query chain, outputs veBalances csv
-
-Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-
-Uses these envvars:
-  SECRET_SEED -- secret integer used to seed the rng
-"""
-    if len(sys.argv) not in [7, 8]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "vebals"
-    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
-    CSV_DIR = sys.argv[5]
-    CHAINID = int(sys.argv[6])
-    RETRIES = 1
-    if len(sys.argv) == 8:
-        RETRIES = int(sys.argv[7])
-
-    print("dftool vebals: Begin")
-    print(
-        f"Arguments: "
-        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = StartFinArgumentParser(
+        description="Query chain, outputs veBalances csv",
+        epilog="""Uses these envvars:
+          \nSECRET_SEED -- secret integer used to seed the rng
+        """,
+        command_name="vebals",
+        csv_name="stakes",
     )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    CSV_DIR, NSAMP, CHAINID = arguments.CSV_DIR, arguments.NSAMP, arguments.CHAINID
 
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
     # create a dir if not exists
-    _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.vebalsCsvFilename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
+    rng = blockrange.create_range(
+        chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
+    )
 
     balances, locked_amt, unlock_time = retryFunction(
-        queries.queryVebalances, RETRIES, 10, rng, CHAINID
+        queries.queryVebalances, arguments.RETRIES, 10, rng, CHAINID
     )
     csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 

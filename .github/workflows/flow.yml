@@ -92,11 +92,11 @@ jobs:
 
       - name: Run dftool vebals
         run: |
-          ./dftool vebals $date $now 200 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool vebals $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
 
       - name: Run dftool allocations
         run: |
-          ./dftool allocations $date $now 200 $CSV_DIR 1 $RETRY_TIMES
+          ./dftool allocations $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
 
       - name: Run sed
         run: |
