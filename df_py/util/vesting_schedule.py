@@ -25,7 +25,8 @@ def getActiveRewardAmountForWeekEthByStream(
     dfweek = getDfWeekNumber(start_dt) - 1
 
     if substream == "predictoor":
-        return total_reward_amount * 0.01 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
+        # 0.01%
+        return total_reward_amount * 0.001 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
 
     if substream == "volume":
         return total_reward_amount - getActiveRewardAmountForWeekEthByStream(
