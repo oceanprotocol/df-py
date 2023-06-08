@@ -565,19 +565,19 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         sys.exit(1)
 
     if TOT_OCEAN == 0:
+        # brownie setup
+
+        # Vesting wallet contract is used to calculate the reward amount for given week / start date
+        # we need to deploy one locally
+        networkutil.connect(networkutil.DEV_CHAINID)
+        ADDRESS_FILE = _getAddressEnvvarOrExit()
+        recordDeployedContracts(ADDRESS_FILE)
         TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, SUBSTREAM_NAME)
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
             f", START_DATE={START_DATE}"
         )
 
-    # brownie setup
-
-    # Vesting wallet is deployed on Goerli
-    # it is used to calculate the reward amount for given week / start date
-    networkutil.connect(5) 
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-    recordDeployedContracts(ADDRESS_FILE)
 
     if SUBSTREAM_NAME == "volume":
 
@@ -589,7 +589,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
             *csvs.ownersCsvFilenames(CSV_DIR),
             *csvs.symbolsCsvFilenames(CSV_DIR),
             *csvs.rateCsvFilenames(CSV_DIR),
-        ] 
+        ]
 
         for fname in required_files:
             if not os.path.exists(fname):
