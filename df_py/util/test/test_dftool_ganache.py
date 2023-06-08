@@ -145,6 +145,22 @@ def test_calc_predictoor_substream(tmp_path):
     total_reward = sum(rewards.values())
     assert total_reward > 0
 
+    # delete rewards csv
+    os.remove(rewards_csv)
+
+    # TEST WITH TOT_OCEAN = 0, DATE WITH ZERO REWARDS
+    TOT_OCEAN = 0
+    ST = "2023-01-01"  # some date where predictoor rewards are zero
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {ST} {SUBSTREAM}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = predictoorRewardsFilename(CSV_DIR, "OCEAN")
+    assert os.path.exists(rewards_csv)
+    rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+    total_reward = sum(rewards.values())
+    assert total_reward == 0
+
 
 @enforce_types
 def test_calc_without_amount(tmp_path):
