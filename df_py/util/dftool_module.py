@@ -16,6 +16,7 @@ from df_py.predictoor.csvs import (
     predictoorRewardsFilename,
     savePredictoorData,
     savePredictoorRewards,
+    loadPredictoorRewards
 )
 from df_py.predictoor.queries import queryPredictoors
 from df_py.predictoor.calcrewards import calcPredictoorRewards
@@ -698,10 +699,11 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
-    rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
-
-    # "flatten" the rewards dict to dispense all chains in one go
-    all_rewards = calcrewards.flattenRewards(rewards)
+    
+    rewards = {}
+    rewards = calcrewards.load_rewards(csvs.rewardsperlpCsvFilename, csvs.loadRewardsCsv, CSV_DIR, "OCEAN", rewards)
+    rewards = calcrewards.load_rewards(predictoorRewardsFilename, loadPredictoorRewards, CSV_DIR, "OCEAN", rewards)
+    # aggregate challenge df rewards here
 
     # dispense
     dispense.dispense(
