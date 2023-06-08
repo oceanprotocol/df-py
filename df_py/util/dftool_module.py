@@ -563,7 +563,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
 
     if TOT_OCEAN == 0:
         START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
-        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
+        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, SUBSTREAM_NAME)
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
             f", START_DATE={START_DATE}"
@@ -575,10 +575,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
     recordDeployedContracts(ADDRESS_FILE)
 
     if SUBSTREAM_NAME == "volume":
-        # substract predictoor rewards from total rewards
-        if predictoorRewardsFilename(CSV_DIR, "OCEAN"):
-            predictoor_rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
-            TOT_OCEAN -= sum(predictoor_rewards.values())
 
         # do we have the input files?
         required_files = [
@@ -634,11 +630,9 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
             print("No predictoors found")
             sys.exit(1)
         _exitIfFileExists(predictoorRewardsFilename(CSV_DIR, "OCEAN"))
-        # get substream rewards
-        tokens_avail = getActiveRewardAmountForWeekEthByStream(START_DATE, "predictoor")
 
         # calculate rewards
-        predictoor_rewards = calcPredictoorRewards(predictoors, tokens_avail)
+        predictoor_rewards = calcPredictoorRewards(predictoors, TOT_OCEAN)
         savePredictoorRewards(predictoor_rewards, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
