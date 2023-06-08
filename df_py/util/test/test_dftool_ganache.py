@@ -48,7 +48,9 @@ def test_calc(tmp_path):
 
     # main cmd
     TOT_OCEAN = 1000.0
-    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN}"
+    START_DATE = "2023-02-02"  # Only substream is volume DF
+    SUBSTREAM_NAME = "volume"
+    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {START_DATE} {SUBSTREAM_NAME}"
     os.system(cmd)
 
     # test result
