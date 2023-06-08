@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
@@ -443,8 +444,8 @@ def flattenRewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
     return flat_rewards
 
 
-def load_rewards(fs_checker, load_function, CSV_DIR, token_symbol, rewards):
-    if fs_checker(CSV_DIR, token_symbol):
+def load_rewards(fname, load_function, CSV_DIR, token_symbol, rewards):
+    if os.path.exists(fname):
         reward_data = load_function(CSV_DIR, token_symbol)
 
         # Check if reward_data is nested and flatten if needed

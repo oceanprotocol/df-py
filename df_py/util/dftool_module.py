@@ -703,10 +703,18 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     rewards = {}
     rewards = calcrewards.load_rewards(
-        csvs.rewardsperlpCsvFilename, csvs.loadRewardsCsv, CSV_DIR, "OCEAN", rewards
+        csvs.rewardsperlpCsvFilename(CSV_DIR, token_symbol),
+        csvs.loadRewardsCsv,
+        CSV_DIR,
+        "OCEAN",
+        rewards,
     )
     rewards = calcrewards.load_rewards(
-        predictoorRewardsFilename, loadPredictoorRewards, CSV_DIR, "OCEAN", rewards
+        predictoorRewardsFilename(CSV_DIR, token_symbol),
+        loadPredictoorRewards,
+        CSV_DIR,
+        "OCEAN",
+        rewards,
     )
     # aggregate challenge df rewards here
 
