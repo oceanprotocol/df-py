@@ -1,7 +1,6 @@
 import datetime
 import os
 import subprocess
-import sys
 from unittest.mock import patch
 
 import brownie
@@ -172,6 +171,7 @@ def test_dispense(tmp_path):
     DFREWARDS_ADDR = df_rewards.address
     OCEAN_ADDR = oceanutil.OCEAN_address()
 
+    # pylint: disable=line-too-long
     cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} --DFREWARDS_ADDR={DFREWARDS_ADDR} --TOKEN_ADDR={OCEAN_ADDR}"
     os.system(cmd)
 

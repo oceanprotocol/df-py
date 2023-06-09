@@ -61,11 +61,6 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
 
 @enforce_types
-def do_help():
-    do_help_long()
-
-
-@enforce_types
 def do_help_short(status_code=0):
     print(HELP_SHORT)
     sys.exit(status_code)
@@ -145,6 +140,7 @@ def challenge_date(s):
 
     try:
         judge.parse_deadline_str(s)
+        return s
     except Exception as e:  # pylint: disable=bare-except
         raise argparse.ArgumentTypeError(str(e)) from e
 

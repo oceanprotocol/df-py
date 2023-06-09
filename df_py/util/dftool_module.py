@@ -25,7 +25,6 @@ from df_py.util.dftool_arguments import (
     autocreate_path,
     block_or_valid_date,
     challenge_date,
-    do_help,
     do_help_long,
     do_help_short,
     existing_path,
@@ -530,6 +529,7 @@ def do_dispense_active():
         "--BATCH_NBR",
         default=None,
         type=str,
+        # pylint: disable=line-too-long
         help="specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.",
         required=False,
     )
@@ -658,7 +658,8 @@ def do_compile():
 def do_initdevwallets():
     # UPADATE THIS
     parser = SimpleChainIdArgumentParser(
-        "Init wallets with OCEAN. (GANACHE ONLY)" "initdevwallets",
+        "Init wallets with OCEAN. (GANACHE ONLY)",
+        "initdevwallets",
         epilog=f"""Uses these envvars:
           ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
         """,
