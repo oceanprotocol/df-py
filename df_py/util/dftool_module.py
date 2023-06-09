@@ -150,6 +150,16 @@ def autocreate_path(s):
     return s
 
 
+def challenge_date(s):
+    if s == "None":
+        return None
+
+    try:
+        judge.parse_deadline_str(s)
+    except Exception as e:  # pylint: disable=bare-except
+        raise argparse.ArgumentTypeError(str(e)) from e
+
+
 def print_arguments(arguments):
     arguments_dict = arguments.__dict__
     command = arguments_dict.pop("command", None)
@@ -375,36 +385,55 @@ def do_vebals():
 # ========================================================================
 @enforce_types
 def do_getrate():
-    HELP = """Get exchange rate, and output rate csv
+    parser = argparse.ArgumentParser(
+        description="Get exchange rate, and output rate csv"
+    )
+    parser.add_argument("command", choices=["getrate"])
+    parser.add_argument(
+        "TOKEN_SYMBOL",
+        type=str,
+        help="e.g. OCEAN, H20",
+    )
+    parser.add_argument(
+        "ST",
+        type=block_or_valid_date,
+        help="start time -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "FIN",
+        type=block_or_valid_date,
+        help="end time -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "CSV_DIR",
+        type=autocreate_path,
+        help="output dir for rate-TOKEN_SYMBOL.csv, etc",
+    )
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
+    )
 
-Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
-  TOKEN_SYMBOL -- e.g. OCEAN, H2O
-  ST -- start time -- YYYY-MM-DD
-  FIN -- end time -- YYYY-MM-DD
-  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  RETRIES -- # times to retry failed queries
-"""
-    if len(sys.argv) not in [2 + 4, 2 + 5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    # extract inputs
-    assert sys.argv[1] == "getrate"
-    TOKEN_SYMBOL = sys.argv[2]
-    ST, FIN = sys.argv[3], sys.argv[4]
-    CSV_DIR = sys.argv[5]
-    RETRIES = 1
-    if len(sys.argv) == 2 + 5:
-        RETRIES = int(sys.argv[2 + 4])
-    print("dftool getrate: Begin")
-    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}\n")
+    TOKEN_SYMBOL, CSV_DIR = arguments.TOKEN_SYMBOL, arguments.CSV_DIR
 
     # check files, prep dir
     _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
-    _createDirIfNeeded(CSV_DIR)
 
     # main work
-    rate = retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
+    rate = retryFunction(
+        getrate.getrate,
+        arguments.RETRIES,
+        60,
+        TOKEN_SYMBOL,
+        arguments.ST,
+        arguments.FIN,
+    )
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
@@ -416,54 +445,34 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
 def do_challenge_data():
     # hardcoded values
     CHAINID = 80001  # only on mumbai
-
-    HELP = f"""Get data for Challenge DF
-
-Usage: dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
-  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  DEADLINE -- submission deadline.
-    Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
-    Example for Round 5: 2023-05-03_23:59
-  RETRIES -- # times to retry failed queries
-
-Hardcoded values:
-  CHAINID = {CHAINID}
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=CHAINID)}
-"""
-    if len(sys.argv) not in [2 + 1, 2 + 2, 2 + 3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "challenge_data"
-    CSV_DIR = sys.argv[2]
-    DEADLINE = "None" if len(sys.argv) <= 3 else sys.argv[3]
-    RETRIES = 1 if len(sys.argv) <= 4 else int(sys.argv[4])
-    print("dftool challenge_data: Begin\n")
-
-    print(
-        f"Arguments:"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n DEADLINE={DEADLINE}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = argparse.ArgumentParser(description="Get data for Challenge DF")
+    parser.add_argument("command", choices=["challenge_data"])
+    parser.add_argument(
+        "CSV_DIR", type=existing_path, help="output directory for challenge.csv"
+    )
+    parser.add_argument(
+        "--DEADLINE",
+        type=challenge_date,
+        default=None,
+        required=False,
+        help="""submission deadline.
+            Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
+            Example for Round 5: 2023-05-03_23:59
+        """,
     )
 
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
     print(f"Hardcoded values:" f"\n CHAINID={CHAINID}" "\n")
+
+    CSV_DIR = arguments.CSV_DIR
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
-
     if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
         challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
-
     else:  # main path
         # brownie setup
         networkutil.connect(CHAINID)
@@ -471,7 +480,7 @@ Uses these envvars:
         judge_acct = judge.get_judge_acct()
 
         # main work
-        deadline_dt = judge.parse_deadline_str(DEADLINE)
+        deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
     saveChallengeDataCsv(challenge_data, CSV_DIR)

@@ -81,9 +81,9 @@ jobs:
 
       - name: Run dftool getrate
         run: |
-          ./dftool getrate OCEAN $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate ETH $date $now $CSV_DIR $RETRY_TIMES
-          ./dftool getrate MATIC $date $now $CSV_DIR $RETRY_TIMES
+          ./dftool getrate OCEAN $date $now $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool getrate ETH $date $now $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool getrate MATIC $date $now $CSV_DIR --RETRIES $RETRY_TIMES
 
       - name: Run dftool volsym
         run: |

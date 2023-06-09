@@ -16,48 +16,30 @@ ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
 
 @enforce_types
 def test1(tmp_path):
-    _test(tmp_path, DEADLINE=None, RETRIES=None)
+    _test(tmp_path, DEADLINE=None)
 
 
 @enforce_types
 def test2(tmp_path):
-    _test(tmp_path, DEADLINE="None", RETRIES=None)
+    _test(tmp_path, DEADLINE="None")
 
 
 @enforce_types
 def test3(tmp_path):
-    _test(tmp_path, DEADLINE="None", RETRIES=2)
+    _test(tmp_path, DEADLINE="2023-05-03_23:59")
 
 
 @enforce_types
-def test4(tmp_path):
-    _test(tmp_path, DEADLINE="2023-05-03_23:59", RETRIES=None)
-
-
-@enforce_types
-def test5(tmp_path):
-    _test(tmp_path, DEADLINE="2023-05-03_23:59", RETRIES=2)
-
-
-@enforce_types
-def _test(tmp_path, DEADLINE: Optional[str], RETRIES: Optional[int]):
+def _test(tmp_path, DEADLINE: Optional[str]):
     # build base cmd
     base_dir = str(tmp_path)
     CSV_DIR = os.path.join(base_dir, judge.DFTOOL_TEST_FAKE_CSVDIR)
     os.mkdir(CSV_DIR)
     cmd = f"./dftool challenge_data {CSV_DIR}"
 
-    # tack on 1 or 2 args to cmd as needed
-    if DEADLINE is None and RETRIES is None:
-        pass
-    elif DEADLINE is None and RETRIES is not None:
-        assert ValueError("must specify DEADLINE if RETRIES is not None")
-    elif DEADLINE is not None and RETRIES is None:
-        cmd += f" {DEADLINE}"
-    elif DEADLINE is not None and RETRIES is not None:
-        cmd += f" {DEADLINE} {RETRIES}"
-    else:
-        raise AssertionError("shouldn't end up here")
+    # DEADLINE option to cmd as needed
+    if DEADLINE is not None:
+        cmd += f" --DEADLINE {DEADLINE}"
 
     # main call
     print(f"CMD: {cmd}")

@@ -48,7 +48,14 @@ def test_noarg_commands():
     # these commands are intended to have no parameters
     fail_gracefully = ["help", "compile"]
     # TODO: in order for tests to pass until we convert to argparse fully
-    uses_argparse = ["volsym", "nftinfo", "allocations", "vebals"]
+    uses_argparse = [
+        "volsym",
+        "nftinfo",
+        "allocations",
+        "vebals",
+        "getrate",
+        "challenge_data",
+    ]
 
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")

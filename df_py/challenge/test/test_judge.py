@@ -83,7 +83,7 @@ def test_parse_deadline_str1():
 
 @enforce_types
 def test_parse_deadline_str2():
-    dt = judge.parse_deadline_str("None")
+    dt = judge.parse_deadline_str()
 
     assert (datetime.now(timezone.utc) - dt) < timedelta(days=7)  # within 1 wk
     assert dt.weekday() == 2  # Mon is 0, Tue is 1, Wed is 2

@@ -83,7 +83,7 @@ jobs:
   
       - name: Run dftool getrate
         run: |
-          ./dftool getrate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR $RETRY_TIMES
+          ./dftool getrate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR --RETRIES $RETRY_TIMES
   
       - name: Run dftool volsym
         run: |
