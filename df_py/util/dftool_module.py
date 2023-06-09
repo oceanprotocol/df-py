@@ -19,7 +19,7 @@ from df_py.predictoor.csvs import (
     load_predictoor_rewards_csv,
 )
 from df_py.predictoor.queries import queryPredictoors
-from df_py.predictoor.calcrewards import calcPredictoorRewards
+from df_py.predictoor.calcrewards import calc_predictoor_rewards
 from df_py.util import blockrange, constants, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
@@ -636,7 +636,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
         _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR, "OCEAN"))
 
         # calculate rewards
-        predictoor_rewards = calcPredictoorRewards(predictoors, TOT_OCEAN)
+        predictoor_rewards = calc_predictoor_rewards(predictoors, TOT_OCEAN)
         save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")

@@ -1,7 +1,7 @@
 import random
 from typing import Dict, Union
 
-from df_py.predictoor.calcrewards import calcPredictoorRewards, filterPredictoors
+from df_py.predictoor.calcrewards import calc_predictoor_rewards, filter_predictoors
 from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.constants import MIN_PREDICTIONS
 
@@ -15,7 +15,7 @@ def test_filterPredictoors():
     p3._prediction_count = MIN_PREDICTIONS + 1
     predictoors = {"0x1": p1, "0x2": p2, "0x3": p3}
 
-    filtered = filterPredictoors(predictoors)
+    filtered = filter_predictoors(predictoors)
 
     assert len(filtered) == 2
     assert "0x1" not in filtered
@@ -26,7 +26,7 @@ def test_filterPredictoors():
 def test_calcPredictoorRewards_no_predictions():
     predictoors: Dict[str, Union[PredictoorBase, Predictoor]] = {}
 
-    rewards = calcPredictoorRewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 100)
 
     assert len(rewards) == 0
 
@@ -37,7 +37,7 @@ def test_calcPredictoorRewards_one_prediction_not_eligible():
     p1._correct_prediction_count = 5
     predictoors = {"0x1": p1}
 
-    rewards = calcPredictoorRewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 100)
 
     assert len(rewards) == 0
     assert rewards.get(p1.address, 0) == 0
@@ -49,7 +49,7 @@ def test_calcPredictoorRewards_one_prediction_eligible():
     p1._correct_prediction_count = 5
     predictoors = {"0x1": p1}
 
-    rewards = calcPredictoorRewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 100)
 
     assert len(rewards) == 1
     assert rewards.get(p1.address, 0) == 100
@@ -67,7 +67,7 @@ def test_calcPredictoorRewards_with_predictions():
     p3._correct_prediction_count = 2
     predictoors = {"0x1": p1, "0x2": p2, "0x3": p3}
 
-    rewards = calcPredictoorRewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 100)
 
     assert len(rewards) == 2
     assert rewards["0x1"] == 50.0
@@ -90,7 +90,7 @@ def test_calcPredictoorRewards_fuzz():
 
     tokens_avail = 1000
 
-    rewards = calcPredictoorRewards(predictoors, tokens_avail)
+    rewards = calc_predictoor_rewards(predictoors, tokens_avail)
 
     # the rewards of each Predictoor should be proportionate to its accuracy
     for address, p in predictoors.items():
