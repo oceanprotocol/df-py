@@ -25,6 +25,20 @@ def filter_predictoors(
 def calc_predictoor_rewards(
     predictoors: Dict[str, Union[PredictoorBase, Predictoor]], tokens_avail: float
 ) -> Dict[str, float]:
+    """
+    Calculate rewards for predictoors based on their accuracy and available tokens.
+
+    @arguments
+    predictoors -- dict of [pdr_address] : Predictoor objects
+        The predictoors to calculate rewards for.
+    tokens_avail -- float
+        The number of tokens available for distribution as rewards.
+
+    @return
+    rewards -- dict of [pdr_address] : float
+        The calculated rewards for each predictoor.
+    """
+    
     # filter predictoors by min prediction count
     predictoors = filter_predictoors(predictoors)
 
