@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 from df_py.util.csv_helpers import assertIsEthAddr
 
 
-def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
+def save_challenge_data_csv(challenge_data: tuple, csv_dir: str):
     """
     @description
       Save challenge data csv.
@@ -22,7 +22,7 @@ def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
     assert sorted(nmses) == nmses
 
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = challengeDataCsvFilename(csv_dir)
+    csv_file = challenge_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -41,7 +41,7 @@ def saveChallengeDataCsv(challenge_data: tuple, csv_dir: str):
     print(f"Created {csv_file}")
 
 
-def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
+def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
     """
     @description
       Load challenge data csv
@@ -50,7 +50,7 @@ def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
       challenge_data -- tuple of (from_addrs, nft_addrs, nmses),
         all ordered with lowest nmse first
     """
-    csv_file = challengeDataCsvFilename(csv_dir)
+    csv_file = challenge_data_csv_filename(csv_dir)
     from_addrs, nft_addrs, nmses = [], [], []
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -77,6 +77,6 @@ def loadChallengeDataCsv(csv_dir: str) -> Tuple[List[str], List[str], list]:
 
 
 @enforce_types
-def challengeDataCsvFilename(csv_dir: str) -> str:
+def challenge_data_csv_filename(csv_dir: str) -> str:
     f = "challenge.csv"
     return os.path.join(csv_dir, f)

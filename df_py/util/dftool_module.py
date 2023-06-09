@@ -9,7 +9,7 @@ from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
-from df_py.challenge.csvs import saveChallengeDataCsv
+from df_py.challenge.csvs import save_challenge_data_csv
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
@@ -462,7 +462,7 @@ Uses these envvars:
         deadline_dt = judge.parse_deadline_str(DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
-    saveChallengeDataCsv(challenge_data, CSV_DIR)
+    save_challenge_data_csv(challenge_data, CSV_DIR)
 
     print("dftool challenge_data: Done")
 
