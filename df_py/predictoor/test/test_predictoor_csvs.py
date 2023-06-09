@@ -28,13 +28,13 @@ def test_predictoordata(tmp_path):
         predictoors[p.address] = p
 
     csv_dir = str(tmp_path)
-    csvs.savePredictoorData(predictoors, csv_dir, 1)
+    csvs.save_predictoor_data_csv(predictoors, csv_dir, 1)
 
-    with open(csvs.predictoorDataFilename(csv_dir, 1), "r") as loaded_data:
+    with open(csvs.predictoor_data_csv_filename(csv_dir, 1), "r") as loaded_data:
         data = loaded_data.read().strip()
         assert data == target_csv
 
-    loaded_predictoors = csvs.loadPredictoorData(csv_dir, 1)
+    loaded_predictoors = csvs.load_predictoor_data_csv(csv_dir, 1)
     assert len(loaded_predictoors) == len(predictoors)
 
     for addr, original_predictoor in predictoors.items():
@@ -67,11 +67,11 @@ def test_loadAllPredictoorData(tmp_path):
                 )
             predictoors[p.address] = p
 
-        csvs.savePredictoorData(predictoors, csv_dir, chainid)
+        csvs.save_predictoor_data_csv(predictoors, csv_dir, chainid)
 
         predictoor_data.update(predictoors)
 
-    loaded_predictoors = csvs.loadAllPredictoorData(csv_dir)
+    loaded_predictoors = csvs.load_all_predictoors_csv(csv_dir)
 
     # loaded data should be equal to the originally created data
     assert len(loaded_predictoors) == len(predictoor_data)
@@ -104,13 +104,13 @@ def test_predictoorrewards(tmp_path):
         ) * 10.0
 
     csv_dir = str(tmp_path)
-    csvs.savePredictoorRewards(predictoor_rewards, csv_dir, "OCEAN")
+    csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir, "OCEAN")
 
-    with open(csvs.predictoorRewardsFilename(csv_dir, "OCEAN"), "r") as loaded_data:
+    with open(csvs.predictoor_rewards_csv_filename(csv_dir, "OCEAN"), "r") as loaded_data:
         data = loaded_data.read().strip()
         assert data == target_csv
 
-    loaded_predictoor_rewards = csvs.loadPredictoorRewards(csv_dir, "OCEAN")
+    loaded_predictoor_rewards = csvs.load_predictoor_rewards_csv(csv_dir, "OCEAN")
     assert len(loaded_predictoor_rewards) == len(predictoor_rewards)
 
     # loaded rewards should be equal to originally created ones

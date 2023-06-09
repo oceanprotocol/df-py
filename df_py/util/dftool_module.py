@@ -11,12 +11,12 @@ from web3.middleware import geth_poa_middleware
 from df_py.challenge import judge
 from df_py.challenge.csvs import saveChallengeDataCsv
 from df_py.predictoor.csvs import (
-    loadAllPredictoorData,
-    predictoorDataFilename,
-    predictoorRewardsFilename,
-    savePredictoorData,
-    savePredictoorRewards,
-    loadPredictoorRewards,
+    load_all_predictoors_csv,
+    predictoor_data_csv_filename,
+    predictoor_rewards_csv_filename,
+    save_predictoor_data_csv,
+    save_predictoor_rewards_csv,
+    load_predictoor_rewards_csv,
 )
 from df_py.predictoor.queries import queryPredictoors
 from df_py.predictoor.calcrewards import calcPredictoorRewards
@@ -503,7 +503,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 
     # check files, prep dir
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(predictoorDataFilename(CSV_DIR, CHAINID))
+    _exitIfFileExists(predictoor_data_csv_filename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -520,7 +520,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
         fin_block,
         CHAINID,
     )
-    savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
+    save_predictoor_data_csv(predictoor_data, CSV_DIR, CHAINID)
     print("dftool predictoor_data: Done")
 
 
@@ -629,15 +629,15 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
     # challenge df goes here ----------
 
     if SUBSTREAM_NAME == "predictoor":
-        predictoors = loadAllPredictoorData(CSV_DIR)
+        predictoors = load_all_predictoors_csv(CSV_DIR)
         if len(predictoors) == 0:
             print("No predictoors found")
             sys.exit(1)
-        _exitIfFileExists(predictoorRewardsFilename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR, "OCEAN"))
 
         # calculate rewards
         predictoor_rewards = calcPredictoorRewards(predictoors, TOT_OCEAN)
-        savePredictoorRewards(predictoor_rewards, CSV_DIR, "OCEAN")
+        save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR, "OCEAN")
 
     print("dftool calc: Done")
 
@@ -710,8 +710,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
         rewards,
     )
     rewards = calcrewards.load_rewards(
-        predictoorRewardsFilename(CSV_DIR, token_symbol),
-        loadPredictoorRewards,
+        predictoor_rewards_csv_filename(CSV_DIR, token_symbol),
+        load_predictoor_rewards_csv,
         CSV_DIR,
         "OCEAN",
         rewards,

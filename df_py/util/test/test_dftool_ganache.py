@@ -8,10 +8,10 @@ import brownie
 from enforce_typing import enforce_types
 
 from df_py.predictoor.csvs import (
-    loadPredictoorData,
-    loadPredictoorRewards,
-    predictoorDataFilename,
-    predictoorRewardsFilename,
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
+    predictoor_data_csv_filename,
+    predictoor_rewards_csv_filename,
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import networkutil, oceantestutil, oceanutil
@@ -78,10 +78,10 @@ def test_predictoor_data(tmp_path):
             do_predictoor_data()
 
     # test result
-    predictoor_data_csv = predictoorDataFilename(CSV_DIR, CHAINID)
+    predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR, CHAINID)
     assert os.path.exists(predictoor_data_csv)
 
-    predictoors = loadPredictoorData(CSV_DIR, CHAINID)
+    predictoors = load_predictoor_data_csv(CSV_DIR, CHAINID)
     for user in users:
         if stats[user]["total"] == 0:
             assert user not in predictoors
@@ -105,7 +105,7 @@ def test_calc_predictoor_substream(tmp_path):
 0x4000000000000000000000000000000000000001,0.5,1818,909    
 """
     for i in range(1, 5):  # chainids
-        predictoor_data_csv = predictoorDataFilename(CSV_DIR, i)
+        predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR, i)
         with open(predictoor_data_csv, "w") as f:
             f.write(csv_template)
 
@@ -119,11 +119,11 @@ def test_calc_predictoor_substream(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = predictoorRewardsFilename(CSV_DIR, "OCEAN")
+    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR, "OCEAN")
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
-    rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+    rewards = load_predictoor_rewards_csv(CSV_DIR, "OCEAN")
     total_reward = sum(rewards.values())
     assert total_reward == 1000.0
 
@@ -137,9 +137,9 @@ def test_calc_predictoor_substream(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = predictoorRewardsFilename(CSV_DIR, "OCEAN")
+    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR, "OCEAN")
     assert os.path.exists(rewards_csv)
-    rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+    rewards = load_predictoor_rewards_csv(CSV_DIR, "OCEAN")
     total_reward = sum(rewards.values())
     assert total_reward > 0
 
@@ -153,9 +153,9 @@ def test_calc_predictoor_substream(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = predictoorRewardsFilename(CSV_DIR, "OCEAN")
+    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR, "OCEAN")
     assert os.path.exists(rewards_csv)
-    rewards = loadPredictoorRewards(CSV_DIR, "OCEAN")
+    rewards = load_predictoor_rewards_csv(CSV_DIR, "OCEAN")
     total_reward = sum(rewards.values())
     assert total_reward == 0
 
