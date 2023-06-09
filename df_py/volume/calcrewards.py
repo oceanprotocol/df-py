@@ -442,3 +442,12 @@ def flattenRewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
                 flat_rewards[LP_addr] = 0.0
             flat_rewards[LP_addr] += rewards[chainID][LP_addr]
     return flat_rewards
+
+def merge_rewards(*dicts):
+    merged_dict = {}
+    
+    for d in dicts:
+        for key, value in d.items():
+            merged_dict[key] = merged_dict.get(key, 0) + value
+    
+    return merged_dict
