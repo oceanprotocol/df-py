@@ -38,7 +38,7 @@ def calc_predictoor_rewards(
     rewards -- dict of [pdr_address] : float
         The calculated rewards for each predictoor.
     """
-    
+
     # filter predictoors by min prediction count
     predictoors = filter_predictoors(predictoors)
 

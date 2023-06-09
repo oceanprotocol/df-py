@@ -58,7 +58,7 @@ def test_calc(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR, "OCEAN")
+    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
     assert os.path.exists(rewards_csv)
 
 
@@ -189,11 +189,11 @@ def test_calc_without_amount(tmp_path):
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR, "OCEAN")
+    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
-    rewards = csvs.load_volume_rewards_csv(CSV_DIR, "OCEAN")
+    rewards = csvs.load_volume_rewards_csv(CSV_DIR)
     total_reward = 0
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
@@ -221,7 +221,7 @@ def test_dispense(tmp_path):
         CHAINID: {address1: 400},
         "5": {address1: 300, address2: 100},
     }
-    csvs.save_volume_rewards_csv(rewards, CSV_DIR, "OCEAN")
+    csvs.save_volume_rewards_csv(rewards, CSV_DIR)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 

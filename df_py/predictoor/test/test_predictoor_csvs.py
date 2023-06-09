@@ -68,9 +68,7 @@ def test_predictoorrewards(tmp_path):
     csv_dir = str(tmp_path)
     csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
-    with open(
-        csvs.predictoor_rewards_csv_filename(csv_dir), "r"
-    ) as loaded_data:
+    with open(csvs.predictoor_rewards_csv_filename(csv_dir), "r") as loaded_data:
         data = loaded_data.read().strip()
         assert data == target_csv
 

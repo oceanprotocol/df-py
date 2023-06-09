@@ -614,7 +614,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
                 sys.exit(1)
 
         # shouldn't already have the output file
-        _exitIfFileExists(csvs.volume_rewards_csv_filename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(csvs.volume_rewards_csv_filename(CSV_DIR))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(CSV_DIR, "OCEAN"))
 
         # DF volume work
@@ -639,7 +639,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
             S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
         )
 
-        csvs.save_volume_rewards_csv(rewperlp, CSV_DIR, "OCEAN")
+        csvs.save_volume_rewards_csv(rewperlp, CSV_DIR)
         csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR, "OCEAN")
 
     # challenge df goes here ----------
@@ -718,8 +718,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
     volume_rewards = {}
-    if os.path.exists(csvs.volume_rewards_csv_filename(CSV_DIR, token_symbol)):
-        volume_rewards_3d = csvs.load_volume_rewards_csv(CSV_DIR, token_symbol)
+    if os.path.exists(csvs.volume_rewards_csv_filename(CSV_DIR)):
+        volume_rewards_3d = csvs.load_volume_rewards_csv(CSV_DIR)
         volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
 
     predictoor_rewards = {}

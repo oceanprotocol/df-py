@@ -273,8 +273,8 @@ def test_rates(tmp_path):
 @enforce_types
 def test_rewardsperlp_filename(tmp_path):
     csv_dir = str(tmp_path)
-    fname = csvs.volume_rewards_csv_filename(csv_dir, "MYTOKEN")
-    target_fname = csv_dir + "/" + "rewardsperlp-MYTOKEN.csv"
+    fname = csvs.volume_rewards_csv_filename(csv_dir)
+    target_fname = csv_dir + "/" + "volume_rewards.csv"
     assert fname == target_fname
 
 
@@ -284,9 +284,9 @@ def test_rewardsperlp_main(tmp_path):
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
-    csvs.save_volume_rewards_csv(rewards, csv_dir, "MYTOKEN")
+    csvs.save_volume_rewards_csv(rewards, csv_dir)
 
-    loaded_rewards = csvs.load_volume_rewards_csv(csv_dir, "MYTOKEN")
+    loaded_rewards = csvs.load_volume_rewards_csv(csv_dir)
     assert loaded_rewards == target_rewards
 
     for innerdict in rewards.values():  # ensures we don't deal in weis

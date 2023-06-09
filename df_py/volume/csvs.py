@@ -718,7 +718,8 @@ def rate_csv_filename(token_symbol: str, csv_dir: str) -> str:
 
 @enforce_types
 def save_volume_rewards_csv(
-    rewards: Dict[str, Dict[str, float]], csv_dir: str, token_symbol: str
+    rewards: Dict[str, Dict[str, float]],
+    csv_dir: str,
 ):
     """
     @description
@@ -729,13 +730,12 @@ def save_volume_rewards_csv(
       rewards -- dict of [chainID][LP_addr] : value (float, *not* integers / wei)
       ..
     """
-    token_symbol = token_symbol.upper()
-    csv_file = volume_rewards_csv_filename(csv_dir, token_symbol)
+    csv_file = volume_rewards_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
 
-        header = ["chainID", "LP_addr", f"{token_symbol}_amt"]
+        header = ["chainID", "LP_addr", "OCEAN_amt"]
         writer.writerow(header)
 
         for chainID, innerdict in rewards.items():
@@ -747,19 +747,16 @@ def save_volume_rewards_csv(
 
 
 @enforce_types
-def load_volume_rewards_csv(
-    csv_dir: str, token_symbol: str
-) -> Dict[str, Dict[str, float]]:
+def load_volume_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
-    token_symbol = token_symbol.upper()
-    csv_file = volume_rewards_csv_filename(csv_dir, token_symbol)
+    csv_file = volume_rewards_csv_filename(csv_dir)
     rewards: Dict[Any, Dict[str, float]] = {}
 
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
             if row_i == 0:  # header
-                assert row == ["chainID", "LP_addr", f"{token_symbol}_amt"]
+                assert row == ["chainID", "LP_addr", "OCEAN_amt"]
             else:
                 chainID = int(row[0])
                 LP_addr = row[1].lower()
@@ -778,8 +775,8 @@ def load_volume_rewards_csv(
 
 
 @enforce_types
-def volume_rewards_csv_filename(csv_dir: str, token_symbol: str) -> str:
-    return os.path.join(csv_dir, f"rewardsperlp-{token_symbol.upper()}.csv")
+def volume_rewards_csv_filename(csv_dir: str) -> str:
+    return os.path.join(csv_dir, "volume_rewards.csv")
 
 
 # ========================================================================
