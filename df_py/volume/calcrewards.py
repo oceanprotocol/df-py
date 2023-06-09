@@ -448,8 +448,8 @@ def flattenRewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
 def merge_rewards(*dicts):
     merged_dict = {}
 
-    for d in dicts:
-        for key, value in d.items():
+    for dict in dicts:
+        for key, value in dict.items():
             merged_dict[key] = merged_dict.get(key, 0) + value
 
     return merged_dict
