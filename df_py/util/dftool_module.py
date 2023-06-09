@@ -526,17 +526,21 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 
 # ========================================================================
 
+
 @enforce_types
 def do_calc_volume_rewards():
     _do_calc("volume")
+
 
 @enforce_types
 def do_calc_challenge_rewards():
     raise NotImplementedError("Challenge rewards is not implemented")
 
+
 @enforce_types
 def do_calc_predictoor_rewards():
     _do_calc("predictoor")
+
 
 @enforce_types
 def _do_calc(substream_name):
