@@ -77,4 +77,4 @@ if [ $df_week_original -lt 9 ]; then
     reward_amount=5000
 fi
 
-dftool calc $CSV_DIR $reward_amount OCEAN
+dftool calc_volume_rewards $CSV_DIR $reward_amount OCEAN
