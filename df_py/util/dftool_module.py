@@ -525,16 +525,27 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 
 
 # ========================================================================
-@enforce_types
-def do_calc():
-    HELP = """from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
 
-Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
+@enforce_types
+def do_calc_volume_rewards():
+    _do_calc("volume")
+
+@enforce_types
+def do_calc_challenge_rewards():
+    raise NotImplementedError("Challenge rewards is not implemented")
+
+@enforce_types
+def do_calc_predictoor_rewards():
+    _do_calc("predictoor")
+
+@enforce_types
+def _do_calc(substream_name):
+    HELP = f"""from {substream_name} data files, output rewards csvs for {substream_name} substream
+
+Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
   CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
   TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
   START_DATE -- week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0
-  SUBSTREAM_NAME -- Name of the substream, default is "volume"
-  IGNORED -- Ignored. Kept here for compatibility.
 """
     if len(sys.argv) not in [4, 5, 6]:
         print(HELP)
@@ -545,7 +556,6 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
     START_DATE = sys.argv[4]
-    SUBSTREAM_NAME = "volume" if len(sys.argv) == 5 else sys.argv[5]
 
     print("dftool calc: Begin")
     print(
@@ -575,13 +585,13 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
         recordDeployedContracts(address_path)
-        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, SUBSTREAM_NAME)
+        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, substream_name)
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
             f", START_DATE={START_DATE}"
         )
 
-    if SUBSTREAM_NAME == "volume":
+    if substream_name == "volume":
         # do we have the input files?
         required_files = [
             csvs.allocation_csv_filename(CSV_DIR),
@@ -628,7 +638,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
 
     # challenge df goes here ----------
 
-    if SUBSTREAM_NAME == "predictoor":
+    if substream_name == "predictoor":
         predictoors = load_predictoor_data_csv(CSV_DIR)
         if len(predictoors) == 0:
             print("No predictoors found")
@@ -701,9 +711,15 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
-    volume_rewards_3d = csvs.load_volume_rewards_csv(CSV_DIR, token_symbol)
-    volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
-    predictoor_rewards = load_predictoor_rewards_csv(CSV_DIR)
+    volume_rewards = {}
+    if os.path.exists(csvs.volume_rewards_csv_filename(CSV_DIR, token_symbol)):
+        volume_rewards_3d = csvs.load_volume_rewards_csv(CSV_DIR, token_symbol)
+        volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
+
+    predictoor_rewards = {}
+    if os.path.exists(predictoor_rewards_csv_filename(CSV_DIR)):
+        predictoor_rewards = load_predictoor_rewards_csv(CSV_DIR)
+
     rewards = calcrewards.merge_rewards(volume_rewards, predictoor_rewards)
 
     # dispense
