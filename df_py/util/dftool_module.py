@@ -615,7 +615,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
 
         # shouldn't already have the output file
         _exitIfFileExists(csvs.volume_rewards_csv_filename(CSV_DIR))
-        _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(CSV_DIR))
 
         # DF volume work
         S = allocations.loadStakes(CSV_DIR)
@@ -640,7 +640,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
         )
 
         csvs.save_volume_rewards_csv(rewperlp, CSV_DIR)
-        csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR, "OCEAN")
+        csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
 
     # challenge df goes here ----------
 

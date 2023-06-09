@@ -331,10 +331,10 @@ def test_rewardsinfo(
 """
 
     csv_dir = str(tmp_path)
-    csvs.save_volume_rewardsinfo_csv(rewards, csv_dir, "MYTOKEN")
+    csvs.save_volume_rewardsinfo_csv(rewards, csv_dir)
 
     # pylint: disable=consider-using-with
-    loaded_rewards = open(csvs.volume_rewardsinfo_csv_filename(csv_dir, "MYTOKEN"), "r")
+    loaded_rewards = open(csvs.volume_rewardsinfo_csv_filename(csv_dir), "r")
     csv = loaded_rewards.read()
     assert csv == target_rewards
 

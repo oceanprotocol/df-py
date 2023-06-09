@@ -785,7 +785,7 @@ def volume_rewards_csv_filename(csv_dir: str) -> str:
 
 @enforce_types
 def save_volume_rewardsinfo_csv(
-    rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
+    rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str
 ):
     """
     @description
@@ -796,8 +796,7 @@ def save_volume_rewardsinfo_csv(
       rewards -- dict of [chainID][nft_addr][LP_addr] : value (float, *not* base 18)
       ..
     """
-    token_symbol = token_symbol.upper()
-    csv_file = volume_rewardsinfo_csv_filename(csv_dir, token_symbol)
+    csv_file = volume_rewardsinfo_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -815,12 +814,12 @@ def save_volume_rewardsinfo_csv(
                         LP_addr.lower(),
                         nft_addr.lower(),
                         value,
-                        token_symbol,
+                        "OCEAN",
                     ]
                     writer.writerow(row)
     print(f"Created {csv_file}")
 
 
 @enforce_types
-def volume_rewardsinfo_csv_filename(csv_dir: str, token_symbol: str) -> str:
-    return os.path.join(csv_dir, f"rewardsinfo-{token_symbol.upper()}.csv")
+def volume_rewardsinfo_csv_filename(csv_dir: str) -> str:
+    return os.path.join(csv_dir, "rewardsinfo.csv")
