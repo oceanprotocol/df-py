@@ -556,7 +556,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
         sys.exit(1)
 
     # extract inputs
-    assert sys.argv[1] == "calc"
+    assert sys.argv[1] == f"calc_{substream_name}_rewards"
     CSV_DIR = sys.argv[2]
     TOT_OCEAN = float(sys.argv[3])
     START_DATE = sys.argv[4]
