@@ -317,17 +317,17 @@ def test_rewardsinfo(
             PE: {LP1: 0.000000000000001, LP2: 12314552354},
         },
     }
-    target_rewards = """nft_addr,LP_addr,amt,token
-0xpa,0xlp1,3.2,MYTOKEN
-0xpa,0xlp2,5.4,MYTOKEN
-0xpb,0xlp2,5.3,MYTOKEN
-0xpb,0xlp3,1.324824324234,MYTOKEN
-0xpc,0xlp3,1.324824324234,MYTOKEN
-0xpc,0xlp4,1.23143252346354,MYTOKEN
-0xpd,0xlp1,1412341242,MYTOKEN
-0xpd,0xlp2,23424,MYTOKEN
-0xpe,0xlp1,1e-15,MYTOKEN
-0xpe,0xlp2,12314552354,MYTOKEN
+    target_rewards = """chainID,nft_addr,LP_addr,amt,token
+1,0xpa,0xlp1,3.2,MYTOKEN
+1,0xpa,0xlp2,5.4,MYTOKEN
+1,0xpb,0xlp2,5.3,MYTOKEN
+1,0xpb,0xlp3,1.324824324234,MYTOKEN
+1,0xpc,0xlp3,1.324824324234,MYTOKEN
+1,0xpc,0xlp4,1.23143252346354,MYTOKEN
+1,0xpd,0xlp1,1412341242,MYTOKEN
+137,0xpd,0xlp2,23424,MYTOKEN
+137,0xpe,0xlp1,1e-15,MYTOKEN
+137,0xpe,0xlp2,12314552354,MYTOKEN
 """
 
     csv_dir = str(tmp_path)
