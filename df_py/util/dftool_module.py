@@ -701,22 +701,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
-    rewards = {}
-    rewards = calcrewards.load_rewards(
-        csvs.volume_rewards_csv_filename(CSV_DIR, token_symbol),
-        csvs.load_volume_rewards_csv,
-        CSV_DIR,
-        "OCEAN",
-        rewards,
-    )
-    rewards = calcrewards.load_rewards(
-        predictoor_rewards_csv_filename(CSV_DIR, token_symbol),
-        load_predictoor_rewards_csv,
-        CSV_DIR,
-        "OCEAN",
-        rewards,
-    )
-    # aggregate challenge df rewards here
+    volume_rewards_3d = csvs.load_volume_rewards_csv(CSV_DIR, token_symbol)
+    volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
+    predictoor_rewards = load_predictoor_rewards_csv(CSV_DIR)
+    rewards = calcrewards.merge_rewards(volume_rewards, predictoor_rewards)
 
     # dispense
     dispense.dispense(
