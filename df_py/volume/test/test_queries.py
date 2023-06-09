@@ -463,11 +463,11 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
 
     sum_ = sum(rewardsperlp[CHAINID].values())
     assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
-    csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
+    csvs.save_volume_rewards_csv(rewardsperlp, csv_dir, "OCEAN")
     rewardsperlp = None  # ensure not used later
 
     # 6. simulate "dftool dispense_active"
-    rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
+    rewardsperlp = csvs.load_volume_rewards_csv(csv_dir, "OCEAN")
     dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
     OCEAN_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)

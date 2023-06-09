@@ -273,7 +273,7 @@ def test_rates(tmp_path):
 @enforce_types
 def test_rewardsperlp_filename(tmp_path):
     csv_dir = str(tmp_path)
-    fname = csvs.rewardsperlpCsvFilename(csv_dir, "MYTOKEN")
+    fname = csvs.volume_rewards_csv_filename(csv_dir, "MYTOKEN")
     target_fname = csv_dir + "/" + "rewardsperlp-MYTOKEN.csv"
     assert fname == target_fname
 
@@ -284,9 +284,9 @@ def test_rewardsperlp_main(tmp_path):
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsperlpCsv(rewards, csv_dir, "MYTOKEN")
+    csvs.save_volume_rewards_csv(rewards, csv_dir, "MYTOKEN")
 
-    loaded_rewards = csvs.loadRewardsCsv(csv_dir, "MYTOKEN")
+    loaded_rewards = csvs.load_volume_rewards_csv(csv_dir, "MYTOKEN")
     assert loaded_rewards == target_rewards
 
     for innerdict in rewards.values():  # ensures we don't deal in weis
@@ -331,10 +331,10 @@ def test_rewardsinfo(
 """
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
+    csvs.save_volume_rewardsinfo_csv(rewards, csv_dir, "MYTOKEN")
 
     # pylint: disable=consider-using-with
-    loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
+    loaded_rewards = open(csvs.volume_rewardsinfo_csv_filename(csv_dir, "MYTOKEN"), "r")
     csv = loaded_rewards.read()
     assert csv == target_rewards
 

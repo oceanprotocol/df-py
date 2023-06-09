@@ -598,8 +598,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
                 sys.exit(1)
 
         # shouldn't already have the output file
-        _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
-        _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(csvs.volume_rewards_csv_filename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(CSV_DIR, "OCEAN"))
 
         # DF volume work
         S = allocations.loadStakes(CSV_DIR)
@@ -623,8 +623,8 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
             S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
         )
 
-        csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
-        csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
+        csvs.save_volume_rewards_csv(rewperlp, CSV_DIR, "OCEAN")
+        csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR, "OCEAN")
 
     # challenge df goes here ----------
 
@@ -703,8 +703,8 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 
     rewards = {}
     rewards = calcrewards.load_rewards(
-        csvs.rewardsperlpCsvFilename(CSV_DIR, token_symbol),
-        csvs.loadRewardsCsv,
+        csvs.volume_rewards_csv_filename(CSV_DIR, token_symbol),
+        csvs.load_volume_rewards_csv,
         CSV_DIR,
         "OCEAN",
         rewards,

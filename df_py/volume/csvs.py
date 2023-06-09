@@ -717,7 +717,7 @@ def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
 
 
 @enforce_types
-def saveRewardsperlpCsv(
+def save_volume_rewards_csv(
     rewards: Dict[str, Dict[str, float]], csv_dir: str, token_symbol: str
 ):
     """
@@ -730,7 +730,7 @@ def saveRewardsperlpCsv(
       ..
     """
     token_symbol = token_symbol.upper()
-    csv_file = rewardsperlpCsvFilename(csv_dir, token_symbol)
+    csv_file = volume_rewards_csv_filename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -747,10 +747,10 @@ def saveRewardsperlpCsv(
 
 
 @enforce_types
-def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float]]:
+def load_volume_rewards_csv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float]]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
     token_symbol = token_symbol.upper()
-    csv_file = rewardsperlpCsvFilename(csv_dir, token_symbol)
+    csv_file = volume_rewards_csv_filename(csv_dir, token_symbol)
     rewards: Dict[Any, Dict[str, float]] = {}
 
     with open(csv_file, "r") as f:
@@ -776,7 +776,7 @@ def loadRewardsCsv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float
 
 
 @enforce_types
-def rewardsperlpCsvFilename(csv_dir: str, token_symbol: str) -> str:
+def volume_rewards_csv_filename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewardsperlp-{token_symbol.upper()}.csv")
 
 
@@ -785,7 +785,7 @@ def rewardsperlpCsvFilename(csv_dir: str, token_symbol: str) -> str:
 
 
 @enforce_types
-def saveRewardsinfoCsv(
+def save_volume_rewardsinfo_csv(
     rewards: Dict[str, Dict[str, Dict[str, float]]], csv_dir: str, token_symbol: str
 ):
     """
@@ -798,7 +798,7 @@ def saveRewardsinfoCsv(
       ..
     """
     token_symbol = token_symbol.upper()
-    csv_file = rewardsinfoCsvFilename(csv_dir, token_symbol)
+    csv_file = volume_rewardsinfo_csv_filename(csv_dir, token_symbol)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -823,5 +823,5 @@ def saveRewardsinfoCsv(
 
 
 @enforce_types
-def rewardsinfoCsvFilename(csv_dir: str, token_symbol: str) -> str:
+def volume_rewardsinfo_csv_filename(csv_dir: str, token_symbol: str) -> str:
     return os.path.join(csv_dir, f"rewardsinfo-{token_symbol.upper()}.csv")
