@@ -505,7 +505,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 
     # check files, prep dir
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(predictoor_data_csv_filename(CSV_DIR, CHAINID))
+    _exitIfFileExists(predictoor_data_csv_filename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -649,11 +649,11 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
         if len(predictoors) == 0:
             print("No predictoors found")
             sys.exit(1)
-        _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR, "OCEAN"))
+        _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards
         predictoor_rewards = calc_predictoor_rewards(predictoors, TOT_OCEAN)
-        save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR, "OCEAN")
+        save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR)
 
     print("dftool calc: Done")
 

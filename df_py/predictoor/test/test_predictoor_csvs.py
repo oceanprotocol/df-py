@@ -66,15 +66,15 @@ def test_predictoorrewards(tmp_path):
         ) * 10.0
 
     csv_dir = str(tmp_path)
-    csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir, "OCEAN")
+    csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
     with open(
-        csvs.predictoor_rewards_csv_filename(csv_dir, "OCEAN"), "r"
+        csvs.predictoor_rewards_csv_filename(csv_dir), "r"
     ) as loaded_data:
         data = loaded_data.read().strip()
         assert data == target_csv
 
-    loaded_predictoor_rewards = csvs.load_predictoor_rewards_csv(csv_dir, "OCEAN")
+    loaded_predictoor_rewards = csvs.load_predictoor_rewards_csv(csv_dir)
     assert len(loaded_predictoor_rewards) == len(predictoor_rewards)
 
     # loaded rewards should be equal to originally created ones
