@@ -163,7 +163,7 @@ Uses these envvars:
     if not os.path.exists(CSV_DIR):
         print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
         sys.exit(1)
-    if not csvs.rateCsvFilenames(CSV_DIR):
+    if not csvs.rate_csv_filenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(1)
 
@@ -177,9 +177,9 @@ Uses these envvars:
     (Vi, Ci, SYMi) = retryFunction(
         queries.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
     )
-    csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
-    csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
-    csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(Vi, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(Ci, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool volsym: Done")
 
@@ -234,7 +234,7 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
 
     # main work
     nftinfo = retryFunction(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
-    csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
+    csvs.save_nftinfo_csv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
 
@@ -285,7 +285,7 @@ Uses these envvars:
 
     # create dir if not exists
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR, NSAMP > 1))
+    _exitIfFileExists(csvs.allocation_csv_filename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -294,7 +294,7 @@ Uses these envvars:
     # main work
     rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
     allocs = retryFunction(queries.queryAllocations, RETRIES, 10, rng, CHAINID)
-    csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
+    csvs.save_allocation_csv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
 
@@ -345,7 +345,7 @@ Uses these envvars:
 
     # create a dir if not exists
     _createDirIfNeeded(CSV_DIR)
-    _exitIfFileExists(csvs.vebalsCsvFilename(CSV_DIR, NSAMP > 1))
+    _exitIfFileExists(csvs.vebals_csv_filename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -355,7 +355,7 @@ Uses these envvars:
     balances, locked_amt, unlock_time = retryFunction(
         queries.queryVebalances, RETRIES, 10, rng, CHAINID
     )
-    csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
+    csvs.save_vebals_csv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
     print("dftool vebals: Done")
 
@@ -388,13 +388,13 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
     print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}\n")
 
     # check files, prep dir
-    _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
+    _exitIfFileExists(csvs.rate_csv_filename(TOKEN_SYMBOL, CSV_DIR))
     _createDirIfNeeded(CSV_DIR)
 
     # main work
     rate = retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
-    csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
+    csvs.save_rate_csv(TOKEN_SYMBOL, rate, CSV_DIR)
 
     print("dftool getrate: Done")
 
@@ -584,12 +584,12 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
     if SUBSTREAM_NAME == "volume":
         # do we have the input files?
         required_files = [
-            csvs.allocationCsvFilename(CSV_DIR),
-            csvs.vebalsCsvFilename(CSV_DIR),
-            *csvs.nftvolsCsvFilenames(CSV_DIR),
-            *csvs.ownersCsvFilenames(CSV_DIR),
-            *csvs.symbolsCsvFilenames(CSV_DIR),
-            *csvs.rateCsvFilenames(CSV_DIR),
+            csvs.allocation_csv_filename(CSV_DIR),
+            csvs.vebals_csv_filename(CSV_DIR),
+            *csvs.nftvols_csv_filenames(CSV_DIR),
+            *csvs.owners_csv_filenames(CSV_DIR),
+            *csvs.symbols_csv_filenames(CSV_DIR),
+            *csvs.rate_csv_filenames(CSV_DIR),
         ]
 
         for fname in required_files:
@@ -603,10 +603,10 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
 
         # DF volume work
         S = allocations.loadStakes(CSV_DIR)
-        V = csvs.loadNftvolsCsvs(CSV_DIR)
-        C = csvs.loadOwnersCsvs(CSV_DIR)
-        SYM = csvs.loadSymbolsCsvs(CSV_DIR)
-        R = csvs.loadRateCsvs(CSV_DIR)
+        V = csvs.load_nftvols_csvs(CSV_DIR)
+        C = csvs.load_owners_csvs(CSV_DIR)
+        SYM = csvs.load_symbols_csvs(CSV_DIR)
+        R = csvs.load_rate_csvs(CSV_DIR)
         do_pubrewards = constants.DO_PUBREWARDS
         do_rank = constants.DO_RANK
 
@@ -1245,21 +1245,21 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
     recordDeployedContracts(ADDRESS_FILE)
 
     # load vebals csv file
-    passive_fname = csvs.passiveCsvFilename(CSV_DIR)
-    vebals_realtime_fname = csvs.vebalsCsvFilename(CSV_DIR, False)
+    passive_fname = csvs.passive_csv_filename(CSV_DIR)
+    vebals_realtime_fname = csvs.vebals_csv_filename(CSV_DIR, False)
     if not os.path.exists(vebals_realtime_fname):
         print(f"\nNo file {vebals_realtime_fname} in '{CSV_DIR}'. Exiting.")
         sys.exit(1)
     _exitIfFileExists(passive_fname)
 
     # get addresses
-    vebals, _, _ = csvs.loadVebalsCsv(CSV_DIR, False)
+    vebals, _, _ = csvs.load_vebals_csv(CSV_DIR, False)
     addresses = list(vebals.keys())
 
     balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
 
     # save to csv
-    csvs.savePassiveCsv(rewards, balances, CSV_DIR)
+    csvs.save_passive_csv(rewards, balances, CSV_DIR)
 
 
 # ========================================================================

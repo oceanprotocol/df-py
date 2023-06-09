@@ -21,7 +21,7 @@ def test_getrate(tmp_path):
     os.system(cmd)
 
     # test result
-    assert csvs.rateCsvFilenames(CSV_DIR)
+    assert csvs.rate_csv_filenames(CSV_DIR)
 
 
 @enforce_types

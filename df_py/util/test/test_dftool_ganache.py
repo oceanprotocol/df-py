@@ -33,23 +33,23 @@ def test_calc(tmp_path):
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.saveAllocationCsv(allocations, CSV_DIR)
+    csvs.save_allocation_csv(allocations, CSV_DIR)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1.0}}
-    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(nftvols_at_chain, CSV_DIR, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(owners_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(symbols_at_chain, CSV_DIR, CHAINID)
 
-    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
     TOT_OCEAN = 1000.0
@@ -167,23 +167,23 @@ def test_calc_without_amount(tmp_path):
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.saveAllocationCsv(allocations, CSV_DIR)
+    csvs.save_allocation_csv(allocations, CSV_DIR)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1e10}}
-    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(nftvols_at_chain, CSV_DIR, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(owners_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1e8}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(symbols_at_chain, CSV_DIR, CHAINID)
 
-    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
     TOT_OCEAN = 0
@@ -308,13 +308,13 @@ def test_calc_passive(tmp_path):
         fake_vebals[acc.address] = from_wei(veOCEAN.balanceOf(acc.address))
         locked_amt[acc.address] = OCEAN_lock_amt
         unlock_times[acc.address] = unlock_time
-    csvs.saveVebalsCsv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
+    csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
     date = chain.time() // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
     cmd = f"./dftool calculate_passive {CHAINID} {date} {CSV_DIR}"
     os.system(cmd)
 
-    filename = csvs.passiveCsvFilename(CSV_DIR)
+    filename = csvs.passive_csv_filename(CSV_DIR)
     assert os.path.exists(filename)
 
     # number of lines must be >=3

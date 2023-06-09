@@ -13,7 +13,7 @@ from df_py.volume.models import SimpleDataNft
 
 
 @enforce_types
-def saveAllocationCsv(allocs: dict, csv_dir: str, sampled=True):
+def save_allocation_csv(allocs: dict, csv_dir: str, sampled=True):
     """
     @description
       Save the allocations csv for this chain.
@@ -23,7 +23,7 @@ def saveAllocationCsv(allocs: dict, csv_dir: str, sampled=True):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = allocationCsvFilename(csv_dir, sampled)
+    csv_file = allocation_csv_filename(csv_dir, sampled)
     assert not os.path.exists(csv_file), csv_file
     S = allocs
     with open(csv_file, "w") as f:
@@ -46,7 +46,7 @@ def saveAllocationCsv(allocs: dict, csv_dir: str, sampled=True):
 
 
 @enforce_types
-def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
+def load_allocation_csvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
       Load allocation csv; return result as a single dict
@@ -54,7 +54,7 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
     @return
       allocs -- dict of [chainID][basetoken_addr][nft_addr][LP_addr] : perc_flt
     """
-    csv_file = allocationCsvFilename(csv_dir)
+    csv_file = allocation_csv_filename(csv_dir)
     allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -85,7 +85,7 @@ def loadAllocationCsvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]:
 
 
 @enforce_types
-def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
+def allocation_csv_filename(csv_dir: str, sampled=True) -> str:
     """Returns the allocations filename"""
     f = "allocations.csv"
     if not sampled:
@@ -95,7 +95,7 @@ def allocationCsvFilename(csv_dir: str, sampled=True) -> str:
 
 # ========================================================================
 # vebals csvs
-def saveVebalsCsv(
+def save_vebals_csv(
     vebals: dict, locked_amt: dict, unlock_time: dict, csv_dir: str, sampled=True
 ):
     """
@@ -110,7 +110,7 @@ def saveVebalsCsv(
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = vebalsCsvFilename(csv_dir, sampled)
+    csv_file = vebals_csv_filename(csv_dir, sampled)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -129,7 +129,7 @@ def saveVebalsCsv(
     print(f"Created {csv_file}")
 
 
-def loadVebalsCsv(
+def load_vebals_csv(
     csv_dir: str, sampled=True
 ) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
@@ -139,7 +139,7 @@ def loadVebalsCsv(
     @return
       vebals -- dict of [LP_addr] : balance
     """
-    csv_file = vebalsCsvFilename(csv_dir, sampled)
+    csv_file = vebals_csv_filename(csv_dir, sampled)
     vebals: Dict[str, float] = {}
     locked_amts: Dict[str, float] = {}
     unlock_times: Dict[str, int] = {}
@@ -167,7 +167,7 @@ def loadVebalsCsv(
 
 
 @enforce_types
-def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
+def vebals_csv_filename(csv_dir: str, sampled=True) -> str:
     """Returns the vebals filename"""
     f = "vebals.csv"
     if not sampled:
@@ -180,7 +180,7 @@ def vebalsCsvFilename(csv_dir: str, sampled=True) -> str:
 
 
 @enforce_types
-def savePassiveCsv(rewards, balances, csv_dir):
+def save_passive_csv(rewards, balances, csv_dir):
     """
     @description
       Save the passive rewards data csv.
@@ -191,7 +191,7 @@ def savePassiveCsv(rewards, balances, csv_dir):
       csv_dir -- directory that holds csv files
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = passiveCsvFilename(csv_dir)
+    csv_file = passive_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -206,7 +206,7 @@ def savePassiveCsv(rewards, balances, csv_dir):
 
 
 @enforce_types
-def passiveCsvFilename(csv_dir: str) -> str:
+def passive_csv_filename(csv_dir: str) -> str:
     """Returns the vebals filename"""
     f = "passive.csv"
     return os.path.join(csv_dir, f)
@@ -217,7 +217,7 @@ def passiveCsvFilename(csv_dir: str) -> str:
 
 
 @enforce_types
-def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
+def save_nftinfo_csv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     """
     @description
       Save the nftinfo for this chain. This csv is required for df-sql.
@@ -228,7 +228,7 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
     """
 
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = nftinfoCsvFilename(csv_dir, chainID)
+    csv_file = nftinfo_csv_filename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
@@ -259,30 +259,30 @@ def saveNftinfoCsv(nftinfo: List[SimpleDataNft], csv_dir: str, chainID: int):
 
 
 @enforce_types
-def loadNftinfoCsvs(csv_dir: str):
+def load_nftinfo_csvs(csv_dir: str):
     """
     @description
       Load all nftinfo csvs (across all chains); return result as single dict
     @return
       nftinfo -- list of SimpleDataNft
     """
-    csv_files = nftinfoCsvFilenames(csv_dir)
+    csv_files = nftinfo_csv_filenames(csv_dir)
     nftinfo = []
     for csv_file in csv_files:
-        chainID = chainIDforNftinfoCsv(csv_file)
-        nftinfo += loadNftinfoCsv(csv_dir, chainID)
+        chainID = chain_id_for_nftinfo_csv(csv_file)
+        nftinfo += load_nftinfo_csv(csv_dir, chainID)
     return nftinfo
 
 
 @enforce_types
-def loadNftinfoCsv(csv_dir: str, chainID: int):
+def load_nftinfo_csv(csv_dir: str, chainID: int):
     """
     @description
       Load nftinfo for this chainID
     @return
       nftinfo_at_chain -- list of SimpleDataNft
     """
-    csv_file = nftinfoCsvFilename(csv_dir, chainID)
+    csv_file = nftinfo_csv_filename(csv_dir, chainID)
     nftinfo = []
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -321,19 +321,19 @@ def loadNftinfoCsv(csv_dir: str, chainID: int):
 
 
 @enforce_types
-def nftinfoCsvFilenames(csv_dir: str) -> List[str]:
+def nftinfo_csv_filenames(csv_dir: str) -> List[str]:
     """Returns a list of nftinfo filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "nftinfo*.csv"))
 
 
 @enforce_types
-def nftinfoCsvFilename(csv_dir: str, chainID: int) -> str:
+def nftinfo_csv_filename(csv_dir: str, chainID: int) -> str:
     """Returns the nftinfo filename"""
     return os.path.join(csv_dir, f"nftinfo_{chainID}.csv")
 
 
 @enforce_types
-def chainIDforNftinfoCsv(filename) -> int:
+def chain_id_for_nftinfo_csv(filename) -> int:
     """Returns chainID for a given nftinfo csv filename"""
     return _lastInt(filename)
 
@@ -343,7 +343,7 @@ def chainIDforNftinfoCsv(filename) -> int:
 
 
 @enforce_types
-def saveNftvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
+def save_nftvols_csv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
       Save the nftvols csv for this chain. This csv is a key input for
@@ -355,7 +355,7 @@ def saveNftvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
       chainID -- which network
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = nftvolsCsvFilename(csv_dir, chainID)
+    csv_file = nftvols_csv_filename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     nftvols = nftvols_at_chain
     with open(csv_file, "w") as f:
@@ -371,7 +371,7 @@ def saveNftvolsCsv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
 
 
 @enforce_types
-def loadNftvolsCsvs(csv_dir: str):
+def load_nftvols_csvs(csv_dir: str):
     """
     @description
       Load all nftvols csvs (across all chains); return result as single dict
@@ -379,16 +379,16 @@ def loadNftvolsCsvs(csv_dir: str):
     @return
       nftvols -- dict of [chainID][basetoken_addr][nft_addr] : vol_amt
     """
-    csv_files = nftvolsCsvFilenames(csv_dir)
+    csv_files = nftvols_csv_filenames(csv_dir)
     nftvols = {}
     for csv_file in csv_files:
-        chainID = chainIDforNftvolsCsv(csv_file)
-        nftvols[chainID] = loadNftvolsCsv(csv_dir, chainID)
+        chainID = chain_id_for_nftvols_csv(csv_file)
+        nftvols[chainID] = load_nftvols_csv(csv_dir, chainID)
     return nftvols
 
 
 @enforce_types
-def loadNftvolsCsv(csv_dir: str, chainID: int):
+def load_nftvols_csv(csv_dir: str, chainID: int):
     """
     @description
       Load nftvols for this chainID
@@ -396,7 +396,7 @@ def loadNftvolsCsv(csv_dir: str, chainID: int):
     @return
       nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt
     """
-    csv_file = nftvolsCsvFilename(csv_dir, chainID)
+    csv_file = nftvols_csv_filename(csv_dir, chainID)
     nftvols: Dict[str, Dict[str, float]] = {}  # ie nftvols_at_chain
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -424,19 +424,19 @@ def loadNftvolsCsv(csv_dir: str, chainID: int):
 
 
 @enforce_types
-def nftvolsCsvFilenames(csv_dir: str) -> List[str]:
+def nftvols_csv_filenames(csv_dir: str) -> List[str]:
     """Returns a list of nftvols filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "nftvols*.csv"))
 
 
 @enforce_types
-def nftvolsCsvFilename(csv_dir: str, chainID: int) -> str:
+def nftvols_csv_filename(csv_dir: str, chainID: int) -> str:
     """Returns the nftvols filename for a given chainID"""
     return os.path.join(csv_dir, f"nftvols-{chainID}.csv")
 
 
 @enforce_types
-def chainIDforNftvolsCsv(filename) -> int:
+def chain_id_for_nftvols_csv(filename) -> int:
     """Returns chainID for a given nftvols csv filename"""
     return _lastInt(filename)
 
@@ -446,7 +446,7 @@ def chainIDforNftvolsCsv(filename) -> int:
 
 
 @enforce_types
-def saveOwnersCsv(owners_at_chain: Dict[str, str], csv_dir: str, chainID: int):
+def save_owners_csv(owners_at_chain: Dict[str, str], csv_dir: str, chainID: int):
     """
     @description
       Save the nft owners for this chain
@@ -457,7 +457,7 @@ def saveOwnersCsv(owners_at_chain: Dict[str, str], csv_dir: str, chainID: int):
       chainID -- which chain (network)
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = ownersCsvFilename(csv_dir, chainID)
+    csv_file = owners_csv_filename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -476,7 +476,7 @@ def saveOwnersCsv(owners_at_chain: Dict[str, str], csv_dir: str, chainID: int):
 
 
 @enforce_types
-def loadOwnersCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
+def load_owners_csvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     """
     @description
       Load all owners csvs across all chains
@@ -484,17 +484,17 @@ def loadOwnersCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     @return
       owners -- dict of [chainID][nft_addr] : owner_addr
     """
-    csv_files = ownersCsvFilenames(csv_dir)
+    csv_files = owners_csv_filenames(csv_dir)
     owners: dict = {}
     for csv_file in csv_files:
-        chainID = chainIDforOwnersCsv(csv_file)
-        owners[chainID] = loadOwnersCsv(csv_dir, chainID)
+        chainID = chain_id_for_owners_csv(csv_file)
+        owners[chainID] = load_owners_csv(csv_dir, chainID)
 
     return owners
 
 
 @enforce_types
-def loadOwnersCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
+def load_owners_csv(csv_dir: str, chainID: int) -> Dict[str, str]:
     """
     @description
       Load owners for this chainID
@@ -502,7 +502,7 @@ def loadOwnersCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
     @return
       owners_at_chain -- dict of [nft_addr] : owner_addr
     """
-    csv_file = ownersCsvFilename(csv_dir, chainID)
+    csv_file = owners_csv_filename(csv_dir, chainID)
     owners_at_chain: dict = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -526,19 +526,19 @@ def loadOwnersCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
 
 
 @enforce_types
-def ownersCsvFilenames(csv_dir: str) -> List[str]:
+def owners_csv_filenames(csv_dir: str) -> List[str]:
     """Returns a list of owners filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "owners*.csv"))
 
 
 @enforce_types
-def ownersCsvFilename(csv_dir: str, chainID: int) -> str:
+def owners_csv_filename(csv_dir: str, chainID: int) -> str:
     """Returns the owners filename for a given chainID"""
     return os.path.join(csv_dir, f"owners-{chainID}.csv")
 
 
 @enforce_types
-def chainIDforOwnersCsv(filename) -> int:
+def chain_id_for_owners_csv(filename) -> int:
     """Returns chainID for a given owners csv filename"""
     return _lastInt(filename)
 
@@ -548,7 +548,7 @@ def chainIDforOwnersCsv(filename) -> int:
 
 
 @enforce_types
-def saveSymbolsCsv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: int):
+def save_symbols_csv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: int):
     """
     @description
       Save the symbols tokens for this chain
@@ -559,7 +559,7 @@ def saveSymbolsCsv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: int)
       chainID -- which chain (network)
     """
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = symbolsCsvFilename(csv_dir, chainID)
+    csv_file = symbols_csv_filename(csv_dir, chainID)
     assert not os.path.exists(csv_file), csv_file
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -577,7 +577,7 @@ def saveSymbolsCsv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: int)
 
 
 @enforce_types
-def loadSymbolsCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
+def load_symbols_csvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     """
     @description
       Load all symbols tokens across all chains
@@ -585,17 +585,17 @@ def loadSymbolsCsvs(csv_dir: str) -> Dict[int, Dict[str, str]]:
     @return
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol
     """
-    csv_files = symbolsCsvFilenames(csv_dir)
+    csv_files = symbols_csv_filenames(csv_dir)
     symbols: dict = {}
     for csv_file in csv_files:
-        chainID = chainIDforSymbolsCsv(csv_file)
-        symbols[chainID] = loadSymbolsCsv(csv_dir, chainID)
+        chainID = chain_id_for_symbols_csv(csv_file)
+        symbols[chainID] = load_symbols_csv(csv_dir, chainID)
 
     return symbols
 
 
 @enforce_types
-def loadSymbolsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
+def load_symbols_csv(csv_dir: str, chainID: int) -> Dict[str, str]:
     """
     @description
       Load symbols for this chainID
@@ -603,7 +603,7 @@ def loadSymbolsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
     @return
       symbols_at_chain -- dict of [basetoken_addr] : basetoken_symbol
     """
-    csv_file = symbolsCsvFilename(csv_dir, chainID)
+    csv_file = symbols_csv_filename(csv_dir, chainID)
     symbols_at_chain: dict = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -626,19 +626,19 @@ def loadSymbolsCsv(csv_dir: str, chainID: int) -> Dict[str, str]:
 
 
 @enforce_types
-def symbolsCsvFilenames(csv_dir: str) -> List[str]:
+def symbols_csv_filenames(csv_dir: str) -> List[str]:
     """Returns a list of symbols filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "symbols*.csv"))
 
 
 @enforce_types
-def symbolsCsvFilename(csv_dir: str, chainID: int) -> str:
+def symbols_csv_filename(csv_dir: str, chainID: int) -> str:
     """Returns the symbols filename for a given chainID"""
     return os.path.join(csv_dir, f"symbols-{chainID}.csv")
 
 
 @enforce_types
-def chainIDforSymbolsCsv(filename) -> int:
+def chain_id_for_symbols_csv(filename) -> int:
     """Returns chainID for a given symbols csv filename"""
     return _lastInt(filename)
 
@@ -648,7 +648,7 @@ def chainIDforSymbolsCsv(filename) -> int:
 
 
 @enforce_types
-def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
+def save_rate_csv(token_symbol: str, rate: float, csv_dir: str):
     """
     @description
       Save a csv file for an exchange rate.
@@ -659,7 +659,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
       csv_dir -- directory holding csvs
     """
     token_symbol = token_symbol.upper()
-    csv_file = rateCsvFilename(token_symbol, csv_dir)
+    csv_file = rate_csv_filename(token_symbol, csv_dir)
     assert not os.path.exists(csv_file), f"{csv_file} can't already exist"
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
@@ -669,7 +669,7 @@ def saveRateCsv(token_symbol: str, rate: float, csv_dir: str):
 
 
 @enforce_types
-def loadRateCsvs(csv_dir: str) -> Dict[str, float]:
+def load_rate_csvs(csv_dir: str) -> Dict[str, float]:
     """
     @description
       Load all exchange rate csvs, and return result as a single dict
@@ -677,7 +677,7 @@ def loadRateCsvs(csv_dir: str) -> Dict[str, float]:
     @return
       rates -- dict of [token_sym] : rate
     """
-    csv_files = rateCsvFilenames(csv_dir)
+    csv_files = rate_csv_filenames(csv_dir)
     rates = {}
     for csv_file in csv_files:
         with open(csv_file, "r") as f:
@@ -701,13 +701,13 @@ def loadRateCsvs(csv_dir: str) -> Dict[str, float]:
 
 
 @enforce_types
-def rateCsvFilenames(csv_dir: str) -> List[str]:
+def rate_csv_filenames(csv_dir: str) -> List[str]:
     """Returns a list of exchange rate filenames in this directory"""
     return glob.glob(os.path.join(csv_dir, "rate*.csv"))
 
 
 @enforce_types
-def rateCsvFilename(token_symbol: str, csv_dir: str) -> str:
+def rate_csv_filename(token_symbol: str, csv_dir: str) -> str:
     """Returns the exchange rate filename for a given token"""
     return os.path.join(csv_dir, f"rate-{token_symbol.upper()}.csv")
 
