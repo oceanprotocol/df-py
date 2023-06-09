@@ -56,7 +56,7 @@ class TokSet:
         """tups - list of (chainID, address, symbol). Will set to [] if None"""
         tups = tups or []
         self.toks = set()
-        for (chainID, address, symbol) in tups:
+        for chainID, address, symbol in tups:
             self.add(chainID, address, symbol)
 
     def add(self, chainID: int, address: str, symbol: str):

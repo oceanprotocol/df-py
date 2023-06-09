@@ -747,7 +747,9 @@ def save_volume_rewards_csv(
 
 
 @enforce_types
-def load_volume_rewards_csv(csv_dir: str, token_symbol: str) -> Dict[str, Dict[str, float]]:
+def load_volume_rewards_csv(
+    csv_dir: str, token_symbol: str
+) -> Dict[str, Dict[str, float]]:
     """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
     token_symbol = token_symbol.upper()
     csv_file = volume_rewards_csv_filename(csv_dir, token_symbol)

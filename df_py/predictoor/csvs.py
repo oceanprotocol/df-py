@@ -73,7 +73,6 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, PredictoorBase]:
     return predictoor_data
 
 
-
 @enforce_types
 def predictoor_data_csv_filename(csv_dir):
     f = "predictoor_data.csv"
@@ -84,9 +83,7 @@ def predictoor_data_csv_filename(csv_dir):
 
 
 @enforce_types
-def save_predictoor_rewards_csv(
-    predictoor_rewards: Dict[str, float], csv_dir: str
-):
+def save_predictoor_rewards_csv(predictoor_rewards: Dict[str, float], csv_dir: str):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = predictoor_rewards_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
@@ -103,9 +100,7 @@ def save_predictoor_rewards_csv(
 
 
 @enforce_types
-def load_predictoor_rewards_csv(
-    csv_dir: str
-) -> Dict[str, float]:
+def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, float]:
     csv_file = predictoor_rewards_csv_filename(csv_dir)
     predictoor_rewards = {}
     with open(csv_file, "r") as f:
