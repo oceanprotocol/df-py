@@ -317,7 +317,7 @@ def test_rewardsinfo(
             PE: {LP1: 0.000000000000001, LP2: 12314552354},
         },
     }
-    target_rewards = """chainID,nft_addr,LP_addr,amt,token
+    target_rewards = """nft_addr,LP_addr,amt,token
 0xpa,0xlp1,3.2,MYTOKEN
 0xpa,0xlp2,5.4,MYTOKEN
 0xpb,0xlp2,5.3,MYTOKEN
