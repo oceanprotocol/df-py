@@ -28,13 +28,13 @@ def test_predictoordata(tmp_path):
         predictoors[p.address] = p
 
     csv_dir = str(tmp_path)
-    csvs.save_predictoor_data_csv(predictoors, csv_dir, 1)
+    csvs.save_predictoor_data_csv(predictoors, csv_dir)
 
-    with open(csvs.predictoor_data_csv_filename(csv_dir, 1), "r") as loaded_data:
+    with open(csvs.predictoor_data_csv_filename(csv_dir), "r") as loaded_data:
         data = loaded_data.read().strip()
         assert data == target_csv
 
-    loaded_predictoors = csvs.load_predictoor_data_csv(csv_dir, 1)
+    loaded_predictoors = csvs.load_predictoor_data_csv(csv_dir)
     assert len(loaded_predictoors) == len(predictoors)
 
     for addr, original_predictoor in predictoors.items():

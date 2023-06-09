@@ -522,7 +522,7 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
         fin_block,
         CHAINID,
     )
-    save_predictoor_data_csv(predictoor_data, CSV_DIR, CHAINID)
+    save_predictoor_data_csv(predictoor_data, CSV_DIR)
     print("dftool predictoor_data: Done")
 
 
