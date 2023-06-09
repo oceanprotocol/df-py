@@ -205,6 +205,34 @@ class StartFinArgumentParser(argparse.ArgumentParser):
         )
 
 
+class SimpleChainIdArgumentParser(argparse.ArgumentParser):
+    def __init__(self, description, command_name, epilog=None):
+        super().__init__(
+            description=description,
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog=epilog,
+        )
+        self.add_argument("command", choices=[command_name])
+        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+
+    def print_args_and_get_chain(self):
+        arguments = self.parse_args()
+        print_arguments(arguments)
+
+        return arguments.CHAINID
+
+
+class DfStrategyArgumentParser(argparse.ArgumentParser):
+    def __init__(self, description, command_name):
+        super().__init__(description=description)
+        self.add_argument("command", choices=[command_name])
+        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("DFREWARDS_ADDR", type=str, help="DFRewards contract address")
+        self.add_argument(
+            "DFSTRATEGY_ADDR", type=str, help="DFStrategy contract address"
+        )
+
+
 # ========================================================================
 @enforce_types
 def do_volsym():
@@ -718,20 +746,10 @@ def do_dispense_active():
 # ========================================================================
 @enforce_types
 def do_newdfrewards():
-    HELP = f"""Deploy new DFRewards contract
-
-Usage: dftool newdfrewards CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "newdfrewards"
-    CHAINID = int(sys.argv[2])
-
-    print(f"Arguments: CHAINID={CHAINID}")
+    parser = SimpleChainIdArgumentParser(
+        "Deploy new DFRewards contract", "newdfrewards"
+    )
+    CHAINID = parser.print_args_and_get_chain()
 
     # main work
     networkutil.connect(CHAINID)
@@ -745,27 +763,16 @@ Usage: dftool newdfrewards CHAINID
 # ========================================================================
 @enforce_types
 def do_newdfstrategy():
-    HELP = f"""Deploy new DFStrategy contract
+    parser = DfStrategyArgumentParser("Deploy new DFStrategy contract", "newdfstrategy")
 
-Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
-  CHAINID -- {CHAINID_EXAMPLES}
-  DFREWARDS_ADDR -- DFRewards contract address
-  DFSTRATEGY_NAME -- DFStrategy contract name
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    assert sys.argv[1] == "newdfstrategy"
-    CHAINID = int(sys.argv[2])
-    DFREWARDS_ADDR = sys.argv[3]
-    DFSTRATEGY_NAME = sys.argv[4]
-
-    print(f"Arguments: CHAINID={CHAINID}")
-
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_strategy = B[DFSTRATEGY_NAME].deploy(DFREWARDS_ADDR, {"from": from_account})
+    df_strategy = B[arguments.DFSTRATEGY_NAME].deploy(
+        arguments.DFREWARDS_ADDR, {"from": from_account}
+    )
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
     print("dftool newdfstrategy: Done")
@@ -774,31 +781,22 @@ Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
 # ========================================================================
 @enforce_types
 def do_addstrategy():
-    HELP = f"""Add a strategy to DFRewards contract
+    parser = DfStrategyArgumentParser(
+        "Add a strategy to DFRewards contract", "addstrategy"
+    )
 
-Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
-  CHAINID -- {CHAINID_EXAMPLES}
-  DFREWARDS_ADDR -- DFRewards contract address
-  DFSTRATEGY_ADDR -- DFStrategy contract address
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    assert sys.argv[1] == "addstrategy"
-    CHAINID = int(sys.argv[2])
-    DFREWARDS_ADDR = sys.argv[3]
-    DFSTRATEGY_ADDR = sys.argv[4]
-
-    print(f"Arguments: CHAINID={CHAINID}")
-
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
-    tx = df_rewards.addStrategy(DFSTRATEGY_ADDR, {"from": from_account})
+    df_rewards = B.DFRewards.at(arguments.DFREWARDS_ADDR)
+    tx = df_rewards.addStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyAdded"
 
-    print(f"Strategy {DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}")
+    print(
+        f"Strategy {arguments.DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}"
+    )
 
     print("dftool addstrategy: Done")
 
@@ -806,30 +804,21 @@ Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 # ========================================================================
 @enforce_types
 def do_retirestrategy():
-    HELP = f"""Retire a strategy from DFRewards contract
+    parser = DfStrategyArgumentParser(
+        "Retire a strategy from DFRewards contract", "retirestrategy"
+    )
 
-Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
-  CHAINID -- {CHAINID_EXAMPLES}
-  DFREWARDS_ADDR -- DFRewards contract address
-  DFSTRATEGY_ADDR -- DFStrategy contract address
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    assert sys.argv[1] == "retirestrategy"
-    CHAINID = int(sys.argv[2])
-    DFREWARDS_ADDR = sys.argv[3]
-    DFSTRATEGY_ADDR = sys.argv[4]
-
-    print(f"Arguments: CHAINID={CHAINID}")
-
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
-    tx = df_rewards.retireStrategy(DFSTRATEGY_ADDR, {"from": from_account})
+    df_rewards = B.DFRewards.at(arguments.DFREWARDS_ADDR)
+    tx = df_rewards.retireStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyRetired"
-    print(f"Strategy {DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}")
+    print(
+        f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
+    )
 
     print("dftool addstrategy: Done")
 
@@ -837,13 +826,8 @@ Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 # ========================================================================
 @enforce_types
 def do_compile():
-    HELP = """Compile contracts
-
-Usage: dftool compile
-"""
-    if len(sys.argv) not in [2]:
-        print(HELP)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Compile contracts")
+    parser.add_argument("command", choices=["compile"])
 
     os.system("brownie compile")
 
@@ -852,25 +836,15 @@ Usage: dftool compile
 @enforce_types
 def do_initdevwallets():
     # UPADATE THIS
-    HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-
-Usage: dftool initdevwallets CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
+    parser = SimpleChainIdArgumentParser(
+        "Init wallets with OCEAN. (GANACHE ONLY)" "initdevwallets",
+        epilog=f"""Uses these envvars:
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+        """,
+    )
+    CHAINID = parser.print_args_and_get_chain()
 
     from df_py.util import oceantestutil  # pylint: disable=import-outside-toplevel
-
-    # extract inputs
-    assert sys.argv[1] == "initdevwallets"
-    CHAINID = int(sys.argv[2])
-    print("dftool initdevwallets: Begin")
-    print(f"Arguments: CHAINID={CHAINID}")
 
     if CHAINID != DEV_CHAINID:
         # To support other testnets, they need to initdevwallets()
@@ -895,23 +869,15 @@ Uses these envvars:
 @enforce_types
 def do_manyrandom():
     # UPDATE THIS
-    HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
+    parser = SimpleChainIdArgumentParser(
+        "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
+        "manyrandom",
+        epilog=f"""Uses these envvars:
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+        """,
+    )
 
-Usage: dftool manyrandom CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "manyrandom"
-    CHAINID = int(sys.argv[2])
-    print("dftool manyrandom: Begin")
-    print(f"Arguments: CHAINID={CHAINID}")
+    CHAINID = parser.print_args_and_get_chain()
 
     if CHAINID != DEV_CHAINID:
         # To support other testnets, they need to fillAccountsWithOcean()
@@ -1300,12 +1266,6 @@ def _exitIfFileExists(filename: str):
     if os.path.exists(filename):
         print(f"\nFile {filename} exists. Exiting.")
         sys.exit(1)
-
-
-def _createDirIfNeeded(dir_: str):
-    if not os.path.exists(dir_):
-        print(f"Directory {dir_} did not exist, so created it")
-        os.mkdir(dir_)
 
 
 def _getAddressEnvvarOrExit() -> str:
