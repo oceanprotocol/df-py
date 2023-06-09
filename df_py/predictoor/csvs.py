@@ -16,10 +16,9 @@ from df_py.util.csv_helpers import assertIsEthAddr
 def save_predictoor_data_csv(
     predictoor_data: Dict[str, Union[PredictoorBase, Predictoor]],
     csv_dir: str,
-    chainid: int,
 ):
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = predictoor_data_csv_filename(csv_dir, chainid)
+    csv_file = predictoor_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
@@ -43,8 +42,8 @@ def save_predictoor_data_csv(
 
 
 @enforce_types
-def load_predictoor_data_csv(csv_dir: str, chainid: int) -> Dict[str, PredictoorBase]:
-    csv_file = predictoor_data_csv_filename(csv_dir, chainid)
+def load_predictoor_data_csv(csv_dir: str) -> Dict[str, PredictoorBase]:
+    csv_file = predictoor_data_csv_filename(csv_dir)
     predictoor_data = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -74,23 +73,10 @@ def load_predictoor_data_csv(csv_dir: str, chainid: int) -> Dict[str, Predictoor
     return predictoor_data
 
 
-def load_all_predictoors_csv(csv_dir: str) -> Dict[str, PredictoorBase]:
-    predictoor_data = {}
-
-    csv_files = glob.glob(os.path.join(csv_dir, "predictoordata-*.csv"))
-    for csv_file in csv_files:
-        # extract chainid from filename
-        match = re.search(r"predictoordata-(\d+)\.csv$", csv_file)
-        if match:
-            chainid = int(match.group(1))
-            predictoor_data.update(load_predictoor_data_csv(csv_dir, chainid))
-
-    return predictoor_data
-
 
 @enforce_types
-def predictoor_data_csv_filename(csv_dir, chainid):
-    f = f"predictoordata-{chainid}.csv"
+def predictoor_data_csv_filename(csv_dir):
+    f = f"predictoordata.csv"
     return os.path.join(csv_dir, f)
 
 
@@ -99,11 +85,10 @@ def predictoor_data_csv_filename(csv_dir, chainid):
 
 @enforce_types
 def save_predictoor_rewards_csv(
-    predictoor_rewards: Dict[str, float], csv_dir: str, token_symbol: str = "OCEAN"
+    predictoor_rewards: Dict[str, float], csv_dir: str
 ):
-    token_symbol = token_symbol.upper()
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = predictoor_rewards_csv_filename(csv_dir, token_symbol)
+    csv_file = predictoor_rewards_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
@@ -119,9 +104,9 @@ def save_predictoor_rewards_csv(
 
 @enforce_types
 def load_predictoor_rewards_csv(
-    csv_dir: str, token_symbol: str = "OCEAN"
+    csv_dir: str
 ) -> Dict[str, float]:
-    csv_file = predictoor_rewards_csv_filename(csv_dir, token_symbol)
+    csv_file = predictoor_rewards_csv_filename(csv_dir)
     predictoor_rewards = {}
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
@@ -141,6 +126,6 @@ def load_predictoor_rewards_csv(
 
 
 @enforce_types
-def predictoor_rewards_csv_filename(csv_dir, token_symbol: str = "OCEAN"):
-    f = f"predictoor_rewards-{token_symbol.upper()}.csv"
+def predictoor_rewards_csv_filename(csv_dir):
+    f = "predictoor_rewards.csv"
     return os.path.join(csv_dir, f)

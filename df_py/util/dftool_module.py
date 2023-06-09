@@ -11,10 +11,10 @@ from web3.middleware import geth_poa_middleware
 from df_py.challenge import judge
 from df_py.challenge.csvs import saveChallengeDataCsv
 from df_py.predictoor.csvs import (
-    load_all_predictoors_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
     save_predictoor_data_csv,
+    load_predictoor_data_csv,
     save_predictoor_rewards_csv,
     load_predictoor_rewards_csv,
 )
@@ -629,7 +629,7 @@ Usage: dftool calc CSV_DIR TOT_OCEAN START_DATE [SUBSTREAM_NAME] [IGNORED]
     # challenge df goes here ----------
 
     if SUBSTREAM_NAME == "predictoor":
-        predictoors = load_all_predictoors_csv(CSV_DIR)
+        predictoors = load_predictoor_data_csv(CSV_DIR)
         if len(predictoors) == 0:
             print("No predictoors found")
             sys.exit(1)

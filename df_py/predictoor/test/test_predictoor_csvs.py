@@ -49,43 +49,6 @@ def test_predictoordata(tmp_path):
         )
 
 
-@enforce_types
-def test_loadAllPredictoorData(tmp_path):
-    # create multiple CSVs for each chain_id
-    csv_dir = str(tmp_path)
-    chain_ids = [1, 2, 3]
-    predictoor_data = {}
-    for chainid in chain_ids:
-        predictoors = {}
-        for i in range(5):  # 5 predictoors per chain
-            p = Predictoor(f"0x{i}00000000000000000000000000000000000000{chainid}")
-            for j in range(5):
-                p.add_prediction(
-                    Prediction(
-                        i, j % 2 * 1.0, "0x0000000000000000000000000000000000000000"
-                    )
-                )
-            predictoors[p.address] = p
-
-        csvs.save_predictoor_data_csv(predictoors, csv_dir, chainid)
-
-        predictoor_data.update(predictoors)
-
-    loaded_predictoors = csvs.load_all_predictoors_csv(csv_dir)
-
-    # loaded data should be equal to the originally created data
-    assert len(loaded_predictoors) == len(predictoor_data)
-    for addr, original_predictoor in predictoor_data.items():
-        loaded_predictoor = loaded_predictoors[addr]
-        assert loaded_predictoor.accuracy == original_predictoor.accuracy
-        assert (
-            loaded_predictoor.prediction_count == original_predictoor.prediction_count
-        )
-        assert (
-            loaded_predictoor.correct_prediction_count
-            == original_predictoor.correct_prediction_count
-        )
-
 
 @enforce_types
 def test_predictoorrewards(tmp_path):
