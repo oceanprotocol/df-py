@@ -159,7 +159,7 @@ def test_dispense(tmp_path):
     DFREWARDS_ADDR = df_rewards.address
     OCEAN_ADDR = oceanutil.OCEAN_address()
 
-    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {OCEAN_ADDR}"
+    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} --DFREWARDS_ADDR={DFREWARDS_ADDR} --TOKEN_ADDR={OCEAN_ADDR}"
     os.system(cmd)
 
     # test result

@@ -55,6 +55,8 @@ def test_noarg_commands():
         "vebals",
         "getrate",
         "challenge_data",
+        "predictoor_data",
+        "dispense_active",
     ]
 
     for subarg in subargs:

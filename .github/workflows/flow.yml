@@ -119,14 +119,14 @@ jobs:
           USE_MULTISIG: true
         if: github.event_name != 'schedule'
         run: |
-          ./dftool dispense_active $CSV_DIR 5 0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 0xCfDdA22C9837aE76E0faA845354f33C62E03653a
+          ./dftool dispense_active $CSV_DIR 5 --DFREWARDS_ADDR=0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 --TOKEN_ADDR=0xCfDdA22C9837aE76E0faA845354f33C62E03653a
 
       - name: Distribute active rewards
         env:
           USE_MULTISIG: true
         if: github.event_name == 'schedule'
         run: |
-          ./dftool dispense_active $CSV_DIR 1 0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 0x967da4048cD07aB37855c090aAF366e4ce1b9F48
+          ./dftool dispense_active $CSV_DIR 1 --DFREWARDS_ADDR=0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 --TOKEN_ADDR=0x967da4048cD07aB37855c090aAF366e4ce1b9F48
 
       - name: Rename folder to round number
         run: |

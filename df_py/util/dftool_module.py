@@ -116,16 +116,12 @@ def block_or_valid_date(s):
 
     try:
         datetime.datetime.strptime(s, "%Y-%m-%d")
-        # TODO: we could process the arguments here and
-        # feed them to functions directly, e.g. return datetime...
         return s
     except ValueError:
         pass
 
     try:
         datetime.datetime.strptime(s, "%Y-%m-%d_%H:%M")
-        # TODO: we could process the arguments here and
-        # feed them to functions directly, e.g. return datetime...
         return s
     except ValueError:
         pass
@@ -491,51 +487,48 @@ def do_challenge_data():
 # ========================================================================
 @enforce_types
 def do_predictoor_data():
-    HELP = f"""Get data for Predictoor DF
-
-Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
-  ST -- start time -- YYYY-MM-DD
-  FIN -- end time -- YYYY-MM-DD
-  CSV_DIR -- output directory for predictoordata_CHAINID.csv file
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-"""
-    if len(sys.argv) not in [2 + 4, 2 + 5]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "predictoor_data"
-    CSV_DIR = sys.argv[2]
-    ST = sys.argv[3]
-    FIN = sys.argv[4]
-    CHAINID = int(sys.argv[5])
-    print(sys.argv, len(sys.argv))
-    RETRIES = 1 if len(sys.argv) == 6 else int(sys.argv[6])
-    print("dftool predictoor_data: Begin")
-    print(
-        f"Arguments: "
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n START_DATE={ST}"
-        f"\n END_DATE={FIN}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
+    parser = argparse.ArgumentParser(description="Get data for Predictoor DF")
+    parser.add_argument("command", choices=["predictoor_data"])
+    parser.add_argument(
+        "ST",
+        type=block_or_valid_date,
+        help="first block # | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
+    )
+    parser.add_argument(
+        "FIN",
+        type=block_or_valid_date,
+        help="last block # | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest",
+    )
+    parser.add_argument(
+        "CSV_DIR",
+        type=autocreate_path,
+        help="output directory for predictoordata_CHAINID.csv",
+    )
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
     )
 
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
+
     # check files, prep dir
-    _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(predictoorDataFilename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    st_block, fin_block = getstfinBlocks(chain, ST, FIN)
+    st_block, fin_block = getstfinBlocks(chain, arguments.ST, arguments.FIN)
 
     # main work
     predictoor_data = retryFunction(
         queryPredictoors,
-        RETRIES,
+        arguments.RETRIES,
         10,
         st_block,
         fin_block,
@@ -658,62 +651,54 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
 # ========================================================================
 @enforce_types
 def do_dispense_active():
-    HELP = f"""From rewards csv, dispense funds to chain
-
-Usage: dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
-  CSV_DIR -- input directory for csv rewards file
-  CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
-  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
-  TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
-  BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
-
-Transactions are signed with envvar 'DFTOOL_KEY`.
-"""
-    if len(sys.argv) not in [4 + 0, 4 + 1, 4 + 2, 4 + 3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "dispense_active"
-    CSV_DIR = sys.argv[2]
-
-    if len(sys.argv) >= 4:
-        CHAINID = int(sys.argv[3])
-    else:
-        CHAINID = 1
-
-    if len(sys.argv) >= 5:
-        DFREWARDS_ADDR = sys.argv[4]
-    else:
-        print("Set DFREWARDS_ADDR from envvar")
-        DFREWARDS_ADDR = os.getenv("DFREWARDS_ADDR")
-
-    if len(sys.argv) >= 6:
-        TOKEN_ADDR = sys.argv[5]
-    else:
-        print("Set TOKEN_ADDR from envvar")
-        TOKEN_ADDR = os.getenv("TOKEN_ADDR")
-
-    BATCH_NBR = None
-    if len(sys.argv) >= 7:
-        BATCH_NBR = int(sys.argv[6])
-
-    print(
-        f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
-        f", DFREWARDS_ADDR={DFREWARDS_ADDR}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", BATCH_NBR={BATCH_NBR}\n"
+    parser = argparse.ArgumentParser(
+        description="From rewards csv, dispense funds to chain."
     )
-    assert DFREWARDS_ADDR is not None
-    assert TOKEN_ADDR is not None
+    parser.add_argument("command", choices=["dispense_active"])
+    parser.add_argument(
+        "CSV_DIR", type=existing_path, help="input directory for csv rewards file"
+    )
+    parser.add_argument(
+        "CHAINID",
+        type=int,
+        help=f"DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).",
+    )
+    parser.add_argument(
+        "--DFREWARDS_ADDR",
+        default=os.getenv("DFREWARDS_ADDR"),
+        type=str,
+        help="DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR",
+        required=False,
+    )
+    parser.add_argument(
+        "--TOKEN_ADDR",
+        default=os.getenv("TOKEN_ADDR"),
+        type=str,
+        help="token contract's address. If not given, uses envvar TOKEN_ADDR",
+        required=False,
+    )
+    parser.add_argument(
+        "--BATCH_NBR",
+        default=None,
+        type=str,
+        help="specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.",
+        required=False,
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    assert arguments.DFREWARDS_ADDR is not None
+    assert arguments.TOKEN_ADDR is not None
 
     # brownie setup
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
 
     # main work
     from_account = _getPrivateAccount()
-    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
+    token_symbol = B.Simpletoken.at(arguments.TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
-    rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
+    rewards = csvs.loadRewardsCsv(arguments.CSV_DIR, token_symbol)
 
     # "flatten" the rewards dict to dispense all chains in one go
     all_rewards = calcrewards.flattenRewards(rewards)
@@ -721,10 +706,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # dispense
     dispense.dispense(
         all_rewards,
-        DFREWARDS_ADDR,
-        TOKEN_ADDR,
+        arguments.DFREWARDS_ADDR,
+        arguments.TOKEN_ADDR,
         from_account,
-        batch_number=BATCH_NBR,
+        batch_number=arguments.BATCH_NBR,
     )
 
     print("dftool dispense_active: Done")
