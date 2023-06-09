@@ -76,7 +76,7 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, PredictoorBase]:
 
 @enforce_types
 def predictoor_data_csv_filename(csv_dir):
-    f = f"predictoordata.csv"
+    f = "predictoor_data.csv"
     return os.path.join(csv_dir, f)
 
 
