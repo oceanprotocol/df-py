@@ -532,6 +532,7 @@ def do_predictoor_data():
         type=autocreate_path,
         help="output directory for predictoordata_CHAINID.csv",
     )
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "--RETRIES",
         default=1,
