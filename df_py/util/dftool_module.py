@@ -20,7 +20,7 @@ from df_py.predictoor.csvs import (
 )
 from df_py.predictoor.queries import queryPredictoors
 from df_py.predictoor.calcrewards import calc_predictoor_rewards
-from df_py.util import blockrange, constants, dispense, getrate, networkutil
+from df_py.util import blockrange, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
