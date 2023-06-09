@@ -38,8 +38,8 @@ from df_py.util.oceanutil import (
     veAllocate,
 )
 from df_py.util.retry import retryFunction
-from df_py.volume import allocations, calcrewards, csvs, queries
-from df_py.volume.calcrewards import calcRewards
+from df_py.volume import calcrewards, csvs, queries
+from df_py.volume.calcrewards import calc_rewards_volume
 from df_py.util.vesting_schedule import (
     getActiveRewardAmountForWeekEth,
     getActiveRewardAmountForWeekEthByStream,
@@ -617,27 +617,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
         _exitIfFileExists(csvs.volume_rewards_csv_filename(CSV_DIR))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(CSV_DIR))
 
-        # DF volume work
-        S = allocations.loadStakes(CSV_DIR)
-        V = csvs.load_nftvols_csvs(CSV_DIR)
-        C = csvs.load_owners_csvs(CSV_DIR)
-        SYM = csvs.load_symbols_csvs(CSV_DIR)
-        R = csvs.load_rate_csvs(CSV_DIR)
-        do_pubrewards = constants.DO_PUBREWARDS
-        do_rank = constants.DO_RANK
-
-        prev_week = 0
-        if START_DATE is None:
-            cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
-            prev_week = cur_week - 1
-        else:
-            prev_week = calcrewards.getDfWeekNumber(START_DATE)
-        m = calcrewards.calcDcvMultiplier(prev_week)
-        print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-
-        rewperlp, rewinfo = calcRewards(
-            S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
-        )
+        rewperlp, rewinfo = calc_rewards_volume(CSV_DIR, START_DATE, TOT_OCEAN)
 
         csvs.save_volume_rewards_csv(rewperlp, CSV_DIR)
         csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
