@@ -51,7 +51,7 @@ def test_predictoordata(tmp_path):
 
 @enforce_types
 def test_predictoorrewards(tmp_path):
-    target_csv = """predictoor_addr,reward
+    target_csv = """predictoor_addr,OCEAN_amt
 0x0000000000000000000000000000000000000000,10.0
 0x1000000000000000000000000000000000000000,20.0
 0x2000000000000000000000000000000000000000,30.0
