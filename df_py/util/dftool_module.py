@@ -62,7 +62,7 @@ def do_volsym():
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="volsym",
-        csv_name="stakes",
+        csv_names="nftvols-CHAINID.csv, owners-CHAINID.csv, symbols-CHAINID.csv",
     )
 
     arguments = parser.parse_args()
@@ -156,7 +156,7 @@ def do_allocations():
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="allocations",
-        csv_name="stakes",
+        csv_names="allocations.csv or allocations_realtime.csv",
     )
 
     arguments = parser.parse_args()
@@ -197,7 +197,7 @@ def do_vebals():
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="vebals",
-        csv_name="stakes",
+        csv_names="vebals.csv or vebals_realtime.csv",
     )
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -1091,6 +1091,10 @@ def _getPrivateAccount():
 def _do_main():
     if len(sys.argv) == 1:
         do_help_short(1)
+        return
+
+    if len(sys.argv[1]) == "help":
+        do_help_long(1)
         return
 
     func_name = f"do_{sys.argv[1]}"

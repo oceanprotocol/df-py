@@ -157,7 +157,7 @@ def print_arguments(arguments):
 
 
 class StartFinArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, epilog, command_name, csv_name):
+    def __init__(self, description, epilog, command_name, csv_names):
         super().__init__(
             description=description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -182,7 +182,7 @@ class StartFinArgumentParser(argparse.ArgumentParser):
         self.add_argument(
             "CSV_DIR",
             type=existing_path,
-            help=f"output dir for {csv_name}-CHAINID.csv, etc",
+            help=f"output dir for {csv_names}",
         )
         self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
         self.add_argument(

@@ -6,7 +6,7 @@ from unittest.mock import patch
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import dftool_module
+from df_py.util import dftool_arguments
 from df_py.volume import csvs
 
 
@@ -46,7 +46,7 @@ def test_noarg_commands():
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ["help", "compile"]
+    fail_gracefully = ["compile"]
 
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")
@@ -70,7 +70,7 @@ def test_noarg_commands():
 @enforce_types
 def _get_HELP_subargs_in_dftool(help_type) -> List[str]:
     """Return e.g. ["help", "compile", "getrate", "volsym", ...]"""
-    help_content = getattr(dftool_module, help_type)
+    help_content = getattr(dftool_arguments, help_type)
     s_lines = help_content.split("\n")
 
     subargs = []
