@@ -46,7 +46,7 @@ def test_noarg_commands():
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ["compile"]
+    fail_gracefully = ["help", "compile"]
 
     for subarg in subargs:
         print(f"CMD: dftool {subarg}")

@@ -1093,8 +1093,8 @@ def _do_main():
         do_help_short(1)
         return
 
-    if len(sys.argv[1]) == "help":
-        do_help_long(1)
+    if sys.argv[1] == "help":
+        do_help_long(0)
         return
 
     func_name = f"do_{sys.argv[1]}"
