@@ -109,7 +109,6 @@ def test_calc_predictoor_substream(tmp_path):
             f.write(csv_template)
 
     # main cmd
-    SUBSTREAM = "predictoor"
 
     # TEST WITH TOT_OCEAN > 0
     TOT_OCEAN = 1000.0
