@@ -20,7 +20,7 @@ from df_py.volume.calcrewards import (
     calcRewards,
     flattenRewards,
     getDfWeekNumber,
-    _stakeVolDictsToArrays
+    _stakeVolDictsToArrays,
 )
 
 # for shorter lines
@@ -822,48 +822,57 @@ def test_flattenRewards():
         LP3: 700.0,
     }
 
+
 def test_stakeVolDictsToArrays():
     # define the inputs for the function
     stakes = {
         1: {
-            'nft_addr1': {
-                'LP_addr1': 10.0,
-                'LP_addr2': 20.0,
+            "nft_addr1": {
+                "LP_addr1": 10.0,
+                "LP_addr2": 20.0,
             },
-            'nft_addr2': {
-                'LP_addr1': 30.0,
-                'LP_addr2': 40.0,
-            }
+            "nft_addr2": {
+                "LP_addr1": 30.0,
+                "LP_addr2": 40.0,
+            },
         },
         2: {
-            'nft_addr3': {
-                'LP_addr3': 50.0,
-                'LP_addr4': 60.0,
+            "nft_addr3": {
+                "LP_addr3": 50.0,
+                "LP_addr4": 60.0,
             },
-            'nft_addr4': {
-                'LP_addr3': 70.0,
-                'LP_addr4': 80.0,
-            }
-        }
+            "nft_addr4": {
+                "LP_addr3": 70.0,
+                "LP_addr4": 80.0,
+            },
+        },
     }
     nftvols_USD = {
         1: {
-            'nft_addr1': 15.0,
-            'nft_addr2': 25.0,
+            "nft_addr1": 15.0,
+            "nft_addr2": 25.0,
         },
         2: {
-            'nft_addr3': 35.0,
-            'nft_addr4': 45.0,
-        }
+            "nft_addr3": 35.0,
+            "nft_addr4": 45.0,
+        },
     }
-    keys_tup = (['LP_addr1', 'LP_addr2', 'LP_addr3', 'LP_addr4'], [(1, 'nft_addr1'), (1, 'nft_addr2'), (2, 'nft_addr3'), (2, 'nft_addr4')])
+    keys_tup = (
+        ["LP_addr1", "LP_addr2", "LP_addr3", "LP_addr4"],
+        [(1, "nft_addr1"), (1, "nft_addr2"), (2, "nft_addr3"), (2, "nft_addr4")],
+    )
 
     S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
 
-    expected_S = np.array([[10.0, 30.0, 0.0, 0.0],
-                           [20.0, 40.0, 0.0, 0.0],
-                           [0.0, 0.0, 50.0, 70.0],
-                           [0.0, 0.0, 60.0, 80.0]], dtype=float)
+    expected_S = np.array(
+        [
+            [10.0, 30.0, 0.0, 0.0],
+            [20.0, 40.0, 0.0, 0.0],
+            [0.0, 0.0, 50.0, 70.0],
+            [0.0, 0.0, 60.0, 80.0],
+        ],
+        dtype=float,
+    )
     expected_V_USD = np.array([15.0, 25.0, 35.0, 45.0], dtype=float)
 
     # assert np.array_equal(S, expected_S)
@@ -949,7 +958,7 @@ def _nullOwners(
     chain_nft_tups = _getChainNftTups(stakes, nftvols_USD)
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
-    for (chainID, nft_addr) in chain_nft_tups:
+    for chainID, nft_addr in chain_nft_tups:
         if chainID not in owners:
             owners[chainID] = {}
         owners[chainID][nft_addr] = ZERO_ADDRESS
