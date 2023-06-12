@@ -373,7 +373,7 @@ def do_predictoor_data():
     CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
 
     # check files, prep dir
-    _exitIfFileExists(predictoor_data_csv_filename(CSV_DIR, CHAINID))
+    _exitIfFileExists(predictoor_data_csv_filename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
