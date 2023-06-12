@@ -44,6 +44,7 @@ test_params = [
 
 
 def test_getActiveRewardAmountForWeekEthByStream():
+    networkutil.connect(5)
     predictoor_substream = "predictoor"
     volume_substream = "volume"
     start_dt = datetime(2022, 1, 1)
@@ -76,6 +77,7 @@ def test_getActiveRewardAmountForWeekEthByStream():
         vesting_schedule.getActiveRewardAmountForWeekEthByStream(
             start_dt, predictoor_substream
         )
+    networkutil.disconnect()
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
