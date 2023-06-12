@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
 import argparse
-import datetime
 import functools
 import os
 import sys
@@ -549,13 +548,13 @@ def do_dispense_active():
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
     volume_rewards = {}
-    if os.path.exists(csvs.volume_rewards_csv_filename(CSV_DIR)):
-        volume_rewards_3d = csvs.load_volume_rewards_csv(CSV_DIR)
+    if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
+        volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
         volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
 
     predictoor_rewards = {}
-    if os.path.exists(predictoor_rewards_csv_filename(CSV_DIR)):
-        predictoor_rewards = load_predictoor_rewards_csv(CSV_DIR)
+    if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
+        predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
 
     rewards = calcrewards.merge_rewards(volume_rewards, predictoor_rewards)
 
