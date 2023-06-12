@@ -80,7 +80,6 @@ def test_getActiveRewardAmountForWeekEthByStream():
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getRewardAmountForWeekWei(test_input, expected_output):
-    networkutil.connectDev()
     assert from_wei(vesting_schedule.getRewardAmountForWeekWei(test_input)) == approx(
         expected_output
     )
@@ -88,7 +87,6 @@ def test_getRewardAmountForWeekWei(test_input, expected_output):
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getActiveRewardAmountForWeekEth(test_input, expected_output):
-    networkutil.connectDev()
     assert vesting_schedule.getActiveRewardAmountForWeekEth(test_input) == approx(
         expected_output * ACTIVE_REWARDS_MULTIPLIER
     )
@@ -106,9 +104,11 @@ def test_compareHalflifeFunctions():
         diff = abs(py_result - solidity_result)
         assert diff < 1e10, f"diff {diff} at i {i/HALF_LIFE*2}"
 
+
 @enforce_types
 def setup_function():
     networkutil.connectDev()
+
 
 @enforce_types
 def teardown_function():
