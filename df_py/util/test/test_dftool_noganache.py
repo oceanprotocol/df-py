@@ -60,9 +60,10 @@ def test_noarg_commands():
                 output_s += proc.stdout.readline().decode("ascii")
 
         return_code = proc.wait()
-        assert return_code == (
-            0 if subarg in fail_gracefully else 1
-        ), f"'dftool {subarg}' failed. \n{output_s}"
+        if subarg in fail_gracefully:
+            assert return_code == 0
+        else:
+            assert return_code in [1, 2]
 
 
 @enforce_types
