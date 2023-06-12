@@ -105,3 +105,11 @@ def test_compareHalflifeFunctions():
         solidity_result = vesting_schedule._halflife_solidity(VALUE, i, HALF_LIFE)
         diff = abs(py_result - solidity_result)
         assert diff < 1e10, f"diff {diff} at i {i/HALF_LIFE*2}"
+
+@enforce_types
+def setup_function():
+    networkutil.connectDev()
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()
