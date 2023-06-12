@@ -470,7 +470,7 @@ def calc_rewards_volume(CSV_DIR, START_DATE, TOT_OCEAN):
 
     prev_week = 0
     if START_DATE is None:
-        cur_week = getDfWeekNumber(datetime.datetime.now())
+        cur_week = getDfWeekNumber(datetime.now())
         prev_week = cur_week - 1
     else:
         prev_week = getDfWeekNumber(START_DATE)
