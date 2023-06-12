@@ -107,9 +107,9 @@ jobs:
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
           sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
   
-      - name: Run dftool calc_volume_rewards
+      - name: Run dftool calc rewards
         run: |
-          ./dftool calc_volume_rewards $CSV_DIR 100000000 $TEST_START_DATE
+          ./dftool calc volume$CSV_DIR 100000000 --START_DATE $TEST_START_DATE
           
       - name: Move csvs to df-sql dir
         run: |

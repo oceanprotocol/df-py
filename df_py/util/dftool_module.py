@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
+import argparse
 import datetime
 import functools
 import os
@@ -24,6 +25,11 @@ from df_py.util import blockrange, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
+from df_py.util.dftool_arguments import (
+    valid_date_and_convert,
+    existing_path,
+    print_arguments,
+)
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
 from df_py.util.oceantestutil import (
@@ -65,9 +71,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
   dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
   dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
-  dftool calc_volume_rewards CSV_DIR TOT_OCEAN START_DATE - from stakes/etc csvs, output rewards csv for volume substream
-  dftool calc_predictoor_rewards CSV_DIR TOT_OCEAN START_DATE - from predictoor data csv, output rewards csv for predictoor substream
-  dftool calc_challenge_rewards CSV_DIR TOT_OCEAN START_DATE - from challenge data csvs, output rewards csv for challenge substream
+  dftool calc volume|predictoor|challenge CSV_DIR TOT_OCEAN START_DATE - from stakes/etc csvs (or predictoor/challenge data csvs), output rewards csv for volume, predictoor or challenge substream
   dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
@@ -530,50 +534,37 @@ Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
 
 
 @enforce_types
-def do_calc_volume_rewards():
-    _do_calc("volume")
-
-
-@enforce_types
-def do_calc_challenge_rewards():
-    raise NotImplementedError("Challenge rewards is not implemented")
-
-
-@enforce_types
-def do_calc_predictoor_rewards():
-    _do_calc("predictoor")
-
-
-@enforce_types
-def _do_calc(substream_name):
-    HELP = f"""from {substream_name} data files, output rewards csvs for {substream_name} substream
-
-Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
-  CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
-  TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
-  START_DATE -- week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0
-"""
-    if len(sys.argv) not in [4, 5, 6]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == f"calc_{substream_name}_rewards"
-    CSV_DIR = sys.argv[2]
-    TOT_OCEAN = float(sys.argv[3])
-    START_DATE = sys.argv[4]
-
-    print("dftool calc: Begin")
-    print(
-        f"Arguments: "
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n TOT_OCEAN={TOT_OCEAN}"
-        f"\n START_DATE={START_DATE}"
-        "\n"
+def do_calc():
+    parser = argparse.ArgumentParser(
+        description="From substream data files, output rewards csvs."
+    )
+    parser.add_argument("command", choices=["calc"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument(
+        "CSV_DIR",
+        type=existing_path,
+        help="output dir for <substream_name>_rewards.csv, etc",
+    )
+    parser.add_argument(
+        "TOT_OCEAN",
+        type=float,
+        help="total amount of TOKEN to distribute (decimal, not wei)",
+    )
+    parser.add_argument(
+        "--START_DATE",
+        type=valid_date_and_convert,
+        help="week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0",
+        required=False,
+        default=None,
     )
 
-    if START_DATE is not None:
-        START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    TOT_OCEAN, START_DATE, CSV_DIR = (
+        arguments.TOT_OCEAN,
+        arguments.START_DATE,
+        arguments.CSV_DIR,
+    )
 
     # condition inputs
     if TOT_OCEAN == 0 and START_DATE is None:
@@ -591,13 +582,15 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
         recordDeployedContracts(address_path)
-        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(START_DATE, substream_name)
+        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(
+            START_DATE, arguments.SUBSTREAM
+        )
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
             f", START_DATE={START_DATE}"
         )
 
-    if substream_name == "volume":
+    if arguments.SUBSTREAM == "volume":
         # do we have the input files?
         required_files = [
             csvs.allocation_csv_filename(CSV_DIR),
@@ -624,7 +617,7 @@ Usage: dftool calc_{substream_name}_rewards CSV_DIR TOT_OCEAN START_DATE
 
     # challenge df goes here ----------
 
-    if substream_name == "predictoor":
+    if arguments.SUBSTREAM == "predictoor":
         predictoors = load_predictoor_data_csv(CSV_DIR)
         if len(predictoors) == 0:
             print("No predictoors found")
