@@ -21,6 +21,7 @@ from df_py.volume.calcrewards import (
     flattenRewards,
     getDfWeekNumber,
     _stakeVolDictsToArrays,
+    merge_rewards,
 )
 
 # for shorter lines
@@ -877,6 +878,34 @@ def test_stakeVolDictsToArrays():
 
     assert np.array_equal(S, expected_S)
     assert np.array_equal(V_USD, expected_V_USD)
+
+
+def test_merge_rewards():
+    # Test case 1: Merge two reward dictionaries with no common keys
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {"C": 30, "D": 40}
+    expected_output = {"A": 10, "B": 20, "C": 30, "D": 40}
+    assert merge_rewards(dict1, dict2) == expected_output
+    # Test case 2: Merge two reward dictionaries with common keys
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {"B": 30, "C": 40}
+    expected_output = {"A": 10, "B": 50, "C": 40}
+    assert merge_rewards(dict1, dict2) == expected_output
+    # Test case 3: Merge three reward dictionaries with common keys
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {"B": 30, "C": 40}
+    dict3 = {"A": 50, "C": 60}
+    expected_output = {"A": 60, "B": 50, "C": 100}
+    assert merge_rewards(dict1, dict2, dict3) == expected_output
+    # Test case 4: Merge empty reward dictionary
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {}
+    expected_output = {"A": 10, "B": 20}
+    assert merge_rewards(dict1, dict2) == expected_output
+    # Test case 5: Merge no reward dictionaries
+    expected_output = {}
+    assert merge_rewards() == expected_output
+
 
 
 # ========================================================================
