@@ -332,7 +332,7 @@ def _test_dftool_nftinfo(tmp_path, FIN):
     CSV_DIR = str(tmp_path)
     _clear_dir(CSV_DIR)
 
-    cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} {FIN}"
+    cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} --FIN {FIN}"
     os.system(cmd)
 
     assert csvs.nftinfo_csv_filename(CSV_DIR, CHAINID)

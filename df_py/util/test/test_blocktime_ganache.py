@@ -149,6 +149,11 @@ def test_getstfinBlocks():
     assert st == 0
     assert fin == 0
 
+    # test in conjunction with create_range in blockrange
+    # to avoid extra setup in test_blockrange.py just for one test
+    # rng = create_range(chain, 10, 5000, 100, 42)
+    # assert rng
+
 
 @enforce_types
 def setup_function():

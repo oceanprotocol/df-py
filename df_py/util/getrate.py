@@ -59,7 +59,7 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     try:
         res = requests.get(req_s, timeout=30)
         data = res.json()
-        if data == []:
+        if not data:
             return None
         avg = sum([float(x[4]) for x in data]) / len(data)
         return avg
@@ -96,8 +96,8 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
     req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"  # pylint: disable=line-too-long
     print("URL", req_s)
     res = requests.get(req_s, timeout=30)
-    data = res.json()["prices"]
-    if data == []:
+    data = res.json().get("prices")
+    if not data:
         return None
     avg = sum([float(x[1]) for x in data]) / len(data)
     return avg

@@ -1,7 +1,6 @@
 import datetime
 import os
 import subprocess
-import sys
 from unittest.mock import patch
 
 import brownie
@@ -62,16 +61,29 @@ def test_calc(tmp_path):
     assert os.path.exists(rewards_csv)
 
 
+class MockArgs:
+    def __init__(self, dictionary):
+        for k, v in dictionary.items():
+            setattr(self, k, v)
+
+
 @enforce_types
 def test_predictoor_data(tmp_path):
     CSV_DIR = str(tmp_path)
-    ST = 0
-    FIN = "latest"
-
-    testargs = ["dftool", "predictoor_data", CSV_DIR, ST, FIN, CHAINID]
+    testargs = MockArgs(
+        {
+            "command": "predictoor_data",
+            "ST": 0,
+            "FIN": "latest",
+            "CSV_DIR": CSV_DIR,
+            "CHAINID": CHAINID,
+            "RETRIES": 1,
+        }
+    )
     mock_query_response, users, stats = create_mock_responses(100)
 
-    with patch.object(sys, "argv", testargs):
+    with patch("argparse.ArgumentParser.parse_args") as mock_args:
+        mock_args.return_value = testargs
         with patch("df_py.predictoor.queries.submitQuery") as mock_submitQuery:
             mock_submitQuery.side_effect = mock_query_response
             do_predictoor_data()
@@ -230,7 +242,8 @@ def test_dispense(tmp_path):
     DFREWARDS_ADDR = df_rewards.address
     OCEAN_ADDR = oceanutil.OCEAN_address()
 
-    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {OCEAN_ADDR}"
+    # pylint: disable=line-too-long
+    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} --DFREWARDS_ADDR={DFREWARDS_ADDR} --TOKEN_ADDR={OCEAN_ADDR}"
     os.system(cmd)
 
     # test result

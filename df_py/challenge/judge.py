@@ -3,7 +3,7 @@
 import os
 from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
-from typing import List, Tuple
+from typing import List, Tuple, Optional
 
 import ccxt
 import numpy as np
@@ -124,7 +124,7 @@ def _get_cex_vals(deadline_dt):
 
 
 @enforce_types
-def parse_deadline_str(deadline_str: str) -> datetime:
+def parse_deadline_str(deadline_str: Optional[str] = None) -> datetime:
     """
     @arguments
       deadline_str - submission deadline
@@ -135,7 +135,7 @@ def parse_deadline_str(deadline_str: str) -> datetime:
     @return
       deadline_dt -- datetime object, in UTC
     """
-    if deadline_str == "None":
+    if deadline_str is None:
         today = datetime.now(timezone.utc)
         today = today.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -187,6 +187,7 @@ def _keep_youngest_entry_per_competitor(txs: list, nmses: list) -> list:
         ]
         if len(I) == 1:
             continue
+
         Ip1 = [i + 1 for i in I]
         print()
         print(f"  NFTs #{Ip1} all come {from_addrs[I[0]]}")

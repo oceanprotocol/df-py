@@ -1,7 +1,10 @@
 from pprint import pprint
+from unittest.mock import Mock, patch
 
 import brownie
+import pytest
 from enforce_typing import enforce_types
+from requests import Response
 
 from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.graphutil import submitQuery
@@ -17,6 +20,17 @@ def test_approvedTokens():
     result = submitQuery(query, CHAINID)
 
     pprint(result)
+
+
+@enforce_types
+def test_connection_failure():
+    query = "{ opcs{approvedTokens} }"
+    with pytest.raises(Exception, match="Query failed"):
+        with patch("df_py.util.graphutil.requests.post") as mock:
+            response = Mock(spec=Response)
+            response.status_code = 500
+            mock.return_value = response
+            submitQuery(query, CHAINID)
 
 
 @enforce_types

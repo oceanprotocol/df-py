@@ -140,7 +140,7 @@ def main():
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     DFREWARDS_ADDR = df_rewards.address
     TOKEN_ADDR = OCEAN.address
-    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} {DFREWARDS_ADDR} {TOKEN_ADDR}"
+    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} --DFREWARDS_ADDR={DFREWARDS_ADDR} --TOKEN_ADDR={TOKEN_ADDR}"
     os.system(cmd)
 
     claimable_amounts = []
