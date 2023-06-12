@@ -1,5 +1,3 @@
-import sys
-
 import numpy
 from enforce_typing import enforce_types
 
@@ -66,10 +64,6 @@ class BlockRange:
 
 
 def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
-    if st == "api" or fin == "api":
-        print("dfblocks has been deprecated")
-        sys.exit()
-
     st_block, fin_block = getstfinBlocks(chain, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
     rng.filterByMaxBlock(len(chain) - 5)
