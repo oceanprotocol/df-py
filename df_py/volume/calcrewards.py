@@ -152,7 +152,7 @@ def _stakeVolDictsToArrays(
         for i, LP_addr in enumerate(LP_addrs):
             assert nft_addr in stakes[chainID], "each tup should be in stakes"
             S[i, j] = stakes[chainID][nft_addr].get(LP_addr, 0.0)
-            V_USD[j] += nftvols_USD[chainID].get(nft_addr, 0.0)
+        V_USD[j] += nftvols_USD[chainID].get(nft_addr, 0.0)
 
     return S, V_USD
 
