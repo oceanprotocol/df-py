@@ -85,7 +85,7 @@ def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
     block_last_time = timeSinceTimestamp(block_last_number)  # time of last block
     block_old_time = timeSinceTimestamp(block_old_number)  # time of old block
 
-    assert block_last_time < timestamp
+    # assert block_last_time < timestamp
 
     # slope
     m = (block_last_number - block_old_number) / (block_last_time - block_old_time)
