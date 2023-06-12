@@ -875,7 +875,7 @@ def test_stakeVolDictsToArrays():
     )
     expected_V_USD = np.array([15.0, 25.0, 35.0, 45.0], dtype=float)
 
-    # assert np.array_equal(S, expected_S)
+    assert np.array_equal(S, expected_S)
     assert np.array_equal(V_USD, expected_V_USD)
 
 
@@ -958,7 +958,7 @@ def _nullOwners(
     chain_nft_tups = _getChainNftTups(stakes, nftvols_USD)
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
-    for chainID, nft_addr in chain_nft_tups:
+    for (chainID, nft_addr) in chain_nft_tups:
         if chainID not in owners:
             owners[chainID] = {}
         owners[chainID][nft_addr] = ZERO_ADDRESS
