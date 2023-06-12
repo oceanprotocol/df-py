@@ -55,6 +55,13 @@ def test_nft_addr_to_pred_vals():
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798
+
+    with patch("df_py.challenge.judge.crypto.asym_decrypt") as mock:
+        mock.side_effect = Exception("mocked exception")
+        pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
+
+    assert pred_vals == []
+
     networkutil.disconnect()
 
 
@@ -128,7 +135,13 @@ def test_get_challenge_data():
                 "nft": {"id": "0xnft2"},
                 "oldOwner": {"id": "0xfrom2"},
             }
-            mock2.return_value = [tx1, tx2]
+            # tx1, but earlier. Will be discarded by keep youngest entry logic
+            tx3 = {
+                "timestamp": 1683790430,
+                "nft": {"id": "0xnft3"},
+                "oldOwner": {"id": "0xfrom1"},
+            }
+            mock2.return_value = [tx1, tx2, tx3]
 
             with patch("df_py.challenge.judge._nft_addr_to_pred_vals") as mock3:
                 # 0x123 has correct length. 0x456 doesn't, so its nmse = 1.0
@@ -136,14 +149,17 @@ def test_get_challenge_data():
                 predvals_0x456 = [0.2, 0.4]
                 assert len(predvals_0x123) == len(cex_vals)
                 assert len(predvals_0x456) != len(cex_vals)
-                mock3.side_effect = [predvals_0x123, predvals_0x456]
+                mock3.side_effect = [predvals_0x123, predvals_0x456, predvals_0x123]
                 challenge_data = judge.get_challenge_data(dt, judge_acct)
 
     (from_addrs, nft_addrs, nmses) = challenge_data
+
+    assert nmses[2] == 1.0  # using keep youngest entry logic
 
     assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
     assert nmses[0] != 1.0
     assert nmses[1] == 1.0
 
-    assert from_addrs == ["0xfrom1", "0xfrom2"]
-    assert nft_addrs == ["0xnft1", "0xnft2"]
+    # should we elliminate the second entry from 0xfrom1?
+    assert from_addrs == ["0xfrom1", "0xfrom2", "0xfrom1"]
+    assert nft_addrs == ["0xnft1", "0xnft2", "0xnft3"]

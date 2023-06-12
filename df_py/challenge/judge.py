@@ -187,6 +187,7 @@ def _keep_youngest_entry_per_competitor(txs: list, nmses: list) -> list:
         ]
         if len(I) == 1:
             continue
+
         Ip1 = [i + 1 for i in I]
         print()
         print(f"  NFTs #{Ip1} all come {from_addrs[I[0]]}")
