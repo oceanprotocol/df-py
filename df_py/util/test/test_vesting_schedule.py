@@ -44,23 +44,30 @@ test_params = [
 
 
 def test_getActiveRewardAmountForWeekEthByStream():
+    predictoor_substream = "predictoor"
+    volume_substream = "volume"
     start_dt = datetime(2022, 1, 1)
-    substream = "predictoor"
     assert (
-        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, substream)
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, predictoor_substream)
         == 0
     )
 
     start_dt = datetime(2025, 1, 1)
-    substream = "predictoor"
     assert (
-        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, substream)
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, predictoor_substream)
         > 0
     )
 
-    substream = "invalid_substream"
+
+    predictoor_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, predictoor_substream)
+    volume_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, volume_substream)
+    total_rewards = vesting_schedule.getActiveRewardAmountForWeekEth(start_dt)
+    assert total_rewards == predictoor_rewards + volume_rewards
+
+
+    predictoor_substream = "invalid_substream"
     with pytest.raises(ValueError):
-        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, substream)
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(start_dt, predictoor_substream)
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
