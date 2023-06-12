@@ -223,7 +223,6 @@ def _calcRewardsUsd(
         for j in range(N_j):
             if C[j] != -1:  # -1 = owner didn't stake
                 S[C[j], j] *= 2.0
-
     # perc_per_j
     if do_rank:
         perc_per_j = _rankBasedAllocate(V_USD)
@@ -461,7 +460,9 @@ def merge_rewards(*reward_dicts):
     return merged_dict
 
 
-def calc_rewards_volume(CSV_DIR, START_DATE, TOT_OCEAN):
+def calc_rewards_volume(
+    CSV_DIR, START_DATE, TOT_OCEAN, DO_PUBREWARDS=DO_PUBREWARDS, DO_RANK=DO_RANK
+):
     S = allocations.loadStakes(CSV_DIR)
     V = csvs.load_nftvols_csvs(CSV_DIR)
     C = csvs.load_owners_csvs(CSV_DIR)
