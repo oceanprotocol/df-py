@@ -129,7 +129,7 @@ def test_calc_predictoor_substream(tmp_path):
 
     # TEST WITH TOT_OCEAN = 0, DATE WITH NONZERO REWARDS
     TOT_OCEAN = 0
-    ST = "2025-03-16"  # some date where predictoor rewards are nonzero
+    ST = "2042-03-16"  # some date where predictoor rewards are nonzero
     cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
     os.system(cmd)
 

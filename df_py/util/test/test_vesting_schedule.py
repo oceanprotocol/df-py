@@ -54,7 +54,7 @@ def test_getActiveRewardAmountForWeekEthByStream():
         == 0
     )
 
-    start_dt = datetime(2025, 1, 1)
+    start_dt = datetime(2042, 1, 1)
     assert (
         vesting_schedule.getActiveRewardAmountForWeekEthByStream(
             start_dt, predictoor_substream
