@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
+import argparse
 import datetime
 import functools
 import os
@@ -16,6 +17,21 @@ from df_py.util import blockrange, constants, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
+from df_py.util.dftool_arguments import (
+    CHAINID_EXAMPLES,
+    DfStrategyArgumentParser,
+    SimpleChainIdArgumentParser,
+    StartFinArgumentParser,
+    autocreate_path,
+    block_or_valid_date,
+    challenge_date,
+    do_help_long,
+    do_help_short,
+    existing_path,
+    print_arguments,
+    valid_date,
+    valid_date_and_convert,
+)
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
 from df_py.util.oceantestutil import (
@@ -36,122 +52,29 @@ from df_py.volume.vesting_schedule import getActiveRewardAmountForWeekEth
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
-CHAINID_EXAMPLES = (
-    f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
-)
 
-# ========================================================================
-HELP_SHORT = """Data Farming tool, for use by OPF.
-
-Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
-
-  dftool help - full command list
-
-  dftool compile - compile contracts
-  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
-  dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES] - query chain, output volumes, symbols, owners
-  dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
-  dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
-  dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED] - from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
-  dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR] - from rewards, dispense funds
-  dftool dispense_passive CHAINID AMOUNT
-  dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
-"""
-
-HELP_LONG = (
-    HELP_SHORT
-    + """
-  dftool newacct - generate new account
-  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-  dftool newtoken CHAINID - generate new token (for testing)
-  dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
-  dftool chaininfo CHAINID - info about a network
-
-  dftool mine BLOCKS [TIMEDELTA] - force chain to pass time (ganache only)
-
-  dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
-
-  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
-  dftool newdfrewards CHAINID - deploy new DFRewards contract
-  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
-  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
-  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
-  dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
-
-Transactions are signed with envvar 'DFTOOL_KEY`.
-"""
-)
-
-
-@enforce_types
-def do_help():
-    do_help_long()
-
-
-@enforce_types
-def do_help_short(status_code=0):
-    print(HELP_SHORT)
-    sys.exit(status_code)
-
-
-@enforce_types
-def do_help_long(status_code=0):
-    print(HELP_LONG)
-    sys.exit(status_code)
-
-
-# ========================================================================
 @enforce_types
 def do_volsym():
-    HELP = f"""Query chain, output volumes, symbols, owners
-
-Usage: dftool volsym ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-  SECRET_SEED -- secret integer used to seed the rng
-"""
-    if len(sys.argv) not in [2 + 5, 2 + 6]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "volsym"
-    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
-    CSV_DIR = sys.argv[5]
-    CHAINID = int(sys.argv[6])
-    RETRIES = 1
-    if len(sys.argv) == 2 + 6:
-        RETRIES = int(sys.argv[7])
-
-    print("dftool volsym: Begin")
-    print(
-        f"Arguments: "
-        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = StartFinArgumentParser(
+        description="Query chain, output volumes, symbols, owners",
+        epilog=f"""Uses these envvars:
+          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          \nSECRET_SEED -- secret integer used to seed the rng
+        """,
+        command_name="volsym",
+        csv_names="nftvols-CHAINID.csv, owners-CHAINID.csv, symbols-CHAINID.csv",
     )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     SECRET_SEED = _getSecretSeedOrExit()
 
+    CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
+
     # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
     if not csvs.rateCsvFilenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(1)
@@ -162,9 +85,11 @@ Uses these envvars:
     recordDeployedContracts(ADDRESS_FILE)
 
     # main work
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
+    rng = blockrange.create_range(
+        chain, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
+    )
     (Vi, Ci, SYMi) = retryFunction(
-        queries.queryVolsOwnersSymbols, RETRIES, 60, rng, CHAINID
+        queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, CHAINID
     )
     csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
     csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
@@ -178,30 +103,25 @@ Uses these envvars:
 
 @enforce_types
 def do_nftinfo():
-    HELP = f"""Query chain, output nft info csv
-Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
-    CSV_DIR -- output dir for nftinfo-CHAINID.csv
-    CHAINID -- {CHAINID_EXAMPLES}
-    FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-"""
-    if len(sys.argv) not in [4, 5]:
-        print(HELP)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Query chain, output nft info csv")
+    parser.add_argument("command", choices=["nftinfo"])
+    parser.add_argument(
+        "CSV_DIR", type=autocreate_path, help="output dir for nftinfo-CHAINID.csv, etc"
+    )
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument(
+        "--FIN",
+        default="latest",
+        type=block_or_valid_date,
+        help="last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest",
+        required=False,
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # extract inputs
-    assert sys.argv[1] == "nftinfo"
-    CSV_DIR = sys.argv[2]
-    CHAINID = int(sys.argv[3])
-    ENDBLOCK = sys.argv[4] if len(sys.argv) == 5 else "latest"
-
-    print("dftool nftinfo: Begin")
-    print(
-        f"Arguments: "
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n ENDBLOCK={ENDBLOCK}"
-        "\n"
-    )
+    CSV_DIR, CHAINID, ENDBLOCK = arguments.CSV_DIR, arguments.CHAINID, arguments.FIN
 
     # hardcoded values
     # -queries.queryNftinfo() can be problematic; it's only used for frontend data
@@ -209,9 +129,6 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
     RETRIES = 3
     DELAY_S = 10
     print(f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
-
-    # create dir if not exists
-    _createDirIfNeeded(CSV_DIR)
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -233,47 +150,24 @@ Usage: dftool nftinfo CSV_DIR CHAINID [FIN]
 
 @enforce_types
 def do_allocations():
-    HELP = f"""Query chain, outputs allocation csv
-
-Usage: dftool allocations ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-
-Uses these envvars:
-  SECRET_SEED -- secret integer used to seed the rng
-"""
-    if len(sys.argv) not in [7, 8]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "allocations"
-    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
-    CSV_DIR = sys.argv[5]
-    CHAINID = int(sys.argv[6])
-    RETRIES = 1
-    if len(sys.argv) == 8:
-        RETRIES = int(sys.argv[7])
-
-    print("dftool do_allocations: Begin")
-    print(
-        f"Arguments: "
-        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = StartFinArgumentParser(
+        description="Query chain, outputs allocation csv",
+        epilog="""Uses these envvars:
+          \nSECRET_SEED -- secret integer used to seed the rng
+        """,
+        command_name="allocations",
+        csv_names="allocations.csv or allocations_realtime.csv",
     )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    CSV_DIR, NSAMP, CHAINID = arguments.CSV_DIR, arguments.NSAMP, arguments.CHAINID
 
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
     # create dir if not exists
-    _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
@@ -281,8 +175,12 @@ Uses these envvars:
     chain = brownie.network.chain
 
     # main work
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
-    allocs = retryFunction(queries.queryAllocations, RETRIES, 10, rng, CHAINID)
+    rng = blockrange.create_range(
+        chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
+    )
+    allocs = retryFunction(
+        queries.queryAllocations, arguments.RETRIES, 10, rng, CHAINID
+    )
     csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
@@ -293,56 +191,34 @@ Uses these envvars:
 
 @enforce_types
 def do_vebals():
-    HELP = f"""Query chain, outputs veBalances csv
-
-Usage: dftool vebals ST FIN NSAMP CSV_DIR CHAINID [RETRIES]
-  ST -- first block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM
-  FIN -- last block # to calc on | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest
-  NSAMP -- # blocks to sample liquidity from, from blocks [ST, ST+1, .., FIN]
-  CSV_DIR -- output dir for stakes-CHAINID.csv, etc
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-
-Uses these envvars:
-  SECRET_SEED -- secret integer used to seed the rng
-"""
-    if len(sys.argv) not in [7, 8]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "vebals"
-    ST, FIN, NSAMP = sys.argv[2], sys.argv[3], int(sys.argv[4])
-    CSV_DIR = sys.argv[5]
-    CHAINID = int(sys.argv[6])
-    RETRIES = 1
-    if len(sys.argv) == 8:
-        RETRIES = int(sys.argv[7])
-
-    print("dftool vebals: Begin")
-    print(
-        f"Arguments: "
-        f"\n ST={ST}\n FIN={FIN}\n NSAMP={NSAMP}"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = StartFinArgumentParser(
+        description="Query chain, outputs veBalances csv",
+        epilog="""Uses these envvars:
+          \nSECRET_SEED -- secret integer used to seed the rng
+        """,
+        command_name="vebals",
+        csv_names="vebals.csv or vebals_realtime.csv",
     )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    CSV_DIR, NSAMP, CHAINID = arguments.CSV_DIR, arguments.NSAMP, arguments.CHAINID
 
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
     # create a dir if not exists
-    _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(csvs.vebalsCsvFilename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-    rng = blockrange.create_range(chain, ST, FIN, NSAMP, SECRET_SEED)
+    rng = blockrange.create_range(
+        chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
+    )
 
     balances, locked_amt, unlock_time = retryFunction(
-        queries.queryVebalances, RETRIES, 10, rng, CHAINID
+        queries.queryVebalances, arguments.RETRIES, 10, rng, CHAINID
     )
     csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
@@ -352,36 +228,55 @@ Uses these envvars:
 # ========================================================================
 @enforce_types
 def do_getrate():
-    HELP = """Get exchange rate, and output rate csv
+    parser = argparse.ArgumentParser(
+        description="Get exchange rate, and output rate csv"
+    )
+    parser.add_argument("command", choices=["getrate"])
+    parser.add_argument(
+        "TOKEN_SYMBOL",
+        type=str,
+        help="e.g. OCEAN, H20",
+    )
+    parser.add_argument(
+        "ST",
+        type=block_or_valid_date,
+        help="start time -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "FIN",
+        type=block_or_valid_date,
+        help="end time -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "CSV_DIR",
+        type=autocreate_path,
+        help="output dir for rate-TOKEN_SYMBOL.csv, etc",
+    )
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
+    )
 
-Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
-  TOKEN_SYMBOL -- e.g. OCEAN, H2O
-  ST -- start time -- YYYY-MM-DD
-  FIN -- end time -- YYYY-MM-DD
-  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  RETRIES -- # times to retry failed queries
-"""
-    if len(sys.argv) not in [2 + 4, 2 + 5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    # extract inputs
-    assert sys.argv[1] == "getrate"
-    TOKEN_SYMBOL = sys.argv[2]
-    ST, FIN = sys.argv[3], sys.argv[4]
-    CSV_DIR = sys.argv[5]
-    RETRIES = 1
-    if len(sys.argv) == 2 + 5:
-        RETRIES = int(sys.argv[2 + 4])
-    print("dftool getrate: Begin")
-    print(f"Arguments: ST={ST}, FIN={FIN}, CSV_DIR={CSV_DIR}\n")
+    TOKEN_SYMBOL, CSV_DIR = arguments.TOKEN_SYMBOL, arguments.CSV_DIR
 
     # check files, prep dir
     _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
-    _createDirIfNeeded(CSV_DIR)
 
     # main work
-    rate = retryFunction(getrate.getrate, RETRIES, 60, TOKEN_SYMBOL, ST, FIN)
+    rate = retryFunction(
+        getrate.getrate,
+        arguments.RETRIES,
+        60,
+        TOKEN_SYMBOL,
+        arguments.ST,
+        arguments.FIN,
+    )
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
 
@@ -393,54 +288,34 @@ Usage: dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR [RETRIES]
 def do_challenge_data():
     # hardcoded values
     CHAINID = 80001  # only on mumbai
-
-    HELP = f"""Get data for Challenge DF
-
-Usage: dftool challenge_data CSV_DIR [DEADLINE] [RETRIES]
-  CSV_DIR -- output directory for rate-TOKEN_SYMBOL.csv file
-  DEADLINE -- submission deadline.
-    Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
-    Example for Round 5: 2023-05-03_23:59
-  RETRIES -- # times to retry failed queries
-
-Hardcoded values:
-  CHAINID = {CHAINID}
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=CHAINID)}
-"""
-    if len(sys.argv) not in [2 + 1, 2 + 2, 2 + 3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "challenge_data"
-    CSV_DIR = sys.argv[2]
-    DEADLINE = "None" if len(sys.argv) <= 3 else sys.argv[3]
-    RETRIES = 1 if len(sys.argv) <= 4 else int(sys.argv[4])
-    print("dftool challenge_data: Begin\n")
-
-    print(
-        f"Arguments:"
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n DEADLINE={DEADLINE}"
-        f"\n RETRIES={RETRIES}"
-        "\n"
+    parser = argparse.ArgumentParser(description="Get data for Challenge DF")
+    parser.add_argument("command", choices=["challenge_data"])
+    parser.add_argument(
+        "CSV_DIR", type=existing_path, help="output directory for challenge.csv"
+    )
+    parser.add_argument(
+        "--DEADLINE",
+        type=challenge_date,
+        default=None,
+        required=False,
+        help="""submission deadline.
+            Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
+            Example for Round 5: 2023-05-03_23:59
+        """,
     )
 
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
     print(f"Hardcoded values:" f"\n CHAINID={CHAINID}" "\n")
+
+    CSV_DIR = arguments.CSV_DIR
 
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    # check files, prep dir
-    if not os.path.exists(CSV_DIR):
-        print(f"\nDirectory {CSV_DIR} doesn't exist; nor do rates. Exiting.")
-        sys.exit(1)
-
     if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
         challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
-
     else:  # main path
         # brownie setup
         networkutil.connect(CHAINID)
@@ -448,7 +323,7 @@ Uses these envvars:
         judge_acct = judge.get_judge_acct()
 
         # main work
-        deadline_dt = judge.parse_deadline_str(DEADLINE)
+        deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
     saveChallengeDataCsv(challenge_data, CSV_DIR)
@@ -459,51 +334,49 @@ Uses these envvars:
 # ========================================================================
 @enforce_types
 def do_predictoor_data():
-    HELP = f"""Get data for Predictoor DF
-
-Usage: dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID [RETRIES]
-  ST -- start time -- YYYY-MM-DD
-  FIN -- end time -- YYYY-MM-DD
-  CSV_DIR -- output directory for predictoordata_CHAINID.csv file
-  CHAINID -- {CHAINID_EXAMPLES}
-  RETRIES -- # times to retry failed queries
-"""
-    if len(sys.argv) not in [2 + 4, 2 + 5]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "predictoor_data"
-    CSV_DIR = sys.argv[2]
-    ST = sys.argv[3]
-    FIN = sys.argv[4]
-    CHAINID = int(sys.argv[5])
-    print(sys.argv, len(sys.argv))
-    RETRIES = 1 if len(sys.argv) == 6 else int(sys.argv[6])
-    print("dftool predictoor_data: Begin")
-    print(
-        f"Arguments: "
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n START_DATE={ST}"
-        f"\n END_DATE={FIN}"
-        f"\n CHAINID={CHAINID}"
-        f"\n RETRIES={RETRIES}"
+    parser = argparse.ArgumentParser(description="Get data for Predictoor DF")
+    parser.add_argument("command", choices=["predictoor_data"])
+    parser.add_argument(
+        "ST",
+        type=block_or_valid_date,
+        help="first block # | YYYY-MM-DD | YYYY-MM-DD_HH:MM",
+    )
+    parser.add_argument(
+        "FIN",
+        type=block_or_valid_date,
+        help="last block # | YYYY-MM-DD | YYYY-MM-DD_HH:MM | latest",
+    )
+    parser.add_argument(
+        "CSV_DIR",
+        type=autocreate_path,
+        help="output directory for predictoordata_CHAINID.csv",
+    )
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
     )
 
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
+
     # check files, prep dir
-    _createDirIfNeeded(CSV_DIR)
     _exitIfFileExists(predictoorDataFilename(CSV_DIR, CHAINID))
 
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    st_block, fin_block = getstfinBlocks(chain, ST, FIN)
+    st_block, fin_block = getstfinBlocks(chain, arguments.ST, arguments.FIN)
 
     # main work
     predictoor_data = retryFunction(
         queryPredictoors,
-        RETRIES,
+        arguments.RETRIES,
         10,
         st_block,
         fin_block,
@@ -626,62 +499,55 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
 # ========================================================================
 @enforce_types
 def do_dispense_active():
-    HELP = f"""From rewards csv, dispense funds to chain
-
-Usage: dftool dispense_active CSV_DIR [CHAINID] [DFREWARDS_ADDR] [TOKEN_ADDR] [BATCH_NBR]
-  CSV_DIR -- input directory for csv rewards file
-  CHAINID: CHAINID -- DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).
-  DFREWARDS_ADDR -- DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR
-  TOKEN_ADDR -- token contract's address. If not given, uses envvar TOKEN_ADDR
-  BATCH_NBR -- specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.
-
-Transactions are signed with envvar 'DFTOOL_KEY`.
-"""
-    if len(sys.argv) not in [4 + 0, 4 + 1, 4 + 2, 4 + 3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "dispense_active"
-    CSV_DIR = sys.argv[2]
-
-    if len(sys.argv) >= 4:
-        CHAINID = int(sys.argv[3])
-    else:
-        CHAINID = 1
-
-    if len(sys.argv) >= 5:
-        DFREWARDS_ADDR = sys.argv[4]
-    else:
-        print("Set DFREWARDS_ADDR from envvar")
-        DFREWARDS_ADDR = os.getenv("DFREWARDS_ADDR")
-
-    if len(sys.argv) >= 6:
-        TOKEN_ADDR = sys.argv[5]
-    else:
-        print("Set TOKEN_ADDR from envvar")
-        TOKEN_ADDR = os.getenv("TOKEN_ADDR")
-
-    BATCH_NBR = None
-    if len(sys.argv) >= 7:
-        BATCH_NBR = int(sys.argv[6])
-
-    print(
-        f"Arguments: CSV_DIR={CSV_DIR}, CHAINID={CHAINID}"
-        f", DFREWARDS_ADDR={DFREWARDS_ADDR}, TOKEN_ADDR={TOKEN_ADDR}"
-        f", BATCH_NBR={BATCH_NBR}\n"
+    parser = argparse.ArgumentParser(
+        description="From rewards csv, dispense funds to chain."
     )
-    assert DFREWARDS_ADDR is not None
-    assert TOKEN_ADDR is not None
+    parser.add_argument("command", choices=["dispense_active"])
+    parser.add_argument(
+        "CSV_DIR", type=existing_path, help="input directory for csv rewards file"
+    )
+    parser.add_argument(
+        "CHAINID",
+        type=int,
+        help=f"DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).",
+    )
+    parser.add_argument(
+        "--DFREWARDS_ADDR",
+        default=os.getenv("DFREWARDS_ADDR"),
+        type=str,
+        help="DFRewards contract's address. If not given, uses envvar DFREWARDS_ADDR",
+        required=False,
+    )
+    parser.add_argument(
+        "--TOKEN_ADDR",
+        default=os.getenv("TOKEN_ADDR"),
+        type=str,
+        help="token contract's address. If not given, uses envvar TOKEN_ADDR",
+        required=False,
+    )
+    parser.add_argument(
+        "--BATCH_NBR",
+        default=None,
+        type=str,
+        # pylint: disable=line-too-long
+        help="specify the batch number to run dispense only for that batch. If not given, runs dispense for all batches.",
+        required=False,
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    assert arguments.DFREWARDS_ADDR is not None
+    assert arguments.TOKEN_ADDR is not None
 
     # brownie setup
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
 
     # main work
     from_account = _getPrivateAccount()
-    token_symbol = B.Simpletoken.at(TOKEN_ADDR).symbol().upper()
+    token_symbol = B.Simpletoken.at(arguments.TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
-    rewards = csvs.loadRewardsCsv(CSV_DIR, token_symbol)
+    rewards = csvs.loadRewardsCsv(arguments.CSV_DIR, token_symbol)
 
     # "flatten" the rewards dict to dispense all chains in one go
     all_rewards = calcrewards.flattenRewards(rewards)
@@ -689,10 +555,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
     # dispense
     dispense.dispense(
         all_rewards,
-        DFREWARDS_ADDR,
-        TOKEN_ADDR,
+        arguments.DFREWARDS_ADDR,
+        arguments.TOKEN_ADDR,
         from_account,
-        batch_number=BATCH_NBR,
+        batch_number=arguments.BATCH_NBR,
     )
 
     print("dftool dispense_active: Done")
@@ -701,20 +567,10 @@ Transactions are signed with envvar 'DFTOOL_KEY`.
 # ========================================================================
 @enforce_types
 def do_newdfrewards():
-    HELP = f"""Deploy new DFRewards contract
-
-Usage: dftool newdfrewards CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "newdfrewards"
-    CHAINID = int(sys.argv[2])
-
-    print(f"Arguments: CHAINID={CHAINID}")
+    parser = SimpleChainIdArgumentParser(
+        "Deploy new DFRewards contract", "newdfrewards"
+    )
+    CHAINID = parser.print_args_and_get_chain()
 
     # main work
     networkutil.connect(CHAINID)
@@ -728,27 +584,16 @@ Usage: dftool newdfrewards CHAINID
 # ========================================================================
 @enforce_types
 def do_newdfstrategy():
-    HELP = f"""Deploy new DFStrategy contract
+    parser = DfStrategyArgumentParser("Deploy new DFStrategy contract", "newdfstrategy")
 
-Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
-  CHAINID -- {CHAINID_EXAMPLES}
-  DFREWARDS_ADDR -- DFRewards contract address
-  DFSTRATEGY_NAME -- DFStrategy contract name
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    assert sys.argv[1] == "newdfstrategy"
-    CHAINID = int(sys.argv[2])
-    DFREWARDS_ADDR = sys.argv[3]
-    DFSTRATEGY_NAME = sys.argv[4]
-
-    print(f"Arguments: CHAINID={CHAINID}")
-
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_strategy = B[DFSTRATEGY_NAME].deploy(DFREWARDS_ADDR, {"from": from_account})
+    df_strategy = B[arguments.DFSTRATEGY_NAME].deploy(
+        arguments.DFREWARDS_ADDR, {"from": from_account}
+    )
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
     print("dftool newdfstrategy: Done")
@@ -757,31 +602,22 @@ Usage: dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME
 # ========================================================================
 @enforce_types
 def do_addstrategy():
-    HELP = f"""Add a strategy to DFRewards contract
+    parser = DfStrategyArgumentParser(
+        "Add a strategy to DFRewards contract", "addstrategy"
+    )
 
-Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
-  CHAINID -- {CHAINID_EXAMPLES}
-  DFREWARDS_ADDR -- DFRewards contract address
-  DFSTRATEGY_ADDR -- DFStrategy contract address
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    assert sys.argv[1] == "addstrategy"
-    CHAINID = int(sys.argv[2])
-    DFREWARDS_ADDR = sys.argv[3]
-    DFSTRATEGY_ADDR = sys.argv[4]
-
-    print(f"Arguments: CHAINID={CHAINID}")
-
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
-    tx = df_rewards.addStrategy(DFSTRATEGY_ADDR, {"from": from_account})
+    df_rewards = B.DFRewards.at(arguments.DFREWARDS_ADDR)
+    tx = df_rewards.addStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyAdded"
 
-    print(f"Strategy {DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}")
+    print(
+        f"Strategy {arguments.DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}"
+    )
 
     print("dftool addstrategy: Done")
 
@@ -789,30 +625,21 @@ Usage: dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 # ========================================================================
 @enforce_types
 def do_retirestrategy():
-    HELP = f"""Retire a strategy from DFRewards contract
+    parser = DfStrategyArgumentParser(
+        "Retire a strategy from DFRewards contract", "retirestrategy"
+    )
 
-Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
-  CHAINID -- {CHAINID_EXAMPLES}
-  DFREWARDS_ADDR -- DFRewards contract address
-  DFSTRATEGY_ADDR -- DFStrategy contract address
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    assert sys.argv[1] == "retirestrategy"
-    CHAINID = int(sys.argv[2])
-    DFREWARDS_ADDR = sys.argv[3]
-    DFSTRATEGY_ADDR = sys.argv[4]
-
-    print(f"Arguments: CHAINID={CHAINID}")
-
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.at(DFREWARDS_ADDR)
-    tx = df_rewards.retireStrategy(DFSTRATEGY_ADDR, {"from": from_account})
+    df_rewards = B.DFRewards.at(arguments.DFREWARDS_ADDR)
+    tx = df_rewards.retireStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyRetired"
-    print(f"Strategy {DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}")
+    print(
+        f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
+    )
 
     print("dftool addstrategy: Done")
 
@@ -820,13 +647,8 @@ Usage: dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR
 # ========================================================================
 @enforce_types
 def do_compile():
-    HELP = """Compile contracts
-
-Usage: dftool compile
-"""
-    if len(sys.argv) not in [2]:
-        print(HELP)
-        sys.exit(1)
+    parser = argparse.ArgumentParser(description="Compile contracts")
+    parser.add_argument("command", choices=["compile"])
 
     os.system("brownie compile")
 
@@ -835,25 +657,16 @@ Usage: dftool compile
 @enforce_types
 def do_initdevwallets():
     # UPADATE THIS
-    HELP = f"""dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-
-Usage: dftool initdevwallets CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
+    parser = SimpleChainIdArgumentParser(
+        "Init wallets with OCEAN. (GANACHE ONLY)",
+        "initdevwallets",
+        epilog=f"""Uses these envvars:
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+        """,
+    )
+    CHAINID = parser.print_args_and_get_chain()
 
     from df_py.util import oceantestutil  # pylint: disable=import-outside-toplevel
-
-    # extract inputs
-    assert sys.argv[1] == "initdevwallets"
-    CHAINID = int(sys.argv[2])
-    print("dftool initdevwallets: Begin")
-    print(f"Arguments: CHAINID={CHAINID}")
 
     if CHAINID != DEV_CHAINID:
         # To support other testnets, they need to initdevwallets()
@@ -878,23 +691,15 @@ Uses these envvars:
 @enforce_types
 def do_manyrandom():
     # UPDATE THIS
-    HELP = f"""deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
+    parser = SimpleChainIdArgumentParser(
+        "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
+        "manyrandom",
+        epilog=f"""Uses these envvars:
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+        """,
+    )
 
-Usage: dftool manyrandom CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-
-Uses these envvars:
-  ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "manyrandom"
-    CHAINID = int(sys.argv[2])
-    print("dftool manyrandom: Begin")
-    print(f"Arguments: CHAINID={CHAINID}")
+    CHAINID = parser.print_args_and_get_chain()
 
     if CHAINID != DEV_CHAINID:
         # To support other testnets, they need to fillAccountsWithOcean()
@@ -922,30 +727,24 @@ Uses these envvars:
 # ========================================================================
 @enforce_types
 def do_mine():
-    HELP = """Force chain to pass time (ganache only)
+    parser = argparse.ArgumentParser(
+        description="Force chain to pass time (ganache only)"
+    )
+    parser.add_argument("command", choices=["mine"])
+    parser.add_argument("BLOCKS", type=int, help="e.g. 3")
+    parser.add_argument(
+        "--TIMEDELTA", type=int, help="e.g. 100", default=None, required=False
+    )
 
-Usage: dftool mine BLOCKS [TIMEDELTA]
-  BLOCKS -- e.g. 3
-  TIMEDELTA -- e.g. 100
-"""
-    if len(sys.argv) not in [3, 4]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    # extract inputs
-    assert sys.argv[1] == "mine"
-    BLOCKS = int(sys.argv[2])
-    if len(sys.argv) == 4:
-        TIMEDELTA = int(sys.argv[3])
-    else:
-        TIMEDELTA = None
-
-    print(f"Arguments: BLOCKS={BLOCKS}, TIMEDELTA={TIMEDELTA}")
+    BLOCKS, TIMEDELTA = arguments.BLOCKS, arguments.TIMEDELTA
 
     # main work
     networkutil.connectDev()
     chain = brownie.network.chain
-    if TIMEDELTA is None:
+    if TIMEDELTA is not None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
     else:
         chain.mine(blocks=BLOCKS)
@@ -956,20 +755,13 @@ Usage: dftool mine BLOCKS [TIMEDELTA]
 # ========================================================================
 @enforce_types
 def do_newacct():
-    HELP = """Generate new account
-
-Usage: dftool newacct
-"""
-    if len(sys.argv) not in [2]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "newacct"
+    parser = argparse.ArgumentParser(description="Generate new account")
+    parser.add_argument("command", choices=["newacct"])
 
     # main work
     networkutil.connectDev()
     account = brownie.network.accounts.add()
+
     print("Generated new account:")
     print(f" private_key = {account.private_key}")
     print(f" address = {account.address}")
@@ -979,21 +771,15 @@ Usage: dftool newacct
 # ========================================================================
 @enforce_types
 def do_newtoken():
-    HELP = """Generate new token (for testing)
+    parser = argparse.ArgumentParser(description="Generate new token (for testing)")
+    parser.add_argument("command", choices=["newtoken"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
-Usage: dftool newtoken CHAINID
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "newtoken"
-    CHAINID = int(sys.argv[2])
-    print(f"Arguments:\n CHAINID={CHAINID}")
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # main work
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
     token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
@@ -1002,29 +788,21 @@ Usage: dftool newtoken CHAINID
 # ========================================================================
 @enforce_types
 def do_newVeOcean():
-    HELP = """Generate new veOcean (for testing)
+    parser = argparse.ArgumentParser(description="Generate new veOcean (for testing)")
+    parser.add_argument("command", choices=["newVeOcean"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("TOKEN_ADDR", type=str, help="token address")
 
-Usage: dftool newVeOcean CHAINID TOKEN_ADDR
-"""
-    if len(sys.argv) not in [4]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "newVeOcean"
-    CHAINID = int(sys.argv[2])
-    print(f"Arguments:\n CHAINID={CHAINID}")
-
-    TOKEN_ADDR = str(sys.argv[3])
-    print(f"Arguments:\n TOKEN_ADDR={TOKEN_ADDR}")
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # main work
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
 
     # deploy veOcean
     veOcean = B.veOcean.deploy(
-        TOKEN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
+        arguments.TOKEN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
     )
     # pylint: disable=line-too-long
     print(
@@ -1035,21 +813,17 @@ Usage: dftool newVeOcean CHAINID TOKEN_ADDR
 # ========================================================================
 @enforce_types
 def do_newVeAllocate():
-    HELP = """Generate new veAllocate (for testing)
+    parser = argparse.ArgumentParser(
+        description="Generate new veAllocate (for testing)"
+    )
+    parser.add_argument("command", choices=["newVeAllocate"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
-Usage: dftool newVeAllocate CHAINID
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "newVeAllocate"
-    CHAINID = int(sys.argv[2])
-    print(f"Arguments:\n CHAINID={CHAINID}")
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # main work
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
     contract = B.veAllocate.deploy({"from": from_account})
     print(f"veAllocate contract deployed at: {contract.address}")
@@ -1058,33 +832,29 @@ Usage: dftool newVeAllocate CHAINID
 # ========================================================================
 @enforce_types
 def do_veSetAllocation():
-    HELP = """Allocate weight to veAllocate contract (for testing).
-    Set to 0 to trigger resetAllocation event.
+    parser = argparse.ArgumentParser(
+        description="""
+        Allocate weight to veAllocate contract (for testing).
+        Set to 0 to trigger resetAllocation event.
+    """
+    )
+    parser.add_argument("command", choices=["veSetAllocation"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("amount", type=float, help="")
+    parser.add_argument("exchangeId", type=str, help="")
 
-Usage: dftool veSetAllocation CHAINID amount exchangeId
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "veSetAllocation"
-    CHAINID = int(sys.argv[2])
-    print(f"Arguments:\n CHAINID={CHAINID}")
-
-    amount = float(sys.argv[3])
-    print(f"Arguments:\n amount={amount}")
-
-    exchangeId = str(sys.argv[4])
-    print(f"Arguments:\n exchangeId={exchangeId}")
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # main work
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
-        veAllocate().setAllocation(amount, exchangeId, {"from": from_account})
+        veAllocate().setAllocation(
+            arguments.amount, arguments.exchangeId, {"from": from_account}
+        )
         allocation = veAllocate().getTotalAllocation(from_account, 100, 0)
         votingPower = functools.reduce(lambda a, b: a + b, allocation[1])
         print(f"veAllocate voting power is: {votingPower}")
@@ -1093,29 +863,36 @@ Usage: dftool veSetAllocation CHAINID amount exchangeId
 # ========================================================================
 @enforce_types
 def do_acctinfo():
-    HELP = f"""Info about an account
+    parser = argparse.ArgumentParser(
+        description="Info about an account",
+        epilog="If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.",
+    )
+    parser.add_argument("command", choices=["acctinfo"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument(
+        "ACCOUNT_ADDR",
+        type=str,
+        help="e.g. '0x987...' or '4'. If the latter, uses accounts[i]",
+    )
+    parser.add_argument(
+        "--TOKEN_ADDR",
+        default=os.getenv("TOKEN_ADDR"),
+        type=str,
+        help="e.g. '0x123..'",
+        required=False,
+    )
 
-Usage: dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR]
-  CHAINID -- {CHAINID_EXAMPLES}
-  ACCOUNT_ADDR -- e.g. '0x987...' or '4'. If the latter, uses accounts[i]
-  TOKEN_ADDR -- e.g. '0x123..'
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
-"""
-    if len(sys.argv) not in [4, 5]:
-        print(HELP)
-        sys.exit(1)
+    CHAINID, ACCOUNT_ADDR, TOKEN_ADDR = (
+        arguments.CHAINID,
+        arguments.ACCOUNT_ADDR,
+        arguments.TOKEN_ADDR,
+    )
 
-    # extract inputs
-    assert sys.argv[1] == "acctinfo"
-    CHAINID = int(sys.argv[2])
-    ACCOUNT_ADDR = sys.argv[3]
-    TOKEN_ADDR = sys.argv[4] if len(sys.argv) >= 5 else None
-
-    # do work
-    print("Account info:")
     networkutil.connect(CHAINID)
-    if len(str(ACCOUNT_ADDR)) == 1:
+    if len(ACCOUNT_ADDR) == 1:
         addr_i = int(ACCOUNT_ADDR)
         ACCOUNT_ADDR = brownie.accounts[addr_i]
     print(f"  Address = {ACCOUNT_ADDR}")
@@ -1137,21 +914,15 @@ If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.
 # ========================================================================
 @enforce_types
 def do_chaininfo():
-    HELP = f"""Info about a network
+    parser = argparse.ArgumentParser(description="Info about a network")
+    parser.add_argument("command", choices=["chaininfo"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
-Usage: dftool chaininfo CHAINID
-  CHAINID -- {CHAINID_EXAMPLES}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "chaininfo"
-    CHAINID = int(sys.argv[2])
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
     # do work
-    networkutil.connect(CHAINID)
+    networkutil.connect(arguments.CHAINID)
     # blocks = len(brownie.network.chain)
     print("\nChain info:")
     print(f"  # blocks: {len(brownie.network.chain)}")
@@ -1160,25 +931,30 @@ Usage: dftool chaininfo CHAINID
 # ========================================================================
 @enforce_types
 def do_dispense_passive():
-    HELP = f"""Dispense passive rewards
+    parser = argparse.ArgumentParser(description="Dispense passive rewards")
+    parser.add_argument("command", choices=["dispense_passive"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument(
+        "AMOUNT",
+        type=float,
+        help="total amount of TOKEN to distribute (decimal, not wei)",
+    )
+    parser.add_argument(
+        "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
+    )
 
-Usage: dftool dispense_passive CHAINID AMOUNT [ST]
-    CHAINID -- {CHAINID_EXAMPLES}
-    AMOUNT -- total amount of TOKEN to distribute (decimal, not wei)
-    ST -- week start date -- YYYY-MM-DD
-"""
-    if len(sys.argv) not in [4, 5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
 
-    CHAINID = int(sys.argv[2])
-    networkutil.connect(CHAINID)
-    AMOUNT = float(sys.argv[3])
+    networkutil.connect(arguments.CHAINID)
+
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     recordDeployedContracts(ADDRESS_FILE)
 
+    AMOUNT = arguments.AMOUNT
+
     if AMOUNT == 0:
-        START_DATE = datetime.datetime.strptime(sys.argv[4], "%Y-%m-%d")
+        START_DATE = arguments.ST
         AMOUNT = getActiveRewardAmountForWeekEth(START_DATE)
 
     feedist = FeeDistributor()
@@ -1191,22 +967,23 @@ Usage: dftool dispense_passive CHAINID AMOUNT [ST]
 # ========================================================================
 @enforce_types
 def do_calculate_passive():
-    HELP = f"""Calculate passive rewards
+    parser = argparse.ArgumentParser(description="Calculate passive rewards")
+    parser.add_argument("command", choices=["calculate_passive"])
+    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("DATE", type=valid_date, help="date in format YYYY-MM-DD")
+    parser.add_argument(
+        "CSV_DIR",
+        type=existing_path,
+        help="output dir for passive-CHAINID.csv",
+    )
 
-Usage: dftool calculate_passive CHAINID DATE CSV_DIR
-    CHAINID -- {CHAINID_EXAMPLES}
-    DATE -- date in format YYYY-MM-DD
-    CSV_DIR -- output dir for passive-CHAINID.csv
-"""
-    if len(sys.argv) not in [5]:
-        print(HELP)
-        sys.exit(1)
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    CSV_DIR = arguments.CSV_DIR
 
-    CHAINID = int(sys.argv[2])
-    networkutil.connect(CHAINID)
-    DATE = sys.argv[3]
-    CSV_DIR = sys.argv[4]
-    timestamp = int(timestrToTimestamp(DATE))
+    networkutil.connect(arguments.CHAINID)
+    timestamp = int(timestrToTimestamp(arguments.DATE))
+
     S_PER_WEEK = 7 * 86400
     timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
     ADDRESS_FILE = _getAddressEnvvarOrExit()
@@ -1233,16 +1010,11 @@ Usage: dftool calculate_passive CHAINID DATE CSV_DIR
 # ========================================================================
 @enforce_types
 def do_checkpoint_feedist():
-    HELP = f"""Checkpoint FeeDistributor contract
+    parser = SimpleChainIdArgumentParser(
+        "Checkpoint FeeDistributor contract", "checkpoint_feedist"
+    )
 
-Usage: dftool checkpoint_feedist CHAINID
-    CHAINID -- {CHAINID_EXAMPLES}
-"""
-    if len(sys.argv) not in [3]:
-        print(HELP)
-        sys.exit(1)
-
-    CHAINID = int(sys.argv[2])
+    CHAINID = parser.print_args_and_get_chain()
     networkutil.connect(CHAINID)
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
@@ -1285,12 +1057,6 @@ def _exitIfFileExists(filename: str):
         sys.exit(1)
 
 
-def _createDirIfNeeded(dir_: str):
-    if not os.path.exists(dir_):
-        print(f"Directory {dir_} did not exist, so created it")
-        os.mkdir(dir_)
-
-
 def _getAddressEnvvarOrExit() -> str:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
@@ -1325,6 +1091,10 @@ def _getPrivateAccount():
 def _do_main():
     if len(sys.argv) == 1:
         do_help_short(1)
+        return
+
+    if sys.argv[1] == "help":
+        do_help_long(0)
         return
 
     func_name = f"do_{sys.argv[1]}"

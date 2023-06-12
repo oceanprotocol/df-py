@@ -53,15 +53,15 @@ if [ $USE_TESTNET -eq 1 ]; then
     dftool query $date $now $SAMPLES $CSV_DIR 80001
     dftool vebals $date $now $SAMPLES $CSV_DIR 5
     dftool allocations $date $now $SAMPLES $CSV_DIR 5
-    dftool nftinfo $CSV_DIR 5 $now
-    dftool nftinfo $CSV_DIR 80001 $now
+    dftool nftinfo $CSV_DIR 5 --FIN $now
+    dftool nftinfo $CSV_DIR 80001 --FIN $now
 else
     dftool query $date $now $SAMPLES $CSV_DIR 1
     dftool query $date $now $SAMPLES $CSV_DIR 137
     dftool vebals $date $now $SAMPLES $CSV_DIR 1
     dftool allocations $date $now $SAMPLES $CSV_DIR 1
-    dftool nftinfo $CSV_DIR 1 $now
-    dftool nftinfo $CSV_DIR 137 $now
+    dftool nftinfo $CSV_DIR 1 --FIN $now
+    dftool nftinfo $CSV_DIR 137 --FIN $now
 fi
 
 
