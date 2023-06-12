@@ -54,7 +54,7 @@ def test_calc(tmp_path):
     # main cmd
     TOT_OCEAN = 1000.0
     START_DATE = "2023-02-02"  # Only substream is volume DF
-    cmd = f"./dftool calc_volume_rewards {CSV_DIR} {TOT_OCEAN} {START_DATE}"
+    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {START_DATE}"
     os.system(cmd)
 
     # test result
@@ -101,7 +101,7 @@ def test_calc_predictoor_substream(tmp_path):
 0x1000000000000000000000000000000000000001,0.5,234,909
 0x2000000000000000000000000000000000000001,0.5,1818,909
 0x3000000000000000000000000000000000000001,0.5,754,909
-0x4000000000000000000000000000000000000001,0.5,1818,909    
+0x4000000000000000000000000000000000000001,0.5,1818,909
 """
     predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR)
     with open(predictoor_data_csv, "w") as f:
@@ -112,7 +112,7 @@ def test_calc_predictoor_substream(tmp_path):
     # TEST WITH TOT_OCEAN > 0
     TOT_OCEAN = 1000.0
     ST = "2023-03-16"  # first week of df main
-    cmd = f"./dftool calc_predictoor_rewards {CSV_DIR} {TOT_OCEAN} {ST}"
+    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
     os.system(cmd)
 
     # test result
@@ -130,7 +130,7 @@ def test_calc_predictoor_substream(tmp_path):
     # TEST WITH TOT_OCEAN = 0, DATE WITH NONZERO REWARDS
     TOT_OCEAN = 0
     ST = "2025-03-16"  # some date where predictoor rewards are nonzero
-    cmd = f"./dftool calc_predictoor_rewards {CSV_DIR} {TOT_OCEAN} {ST}"
+    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
     os.system(cmd)
 
     # test result
@@ -146,7 +146,7 @@ def test_calc_predictoor_substream(tmp_path):
     # TEST WITH TOT_OCEAN = 0, DATE WITH ZERO REWARDS
     TOT_OCEAN = 0
     ST = "2023-01-01"  # some date where predictoor rewards are zero
-    cmd = f"./dftool calc_predictoor_rewards {CSV_DIR} {TOT_OCEAN} {ST}"
+    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
     os.system(cmd)
 
     # test result
@@ -185,7 +185,7 @@ def test_calc_without_amount(tmp_path):
     # main cmd
     TOT_OCEAN = 0
     ST = "2023-03-16"  # first week of df main
-    cmd = f"./dftool calc_volume_rewards {CSV_DIR} {TOT_OCEAN} {ST}"
+    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
     os.system(cmd)
 
     # test result
