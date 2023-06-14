@@ -1,9 +1,12 @@
 import datetime
 import os
 import subprocess
+import sys
+from pathlib import Path
 from unittest.mock import patch
 
 import brownie
+import pytest
 from enforce_typing import enforce_types
 
 from df_py.predictoor.csvs import (
@@ -13,7 +16,7 @@ from df_py.predictoor.csvs import (
     predictoor_rewards_csv_filename,
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
-from df_py.util import networkutil, oceantestutil, oceanutil
+from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
@@ -344,6 +347,40 @@ def test_initdevwallets():
         os.system(cmd)
 
         assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
+
+
+def test_volsym(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    old_sys_argv = sys.argv
+    sys_argv = [
+        "dftool",
+        "volsym",
+        "2023-03-16",  # first week of df main
+        "latest",
+        "10",
+        CSV_DIR,
+        str(networkutil.DEV_CHAINID),
+    ]
+
+    sys.argv = sys_argv
+
+    # rates does not exist
+    with pytest.raises(SystemExit):
+        dftool_module.do_volsym()
+
+    rate_file = os.path.join(tmp_path, "rate-test.csv")
+    Path(rate_file).write_text("")
+
+    with patch.object(dftool_module, "retryFunction") as mock:
+        mock.return_value = ({}, {}, {})
+        dftool_module.do_volsym()
+
+    sys.argv = old_sys_argv
+
+    assert os.path.exists(os.path.join(CSV_DIR, "nftvols-8996.csv"))
+    assert os.path.exists(os.path.join(CSV_DIR, "owners-8996.csv"))
+    assert os.path.exists(os.path.join(CSV_DIR, "symbols-8996.csv"))
 
 
 @enforce_types

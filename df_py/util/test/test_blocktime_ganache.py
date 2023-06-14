@@ -106,6 +106,8 @@ def test_get_next_thursday():
 def test_get_next_thursday_block_number():
     next_thursday_block = getBlockNumberThursday(chain)
     assert next_thursday_block % 10 == 0
+    # uncomment when #629 is done
+    # assert len(chain) < next_thursday_block
 
     now = len(chain) - 1
 

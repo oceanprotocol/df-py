@@ -114,7 +114,7 @@ def block_or_valid_date(s):
     except ValueError:
         pass
 
-    msg = "not a valid date or block number: {s}"
+    msg = f"not a valid date or block number: {s}"
     raise argparse.ArgumentTypeError(msg)
 
 
