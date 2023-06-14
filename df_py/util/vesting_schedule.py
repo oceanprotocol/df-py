@@ -4,11 +4,40 @@ from enforce_typing import enforce_types
 
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
-from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS
+from df_py.util.constants import (
+    ACTIVE_REWARDS_MULTIPLIER,
+    DFMAIN_CONSTANTS,
+    PREDICTOOR_RELEASE_WEEK,
+)
 from df_py.volume.calcrewards import getDfWeekNumber
 
 
-def getActiveRewardAmountForWeekEth(start_dt: datetime) -> int:
+@enforce_types
+def getActiveRewardAmountForWeekEthByStream(
+    start_dt: datetime, substream: str
+) -> float:
+    """
+    Return the reward amount for the week and substream in ETH starting at start_dt.
+    This is the amount that will be allocated to active rewards.
+    """
+    total_reward_amount = getActiveRewardAmountForWeekEth(start_dt)
+
+    dfweek = getDfWeekNumber(start_dt) - 1
+
+    if substream == "predictoor":
+        # 0.01%
+        return total_reward_amount * 0.001 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
+
+    if substream == "volume":
+        return total_reward_amount - getActiveRewardAmountForWeekEthByStream(
+            start_dt, "predictoor"
+        )
+
+    raise ValueError("Unrecognized substream: {}".format(substream))
+
+
+@enforce_types
+def getActiveRewardAmountForWeekEth(start_dt: datetime) -> float:
     """
     Return the reward amount for the week in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.

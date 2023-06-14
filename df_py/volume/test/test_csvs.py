@@ -39,8 +39,8 @@ def test_allocations_onechain_lowercase(tmp_path):
             PC: {LP1: 0.7, LP4: 1.0},
         }
     }
-    csvs.saveAllocationCsv(allocs, csv_dir)
-    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    csvs.save_allocation_csv(allocs, csv_dir)
+    allocs_loaded = csvs.load_allocation_csvs(csv_dir)
     assert allocs_loaded == allocs
 
 
@@ -61,8 +61,8 @@ def test_allocations_onechain_mixedcase(tmp_path):
             PC: {"0xlp1": 0.7, "0xLp4": 1.0},
         }
     }
-    csvs.saveAllocationCsv(allocs_mixedcase, csv_dir)
-    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    csvs.save_allocation_csv(allocs_mixedcase, csv_dir)
+    allocs_loaded = csvs.load_allocation_csvs(csv_dir)
     assert allocs_loaded == allocs_lowercase
 
 
@@ -78,8 +78,8 @@ def test_allocations_twochains(tmp_path):
         C2: {PD: {LP1: 0.1, LP5: 1.0}, PE: {LP6: 1.0}},
     }
 
-    csvs.saveAllocationCsv(allocs, csv_dir)
-    allocs_loaded = csvs.loadAllocationCsvs(csv_dir)
+    csvs.save_allocation_csv(allocs, csv_dir)
+    allocs_loaded = csvs.load_allocation_csvs(csv_dir)
     assert allocs_loaded == allocs
 
 
@@ -95,10 +95,10 @@ def test_vebals(tmp_path):
     vebals = {LP1: 1.0, LP2: 2.0, LP3: 3.0}
     locked_amt = {LP1: 10.0, LP2: 20.0, LP3: 3.0}
     unlock_time = {LP1: 1, LP2: 1, LP3: 3}
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     # load & compare
-    loaded_vebals, locked_amts, unlock_times = csvs.loadVebalsCsv(csv_dir)
+    loaded_vebals, locked_amts, unlock_times = csvs.load_vebals_csv(csv_dir)
     assert loaded_vebals == vebals
     assert locked_amts == locked_amt
     assert unlock_times == unlock_time
@@ -117,20 +117,20 @@ def test_nftinfo(tmp_path):
     nft2 = SimpleDataNft(137, RND_ADDRS[2], "DN2", RND_ADDRS[3])
     nft3 = SimpleDataNft(1285, RND_ADDRS[4], "DN3", RND_ADDRS[5])
 
-    csvs.saveNftinfoCsv([nft1, nft2], csv_dir, 137)
-    csvs.saveNftinfoCsv([nft3], csv_dir, 1285)
+    csvs.save_nftinfo_csv([nft1, nft2], csv_dir, 137)
+    csvs.save_nftinfo_csv([nft3], csv_dir, 1285)
 
     # load - building blocks
-    fnames1 = [csvs.nftinfoCsvFilename(csv_dir, cid) for cid in [137, 1285]]
-    fnames2 = csvs.nftinfoCsvFilenames(csv_dir)
+    fnames1 = [csvs.nftinfo_csv_filename(csv_dir, cid) for cid in [137, 1285]]
+    fnames2 = csvs.nftinfo_csv_filenames(csv_dir)
     assert len(fnames1) == len(fnames2) == 2
     assert set(fnames1) == set(fnames2)
 
-    cids = [csvs.chainIDforNftinfoCsv(fname) for fname in fnames1]
+    cids = [csvs.chain_id_for_nftinfo_csv(fname) for fname in fnames1]
     assert set([137, 1285]) == set(cids)
 
     # load - main
-    nftinfo = csvs.loadNftinfoCsvs(csv_dir)  # list of SimpleDataNft
+    nftinfo = csvs.load_nftinfo_csvs(csv_dir)  # list of SimpleDataNft
     assert len(nftinfo) == 3
     assert sorted([nft.symbol for nft in nftinfo]) == ["DN1", "DN2", "DN3"]
     nft1a = [nft for nft in nftinfo if nft.symbol == "DN1"][0]
@@ -147,17 +147,17 @@ def test_nftinfo(tmp_path):
 
 
 @enforce_types
-def test_chainIDforNftvolsCsv():
-    assert csvs.chainIDforNftvolsCsv("poolvols-101.csv") == 101
-    assert csvs.chainIDforNftvolsCsv("path1/32/poolvols-92.csv") == 92
+def test_chain_id_for_nftvols_csv():
+    assert csvs.chain_id_for_nftvols_csv("poolvols-101.csv") == 101
+    assert csvs.chain_id_for_nftvols_csv("path1/32/poolvols-92.csv") == 92
 
 
 @enforce_types
 def test_nftvols_onechain_lowercase(tmp_path):
     csv_dir = str(tmp_path)
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
-    csvs.saveNftvolsCsv(V1, csv_dir, C1)
-    V1_loaded = csvs.loadNftvolsCsv(csv_dir, C1)
+    csvs.save_nftvols_csv(V1, csv_dir, C1)
+    V1_loaded = csvs.load_nftvols_csv(csv_dir, C1)
     assert V1_loaded == V1
 
 
@@ -166,8 +166,8 @@ def test_nftvols_onechain_mixedcase(tmp_path):
     csv_dir = str(tmp_path)
     V1_lowercase = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V1_mixedcase = {OCN_ADDR2: {PA: 1.1, PB: 2.1}, H2O_ADDR2: {PC: 3.1}}
-    csvs.saveNftvolsCsv(V1_mixedcase, csv_dir, C1)
-    V1_loaded = csvs.loadNftvolsCsv(csv_dir, C1)
+    csvs.save_nftvols_csv(V1_mixedcase, csv_dir, C1)
+    V1_loaded = csvs.load_nftvols_csv(csv_dir, C1)
     assert V1_loaded == V1_lowercase
 
 
@@ -177,13 +177,13 @@ def test_nftvols_twochains(tmp_path):
     V1 = {OCN_ADDR: {PA: 1.1, PB: 2.1}, H2O_ADDR: {PC: 3.1}}
     V2 = {OCN_ADDR: {PD: 4.1, PE: 5.1}, H2O_ADDR: {PF: 6.1}}
 
-    assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 0
-    csvs.saveNftvolsCsv(V1, csv_dir, C1)
-    csvs.saveNftvolsCsv(V2, csv_dir, C2)
-    assert len(csvs.nftvolsCsvFilenames(csv_dir)) == 2
+    assert len(csvs.nftvols_csv_filenames(csv_dir)) == 0
+    csvs.save_nftvols_csv(V1, csv_dir, C1)
+    csvs.save_nftvols_csv(V2, csv_dir, C2)
+    assert len(csvs.nftvols_csv_filenames(csv_dir)) == 2
 
     target_V = {C1: V1, C2: V2}
-    loaded_V = csvs.loadNftvolsCsvs(csv_dir)
+    loaded_V = csvs.load_nftvols_csvs(csv_dir)
     assert loaded_V == target_V
 
 
@@ -192,9 +192,9 @@ def test_nftvols_twochains(tmp_path):
 
 
 @enforce_types
-def test_chainIDforOwnersCsv():
-    assert csvs.chainIDforOwnersCsv("owners-101.csv") == 101
-    assert csvs.chainIDforOwnersCsv("path1/32/owners-92.csv") == 92
+def test_chain_id_for_owners_csv():
+    assert csvs.chain_id_for_owners_csv("owners-101.csv") == 101
+    assert csvs.chain_id_for_owners_csv("path1/32/owners-92.csv") == 92
 
 
 @enforce_types
@@ -206,12 +206,12 @@ def test_ownersCsv(tmp_path):
         C2: {"0x4": "0xa", "0x5": "0xd"},
     }
 
-    csvs.saveOwnersCsv(C[C1], csv_dir, C1)
-    csvs.saveOwnersCsv(C[C2], csv_dir, C2)
+    csvs.save_owners_csv(C[C1], csv_dir, C1)
+    csvs.save_owners_csv(C[C2], csv_dir, C2)
 
-    loaded_C_C1 = csvs.loadOwnersCsv(csv_dir, C1)
-    loaded_C_C2 = csvs.loadOwnersCsv(csv_dir, C2)
-    loaded_C = csvs.loadOwnersCsvs(csv_dir)
+    loaded_C_C1 = csvs.load_owners_csv(csv_dir, C1)
+    loaded_C_C2 = csvs.load_owners_csv(csv_dir, C2)
+    loaded_C = csvs.load_owners_csvs(csv_dir)
 
     assert loaded_C_C1 == C[C1]
     assert loaded_C_C2 == C[C2]
@@ -223,9 +223,9 @@ def test_ownersCsv(tmp_path):
 
 
 @enforce_types
-def test_chainIDforSymbolsCsv():
-    assert csvs.chainIDforSymbolsCsv("symbols-101.csv") == 101
-    assert csvs.chainIDforSymbolsCsv("path1/32/symbols-92.csv") == 92
+def test_chain_id_for_symbols_csv():
+    assert csvs.chain_id_for_symbols_csv("symbols-101.csv") == 101
+    assert csvs.chain_id_for_symbols_csv("path1/32/symbols-92.csv") == 92
 
 
 @enforce_types
@@ -235,12 +235,12 @@ def test_symbols(tmp_path):
     symbols_C1 = {"0x123": "OCEAN", "0x456": "H2O"}
     symbols_C2 = {"0x789": "MOCEAN", "0xabc": "H2O"}
 
-    csvs.saveSymbolsCsv(symbols_C1, csv_dir, C1)
-    csvs.saveSymbolsCsv(symbols_C2, csv_dir, C2)
+    csvs.save_symbols_csv(symbols_C1, csv_dir, C1)
+    csvs.save_symbols_csv(symbols_C2, csv_dir, C2)
 
-    loaded_symbols_C1 = csvs.loadSymbolsCsv(csv_dir, C1)
-    loaded_symbols_C2 = csvs.loadSymbolsCsv(csv_dir, C2)
-    loaded_symbols = csvs.loadSymbolsCsvs(csv_dir)
+    loaded_symbols_C1 = csvs.load_symbols_csv(csv_dir, C1)
+    loaded_symbols_C2 = csvs.load_symbols_csv(csv_dir, C2)
+    loaded_symbols = csvs.load_symbols_csvs(csv_dir)
 
     assert loaded_symbols_C1 == symbols_C1
     assert loaded_symbols_C2 == symbols_C2
@@ -256,13 +256,13 @@ def test_rates(tmp_path):
     rates = {OCN_SYMB: 0.66, H2O_SYMB: 1.618}
 
     csv_dir = str(tmp_path)
-    assert len(csvs.rateCsvFilenames(csv_dir)) == 0
-    csvs.saveRateCsv(OCN_SYMB, rates[OCN_SYMB], csv_dir)
-    assert len(csvs.rateCsvFilenames(csv_dir)) == 1
-    csvs.saveRateCsv(H2O_SYMB, rates[H2O_SYMB], csv_dir)
-    assert len(csvs.rateCsvFilenames(csv_dir)) == 2
+    assert len(csvs.rate_csv_filenames(csv_dir)) == 0
+    csvs.save_rate_csv(OCN_SYMB, rates[OCN_SYMB], csv_dir)
+    assert len(csvs.rate_csv_filenames(csv_dir)) == 1
+    csvs.save_rate_csv(H2O_SYMB, rates[H2O_SYMB], csv_dir)
+    assert len(csvs.rate_csv_filenames(csv_dir)) == 2
 
-    loaded_rates = csvs.loadRateCsvs(csv_dir)
+    loaded_rates = csvs.load_rate_csvs(csv_dir)
     assert loaded_rates == rates
 
 
@@ -273,8 +273,8 @@ def test_rates(tmp_path):
 @enforce_types
 def test_rewardsperlp_filename(tmp_path):
     csv_dir = str(tmp_path)
-    fname = csvs.rewardsperlpCsvFilename(csv_dir, "MYTOKEN")
-    target_fname = csv_dir + "/" + "rewardsperlp-MYTOKEN.csv"
+    fname = csvs.volume_rewards_csv_filename(csv_dir)
+    target_fname = csv_dir + "/" + "volume_rewards.csv"
     assert fname == target_fname
 
 
@@ -284,9 +284,9 @@ def test_rewardsperlp_main(tmp_path):
     target_rewards = rewards
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsperlpCsv(rewards, csv_dir, "MYTOKEN")
+    csvs.save_volume_rewards_csv(rewards, csv_dir)
 
-    loaded_rewards = csvs.loadRewardsCsv(csv_dir, "MYTOKEN")
+    loaded_rewards = csvs.load_volume_rewards_csv(csv_dir)
     assert loaded_rewards == target_rewards
 
     for innerdict in rewards.values():  # ensures we don't deal in weis
@@ -318,23 +318,23 @@ def test_rewardsinfo(
         },
     }
     target_rewards = """chainID,nft_addr,LP_addr,amt,token
-1,0xpa,0xlp1,3.2,MYTOKEN
-1,0xpa,0xlp2,5.4,MYTOKEN
-1,0xpb,0xlp2,5.3,MYTOKEN
-1,0xpb,0xlp3,1.324824324234,MYTOKEN
-1,0xpc,0xlp3,1.324824324234,MYTOKEN
-1,0xpc,0xlp4,1.23143252346354,MYTOKEN
-137,0xpd,0xlp1,1412341242,MYTOKEN
-137,0xpd,0xlp2,23424,MYTOKEN
-137,0xpe,0xlp1,1e-15,MYTOKEN
-137,0xpe,0xlp2,12314552354,MYTOKEN
+1,0xpa,0xlp1,3.2,OCEAN
+1,0xpa,0xlp2,5.4,OCEAN
+1,0xpb,0xlp2,5.3,OCEAN
+1,0xpb,0xlp3,1.324824324234,OCEAN
+1,0xpc,0xlp3,1.324824324234,OCEAN
+1,0xpc,0xlp4,1.23143252346354,OCEAN
+137,0xpd,0xlp1,1412341242,OCEAN
+137,0xpd,0xlp2,23424,OCEAN
+137,0xpe,0xlp1,1e-15,OCEAN
+137,0xpe,0xlp2,12314552354,OCEAN
 """
 
     csv_dir = str(tmp_path)
-    csvs.saveRewardsinfoCsv(rewards, csv_dir, "MYTOKEN")
+    csvs.save_volume_rewardsinfo_csv(rewards, csv_dir)
 
     # pylint: disable=consider-using-with
-    loaded_rewards = open(csvs.rewardsinfoCsvFilename(csv_dir, "MYTOKEN"), "r")
+    loaded_rewards = open(csvs.volume_rewardsinfo_csv_filename(csv_dir), "r")
     csv = loaded_rewards.read()
     assert csv == target_rewards
 

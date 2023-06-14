@@ -7,7 +7,7 @@ from pytest import approx
 from df_py.util import networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER
-from df_py.volume import vesting_schedule
+from df_py.util import vesting_schedule
 
 test_params = [
     (datetime(2023, 3, 9), 0),
@@ -43,9 +43,43 @@ test_params = [
 ]
 
 
+def test_getActiveRewardAmountForWeekEthByStream():
+    predictoor_substream = "predictoor"
+    volume_substream = "volume"
+    start_dt = datetime(2022, 1, 1)
+    assert (
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+            start_dt, predictoor_substream
+        )
+        == 0
+    )
+
+    start_dt = datetime(2042, 1, 1)
+    assert (
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+            start_dt, predictoor_substream
+        )
+        > 0
+    )
+
+    predictoor_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+        start_dt, predictoor_substream
+    )
+    volume_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+        start_dt, volume_substream
+    )
+    total_rewards = vesting_schedule.getActiveRewardAmountForWeekEth(start_dt)
+    assert total_rewards == predictoor_rewards + volume_rewards
+
+    predictoor_substream = "invalid_substream"
+    with pytest.raises(ValueError):
+        vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+            start_dt, predictoor_substream
+        )
+
+
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getRewardAmountForWeekWei(test_input, expected_output):
-    networkutil.connectDev()
     assert from_wei(vesting_schedule.getRewardAmountForWeekWei(test_input)) == approx(
         expected_output
     )
@@ -53,7 +87,6 @@ def test_getRewardAmountForWeekWei(test_input, expected_output):
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_getActiveRewardAmountForWeekEth(test_input, expected_output):
-    networkutil.connectDev()
     assert vesting_schedule.getActiveRewardAmountForWeekEth(test_input) == approx(
         expected_output * ACTIVE_REWARDS_MULTIPLIER
     )
@@ -70,3 +103,13 @@ def test_compareHalflifeFunctions():
         solidity_result = vesting_schedule._halflife_solidity(VALUE, i, HALF_LIFE)
         diff = abs(py_result - solidity_result)
         assert diff < 1e10, f"diff {diff} at i {i/HALF_LIFE*2}"
+
+
+@enforce_types
+def setup_function():
+    networkutil.connectDev()
+
+
+@enforce_types
+def teardown_function():
+    networkutil.disconnect()

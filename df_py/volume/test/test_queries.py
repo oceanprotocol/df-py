@@ -312,7 +312,7 @@ def _test_dftool_query(tmp_path, ST, FIN):
     _clear_dir(CSV_DIR)
 
     # insert fake inputs: rate csv file
-    csvs.saveRateCsv("OCEAN", 0.5, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.5, CSV_DIR)
 
     # main cmd
     NSAMP = 5
@@ -321,9 +321,9 @@ def _test_dftool_query(tmp_path, ST, FIN):
     os.system(cmd)
 
     # test result
-    assert csvs.nftvolsCsvFilenames(CSV_DIR)
-    assert csvs.ownersCsvFilenames(CSV_DIR)
-    assert csvs.symbolsCsvFilenames(CSV_DIR)
+    assert csvs.nftvols_csv_filenames(CSV_DIR)
+    assert csvs.owners_csv_filenames(CSV_DIR)
+    assert csvs.symbols_csv_filenames(CSV_DIR)
 
 
 @enforce_types
@@ -335,7 +335,7 @@ def _test_dftool_nftinfo(tmp_path, FIN):
     cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} --FIN {FIN}"
     os.system(cmd)
 
-    assert csvs.nftinfoCsvFilename(CSV_DIR, CHAINID)
+    assert csvs.nftinfo_csv_filename(CSV_DIR, CHAINID)
 
 
 @enforce_types
@@ -350,7 +350,7 @@ def _test_dftool_vebals(tmp_path, ST, FIN):
     os.system(cmd)
 
     # test result
-    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR)
+    vebals_csv = csvs.vebals_csv_filename(CSV_DIR)
     assert os.path.exists(vebals_csv), "vebals csv file not found"
 
     # test without sampling
@@ -358,7 +358,7 @@ def _test_dftool_vebals(tmp_path, ST, FIN):
     os.system(cmd)
 
     # test result
-    vebals_csv = csvs.vebalsCsvFilename(CSV_DIR, False)
+    vebals_csv = csvs.vebals_csv_filename(CSV_DIR, False)
     assert os.path.exists(vebals_csv), "vebals_realtime csv not found"
 
 
@@ -374,7 +374,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
     os.system(cmd)
 
     # test result
-    allocations_csv = csvs.allocationCsvFilename(CSV_DIR)
+    allocations_csv = csvs.allocation_csv_filename(CSV_DIR)
     assert os.path.exists(allocations_csv), "allocations csv file not found"
 
     # test without sampling
@@ -382,7 +382,7 @@ def _test_dftool_allocations(tmp_path, ST, FIN):
     os.system(cmd)
 
     # test result
-    allocations_csv = csvs.allocationCsvFilename(CSV_DIR, False)
+    allocations_csv = csvs.allocation_csv_filename(CSV_DIR, False)
     assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
 
 
@@ -424,33 +424,33 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
     _clear_dir(csv_dir)
 
     # 1. simulate "dftool getrate"
-    csvs.saveRateCsv("OCEAN", 0.25, csv_dir)
-    csvs.saveRateCsv("H2O", 1.61, csv_dir)
-    csvs.saveRateCsv(CO2_sym, 1.00, csv_dir)
+    csvs.save_rate_csv("OCEAN", 0.25, csv_dir)
+    csvs.save_rate_csv("H2O", 1.61, csv_dir)
+    csvs.save_rate_csv(CO2_sym, 1.00, csv_dir)
 
     # 2. simulate "dftool volsym"
     (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
-    csvs.saveNftvolsCsv(V0, csv_dir, CHAINID)
-    csvs.saveOwnersCsv(C0, csv_dir, CHAINID)
-    csvs.saveSymbolsCsv(SYM0, csv_dir, CHAINID)
+    csvs.save_nftvols_csv(V0, csv_dir, CHAINID)
+    csvs.save_owners_csv(C0, csv_dir, CHAINID)
+    csvs.save_symbols_csv(SYM0, csv_dir, CHAINID)
     V0 = C0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
     allocs = queries.queryAllocations(rng, CHAINID)
-    csvs.saveAllocationCsv(allocs, csv_dir)
+    csvs.save_allocation_csv(allocs, csv_dir)
     allocs = None  # ensure not used later
 
     # 4. simulate "dftool vebals"
     vebals, locked_amt, unlock_time = queries.queryVebalances(rng, CHAINID)
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, csv_dir)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
     vebals = locked_amt = unlock_time = None  # ensure not used later
 
     # 5. simulate "dftool calc"
     S = loadStakes(csv_dir)  # loads allocs & vebals, then *
-    R = csvs.loadRateCsvs(csv_dir)
-    V = csvs.loadNftvolsCsvs(csv_dir)
-    C = csvs.loadOwnersCsvs(csv_dir)
-    SYM = csvs.loadSymbolsCsvs(csv_dir)
+    R = csvs.load_rate_csvs(csv_dir)
+    V = csvs.load_nftvols_csvs(csv_dir)
+    C = csvs.load_owners_csvs(csv_dir)
+    SYM = csvs.load_symbols_csvs(csv_dir)
 
     m = float("inf")
     OCEAN_avail = 1e-5
@@ -463,11 +463,11 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
 
     sum_ = sum(rewardsperlp[CHAINID].values())
     assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
-    csvs.saveRewardsperlpCsv(rewardsperlp, csv_dir, "OCEAN")
+    csvs.save_volume_rewards_csv(rewardsperlp, csv_dir)
     rewardsperlp = None  # ensure not used later
 
     # 6. simulate "dftool dispense_active"
-    rewardsperlp = csvs.loadRewardsCsv(csv_dir, "OCEAN")
+    rewardsperlp = csvs.load_volume_rewards_csv(csv_dir)
     dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
     OCEAN_addr = oceanutil.OCEAN_address()
     dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
