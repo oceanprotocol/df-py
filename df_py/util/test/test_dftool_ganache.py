@@ -6,7 +6,12 @@ from unittest.mock import patch
 import brownie
 from enforce_typing import enforce_types
 
-from df_py.predictoor.csvs import loadPredictoorData, predictoorDataFilename
+from df_py.predictoor.csvs import (
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
+    predictoor_data_csv_filename,
+    predictoor_rewards_csv_filename,
+)
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
@@ -27,31 +32,32 @@ def test_calc(tmp_path):
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.saveAllocationCsv(allocations, CSV_DIR)
+    csvs.save_allocation_csv(allocations, CSV_DIR)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1.0}}
-    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(nftvols_at_chain, CSV_DIR, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(owners_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(symbols_at_chain, CSV_DIR, CHAINID)
 
-    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
     TOT_OCEAN = 1000.0
-    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN}"
+    START_DATE = "2023-02-02"  # Only substream is volume DF
+    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {START_DATE}"
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
+    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
     assert os.path.exists(rewards_csv)
 
 
@@ -83,10 +89,10 @@ def test_predictoor_data(tmp_path):
             do_predictoor_data()
 
     # test result
-    predictoor_data_csv = predictoorDataFilename(CSV_DIR, CHAINID)
+    predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR)
     assert os.path.exists(predictoor_data_csv)
 
-    predictoors = loadPredictoorData(CSV_DIR, CHAINID)
+    predictoors = load_predictoor_data_csv(CSV_DIR)
     for user in users:
         if stats[user]["total"] == 0:
             assert user not in predictoors
@@ -99,42 +105,107 @@ def test_predictoor_data(tmp_path):
 
 
 @enforce_types
+def test_calc_predictoor_substream(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    csv_template = """predictoor_addr,accuracy,n_preds,n_correct_preds
+0x0000000000000000000000000000000000000001,0.5,1818,909
+0x1000000000000000000000000000000000000001,0.5,234,909
+0x2000000000000000000000000000000000000001,0.5,1818,909
+0x3000000000000000000000000000000000000001,0.5,754,909
+0x4000000000000000000000000000000000000001,0.5,1818,909
+"""
+    predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR)
+    with open(predictoor_data_csv, "w") as f:
+        f.write(csv_template)
+
+    # main cmd
+
+    # TEST WITH TOT_OCEAN > 0
+    TOT_OCEAN = 1000.0
+    ST = "2023-03-16"  # first week of df main
+    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
+    assert os.path.exists(rewards_csv)
+
+    # get total reward amount
+    rewards = load_predictoor_rewards_csv(CSV_DIR)
+    total_reward = sum(rewards.values())
+    assert total_reward == 1000.0
+
+    # delete rewards csv
+    os.remove(rewards_csv)
+
+    # TEST WITH TOT_OCEAN = 0, DATE WITH NONZERO REWARDS
+    TOT_OCEAN = 0
+    ST = "2042-03-16"  # some date where predictoor rewards are nonzero
+    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
+    assert os.path.exists(rewards_csv)
+    rewards = load_predictoor_rewards_csv(CSV_DIR)
+    total_reward = sum(rewards.values())
+    assert total_reward > 0
+
+    # delete rewards csv
+    os.remove(rewards_csv)
+
+    # TEST WITH TOT_OCEAN = 0, DATE WITH ZERO REWARDS
+    TOT_OCEAN = 0
+    ST = "2023-01-01"  # some date where predictoor rewards are zero
+    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
+    os.system(cmd)
+
+    # test result
+    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
+    assert os.path.exists(rewards_csv)
+    rewards = load_predictoor_rewards_csv(CSV_DIR)
+    total_reward = sum(rewards.values())
+    assert total_reward == 0
+
+
+@enforce_types
 def test_calc_without_amount(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.saveAllocationCsv(allocations, CSV_DIR)
+    csvs.save_allocation_csv(allocations, CSV_DIR)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1e10}}
-    csvs.saveNftvolsCsv(nftvols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(nftvols_at_chain, CSV_DIR, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.saveOwnersCsv(owners_at_chain, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(owners_at_chain, CSV_DIR, CHAINID)
 
     vebals = {"0xlp_addr1": 1e8}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.saveVebalsCsv(vebals, locked_amt, unlock_time, CSV_DIR)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, CSV_DIR)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.saveSymbolsCsv(symbols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(symbols_at_chain, CSV_DIR, CHAINID)
 
-    csvs.saveRateCsv("OCEAN", 0.50, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
     TOT_OCEAN = 0
     ST = "2023-03-16"  # first week of df main
-    cmd = f"./dftool calc {CSV_DIR} {TOT_OCEAN} {ST}"
+    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
     os.system(cmd)
 
     # test result
-    rewards_csv = csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN")
+    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
-    rewards = csvs.loadRewardsCsv(CSV_DIR, "OCEAN")
+    rewards = csvs.load_volume_rewards_csv(CSV_DIR)
     total_reward = 0
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
@@ -162,7 +233,7 @@ def test_dispense(tmp_path):
         CHAINID: {address1: 400},
         "5": {address1: 300, address2: 100},
     }
-    csvs.saveRewardsperlpCsv(rewards, CSV_DIR, "OCEAN")
+    csvs.save_volume_rewards_csv(rewards, CSV_DIR)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
@@ -247,13 +318,13 @@ def test_calc_passive(tmp_path):
         fake_vebals[acc.address] = from_wei(veOCEAN.balanceOf(acc.address))
         locked_amt[acc.address] = OCEAN_lock_amt
         unlock_times[acc.address] = unlock_time
-    csvs.saveVebalsCsv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
+    csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
     date = chain.time() // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
     cmd = f"./dftool calculate_passive {CHAINID} {date} {CSV_DIR}"
     os.system(cmd)
 
-    filename = csvs.passiveCsvFilename(CSV_DIR)
+    filename = csvs.passive_csv_filename(CSV_DIR)
     assert os.path.exists(filename)
 
     # number of lines must be >=3

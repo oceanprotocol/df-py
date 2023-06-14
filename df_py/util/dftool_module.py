@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
 import argparse
-import datetime
 import functools
 import os
 import sys
@@ -10,10 +9,18 @@ from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
-from df_py.challenge.csvs import saveChallengeDataCsv
-from df_py.predictoor.csvs import predictoorDataFilename, savePredictoorData
+from df_py.challenge.csvs import save_challenge_data_csv
+from df_py.predictoor.csvs import (
+    predictoor_data_csv_filename,
+    predictoor_rewards_csv_filename,
+    save_predictoor_data_csv,
+    load_predictoor_data_csv,
+    save_predictoor_rewards_csv,
+    load_predictoor_rewards_csv,
+)
 from df_py.predictoor.queries import queryPredictoors
-from df_py.util import blockrange, constants, dispense, getrate, networkutil
+from df_py.predictoor.calcrewards import calc_predictoor_rewards
+from df_py.util import blockrange, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
@@ -46,9 +53,12 @@ from df_py.util.oceanutil import (
     veAllocate,
 )
 from df_py.util.retry import retryFunction
-from df_py.volume import allocations, calcrewards, csvs, queries
-from df_py.volume.calcrewards import calcRewards
-from df_py.volume.vesting_schedule import getActiveRewardAmountForWeekEth
+from df_py.volume import calcrewards, csvs, queries
+from df_py.volume.calcrewards import calc_rewards_volume
+from df_py.util.vesting_schedule import (
+    getActiveRewardAmountForWeekEth,
+    getActiveRewardAmountForWeekEthByStream,
+)
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -75,7 +85,7 @@ def do_volsym():
     CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
 
     # check files, prep dir
-    if not csvs.rateCsvFilenames(CSV_DIR):
+    if not csvs.rate_csv_filenames(CSV_DIR):
         print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
         sys.exit(1)
 
@@ -91,9 +101,9 @@ def do_volsym():
     (Vi, Ci, SYMi) = retryFunction(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, CHAINID
     )
-    csvs.saveNftvolsCsv(Vi, CSV_DIR, CHAINID)
-    csvs.saveOwnersCsv(Ci, CSV_DIR, CHAINID)
-    csvs.saveSymbolsCsv(SYMi, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(Vi, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(Ci, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(SYMi, CSV_DIR, CHAINID)
 
     print("dftool volsym: Done")
 
@@ -140,7 +150,7 @@ def do_nftinfo():
 
     # main work
     nftinfo = retryFunction(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
-    csvs.saveNftinfoCsv(nftinfo, CSV_DIR, CHAINID)
+    csvs.save_nftinfo_csv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
 
@@ -167,8 +177,7 @@ def do_allocations():
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # create dir if not exists
-    _exitIfFileExists(csvs.allocationCsvFilename(CSV_DIR, NSAMP > 1))
+    _exitIfFileExists(csvs.allocation_csv_filename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -181,7 +190,7 @@ def do_allocations():
     allocs = retryFunction(
         queries.queryAllocations, arguments.RETRIES, 10, rng, CHAINID
     )
-    csvs.saveAllocationCsv(allocs, CSV_DIR, NSAMP > 1)
+    csvs.save_allocation_csv(allocs, CSV_DIR, NSAMP > 1)
 
     print("dftool allocations: Done")
 
@@ -207,8 +216,7 @@ def do_vebals():
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    # create a dir if not exists
-    _exitIfFileExists(csvs.vebalsCsvFilename(CSV_DIR, NSAMP > 1))
+    _exitIfFileExists(csvs.vebals_csv_filename(CSV_DIR, NSAMP > 1))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -220,7 +228,7 @@ def do_vebals():
     balances, locked_amt, unlock_time = retryFunction(
         queries.queryVebalances, arguments.RETRIES, 10, rng, CHAINID
     )
-    csvs.saveVebalsCsv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
+    csvs.save_vebals_csv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
 
     print("dftool vebals: Done")
 
@@ -266,7 +274,7 @@ def do_getrate():
     TOKEN_SYMBOL, CSV_DIR = arguments.TOKEN_SYMBOL, arguments.CSV_DIR
 
     # check files, prep dir
-    _exitIfFileExists(csvs.rateCsvFilename(TOKEN_SYMBOL, CSV_DIR))
+    _exitIfFileExists(csvs.rate_csv_filename(TOKEN_SYMBOL, CSV_DIR))
 
     # main work
     rate = retryFunction(
@@ -278,7 +286,7 @@ def do_getrate():
         arguments.FIN,
     )
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
-    csvs.saveRateCsv(TOKEN_SYMBOL, rate, CSV_DIR)
+    csvs.save_rate_csv(TOKEN_SYMBOL, rate, CSV_DIR)
 
     print("dftool getrate: Done")
 
@@ -326,7 +334,7 @@ def do_challenge_data():
         deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
         challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
-    saveChallengeDataCsv(challenge_data, CSV_DIR)
+    save_challenge_data_csv(challenge_data, CSV_DIR)
 
     print("dftool challenge_data: Done")
 
@@ -365,7 +373,7 @@ def do_predictoor_data():
     CSV_DIR, CHAINID = arguments.CSV_DIR, arguments.CHAINID
 
     # check files, prep dir
-    _exitIfFileExists(predictoorDataFilename(CSV_DIR, CHAINID))
+    _exitIfFileExists(predictoor_data_csv_filename(CSV_DIR))
 
     # brownie setup
     networkutil.connect(CHAINID)
@@ -382,38 +390,44 @@ def do_predictoor_data():
         fin_block,
         CHAINID,
     )
-    savePredictoorData(predictoor_data, CSV_DIR, CHAINID)
+    save_predictoor_data_csv(predictoor_data, CSV_DIR)
     print("dftool predictoor_data: Done")
 
 
 # ========================================================================
+
+
 @enforce_types
 def do_calc():
-    HELP = """from stakes/etc csvs, output rewards csvs across Volume + Challenge + Predictoor DF
+    parser = argparse.ArgumentParser(
+        description="From substream data files, output rewards csvs."
+    )
+    parser.add_argument("command", choices=["calc"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument(
+        "CSV_DIR",
+        type=existing_path,
+        help="output dir for <substream_name>_rewards.csv, etc",
+    )
+    parser.add_argument(
+        "TOT_OCEAN",
+        type=float,
+        help="total amount of TOKEN to distribute (decimal, not wei)",
+    )
+    parser.add_argument(
+        "--START_DATE",
+        type=valid_date_and_convert,
+        help="week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0",
+        required=False,
+        default=None,
+    )
 
-Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
-  CSV_DIR -- directory: input csvs (stakes, vols, etc), output rewards.csv
-  TOT_OCEAN -- total amount of TOKEN to distribute (decimal, not wei)
-  START_DATE -- week start date -- YYYY-MM-DD. Used when TOT_OCEAN == 0
-  IGNORED -- Ignored. Kept here for compatibility.
-"""
-    if len(sys.argv) not in [4, 5, 6]:
-        print(HELP)
-        sys.exit(1)
-
-    # extract inputs
-    assert sys.argv[1] == "calc"
-    CSV_DIR = sys.argv[2]
-    TOT_OCEAN = float(sys.argv[3])
-    START_DATE = None if len(sys.argv) == 4 else sys.argv[4]
-
-    print("dftool calc: Begin")
-    print(
-        f"Arguments: "
-        f"\n CSV_DIR={CSV_DIR}"
-        f"\n TOT_OCEAN={TOT_OCEAN}"
-        f"\n START_DATE={START_DATE}"
-        "\n"
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    TOT_OCEAN, START_DATE, CSV_DIR = (
+        arguments.TOT_OCEAN,
+        arguments.START_DATE,
+        arguments.CSV_DIR,
     )
 
     # condition inputs
@@ -422,76 +436,61 @@ Usage: dftool calc CSV_DIR TOT_OCEAN [START_DATE] [IGNORED]
         sys.exit(1)
 
     if TOT_OCEAN == 0:
-        START_DATE = datetime.datetime.strptime(START_DATE, "%Y-%m-%d")
-        TOT_OCEAN = getActiveRewardAmountForWeekEth(START_DATE)
+        # brownie setup
+
+        # Vesting wallet contract is used to calculate the reward amount for given week / start date
+        # currently only deployed on Goerli
+        networkutil.connect(5)
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        address_path = os.path.join(
+            current_dir, "..", "..", ".github", "workflows", "data", "address.json"
+        )
+        recordDeployedContracts(address_path)
+        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(
+            START_DATE, arguments.SUBSTREAM
+        )
         print(
             f"TOT_OCEAN was 0, so re-calc'd: TOT_OCEAN={TOT_OCEAN}"
             f", START_DATE={START_DATE}"
         )
-    elif START_DATE is not None:
-        print("TOT_OCEAN was nonzero, so re-calc'd: START_DATE=None")
-        START_DATE = None
 
-    # do we have the input files?
-    alloc_fname = csvs.allocationCsvFilename(CSV_DIR)  # need for loadStakes()
-    if not os.path.exists(alloc_fname):
-        print(f"\nNo file {alloc_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
+    if arguments.SUBSTREAM == "volume":
+        # do we have the input files?
+        required_files = [
+            csvs.allocation_csv_filename(CSV_DIR),
+            csvs.vebals_csv_filename(CSV_DIR),
+            *csvs.nftvols_csv_filenames(CSV_DIR),
+            *csvs.owners_csv_filenames(CSV_DIR),
+            *csvs.symbols_csv_filenames(CSV_DIR),
+            *csvs.rate_csv_filenames(CSV_DIR),
+        ]
 
-    vebals_fname = csvs.vebalsCsvFilename(CSV_DIR)  # need for loadStakes()
-    if not os.path.exists(vebals_fname):
-        print(f"\nNo file {vebals_fname} in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
+        for fname in required_files:
+            if not os.path.exists(fname):
+                print(f"\nNo file {fname} in '{CSV_DIR}'. Exiting.")
+                sys.exit(1)
 
-    if not csvs.nftvolsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'nftvols*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
+        # shouldn't already have the output file
+        _exitIfFileExists(csvs.volume_rewards_csv_filename(CSV_DIR))
+        _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(CSV_DIR))
 
-    if not csvs.ownersCsvFilenames(CSV_DIR):
-        print(f"\nNo 'owners*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
+        rewperlp, rewinfo = calc_rewards_volume(CSV_DIR, START_DATE, TOT_OCEAN)
 
-    if not csvs.symbolsCsvFilenames(CSV_DIR):
-        print(f"\nNo 'symbols*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
+        csvs.save_volume_rewards_csv(rewperlp, CSV_DIR)
+        csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
 
-    if not csvs.rateCsvFilenames(CSV_DIR):
-        print(f"\nNo 'rate*.csv' files in '{CSV_DIR}'. Exiting.")
-        sys.exit(1)
+    # challenge df goes here ----------
 
-    # shouldn't already have the output file
-    _exitIfFileExists(csvs.rewardsperlpCsvFilename(CSV_DIR, "OCEAN"))
-    _exitIfFileExists(csvs.rewardsinfoCsvFilename(CSV_DIR, "OCEAN"))
+    if arguments.SUBSTREAM == "predictoor":
+        predictoors = load_predictoor_data_csv(CSV_DIR)
+        if len(predictoors) == 0:
+            print("No predictoors found")
+            sys.exit(1)
+        _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR))
 
-    # brownie setup
-    networkutil.connect(5)
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-    recordDeployedContracts(ADDRESS_FILE)
-
-    # main work
-    S = allocations.loadStakes(CSV_DIR)
-    V = csvs.loadNftvolsCsvs(CSV_DIR)
-    C = csvs.loadOwnersCsvs(CSV_DIR)
-    SYM = csvs.loadSymbolsCsvs(CSV_DIR)
-    R = csvs.loadRateCsvs(CSV_DIR)
-    do_pubrewards = constants.DO_PUBREWARDS
-    do_rank = constants.DO_RANK
-
-    prev_week = 0
-    if START_DATE is None:
-        cur_week = calcrewards.getDfWeekNumber(datetime.datetime.now())
-        prev_week = cur_week - 1
-    else:
-        prev_week = calcrewards.getDfWeekNumber(START_DATE)
-    m = calcrewards.calcDcvMultiplier(prev_week)
-    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-
-    rewperlp, rewinfo = calcRewards(
-        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank
-    )
-
-    csvs.saveRewardsperlpCsv(rewperlp, CSV_DIR, "OCEAN")
-    csvs.saveRewardsinfoCsv(rewinfo, CSV_DIR, "OCEAN")
+        # calculate rewards
+        predictoor_rewards = calc_predictoor_rewards(predictoors, TOT_OCEAN)
+        save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR)
 
     print("dftool calc: Done")
 
@@ -547,14 +546,21 @@ def do_dispense_active():
     from_account = _getPrivateAccount()
     token_symbol = B.Simpletoken.at(arguments.TOKEN_ADDR).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
-    rewards = csvs.loadRewardsCsv(arguments.CSV_DIR, token_symbol)
 
-    # "flatten" the rewards dict to dispense all chains in one go
-    all_rewards = calcrewards.flattenRewards(rewards)
+    volume_rewards = {}
+    if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
+        volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
+        volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
+
+    predictoor_rewards = {}
+    if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
+        predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
+
+    rewards = calcrewards.merge_rewards(volume_rewards, predictoor_rewards)
 
     # dispense
     dispense.dispense(
-        all_rewards,
+        rewards,
         arguments.DFREWARDS_ADDR,
         arguments.TOKEN_ADDR,
         from_account,
@@ -990,21 +996,21 @@ def do_calculate_passive():
     recordDeployedContracts(ADDRESS_FILE)
 
     # load vebals csv file
-    passive_fname = csvs.passiveCsvFilename(CSV_DIR)
-    vebals_realtime_fname = csvs.vebalsCsvFilename(CSV_DIR, False)
+    passive_fname = csvs.passive_csv_filename(CSV_DIR)
+    vebals_realtime_fname = csvs.vebals_csv_filename(CSV_DIR, False)
     if not os.path.exists(vebals_realtime_fname):
         print(f"\nNo file {vebals_realtime_fname} in '{CSV_DIR}'. Exiting.")
         sys.exit(1)
     _exitIfFileExists(passive_fname)
 
     # get addresses
-    vebals, _, _ = csvs.loadVebalsCsv(CSV_DIR, False)
+    vebals, _, _ = csvs.load_vebals_csv(CSV_DIR, False)
     addresses = list(vebals.keys())
 
     balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
 
     # save to csv
-    csvs.savePassiveCsv(rewards, balances, CSV_DIR)
+    csvs.save_passive_csv(rewards, balances, CSV_DIR)
 
 
 # ========================================================================

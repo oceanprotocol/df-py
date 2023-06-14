@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Dict, Tuple, Union
+from unittest.mock import patch
 
 import numpy as np
 import pytest
@@ -21,6 +22,8 @@ from df_py.volume.calcrewards import (
     flattenRewards,
     getDfWeekNumber,
     _stakeVolDictsToArrays,
+    merge_rewards,
+    calc_rewards_volume,
 )
 
 # for shorter lines
@@ -879,6 +882,86 @@ def test_stakeVolDictsToArrays():
     assert np.array_equal(V_USD, expected_V_USD)
 
 
+def test_merge_rewards():
+    # Test case 1: Merge two reward dictionaries with no common keys
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {"C": 30, "D": 40}
+    expected_output = {"A": 10, "B": 20, "C": 30, "D": 40}
+    assert merge_rewards(dict1, dict2) == expected_output
+    # Test case 2: Merge two reward dictionaries with common keys
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {"B": 30, "C": 40}
+    expected_output = {"A": 10, "B": 50, "C": 40}
+    assert merge_rewards(dict1, dict2) == expected_output
+    # Test case 3: Merge three reward dictionaries with common keys
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {"B": 30, "C": 40}
+    dict3 = {"A": 50, "C": 60}
+    expected_output = {"A": 60, "B": 50, "C": 100}
+    assert merge_rewards(dict1, dict2, dict3) == expected_output
+    # Test case 4: Merge empty reward dictionary
+    dict1 = {"A": 10, "B": 20}
+    dict2 = {}
+    expected_output = {"A": 10, "B": 20}
+    assert merge_rewards(dict1, dict2) == expected_output
+    # Test case 5: Merge no reward dictionaries
+    expected_output = {}
+    assert merge_rewards() == expected_output
+
+
+def test_calc_rewards_volume():
+    mock_data = {
+        "stakes": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
+        "volumes": {
+            1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
+            2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
+        },
+        "owners": {1: {"0xnft_addr1": "0xlp_addr1"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
+        "symbols": {
+            1: {"0xbasetoken_addr1": "basetoken_symbol1"},
+            2: {"0xbasetoken_addr2": "basetoken_symbol1"},
+        },
+        "rates": {
+            "basetoken_symbol1": 1.0,
+        },
+        "multiplier": 1.0,
+    }
+
+    with patch(
+        "df_py.volume.allocations.loadStakes", return_value=mock_data["stakes"]
+    ), patch(
+        "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
+    ), patch(
+        "df_py.volume.csvs.load_owners_csvs", return_value=mock_data["owners"]
+    ), patch(
+        "df_py.volume.csvs.load_symbols_csvs", return_value=mock_data["symbols"]
+    ), patch(
+        "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
+    ), patch(
+        "df_py.volume.calcrewards.calcDcvMultiplier",
+        return_value=mock_data["multiplier"],
+    ), patch(
+        "df_py.volume.calcrewards.getDfWeekNumber", return_value=30
+    ):
+
+        rewardsperlp, rewardsinfo = calc_rewards_volume(
+            "somedir", None, 1000.0, True, False
+        )
+        assert rewardsperlp[2]["0xlp_addr2"] == approx(
+            444.44444444
+        )  # pub rewards extra
+        assert rewardsperlp[2]["0xlp_addr3"] == approx(222.22222222)
+        assert rewardsperlp[1]["0xlp_addr1"] == approx(
+            300
+        )  # pub rewards extra - bounded to 300 due to DCV
+        assert rewardsinfo[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
+        assert rewardsinfo[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
+        assert rewardsinfo[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
+
+
 # ========================================================================
 # Helpers to keep function calls compact, and return vals compact.
 
@@ -958,7 +1041,7 @@ def _nullOwners(
     chain_nft_tups = _getChainNftTups(stakes, nftvols_USD)
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
-    for (chainID, nft_addr) in chain_nft_tups:
+    for chainID, nft_addr in chain_nft_tups:
         if chainID not in owners:
             owners[chainID] = {}
         owners[chainID][nft_addr] = ZERO_ADDRESS

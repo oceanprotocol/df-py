@@ -28,13 +28,13 @@ def test_predictoordata(tmp_path):
         predictoors[p.address] = p
 
     csv_dir = str(tmp_path)
-    csvs.savePredictoorData(predictoors, csv_dir, 1)
+    csvs.save_predictoor_data_csv(predictoors, csv_dir)
 
-    with open(csvs.predictoorDataFilename(csv_dir, 1), "r") as loaded_data:
+    with open(csvs.predictoor_data_csv_filename(csv_dir), "r") as loaded_data:
         data = loaded_data.read().strip()
         assert data == target_csv
 
-    loaded_predictoors = csvs.loadPredictoorData(csv_dir, 1)
+    loaded_predictoors = csvs.load_predictoor_data_csv(csv_dir)
     assert len(loaded_predictoors) == len(predictoors)
 
     for addr, original_predictoor in predictoors.items():
@@ -47,3 +47,35 @@ def test_predictoordata(tmp_path):
             loaded_predictoor.correct_prediction_count
             == original_predictoor.correct_prediction_count
         )
+
+
+@enforce_types
+def test_predictoor_rewards(tmp_path):
+    target_csv = """predictoor_addr,OCEAN_amt
+0x0000000000000000000000000000000000000000,10.0
+0x1000000000000000000000000000000000000000,20.0
+0x2000000000000000000000000000000000000000,30.0
+0x3000000000000000000000000000000000000000,40.0
+0x4000000000000000000000000000000000000000,50.0"""
+
+    # generate random rewards
+    predictoor_rewards = {}
+    for i in range(5):
+        predictoor_rewards[f"0x{i}000000000000000000000000000000000000000"] = (
+            i + 1
+        ) * 10.0
+
+    csv_dir = str(tmp_path)
+    csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
+
+    with open(csvs.predictoor_rewards_csv_filename(csv_dir), "r") as loaded_data:
+        data = loaded_data.read().strip()
+        assert data == target_csv
+
+    loaded_predictoor_rewards = csvs.load_predictoor_rewards_csv(csv_dir)
+    assert len(loaded_predictoor_rewards) == len(predictoor_rewards)
+
+    # loaded rewards should be equal to originally created ones
+    for addr, original_reward in predictoor_rewards.items():
+        loaded_reward = loaded_predictoor_rewards[addr]
+        assert loaded_reward == original_reward
