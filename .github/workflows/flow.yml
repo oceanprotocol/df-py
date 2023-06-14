@@ -103,9 +103,9 @@ jobs:
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
           sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
 
-      - name: Run dftool calc
+      - name: Run dftool calc rewards for volume
         run: |
-          ./dftool calc $CSV_DIR 0 $date OCEAN
+          ./dftool calc volume $CSV_DIR 0 --START_DATE $date
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
