@@ -53,7 +53,7 @@ def _test(tmp_path, DEADLINE: Optional[str]):
     ) = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
 
     # test result
-    (from_addrs, nft_addrs, nmses) = csvs.loadChallengeDataCsv(CSV_DIR)
+    (from_addrs, nft_addrs, nmses) = csvs.load_challenge_data_csv(CSV_DIR)
 
     assert len(from_addrs) == len(nft_addrs) == len(nmses)
     assert sorted(nmses) == nmses
