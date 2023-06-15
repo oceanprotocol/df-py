@@ -490,7 +490,7 @@ def do_calc():
         from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
         if not from_addrs:
             print("No challenge winners found")
-            sys.exit(1)
+            sys.exit(0)
         _exitIfFileExists(challenge_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards

@@ -93,6 +93,13 @@ def challenge_rewards_csv_filename(csv_dir):
 
 @enforce_types
 def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir: str):
+    """Saves the challenge rewards to a CSV file.
+    Format of entries is a list of dicts, each dict with keys:
+    - winner_addr: str, Ethereum address
+    - OCEAN_amt: float, amount of OCEAN to award
+
+    :return: str, filename of the CSV file
+    """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = challenge_rewards_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
@@ -110,6 +117,11 @@ def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir:
 
 @enforce_types
 def load_challenge_rewards_csv(csv_dir: str) -> List[Dict[str, Any]]:
+    """Loads the challenge rewards from a CSV file.
+    Format of entries is a list of dicts, each dict with keys:
+    - winner_addr: str, Ethereum address
+    - OCEAN_amt: float, amount of OCEAN to award
+    """
     csv_file = challenge_rewards_csv_filename(csv_dir)
     rewards = []
 
