@@ -1,6 +1,7 @@
 from datetime import datetime
 from typing import Any, Dict, List
 
+from df_py.util.constants import CHALLENGE_FIRST_DATE
 from df_py.util.getrate import getrate
 
 
@@ -10,7 +11,7 @@ def get_challenge_reward_amounts_in_usdt():
     """
     today = datetime.now()
 
-    if today < datetime(2021, 6, 1):
+    if today < CHALLENGE_FIRST_DATE:
         return [0, 0, 0]
 
     return [2500, 1500, 1000]

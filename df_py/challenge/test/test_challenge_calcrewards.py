@@ -1,8 +1,10 @@
+from datetime import datetime
 from unittest.mock import patch
 
 from df_py.challenge.calcrewards import calc_challenge_rewards
 
 
+@patch("df_py.util.constants.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
 def test_calc_challenge_rewards():
     from_addrs = [
         "0xfrom1",
