@@ -21,6 +21,7 @@ from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
+from df_py.util.getrate import getrate
 from df_py.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
@@ -184,6 +185,9 @@ def test_calc_challenge_substream(tmp_path):
 0x3000000000000000000000000000000000000001,0x04,0.8
 0x4000000000000000000000000000000000000001,0x05,0.88
 """
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    safe_limit = 6000 * (1 / getrate("OCEAN", today, today))
+
     challenge_data_csv = challenge_data_csv_filename(CSV_DIR)
     with open(challenge_data_csv, "w") as f:
         f.write(csv_template)
@@ -191,13 +195,20 @@ def test_calc_challenge_substream(tmp_path):
     CSV_DIR = str(tmp_path)
 
     old_sys_argv = sys.argv
-    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, "100"]
+    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]
     dftool_module.do_calc()
     sys.argv = old_sys_argv
 
     rewards = load_challenge_rewards_csv(CSV_DIR)
     assert len(rewards) == 3
     assert rewards[0]["winner_addr"] == "0x0000000000000000000000000000000000000001"
+
+    # not enough available tokens
+    old_sys_argv = sys.argv
+    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, "3000"]
+    with pytest.raises(SystemExit):
+        dftool_module.do_calc()
+    sys.argv = old_sys_argv
 
     # no rewards case:
     csv_template = "from_addr,nft_addr,nmse"
@@ -206,7 +217,7 @@ def test_calc_challenge_substream(tmp_path):
         f.write(csv_template)
 
     old_sys_argv = sys.argv
-    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, "100"]
+    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]
     with pytest.raises(SystemExit):
         dftool_module.do_calc()
     sys.argv = old_sys_argv

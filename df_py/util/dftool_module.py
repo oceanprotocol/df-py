@@ -494,7 +494,12 @@ def do_calc():
         _exitIfFileExists(challenge_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards
-        challenge_rewards = calc_challenge_rewards(from_addrs, TOT_OCEAN)
+        try:
+            challenge_rewards = calc_challenge_rewards(from_addrs, TOT_OCEAN)
+        except ValueError as e:
+            print(e)
+            sys.exit(1)
+
         save_challenge_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
