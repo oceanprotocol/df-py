@@ -9,17 +9,22 @@ from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
-from df_py.challenge.csvs import save_challenge_data_csv
+from df_py.challenge.calcrewards import calc_challenge_rewards
+from df_py.challenge.csvs import (
+    challenge_rewards_csv_filename,
+    load_challenge_data_csv,
+    save_challenge_data_csv,
+)
+from df_py.predictoor.calcrewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
     save_predictoor_data_csv,
-    load_predictoor_data_csv,
     save_predictoor_rewards_csv,
-    load_predictoor_rewards_csv,
 )
 from df_py.predictoor.queries import queryPredictoors
-from df_py.predictoor.calcrewards import calc_predictoor_rewards
 from df_py.util import blockrange, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
@@ -53,12 +58,12 @@ from df_py.util.oceanutil import (
     veAllocate,
 )
 from df_py.util.retry import retryFunction
-from df_py.volume import calcrewards, csvs, queries
-from df_py.volume.calcrewards import calc_rewards_volume
 from df_py.util.vesting_schedule import (
     getActiveRewardAmountForWeekEth,
     getActiveRewardAmountForWeekEthByStream,
 )
+from df_py.volume import calcrewards, csvs, queries
+from df_py.volume.calcrewards import calc_rewards_volume
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -480,7 +485,17 @@ def do_calc():
         csvs.save_volume_rewards_csv(rewperlp, CSV_DIR)
         csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
 
-    # challenge df goes here ----------
+    if arguments.SUBSTREAM == "challenge":
+        # TODO: test!
+        from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
+        if not from_addrs:
+            print("No challenge winners found")
+            sys.exit(1)
+        _exitIfFileExists(challenge_rewards_csv_filename(CSV_DIR))
+
+        # calculate rewards
+        challenge_rewards = calc_challenge_rewards(from_addrs, TOT_OCEAN)
+        save_predictoor_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
         predictoors = load_predictoor_data_csv(CSV_DIR)

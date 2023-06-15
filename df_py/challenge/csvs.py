@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
 
@@ -80,3 +80,44 @@ def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
 def challenge_data_csv_filename(csv_dir: str) -> str:
     f = "challenge.csv"
     return os.path.join(csv_dir, f)
+
+
+# ------------------------------- REWARDS -------------------------------
+
+
+@enforce_types
+def challenge_rewards_csv_filename(csv_dir):
+    f = "challenge_rewards.csv"
+    return os.path.join(csv_dir, f)
+
+
+@enforce_types
+def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir: str):
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = challenge_rewards_csv_filename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+
+    with open(csv_file, "w") as f:
+        writer = csv.DictWriter(f, fieldnames=["winner_addr", "OCEAN_amt"])
+        writer.writeheader()
+        for row in challenge_rewards:
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+    return csv_file
+
+
+@enforce_types
+def load_challenge_rewards_csv(csv_dir: str) -> List[Dict[str, Any]]:
+    csv_file = challenge_rewards_csv_filename(csv_dir)
+    rewards = []
+
+    with open(csv_file, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            row["OCEAN_amt"] = float(row["OCEAN_amt"])
+            rewards.append(row)
+
+    print(f"Loaded {csv_file}")
+    return rewards
