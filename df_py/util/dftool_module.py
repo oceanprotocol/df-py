@@ -14,6 +14,7 @@ from df_py.challenge.csvs import (
     challenge_rewards_csv_filename,
     load_challenge_data_csv,
     save_challenge_data_csv,
+    save_challenge_rewards_csv,
 )
 from df_py.predictoor.calcrewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
@@ -486,7 +487,6 @@ def do_calc():
         csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
 
     if arguments.SUBSTREAM == "challenge":
-        # TODO: test!
         from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
         if not from_addrs:
             print("No challenge winners found")
@@ -495,7 +495,7 @@ def do_calc():
 
         # calculate rewards
         challenge_rewards = calc_challenge_rewards(from_addrs, TOT_OCEAN)
-        save_predictoor_rewards_csv(challenge_rewards, CSV_DIR)
+        save_challenge_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
         predictoors = load_predictoor_data_csv(CSV_DIR)
