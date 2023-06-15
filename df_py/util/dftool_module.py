@@ -101,6 +101,7 @@ def do_volsym():
     (Vi, Ci, SYMi) = retryFunction(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, CHAINID
     )
+
     csvs.save_nftvols_csv(Vi, CSV_DIR, CHAINID)
     csvs.save_owners_csv(Ci, CSV_DIR, CHAINID)
     csvs.save_symbols_csv(SYMi, CSV_DIR, CHAINID)
