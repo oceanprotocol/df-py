@@ -20,7 +20,8 @@ def get_challenge_reward_amounts_in_usdt():
 
 def get_challenge_reward_amounts_in_ocean() -> List[int]:
     """
-    :return: list of OCEAN amounts, in order of 1st, 2nd, 3rd place
+    @return
+      rewards - list of OCEAN amounts, in order of 1st, 2nd, 3rd place
     """
     rewards_in_usdt = get_challenge_reward_amounts_in_usdt()
 
