@@ -18,7 +18,7 @@ def get_challenge_reward_amounts_in_usdt():
     return [625, 375, 250]
 
 
-def get_challenge_reward_amounts_in_ocean():
+def get_challenge_reward_amounts_in_ocean() -> List[int]:
     """
     :return: list of OCEAN amounts, in order of 1st, 2nd, 3rd place
     """
