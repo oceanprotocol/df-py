@@ -27,7 +27,8 @@ jobs:
 
       - name: Set branch to checkout
         id: set_branch
-        run: echo "BRANCH=${{ github.event_name == 'schedule' && env.VERSION || 'main' }}" >> $GITHUB_ENV
+        run: echo "BRANCH=${{ github.event_name == 'schedule' && env.VERSION || github.ref }}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v3
         with:
           ref: ${{ env.BRANCH }}
