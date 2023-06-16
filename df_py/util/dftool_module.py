@@ -450,7 +450,7 @@ def do_calc():
         networkutil.connect(5)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         address_path = os.path.join(
-            current_dir, "..", "..", ".github", "workflows", "data", "address.json"
+            current_dir, "..", "..", "..", ".github", "workflows", "data", "address.json"
         )
         recordDeployedContracts(address_path)
         TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(
