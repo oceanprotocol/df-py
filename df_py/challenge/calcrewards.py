@@ -37,13 +37,14 @@ def get_challenge_reward_amounts_in_ocean() -> List[int]:
 def calc_challenge_rewards(
     from_addrs: list, tokens_avail: float
 ) -> List[Dict[str, Any]]:
-    """Returns a dict of rewards for the challenge, each entry having keys:
-    - winner_addr: ethereum address of the winner
-    - OCEAN_amt: number of OCEAN tokens to award the winner
-
-    :param from_addrs: list of Ethereum addresses
-    :param tokens_avail: number of tokens available for rewards
-    :return: list of dicts
+    """Returns a dict of rewards for the challenge.
+    @arguments
+      - from_addrs: A list of addresses participating in the challenge.
+      - tokens_avail: The total number of tokens available for rewards.
+    @return
+      - A list of dictionaries representing rewards for the challenge. Each dictionary contains the following keys:
+        - winner_addr: The address of the challenge winner.
+        - OCEAN_amt: The number of OCEAN tokens to be awarded to the winner.
     """
     rewards = []
     rewards_amts = get_challenge_reward_amounts_in_ocean()
