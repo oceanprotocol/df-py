@@ -95,7 +95,8 @@ def challenge_rewards_csv_filename(csv_dir):
 def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir: str):
     """Saves the challenge rewards to a CSV file.
     @arguments
-      - challenge_rewards: A list of dictionaries representing rewards for the challenge. Each dictionary contains the following keys:
+      - challenge_rewards: A list of dictionaries representing rewards for the challenge.
+        Each dictionary contains the following keys:
         - winner_addr: The address of the winner.
         - OCEAN_amt: The amount of OCEAN tokens to be awarded to the winner.
       - csv_dir: The directory to save the CSV file.

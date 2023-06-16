@@ -7,7 +7,7 @@ from df_py.util.getrate import getrate
 
 def get_challenge_reward_amounts_in_usdt() -> List[int]:
     """
-    @return 
+    @return
       list of USDT amounts, in order of 1st, 2nd, 3rd place
     """
     today = datetime.now()
@@ -26,10 +26,10 @@ def get_challenge_reward_amounts_in_ocean() -> List[int]:
     rewards_in_usdt = get_challenge_reward_amounts_in_usdt()
 
     today = datetime.now()
-    today = today.strftime("%Y-%m-%d")
+    today_str = today.strftime("%Y-%m-%d")
 
     return [
-        (1 / getrate("OCEAN", today, today)) * reward_amt
+        (1 / getrate("OCEAN", today_str, today_str)) * reward_amt
         for reward_amt in rewards_in_usdt
     ]
 
@@ -42,7 +42,8 @@ def calc_challenge_rewards(
       - from_addrs: A list of addresses participating in the challenge.
       - tokens_avail: The total number of tokens available for rewards.
     @return
-      - A list of dictionaries representing rewards for the challenge. Each dictionary contains the following keys:
+      - A list of dictionaries representing rewards for the challenge.
+        Each dictionary contains the following keys:
         - winner_addr: The address of the challenge winner.
         - OCEAN_amt: The number of OCEAN tokens to be awarded to the winner.
     """
