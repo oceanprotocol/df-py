@@ -252,10 +252,15 @@ def test_calc_without_amount(tmp_path):
     csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
-    TOT_OCEAN = 0
     ST = "2023-03-16"  # first week of df main
-    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
-    os.system(cmd)
+    sys_args = ["dftool", "calc", "volume", CSV_DIR, "0", f"--START_DATE={ST}"]
+
+    with patch(
+        "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
+    ) as mock:
+        with sysargs_context(sys_args):
+            mock.return_value = 50
+            dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
@@ -267,7 +272,7 @@ def test_calc_without_amount(tmp_path):
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
             total_reward += reward
-    assert total_reward == 75000.0
+    assert total_reward == 73050.0
 
 
 @enforce_types

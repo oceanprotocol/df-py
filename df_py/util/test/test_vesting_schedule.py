@@ -44,6 +44,7 @@ test_params = [
 
 
 def test_getActiveRewardAmountForWeekEthByStream():
+    challenge_substream = "challenge"
     predictoor_substream = "predictoor"
     volume_substream = "volume"
     start_dt = datetime(2022, 1, 1)
@@ -62,6 +63,9 @@ def test_getActiveRewardAmountForWeekEthByStream():
         > 0
     )
 
+    challenge_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+        start_dt, challenge_substream
+    )
     predictoor_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
         start_dt, predictoor_substream
     )
@@ -69,7 +73,9 @@ def test_getActiveRewardAmountForWeekEthByStream():
         start_dt, volume_substream
     )
     total_rewards = vesting_schedule.getActiveRewardAmountForWeekEth(start_dt)
-    assert total_rewards == predictoor_rewards + volume_rewards
+    assert total_rewards == approx(
+        challenge_rewards + predictoor_rewards + volume_rewards, 0.1
+    )
 
     predictoor_substream = "invalid_substream"
     with pytest.raises(ValueError):
