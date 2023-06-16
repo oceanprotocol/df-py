@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from enforce_typing import enforce_types
 
+from df_py.challenge.calcrewards import get_challenge_reward_amounts_in_ocean
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import (
@@ -28,9 +29,14 @@ def getActiveRewardAmountForWeekEthByStream(
         # 0.01%
         return total_reward_amount * 0.001 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
 
+    if substream == "challenge":
+        return sum(get_challenge_reward_amounts_in_ocean())
+
     if substream == "volume":
-        return total_reward_amount - getActiveRewardAmountForWeekEthByStream(
-            start_dt, "predictoor"
+        return (
+            total_reward_amount
+            - getActiveRewardAmountForWeekEthByStream(start_dt, "predictoor")
+            - getActiveRewardAmountForWeekEthByStream(start_dt, "challenge")
         )
 
     raise ValueError("Unrecognized substream: {}".format(substream))
