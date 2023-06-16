@@ -256,11 +256,14 @@ def test_calc_without_amount(tmp_path):
     sys_args = ["dftool", "calc", "volume", CSV_DIR, "0", f"--START_DATE={ST}"]
 
     with patch(
-        "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
+        "df_py.util.dftool_module.recordDeployedContracts"
     ) as mock:
-        with sysargs_context(sys_args):
-            mock.return_value = 50
-            dftool_module.do_calc()
+        with patch(
+            "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
+        ) as mock:
+            with sysargs_context(sys_args):
+                mock.return_value = [30, 20]
+                dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
@@ -272,7 +275,7 @@ def test_calc_without_amount(tmp_path):
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
             total_reward += reward
-    assert total_reward == 73050.0
+    assert total_reward == 74950.0
 
 
 @enforce_types
