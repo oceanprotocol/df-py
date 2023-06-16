@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import os
 import subprocess
@@ -28,6 +29,14 @@ PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+
+
+@contextlib.contextmanager
+def sysargs_context(arguments):
+    old_sys_argv = sys.argv
+    sys.argv = arguments
+    yield
+    sys.argv = old_sys_argv
 
 
 @enforce_types
@@ -186,7 +195,7 @@ def test_calc_challenge_substream(tmp_path):
 0x4000000000000000000000000000000000000001,0x05,0.88
 """
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    safe_limit = 6000 * (1 / getrate("OCEAN", today, today))
+    safe_limit = 1300 * (1 / getrate("OCEAN", today, today))
 
     challenge_data_csv = challenge_data_csv_filename(CSV_DIR)
     with open(challenge_data_csv, "w") as f:
@@ -194,21 +203,17 @@ def test_calc_challenge_substream(tmp_path):
 
     CSV_DIR = str(tmp_path)
 
-    old_sys_argv = sys.argv
-    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]
-    dftool_module.do_calc()
-    sys.argv = old_sys_argv
+    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]):
+        dftool_module.do_calc()
 
     rewards = load_challenge_rewards_csv(CSV_DIR)
     assert len(rewards) == 3
     assert rewards[0]["winner_addr"] == "0x0000000000000000000000000000000000000001"
 
     # not enough available tokens
-    old_sys_argv = sys.argv
-    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, "3000"]
-    with pytest.raises(SystemExit):
-        dftool_module.do_calc()
-    sys.argv = old_sys_argv
+    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, "750"]):
+        with pytest.raises(SystemExit):
+            dftool_module.do_calc()
 
     # no rewards case:
     csv_template = "from_addr,nft_addr,nmse"
@@ -216,11 +221,9 @@ def test_calc_challenge_substream(tmp_path):
     with open(challenge_data_csv, "w") as f:
         f.write(csv_template)
 
-    old_sys_argv = sys.argv
-    sys.argv = ["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]
-    with pytest.raises(SystemExit):
-        dftool_module.do_calc()
-    sys.argv = old_sys_argv
+    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]):
+        with pytest.raises(SystemExit):
+            dftool_module.do_calc()
 
 
 @enforce_types
@@ -403,7 +406,6 @@ def test_initdevwallets():
 def test_volsym(tmp_path):
     CSV_DIR = str(tmp_path)
 
-    old_sys_argv = sys.argv
     sys_argv = [
         "dftool",
         "volsym",
@@ -414,20 +416,18 @@ def test_volsym(tmp_path):
         str(networkutil.DEV_CHAINID),
     ]
 
-    sys.argv = sys_argv
-
     # rates does not exist
-    with pytest.raises(SystemExit):
-        dftool_module.do_volsym()
+    with sysargs_context(sys_argv):
+        with pytest.raises(SystemExit):
+            dftool_module.do_volsym()
 
     rate_file = os.path.join(tmp_path, "rate-test.csv")
     Path(rate_file).write_text("")
 
-    with patch.object(dftool_module, "retryFunction") as mock:
-        mock.return_value = ({}, {}, {})
-        dftool_module.do_volsym()
-
-    sys.argv = old_sys_argv
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "retryFunction") as mock:
+            mock.return_value = ({}, {}, {})
+            dftool_module.do_volsym()
 
     assert os.path.exists(os.path.join(CSV_DIR, "nftvols-8996.csv"))
     assert os.path.exists(os.path.join(CSV_DIR, "owners-8996.csv"))

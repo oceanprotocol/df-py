@@ -13,9 +13,9 @@ def test_calc_challenge_rewards():
     ]
 
     with patch("df_py.challenge.calcrewards.getrate", return_value=0.5):
-        rewards = calc_challenge_rewards(from_addrs, 10_000)
+        rewards = calc_challenge_rewards(from_addrs, 2500)
 
     assert len(rewards) == 3
-    assert rewards[0]["OCEAN_amt"] == 5000
-    assert rewards[1]["OCEAN_amt"] == 3000
-    assert rewards[2]["OCEAN_amt"] == 2000
+    assert rewards[0]["OCEAN_amt"] == 1250
+    assert rewards[1]["OCEAN_amt"] == 750
+    assert rewards[2]["OCEAN_amt"] == 500

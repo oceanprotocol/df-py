@@ -14,7 +14,7 @@ def get_challenge_reward_amounts_in_usdt():
     if today < CHALLENGE_FIRST_DATE:
         return [0, 0, 0]
 
-    return [2500, 1500, 1000]
+    return [625, 375, 250]
 
 
 def get_challenge_reward_amounts_in_ocean():
