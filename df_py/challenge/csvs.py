@@ -94,11 +94,13 @@ def challenge_rewards_csv_filename(csv_dir):
 @enforce_types
 def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir: str):
     """Saves the challenge rewards to a CSV file.
-    Format of entries is a list of dicts, each dict with keys:
-    - winner_addr: str, Ethereum address
-    - OCEAN_amt: float, amount of OCEAN to award
-
-    :return: str, filename of the CSV file
+    @arguments
+      - challenge_rewards: A list of dictionaries representing rewards for the challenge. Each dictionary contains the following keys:
+        - winner_addr: The address of the winner.
+        - OCEAN_amt: The amount of OCEAN tokens to be awarded to the winner.
+      - csv_dir: The directory to save the CSV file.
+    @return
+      - The filename of the saved CSV file.
     """
     assert os.path.exists(csv_dir), csv_dir
     csv_file = challenge_rewards_csv_filename(csv_dir)
