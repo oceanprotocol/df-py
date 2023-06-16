@@ -5,7 +5,7 @@ from df_py.util.constants import CHALLENGE_FIRST_DATE
 from df_py.util.getrate import getrate
 
 
-def get_challenge_reward_amounts_in_usdt():
+def get_challenge_reward_amounts_in_usdt() -> List[int]:
     """
     @return 
       list of USDT amounts, in order of 1st, 2nd, 3rd place
