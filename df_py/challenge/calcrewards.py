@@ -7,7 +7,8 @@ from df_py.util.getrate import getrate
 
 def get_challenge_reward_amounts_in_usdt():
     """
-    :return: list of USDT amounts, in order of 1st, 2nd, 3rd place
+    @return 
+      list of USDT amounts, in order of 1st, 2nd, 3rd place
     """
     today = datetime.now()
 
