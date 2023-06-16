@@ -255,9 +255,7 @@ def test_calc_without_amount(tmp_path):
     ST = "2023-03-16"  # first week of df main
     sys_args = ["dftool", "calc", "volume", CSV_DIR, "0", f"--START_DATE={ST}"]
 
-    with patch(
-        "df_py.util.dftool_module.recordDeployedContracts"
-    ) as mock:
+    with patch("df_py.util.dftool_module.recordDeployedContracts") as mock:
         with patch(
             "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
         ) as mock:
