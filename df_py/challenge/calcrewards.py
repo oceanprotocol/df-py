@@ -1,16 +1,18 @@
 from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 from df_py.util.constants import CHALLENGE_FIRST_DATE
 from df_py.util.getrate import getrate
 
 
-def get_challenge_reward_amounts_in_usdt() -> List[int]:
+def get_challenge_reward_amounts_in_usdt(
+    at_date: Optional[datetime] = None,
+) -> List[int]:
     """
     @return
       list of USDT amounts, in order of 1st, 2nd, 3rd place
     """
-    today = datetime.now()
+    today = at_date if at_date else datetime.now()
 
     if today < CHALLENGE_FIRST_DATE:
         return [0, 0, 0]
@@ -18,14 +20,16 @@ def get_challenge_reward_amounts_in_usdt() -> List[int]:
     return [625, 375, 250]
 
 
-def get_challenge_reward_amounts_in_ocean() -> List[int]:
+def get_challenge_reward_amounts_in_ocean(
+    at_date: Optional[datetime] = None,
+) -> List[int]:
     """
     @return
       rewards - list of OCEAN amounts, in order of 1st, 2nd, 3rd place
     """
-    rewards_in_usdt = get_challenge_reward_amounts_in_usdt()
+    rewards_in_usdt = get_challenge_reward_amounts_in_usdt(at_date)
 
-    today = datetime.now()
+    today = at_date if at_date else datetime.now()
     today_str = today.strftime("%Y-%m-%d")
 
     ocean_usdt_rate = getrate("OCEAN", today_str, today_str)
@@ -34,7 +38,7 @@ def get_challenge_reward_amounts_in_ocean() -> List[int]:
 
 
 def calc_challenge_rewards(
-    from_addrs: list, tokens_avail: float
+    from_addrs: list, tokens_avail: float, at_date: Optional[datetime] = None
 ) -> List[Dict[str, Any]]:
     """Returns a dict of rewards for the challenge.
     @arguments
@@ -45,7 +49,7 @@ def calc_challenge_rewards(
         The calculated rewards for each winner.
     """
     rewards = []
-    rewards_amts = get_challenge_reward_amounts_in_ocean()
+    rewards_amts = get_challenge_reward_amounts_in_ocean(at_date)
 
     if sum(rewards_amts) > tokens_avail:
         raise ValueError(
