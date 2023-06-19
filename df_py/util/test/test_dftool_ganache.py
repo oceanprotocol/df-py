@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import os
 import subprocess
@@ -26,6 +27,14 @@ PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+
+
+@contextlib.contextmanager
+def sysargs_context(arguments):
+    old_sys_argv = sys.argv
+    sys.argv = arguments
+    yield
+    sys.argv = old_sys_argv
 
 
 @enforce_types
@@ -381,6 +390,24 @@ def test_volsym(tmp_path):
     assert os.path.exists(os.path.join(CSV_DIR, "nftvols-8996.csv"))
     assert os.path.exists(os.path.join(CSV_DIR, "owners-8996.csv"))
     assert os.path.exists(os.path.join(CSV_DIR, "symbols-8996.csv"))
+
+
+def test_nftinfo(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    sys_argv = [
+        "dftool",
+        "nftinfo",
+        CSV_DIR,
+        str(networkutil.DEV_CHAINID),
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "retryFunction") as mock:
+            mock.return_value = []
+            dftool_module.do_nftinfo()
+
+    assert os.path.exists(os.path.join(CSV_DIR, "nftinfo_8996.csv"))
 
 
 @enforce_types
