@@ -30,7 +30,7 @@ def getActiveRewardAmountForWeekEthByStream(
         return total_reward_amount * 0.001 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
 
     if substream == "challenge":
-        return sum(get_challenge_reward_amounts_in_ocean())
+        return sum(get_challenge_reward_amounts_in_ocean(start_dt))
 
     if substream == "volume":
         return (
