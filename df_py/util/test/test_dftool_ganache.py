@@ -208,7 +208,7 @@ def test_calc_challenge_substream(tmp_path):
 
     rewards = load_challenge_rewards_csv(CSV_DIR)
     assert len(rewards) == 3
-    assert rewards[0]["winner_addr"] == "0x0000000000000000000000000000000000000001"
+    assert rewards["0x0000000000000000000000000000000000000001"] > 0
 
     # not enough available tokens
     with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, "750"]):

@@ -49,4 +49,8 @@ def test_challenge_rewards(tmp_path):
 
     assert csvs.save_challenge_rewards_csv(rewards, csv_dir)
     loaded_rewards = csvs.load_challenge_rewards_csv(csv_dir)
-    assert loaded_rewards == rewards
+    assert loaded_rewards == {
+        "0xfrom1": 200,
+        "0xfrom2": 100,
+        "0xfrom3": 50,
+    }

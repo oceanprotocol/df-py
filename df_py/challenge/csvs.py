@@ -119,20 +119,19 @@ def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir:
 
 
 @enforce_types
-def load_challenge_rewards_csv(csv_dir: str) -> List[Dict[str, Any]]:
+def load_challenge_rewards_csv(csv_dir: str) -> Dict[str, float]:
     """Loads the challenge rewards from a CSV file.
     Format of entries is a list of dicts, each dict with keys:
     - winner_addr: str, Ethereum address
     - OCEAN_amt: float, amount of OCEAN to award
     """
     csv_file = challenge_rewards_csv_filename(csv_dir)
-    rewards = []
+    rewards = {}
 
     with open(csv_file, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            row["OCEAN_amt"] = float(row["OCEAN_amt"])
-            rewards.append(row)
+            rewards[row["winner_addr"]] = float(row["OCEAN_amt"])
 
     print(f"Loaded {csv_file}")
     return rewards

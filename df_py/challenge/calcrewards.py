@@ -28,10 +28,9 @@ def get_challenge_reward_amounts_in_ocean() -> List[int]:
     today = datetime.now()
     today_str = today.strftime("%Y-%m-%d")
 
-    return [
-        (1 / getrate("OCEAN", today_str, today_str)) * reward_amt
-        for reward_amt in rewards_in_usdt
-    ]
+    ocean_usdt_rate = getrate("OCEAN", today_str, today_str)
+
+    return [(1 / ocean_usdt_rate) * reward_amt for reward_amt in rewards_in_usdt]
 
 
 def calc_challenge_rewards(
@@ -42,10 +41,8 @@ def calc_challenge_rewards(
       - from_addrs: A list of addresses participating in the challenge.
       - tokens_avail: The total number of tokens available for rewards.
     @return
-      - A list of dictionaries representing rewards for the challenge.
-        Each dictionary contains the following keys:
-        - winner_addr: The address of the challenge winner.
-        - OCEAN_amt: The number of OCEAN tokens to be awarded to the winner.
+    rewards -- dict of [winner_address] : float
+        The calculated rewards for each winner.
     """
     rewards = []
     rewards_amts = get_challenge_reward_amounts_in_ocean()
@@ -55,11 +52,11 @@ def calc_challenge_rewards(
             f"Total reward amount {sum(rewards_amts)} is greater than tokens avail {tokens_avail}"
         )
 
-    for i in range(len(get_challenge_reward_amounts_in_usdt())):
+    for i, reward_amt in enumerate(rewards_amts):
         rewards.append(
             {
                 "winner_addr": from_addrs[i],
-                "OCEAN_amt": rewards_amts[i],
+                "OCEAN_amt": reward_amt,
             }
         )
 
