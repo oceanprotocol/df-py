@@ -495,7 +495,9 @@ def do_calc():
 
         # calculate rewards
         try:
-            challenge_rewards = calc_challenge_rewards(from_addrs, TOT_OCEAN)
+            challenge_rewards = calc_challenge_rewards(
+                from_addrs, TOT_OCEAN, START_DATE
+            )
         except ValueError as e:
             print(e)
             sys.exit(1)
