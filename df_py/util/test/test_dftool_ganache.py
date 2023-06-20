@@ -73,29 +73,23 @@ def test_calc(tmp_path):
     assert os.path.exists(rewards_csv)
 
 
-class MockArgs:
-    def __init__(self, dictionary):
-        for k, v in dictionary.items():
-            setattr(self, k, v)
-
-
 @enforce_types
 def test_predictoor_data(tmp_path):
     CSV_DIR = str(tmp_path)
-    testargs = MockArgs(
-        {
-            "command": "predictoor_data",
-            "ST": 0,
-            "FIN": "latest",
-            "CSV_DIR": CSV_DIR,
-            "CHAINID": CHAINID,
-            "RETRIES": 1,
-        }
-    )
+
+    sys_argv = [
+        "dftool",
+        "predictoor_data",
+        "0",
+        "latest",
+        CSV_DIR,
+        str(CHAINID),
+        "--RETRIES=1"
+    ]
+
     mock_query_response, users, stats = create_mock_responses(100)
 
-    with patch("argparse.ArgumentParser.parse_args") as mock_args:
-        mock_args.return_value = testargs
+    with sysargs_context(sys_argv):
         with patch("df_py.predictoor.queries.submitQuery") as mock_submitQuery:
             mock_submitQuery.side_effect = mock_query_response
             do_predictoor_data()
@@ -408,6 +402,27 @@ def test_nftinfo(tmp_path):
             dftool_module.do_nftinfo()
 
     assert os.path.exists(os.path.join(CSV_DIR, "nftinfo_8996.csv"))
+
+
+def test_allocations(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    sys_argv = [
+        "dftool",
+        "allocations",
+        "0",
+        "latest",
+        "10",
+        CSV_DIR,
+        str(networkutil.DEV_CHAINID),
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "retryFunction") as mock:
+            mock.return_value = {}
+            dftool_module.do_allocations()
+
+    assert os.path.exists(os.path.join(CSV_DIR, "allocations.csv"))
 
 
 @enforce_types
