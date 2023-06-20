@@ -84,7 +84,7 @@ def test_predictoor_data(tmp_path):
         "latest",
         CSV_DIR,
         str(CHAINID),
-        "--RETRIES=1"
+        "--RETRIES=1",
     ]
 
     mock_query_response, users, stats = create_mock_responses(100)
@@ -423,6 +423,47 @@ def test_allocations(tmp_path):
             dftool_module.do_allocations()
 
     assert os.path.exists(os.path.join(CSV_DIR, "allocations.csv"))
+
+
+def test_vebals(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    sys_argv = [
+        "dftool",
+        "vebals",
+        "0",
+        "latest",
+        "10",
+        CSV_DIR,
+        str(networkutil.DEV_CHAINID),
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "retryFunction") as mock:
+            mock.return_value = ({}, {}, {})
+            dftool_module.do_vebals()
+
+    assert os.path.exists(os.path.join(CSV_DIR, "vebals.csv"))
+
+
+def test_getrate(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    sys_argv = [
+        "dftool",
+        "getrate",
+        "OCEAN",
+        "0",
+        "latest",
+        CSV_DIR,
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "retryFunction") as mock:
+            mock.return_value = 100.0
+            dftool_module.do_getrate()
+
+    assert os.path.exists(os.path.join(CSV_DIR, "rate-OCEAN.csv"))
 
 
 @enforce_types
