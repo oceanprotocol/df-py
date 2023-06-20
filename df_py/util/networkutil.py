@@ -18,6 +18,8 @@ _RAW_CHAIN_DATA = [
     (5, "goerli", "ETH"),
     (137, "polygon", "MATIC"),
     (80001, "mumbai", "MATIC"),
+    (23294, "oasis-sapphire", "ROSE"),
+    (23295, "oasis-sapphire-testnet", "ROSE"),
 ]
 
 # chainids and names must be unique. Token symbols don't need to be
