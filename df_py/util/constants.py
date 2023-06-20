@@ -44,5 +44,5 @@ PREDICTOOR_RELEASE_WEEK = 150  # change me when Predictoor is released
 
 # challenge
 CHALLENGE_FIRST_DATE = datetime(
-    2022, 7, 15
+    2024, 7, 15
 )  # change me if Challenge release is postponed

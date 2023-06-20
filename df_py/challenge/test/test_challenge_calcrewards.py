@@ -4,7 +4,7 @@ from unittest.mock import patch
 from df_py.challenge.calcrewards import calc_challenge_rewards
 
 
-@patch("df_py.util.constants.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
+@patch("df_py.challenge.calcrewards.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
 def test_calc_challenge_rewards():
     from_addrs = [
         "0xfrom1",
@@ -21,7 +21,7 @@ def test_calc_challenge_rewards():
     assert rewards[2]["OCEAN_amt"] == 500
 
 
-@patch("df_py.util.constants.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
+@patch("df_py.challenge.calcrewards.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
 def test_calc_challenge_rewards_with_dates():
     from_addrs = [
         "0xfrom1",

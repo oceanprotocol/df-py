@@ -183,6 +183,9 @@ def test_calc_predictoor_substream(tmp_path):
     assert total_reward == 0
 
 
+@patch(
+    "df_py.challenge.calcrewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
+)
 @enforce_types
 def test_calc_challenge_substream(tmp_path):
     CSV_DIR = str(tmp_path)
