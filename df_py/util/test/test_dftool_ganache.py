@@ -248,9 +248,22 @@ def test_dispense(tmp_path):
     DFREWARDS_ADDR = df_rewards.address
     OCEAN_ADDR = oceanutil.OCEAN_address()
 
-    # pylint: disable=line-too-long
-    cmd = f"./dftool dispense_active {CSV_DIR} {CHAINID} --DFREWARDS_ADDR={DFREWARDS_ADDR} --TOKEN_ADDR={OCEAN_ADDR}"
-    os.system(cmd)
+    sys_argv = [
+        "dftool",
+        "dispense_active",
+        CSV_DIR,
+        str(CHAINID),
+        f"--DFREWARDS_ADDR={DFREWARDS_ADDR}",
+        f"--TOKEN_ADDR={OCEAN_ADDR}",
+    ]
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_dispense_active()
 
     # test result
     assert from_wei(df_rewards.claimable(address1, OCEAN_ADDR)) == 700.0
