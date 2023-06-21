@@ -15,6 +15,7 @@ from df_py.predictoor.csvs import (
     load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
+    save_predictoor_rewards_csv,
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
@@ -240,6 +241,7 @@ def test_dispense(tmp_path):
         "5": {address1: 300, address2: 100},
     }
     csvs.save_volume_rewards_csv(rewards, CSV_DIR)
+    save_predictoor_rewards_csv({}, CSV_DIR)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
