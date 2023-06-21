@@ -10,16 +10,16 @@ from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
 from df_py.challenge.csvs import save_challenge_data_csv
+from df_py.predictoor.calcrewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
     save_predictoor_data_csv,
-    load_predictoor_data_csv,
     save_predictoor_rewards_csv,
-    load_predictoor_rewards_csv,
 )
 from df_py.predictoor.queries import queryPredictoors
-from df_py.predictoor.calcrewards import calc_predictoor_rewards
 from df_py.util import blockrange, dispense, getrate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
@@ -53,12 +53,12 @@ from df_py.util.oceanutil import (
     veAllocate,
 )
 from df_py.util.retry import retryFunction
-from df_py.volume import calcrewards, csvs, queries
-from df_py.volume.calcrewards import calc_rewards_volume
 from df_py.util.vesting_schedule import (
     getActiveRewardAmountForWeekEth,
     getActiveRewardAmountForWeekEthByStream,
 )
+from df_py.volume import calcrewards, csvs, queries
+from df_py.volume.calcrewards import calc_rewards_volume
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -591,8 +591,11 @@ def do_newdfrewards():
 # ========================================================================
 @enforce_types
 def do_newdfstrategy():
-    parser = DfStrategyArgumentParser("Deploy new DFStrategy contract", "newdfstrategy")
-
+    parser = argparse.ArgumentParser(description="Deploy new DFStrategy")
+    parser.add_argument("command", choices=["newdfstrategy"])
+    parser.add_argument("CHAINID", type=int, help=f"{CHAINID_EXAMPLES}")
+    parser.add_argument("DFREWARDS_ADDR", help="DFRewards contract's address")
+    parser.add_argument("DFSTRATEGY_NAME", help="DF Strategy name")
     arguments = parser.parse_args()
     print_arguments(arguments)
 

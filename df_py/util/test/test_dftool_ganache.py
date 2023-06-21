@@ -4,7 +4,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 import brownie
 import pytest
@@ -459,6 +459,31 @@ def test_vebals(tmp_path):
             dftool_module.do_vebals()
 
     assert os.path.exists(os.path.join(CSV_DIR, "vebals.csv"))
+
+
+def test_df_strategies(tmp_path):
+    sys_argv = [
+        "dftool",
+        "newdfrewards",
+        str(networkutil.DEV_CHAINID),
+    ]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_newdfrewards()
+
+    sys_argv = [
+        "dftool",
+        "newdfstrategy",
+        str(networkutil.DEV_CHAINID),
+        "0x0",
+        "testStrategy",
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "B") as mock:
+            mock_df = Mock()
+            mock_df.address = "0xabc"
+            dftool_module.do_newdfstrategy()
 
 
 def test_getrate(tmp_path):
