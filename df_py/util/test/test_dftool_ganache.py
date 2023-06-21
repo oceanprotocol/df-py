@@ -391,7 +391,6 @@ def test_initdevwallets():
 def test_volsym(tmp_path):
     CSV_DIR = str(tmp_path)
 
-    old_sys_argv = sys.argv
     sys_argv = [
         "dftool",
         "volsym",
@@ -402,24 +401,41 @@ def test_volsym(tmp_path):
         str(networkutil.DEV_CHAINID),
     ]
 
-    sys.argv = sys_argv
-
     # rates does not exist
     with pytest.raises(SystemExit):
-        dftool_module.do_volsym()
+        with sysargs_context(sys_argv):
+            dftool_module.do_volsym()
 
     rate_file = os.path.join(tmp_path, "rate-test.csv")
     Path(rate_file).write_text("")
 
     with patch.object(dftool_module, "retryFunction") as mock:
-        mock.return_value = ({}, {}, {})
-        dftool_module.do_volsym()
-
-    sys.argv = old_sys_argv
+        with sysargs_context(sys_argv):
+            mock.return_value = ({}, {}, {})
+            dftool_module.do_volsym()
 
     assert os.path.exists(os.path.join(CSV_DIR, "nftvols-8996.csv"))
     assert os.path.exists(os.path.join(CSV_DIR, "owners-8996.csv"))
     assert os.path.exists(os.path.join(CSV_DIR, "symbols-8996.csv"))
+
+    os.remove(os.path.join(CSV_DIR, "nftvols-8996.csv"))
+    os.remove(os.path.join(CSV_DIR, "owners-8996.csv"))
+    os.remove(os.path.join(CSV_DIR, "symbols-8996.csv"))
+
+    del os.environ["ADDRESS_FILE"]
+    # rates does not exist
+    with pytest.raises(SystemExit):
+        with sysargs_context(sys_argv):
+            dftool_module.do_volsym()
+
+    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
+    del os.environ["SECRET_SEED"]
+    # rates does not exist
+    with pytest.raises(SystemExit):
+        with sysargs_context(sys_argv):
+            dftool_module.do_volsym()
+
+    os.environ["SECRET_SEED"] = "1234"
 
 
 def test_nftinfo(tmp_path):
@@ -459,6 +475,11 @@ def test_allocations(tmp_path):
             dftool_module.do_allocations()
 
     assert os.path.exists(os.path.join(CSV_DIR, "allocations.csv"))
+
+    # file already exists
+    with pytest.raises(SystemExit):
+        with sysargs_context(sys_argv):
+            dftool_module.do_allocations()
 
 
 def test_vebals(tmp_path):

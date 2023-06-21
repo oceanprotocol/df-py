@@ -6,8 +6,9 @@ from unittest.mock import patch
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import dftool_arguments
+from df_py.util import dftool_arguments, dftool_module
 from df_py.volume import csvs
+from df_py.util.test.test_dftool_ganache import sysargs_context
 
 
 @enforce_types
@@ -49,22 +50,23 @@ def test_noarg_commands():
     fail_gracefully = ["help", "compile"]
 
     for subarg in subargs:
+        sys_argv = ["dftool", subarg]
+
+        if subarg == "compile":
+            with sysargs_context(sys_argv):
+                dftool_module._do_main()
+            continue
+
         print(f"CMD: dftool {subarg}")
-        cmd = f"./dftool {subarg}"
 
-        output_s = ""
-        with subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        ) as proc:
-            while proc.poll() is None:
-                output_s += proc.stdout.readline().decode("ascii")
-
-        return_code = proc.wait()
+        with pytest.raises(SystemExit) as excinfo:
+            with sysargs_context(sys_argv):
+                dftool_module._do_main()
 
         if subarg in fail_gracefully:
-            assert return_code == 0
+            assert excinfo.value.code == 0
         else:
-            assert return_code in [1, 2]
+            assert excinfo.value.code in [1, 2]
 
 
 @enforce_types

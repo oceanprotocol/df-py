@@ -1099,18 +1099,12 @@ def _getPrivateAccount():
 
 @enforce_types
 def _do_main():
-    if len(sys.argv) == 1:
-        do_help_short(1)
-        return
-
     if sys.argv[1] == "help":
         do_help_long(0)
-        return
 
     func_name = f"do_{sys.argv[1]}"
     func = globals().get(func_name)
     if func is None:
         do_help_long(1)
-        return
 
     func()
