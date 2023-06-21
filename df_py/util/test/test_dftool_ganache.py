@@ -607,6 +607,56 @@ def test_new_functions():
         dftool_module.do_newVeAllocate()
 
 
+def test_acctinfo():
+    sys_argv = ["dftool", "acctinfo", str(networkutil.DEV_CHAINID), "1"]
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_acctinfo()
+
+    OCEAN_addr = oceanutil.OCEAN_address()
+    sys_argv = [
+        "dftool",
+        "acctinfo",
+        str(networkutil.DEV_CHAINID),
+        "1",
+        f"--TOKEN_ADDR={OCEAN_addr}",
+    ]
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_acctinfo()
+
+
+def test_chaininfo():
+    sys_argv = ["dftool", "chaininfo", str(networkutil.DEV_CHAINID)]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_chaininfo()
+
+
+def test_dispense_passive():
+    sys_argv = [
+        "dftool",
+        "dispense_passive",
+        str(networkutil.DEV_CHAINID),
+        "0",
+        "2023-02-02",
+    ]
+
+    with patch.object(dftool_module, "retryFunction"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_dispense_passive()
+
+
 @enforce_types
 def setup_function():
     global PREV, DFTOOL_ACCT
