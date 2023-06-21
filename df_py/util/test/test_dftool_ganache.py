@@ -538,6 +538,14 @@ def test_getrate(tmp_path):
     assert os.path.exists(os.path.join(CSV_DIR, "rate-OCEAN.csv"))
 
 
+def test_compile():
+    sys_argv = ["dftool", "compile"]
+
+    with sysargs_context(sys_argv):
+        with patch("os.system"):
+            dftool_module.do_compile()
+
+
 @enforce_types
 def setup_function():
     global PREV, DFTOOL_ACCT
