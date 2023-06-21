@@ -274,15 +274,21 @@ def test_dispense(tmp_path):
 
 @enforce_types
 def test_manyrandom():
-    cmd = f"./dftool manyrandom {CHAINID}"
-    output_s = ""
-    with subprocess.Popen(
-        cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-    ) as proc:
-        while proc.poll() is None:
-            output_s += proc.stdout.readline().decode("ascii")
-    return_code = proc.wait()
-    assert return_code == 0, f"Error. \n{output_s}"
+    sys_argv = [
+        "dftool",
+        "manyrandom",
+        str(CHAINID),
+    ]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_manyrandom()
+
+    # different chain id will fail
+    sys_argv = ["dftool", "manyrandom", "3"]
+
+    with pytest.raises(SystemExit):
+        with sysargs_context(sys_argv):
+            dftool_module.do_manyrandom()
 
 
 @enforce_types
@@ -559,6 +565,46 @@ def test_compile():
     with sysargs_context(sys_argv):
         with patch("os.system"):
             dftool_module.do_compile()
+
+
+def test_mine():
+    sys_argv = ["dftool", "mine", "10"]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_mine()
+
+    sys_argv = ["dftool", "mine", "10", "--TIMEDELTA=100"]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_mine()
+
+
+def test_new_functions():
+    sys_argv = ["dftool", "newacct", str(networkutil.DEV_CHAINID)]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_newacct()
+
+    sys_argv = ["dftool", "newtoken", str(networkutil.DEV_CHAINID)]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_newtoken()
+
+    sys_argv = ["dftool", "newVeOcean", str(networkutil.DEV_CHAINID), "0x0"]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "B") as mock_B:
+            mock_token = Mock()
+            mock_token.symbol.return_value = "SYMB"
+            mock_token.address = "0x0"
+            mock_token.token = ""
+            mock_B.veOcean.deploy.return_value = mock_token
+            dftool_module.do_newVeOcean()
+
+    sys_argv = ["dftool", "newVeAllocate", str(networkutil.DEV_CHAINID)]
+
+    with sysargs_context(sys_argv):
+        dftool_module.do_newVeAllocate()
 
 
 @enforce_types
