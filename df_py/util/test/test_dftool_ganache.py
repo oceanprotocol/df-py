@@ -657,6 +657,29 @@ def test_dispense_passive():
             dftool_module.do_dispense_passive()
 
 
+def test_calculate_passive(tmp_path):
+    CSV_DIR = str(tmp_path)
+    sys_argv = [
+        "dftool",
+        "calculate_passive",
+        str(networkutil.DEV_CHAINID),
+        "2023-02-02",
+        CSV_DIR,
+    ]
+
+    with pytest.raises(SystemExit):
+        with sysargs_context(sys_argv):
+            dftool_module.do_calculate_passive()
+
+    vebals_file = os.path.join(tmp_path, "vebals_realtime.csv")
+    Path(vebals_file).write_text("LP_addr,balance,locked_amt,unlock_time")
+
+    with patch.object(dftool_module, "queries") as mock:
+        mock.queryPassiveRewards.return_value = {}, {}
+        with sysargs_context(sys_argv):
+            dftool_module.do_calculate_passive()
+
+
 @enforce_types
 def setup_function():
     global PREV, DFTOOL_ACCT
