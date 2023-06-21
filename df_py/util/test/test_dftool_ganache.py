@@ -355,16 +355,31 @@ def test_calc_passive(tmp_path):
 
 
 def test_initdevwallets():
+    account8 = brownie.network.accounts[8]
     account9 = brownie.network.accounts[9]
 
     OCEAN = oceanutil.OCEANtoken()
-    if OCEAN.balanceOf(account9.address) == 0.0:
-        assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
+    OCEAN.transfer(account8, OCEAN.balanceOf(account9.address), {"from": account9})
 
-        cmd = f"./dftool initdevwallets {networkutil.DEV_CHAINID}"
-        os.system(cmd)
+    assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
 
-        assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
+    sys_argv = ["dftool", "initdevwallets", str(networkutil.DEV_CHAINID)]
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_initdevwallets()
+
+    assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
+
+    # different chain id will fail
+    sys_argv = ["dftool", "initdevwallets", "3"]
+
+    with pytest.raises(SystemExit):
+        with sysargs_context(sys_argv):
+            dftool_module.do_initdevwallets()
 
 
 def test_volsym(tmp_path):
