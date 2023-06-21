@@ -461,7 +461,7 @@ def test_vebals(tmp_path):
     assert os.path.exists(os.path.join(CSV_DIR, "vebals.csv"))
 
 
-def test_df_strategies(tmp_path):
+def test_df_strategies():
     sys_argv = [
         "dftool",
         "newdfrewards",
@@ -480,10 +480,42 @@ def test_df_strategies(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "B") as mock:
-            mock_df = Mock()
-            mock_df.address = "0xabc"
+        with patch.object(dftool_module, "B"):
             dftool_module.do_newdfstrategy()
+
+    sys_argv = [
+        "dftool",
+        "addstrategy",
+        str(networkutil.DEV_CHAINID),
+        "0x0",
+        "0x0",
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "B") as mock_B:
+            mock_df = Mock()
+            mock_tx = Mock()
+            mock_tx.events.keys.return_value = ["StrategyAdded"]
+            mock_df.addStrategy.return_value = mock_tx
+            mock_B.DFRewards.at.return_value = mock_df
+            dftool_module.do_addstrategy()
+
+    sys_argv = [
+        "dftool",
+        "retirestrategy",
+        str(networkutil.DEV_CHAINID),
+        "0x0",
+        "0x0",
+    ]
+
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "B") as mock_B:
+            mock_df = Mock()
+            mock_tx = Mock()
+            mock_tx.events.keys.return_value = ["StrategyRetired"]
+            mock_df.retireStrategy.return_value = mock_tx
+            mock_B.DFRewards.at.return_value = mock_df
+            dftool_module.do_retirestrategy()
 
 
 def test_getrate(tmp_path):
