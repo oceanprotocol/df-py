@@ -485,7 +485,11 @@ def do_calc():
         csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
 
     if arguments.SUBSTREAM == "challenge":
-        from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
+        try:
+            from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
+        except FileNotFoundError:
+            from_addrs = []
+
         if not from_addrs:
             print("No challenge winners found")
             sys.exit(0)
@@ -501,7 +505,11 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
-        predictoors = load_predictoor_data_csv(CSV_DIR)
+        try:
+            predictoors = load_predictoor_data_csv(CSV_DIR)
+        except FileNotFoundError:
+            predictoors = []
+
         if len(predictoors) == 0:
             print("No predictoors found")
             sys.exit(1)

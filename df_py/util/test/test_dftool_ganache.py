@@ -40,7 +40,7 @@ def sysargs_context(arguments):
 
 
 @enforce_types
-def test_calc(tmp_path):
+def test_calc_volume(tmp_path):
     CSV_DIR = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
 
@@ -67,12 +67,81 @@ def test_calc(tmp_path):
     # main cmd
     TOT_OCEAN = 1000.0
     START_DATE = "2023-02-02"  # Only substream is volume DF
-    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {START_DATE}"
-    os.system(cmd)
+
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "volume",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={START_DATE}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
     assert os.path.exists(rewards_csv)
+
+
+@enforce_types
+def test_calc_failures(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    # neither total ocean, nor given start date
+    with pytest.raises(SystemExit):
+        with sysargs_context(["dftool", "calc", "volume", CSV_DIR, "0"]):
+            dftool_module.do_calc()
+
+    TOT_OCEAN = 1000.0
+    START_DATE = "2023-02-02"  # Only substream is volume DF
+
+    # no required input files -- volume
+    with pytest.raises(SystemExit):
+        with patch.object(dftool_module.networkutil, "connect"):
+            with sysargs_context(
+                [
+                    "dftool",
+                    "calc",
+                    "volume",
+                    CSV_DIR,
+                    str(TOT_OCEAN),
+                    f"--START_DATE={START_DATE}",
+                ]
+            ):
+                dftool_module.do_calc()
+
+    # no required input files -- predictoor
+    with pytest.raises(SystemExit):
+        with patch.object(dftool_module.networkutil, "connect"):
+            with sysargs_context(
+                [
+                    "dftool",
+                    "calc",
+                    "predictoor",
+                    CSV_DIR,
+                    str(TOT_OCEAN),
+                    f"--START_DATE={START_DATE}",
+                ]
+            ):
+                dftool_module.do_calc()
+
+    # no required input files -- challenge
+    with pytest.raises(SystemExit):
+        with patch.object(dftool_module.networkutil, "connect"):
+            with sysargs_context(
+                [
+                    "dftool",
+                    "calc",
+                    "challenge",
+                    CSV_DIR,
+                    str(TOT_OCEAN),
+                    f"--START_DATE={START_DATE}",
+                ]
+            ):
+                dftool_module.do_calc()
 
 
 @enforce_types
@@ -132,8 +201,23 @@ def test_calc_predictoor_substream(tmp_path):
     # TEST WITH TOT_OCEAN > 0
     TOT_OCEAN = 1000.0
     ST = "2023-03-16"  # first week of df main
-    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
-    os.system(cmd)
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "predictoor",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={ST}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # test result
     rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
@@ -150,8 +234,22 @@ def test_calc_predictoor_substream(tmp_path):
     # TEST WITH TOT_OCEAN = 0, DATE WITH NONZERO REWARDS
     TOT_OCEAN = 0
     ST = "2042-03-16"  # some date where predictoor rewards are nonzero
-    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
-    os.system(cmd)
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "predictoor",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={ST}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # test result
     rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
@@ -166,8 +264,22 @@ def test_calc_predictoor_substream(tmp_path):
     # TEST WITH TOT_OCEAN = 0, DATE WITH ZERO REWARDS
     TOT_OCEAN = 0
     ST = "2023-01-01"  # some date where predictoor rewards are zero
-    cmd = f"./dftool calc predictoor {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
-    os.system(cmd)
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "predictoor",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={ST}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # test result
     rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
