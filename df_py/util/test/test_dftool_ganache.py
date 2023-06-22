@@ -1,7 +1,6 @@
 import contextlib
 import datetime
 import os
-import subprocess
 import sys
 from pathlib import Path
 from unittest.mock import Mock, patch

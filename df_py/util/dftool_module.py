@@ -33,7 +33,6 @@ from df_py.util.dftool_arguments import (
     block_or_valid_date,
     challenge_date,
     do_help_long,
-    do_help_short,
     existing_path,
     print_arguments,
     valid_date,
