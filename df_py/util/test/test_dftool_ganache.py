@@ -317,6 +317,24 @@ def test_calc_passive(tmp_path):
     CSV_DIR = str(tmp_path)
     unlock_time = chain.time() + S_PER_WEEK * 10
 
+    sys_argv = [
+        "dftool",
+        "calculate_passive",
+        str(networkutil.DEV_CHAINID),
+        "2023-02-02",
+        CSV_DIR,
+    ]
+
+    # fails without vebals file
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+    with patch.object(dftool_module.networkutil, "connect"):
+        with patch.object(dftool_module, "recordDeployedContracts"):
+            with pytest.raises(SystemExit):
+                with sysargs_context(sys_argv):
+                    dftool_module.do_calculate_passive()
+
     for _ in range(2):
         acc = brownie.network.accounts.add()
         account0.transfer(acc, to_wei(0.1))
@@ -347,8 +365,22 @@ def test_calc_passive(tmp_path):
     csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
     date = chain.time() // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
-    cmd = f"./dftool calculate_passive {CHAINID} {date} {CSV_DIR}"
-    os.system(cmd)
+
+    sys_argv = [
+        "dftool",
+        "calculate_passive",
+        str(CHAINID),
+        str(date),
+        CSV_DIR
+    ]
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+    with patch.object(dftool_module.networkutil, "connect"):
+        with patch.object(dftool_module, "recordDeployedContracts"):
+            with sysargs_context(sys_argv):
+                dftool_module.do_calculate_passive()
 
     filename = csvs.passive_csv_filename(CSV_DIR)
     assert os.path.exists(filename)
@@ -675,29 +707,6 @@ def test_dispense_passive():
     with patch.object(dftool_module, "retryFunction"):
         with sysargs_context(sys_argv):
             dftool_module.do_dispense_passive()
-
-
-def test_calculate_passive(tmp_path):
-    CSV_DIR = str(tmp_path)
-    sys_argv = [
-        "dftool",
-        "calculate_passive",
-        str(networkutil.DEV_CHAINID),
-        "2023-02-02",
-        CSV_DIR,
-    ]
-
-    with pytest.raises(SystemExit):
-        with sysargs_context(sys_argv):
-            dftool_module.do_calculate_passive()
-
-    vebals_file = os.path.join(tmp_path, "vebals_realtime.csv")
-    Path(vebals_file).write_text("LP_addr,balance,locked_amt,unlock_time")
-
-    with patch.object(dftool_module, "queries") as mock:
-        mock.queryPassiveRewards.return_value = {}, {}
-        with sysargs_context(sys_argv):
-            dftool_module.do_calculate_passive()
 
 
 @enforce_types
