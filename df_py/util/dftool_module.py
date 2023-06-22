@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
 import argparse
-import functools
 import os
 import sys
 
@@ -850,7 +849,7 @@ def do_veSetAllocation():
     parser.add_argument("command", choices=["veSetAllocation"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=float, help="")
-    parser.add_argument("exchangeId", type=str, help="")
+    parser.add_argument("TOKEN_ADDR", type=str, help="NFT Token Address")
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -862,11 +861,16 @@ def do_veSetAllocation():
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         veAllocate().setAllocation(
-            arguments.amount, arguments.exchangeId, {"from": from_account}
+            arguments.amount,
+            arguments.TOKEN_ADDR,
+            arguments.CHAINID,
+            {"from": from_account},
         )
-        allocation = veAllocate().getTotalAllocation(from_account, 100, 0)
-        votingPower = functools.reduce(lambda a, b: a + b, allocation[1])
-        print(f"veAllocate voting power is: {votingPower}")
+        allocation = veAllocate().getTotalAllocation(from_account)
+        print(
+            "veAllocate current total allocated voting power is: "
+            f"{(allocation/10000 * 100)}%"
+        )
 
 
 # ========================================================================

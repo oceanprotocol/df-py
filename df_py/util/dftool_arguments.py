@@ -46,7 +46,7 @@ HELP_LONG = (
 
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+  dftool veSetAllocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
   dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract

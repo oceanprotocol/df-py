@@ -653,6 +653,25 @@ def test_new_functions():
         dftool_module.do_newVeAllocate()
 
 
+def test_veSetAllocation():
+    OCEAN_addr = oceanutil.OCEAN_address()
+    sys_argv = [
+        "dftool",
+        "veSetAllocation",
+        str(networkutil.DEV_CHAINID),
+        "10",
+        OCEAN_addr,
+    ]
+
+    # Mock the connection, otherwise the test setup clashes with
+    # the implementation itself, and cleans up the contracts.
+    # Either way, we are already connected to ganache through tests.
+
+    with patch.object(dftool_module.networkutil, "connect"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_veSetAllocation()
+
+
 def test_acctinfo():
     sys_argv = ["dftool", "acctinfo", str(networkutil.DEV_CHAINID), "1"]
 
