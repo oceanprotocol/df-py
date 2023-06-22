@@ -366,13 +366,7 @@ def test_calc_passive(tmp_path):
     date = chain.time() // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
 
-    sys_argv = [
-        "dftool",
-        "calculate_passive",
-        str(CHAINID),
-        str(date),
-        CSV_DIR
-    ]
+    sys_argv = ["dftool", "calculate_passive", str(CHAINID), str(date), CSV_DIR]
 
     # Mock the connection, otherwise the test setup clashes with
     # the implementation itself, and cleans up the contracts.

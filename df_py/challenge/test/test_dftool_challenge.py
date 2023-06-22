@@ -2,11 +2,13 @@ import os
 from typing import Optional
 
 import brownie
+import pytest
 from enforce_typing import enforce_types
 
 from df_py.challenge import csvs, judge
-from df_py.util import networkutil, oceantestutil, oceanutil
+from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
+from df_py.util.test.test_dftool_ganache import sysargs_context
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -35,15 +37,16 @@ def _test(tmp_path, DEADLINE: Optional[str]):
     base_dir = str(tmp_path)
     CSV_DIR = os.path.join(base_dir, judge.DFTOOL_TEST_FAKE_CSVDIR)
     os.mkdir(CSV_DIR)
-    cmd = f"./dftool challenge_data {CSV_DIR}"
+
+    sysargs = ["dftool", "challenge_data", CSV_DIR]
 
     # DEADLINE option to cmd as needed
     if DEADLINE is not None:
-        cmd += f" --DEADLINE {DEADLINE}"
+        sysargs.append(f"--DEADLINE={DEADLINE}")
 
     # main call
-    print(f"CMD: {cmd}")
-    os.system(cmd)
+    with sysargs_context(sysargs):
+        dftool_module.do_challenge_data()
 
     # targets
     (
@@ -65,8 +68,9 @@ def _test(tmp_path, DEADLINE: Optional[str]):
 
 @enforce_types
 def test_challenge_help():
-    cmd = "./dftool challenge_data"
-    os.system(cmd)
+    with pytest.raises(SystemExit):
+        with sysargs_context(["dftool", "challenge_data"]):
+            dftool_module.do_challenge_data()
 
 
 @enforce_types
