@@ -1,13 +1,13 @@
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import networkutil
+from df_py.util import networkutil, vesting_schedule
 from df_py.util.base18 import from_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER
-from df_py.util import vesting_schedule
 
 test_params = [
     (datetime(2023, 3, 9), 0),
@@ -44,6 +44,7 @@ test_params = [
 
 
 def test_getActiveRewardAmountForWeekEthByStream():
+    challenge_substream = "challenge"
     predictoor_substream = "predictoor"
     volume_substream = "volume"
     start_dt = datetime(2022, 1, 1)
@@ -62,14 +63,29 @@ def test_getActiveRewardAmountForWeekEthByStream():
         > 0
     )
 
+    # getrate patches are needed because we are testing with a future start_dt
+    # for predictoor, but the getrate function is not implemented for the future
+
+    with patch("df_py.challenge.calcrewards.getrate", return_value=0.5):
+        challenge_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+            start_dt, challenge_substream
+        )
+
     predictoor_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
         start_dt, predictoor_substream
     )
-    volume_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
-        start_dt, volume_substream
+
+    with patch("df_py.challenge.calcrewards.getrate", return_value=0.5):
+        volume_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+            start_dt, volume_substream
+        )
+
+    with patch("df_py.challenge.calcrewards.getrate", return_value=0.5):
+        total_rewards = vesting_schedule.getActiveRewardAmountForWeekEth(start_dt)
+
+    assert total_rewards == approx(
+        challenge_rewards + predictoor_rewards + volume_rewards, 0.1
     )
-    total_rewards = vesting_schedule.getActiveRewardAmountForWeekEth(start_dt)
-    assert total_rewards == predictoor_rewards + volume_rewards
 
     predictoor_substream = "invalid_substream"
     with pytest.raises(ValueError):
