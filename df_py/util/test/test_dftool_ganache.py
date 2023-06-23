@@ -1,3 +1,4 @@
+import contextlib
 import datetime
 import os
 import subprocess
@@ -9,6 +10,7 @@ import brownie
 import pytest
 from enforce_typing import enforce_types
 
+from df_py.challenge.csvs import challenge_data_csv_filename, load_challenge_rewards_csv
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     load_predictoor_rewards_csv,
@@ -20,12 +22,21 @@ from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
+from df_py.util.getrate import getrate
 from df_py.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+
+
+@contextlib.contextmanager
+def sysargs_context(arguments):
+    old_sys_argv = sys.argv
+    sys.argv = arguments
+    yield
+    sys.argv = old_sys_argv
 
 
 @enforce_types
@@ -172,6 +183,52 @@ def test_calc_predictoor_substream(tmp_path):
     assert total_reward == 0
 
 
+@patch(
+    "df_py.challenge.calcrewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
+)
+@enforce_types
+def test_calc_challenge_substream(tmp_path):
+    CSV_DIR = str(tmp_path)
+
+    csv_template = """from_addr,nft_addr,nmse
+0x0000000000000000000000000000000000000001,0x01,0.1
+0x1000000000000000000000000000000000000001,0x02,0.122
+0x2000000000000000000000000000000000000001,0x03,0.3
+0x3000000000000000000000000000000000000001,0x04,0.8
+0x4000000000000000000000000000000000000001,0x05,0.88
+"""
+    today = datetime.datetime.now().strftime("%Y-%m-%d")
+    safe_limit = 1300 * (1 / getrate("OCEAN", today, today))
+
+    challenge_data_csv = challenge_data_csv_filename(CSV_DIR)
+    with open(challenge_data_csv, "w") as f:
+        f.write(csv_template)
+
+    CSV_DIR = str(tmp_path)
+
+    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]):
+        dftool_module.do_calc()
+
+    rewards = load_challenge_rewards_csv(CSV_DIR)
+    assert len(rewards) == 3
+    assert rewards["0x0000000000000000000000000000000000000001"] > 0
+
+    # not enough available tokens
+    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, "750"]):
+        with pytest.raises(SystemExit):
+            dftool_module.do_calc()
+
+    # no rewards case:
+    csv_template = "from_addr,nft_addr,nmse"
+
+    with open(challenge_data_csv, "w") as f:
+        f.write(csv_template)
+
+    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]):
+        with pytest.raises(SystemExit):
+            dftool_module.do_calc()
+
+
 @enforce_types
 def test_calc_without_amount(tmp_path):
     CSV_DIR = str(tmp_path)
@@ -198,10 +255,16 @@ def test_calc_without_amount(tmp_path):
     csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
 
     # main cmd
-    TOT_OCEAN = 0
     ST = "2023-03-16"  # first week of df main
-    cmd = f"./dftool calc volume {CSV_DIR} {TOT_OCEAN} --START_DATE {ST}"
-    os.system(cmd)
+    sys_args = ["dftool", "calc", "volume", CSV_DIR, "0", f"--START_DATE={ST}"]
+
+    with patch("df_py.util.dftool_module.recordDeployedContracts") as mock:
+        with patch(
+            "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
+        ) as mock:
+            with sysargs_context(sys_args):
+                mock.return_value = [30, 20]
+                dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
@@ -213,7 +276,7 @@ def test_calc_without_amount(tmp_path):
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
             total_reward += reward
-    assert total_reward == 75000.0
+    assert total_reward == 74950.0
 
 
 @enforce_types
@@ -352,7 +415,6 @@ def test_initdevwallets():
 def test_volsym(tmp_path):
     CSV_DIR = str(tmp_path)
 
-    old_sys_argv = sys.argv
     sys_argv = [
         "dftool",
         "volsym",
@@ -363,20 +425,18 @@ def test_volsym(tmp_path):
         str(networkutil.DEV_CHAINID),
     ]
 
-    sys.argv = sys_argv
-
     # rates does not exist
-    with pytest.raises(SystemExit):
-        dftool_module.do_volsym()
+    with sysargs_context(sys_argv):
+        with pytest.raises(SystemExit):
+            dftool_module.do_volsym()
 
     rate_file = os.path.join(tmp_path, "rate-test.csv")
     Path(rate_file).write_text("")
 
-    with patch.object(dftool_module, "retryFunction") as mock:
-        mock.return_value = ({}, {}, {})
-        dftool_module.do_volsym()
-
-    sys.argv = old_sys_argv
+    with sysargs_context(sys_argv):
+        with patch.object(dftool_module, "retryFunction") as mock:
+            mock.return_value = ({}, {}, {})
+            dftool_module.do_volsym()
 
     assert os.path.exists(os.path.join(CSV_DIR, "nftvols-8996.csv"))
     assert os.path.exists(os.path.join(CSV_DIR, "owners-8996.csv"))
