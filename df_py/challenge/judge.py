@@ -3,7 +3,7 @@
 import os
 from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import ccxt
 import numpy as np
@@ -11,18 +11,10 @@ from brownie.network import accounts
 from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
-from df_py.util import crypto, oceanutil, graphutil, networkutil
+from df_py.util import crypto, graphutil, networkutil, oceanutil
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
-
-# for testing dftool
-DFTOOL_TEST_FAKE_CSVDIR = "fakedir_dftool"
-DFTOOL_TEST_FAKE_CHALLENGE_DATA = (
-    ["0xfrom1", "0xfrom2"],
-    ["0xnft1", "0xnft2"],
-    [0.2, 1.0],
-)
 
 
 @enforce_types

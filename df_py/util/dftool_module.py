@@ -327,17 +327,14 @@ def do_challenge_data():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
-        challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
-    else:  # main path
-        # brownie setup
-        networkutil.connect(CHAINID)
-        recordDeployedContracts(ADDRESS_FILE)
-        judge_acct = judge.get_judge_acct()
+    # brownie setup
+    networkutil.connect(CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
+    judge_acct = judge.get_judge_acct()
 
-        # main work
-        deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
-        challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
+    # main work
+    deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
+    challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
     save_challenge_data_csv(challenge_data, CSV_DIR)
 
