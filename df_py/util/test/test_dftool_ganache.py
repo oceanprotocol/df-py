@@ -39,6 +39,15 @@ def sysargs_context(arguments):
     sys.argv = old_sys_argv
 
 
+# Mock the connection, otherwise the test setup clashes with
+# the implementation itself, and cleans up the contracts.
+# Either way, we are already connected to ganache through tests.
+@pytest.fixture(autouse=True)
+def mock_connect():
+    with patch.object(dftool_module.networkutil, "connect"):
+        yield
+
+
 @enforce_types
 def test_calc_volume(tmp_path):
     CSV_DIR = str(tmp_path)
@@ -68,18 +77,17 @@ def test_calc_volume(tmp_path):
     TOT_OCEAN = 1000.0
     START_DATE = "2023-02-02"  # Only substream is volume DF
 
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "volume",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={START_DATE}",
-            ]
-        ):
-            dftool_module.do_calc()
+    with sysargs_context(
+        [
+            "dftool",
+            "calc",
+            "volume",
+            CSV_DIR,
+            str(TOT_OCEAN),
+            f"--START_DATE={START_DATE}",
+        ]
+    ):
+        dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
@@ -100,48 +108,45 @@ def test_calc_failures(tmp_path):
 
     # no required input files -- volume
     with pytest.raises(SystemExit):
-        with patch.object(dftool_module.networkutil, "connect"):
-            with sysargs_context(
-                [
-                    "dftool",
-                    "calc",
-                    "volume",
-                    CSV_DIR,
-                    str(TOT_OCEAN),
-                    f"--START_DATE={START_DATE}",
-                ]
-            ):
-                dftool_module.do_calc()
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "volume",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={START_DATE}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # no required input files -- predictoor
     with pytest.raises(SystemExit):
-        with patch.object(dftool_module.networkutil, "connect"):
-            with sysargs_context(
-                [
-                    "dftool",
-                    "calc",
-                    "predictoor",
-                    CSV_DIR,
-                    str(TOT_OCEAN),
-                    f"--START_DATE={START_DATE}",
-                ]
-            ):
-                dftool_module.do_calc()
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "predictoor",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={START_DATE}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # no required input files -- challenge
     with pytest.raises(SystemExit):
-        with patch.object(dftool_module.networkutil, "connect"):
-            with sysargs_context(
-                [
-                    "dftool",
-                    "calc",
-                    "challenge",
-                    CSV_DIR,
-                    str(TOT_OCEAN),
-                    f"--START_DATE={START_DATE}",
-                ]
-            ):
-                dftool_module.do_calc()
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "challenge",
+                CSV_DIR,
+                str(TOT_OCEAN),
+                f"--START_DATE={START_DATE}",
+            ]
+        ):
+            dftool_module.do_calc()
 
 
 @enforce_types
@@ -202,22 +207,17 @@ def test_calc_predictoor_substream(tmp_path):
     TOT_OCEAN = 1000.0
     ST = "2023-03-16"  # first week of df main
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={ST}",
-            ]
-        ):
-            dftool_module.do_calc()
+    with sysargs_context(
+        [
+            "dftool",
+            "calc",
+            "predictoor",
+            CSV_DIR,
+            str(TOT_OCEAN),
+            f"--START_DATE={ST}",
+        ]
+    ):
+        dftool_module.do_calc()
 
     # test result
     rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
@@ -235,21 +235,17 @@ def test_calc_predictoor_substream(tmp_path):
     TOT_OCEAN = 0
     ST = "2042-03-16"  # some date where predictoor rewards are nonzero
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={ST}",
-            ]
-        ):
-            dftool_module.do_calc()
+    with sysargs_context(
+        [
+            "dftool",
+            "calc",
+            "predictoor",
+            CSV_DIR,
+            str(TOT_OCEAN),
+            f"--START_DATE={ST}",
+        ]
+    ):
+        dftool_module.do_calc()
 
     # test result
     rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
@@ -265,21 +261,17 @@ def test_calc_predictoor_substream(tmp_path):
     TOT_OCEAN = 0
     ST = "2023-01-01"  # some date where predictoor rewards are zero
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={ST}",
-            ]
-        ):
-            dftool_module.do_calc()
+    with sysargs_context(
+        [
+            "dftool",
+            "calc",
+            "predictoor",
+            CSV_DIR,
+            str(TOT_OCEAN),
+            f"--START_DATE={ST}",
+        ]
+    ):
+        dftool_module.do_calc()
 
     # test result
     rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
@@ -424,13 +416,8 @@ def test_dispense(tmp_path):
         f"--TOKEN_ADDR={OCEAN_ADDR}",
     ]
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(sys_argv):
-            dftool_module.do_dispense_active()
+    with sysargs_context(sys_argv):
+        dftool_module.do_dispense_active()
 
     # test result
     assert from_wei(df_rewards.claimable(address1, OCEAN_ADDR)) == 700.0
@@ -492,14 +479,10 @@ def test_calc_passive(tmp_path):
     ]
 
     # fails without vebals file
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-    with patch.object(dftool_module.networkutil, "connect"):
-        with patch.object(dftool_module, "recordDeployedContracts"):
-            with pytest.raises(SystemExit):
-                with sysargs_context(sys_argv):
-                    dftool_module.do_calculate_passive()
+    with patch.object(dftool_module, "recordDeployedContracts"):
+        with pytest.raises(SystemExit):
+            with sysargs_context(sys_argv):
+                dftool_module.do_calculate_passive()
 
     for _ in range(2):
         acc = brownie.network.accounts.add()
@@ -534,13 +517,9 @@ def test_calc_passive(tmp_path):
 
     sys_argv = ["dftool", "calculate_passive", str(CHAINID), str(date), CSV_DIR]
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-    with patch.object(dftool_module.networkutil, "connect"):
-        with patch.object(dftool_module, "recordDeployedContracts"):
-            with sysargs_context(sys_argv):
-                dftool_module.do_calculate_passive()
+    with patch.object(dftool_module, "recordDeployedContracts"):
+        with sysargs_context(sys_argv):
+            dftool_module.do_calculate_passive()
 
     filename = csvs.passive_csv_filename(CSV_DIR)
     assert os.path.exists(filename)
@@ -562,12 +541,8 @@ def test_initdevwallets():
 
     sys_argv = ["dftool", "initdevwallets", str(networkutil.DEV_CHAINID)]
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(sys_argv):
-            dftool_module.do_initdevwallets()
+    with sysargs_context(sys_argv):
+        dftool_module.do_initdevwallets()
 
     assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
 
