@@ -14,7 +14,7 @@ CHAINID_EXAMPLES = (
 )
 
 # ========================================================================
-HELP_SHORT = """Data Farming tool, for use by OPF.
+HELP_LONG = """Data Farming tool, for use by OPF.
 
 Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
 
@@ -31,11 +31,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool dispense_active CSV_DIR CHAINID --DFREWARDS_ADDR --TOKEN_ADDR --BATCH_NBR - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
-"""
 
-HELP_LONG = (
-    HELP_SHORT
-    + """
   dftool newacct - generate new account
   dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool newtoken CHAINID - generate new token (for testing)
@@ -57,13 +53,6 @@ HELP_LONG = (
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
-)
-
-
-@enforce_types
-def do_help_short(status_code=0):
-    print(HELP_SHORT)
-    sys.exit(status_code)
 
 
 @enforce_types
