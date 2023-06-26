@@ -23,3 +23,34 @@ def test_challenge_data(tmp_path):
     assert from_addrs2 == from_addrs
     assert nft_addrs2 == nft_addrs
     assert nmses2 == nmses
+
+
+@enforce_types
+def test_challenge_rewards(tmp_path):
+    csv_dir = str(tmp_path)
+
+    # filename
+    assert "challenge_rewards.csv" in csvs.challenge_rewards_csv_filename(csv_dir)
+
+    rewards = [
+        {
+            "winner_addr": "0xfrom1",
+            "OCEAN_amt": 200,
+        },
+        {
+            "winner_addr": "0xfrom2",
+            "OCEAN_amt": 100,
+        },
+        {
+            "winner_addr": "0xfrom3",
+            "OCEAN_amt": 50,
+        },
+    ]
+
+    assert csvs.save_challenge_rewards_csv(rewards, csv_dir)
+    loaded_rewards = csvs.load_challenge_rewards_csv(csv_dir)
+    assert loaded_rewards == {
+        "0xfrom1": 200,
+        "0xfrom2": 100,
+        "0xfrom3": 50,
+    }
