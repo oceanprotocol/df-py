@@ -14,7 +14,7 @@ CHAINID_EXAMPLES = (
 )
 
 # ========================================================================
-HELP_SHORT = """Data Farming tool, for use by OPF.
+HELP_LONG = """Data Farming tool, for use by OPF.
 
 Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
 
@@ -31,11 +31,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool dispense_active CSV_DIR CHAINID --DFREWARDS_ADDR --TOKEN_ADDR --BATCH_NBR - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
-"""
 
-HELP_LONG = (
-    HELP_SHORT
-    + """
   dftool newacct - generate new account
   dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
   dftool newtoken CHAINID - generate new token (for testing)
@@ -46,7 +42,7 @@ HELP_LONG = (
 
   dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+  dftool veSetAllocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
   dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool newdfrewards CHAINID - deploy new DFRewards contract
@@ -57,13 +53,6 @@ HELP_LONG = (
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
-)
-
-
-@enforce_types
-def do_help_short(status_code=0):
-    print(HELP_SHORT)
-    sys.exit(status_code)
 
 
 @enforce_types

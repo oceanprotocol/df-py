@@ -1,12 +1,15 @@
 import os
 from typing import Optional
+from unittest.mock import patch
 
 import brownie
+import pytest
 from enforce_typing import enforce_types
 
-from df_py.challenge import csvs, judge
-from df_py.util import networkutil, oceantestutil, oceanutil
+from df_py.challenge import csvs
+from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
+from df_py.util.test.test_dftool_ganache import sysargs_context
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -32,25 +35,29 @@ def test3(tmp_path):
 @enforce_types
 def _test(tmp_path, DEADLINE: Optional[str]):
     # build base cmd
-    base_dir = str(tmp_path)
-    CSV_DIR = os.path.join(base_dir, judge.DFTOOL_TEST_FAKE_CSVDIR)
-    os.mkdir(CSV_DIR)
-    cmd = f"./dftool challenge_data {CSV_DIR}"
+    CSV_DIR = str(tmp_path)
+
+    sysargs = ["dftool", "challenge_data", CSV_DIR]
 
     # DEADLINE option to cmd as needed
     if DEADLINE is not None:
-        cmd += f" --DEADLINE {DEADLINE}"
+        sysargs.append(f"--DEADLINE={DEADLINE}")
 
     # main call
-    print(f"CMD: {cmd}")
-    os.system(cmd)
 
     # targets
-    (
-        target_from_addrs,
-        target_nft_addrs,
-        target_nmses,
-    ) = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
+    (target_from_addrs, target_nft_addrs, target_nmses,) = (
+        ["0xfrom1", "0xfrom2"],
+        ["0xnft1", "0xnft2"],
+        [0.2, 1.0],
+    )
+
+    # Mock the connection, use test data
+    with patch("df_py.util.dftool_module.recordDeployedContracts"):
+        with patch.object(dftool_module.judge, "get_challenge_data") as mock:
+            mock.return_value = (target_from_addrs, target_nft_addrs, target_nmses)
+            with sysargs_context(sysargs):
+                dftool_module.do_challenge_data()
 
     # test result
     (from_addrs, nft_addrs, nmses) = csvs.load_challenge_data_csv(CSV_DIR)
@@ -65,8 +72,9 @@ def _test(tmp_path, DEADLINE: Optional[str]):
 
 @enforce_types
 def test_challenge_help():
-    cmd = "./dftool challenge_data"
-    os.system(cmd)
+    with pytest.raises(SystemExit):
+        with sysargs_context(["dftool", "challenge_data"]):
+            dftool_module.do_challenge_data()
 
 
 @enforce_types

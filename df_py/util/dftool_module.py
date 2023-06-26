@@ -1,6 +1,5 @@
 # pylint: disable=too-many-lines,too-many-statements
 import argparse
-import functools
 import os
 import sys
 
@@ -39,7 +38,6 @@ from df_py.util.dftool_arguments import (
     block_or_valid_date,
     challenge_date,
     do_help_long,
-    do_help_short,
     existing_path,
     print_arguments,
     valid_date,
@@ -329,17 +327,14 @@ def do_challenge_data():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    if judge.DFTOOL_TEST_FAKE_CSVDIR in CSV_DIR:
-        challenge_data = judge.DFTOOL_TEST_FAKE_CHALLENGE_DATA
-    else:  # main path
-        # brownie setup
-        networkutil.connect(CHAINID)
-        recordDeployedContracts(ADDRESS_FILE)
-        judge_acct = judge.get_judge_acct()
+    # brownie setup
+    networkutil.connect(CHAINID)
+    recordDeployedContracts(ADDRESS_FILE)
+    judge_acct = judge.get_judge_acct()
 
-        # main work
-        deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
-        challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
+    # main work
+    deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
+    challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
 
     save_challenge_data_csv(challenge_data, CSV_DIR)
 
@@ -487,7 +482,12 @@ def do_calc():
         csvs.save_volume_rewardsinfo_csv(rewinfo, CSV_DIR)
 
     if arguments.SUBSTREAM == "challenge":
-        from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
+        try:
+            from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
+        except FileNotFoundError:
+            print("Challenge data file not found")
+            sys.exit(1)
+
         if not from_addrs:
             print("No challenge winners found")
             sys.exit(0)
@@ -503,10 +503,15 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
-        predictoors = load_predictoor_data_csv(CSV_DIR)
+        try:
+            predictoors = load_predictoor_data_csv(CSV_DIR)
+        except FileNotFoundError:
+            print("Predictoor data file not found")
+            sys.exit(1)
+
         if len(predictoors) == 0:
             print("No predictoors found")
-            sys.exit(1)
+            sys.exit(0)
         _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards
@@ -611,8 +616,11 @@ def do_newdfrewards():
 # ========================================================================
 @enforce_types
 def do_newdfstrategy():
-    parser = DfStrategyArgumentParser("Deploy new DFStrategy contract", "newdfstrategy")
-
+    parser = argparse.ArgumentParser(description="Deploy new DFStrategy")
+    parser.add_argument("command", choices=["newdfstrategy"])
+    parser.add_argument("CHAINID", type=int, help=f"{CHAINID_EXAMPLES}")
+    parser.add_argument("DFREWARDS_ADDR", help="DFRewards contract's address")
+    parser.add_argument("DFSTRATEGY_NAME", help="DF Strategy name")
     arguments = parser.parse_args()
     print_arguments(arguments)
 
@@ -868,7 +876,7 @@ def do_veSetAllocation():
     parser.add_argument("command", choices=["veSetAllocation"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=float, help="")
-    parser.add_argument("exchangeId", type=str, help="")
+    parser.add_argument("TOKEN_ADDR", type=str, help="NFT Token Address")
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -880,11 +888,16 @@ def do_veSetAllocation():
         recordDeployedContracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         veAllocate().setAllocation(
-            arguments.amount, arguments.exchangeId, {"from": from_account}
+            arguments.amount,
+            arguments.TOKEN_ADDR,
+            arguments.CHAINID,
+            {"from": from_account},
         )
-        allocation = veAllocate().getTotalAllocation(from_account, 100, 0)
-        votingPower = functools.reduce(lambda a, b: a + b, allocation[1])
-        print(f"veAllocate voting power is: {votingPower}")
+        allocation = veAllocate().getTotalAllocation(from_account)
+        print(
+            "veAllocate current total allocated voting power is: "
+            f"{(allocation/10000 * 100)}%"
+        )
 
 
 # ========================================================================
@@ -1116,18 +1129,12 @@ def _getPrivateAccount():
 
 @enforce_types
 def _do_main():
-    if len(sys.argv) == 1:
-        do_help_short(1)
-        return
-
     if sys.argv[1] == "help":
         do_help_long(0)
-        return
 
     func_name = f"do_{sys.argv[1]}"
     func = globals().get(func_name)
     if func is None:
         do_help_long(1)
-        return
 
     func()

@@ -6,7 +6,8 @@ from unittest.mock import patch
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import dftool_arguments
+from df_py.util import dftool_arguments, dftool_module
+from df_py.util.test.test_dftool_ganache import sysargs_context
 from df_py.volume import csvs
 
 
@@ -42,35 +43,36 @@ def test_gen_hist_data():
 @enforce_types
 def test_noarg_commands():
     # Test commands that have no args
-    subargs = _get_HELP_subargs_in_dftool("HELP_SHORT")  # key args only, for speed
+    subargs = _get_HELP_subargs_in_dftool()
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ["help", "compile"]
+    fail_gracefully = ["help", "compile", "newacct"]
 
     for subarg in subargs:
+        sys_argv = ["dftool", subarg]
+
+        if subarg in ["compile", "newacct"]:
+            with sysargs_context(sys_argv):
+                dftool_module._do_main()
+            continue
+
         print(f"CMD: dftool {subarg}")
-        cmd = f"./dftool {subarg}"
 
-        output_s = ""
-        with subprocess.Popen(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-        ) as proc:
-            while proc.poll() is None:
-                output_s += proc.stdout.readline().decode("ascii")
-
-        return_code = proc.wait()
+        with pytest.raises(SystemExit) as excinfo:
+            with sysargs_context(sys_argv):
+                dftool_module._do_main()
 
         if subarg in fail_gracefully:
-            assert return_code == 0
+            assert excinfo.value.code == 0
         else:
-            assert return_code in [1, 2]
+            assert excinfo.value.code in [1, 2]
 
 
 @enforce_types
-def _get_HELP_subargs_in_dftool(help_type) -> List[str]:
+def _get_HELP_subargs_in_dftool() -> List[str]:
     """Return e.g. ["help", "compile", "getrate", "volsym", ...]"""
-    help_content = getattr(dftool_arguments, help_type)
+    help_content = getattr(dftool_arguments, "HELP_LONG")
     s_lines = help_content.split("\n")
 
     subargs = []
@@ -88,7 +90,7 @@ def _get_HELP_subargs_in_dftool(help_type) -> List[str]:
 
 @enforce_types
 def test_functions_exist():
-    functions = _get_HELP_subargs_in_dftool("HELP_LONG")
+    functions = _get_HELP_subargs_in_dftool()
     functions.remove("help")  # maps to help_short
 
     for function in functions:
