@@ -530,7 +530,7 @@ def test_calc_passive(tmp_path):
         assert len(lines) >= 3
 
 
-def test_initdevwallets():
+def test_init_dev_wallets():
     account8 = brownie.network.accounts[8]
     account9 = brownie.network.accounts[9]
 
@@ -539,19 +539,19 @@ def test_initdevwallets():
 
     assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
 
-    sys_argv = ["dftool", "initdevwallets", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "init_dev_wallets", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_initdevwallets()
+        dftool_module.do_init_dev_wallets()
 
     assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
 
     # different chain id will fail
-    sys_argv = ["dftool", "initdevwallets", "3"]
+    sys_argv = ["dftool", "init_dev_wallets", "3"]
 
     with pytest.raises(SystemExit):
         with sysargs_context(sys_argv):
-            dftool_module.do_initdevwallets()
+            dftool_module.do_init_dev_wallets()
 
 
 def test_volsym(tmp_path):
@@ -673,16 +673,16 @@ def test_vebals(tmp_path):
 def test_df_strategies():
     sys_argv = [
         "dftool",
-        "newdfrewards",
+        "new_df_rewards",
         str(networkutil.DEV_CHAINID),
     ]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newdfrewards()
+        dftool_module.do_new_df_rewards()
 
     sys_argv = [
         "dftool",
-        "newdfstrategy",
+        "new_df_strategy",
         str(networkutil.DEV_CHAINID),
         "0x0",
         "testStrategy",
@@ -690,7 +690,7 @@ def test_df_strategies():
 
     with sysargs_context(sys_argv):
         with patch.object(dftool_module, "B"):
-            dftool_module.do_newdfstrategy()
+            dftool_module.do_new_df_strategy()
 
     sys_argv = [
         "dftool",
@@ -707,11 +707,11 @@ def test_df_strategies():
             mock_tx.events.keys.return_value = ["StrategyAdded"]
             mock_df.addStrategy.return_value = mock_tx
             mock_B.DFRewards.at.return_value = mock_df
-            dftool_module.do_addstrategy()
+            dftool_module.do_add_strategy()
 
     sys_argv = [
         "dftool",
-        "retirestrategy",
+        "retire_strategy",
         str(networkutil.DEV_CHAINID),
         "0x0",
         "0x0",
@@ -724,7 +724,7 @@ def test_df_strategies():
             mock_tx.events.keys.return_value = ["StrategyRetired"]
             mock_df.retireStrategy.return_value = mock_tx
             mock_B.DFRewards.at.return_value = mock_df
-            dftool_module.do_retirestrategy()
+            dftool_module.do_retire_strategy()
 
 
 def test_getrate(tmp_path):
@@ -768,17 +768,17 @@ def test_mine():
 
 
 def test_new_functions():
-    sys_argv = ["dftool", "newacct", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "new_acct", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newacct()
+        dftool_module.do_new_acct()
 
-    sys_argv = ["dftool", "newtoken", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "new_token", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newtoken()
+        dftool_module.do_new_token()
 
-    sys_argv = ["dftool", "newVeOcean", str(networkutil.DEV_CHAINID), "0x0"]
+    sys_argv = ["dftool", "new_veocean", str(networkutil.DEV_CHAINID), "0x0"]
 
     with sysargs_context(sys_argv):
         with patch.object(dftool_module, "B") as mock_B:
@@ -787,19 +787,19 @@ def test_new_functions():
             mock_token.address = "0x0"
             mock_token.token = ""
             mock_B.veOcean.deploy.return_value = mock_token
-            dftool_module.do_newVeOcean()
+            dftool_module.do_new_veocean()
 
-    sys_argv = ["dftool", "newVeAllocate", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "new_ve_allocate", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newVeAllocate()
+        dftool_module.do_new_veallocate()
 
 
-def test_veSetAllocation():
+def test_ve_set_allocation():
     OCEAN_addr = oceanutil.OCEAN_address()
     sys_argv = [
         "dftool",
-        "veSetAllocation",
+        "ve_set_allocation",
         str(networkutil.DEV_CHAINID),
         "10",
         OCEAN_addr,
@@ -811,11 +811,11 @@ def test_veSetAllocation():
 
     with patch.object(dftool_module.networkutil, "connect"):
         with sysargs_context(sys_argv):
-            dftool_module.do_veSetAllocation()
+            dftool_module.do_ve_set_allocation()
 
 
-def test_acctinfo():
-    sys_argv = ["dftool", "acctinfo", str(networkutil.DEV_CHAINID), "1"]
+def test_acct_info():
+    sys_argv = ["dftool", "acct_info", str(networkutil.DEV_CHAINID), "1"]
 
     # Mock the connection, otherwise the test setup clashes with
     # the implementation itself, and cleans up the contracts.
@@ -823,12 +823,12 @@ def test_acctinfo():
 
     with patch.object(dftool_module.networkutil, "connect"):
         with sysargs_context(sys_argv):
-            dftool_module.do_acctinfo()
+            dftool_module.do_acct_info()
 
     OCEAN_addr = oceanutil.OCEAN_address()
     sys_argv = [
         "dftool",
-        "acctinfo",
+        "acct_info",
         str(networkutil.DEV_CHAINID),
         "1",
         f"--TOKEN_ADDR={OCEAN_addr}",
@@ -840,14 +840,14 @@ def test_acctinfo():
 
     with patch.object(dftool_module.networkutil, "connect"):
         with sysargs_context(sys_argv):
-            dftool_module.do_acctinfo()
+            dftool_module.do_acct_info()
 
 
-def test_chaininfo():
-    sys_argv = ["dftool", "chaininfo", str(networkutil.DEV_CHAINID)]
+def test_chain_info():
+    sys_argv = ["dftool", "chain_info", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_chaininfo()
+        dftool_module.do_chain_info()
 
 
 def test_dispense_passive():

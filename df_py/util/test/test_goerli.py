@@ -36,7 +36,7 @@ def test_main(tmp_path):
     ACCOUNT_ADDR = "0xc945a5a960fef1a9c3fef8593fc2446d1d7c6146"
     TOKEN_ADDR = "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6"
     fn = os.path.join(tmp_path, "out.txt")
-    cmd = f"./dftool acctinfo {CHAINID} {ACCOUNT_ADDR} --TOKEN_ADDR={TOKEN_ADDR}>{fn} 2>{fn}"
+    cmd = f"./dftool acct_info {CHAINID} {ACCOUNT_ADDR} --TOKEN_ADDR={TOKEN_ADDR}>{fn} 2>{fn}"
     os.system(cmd)
 
     s = None

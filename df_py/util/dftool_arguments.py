@@ -32,23 +32,23 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
 
-  dftool newacct - generate new account
-  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-  dftool newtoken CHAINID - generate new token (for testing)
-  dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
-  dftool chaininfo CHAINID - info about a network
+  dftool new_acct - generate new account
+  dftool init_dev_wallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+  dftool new_token CHAINID - generate new token (for testing)
+  dftool acct_info CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
+  dftool chain_info CHAINID - info about a network
 
   dftool mine BLOCKS --TIMEDELTA - force chain to pass time (ganache only)
 
-  dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+  dftool new_veocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
+  dftool new_veallocate CHAINID - deploy veAllocate (for testing)
+  dftool ve_set_allocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
   dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
-  dftool newdfrewards CHAINID - deploy new DFRewards contract
-  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
-  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
-  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
+  dftool new_df_rewards CHAINID - deploy new DFRewards contract
+  dftool new_df_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
+  dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
   dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
 
 Transactions are signed with envvar 'DFTOOL_KEY`.

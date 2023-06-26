@@ -47,12 +47,12 @@ def test_noarg_commands():
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ["help", "compile", "newacct"]
+    fail_gracefully = ["help", "compile", "new_acct"]
 
     for subarg in subargs:
         sys_argv = ["dftool", subarg]
 
-        if subarg in ["compile", "newacct"]:
+        if subarg in ["compile", "new_acct"]:
             with sysargs_context(sys_argv):
                 dftool_module._do_main()
             continue

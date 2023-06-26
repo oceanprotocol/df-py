@@ -598,9 +598,9 @@ def do_dispense_active():
 
 # ========================================================================
 @enforce_types
-def do_newdfrewards():
+def do_new_df_rewards():
     parser = SimpleChainIdArgumentParser(
-        "Deploy new DFRewards contract", "newdfrewards"
+        "Deploy new DFRewards contract", "new_df_rewards"
     )
     CHAINID = parser.print_args_and_get_chain()
 
@@ -610,14 +610,14 @@ def do_newdfrewards():
     df_rewards = B.DFRewards.deploy({"from": from_account})
     print(f"New DFRewards contract deployed at address: {df_rewards.address}")
 
-    print("dftool newdfrewards: Done")
+    print("dftool new_dfrewards: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_newdfstrategy():
+def do_new_df_strategy():
     parser = argparse.ArgumentParser(description="Deploy new DFStrategy")
-    parser.add_argument("command", choices=["newdfstrategy"])
+    parser.add_argument("command", choices=["new_df_strategy"])
     parser.add_argument("CHAINID", type=int, help=f"{CHAINID_EXAMPLES}")
     parser.add_argument("DFREWARDS_ADDR", help="DFRewards contract's address")
     parser.add_argument("DFSTRATEGY_NAME", help="DF Strategy name")
@@ -631,12 +631,12 @@ def do_newdfstrategy():
     )
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
-    print("dftool newdfstrategy: Done")
+    print("dftool new_df_strategy: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_addstrategy():
+def do_add_strategy():
     parser = DfStrategyArgumentParser(
         "Add a strategy to DFRewards contract", "addstrategy"
     )
@@ -654,14 +654,14 @@ def do_addstrategy():
         f"Strategy {arguments.DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}"
     )
 
-    print("dftool addstrategy: Done")
+    print("dftool add_strategy: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_retirestrategy():
+def do_retire_strategy():
     parser = DfStrategyArgumentParser(
-        "Retire a strategy from DFRewards contract", "retirestrategy"
+        "Retire a strategy from DFRewards contract", "retire_strategy"
     )
 
     arguments = parser.parse_args()
@@ -676,7 +676,7 @@ def do_retirestrategy():
         f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
     )
 
-    print("dftool addstrategy: Done")
+    print("dftool retire_strategy: Done")
 
 
 # ========================================================================
@@ -690,11 +690,11 @@ def do_compile():
 
 # ========================================================================
 @enforce_types
-def do_initdevwallets():
-    # UPADATE THIS
+def do_init_dev_wallets():
+    # UPDATE THIS
     parser = SimpleChainIdArgumentParser(
         "Init wallets with OCEAN. (GANACHE ONLY)",
-        "initdevwallets",
+        "init_dev_wallets",
         epilog=f"""Uses these envvars:
           ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
         """,
@@ -704,7 +704,7 @@ def do_initdevwallets():
     from df_py.util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     if CHAINID != DEV_CHAINID:
-        # To support other testnets, they need to initdevwallets()
+        # To support other testnets, they need to init_dev_wallets()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
         sys.exit(1)
@@ -719,7 +719,7 @@ def do_initdevwallets():
     recordDeployedContracts(ADDRESS_FILE)
     oceantestutil.fillAccountsWithOCEAN()
 
-    print("dftool initdevwallets: Done.")
+    print("dftool init_dev_wallets: Done.")
 
 
 # ========================================================================
@@ -789,9 +789,9 @@ def do_mine():
 
 # ========================================================================
 @enforce_types
-def do_newacct():
+def do_new_acct():
     parser = argparse.ArgumentParser(description="Generate new account")
-    parser.add_argument("command", choices=["newacct"])
+    parser.add_argument("command", choices=["new_acct"])
 
     # main work
     networkutil.connectDev()
@@ -805,9 +805,9 @@ def do_newacct():
 
 # ========================================================================
 @enforce_types
-def do_newtoken():
+def do_new_token():
     parser = argparse.ArgumentParser(description="Generate new token (for testing)")
-    parser.add_argument("command", choices=["newtoken"])
+    parser.add_argument("command", choices=["new_token"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
@@ -822,9 +822,9 @@ def do_newtoken():
 
 # ========================================================================
 @enforce_types
-def do_newVeOcean():
+def do_new_veocean():
     parser = argparse.ArgumentParser(description="Generate new veOcean (for testing)")
-    parser.add_argument("command", choices=["newVeOcean"])
+    parser.add_argument("command", choices=["new_veocean"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument("TOKEN_ADDR", type=str, help="token address")
 
@@ -847,11 +847,11 @@ def do_newVeOcean():
 
 # ========================================================================
 @enforce_types
-def do_newVeAllocate():
+def do_new_veallocate():
     parser = argparse.ArgumentParser(
         description="Generate new veAllocate (for testing)"
     )
-    parser.add_argument("command", choices=["newVeAllocate"])
+    parser.add_argument("command", choices=["new_ve_allocate"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
@@ -866,14 +866,14 @@ def do_newVeAllocate():
 
 # ========================================================================
 @enforce_types
-def do_veSetAllocation():
+def do_ve_set_allocation():
     parser = argparse.ArgumentParser(
         description="""
         Allocate weight to veAllocate contract (for testing).
         Set to 0 to trigger resetAllocation event.
     """
     )
-    parser.add_argument("command", choices=["veSetAllocation"])
+    parser.add_argument("command", choices=["ve_set_allocation"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=float, help="")
     parser.add_argument("TOKEN_ADDR", type=str, help="NFT Token Address")
@@ -902,12 +902,12 @@ def do_veSetAllocation():
 
 # ========================================================================
 @enforce_types
-def do_acctinfo():
+def do_acct_info():
     parser = argparse.ArgumentParser(
         description="Info about an account",
         epilog="If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.",
     )
-    parser.add_argument("command", choices=["acctinfo"])
+    parser.add_argument("command", choices=["acct_info"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "ACCOUNT_ADDR",
@@ -953,9 +953,9 @@ def do_acctinfo():
 
 # ========================================================================
 @enforce_types
-def do_chaininfo():
+def do_chain_info():
     parser = argparse.ArgumentParser(description="Info about a network")
-    parser.add_argument("command", choices=["chaininfo"])
+    parser.add_argument("command", choices=["chain_info"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
