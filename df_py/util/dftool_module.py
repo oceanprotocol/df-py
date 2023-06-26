@@ -485,7 +485,8 @@ def do_calc():
         try:
             from_addrs, _, _ = load_challenge_data_csv(CSV_DIR)
         except FileNotFoundError:
-            from_addrs = []
+            print("Challenge data file not found")
+            sys.exit(1)
 
         if not from_addrs:
             print("No challenge winners found")
@@ -505,11 +506,12 @@ def do_calc():
         try:
             predictoors = load_predictoor_data_csv(CSV_DIR)
         except FileNotFoundError:
-            predictoors = []
+            print("Predictoor data file not found")
+            sys.exit(1)
 
         if len(predictoors) == 0:
             print("No predictoors found")
-            sys.exit(1)
+            sys.exit(0)
         _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards
