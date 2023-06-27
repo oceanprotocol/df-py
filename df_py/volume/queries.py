@@ -11,7 +11,7 @@ from df_py.util.blockrange import BlockRange
 from df_py.util.constants import AQUARIUS_BASE_URL
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import MAX_ALLOCATE
-from df_py.util.graphutil import submitQuery
+from df_py.util.graphutil import submit_query
 from df_py.volume.models import SimpleDataNft, TokSet
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
@@ -155,7 +155,7 @@ def queryVebalances(
                 block,
             )
 
-            result = submitQuery(query, CHAINID)
+            result = submit_query(query, CHAINID)
             if "data" in result:
                 assert "veOCEANs" in result["data"]
                 veOCEANs = result["data"]["veOCEANs"]
@@ -267,7 +267,7 @@ def queryAllocations(
                 offset,
                 block,
             )
-            result = submitQuery(query, CHAINID)
+            result = submit_query(query, CHAINID)
             if "data" in result:
                 assert "veAllocateUsers" in result["data"]
                 _allocs = result["data"]["veAllocateUsers"]
@@ -403,7 +403,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
             offset,
             endBlock,
         )
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
         nft_records = result["data"]["nfts"]
         if len(nft_records) == 0:
             # means there are no records left
@@ -482,7 +482,7 @@ def _queryVolsOwners(
             chunk_size,
         )
         offset += chunk_size
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
         if "errors" in result:
             raise AssertionError(result)
         new_orders = result["data"]["orders"]
@@ -582,7 +582,7 @@ def _querySwaps(
             chunk_size,
         )
         offset += chunk_size
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
         if "errors" in result:
             raise AssertionError(result)
         new_swaps = result["data"]["fixedRateExchangeSwaps"]

@@ -12,10 +12,10 @@ CHAINID = networkutil.DEV_CHAINID
 chain = None
 
 
-@patch("df_py.predictoor.queries.submitQuery")
-def test_query_predictoors(mock_submitQuery):
+@patch("df_py.predictoor.queries.submit_query")
+def test_query_predictoors(mock_submit_query):
     responses, users, stats = create_mock_responses(100)
-    mock_submitQuery.side_effect = responses
+    mock_submit_query.side_effect = responses
 
     predictoors = query_predictoors(1, 2, CHAINID)
 
@@ -29,7 +29,7 @@ def test_query_predictoors(mock_submitQuery):
         assert predictoors[user].correct_prediction_count == user_correct
         assert predictoors[user].accuracy == user_correct / user_total
 
-    mock_submitQuery.assert_called()
+    mock_submit_query.assert_called()
 
 
 @pytest.mark.skip(reason="Requires predictoor support in subgraph")

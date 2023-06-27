@@ -2,7 +2,7 @@ from typing import Dict
 
 from df_py.predictoor.models import Prediction, Predictoor
 from df_py.util.constants import DEPLOYER_ADDRS
-from df_py.util.graphutil import submitQuery
+from df_py.util.graphutil import submit_query
 from df_py.util.networkutil import DEV_CHAINID
 
 
@@ -67,7 +67,7 @@ def query_predictoors(
         )
 
         offset += chunk_size
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
 
         if "error" in result:
             raise AssertionError(result)

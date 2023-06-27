@@ -38,14 +38,14 @@ def test_block_or_valid_date():
 
 def test_autocreate_path(tmp_path):
     path = tmp_path / "test"
-    assert autocreate_path(path) == path
+    assert autocreate_path(str(path)) == str(path)
     assert path.exists()
 
 
 def test_existing_path(tmp_path):
     path = tmp_path / "test"
     path.mkdir()
-    assert existing_path(path) == path
+    assert existing_path(str(path)) == str(path)
 
     with pytest.raises(argparse.ArgumentTypeError, match="doesn't exist"):
-        existing_path(tmp_path / "not_existing")
+        existing_path(str(tmp_path / "not_existing"))

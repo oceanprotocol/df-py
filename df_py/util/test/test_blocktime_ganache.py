@@ -10,7 +10,7 @@ from df_py.util.blockrange import create_range
 from df_py.util.blocktime import (
     get_block_number_thursday,
     get_st_fin_blocks,
-    getNextThursdayTimestamp,
+    get_next_thursday_timestamp,
     timestamp_to_block,
     timestr_to_block,
     timestr_to_timestamp,
@@ -96,7 +96,7 @@ def test_timestamp_to_block():
 
 @enforce_types
 def test_get_next_thursday():
-    next_thursday = getNextThursdayTimestamp()
+    next_thursday = get_next_thursday_timestamp()
     date = datetime.utcfromtimestamp(next_thursday)
 
     assert date.isoweekday() == 4
@@ -116,7 +116,7 @@ def test_get_next_thursday_block_number():
 
     avgBlockTime = (t1 - t0) / now
 
-    next_thursday = getNextThursdayTimestamp()
+    next_thursday = get_next_thursday_timestamp()
     apprx = (next_thursday - t0) / avgBlockTime
     apprx = ceil(apprx / 100) * 100
 

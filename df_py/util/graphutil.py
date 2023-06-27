@@ -3,7 +3,7 @@ import requests
 from df_py.util import networkutil
 
 
-def submitQuery(query: str, chainID: int) -> dict:
+def submit_query(query: str, chainID: int) -> dict:
     subgraph_url = networkutil.chainIdToSubgraphUri(chainID)
     request = requests.post(subgraph_url, "", json={"query": query}, timeout=30)
     if request.status_code != 200:

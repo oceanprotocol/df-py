@@ -166,8 +166,8 @@ def test_predictoor_data(tmp_path):
     mock_query_response, users, stats = create_mock_responses(100)
 
     with sysargs_context(sys_argv):
-        with patch("df_py.predictoor.queries.submitQuery") as mock_submitQuery:
-            mock_submitQuery.side_effect = mock_query_response
+        with patch("df_py.predictoor.queries.submit_query") as mock_submit_query:
+            mock_submit_query.side_effect = mock_query_response
             do_predictoor_data()
 
     # test result

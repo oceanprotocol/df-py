@@ -21,12 +21,12 @@ def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     @return
       rate -- float or None -- USD_per_token. None if failure
     """
-    rate = getBinanceRate(token_symbol, st, fin)
+    rate = get_binance_rate(token_symbol, st, fin)
     if rate is not None:
         return rate
 
     print("Couldn't get Binance data; trying CoinGecko")
-    rate = getCoingeckoRate(token_symbol, st, fin)
+    rate = get_coingecko_rate(token_symbol, st, fin)
     if rate is not None:
         return rate
 
@@ -35,7 +35,7 @@ def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
 
 
 @enforce_types
-def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def get_binance_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -48,7 +48,7 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    (st_dt, fin_dt) = _toDatetime(st, fin)
+    (st_dt, fin_dt) = _to_datetime(st, fin)
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
@@ -65,12 +65,12 @@ def getBinanceRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
         return avg
     # pylint: disable=broad-exception-caught
     except Exception as e:
-        print(f"Error in getBinanceRate: {e}")
+        print(f"Error in get_binance_rate: {e}")
         return None
 
 
 @enforce_types
-def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -83,14 +83,14 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    (st_dt, fin_dt) = _toDatetime(st, fin)
+    (st_dt, fin_dt) = _to_datetime(st, fin)
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
     if num_days == 0:  # coingecko needs >=1 days of data
         st_dt = st_dt - timedelta(days=1)
 
-    cg_id = _coingeckoId(token_symbol)
+    cg_id = _coingecko_id(token_symbol)
     if cg_id == "":
         raise ValueError(f"Couldn't find Coingecko ID for {token_symbol}")
     req_s = f"https://api.coingecko.com/api/v3/coins/{cg_id}/market_chart/range?vs_currency=usd&from={int(st_dt.timestamp())}&to={int(fin_dt.timestamp())}"  # pylint: disable=line-too-long
@@ -104,7 +104,7 @@ def getCoingeckoRate(token_symbol: str, st: str, fin: str) -> Union[float, None]
 
 
 @enforce_types
-def _toDatetime(st: str, fin: str) -> Tuple[datetime, datetime]:
+def _to_datetime(st: str, fin: str) -> Tuple[datetime, datetime]:
     """
     @arguments
       st, fin -- (start date, end date) in format "YYYY-MM-DD"
@@ -118,7 +118,7 @@ def _toDatetime(st: str, fin: str) -> Tuple[datetime, datetime]:
 
 
 @enforce_types
-def _coingeckoId(token_symbol: str) -> str:
+def _coingecko_id(token_symbol: str) -> str:
     """Convert token_symbol to coingecko id for a few common tokens"""
     id_ = token_symbol.lower()
 

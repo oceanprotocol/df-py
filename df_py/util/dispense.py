@@ -1,7 +1,7 @@
 import os
 
 # pylint: disable=logging-fstring-interpolation
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import brownie
 from enforce_typing import enforce_types
@@ -113,12 +113,16 @@ def dispense(
     logger.info("dispense: done")
 
 
-def dispense_passive(ocean, feedistributor, amount):
+@enforce_types
+def dispense_passive(ocean, feedistributor, amount: Union[float, int]):
     amount_wei = to_wei(amount)
     transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
+
     checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
     checkpoint_token_data = feedistributor.checkpoint_token.encode_input()
+
     multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
     send_multisig_tx(multisig_addr, ocean.address, 0, transfer_data)
+
     for data in [checkpoint_total_supply_data, checkpoint_token_data]:
         send_multisig_tx(multisig_addr, feedistributor.address, 0, data)
