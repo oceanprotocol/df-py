@@ -316,6 +316,13 @@ def do_challenge_data():
             Example for Round 5: 2023-05-03_23:59
         """,
     )
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -334,7 +341,13 @@ def do_challenge_data():
 
     # main work
     deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
-    challenge_data = judge.get_challenge_data(deadline_dt, judge_acct)
+    challenge_data = retryFunction(
+        judge.get_challenge_data,
+         arguments.RETRIES,
+         10,
+         deadline_dt,
+         judge_acct
+    )
 
     save_challenge_data_csv(challenge_data, CSV_DIR)
 
