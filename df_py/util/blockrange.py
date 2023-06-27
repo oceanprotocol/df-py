@@ -1,7 +1,7 @@
 import numpy
 from enforce_typing import enforce_types
 
-from df_py.util.blocktime import getstfinBlocks
+from df_py.util.blocktime import get_st_fin_blocks
 
 
 @enforce_types
@@ -37,19 +37,19 @@ class BlockRange:
             numpy.random.choice(cand_blocks, num_samples, replace=False)
         )
 
-    def getBlocks(self) -> list:
+    def get_blocks(self) -> list:
         return self._blocks
 
-    def numBlocks(self) -> int:
-        return len(self.getBlocks())
+    def num_blocks(self) -> int:
+        return len(self.get_blocks())
 
-    def filterByMaxBlock(self, max_block: int):
+    def filter_by_max_block(self, max_block: int):
         """
         @arguments
           max_block -- maximum block number to include in the range
         """
         new_blocks = []
-        for b in self.getBlocks():
+        for b in self.get_blocks():
             if b <= max_block:
                 new_blocks.append(b)
 
@@ -58,14 +58,14 @@ class BlockRange:
     def __str__(self):
         return (
             f"BlockRange: st={self.st}, fin={self.fin}"
-            f", # blocks sampled={self.numBlocks()}"
-            f", range={self.getBlocks()[:4]}.."
+            f", # blocks sampled={self.num_blocks()}"
+            f", range={self.get_blocks()[:4]}.."
         )
 
 
 def create_range(chain, st, fin, samples, rndseed) -> BlockRange:
-    st_block, fin_block = getstfinBlocks(chain, st, fin)
+    st_block, fin_block = get_st_fin_blocks(chain, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
-    rng.filterByMaxBlock(len(chain) - 5)
+    rng.filter_by_max_block(len(chain) - 5)
 
     return rng

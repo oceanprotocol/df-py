@@ -114,9 +114,9 @@ def queryVebalances(
     unlock_times: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
-    n_blocks = rng.numBlocks()
+    n_blocks = rng.num_blocks()
     n_blocks_sampled = 0
-    blocks = rng.getBlocks()
+    blocks = rng.get_blocks()
     print("queryVebalances: begin")
 
     for block_i, block in enumerate(blocks):
@@ -239,9 +239,9 @@ def queryAllocations(
     # [chain_id][nft_addr][LP_addr] : percent
     allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
 
-    n_blocks = rng.numBlocks()
+    n_blocks = rng.num_blocks()
     n_blocks_sampled = 0
-    blocks = rng.getBlocks()
+    blocks = rng.get_blocks()
 
     for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):

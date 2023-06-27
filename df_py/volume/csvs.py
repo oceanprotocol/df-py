@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
 
-from df_py.util.csv_helpers import _lastInt, assert_is_eth_addr
+from df_py.util.csv_helpers import _last_int, assert_is_eth_addr
 from df_py.volume.models import SimpleDataNft
 
 # ========================================================================
@@ -335,7 +335,7 @@ def nftinfo_csv_filename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chain_id_for_nftinfo_csv(filename) -> int:
     """Returns chainID for a given nftinfo csv filename"""
-    return _lastInt(filename)
+    return _last_int(filename)
 
 
 # ========================================================================
@@ -438,7 +438,7 @@ def nftvols_csv_filename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chain_id_for_nftvols_csv(filename) -> int:
     """Returns chainID for a given nftvols csv filename"""
-    return _lastInt(filename)
+    return _last_int(filename)
 
 
 # ========================================================================
@@ -540,7 +540,7 @@ def owners_csv_filename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chain_id_for_owners_csv(filename) -> int:
     """Returns chainID for a given owners csv filename"""
-    return _lastInt(filename)
+    return _last_int(filename)
 
 
 # ========================================================================
@@ -640,7 +640,7 @@ def symbols_csv_filename(csv_dir: str, chainID: int) -> str:
 @enforce_types
 def chain_id_for_symbols_csv(filename) -> int:
     """Returns chainID for a given symbols csv filename"""
-    return _lastInt(filename)
+    return _last_int(filename)
 
 
 # ========================================================================

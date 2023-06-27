@@ -8,11 +8,11 @@ from pytest import approx
 from df_py.util import networkutil, oceanutil
 from df_py.util.blockrange import create_range
 from df_py.util.blocktime import (
-    getBlockNumberThursday,
+    get_block_number_thursday,
+    get_st_fin_blocks,
     getNextThursdayTimestamp,
-    getstfinBlocks,
     timestampToBlock,
-    timestrToBlock,
+    timestr_to_block,
     timestrToTimestamp,
 )
 
@@ -20,27 +20,27 @@ chain = None
 
 
 @enforce_types
-def test_timestrToBlock_1():
+def test_timestr_to_block_1():
     # tests here are light, the real tests are in test_*() below
-    assert timestrToBlock(chain, "2022-03-29") >= 0.0
-    assert timestrToBlock(chain, "2022-03-29_0:00") >= 0.0
+    assert timestr_to_block(chain, "2022-03-29") >= 0.0
+    assert timestr_to_block(chain, "2022-03-29_0:00") >= 0.0
 
 
 @enforce_types
 def test_timestampToBlock_FarLeft():
-    b = timestrToBlock(chain, "1970-01-01")
+    b = timestr_to_block(chain, "1970-01-01")
     assert b == 0 and isinstance(b, int)
 
-    b = timestrToBlock(chain, "1970-01-01_0:00")
+    b = timestr_to_block(chain, "1970-01-01_0:00")
     assert b == 0 and isinstance(b, int)
 
 
 @enforce_types
 def test_timestampToBlock_FarRight():
-    b = timestrToBlock(chain, "2150-01-01")
+    b = timestr_to_block(chain, "2150-01-01")
     assert b == len(chain) and isinstance(b, int)
 
-    b = timestrToBlock(chain, "2150-01-01_0:00")
+    b = timestr_to_block(chain, "2150-01-01_0:00")
     assert b == len(chain) and isinstance(b, int)
 
 
@@ -104,7 +104,7 @@ def test_get_next_thursday():
 
 @enforce_types
 def test_get_next_thursday_block_number():
-    next_thursday_block = getBlockNumberThursday(chain)
+    next_thursday_block = get_block_number_thursday(chain)
     assert next_thursday_block % 10 == 0
     # uncomment when #629 is done
     # assert len(chain) < next_thursday_block
@@ -124,27 +124,27 @@ def test_get_next_thursday_block_number():
 
 
 @enforce_types
-def test_getstfinBlocks():
+def test_get_st_fin_blocks():
     chain.mine()
     # by block number
-    (st, fin) = getstfinBlocks(chain, "0", "1")
+    (st, fin) = get_st_fin_blocks(chain, "0", "1")
     assert st == 0
     assert fin > 0
 
     # get by latest fin
-    (st, fin) = getstfinBlocks(chain, "0", "latest")
+    (st, fin) = get_st_fin_blocks(chain, "0", "latest")
     assert st == 0
     assert fin > 0
 
     # get by thu fin
-    (st, fin) = getstfinBlocks(chain, "0", "thu")
+    (st, fin) = get_st_fin_blocks(chain, "0", "thu")
     assert st == 0
     assert fin > 0
 
     # get by datetime YYYY-MM-DD
     now_date = datetime.utcfromtimestamp(chain[-1].timestamp)
     now_date = now_date.strftime("%Y-%m-%d")
-    (st, fin) = getstfinBlocks(chain, "0", now_date)
+    (st, fin) = get_st_fin_blocks(chain, "0", now_date)
     assert st == 0
     assert fin >= 0
 

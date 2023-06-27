@@ -10,7 +10,7 @@ def assert_is_eth_addr(s: str):
 
 
 @enforce_types
-def _lastInt(s: str) -> int:
+def _last_int(s: str) -> int:
     """Return the last integer in the given str"""
     nbr_strs = re.findall("[0-9]+", s)
     return int(nbr_strs[-1])

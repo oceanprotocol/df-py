@@ -7,8 +7,8 @@ from scipy import optimize
 
 
 @enforce_types
-def getBlockNumberThursday(chain) -> int:
-    timestamp = getNextThursdayTimestamp()
+def get_block_number_thursday(chain) -> int:
+    timestamp = get_next_thursday_timestamp()
     block_number = timestampToFutureBlock(chain, timestamp)
 
     ## round to upper 100th
@@ -17,7 +17,7 @@ def getBlockNumberThursday(chain) -> int:
 
 
 @enforce_types
-def getNextThursdayTimestamp() -> int:
+def get_next_thursday_timestamp() -> int:
     dd = datetime.now(timezone.utc)
     dd = dd.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -31,7 +31,7 @@ def getNextThursdayTimestamp() -> int:
 
 
 @enforce_types
-def timestrToBlock(chain, timestr: str, test_eth: bool = False) -> int:
+def timestr_to_block(chain, timestr: str, test_eth: bool = False) -> int:
     """
     Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
@@ -205,31 +205,31 @@ def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) 
 
 
 @enforce_types
-def getfinBlock(chain, FIN):
+def get_fin_block(chain, FIN):
     fin_block = 0
     if FIN == "latest":
         fin_block = len(chain) - 5
     elif FIN == "thu":
-        fin_block = getBlockNumberThursday(chain)
+        fin_block = get_block_number_thursday(chain)
     elif "-" in str(FIN):
-        fin_block = timestrToBlock(chain, FIN)
+        fin_block = timestr_to_block(chain, FIN)
     else:
         fin_block = int(FIN)
     return fin_block
 
 
 @enforce_types
-def getstBlock(chain, ST):
+def get_st_block(chain, ST):
     st_block = 0
     if "-" in str(ST):
-        st_block = timestrToBlock(chain, ST)
+        st_block = timestr_to_block(chain, ST)
     else:
         st_block = int(ST)
     return st_block
 
 
 @enforce_types
-def getstfinBlocks(chain, ST, FIN):
-    st_block = getstBlock(chain, ST)
-    fin_block = getfinBlock(chain, FIN)
+def get_st_fin_blocks(chain, ST, FIN):
+    st_block = get_st_block(chain, ST)
+    fin_block = get_fin_block(chain, FIN)
     return (st_block, fin_block)

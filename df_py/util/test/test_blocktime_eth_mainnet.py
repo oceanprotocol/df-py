@@ -10,7 +10,7 @@ from df_py.util import networkutil
 from df_py.util.blocktime import (
     ethFindClosestBlock,
     ethTimestamptoBlock,
-    timestrToBlock,
+    timestr_to_block,
 )
 
 PREV = None
@@ -27,7 +27,7 @@ def test_ethTimestamptoBlock():
     assert guess == approx(block, 10)
 
 
-def test_timestrToBlock_eth_1():
+def test_timestr_to_block_eth_1():
     ts = chain[-5000].timestamp
     block = chain[-5000].number
 
@@ -35,27 +35,27 @@ def test_timestrToBlock_eth_1():
     dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
-    guess = timestrToBlock(chain, dt_str, True)
+    guess = timestr_to_block(chain, dt_str, True)
 
     assert guess == block
 
 
 @enforce_types
-def test_timestrToBlock_eth_2():
+def test_timestr_to_block_eth_2():
     expected = 15735470
     ts = 1665619200
     dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
-    guess = timestrToBlock(chain, dt_str, True)
+    guess = timestr_to_block(chain, dt_str, True)
     assert guess == expected
 
 
 @enforce_types
-def test_timestrToBlock_eth_3():
+def test_timestr_to_block_eth_3():
     expected = 15835686
     dt_str = "2022-10-27"
-    guess = timestrToBlock(chain, dt_str, True)
+    guess = timestr_to_block(chain, dt_str, True)
     assert guess == expected
 
 
