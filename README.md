@@ -254,7 +254,7 @@ This section provides tactics if you encounter issues like `KeyError "developmen
 If you run a test and get an error like:
 ```text
 INTERNALERROR>   File "/home/trentmc/code/df-py/util/test/conftest.py", line 24, in pytest_sessionstart
-INTERNALERROR>     networkutil.connectDev()
+INTERNALERROR>     networkutil.connect_dev()
 ...
 INTERNALERROR>   File "/home/trentmc/code/df-py/venv/lib/python3.10/site-packages/brownie/network/contract.py", line 708, in __init__
 INTERNALERROR>     raise ContractNotFound(f"No contract deployed at {address}")

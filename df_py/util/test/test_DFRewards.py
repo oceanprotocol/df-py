@@ -64,7 +64,7 @@ def test_TOK():
 
 @enforce_types
 def test_OCEAN():
-    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
     assert OCEAN.balanceOf(accounts[0]) >= 10
@@ -216,7 +216,7 @@ def test_strategies():
 
 @enforce_types
 def _test_claim_and_restake():
-    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
     OCEAN = oceanutil.OCEANtoken()
     deployer = accounts[0]
@@ -270,7 +270,7 @@ def _deployTOK(account):
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     global accounts, a1, a2, a3
     accounts = brownie.network.accounts
     a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address

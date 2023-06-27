@@ -45,7 +45,7 @@ def _get_txs(deadline_dt) -> list:
      }}
 }}"""
 
-    result = graphutil.submit_query(query_s, networkutil.networkToChainId("mumbai"))
+    result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
     txs = result["nftTransferHistories"]
 
     return txs

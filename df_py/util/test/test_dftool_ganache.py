@@ -28,7 +28,7 @@ from df_py.volume import csvs
 PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @contextlib.contextmanager
@@ -576,7 +576,7 @@ def test_volsym(tmp_path):
     rate_file = os.path.join(tmp_path, "rate-test.csv")
     Path(rate_file).write_text("")
 
-    with patch.object(dftool_module, "retryFunction") as mock:
+    with patch.object(dftool_module, "retry_function") as mock:
         with sysargs_context(sys_argv):
             mock.return_value = ({}, {}, {})
             dftool_module.do_volsym()
@@ -616,7 +616,7 @@ def test_nftinfo(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = []
             dftool_module.do_nftinfo()
 
@@ -637,7 +637,7 @@ def test_allocations(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = {}
             dftool_module.do_allocations()
 
@@ -663,7 +663,7 @@ def test_vebals(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = ({}, {}, {})
             dftool_module.do_vebals()
 
@@ -740,7 +740,7 @@ def test_get_rate(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = 100.0
             dftool_module.do_get_rate()
 
@@ -859,7 +859,7 @@ def test_dispense_passive():
         "2023-02-02",
     ]
 
-    with patch.object(dftool_module, "retryFunction"):
+    with patch.object(dftool_module, "retry_function"):
         with sysargs_context(sys_argv):
             dftool_module.do_dispense_passive()
 
@@ -871,7 +871,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
@@ -887,7 +887,7 @@ def setup_function():
 
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
-    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
+    os.environ["SUBGRAPH_URI"] = networkutil.chain_id_to_subgraph_uri(CHAINID)
     os.environ["SECRET_SEED"] = "1234"
     os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
 

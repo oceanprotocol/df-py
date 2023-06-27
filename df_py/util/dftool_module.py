@@ -44,11 +44,11 @@ from df_py.util.dftool_arguments import (
     valid_date_and_convert,
 )
 from df_py.util.multisig import send_multisig_tx
-from df_py.util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
+from df_py.util.networkutil import DEV_CHAINID, chain_id_to_multisig_addr
 from df_py.util.oceantestutil import (
-    randomConsumeFREs,
-    randomCreateDataNFTWithFREs,
-    randomLockAndAllocate,
+    random_consume_FREs,
+    random_create_dataNFT_with_FREs,
+    random_lock_and_allocate,
 )
 from df_py.util.oceanutil import (
     FeeDistributor,
@@ -56,10 +56,10 @@ from df_py.util.oceanutil import (
     recordDeployedContracts,
     veAllocate,
 )
-from df_py.util.retry import retryFunction
+from df_py.util.retry import retry_function
 from df_py.util.vesting_schedule import (
-    getActiveRewardAmountForWeekEth,
-    getActiveRewardAmountForWeekEthByStream,
+    get_active_reward_amount_for_week_eth,
+    get_active_reward_amount_for_week_eth_by_stream,
 )
 from df_py.volume import calcrewards, csvs, queries
 from df_py.volume.calcrewards import calc_rewards_volume
@@ -72,7 +72,7 @@ def do_volsym():
     parser = StartFinArgumentParser(
         description="Query chain, output volumes, symbols, owners",
         epilog=f"""Uses these envvars:
-          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="volsym",
@@ -102,7 +102,7 @@ def do_volsym():
     rng = blockrange.create_range(
         chain, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
     )
-    (Vi, Ci, SYMi) = retryFunction(
+    (Vi, Ci, SYMi) = retry_function(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, CHAINID
     )
 
@@ -154,7 +154,7 @@ def do_nftinfo():
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
-    nftinfo = retryFunction(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
+    nftinfo = retry_function(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
     csvs.save_nftinfo_csv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -192,7 +192,7 @@ def do_allocations():
     rng = blockrange.create_range(
         chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
     )
-    allocs = retryFunction(
+    allocs = retry_function(
         queries.queryAllocations, arguments.RETRIES, 10, rng, CHAINID
     )
     csvs.save_allocation_csv(allocs, CSV_DIR, NSAMP > 1)
@@ -230,7 +230,7 @@ def do_vebals():
         chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
     )
 
-    balances, locked_amt, unlock_time = retryFunction(
+    balances, locked_amt, unlock_time = retry_function(
         queries.queryVebalances, arguments.RETRIES, 10, rng, CHAINID
     )
     csvs.save_vebals_csv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
@@ -282,7 +282,7 @@ def do_get_rate():
     _exitIfFileExists(csvs.rate_csv_filename(TOKEN_SYMBOL, CSV_DIR))
 
     # main work
-    rate = retryFunction(
+    rate = retry_function(
         get_rate.get_rate,
         arguments.RETRIES,
         60,
@@ -384,7 +384,7 @@ def do_predictoor_data():
     st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
 
     # main work
-    predictoor_data = retryFunction(
+    predictoor_data = retry_function(
         query_predictoors,
         arguments.RETRIES,
         10,
@@ -448,7 +448,7 @@ def do_calc():
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
         recordDeployedContracts(address_path)
-        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(
+        TOT_OCEAN = get_active_reward_amount_for_week_eth_by_stream(
             START_DATE, arguments.SUBSTREAM
         )
         print(
@@ -696,7 +696,7 @@ def do_init_dev_wallets():
         "Init wallets with OCEAN. (GANACHE ONLY)",
         "init_dev_wallets",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
     CHAINID = parser.print_args_and_get_chain()
@@ -717,7 +717,7 @@ def do_init_dev_wallets():
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
     print("dftool init_dev_wallets: Done.")
 
@@ -730,14 +730,14 @@ def do_many_random():
         "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
         "many_random",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
 
     CHAINID = parser.print_args_and_get_chain()
 
     if CHAINID != DEV_CHAINID:
-        # To support other testnets, they need to fillAccountsWithOcean()
+        # To support other testnets, they need to fill_accounts_with_OCEAN()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
         sys.exit(1)
@@ -753,9 +753,9 @@ def do_many_random():
     OCEAN = OCEANtoken()
 
     num_nfts = 10  # magic number
-    tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
-    randomLockAndAllocate(tups)
-    randomConsumeFREs(tups, OCEAN)
+    tups = random_create_dataNFT_with_FREs(num_nfts, OCEAN, brownie.network.accounts)
+    random_lock_and_allocate(tups)
+    random_consume_FREs(tups, OCEAN)
     print(f"dftool many_random: Done. {num_nfts} new nfts created.")
 
 
@@ -777,7 +777,7 @@ def do_mine():
     BLOCKS, TIMEDELTA = arguments.BLOCKS, arguments.TIMEDELTA
 
     # main work
-    networkutil.connectDev()
+    networkutil.connect_dev()
     chain = brownie.network.chain
     if TIMEDELTA is not None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
@@ -794,7 +794,7 @@ def do_new_acct():
     parser.add_argument("command", choices=["new_acct"])
 
     # main work
-    networkutil.connectDev()
+    networkutil.connect_dev()
     account = brownie.network.accounts.add()
 
     print("Generated new account:")
@@ -995,11 +995,11 @@ def do_dispense_passive():
 
     if AMOUNT == 0:
         START_DATE = arguments.ST
-        AMOUNT = getActiveRewardAmountForWeekEth(START_DATE)
+        AMOUNT = get_active_reward_amount_for_week_eth(START_DATE)
 
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
-    retryFunction(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
+    retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
 
@@ -1074,13 +1074,13 @@ def do_checkpoint_feedist():
 
         to = feedist.address
         value = 0
-        multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
+        multisig_addr = chain_id_to_multisig_addr(brownie.network.chain.id)
 
         # submit transactions to multisig
-        retryFunction(
+        retry_function(
             send_multisig_tx, 3, 60, multisig_addr, to, value, total_supply_encoded
         )
-        retryFunction(
+        retry_function(
             send_multisig_tx, 3, 60, multisig_addr, to, value, checkpoint_token_encoded
         )
 
@@ -1103,7 +1103,7 @@ def _getAddressEnvvarOrExit() -> str:
     if ADDRESS_FILE is None:
         print(
             "\nNeed to set envvar ADDRESS_FILE. Exiting. "
-            f"\nEg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}"
+            f"\nEg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}"
         )
         sys.exit(1)
     return ADDRESS_FILE

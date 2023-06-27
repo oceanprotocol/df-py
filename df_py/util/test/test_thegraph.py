@@ -39,7 +39,7 @@ def setup_function():
     global accounts
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
 
 @enforce_types

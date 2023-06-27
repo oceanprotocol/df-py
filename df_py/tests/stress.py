@@ -39,7 +39,7 @@ from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.volume.queries import getApprovedTokens
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+ADDRESS_FILE = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
 NUMBER_OF_ACCOUNTS = 1000
 
 
@@ -89,7 +89,7 @@ def main():
     print("Adding stake")
     for acc in tqdm(test_accounts):
         with HiddenPrints():
-            oceantestutil.addStake(pool, STAKE_AMT, acc, OCEAN)
+            oceantestutil.add_stake(pool, STAKE_AMT, acc, OCEAN)
 
     ST = len(brownie.network.chain)
 
@@ -97,10 +97,10 @@ def main():
     for acc in tqdm(test_accounts):
         with HiddenPrints():
             for _ in range(DT_buy_times):
-                oceantestutil.buyDT(
+                oceantestutil.buy_dT(
                     pool, DT, DT_buy_amt, funding_for_each_addr, acc, OCEAN
                 )
-                oceantestutil.consumeDT(DT, accounts[0], acc)
+                oceantestutil.consume_DT(DT, accounts[0], acc)
 
     brownie.network.chain.mine(blocks=300)  # mine 300 blocks
     print("Mining blocks")
@@ -112,7 +112,7 @@ def main():
     FIN = len(brownie.network.chain) - 10
     # %%
 
-    os.environ["ADDRESS_FILE"] = networkutil.chainIdToAddressFile(CHAINID)
+    os.environ["ADDRESS_FILE"] = networkutil.chain_id_to_address_file(CHAINID)
     os.environ["SECRET_SEED"] = "123123123"
     DISPENSE_ACCT = brownie.network.accounts.add()
     os.environ["DFTOOL_KEY"] = DISPENSE_ACCT.private_key

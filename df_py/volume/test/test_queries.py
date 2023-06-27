@@ -26,7 +26,7 @@ OCEAN, veOCEAN = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 DAY = 86400
 WEEK = 7 * DAY
@@ -92,15 +92,15 @@ def test_all(tmp_path):
 
     print("Consume...")
     for i, acct in enumerate(accounts):
-        oceantestutil.buyDTFRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
-        oceantestutil.consumeDT(assets[i].dt, god_acct, acct)
+        oceantestutil.buy_DT_FRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
+        oceantestutil.consume_DT(assets[i].dt, god_acct, acct)
 
     print("Ghost consume...")
     ghost_consume_asset = assets[0]
     ghost_consume_nft_addr = ghost_consume_asset.nft.address.lower()
     ghost_consume_asset.dt.mint(god_acct, to_wei(1000.0), {"from": god_acct})
     for _ in range(20):
-        oceantestutil.consumeDT(ghost_consume_asset.dt, god_acct, god_acct)
+        oceantestutil.consume_DT(ghost_consume_asset.dt, god_acct, god_acct)
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
@@ -1078,7 +1078,7 @@ def setup_function():
         PREV[envvar] = os.environ.get(envvar)
 
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
-    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
+    os.environ["SUBGRAPH_URI"] = networkutil.chain_id_to_subgraph_uri(CHAINID)
     os.environ["SECRET_SEED"] = "1234"
 
 

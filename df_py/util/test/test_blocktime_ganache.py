@@ -9,8 +9,8 @@ from df_py.util import networkutil, oceanutil
 from df_py.util.blockrange import create_range
 from df_py.util.blocktime import (
     get_block_number_thursday,
-    get_st_fin_blocks,
     get_next_thursday_timestamp,
+    get_st_fin_blocks,
     timestamp_to_block,
     timestr_to_block,
     timestr_to_timestamp,
@@ -156,7 +156,7 @@ def test_get_st_fin_blocks():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     global chain
     chain = brownie.network.chain

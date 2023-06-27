@@ -29,27 +29,27 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
 @enforce_types
-def fillAccountsWithToken(token):
+def fill_accounts_with_token(token):
     accounts = network.accounts
     for i in range(1, 10):
         bal_before = from_wei(token.balanceOf(accounts[i]))
         if bal_before < 1000.0:
             token.transfer(accounts[i], to_wei(1000.0), {"from": accounts[0]})
 
-    print(f"fillAccountsWithToken({token.symbol()}), balances after:")
+    print(f"fill_accounts_with_token({token.symbol()}), balances after:")
     for i in range(10):
         amt = from_wei(token.balanceOf(accounts[i]))
         print(f"  Account #{i} has {amt} {token.symbol()}")
 
 
 @enforce_types
-def fillAccountsWithOCEAN():
+def fill_accounts_with_OCEAN():
     OCEAN = oceanutil.OCEANtoken()
-    fillAccountsWithToken(OCEAN)
+    fill_accounts_with_token(OCEAN)
 
 
 @enforce_types
-def consumeDT(DT, pub_account, consume_account):
+def consume_DT(DT, pub_account, consume_account):
     service_index = 0
     provider_fee = oceanutil.get_zero_provider_fee_tuple(pub_account)
     consume_mkt_fee = oceanutil.get_zero_consume_mkt_fee_tuple()
@@ -63,16 +63,16 @@ def consumeDT(DT, pub_account, consume_account):
 
 
 @enforce_types
-def randomAddStake(pool, pub_account_i: int, token):
+def random_add_stake(pool, pub_account_i: int, token):
     cand_account_I = [i for i in range(10) if i != pub_account_i]
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
         TOKEN_stake = AVG_TOKEN_STAKE * (1 + 0.1 * random.random())
-        addStake(pool, TOKEN_stake, network.accounts[account_i], token)
+        add_stake(pool, TOKEN_stake, network.accounts[account_i], token)
 
 
 @enforce_types
-def addStake(pool, TOKEN_stake: float, from_account, token):
+def add_stake(pool, TOKEN_stake: float, from_account, token):
     token.approve(pool.address, to_wei(TOKEN_stake), {"from": from_account})
 
     token_amt_in = to_wei(TOKEN_stake)
@@ -83,7 +83,7 @@ def addStake(pool, TOKEN_stake: float, from_account, token):
 
 
 @enforce_types
-def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
+def buy_DT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
     base_token.approve(pool.address, to_wei(max_TOKEN), {"from": from_account})
 
     tokenInOutMarket = [
@@ -110,7 +110,7 @@ def buyDT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_toke
 
 
 @enforce_types
-def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
+def random_create_dataNFT_with_FREs(num_FRE: int, base_token, accounts):
     # create random num_FRE.
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
@@ -128,7 +128,9 @@ def randomCreateDataNFTWithFREs(num_FRE: int, base_token, accounts):
 
 
 @enforce_types
-def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token):
+def buy_DT_FRE(
+    exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token
+):
     base_token.approve(
         oceanutil.FixedPrice().address, to_wei(max_TOKEN), {"from": from_account}
     )
@@ -145,7 +147,7 @@ def buyDTFRE(exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base
 
 
 @enforce_types
-def randomConsumeFREs(FRE_tup: list, base_token):
+def random_consume_FREs(FRE_tup: list, base_token):
     accounts = network.accounts
 
     # consume data assets from FREs randomly
@@ -160,15 +162,17 @@ def randomConsumeFREs(FRE_tup: list, base_token):
 
         # buy asset
         DT_buy_amt = 1.0
-        buyDTFRE(exchangeId, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token)
+        buy_DT_FRE(
+            exchangeId, DT_buy_amt, MAX_TOKEN_IN_BUY, consume_account, base_token
+        )
 
         # consume asset
         pub_account = accounts[pub_account_i]
-        consumeDT(DT, pub_account, consume_account)
+        consume_DT(DT, pub_account, consume_account)
 
 
 @enforce_types
-def randomLockAndAllocate(tups: list):
+def random_lock_and_allocate(tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
     acc1 = network.accounts[0]
