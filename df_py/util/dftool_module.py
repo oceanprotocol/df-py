@@ -27,7 +27,7 @@ from df_py.predictoor.csvs import (
 from df_py.predictoor.queries import query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil
 from df_py.util.base18 import from_wei
-from df_py.util.blocktime import get_st_fin_blocks, getfinBlock, timestrToTimestamp
+from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_arguments import (
     CHAINID_EXAMPLES,
@@ -150,7 +150,7 @@ def do_nftinfo():
     chain = brownie.network.chain
 
     # update ENDBLOCK
-    ENDBLOCK = getfinBlock(chain, ENDBLOCK)
+    ENDBLOCK = get_fin_block(chain, ENDBLOCK)
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
@@ -1022,7 +1022,7 @@ def do_calculate_passive():
     CSV_DIR = arguments.CSV_DIR
 
     networkutil.connect(arguments.CHAINID)
-    timestamp = int(timestrToTimestamp(arguments.DATE))
+    timestamp = int(timestr_to_timestamp(arguments.DATE))
 
     S_PER_WEEK = 7 * 86400
     timestamp = timestamp // S_PER_WEEK * S_PER_WEEK

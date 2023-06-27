@@ -11,9 +11,9 @@ from df_py.util.blocktime import (
     get_block_number_thursday,
     get_st_fin_blocks,
     getNextThursdayTimestamp,
-    timestampToBlock,
+    timestamp_to_block,
     timestr_to_block,
-    timestrToTimestamp,
+    timestr_to_timestamp,
 )
 
 chain = None
@@ -27,7 +27,7 @@ def test_timestr_to_block_1():
 
 
 @enforce_types
-def test_timestampToBlock_FarLeft():
+def test_timestamp_to_block_FarLeft():
     b = timestr_to_block(chain, "1970-01-01")
     assert b == 0 and isinstance(b, int)
 
@@ -36,7 +36,7 @@ def test_timestampToBlock_FarLeft():
 
 
 @enforce_types
-def test_timestampToBlock_FarRight():
+def test_timestamp_to_block_FarRight():
     b = timestr_to_block(chain, "2150-01-01")
     assert b == len(chain) and isinstance(b, int)
 
@@ -45,19 +45,19 @@ def test_timestampToBlock_FarRight():
 
 
 @enforce_types
-def test_timestrToTimestamp():
-    t = timestrToTimestamp("1970-01-01_0:00")
+def test_timestr_to_timestamp():
+    t = timestr_to_timestamp("1970-01-01_0:00")
     assert t == 0.0 and isinstance(t, float)
 
-    t = timestrToTimestamp("2022-03-29_17:55")
+    t = timestr_to_timestamp("2022-03-29_17:55")
     assert t == 1648576500.0 and isinstance(t, float)
 
-    t = timestrToTimestamp("2022-03-29")
+    t = timestr_to_timestamp("2022-03-29")
     assert t == 1648512000.0 and isinstance(t, float)
 
 
 @enforce_types
-def test_timestampToBlock():
+def test_timestamp_to_block():
     # gather timestamp and blocks at block offset 0, 9, 29
     timestamp0 = chain[-1].timestamp
     block0 = chain[-1].number
@@ -81,17 +81,17 @@ def test_timestampToBlock():
     assert timestamp29 == (timestamp9 + 200.0)
 
     # test
-    assert timestampToBlock(chain, timestamp0) == approx(block0, 1)
-    assert timestampToBlock(chain, timestamp9) == approx(block9, 1)
-    assert timestampToBlock(chain, timestamp29) == approx(block29, 1)
+    assert timestamp_to_block(chain, timestamp0) == approx(block0, 1)
+    assert timestamp_to_block(chain, timestamp9) == approx(block9, 1)
+    assert timestamp_to_block(chain, timestamp29) == approx(block29, 1)
 
-    assert timestampToBlock(chain, timestamp0 + 10.0) == approx(block0 + 1, 1)
-    assert timestampToBlock(chain, timestamp0 + 20.0) == approx(block0 + 2, 1)
+    assert timestamp_to_block(chain, timestamp0 + 10.0) == approx(block0 + 1, 1)
+    assert timestamp_to_block(chain, timestamp0 + 20.0) == approx(block0 + 2, 1)
 
-    assert timestampToBlock(chain, timestamp9 - 10.0) == approx(block9 - 1, 1)
-    assert timestampToBlock(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
+    assert timestamp_to_block(chain, timestamp9 - 10.0) == approx(block9 - 1, 1)
+    assert timestamp_to_block(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
 
-    assert timestampToBlock(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
+    assert timestamp_to_block(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
 
 
 @enforce_types

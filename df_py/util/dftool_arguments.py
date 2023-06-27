@@ -3,6 +3,7 @@ import argparse
 import datetime
 import os
 import sys
+from typing import Optional
 
 from enforce_typing import enforce_types
 
@@ -61,7 +62,8 @@ def do_help_long(status_code=0):
     sys.exit(status_code)
 
 
-def valid_date_and_convert(s):
+@enforce_types
+def valid_date_and_convert(s: str):
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
@@ -71,7 +73,8 @@ def valid_date_and_convert(s):
     raise argparse.ArgumentTypeError(msg)
 
 
-def valid_date(s):
+@enforce_types
+def valid_date(s: str):
     try:
         datetime.datetime.strptime(s, "%Y-%m-%d")
         return s
@@ -82,7 +85,8 @@ def valid_date(s):
     raise argparse.ArgumentTypeError(msg)
 
 
-def block_or_valid_date(s):
+@enforce_types
+def block_or_valid_date(s: str):
     if s == "latest":
         return s
 
@@ -107,7 +111,8 @@ def block_or_valid_date(s):
     raise argparse.ArgumentTypeError(msg)
 
 
-def existing_path(s):
+@enforce_types
+def existing_path(s: str):
     if not os.path.exists(s):
         msg = f"Directory {s} doesn't exist."
         raise argparse.ArgumentTypeError(msg)
@@ -115,7 +120,8 @@ def existing_path(s):
     return s
 
 
-def autocreate_path(s):
+@enforce_types
+def autocreate_path(s: str):
     if not os.path.exists(s):
         print(f"Directory {s} did not exist, so created it")
         os.mkdir(s)
@@ -123,7 +129,8 @@ def autocreate_path(s):
     return s
 
 
-def challenge_date(s):
+@enforce_types
+def challenge_date(s: str):
     if s == "None":
         return None
 
@@ -134,7 +141,8 @@ def challenge_date(s):
         raise argparse.ArgumentTypeError(str(e)) from e
 
 
-def print_arguments(arguments):
+@enforce_types
+def print_arguments(arguments: argparse.Namespace):
     arguments_dict = arguments.__dict__
     command = arguments_dict.pop("command", None)
 
@@ -145,8 +153,12 @@ def print_arguments(arguments):
         print(f"{arg_k}={arg_v}")
 
 
+@enforce_types
 class StartFinArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, epilog, command_name, csv_names):
+    @enforce_types
+    def __init__(
+        self, description: str, epilog: str, command_name: str, csv_names: str
+    ):
         super().__init__(
             description=description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -183,8 +195,12 @@ class StartFinArgumentParser(argparse.ArgumentParser):
         )
 
 
+@enforce_types
 class SimpleChainIdArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, command_name, epilog=None):
+    @enforce_types
+    def __init__(
+        self, description: str, command_name: str, epilog: Optional[str] = None
+    ):
         super().__init__(
             description=description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -193,15 +209,18 @@ class SimpleChainIdArgumentParser(argparse.ArgumentParser):
         self.add_argument("command", choices=[command_name])
         self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
-    def print_args_and_get_chain(self):
+    @enforce_types
+    def print_args_and_get_chain(self) -> int:
         arguments = self.parse_args()
         print_arguments(arguments)
 
         return arguments.CHAINID
 
 
+@enforce_types
 class DfStrategyArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, command_name):
+    @enforce_types
+    def __init__(self, description: str, command_name: str):
         super().__init__(description=description)
         self.add_argument("command", choices=[command_name])
         self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)

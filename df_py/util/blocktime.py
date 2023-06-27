@@ -9,7 +9,7 @@ from scipy import optimize
 @enforce_types
 def get_block_number_thursday(chain) -> int:
     timestamp = get_next_thursday_timestamp()
-    block_number = timestampToFutureBlock(chain, timestamp)
+    block_number = timestamp_to_future_block(chain, timestamp)
 
     ## round to upper 100th
     block_number = ceil(block_number / 100) * 100
@@ -42,18 +42,18 @@ def timestr_to_block(chain, timestr: str, test_eth: bool = False) -> int:
     @return
       block -- int
     """
-    timestamp = timestrToTimestamp(timestr)
+    timestamp = timestr_to_timestamp(timestr)
     if chain.id == 1 or test_eth:
         # more accurate for mainnet
-        block = ethTimestamptoBlock(chain, timestamp)
-        block = ethFindClosestBlock(chain, block, timestamp)
+        block = eth_timestamp_to_block(chain, timestamp)
+        block = eth_find_closest_block(chain, block, timestamp)
         return block
 
-    return timestampToBlock(chain, timestamp)
+    return timestamp_to_block(chain, timestamp)
 
 
 @enforce_types
-def timestrToTimestamp(timestr: str) -> float:
+def timestr_to_timestamp(timestr: str) -> float:
     """Examples: 2022-03-29_17:55 --> 1648872899.3 (unix time)
     2022-03-29 --> 1648872899.0
     Does not use local time, rather always uses UTC
@@ -73,7 +73,7 @@ def timestrToTimestamp(timestr: str) -> float:
 
 
 @enforce_types
-def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
+def timestamp_to_future_block(chain, timestamp: Union[float, int]) -> int:
     def timeSinceTimestamp(block_i):
         return chain[int(block_i)].timestamp
 
@@ -104,7 +104,7 @@ def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
+def timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
 
     class C:
@@ -145,30 +145,32 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
+def eth_timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
     current_block = chain[-1].number
     current_time = chain[-1].timestamp
-    return ethCalcBlockNumber(
+    return eth_calc_block_number(
         int(current_time), int(current_block), int(timestamp), chain
     )
 
 
 @enforce_types
-def ethCalcBlockNumber(ts: int, block: int, target_ts: int, chain):
+def eth_calc_block_number(ts: int, block: int, target_ts: int, chain):
     AVG_BLOCK_TIME = 12.06  # seconds
     diff = target_ts - ts
     diff_blocks = int(diff // AVG_BLOCK_TIME)
     block += diff_blocks
     ts_found = chain[block].timestamp
     if abs(ts_found - target_ts) > 12 * 5:
-        return ethCalcBlockNumber(ts_found, block, target_ts, chain)
+        return eth_calc_block_number(ts_found, block, target_ts, chain)
 
     return block
 
 
 @enforce_types
-def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) -> int:
+def eth_find_closest_block(
+    chain, block_number: int, timestamp: Union[float, int]
+) -> int:
     """
     @arguments
         chain -- brownie.networks.chain
