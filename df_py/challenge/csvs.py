@@ -7,6 +7,7 @@ from enforce_typing import enforce_types
 from df_py.util.csv_helpers import assertIsEthAddr
 
 
+@enforce_types
 def save_challenge_data_csv(challenge_data: tuple, csv_dir: str):
     """
     @description
@@ -24,6 +25,7 @@ def save_challenge_data_csv(challenge_data: tuple, csv_dir: str):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = challenge_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
+
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         row = ["from_addr", "nft_addr", "nmse"]

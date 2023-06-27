@@ -172,26 +172,28 @@ def _keep_youngest_entry_per_competitor(txs: list, nmses: list) -> list:
     print("Keep-youngest: begin")
     from_addrs = [_from_addr(tx) for tx in txs]
     for from_addr in set(from_addrs):
-        I = [
+        entries = [
             i
             for i, cand_from_addr in enumerate(from_addrs)
             if cand_from_addr == from_addr
         ]
-        if len(I) == 1:
+        if len(entries) == 1:
             continue
 
-        Ip1 = [i + 1 for i in I]
+        entries_p1 = [i + 1 for i in entries]
         print()
-        print(f"  NFTs #{Ip1} all come {from_addrs[I[0]]}")
+        print(f"  NFTs #{entries_p1} all come {from_addrs[entries[0]]}")
 
-        dates = [_date(txs[i]) for i in I]
+        dates = [_date(txs[i]) for i in entries]
         youngest_j = np.argmax(dates)
-        print(f"  Youngest is #{Ip1[youngest_j]}, at {dates[youngest_j]}")
+        print(f"  Youngest is #{entries_p1[youngest_j]}, at {dates[youngest_j]}")
 
-        for j, i in enumerate(I):
+        for j, i in enumerate(entries):
             if j != youngest_j:
-                nmses[I[j]] = 1.0
-                print(f"  Non-youngest #{[Ip1[j]]}, at {dates[j]} gets nmse = 1.0")
+                nmses[entries[j]] = 1.0
+                print(
+                    f"  Non-youngest #{[entries_p1[j]]}, at {dates[j]} gets nmse = 1.0"
+                )
     print()
     print("Keep-youngest: done")
 
@@ -266,10 +268,10 @@ def get_challenge_data(
     nmses = _keep_youngest_entry_per_competitor(txs, nmses)
 
     # Sort results for lowest-nmse first
-    I = np.argsort(nmses)
-    from_addrs = [from_addrs[i] for i in I]
-    nft_addrs = [nft_addrs[i] for i in I]
-    nmses = [nmses[i] for i in I]
+    entries = np.argsort(nmses)
+    from_addrs = [from_addrs[i] for i in entries]
+    nft_addrs = [nft_addrs[i] for i in entries]
+    nmses = [nmses[i] for i in entries]
 
     # print
     challenge_data = (from_addrs, nft_addrs, nmses)
