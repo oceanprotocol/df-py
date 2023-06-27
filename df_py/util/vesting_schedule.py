@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 from enforce_typing import enforce_types
 
-from df_py.challenge.calcrewards import get_challenge_reward_amounts_in_ocean
+from df_py.challenge.calc_rewards import get_challenge_reward_amounts_in_ocean
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import (
@@ -10,7 +10,7 @@ from df_py.util.constants import (
     DFMAIN_CONSTANTS,
     PREDICTOOR_RELEASE_WEEK,
 )
-from df_py.volume.calcrewards import getDfWeekNumber
+from df_py.volume.calc_rewards import get_df_week_number
 
 
 @enforce_types
@@ -23,7 +23,7 @@ def get_active_reward_amount_for_week_eth_by_stream(
     """
     total_reward_amount = get_active_reward_amount_for_week_eth(start_dt)
 
-    dfweek = getDfWeekNumber(start_dt) - 1
+    dfweek = get_df_week_number(start_dt) - 1
 
     if substream == "predictoor":
         # 0.01%
@@ -63,7 +63,7 @@ def get_reward_amount_for_week_wei(start_dt: datetime) -> int:
     """
 
     # hardcoded values for linear vesting schedule
-    dfweek = getDfWeekNumber(start_dt) - 1
+    dfweek = get_df_week_number(start_dt) - 1
 
     for start_week, value in DFMAIN_CONSTANTS.items():
         if dfweek < start_week:

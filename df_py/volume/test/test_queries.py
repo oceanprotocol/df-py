@@ -255,7 +255,7 @@ def _test_getSymbols():
         tokset, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
 
-    OCEAN_tok = tokset.tokAtSymbol(CHAINID, "OCEAN")
+    OCEAN_tok = tokset.tok_at_symbol(CHAINID, "OCEAN")
     assert symbols_at_chain[OCEAN_tok.address] == "OCEAN"
 
 
@@ -895,8 +895,8 @@ def test_SimpleDataNFT():
     repr2 = f"SimpleDataNft(137, '{nft_addr.lower()}', 'DN1', '0x123abc', False, '')"
     assert repr1 == repr2
 
-    # test setName
-    nft.setName("nAmE1")
+    # test set_name
+    nft.set_name("nAmE1")
     assert nft.name == "nAmE1"
     assert "nAmE1" in repr(nft)
 

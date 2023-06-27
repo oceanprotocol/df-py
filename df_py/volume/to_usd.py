@@ -7,7 +7,7 @@ from df_py.volume import cleancase
 
 
 @enforce_types
-def ratesToAddrRates(
+def rates_to_addr_rates(
     rates: Dict[str, float],
     symbols: Dict[int, Dict[str, str]],
 ) -> dict:
@@ -32,7 +32,7 @@ def ratesToAddrRates(
 
 
 @enforce_types
-def nftvolsToUsd(
+def nft_vols_to_usd(
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     symbols: Dict[int, Dict[str, str]],
     rates: Dict[str, float],
@@ -62,7 +62,7 @@ def nftvolsToUsd(
 
         symbols[chainID][token_addr] = token_symbol
 
-    addr_rates = ratesToAddrRates(
+    addr_rates = rates_to_addr_rates(
         rates, symbols
     )  # dict of [chainID][basetoken_addr] : USD_price
 

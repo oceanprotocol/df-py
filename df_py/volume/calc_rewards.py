@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
@@ -14,7 +13,7 @@ from df_py.util.constants import (
 )
 from df_py.volume import allocations
 from df_py.volume import cleancase as cc
-from df_py.volume import csvs, tousd
+from df_py.volume import csvs, to_usd
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -99,7 +98,7 @@ def calc_rewards(
         cc.mod_owners(owners),
     )
 
-    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
+    nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
 
     keys_tup = _get_keys_tuple(stakes, nftvols_USD)
     S, V_USD = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)

@@ -282,7 +282,7 @@ def test_calc_predictoor_substream(tmp_path):
 
 
 @patch(
-    "df_py.challenge.calcrewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
+    "df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
 )
 @enforce_types
 def test_calc_challenge_substream(tmp_path):

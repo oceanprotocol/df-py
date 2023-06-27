@@ -101,7 +101,7 @@ def save_vebals_csv(
     """
     @description
       Save the stakes csv for this chain. This csv is a key input for
-      dftool calcrewards, and contains just enough info for it to operate, and no more.
+      dftool calc, and contains just enough info for it to operate, and no more.
 
     @arguments
       vebals -- dict of [LP_addr] : balance
@@ -347,7 +347,7 @@ def save_nftvols_csv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
     """
     @description
       Save the nftvols csv for this chain. This csv is a key input for
-      dftool calcrewards, and contains just enough info for it to operate, and no more.
+      dftool calc, and contains just enough info for it to operate, and no more.
 
     @arguments
       nftvols_at_chain -- dict of [basetoken_addr][nft_addr] : vol_amt

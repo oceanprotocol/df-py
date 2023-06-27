@@ -66,7 +66,7 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
     # get_rate patches are needed because we are testing with a future start_dt
     # for predictoor, but the get_rate function is not implemented for the future
 
-    with patch("df_py.challenge.calcrewards.get_rate", return_value=0.5):
+    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
         challenge_rewards = (
             vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
                 start_dt, challenge_substream
@@ -79,14 +79,14 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         )
     )
 
-    with patch("df_py.challenge.calcrewards.get_rate", return_value=0.5):
+    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
         volume_rewards = (
             vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
                 start_dt, volume_substream
             )
         )
 
-    with patch("df_py.challenge.calcrewards.get_rate", return_value=0.5):
+    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
         total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
 
     assert total_rewards == approx(

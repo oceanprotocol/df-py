@@ -10,7 +10,7 @@ from pytest import approx
 from df_py.util import constants
 from df_py.util.constants import ZERO_ADDRESS
 from df_py.volume import cleancase as cc
-from df_py.volume import tousd
+from df_py.volume import to_usd
 from df_py.volume.calc_rewards import (
     TARGET_WPY,
     _get_chain_nft_tups,
@@ -1037,7 +1037,7 @@ def _nullOwners(
         cc.mod_symbols(symbols),
         cc.mod_rates(rates),
     )
-    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
+    nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
     chain_nft_tups = _get_chain_nft_tups(stakes, nftvols_USD)
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}

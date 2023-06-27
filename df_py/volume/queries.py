@@ -366,7 +366,7 @@ def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     did_to_name = queryAquariusAssetNames(nft_dids)
 
     for nft in nftInfo:
-        nft.setName(did_to_name[nft.did])
+        nft.set_name(did_to_name[nft.did])
 
     return nftInfo
 

@@ -24,7 +24,7 @@ class SimpleDataNft:
         self.name = name  # can be any mix of upper and lower case
         self.did = oceanutil.calcDID(nft_addr, chain_id)
 
-    def setName(self, name: str):
+    def set_name(self, name: str):
         self.name = name
 
     def __eq__(self, x) -> bool:
@@ -64,41 +64,41 @@ class TokSet:
         Add another Tok to this set.
         For a given chain: both address & symbol must be unique.
         """
-        assert not self.hasAddress(chainID, address), (chainID, address)
-        assert not self.hasSymbol(chainID, symbol), (chainID, symbol)
+        assert not self.has_address(chainID, address), (chainID, address)
+        assert not self.has_symbol(chainID, symbol), (chainID, symbol)
         tok = Tok(chainID, address, symbol)
         self.toks.add(tok)
 
-    def hasChain(self, chainID: int) -> bool:
+    def has_chain(self, chainID: int) -> bool:
         """Are there any tokens at this chainID?"""
         for tok in self.toks:
             if tok.chainID == chainID:
                 return True
         return False
 
-    def hasAddress(self, chainID: int, address: str) -> bool:
+    def has_address(self, chainID: int, address: str) -> bool:
         """Is there a token at this chainID & address?"""
-        tok = self.tokAtAddress(chainID, address)
+        tok = self.tok_at_address(chainID, address)
         return tok is not None
 
-    def hasSymbol(self, chainID: int, symbol: str) -> bool:
+    def has_symbol(self, chainID: int, symbol: str) -> bool:
         """Is there a token at this chainID & address?"""
-        tok = self.tokAtSymbol(chainID, symbol)
+        tok = self.tok_at_symbol(chainID, symbol)
         return tok is not None
 
-    def getSymbol(self, chainID: int, address: str) -> str:
+    def get_symbol(self, chainID: int, address: str) -> str:
         """Returns Tok's symbol if there's a token, otherwise raises an error"""
-        tok = self.tokAtAddress(chainID, address)
+        tok = self.tok_at_address(chainID, address)
         assert tok is not None
         return tok.symbol
 
     def getAddress(self, chainID: int, symbol: str) -> str:
         """Returns Tok's address if there's a token, otherwise raises an error"""
-        tok = self.tokAtSymbol(chainID, symbol)
+        tok = self.tok_at_symbol(chainID, symbol)
         assert tok is not None
         return tok.address
 
-    def tokAtAddress(self, chainID: int, address: str) -> Union[Tok, None]:
+    def tok_at_address(self, chainID: int, address: str) -> Union[Tok, None]:
         """Returns Tok if there's a token, otherwise returns None"""
         assert address == address.lower(), address
         assert address[:2] == "0x", address
@@ -107,7 +107,7 @@ class TokSet:
                 return tok
         return None
 
-    def tokAtSymbol(self, chainID: int, symbol: str) -> Union[Tok, None]:
+    def tok_at_symbol(self, chainID: int, symbol: str) -> Union[Tok, None]:
         """Returns Tok if there's a token, otherwise returns None"""
         assert symbol == symbol.upper(), symbol
         for tok in self.toks:
@@ -115,7 +115,7 @@ class TokSet:
                 return tok
         return None
 
-    def exportTokenAddrs(self) -> Dict[int, List[str]]:
+    def export_token_addrs(self) -> Dict[int, List[str]]:
         """@return -- dict of [chainID] : list_of_addr"""
         d: dict = {}
         for tok in self.toks:
