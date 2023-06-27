@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
 
-from df_py.util.csv_helpers import _lastInt, assertIsEthAddr
+from df_py.util.csv_helpers import _lastInt, assert_is_eth_addr
 from df_py.volume.models import SimpleDataNft
 
 # ========================================================================
@@ -32,9 +32,9 @@ def save_allocation_csv(allocs: dict, csv_dir: str, sampled=True):
         writer.writerow(row)
         for chainID in S.keys():
             for nft_addr in S[chainID].keys():
-                assertIsEthAddr(nft_addr)
+                assert_is_eth_addr(nft_addr)
                 for LP_addr, percent in S[chainID][nft_addr].items():
-                    assertIsEthAddr(nft_addr)
+                    assert_is_eth_addr(nft_addr)
                     row = [
                         chainID,
                         nft_addr.lower(),
@@ -69,8 +69,8 @@ def load_allocation_csvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]
             LP_addr = LP_addr.lower()
             percent = float(_percent)
 
-            assertIsEthAddr(nft_addr)
-            assertIsEthAddr(LP_addr)
+            assert_is_eth_addr(nft_addr)
+            assert_is_eth_addr(LP_addr)
 
             if chainID not in allocs:
                 allocs[chainID] = {}
@@ -117,7 +117,7 @@ def save_vebals_csv(
         row = ["LP_addr", "balance", "locked_amt", "unlock_time"]
         writer.writerow(row)
         for LP_addr in vebals.keys():
-            assertIsEthAddr(LP_addr)
+            assert_is_eth_addr(LP_addr)
             row = [
                 LP_addr.lower(),
                 vebals[LP_addr],
@@ -156,7 +156,7 @@ def load_vebals_csv(
             locked_amt = float(_locked_amt)
             unlock_time = int(_unlock_time)
 
-            assertIsEthAddr(LP_addr)
+            assert_is_eth_addr(LP_addr)
 
             vebals[LP_addr] = balance
             locked_amts[LP_addr] = locked_amt
@@ -198,7 +198,7 @@ def save_passive_csv(rewards, balances, csv_dir):
         row = ["LP_addr", "balance", "reward"]
         writer.writerow(row)
         for LP_addr in rewards.keys():
-            assertIsEthAddr(LP_addr)
+            assert_is_eth_addr(LP_addr)
             row = [LP_addr.lower(), balances[LP_addr], rewards[LP_addr]]
             writer.writerow(row)
 
@@ -307,8 +307,8 @@ def load_nftinfo_csv(csv_dir: str, chainID: int):
             owner_addr = row[6]
 
             assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(nft_addr)
-            assertIsEthAddr(owner_addr)
+            assert_is_eth_addr(nft_addr)
+            assert_is_eth_addr(owner_addr)
 
             nft = SimpleDataNft(
                 chainID, nft_addr, symbol, owner_addr, is_purgatory, name
@@ -362,9 +362,9 @@ def save_nftvols_csv(nftvols_at_chain: dict, csv_dir: str, chainID: int):
         writer = csv.writer(f)
         writer.writerow(["chainID", "basetoken_addr", "nft_addr", "vol_amt"])
         for basetoken_addr in nftvols.keys():
-            assertIsEthAddr(basetoken_addr)
+            assert_is_eth_addr(basetoken_addr)
             for nft_addr, vol in nftvols[basetoken_addr].items():
-                assertIsEthAddr(nft_addr)
+                assert_is_eth_addr(nft_addr)
                 row = [chainID, basetoken_addr.lower(), nft_addr.lower(), vol]
                 writer.writerow(row)
     print(f"Created {csv_file}")
@@ -411,8 +411,8 @@ def load_nftvols_csv(csv_dir: str, chainID: int):
             vol_amt = float(row[3])
 
             assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(basetoken_addr)
-            assertIsEthAddr(nft_addr)
+            assert_is_eth_addr(basetoken_addr)
+            assert_is_eth_addr(nft_addr)
 
             if basetoken_addr not in nftvols:
                 nftvols[basetoken_addr] = {}
@@ -463,8 +463,8 @@ def save_owners_csv(owners_at_chain: Dict[str, str], csv_dir: str, chainID: int)
         writer = csv.writer(f)
         writer.writerow(["chainID", "nft_addr", "owner_addr"])
         for nft_addr, owner_addr in owners_at_chain.items():
-            assertIsEthAddr(nft_addr)
-            assertIsEthAddr(owner_addr)
+            assert_is_eth_addr(nft_addr)
+            assert_is_eth_addr(owner_addr)
             row = [
                 chainID,
                 nft_addr.lower(),
@@ -516,8 +516,8 @@ def load_owners_csv(csv_dir: str, chainID: int) -> Dict[str, str]:
             owner_addr = row[2].lower()
 
             assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(nft_addr)
-            assertIsEthAddr(owner_addr)
+            assert_is_eth_addr(nft_addr)
+            assert_is_eth_addr(owner_addr)
 
             owners_at_chain[nft_addr] = owner_addr
 
@@ -565,7 +565,7 @@ def save_symbols_csv(symbols_at_chain: Dict[str, str], csv_dir: str, chainID: in
         writer = csv.writer(f)
         writer.writerow(["chainID", "token_addr", "token_symbol"])
         for token_addr, token_symbol in symbols_at_chain.items():
-            assertIsEthAddr(token_addr)
+            assert_is_eth_addr(token_addr)
             row = [
                 chainID,
                 token_addr.lower(),
@@ -617,7 +617,7 @@ def load_symbols_csv(csv_dir: str, chainID: int) -> Dict[str, str]:
             token_symbol = row[2].upper()
 
             assert chainID2 == chainID, "csv had data from different chain"
-            assertIsEthAddr(token_addr)
+            assert_is_eth_addr(token_addr)
 
             symbols_at_chain[token_addr] = token_symbol
 
@@ -740,7 +740,7 @@ def save_volume_rewards_csv(
 
         for chainID, innerdict in rewards.items():
             for LP_addr, value in innerdict.items():
-                assertIsEthAddr(LP_addr)
+                assert_is_eth_addr(LP_addr)
                 row = [chainID, LP_addr.lower(), value]
                 writer.writerow(row)
     print(f"Created {csv_file}")
@@ -762,7 +762,7 @@ def load_volume_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
                 LP_addr = row[1].lower()
                 amt = float(row[2])
 
-                assertIsEthAddr(LP_addr)
+                assert_is_eth_addr(LP_addr)
                 if chainID not in rewards:
                     rewards[chainID] = {}
                 assert LP_addr not in rewards[chainID], "duplicate found"
@@ -806,9 +806,9 @@ def save_volume_rewardsinfo_csv(
 
         for chainID, innerdict in rewards.items():
             for LP_addr, innerdict2 in innerdict.items():
-                assertIsEthAddr(LP_addr)
+                assert_is_eth_addr(LP_addr)
                 for nft_addr, value in innerdict2.items():
-                    assertIsEthAddr(nft_addr)
+                    assert_is_eth_addr(nft_addr)
                     row = [
                         chainID,
                         LP_addr.lower(),

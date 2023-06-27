@@ -24,7 +24,7 @@ from df_py.predictoor.csvs import (
     save_predictoor_data_csv,
     save_predictoor_rewards_csv,
 )
-from df_py.predictoor.queries import queryPredictoors
+from df_py.predictoor.queries import query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
@@ -385,7 +385,7 @@ def do_predictoor_data():
 
     # main work
     predictoor_data = retryFunction(
-        queryPredictoors,
+        query_predictoors,
         arguments.RETRIES,
         10,
         st_block,

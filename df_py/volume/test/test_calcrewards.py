@@ -17,13 +17,13 @@ from df_py.volume.calcrewards import (
     _getLpAddrs,
     _getNftAddrs,
     _rankBasedAllocate,
+    _stakeVolDictsToArrays,
+    calc_rewards_volume,
     calcDcvMultiplier,
     calcRewards,
     flattenRewards,
     getDfWeekNumber,
-    _stakeVolDictsToArrays,
     merge_rewards,
-    calc_rewards_volume,
 )
 
 # for shorter lines

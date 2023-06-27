@@ -6,7 +6,7 @@ from df_py.util.graphutil import submitQuery
 from df_py.util.networkutil import DEV_CHAINID
 
 
-def queryPredictoors(
+def query_predictoors(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Predictoor]:
     """
@@ -65,8 +65,10 @@ def queryPredictoors(
             offset,
             chunk_size,
         )
+
         offset += chunk_size
         result = submitQuery(query, chainID)
+
         if "error" in result:
             raise AssertionError(result)
         if "data" not in result:

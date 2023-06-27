@@ -7,15 +7,14 @@ import scipy
 from enforce_typing import enforce_types
 
 from df_py.util.constants import (
-    MAX_N_RANK_ASSETS,
-    RANK_SCALE_OP,
     DO_PUBREWARDS,
     DO_RANK,
+    MAX_N_RANK_ASSETS,
+    RANK_SCALE_OP,
 )
-from df_py.volume import cleancase as cc
-from df_py.volume import tousd
-from df_py.volume import csvs
 from df_py.volume import allocations
+from df_py.volume import cleancase as cc
+from df_py.volume import csvs, tousd
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
