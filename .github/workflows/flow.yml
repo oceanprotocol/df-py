@@ -103,6 +103,14 @@ jobs:
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
           sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
 
+      - name: Challenge DF data
+        run: |
+          ./dftool challenge_data $CSV_DIR --RETRIES 3
+        
+      - name: Run dftool calc rewards for DF Challenge
+        run: |
+          ./dftool calc challenge $CSV_DIR 0 --START_DATE $date
+
       - name: Run dftool calc rewards for volume
         run: |
           ./dftool calc volume $CSV_DIR 0 --START_DATE $date
