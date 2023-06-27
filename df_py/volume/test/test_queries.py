@@ -15,8 +15,8 @@ from df_py.util.blockrange import BlockRange
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import MAX_ALLOCATE
 from df_py.util.oceanutil import ve_delegate
-from df_py.volume import calcrewards, csvs, queries
-from df_py.volume.allocations import allocsToStakes, loadStakes
+from df_py.volume import calc_rewards, csvs, queries
+from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
 
 PREV = {}
@@ -400,7 +400,7 @@ def _test_end_to_end_without_csvs(rng):
 
     vebals, _, _ = queries.queryVebalances(rng, CHAINID)
     allocs = queries.queryAllocations(rng, CHAINID)
-    S = allocsToStakes(allocs, vebals)
+    S = allocs_to_stakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
@@ -409,7 +409,7 @@ def _test_end_to_end_without_csvs(rng):
     do_pubrewards = False
     do_rank = True
 
-    rewardsperlp, _ = calcrewards.calcRewards(
+    rewardsperlp, _ = calc_rewards.calc_rewards(
         S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
     )
 
@@ -446,7 +446,7 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
     vebals = locked_amt = unlock_time = None  # ensure not used later
 
     # 5. simulate "dftool calc"
-    S = loadStakes(csv_dir)  # loads allocs & vebals, then *
+    S = load_stakes(csv_dir)  # loads allocs & vebals, then *
     R = csvs.load_rate_csvs(csv_dir)
     V = csvs.load_nftvols_csvs(csv_dir)
     C = csvs.load_owners_csvs(csv_dir)
@@ -457,7 +457,7 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
     do_pubrewards = False
     do_rank = True
 
-    rewardsperlp, _ = calcrewards.calcRewards(
+    rewardsperlp, _ = calc_rewards.calc_rewards(
         S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
     )
 

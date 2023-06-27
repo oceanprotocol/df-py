@@ -49,8 +49,8 @@ def nftvolsToUsd(
     @return
       nftvols_USD -- dict of [chainID][nft_addr] : vol_USD
     """
-    cleancase.assertNFTvols(nftvols)
-    cleancase.assertRates(rates)
+    cleancase.assert_nft_vols(nftvols)
+    cleancase.assert_rates(rates)
 
     # Add native token rates
     for chainID in _CHAINID_TO_ADDRS:

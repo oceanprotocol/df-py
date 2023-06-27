@@ -8,7 +8,7 @@ FAKE_TOKEN_ADDR = "0xfake_token"
 
 
 @enforce_types
-def modAllocations(allocs: dict) -> dict:
+def mod_allocations(allocs: dict) -> dict:
     """allocs - dict of [chainID][nft_addr][LP_addr] : LP's % alloc"""
     allocs2: dict = {}
     for chainID in allocs:
@@ -20,12 +20,12 @@ def modAllocations(allocs: dict) -> dict:
             for LP_addr, alloc in allocs[chainID][nft_addr].items():
                 LP_addr2 = LP_addr.lower()
                 allocs2[chainID2][nft_addr2][LP_addr2] = alloc
-    assertAllocations(allocs2)
+    assert_allocations(allocs2)
     return allocs2
 
 
 @enforce_types
-def assertAllocations(allocs: dict):
+def assert_allocations(allocs: dict):
     """allocations - dict of [chainID][nft_addr][LP_addr] : LP's % alloc"""
     lpsum = {}
     for chainID in allocs:
@@ -46,7 +46,7 @@ def assertAllocations(allocs: dict):
 
 
 @enforce_types
-def modStakes(stakes: dict) -> dict:
+def mod_stakes(stakes: dict) -> dict:
     """stakes - dict of [chainID][nft_addr][LP_addr] : LP's absolute alloc"""
     stakes2: dict = {}
     for chainID in stakes:
@@ -58,15 +58,15 @@ def modStakes(stakes: dict) -> dict:
             for LP_addr, alloc in stakes[chainID][nft_addr].items():
                 LP_addr2 = LP_addr.lower()
                 stakes2[chainID2][nft_addr2][LP_addr2] = alloc
-    assertStakes(stakes2)
+    assert_stakes(stakes2)
     return stakes2
 
 
 @enforce_types
-def assertStakes(stakes: dict):
+def assert_stakes(stakes: dict):
     """stakes - dict of [chainID][nft_addr][LP_addr] : stake"""
     # stakes are like allocations, except absolute not %. But, we can't
-    # reuse assertAllocations() here because it tests for sum(vals) == 1.0
+    # reuse assert_allocations() here because it tests for sum(vals) == 1.0
     for chainID in stakes:
         assert isinstance(chainID, int)
         for nft_addr in stakes[chainID]:
@@ -77,19 +77,19 @@ def assertStakes(stakes: dict):
 
 
 @enforce_types
-def modVebals(vebals: dict) -> dict:
+def mod_vebals(vebals: dict) -> dict:
     """vebals - dict of [LP_addr] : LP's ve balance"""
     vebals2 = {}
     for LP_addr, bal in vebals.items():
         LP_addr2 = LP_addr.lower()
         vebals2[LP_addr2] = bal
 
-    assertVebals(vebals2)
+    assert_vebals(vebals2)
     return vebals2
 
 
 @enforce_types
-def assertVebals(vebals: dict):
+def assert_vebals(vebals: dict):
     """vebals - dict of [LP_addr] : LP's ve balance"""
     for LP_addr in vebals:
         assert LP_addr[:2] == "0x", LP_addr
@@ -97,7 +97,7 @@ def assertVebals(vebals: dict):
 
 
 @enforce_types
-def modNFTvols(nftvols: dict) -> dict:
+def mod_nft_vols(nftvols: dict) -> dict:
     """nftvols - dict of [chainID][basetoken_address][NFT_addr] : vol"""
     nftvols2: dict = {}
     for chainID in nftvols:
@@ -110,12 +110,12 @@ def modNFTvols(nftvols: dict) -> dict:
                 NFT_addr2 = NFT_addr.lower()
                 nftvols2[chainID2][base_addr2][NFT_addr2] = vol
 
-    assertNFTvols(nftvols2)
+    assert_nft_vols(nftvols2)
     return nftvols2
 
 
 @enforce_types
-def assertNFTvols(nftvols: dict):
+def assert_nft_vols(nftvols: dict):
     """nftvols - dict of [chainID][basetoken_address][nft_addr] : vol"""
     for chainID in nftvols:
         for base_addr in nftvols[chainID]:
@@ -127,7 +127,7 @@ def assertNFTvols(nftvols: dict):
 
 
 @enforce_types
-def modSymbols(symbols: dict) -> dict:
+def mod_symbols(symbols: dict) -> dict:
     """symbols - dict of [chainID][basetoken_address] : symbol"""
     symbols2: dict = {}
     for chainID in symbols:
@@ -138,12 +138,12 @@ def modSymbols(symbols: dict) -> dict:
             symbol2 = symbol.upper()
             symbols2[chainID2][base_addr2] = symbol2
 
-    assertSymbols(symbols2)
+    assert_symbols(symbols2)
     return symbols2
 
 
 @enforce_types
-def assertSymbols(symbols: dict):
+def assert_symbols(symbols: dict):
     """nftvols - dict of [chainID][basetoken_address] : symbol"""
     for chainID in symbols:
         for base_addr, symbol in symbols[chainID].items():
@@ -153,19 +153,19 @@ def assertSymbols(symbols: dict):
 
 
 @enforce_types
-def modRates(rates: dict) -> dict:
+def mod_rates(rates: dict) -> dict:
     """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
     rates2 = {}
     for base_symb, rate in rates.items():
         base_symb2 = base_symb.upper()
         rates2[base_symb2] = rate
 
-    assertRates(rates2)
+    assert_rates(rates2)
     return rates2
 
 
 @enforce_types
-def assertRates(rates: dict):
+def assert_rates(rates: dict):
     """rates - dict of [basetoken_symbol] : USD_per_basetoken"""
     for base_symb in rates:
         assert base_symb == base_symb.upper(), base_symb
@@ -173,7 +173,7 @@ def assertRates(rates: dict):
 
 
 @enforce_types
-def modOwners(owners: dict) -> dict:
+def mod_owners(owners: dict) -> dict:
     """owners - dict of [chainID][nft_addr] : owner_addr"""
     owners2: dict = {}
     for chainID in owners:
@@ -184,12 +184,12 @@ def modOwners(owners: dict) -> dict:
             owner_addr2 = owner_addr.lower()
             owners2[chainID2][nft_addr2] = owner_addr2
 
-    assertOwners(owners2)
+    assert_owners(owners2)
     return owners2
 
 
 @enforce_types
-def assertOwners(owners: dict):
+def assert_owners(owners: dict):
     """nftvols - dict of [chainID][nft_addr] : owner_addr"""
     for chainID in owners:
         for nft_addr, owner_addr in owners[chainID].items():

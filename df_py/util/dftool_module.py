@@ -8,14 +8,14 @@ from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
-from df_py.challenge.calcrewards import calc_challenge_rewards
+from df_py.challenge.calc_rewards import calc_challenge_rewards
 from df_py.challenge.csvs import (
     challenge_rewards_csv_filename,
     load_challenge_data_csv,
     save_challenge_data_csv,
     save_challenge_rewards_csv,
 )
-from df_py.predictoor.calcrewards import calc_predictoor_rewards
+from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     load_predictoor_rewards_csv,
@@ -61,8 +61,8 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
 )
-from df_py.volume import calcrewards, csvs, queries
-from df_py.volume.calcrewards import calc_rewards_volume
+from df_py.volume import calc_rewards, csvs, queries
+from df_py.volume.calc_rewards import calc_rewards_volume
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -576,13 +576,13 @@ def do_dispense_active():
     volume_rewards = {}
     if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
         volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
-        volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
+        volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
 
     predictoor_rewards = {}
     if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
 
-    rewards = calcrewards.merge_rewards(volume_rewards, predictoor_rewards)
+    rewards = calc_rewards.merge_rewards(volume_rewards, predictoor_rewards)
 
     # dispense
     dispense.dispense(
