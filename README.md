@@ -176,7 +176,7 @@ Example usage with docker:
 ```
 
 ```shell
-$ ./dfpy_docker getrate OCEAN 2022-01-01 2022-01-02 /app/data
+$ ./dfpy_docker get_rate OCEAN 2022-01-01 2022-01-02 /app/data
 
 Arguments: ST=2022-01-01, FIN=2022-01-02, CSV_DIR=/app/data
 rate = $0.8774 / OCEAN
@@ -231,7 +231,7 @@ cd /app/df-py/
 date=`date -dlast-wednesday '+%Y-%m-%d'`
 now=`date '+%Y-%m-%d'`
 
-/app/df-py/dfpy_docker getrate OCEAN $date $now /app/data &&
+/app/df-py/dfpy_docker get_rate OCEAN $date $now /app/data &&
 /app/df-py/dfpy_docker query $date latest 1 /app/data 1 &&
 /app/df-py/dfpy_docker query $date latest 1 /app/data 137 &&
 /app/df-py/dfpy_docker calc /app/data 10000 OCEAN &&

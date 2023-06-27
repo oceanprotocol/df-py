@@ -423,7 +423,7 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
 
-    # 1. simulate "dftool getrate"
+    # 1. simulate "dftool get_rate"
     csvs.save_rate_csv("OCEAN", 0.25, csv_dir)
     csvs.save_rate_csv("H2O", 1.61, csv_dir)
     csvs.save_rate_csv(CO2_sym, 1.00, csv_dir)

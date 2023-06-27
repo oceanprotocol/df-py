@@ -25,7 +25,7 @@ from df_py.predictoor.csvs import (
     save_predictoor_rewards_csv,
 )
 from df_py.predictoor.queries import queryPredictoors
-from df_py.util import blockrange, dispense, getrate, networkutil
+from df_py.util import blockrange, dispense, get_rate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
@@ -90,7 +90,7 @@ def do_volsym():
 
     # check files, prep dir
     if not csvs.rate_csv_filenames(CSV_DIR):
-        print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
+        print("\nRates don't exist. Call 'dftool get_rate' first. Exiting.")
         sys.exit(1)
 
     # brownie setup
@@ -240,11 +240,11 @@ def do_vebals():
 
 # ========================================================================
 @enforce_types
-def do_getrate():
+def do_get_rate():
     parser = argparse.ArgumentParser(
         description="Get exchange rate, and output rate csv"
     )
-    parser.add_argument("command", choices=["getrate"])
+    parser.add_argument("command", choices=["get_rate"])
     parser.add_argument(
         "TOKEN_SYMBOL",
         type=str,
@@ -283,7 +283,7 @@ def do_getrate():
 
     # main work
     rate = retryFunction(
-        getrate.getrate,
+        get_rate.get_rate,
         arguments.RETRIES,
         60,
         TOKEN_SYMBOL,
@@ -293,7 +293,7 @@ def do_getrate():
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.save_rate_csv(TOKEN_SYMBOL, rate, CSV_DIR)
 
-    print("dftool getrate: Done")
+    print("dftool get_rate: Done")
 
 
 # ========================================================================
@@ -724,11 +724,11 @@ def do_init_dev_wallets():
 
 # ========================================================================
 @enforce_types
-def do_manyrandom():
+def do_many_random():
     # UPDATE THIS
     parser = SimpleChainIdArgumentParser(
         "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
-        "manyrandom",
+        "many_random",
         epilog=f"""Uses these envvars:
           ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
         """,
@@ -756,7 +756,7 @@ def do_manyrandom():
     tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
     randomLockAndAllocate(tups)
     randomConsumeFREs(tups, OCEAN)
-    print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
+    print(f"dftool many_random: Done. {num_nfts} new nfts created.")
 
 
 # ========================================================================

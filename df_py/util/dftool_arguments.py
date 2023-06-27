@@ -16,12 +16,12 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_LONG = """Data Farming tool, for use by OPF.
 
-Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
+Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
 
   dftool help - full command list
 
   dftool compile - compile contracts
-  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR --RETRIES
+  dftool get_rate TOKEN_SYMBOL ST FIN CSV_DIR --RETRIES
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID --RETRIES - query chain, output volumes, symbols, owners
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID --RETRIES
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID --RETRIES
@@ -44,7 +44,7 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool new_veallocate CHAINID - deploy veAllocate (for testing)
   dftool ve_set_allocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
-  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
+  dftool many_random CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
   dftool new_df_rewards CHAINID - deploy new DFRewards contract
   dftool new_df_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
   dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract

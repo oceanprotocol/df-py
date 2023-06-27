@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 from df_py.util.constants import CHALLENGE_FIRST_DATE
-from df_py.util.getrate import getrate
+from df_py.util.get_rate import get_rate
 
 
 def get_challenge_reward_amounts_in_usdt(
@@ -32,7 +32,7 @@ def get_challenge_reward_amounts_in_ocean(
     today = at_date if at_date else datetime.now()
     today_str = today.strftime("%Y-%m-%d")
 
-    ocean_usdt_rate = getrate("OCEAN", today_str, today_str)
+    ocean_usdt_rate = get_rate("OCEAN", today_str, today_str)
 
     return [(1 / ocean_usdt_rate) * reward_amt for reward_amt in rewards_in_usdt]
 

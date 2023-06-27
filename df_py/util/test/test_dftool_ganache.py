@@ -22,7 +22,7 @@ from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
-from df_py.util.getrate import getrate
+from df_py.util.get_rate import get_rate
 from df_py.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
@@ -296,7 +296,7 @@ def test_calc_challenge_substream(tmp_path):
 0x4000000000000000000000000000000000000001,0x05,0.88
 """
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    safe_limit = 1300 * (1 / getrate("OCEAN", today, today))
+    safe_limit = 1300 * (1 / get_rate("OCEAN", today, today))
 
     challenge_data_csv = challenge_data_csv_filename(CSV_DIR)
     with open(challenge_data_csv, "w") as f:
@@ -425,22 +425,22 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def test_manyrandom():
+def test_many_random():
     sys_argv = [
         "dftool",
-        "manyrandom",
+        "many_random",
         str(CHAINID),
     ]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_manyrandom()
+        dftool_module.do_many_random()
 
     # different chain id will fail
-    sys_argv = ["dftool", "manyrandom", "3"]
+    sys_argv = ["dftool", "many_random", "3"]
 
     with pytest.raises(SystemExit):
         with sysargs_context(sys_argv):
-            dftool_module.do_manyrandom()
+            dftool_module.do_many_random()
 
 
 @enforce_types
@@ -727,12 +727,12 @@ def test_df_strategies():
             dftool_module.do_retire_strategy()
 
 
-def test_getrate(tmp_path):
+def test_get_rate(tmp_path):
     CSV_DIR = str(tmp_path)
 
     sys_argv = [
         "dftool",
-        "getrate",
+        "get_rate",
         "OCEAN",
         "0",
         "latest",
@@ -742,7 +742,7 @@ def test_getrate(tmp_path):
     with sysargs_context(sys_argv):
         with patch.object(dftool_module, "retryFunction") as mock:
             mock.return_value = 100.0
-            dftool_module.do_getrate()
+            dftool_module.do_get_rate()
 
     assert os.path.exists(os.path.join(CSV_DIR, "rate-OCEAN.csv"))
 
