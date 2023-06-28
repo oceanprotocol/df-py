@@ -15,12 +15,14 @@ def get_challenge_reward_amounts_in_usdt(
     @return
       list of USDT amounts, in order of 1st, 2nd, 3rd place
     """
+    rewards_in_ocean = get_challenge_reward_amounts_in_ocean(at_date)
+
     today = at_date if at_date else datetime.now()
+    today_str = today.strftime("%Y-%m-%d")
 
-    if today < CHALLENGE_FIRST_DATE:
-        return [0, 0, 0]
+    ocean_usdt_rate = get_rate("OCEAN", today_str, today_str)
 
-    return [625, 375, 250]
+    return [ocean_usdt_rate * reward_amt for reward_amt in rewards_in_ocean]
 
 
 @enforce_types
@@ -31,14 +33,12 @@ def get_challenge_reward_amounts_in_ocean(
     @return
       rewards - list of OCEAN amounts, in order of 1st, 2nd, 3rd place
     """
-    rewards_in_usdt = get_challenge_reward_amounts_in_usdt(at_date)
-
     today = at_date if at_date else datetime.now()
-    today_str = today.strftime("%Y-%m-%d")
 
-    ocean_usdt_rate = get_rate("OCEAN", today_str, today_str)
+    if today < CHALLENGE_FIRST_DATE:
+        return [0, 0, 0]
 
-    return [(1 / ocean_usdt_rate) * reward_amt for reward_amt in rewards_in_usdt]
+    return [2500, 1500, 1000]
 
 
 @enforce_types
