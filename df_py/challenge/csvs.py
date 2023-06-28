@@ -83,7 +83,7 @@ def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
 
 @enforce_types
 def challenge_data_csv_filename(csv_dir: str) -> str:
-    f = "challenge_data.csv"
+    f = "challenge.csv"
     return os.path.join(csv_dir, f)
 
 
