@@ -484,7 +484,7 @@ def _test_queryPassiveRewards(addresses):
             to_wei(1000.0),
             {"from": god_acct},
         )
-        chain.sleep(WEEK)
+        chain.sleep(WEEK * 2)
         chain.mine()
         feeDistributor.checkpoint_token({"from": god_acct})
         feeDistributor.checkpoint_total_supply({"from": god_acct})
