@@ -7,23 +7,6 @@ from df_py.util.constants import CHALLENGE_FIRST_DATE
 from df_py.util.get_rate import get_rate
 
 
-@enforce_types
-def get_challenge_reward_amounts_in_usdt(
-    at_date: Optional[datetime] = None,
-) -> List[int]:
-    """
-    @return
-      list of USDT amounts, in order of 1st, 2nd, 3rd place
-    """
-    rewards_in_ocean = get_challenge_reward_amounts_in_ocean(at_date)
-
-    today = at_date if at_date else datetime.now()
-    today_str = today.strftime("%Y-%m-%d")
-
-    ocean_usdt_rate = get_rate("OCEAN", today_str, today_str)
-
-    return [ocean_usdt_rate * reward_amt for reward_amt in rewards_in_ocean]
-
 
 @enforce_types
 def get_challenge_reward_amounts_in_ocean(
