@@ -309,7 +309,7 @@ def do_challenge_data():
     )
     parser.add_argument(
         "--DEADLINE",
-        type=challenge_date,
+        type=block_or_valid_date,
         default=None,
         required=False,
         help="""submission deadline.
