@@ -63,9 +63,9 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
     )
 
     challenge_rewards = (
-            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, challenge_substream
-            )
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, challenge_substream
+        )
     )
 
     predictoor_rewards = (
@@ -74,10 +74,8 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         )
     )
 
-    volume_rewards = (
-            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, volume_substream
-            )
+    volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+        start_dt, volume_substream
     )
 
     total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
