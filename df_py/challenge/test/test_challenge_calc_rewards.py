@@ -12,8 +12,7 @@ def test_calc_challenge_rewards():
         "0xfrom3",
     ]
 
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        rewards = calc_challenge_rewards(from_addrs)
+    rewards = calc_challenge_rewards(from_addrs)
 
     assert len(rewards) == 3
     assert rewards[0]["OCEAN_amt"] == 2500
@@ -30,8 +29,7 @@ def test_calc_challenge_rewards_with_dates():
     ]
 
     before_challenge = datetime(2020, 12, 31)
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        rewards = calc_challenge_rewards(from_addrs, at_date=before_challenge)
+    rewards = calc_challenge_rewards(from_addrs, at_date=before_challenge)
 
     assert len(rewards) == 3
     assert rewards[0]["OCEAN_amt"] == 0
