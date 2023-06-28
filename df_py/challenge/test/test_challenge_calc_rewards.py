@@ -16,9 +16,9 @@ def test_calc_challenge_rewards():
         rewards = calc_challenge_rewards(from_addrs)
 
     assert len(rewards) == 3
-    assert rewards[0]["OCEAN_amt"] == 1250
-    assert rewards[1]["OCEAN_amt"] == 750
-    assert rewards[2]["OCEAN_amt"] == 500
+    assert rewards[0]["OCEAN_amt"] == 2500
+    assert rewards[1]["OCEAN_amt"] == 1500
+    assert rewards[2]["OCEAN_amt"] == 1000
 
 
 @patch("df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
