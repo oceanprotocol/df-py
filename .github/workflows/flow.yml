@@ -105,7 +105,7 @@ jobs:
 
       - name: Challenge DF data
         run: |
-          ./dftool challenge_data $CSV_DIR --RETRIES 3
+          ./dftool challenge_data $CSV_DIR --RETRIES 3 
         env:
           JUDGE_PRIVATE_KEY: ${{secrets.JUDGE_PRIVATE_KEY}}
         
