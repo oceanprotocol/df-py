@@ -8,7 +8,7 @@ from df_py.challenge import helpers
 
 
 @enforce_types
-def test_dt_to_ut__timezone():
+def test_dt_to_ut_timezone():
     # setup
     unaware_dt = datetime.datetime(2011, 8, 15, 8, 15, 12, 0)
     aware_dt = datetime.datetime(2011, 8, 15, 8, 15, 12, 0, tzinfo=timezone.utc)
@@ -31,7 +31,7 @@ def test_dt_to_ut__timezone():
 
 
 @enforce_types
-def test_dt_to_ut__main():
+def test_dt_to_ut_main():
     # time = when unix time starts
     dt = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
     ut = helpers.dt_to_ut(dt)
@@ -44,7 +44,7 @@ def test_dt_to_ut__main():
 
 
 @enforce_types
-def test_ut_to_dt__main():
+def test_ut_to_dt_main():
     # time = when unix time starts
     ut = 0
     target_dt = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc)

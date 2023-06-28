@@ -18,17 +18,17 @@ ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @enforce_types
-def test1(tmp_path):
+def test_empty_deadline(tmp_path):
     _test(tmp_path, DEADLINE=None)
 
 
 @enforce_types
-def test2(tmp_path):
+def test_deadline_none_string(tmp_path):
     _test(tmp_path, DEADLINE="None")
 
 
 @enforce_types
-def test3(tmp_path):
+def test_explicit_deadlin(tmp_path):
     _test(tmp_path, DEADLINE="2023-05-03_23:59")
 
 

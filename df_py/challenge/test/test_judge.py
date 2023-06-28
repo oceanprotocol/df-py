@@ -33,8 +33,8 @@ def test_get_txs():
 
     # sort txs by nft address, to ease subsequent testing
     nft_addrs = [tx["nft"]["id"] for tx in txs]
-    I = np.argsort(nft_addrs)
-    txs = [txs[i] for i in I]
+    sorted_txs = np.argsort(nft_addrs)
+    txs = [txs[i] for i in sorted_txs]
 
     # now test
     nft_addrs = [tx["nft"]["id"] for tx in txs]
@@ -66,7 +66,7 @@ def test_nft_addr_to_pred_vals():
 
 
 @enforce_types
-def test_get_cex_vals1():
+def test_get_cex_vals_1():
     today = datetime.today().replace(tzinfo=timezone.utc)
     deadline_dt = today - timedelta(days=2)
     deadline_dt = deadline_dt.replace(hour=12, minute=59, second=0, microsecond=0)
@@ -75,21 +75,21 @@ def test_get_cex_vals1():
 
 
 @enforce_types
-def test_get_cex_vals2():
+def test_get_cex_vals_2():
     deadline_dt = datetime(2023, 5, 3, 23, 59, tzinfo=timezone.utc)
     cex_vals = judge._get_cex_vals(deadline_dt)
     assert len(cex_vals) == 12
 
 
 @enforce_types
-def test_parse_deadline_str1():
+def test_parse_deadline_str_1():
     dt = judge.parse_deadline_str("2023-05-03_23:59")
     dt_target = datetime(2023, 5, 3, 23, 59, tzinfo=timezone.utc)
     assert dt == dt_target
 
 
 @enforce_types
-def test_parse_deadline_str2():
+def test_parse_deadline_str_2():
     dt = judge.parse_deadline_str()
 
     assert (datetime.now(timezone.utc) - dt) < timedelta(days=7)  # within 1 wk
