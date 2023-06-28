@@ -194,7 +194,7 @@ def test_alice_claims_after_lock_ends():
 @enforce_types
 def setup_function():
     global accounts, alice, bob, veOCEAN, OCEAN, feeDistributor
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
 

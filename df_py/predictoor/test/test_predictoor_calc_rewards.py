@@ -1,7 +1,7 @@
 import random
 from typing import Dict, Union
 
-from df_py.predictoor.calcrewards import calc_predictoor_rewards, filter_predictoors
+from df_py.predictoor.calc_rewards import calc_predictoor_rewards, filter_predictoors
 from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.constants import MIN_PREDICTIONS
 

@@ -1,28 +1,33 @@
-import datetime
-from datetime import timezone
+from datetime import datetime, timezone
+from typing import Union
 
 import numpy as np
+from enforce_typing import enforce_types
 
 
-def dt_to_ut(dt: datetime.datetime) -> int:
+@enforce_types
+def dt_to_ut(dt: datetime) -> int:
     """datetime to unixtime"""
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     ut = int(dt.timestamp())
     return ut
 
 
-def ut_to_dt(ut: int) -> datetime.datetime:
+@enforce_types
+def ut_to_dt(ut: Union[int, float]) -> datetime:
     """unixtime to datetime"""
-    dt = datetime.datetime.utcfromtimestamp(ut)
+    dt = datetime.utcfromtimestamp(ut)
     dt = dt.replace(tzinfo=timezone.utc)
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     return dt
 
 
-def pretty_time(dt: datetime.datetime) -> str:
+@enforce_types
+def pretty_time(dt: datetime) -> str:
     return dt.strftime("%Y/%m/%d, %H:%M:%S")
 
 
+@enforce_types
 def print_datetime_info(descr: str, uts: list):
     dts = [ut_to_dt(ut) for ut in uts]
     print(descr + ":")
@@ -32,6 +37,7 @@ def print_datetime_info(descr: str, uts: list):
     print(f"  time interval between datapoints: {(dts[1]-dts[0])}")
 
 
+@enforce_types
 def filter_to_target_uts(
     target_uts: list, unfiltered_uts: list, unfiltered_vals: list
 ) -> list:
@@ -50,6 +56,7 @@ def filter_to_target_uts(
     return filtered_vals
 
 
+@enforce_types
 def calc_nmse(y, yhat) -> float:
     assert len(y) == len(yhat)
     mse_xy = np.sum(np.square(np.asarray(y) - np.asarray(yhat)))

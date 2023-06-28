@@ -14,7 +14,7 @@ def test_get_txs():
     six_days_ago = now - timedelta(days=6)
     one_day_ago = now - timedelta(days=1)
 
-    with patch("df_py.util.graphutil.submitQuery") as mock:
+    with patch("df_py.util.graphutil.submit_query") as mock:
         mock.return_value = {
             "nftTransferHistories": [
                 {

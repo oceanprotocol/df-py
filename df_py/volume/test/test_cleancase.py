@@ -24,10 +24,10 @@ def test_allocations():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertAllocations(allocs)
+        cleancase.assert_allocations(allocs)
 
-    mod_allocs = cleancase.modAllocations(allocs)
-    cleancase.assertAllocations(mod_allocs)
+    mod_allocs = cleancase.mod_allocations(allocs)
+    cleancase.assert_allocations(mod_allocs)
     assert mod_allocs == target_allocs
 
 
@@ -41,7 +41,7 @@ def test_allocations_fail():
     }
 
     with pytest.raises(AssertionError) as excinfo:
-        cleancase.assertAllocations(allocations)
+        cleancase.assert_allocations(allocations)
     assert str(excinfo.value) == "LP 0xlp1 has 1.01% allocation, > 1.0%"
 
 
@@ -65,10 +65,10 @@ def test_stakes():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertStakes(stakes)
+        cleancase.assert_stakes(stakes)
 
-    mod_stakes = cleancase.modStakes(stakes)
-    cleancase.assertStakes(mod_stakes)
+    mod_stakes = cleancase.mod_stakes(stakes)
+    cleancase.assert_stakes(mod_stakes)
     assert mod_stakes == target_stakes
 
 
@@ -78,10 +78,10 @@ def test_vebals1_fixcase():
     target_vebals = {"0xlp1": 10.1, "0xlp2": 20.2}
 
     with pytest.raises(AssertionError):
-        cleancase.assertVebals(vebals)
+        cleancase.assert_vebals(vebals)
 
-    mod_vebals = cleancase.modVebals(vebals)
-    cleancase.assertVebals(mod_vebals)
+    mod_vebals = cleancase.mod_vebals(vebals)
+    cleancase.assert_vebals(mod_vebals)
     assert mod_vebals == target_vebals
 
 
@@ -90,7 +90,7 @@ def test_vebals2_missing0x():
     vebals = {"lp1": 10.1}
 
     with pytest.raises(AssertionError):
-        cleancase.assertVebals(vebals)
+        cleancase.assert_vebals(vebals)
 
 
 @enforce_types
@@ -106,10 +106,10 @@ def test_nftvols():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertNFTvols(poolvols)
+        cleancase.assert_nft_vols(poolvols)
 
-    mod_poolvols = cleancase.modNFTvols(poolvols)
-    cleancase.assertNFTvols(mod_poolvols)
+    mod_poolvols = cleancase.mod_nft_vols(poolvols)
+    cleancase.assert_nft_vols(mod_poolvols)
     assert mod_poolvols == target_poolvols
 
 
@@ -125,10 +125,10 @@ def test_symbols():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertSymbols(symbols)
+        cleancase.assert_symbols(symbols)
 
-    mod_symbols = cleancase.modSymbols(symbols)
-    cleancase.assertSymbols(mod_symbols)
+    mod_symbols = cleancase.mod_symbols(symbols)
+    cleancase.assert_symbols(mod_symbols)
     assert mod_symbols == target_symbols
 
 
@@ -138,10 +138,10 @@ def test_rates_main():
     target_rates = {"OCEAN": 0.25, "H2O": 1.61}
 
     with pytest.raises(AssertionError):
-        cleancase.assertRates(rates)
+        cleancase.assert_rates(rates)
 
-    mod_rates = cleancase.modRates(rates)
-    cleancase.assertRates(mod_rates)
+    mod_rates = cleancase.mod_rates(rates)
+    cleancase.assert_rates(mod_rates)
     assert mod_rates == target_rates
 
 
@@ -149,7 +149,7 @@ def test_rates_main():
 def test_rates_0x():
     rates = {"0xOCEAN": 0.1}
     with pytest.raises(AssertionError):
-        cleancase.assertRates(rates)
+        cleancase.assert_rates(rates)
 
 
 @enforce_types
@@ -164,8 +164,8 @@ def test_owners():
     }
 
     with pytest.raises(AssertionError):
-        cleancase.assertOwners(owners)
+        cleancase.assert_owners(owners)
 
-    mod_owners = cleancase.modOwners(owners)
-    cleancase.assertOwners(mod_owners)
+    mod_owners = cleancase.mod_owners(owners)
+    cleancase.assert_owners(mod_owners)
     assert mod_owners == target_owners

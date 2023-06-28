@@ -4,7 +4,7 @@ from df_py.volume import cleancase, csvs
 
 
 @enforce_types
-def allocsToStakes(allocs: dict, vebals: dict) -> dict:
+def allocs_to_stakes(allocs: dict, vebals: dict) -> dict:
     """
     For each % allocated value, multiply it with appropriate balance and return
     the absolute allocated value (="stake").
@@ -17,8 +17,8 @@ def allocsToStakes(allocs: dict, vebals: dict) -> dict:
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float - abs alloc
     """
 
-    allocs = cleancase.modAllocations(allocs)
-    vebals = cleancase.modVebals(vebals)
+    allocs = cleancase.mod_allocations(allocs)
+    vebals = cleancase.mod_vebals(vebals)
 
     stakes = allocs.copy()  # we'll be changing the values
     for chainID in allocs:
@@ -28,11 +28,12 @@ def allocsToStakes(allocs: dict, vebals: dict) -> dict:
                 stake = perc_alloc * vebal
                 stakes[chainID][nft_addr][LP_addr] = stake
 
-    cleancase.assertStakes(stakes)
+    cleancase.assert_stakes(stakes)
     return stakes
 
 
-def loadStakes(csv_dir: str) -> dict:
+@enforce_types
+def load_stakes(csv_dir: str) -> dict:
     """
     Loads allocs and vebals, computes stakes from it, and returns stakes.
 
@@ -41,5 +42,5 @@ def loadStakes(csv_dir: str) -> dict:
     """
     allocs = csvs.load_allocation_csvs(csv_dir)
     vebals, _, _ = csvs.load_vebals_csv(csv_dir)
-    stakes = allocsToStakes(allocs, vebals)
+    stakes = allocs_to_stakes(allocs, vebals)
     return stakes

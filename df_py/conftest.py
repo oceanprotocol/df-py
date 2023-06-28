@@ -9,7 +9,7 @@ from df_py.util.oceanutil import OCEANtoken, recordDevDeployedContracts
 @enforce_types
 @pytest.fixture
 def network_setup_and_teardown():
-    networkutil.connectDev()
+    networkutil.connect_dev()
 
     # everyting before the yield is run before the test
     # everything after the yield is run after the test
@@ -20,7 +20,7 @@ def network_setup_and_teardown():
 
 
 def pytest_sessionstart():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     recordDevDeployedContracts()
     accs = brownie.network.accounts
     OCEANtoken().mint(accs[0], 1e24, {"from": accs[0]})

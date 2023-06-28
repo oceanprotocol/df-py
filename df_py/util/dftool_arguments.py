@@ -3,6 +3,7 @@ import argparse
 import datetime
 import os
 import sys
+from typing import Optional
 
 from enforce_typing import enforce_types
 
@@ -14,14 +15,14 @@ CHAINID_EXAMPLES = (
 )
 
 # ========================================================================
-HELP_SHORT = """Data Farming tool, for use by OPF.
+HELP_LONG = """Data Farming tool, for use by OPF.
 
-Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
+Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
 
   dftool help - full command list
 
   dftool compile - compile contracts
-  dftool getrate TOKEN_SYMBOL ST FIN CSV_DIR --RETRIES
+  dftool get_rate TOKEN_SYMBOL ST FIN CSV_DIR --RETRIES
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID --RETRIES - query chain, output volumes, symbols, owners
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID --RETRIES
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID --RETRIES
@@ -31,39 +32,28 @@ Usage: dftool compile|getrate|volsym|.. ARG1 ARG2 ..
   dftool dispense_active CSV_DIR CHAINID --DFREWARDS_ADDR --TOKEN_ADDR --BATCH_NBR - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
-"""
 
-HELP_LONG = (
-    HELP_SHORT
-    + """
-  dftool newacct - generate new account
-  dftool initdevwallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
-  dftool newtoken CHAINID - generate new token (for testing)
-  dftool acctinfo CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
-  dftool chaininfo CHAINID - info about a network
+  dftool new_acct - generate new account
+  dftool init_dev_wallets CHAINID - Init wallets with OCEAN. (GANACHE ONLY)
+  dftool new_token CHAINID - generate new token (for testing)
+  dftool acct_info CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
+  dftool chain_info CHAINID - info about a network
 
   dftool mine BLOCKS --TIMEDELTA - force chain to pass time (ganache only)
 
-  dftool newVeOcean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
-  dftool newVeAllocate CHAINID - deploy veAllocate (for testing)
-  dftool veSetAllocation CHAINID amount exchangeId - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
+  dftool new_veocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
+  dftool new_veallocate CHAINID - deploy veAllocate (for testing)
+  dftool ve_set_allocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
-  dftool manyrandom CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
-  dftool newdfrewards CHAINID - deploy new DFRewards contract
-  dftool newdfstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
-  dftool addstrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
-  dftool retirestrategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
+  dftool many_random CHAINID - deploy many datatokens + locks OCEAN + allocates + consumes (for testing)
+  dftool new_df_rewards CHAINID - deploy new DFRewards contract
+  dftool new_df_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_NAME - deploy new DFStrategy
+  dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
+  dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
   dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
-)
-
-
-@enforce_types
-def do_help_short(status_code=0):
-    print(HELP_SHORT)
-    sys.exit(status_code)
 
 
 @enforce_types
@@ -72,7 +62,8 @@ def do_help_long(status_code=0):
     sys.exit(status_code)
 
 
-def valid_date_and_convert(s):
+@enforce_types
+def valid_date_and_convert(s: str):
     try:
         return datetime.datetime.strptime(s, "%Y-%m-%d")
     except ValueError:
@@ -82,7 +73,8 @@ def valid_date_and_convert(s):
     raise argparse.ArgumentTypeError(msg)
 
 
-def valid_date(s):
+@enforce_types
+def valid_date(s: str):
     try:
         datetime.datetime.strptime(s, "%Y-%m-%d")
         return s
@@ -93,7 +85,8 @@ def valid_date(s):
     raise argparse.ArgumentTypeError(msg)
 
 
-def block_or_valid_date(s):
+@enforce_types
+def block_or_valid_date(s: str):
     if s == "latest":
         return s
 
@@ -118,7 +111,8 @@ def block_or_valid_date(s):
     raise argparse.ArgumentTypeError(msg)
 
 
-def existing_path(s):
+@enforce_types
+def existing_path(s: str):
     if not os.path.exists(s):
         msg = f"Directory {s} doesn't exist."
         raise argparse.ArgumentTypeError(msg)
@@ -126,7 +120,8 @@ def existing_path(s):
     return s
 
 
-def autocreate_path(s):
+@enforce_types
+def autocreate_path(s: str):
     if not os.path.exists(s):
         print(f"Directory {s} did not exist, so created it")
         os.mkdir(s)
@@ -134,7 +129,8 @@ def autocreate_path(s):
     return s
 
 
-def challenge_date(s):
+@enforce_types
+def challenge_date(s: str):
     if s == "None":
         return None
 
@@ -145,7 +141,8 @@ def challenge_date(s):
         raise argparse.ArgumentTypeError(str(e)) from e
 
 
-def print_arguments(arguments):
+@enforce_types
+def print_arguments(arguments: argparse.Namespace):
     arguments_dict = arguments.__dict__
     command = arguments_dict.pop("command", None)
 
@@ -156,8 +153,12 @@ def print_arguments(arguments):
         print(f"{arg_k}={arg_v}")
 
 
+@enforce_types
 class StartFinArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, epilog, command_name, csv_names):
+    @enforce_types
+    def __init__(
+        self, description: str, epilog: str, command_name: str, csv_names: str
+    ):
         super().__init__(
             description=description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -194,8 +195,12 @@ class StartFinArgumentParser(argparse.ArgumentParser):
         )
 
 
+@enforce_types
 class SimpleChainIdArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, command_name, epilog=None):
+    @enforce_types
+    def __init__(
+        self, description: str, command_name: str, epilog: Optional[str] = None
+    ):
         super().__init__(
             description=description,
             formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -204,15 +209,18 @@ class SimpleChainIdArgumentParser(argparse.ArgumentParser):
         self.add_argument("command", choices=[command_name])
         self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
-    def print_args_and_get_chain(self):
+    @enforce_types
+    def print_args_and_get_chain(self) -> int:
         arguments = self.parse_args()
         print_arguments(arguments)
 
         return arguments.CHAINID
 
 
+@enforce_types
 class DfStrategyArgumentParser(argparse.ArgumentParser):
-    def __init__(self, description, command_name):
+    @enforce_types
+    def __init__(self, description: str, command_name: str):
         super().__init__(description=description)
         self.add_argument("command", choices=[command_name])
         self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)

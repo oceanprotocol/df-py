@@ -3,7 +3,7 @@
 import os
 from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
-from typing import List, Tuple, Optional
+from typing import List, Optional, Tuple
 
 import ccxt
 import numpy as np
@@ -11,18 +11,10 @@ from brownie.network import accounts
 from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
-from df_py.util import crypto, oceanutil, graphutil, networkutil
+from df_py.util import crypto, graphutil, networkutil, oceanutil
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
-
-# for testing dftool
-DFTOOL_TEST_FAKE_CSVDIR = "fakedir_dftool"
-DFTOOL_TEST_FAKE_CHALLENGE_DATA = (
-    ["0xfrom1", "0xfrom2"],
-    ["0xnft1", "0xnft2"],
-    [0.2, 1.0],
-)
 
 
 @enforce_types
@@ -53,7 +45,7 @@ def _get_txs(deadline_dt) -> list:
      }}
 }}"""
 
-    result = graphutil.submitQuery(query_s, networkutil.networkToChainId("mumbai"))
+    result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
     txs = result["nftTransferHistories"]
 
     return txs
@@ -180,26 +172,28 @@ def _keep_youngest_entry_per_competitor(txs: list, nmses: list) -> list:
     print("Keep-youngest: begin")
     from_addrs = [_from_addr(tx) for tx in txs]
     for from_addr in set(from_addrs):
-        I = [
+        entries = [
             i
             for i, cand_from_addr in enumerate(from_addrs)
             if cand_from_addr == from_addr
         ]
-        if len(I) == 1:
+        if len(entries) == 1:
             continue
 
-        Ip1 = [i + 1 for i in I]
+        entries_p1 = [i + 1 for i in entries]
         print()
-        print(f"  NFTs #{Ip1} all come {from_addrs[I[0]]}")
+        print(f"  NFTs #{entries_p1} all come {from_addrs[entries[0]]}")
 
-        dates = [_date(txs[i]) for i in I]
+        dates = [_date(txs[i]) for i in entries]
         youngest_j = np.argmax(dates)
-        print(f"  Youngest is #{Ip1[youngest_j]}, at {dates[youngest_j]}")
+        print(f"  Youngest is #{entries_p1[youngest_j]}, at {dates[youngest_j]}")
 
-        for j, i in enumerate(I):
+        for j, i in enumerate(entries):
             if j != youngest_j:
-                nmses[I[j]] = 1.0
-                print(f"  Non-youngest #{[Ip1[j]]}, at {dates[j]} gets nmse = 1.0")
+                nmses[entries[j]] = 1.0
+                print(
+                    f"  Non-youngest #{[entries_p1[j]]}, at {dates[j]} gets nmse = 1.0"
+                )
     print()
     print("Keep-youngest: done")
 
@@ -274,10 +268,10 @@ def get_challenge_data(
     nmses = _keep_youngest_entry_per_competitor(txs, nmses)
 
     # Sort results for lowest-nmse first
-    I = np.argsort(nmses)
-    from_addrs = [from_addrs[i] for i in I]
-    nft_addrs = [nft_addrs[i] for i in I]
-    nmses = [nmses[i] for i in I]
+    entries = np.argsort(nmses)
+    from_addrs = [from_addrs[i] for i in entries]
+    nft_addrs = [nft_addrs[i] for i in entries]
+    nmses = [nmses[i] for i in entries]
 
     # print
     challenge_data = (from_addrs, nft_addrs, nmses)
