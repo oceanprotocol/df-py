@@ -341,7 +341,7 @@ def do_challenge_data():
 
     # main work
     deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
-    challenge_data = retryFunction(
+    challenge_data = retry_function(
         judge.get_challenge_data,
          arguments.RETRIES,
          10,
