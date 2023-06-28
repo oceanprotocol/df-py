@@ -8,9 +8,9 @@ from pytest import approx
 
 from df_py.util import networkutil
 from df_py.util.blocktime import (
-    ethFindClosestBlock,
-    ethTimestamptoBlock,
-    timestrToBlock,
+    eth_find_closest_block,
+    eth_timestamp_to_block,
+    timestr_to_block,
 )
 
 PREV = None
@@ -18,16 +18,16 @@ chain = None
 
 
 @enforce_types
-def test_ethTimestamptoBlock():
+def test_eth_timestamp_to_block():
     ts = chain[-5000].timestamp
     block = chain[-5000].number
 
-    guess = ethTimestamptoBlock(chain, ts)
+    guess = eth_timestamp_to_block(chain, ts)
 
     assert guess == approx(block, 10)
 
 
-def test_timestrToBlock_eth_1():
+def test_timestr_to_block_eth_1():
     ts = chain[-5000].timestamp
     block = chain[-5000].number
 
@@ -35,38 +35,38 @@ def test_timestrToBlock_eth_1():
     dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
-    guess = timestrToBlock(chain, dt_str, True)
+    guess = timestr_to_block(chain, dt_str, True)
 
     assert guess == block
 
 
 @enforce_types
-def test_timestrToBlock_eth_2():
+def test_timestr_to_block_eth_2():
     expected = 15735470
     ts = 1665619200
     dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
-    guess = timestrToBlock(chain, dt_str, True)
+    guess = timestr_to_block(chain, dt_str, True)
     assert guess == expected
 
 
 @enforce_types
-def test_timestrToBlock_eth_3():
+def test_timestr_to_block_eth_3():
     expected = 15835686
     dt_str = "2022-10-27"
-    guess = timestrToBlock(chain, dt_str, True)
+    guess = timestr_to_block(chain, dt_str, True)
     assert guess == expected
 
 
 @enforce_types
-def test_ethFindClosestBlock():
+def test_eth_find_closest_block():
     expected = 15835686
 
     # get timestamp last thu
     last_thu = 1666828800
-    last_thu_block_guess = ethTimestamptoBlock(chain, last_thu)
-    last_thu_block = ethFindClosestBlock(chain, last_thu_block_guess, last_thu)
+    last_thu_block_guess = eth_timestamp_to_block(chain, last_thu)
+    last_thu_block = eth_find_closest_block(chain, last_thu_block_guess, last_thu)
 
     assert last_thu_block == expected
 

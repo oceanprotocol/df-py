@@ -1,12 +1,13 @@
 import csv
 import os
-from typing import List, Tuple
+from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
 
-from df_py.util.csv_helpers import assertIsEthAddr
+from df_py.util.csv_helpers import assert_is_eth_addr
 
 
+@enforce_types
 def save_challenge_data_csv(challenge_data: tuple, csv_dir: str):
     """
     @description
@@ -24,13 +25,14 @@ def save_challenge_data_csv(challenge_data: tuple, csv_dir: str):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = challenge_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
+
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
         row = ["from_addr", "nft_addr", "nmse"]
         writer.writerow(row)
         for from_addr, nft_addr, nmse in zip(from_addrs, nft_addrs, nmses):
-            assertIsEthAddr(from_addr)
-            assertIsEthAddr(nft_addr)
+            assert_is_eth_addr(from_addr)
+            assert_is_eth_addr(nft_addr)
             row = [
                 from_addr.lower(),
                 nft_addr.lower(),
@@ -41,6 +43,7 @@ def save_challenge_data_csv(challenge_data: tuple, csv_dir: str):
     print(f"Created {csv_file}")
 
 
+@enforce_types
 def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
     """
     @description
@@ -52,6 +55,7 @@ def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
     """
     csv_file = challenge_data_csv_filename(csv_dir)
     from_addrs, nft_addrs, nmses = [], [], []
+
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
         for row_i, row in enumerate(reader):
@@ -64,12 +68,13 @@ def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
             nft_addr = nft_addr.lower()
             nmse = float(nmse_s)
 
-            assertIsEthAddr(from_addr)
-            assertIsEthAddr(nft_addr)
+            assert_is_eth_addr(from_addr)
+            assert_is_eth_addr(nft_addr)
 
             from_addrs.append(from_addr)
             nft_addrs.append(nft_addr)
             nmses.append(nmse)
+
     assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
 
     print(f"Loaded {csv_file}")
@@ -80,3 +85,58 @@ def load_challenge_data_csv(csv_dir: str) -> Tuple[List[str], List[str], list]:
 def challenge_data_csv_filename(csv_dir: str) -> str:
     f = "challenge.csv"
     return os.path.join(csv_dir, f)
+
+
+# ------------------------------- REWARDS -------------------------------
+
+
+@enforce_types
+def challenge_rewards_csv_filename(csv_dir):
+    f = "challenge_rewards.csv"
+    return os.path.join(csv_dir, f)
+
+
+@enforce_types
+def save_challenge_rewards_csv(challenge_rewards: List[Dict[str, Any]], csv_dir: str):
+    """Saves the challenge rewards to a CSV file.
+    @arguments
+      - challenge_rewards: A list of dictionaries representing rewards for the challenge.
+        Each dictionary contains the following keys:
+        - winner_addr: The address of the winner.
+        - OCEAN_amt: The amount of OCEAN tokens to be awarded to the winner.
+      - csv_dir: The directory to save the CSV file.
+    @return
+      - The filename of the saved CSV file.
+    """
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = challenge_rewards_csv_filename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+
+    with open(csv_file, "w") as f:
+        writer = csv.DictWriter(f, fieldnames=["winner_addr", "OCEAN_amt"])
+        writer.writeheader()
+        for row in challenge_rewards:
+            writer.writerow(row)
+
+    print(f"Created {csv_file}")
+
+    return csv_file
+
+
+@enforce_types
+def load_challenge_rewards_csv(csv_dir: str) -> Dict[str, float]:
+    """Loads the challenge rewards from a CSV file.
+    Format of entries is a list of dicts, each dict with keys:
+    - winner_addr: str, Ethereum address
+    - OCEAN_amt: float, amount of OCEAN to award
+    """
+    csv_file = challenge_rewards_csv_filename(csv_dir)
+    rewards = {}
+
+    with open(csv_file, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            rewards[row["winner_addr"]] = float(row["OCEAN_amt"])
+
+    print(f"Loaded {csv_file}")
+    return rewards

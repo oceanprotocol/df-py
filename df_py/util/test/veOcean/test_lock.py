@@ -59,7 +59,7 @@ def test_alice_locks_tokens():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     global accounts, alice, bob, veOCEAN, OCEAN
     accounts = brownie.network.accounts

@@ -1,13 +1,13 @@
 from datetime import datetime
+from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import networkutil
+from df_py.util import networkutil, vesting_schedule
 from df_py.util.base18 import from_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER
-from df_py.util import vesting_schedule
 
 test_params = [
     (datetime(2023, 3, 9), 0),
@@ -43,12 +43,13 @@ test_params = [
 ]
 
 
-def test_getActiveRewardAmountForWeekEthByStream():
+def test_get_active_reward_amount_for_week_eth_by_stream():
+    challenge_substream = "challenge"
     predictoor_substream = "predictoor"
     volume_substream = "volume"
     start_dt = datetime(2022, 1, 1)
     assert (
-        vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream
         )
         == 0
@@ -56,38 +57,59 @@ def test_getActiveRewardAmountForWeekEthByStream():
 
     start_dt = datetime(2042, 1, 1)
     assert (
-        vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream
         )
         > 0
     )
 
-    predictoor_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
-        start_dt, predictoor_substream
+    # get_rate patches are needed because we are testing with a future start_dt
+    # for predictoor, but the get_rate function is not implemented for the future
+
+    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
+        challenge_rewards = (
+            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+                start_dt, challenge_substream
+            )
+        )
+
+    predictoor_rewards = (
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, predictoor_substream
+        )
     )
-    volume_rewards = vesting_schedule.getActiveRewardAmountForWeekEthByStream(
-        start_dt, volume_substream
+
+    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
+        volume_rewards = (
+            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+                start_dt, volume_substream
+            )
+        )
+
+    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
+        total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
+
+    assert total_rewards == approx(
+        challenge_rewards + predictoor_rewards + volume_rewards, 0.1
     )
-    total_rewards = vesting_schedule.getActiveRewardAmountForWeekEth(start_dt)
-    assert total_rewards == predictoor_rewards + volume_rewards
 
     predictoor_substream = "invalid_substream"
     with pytest.raises(ValueError):
-        vesting_schedule.getActiveRewardAmountForWeekEthByStream(
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream
         )
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
-def test_getRewardAmountForWeekWei(test_input, expected_output):
-    assert from_wei(vesting_schedule.getRewardAmountForWeekWei(test_input)) == approx(
-        expected_output
-    )
+def test_get_reward_amount_for_week_wei(test_input, expected_output):
+    assert from_wei(
+        vesting_schedule.get_reward_amount_for_week_wei(test_input)
+    ) == approx(expected_output)
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
-def test_getActiveRewardAmountForWeekEth(test_input, expected_output):
-    assert vesting_schedule.getActiveRewardAmountForWeekEth(test_input) == approx(
+def test_get_active_reward_amount_for_week_eth(test_input, expected_output):
+    assert vesting_schedule.get_active_reward_amount_for_week_eth(test_input) == approx(
         expected_output * ACTIVE_REWARDS_MULTIPLIER
     )
 
@@ -107,7 +129,7 @@ def test_compareHalflifeFunctions():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
 
 
 @enforce_types

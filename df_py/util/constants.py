@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import List
 
 import brownie
@@ -22,7 +23,7 @@ DFMAIN_CONSTANTS = {
     # we use the halflife formula after week 132
 }
 
-# used by _rankBasedAllocate() as part of reward function
+# used by _rank_based_allocate() as part of reward function
 DO_RANK = True
 RANK_SCALE_OP = "LOG"  # can be: LIN, POW2, POW4, LOG, SQRT
 MAX_N_RANK_ASSETS = 100  # only reward top N assets. Eg 20, 50, 100, 500
@@ -40,3 +41,8 @@ CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 MIN_PREDICTIONS = 1818
 DEPLOYER_ADDRS: List[str] = []
 PREDICTOOR_RELEASE_WEEK = 150  # change me when Predictoor is released
+
+# challenge
+CHALLENGE_FIRST_DATE = datetime(
+    2024, 7, 15
+)  # change me if Challenge release is postponed

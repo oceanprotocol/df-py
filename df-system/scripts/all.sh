@@ -9,9 +9,9 @@ then
 fi
 echo $date
 
-dfpy_docker getrate OCEAN $date $now /app/data
-dfpy_docker getrate ETH $date $now /app/data
-dfpy_docker getrate MATIC $date $now /app/data
+dfpy_docker get_rate OCEAN $date $now /app/data
+dfpy_docker get_rate ETH $date $now /app/data
+dfpy_docker get_rate MATIC $date $now /app/data
 
 dfpy_docker volsym $date latest 50 /app/data 1 &&
 dfpy_docker volsym $date latest 50 /app/data 137 &&

@@ -30,7 +30,8 @@ jobs:
         with:
           repository: "oceanprotocol/df-sql"
           path: "df-sql"
-      
+          ref: v0.1.0
+
       - name: Create CSV dir
         run: |
           mkdir ~/.dfcsv
@@ -49,7 +50,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt --quiet
-  
+
       - name: Create Brownie paths
         run: |
           mkdir -p /home/runner/.solcx
@@ -80,24 +81,24 @@ jobs:
       - name: Add polygon network
         run: |
           brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
-  
-      - name: Run dftool getrate
+
+      - name: Run dftool get_rate
         run: |
-          ./dftool getrate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR --RETRIES $RETRY_TIMES
-  
+          ./dftool get_rate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR --RETRIES $RETRY_TIMES
+
       - name: Run dftool volsym
         run: |
           ./dftool volsym $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 --RETRIES $RETRY_TIMES
           ./dftool volsym $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 137 --RETRIES $RETRY_TIMES
-  
+
       - name: Run dftool vebals
         run: |
           ./dftool vebals $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 --RETRIES $RETRY_TIMES
-  
+
       - name: Run dftool allocations
         run: |
           ./dftool allocations $TEST_START_DATE $TEST_END_DATE 2 $CSV_DIR 1 --RETRIES $RETRY_TIMES
-  
+
       - name: Run dftool nftinfo
         run: |
           ./dftool nftinfo $CSV_DIR 1 --FIN $TEST_END_DATE
@@ -106,19 +107,19 @@ jobs:
         run: |
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
           sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
-  
+
       - name: Run dftool calc rewards
         run: |
           ./dftool calc volume $CSV_DIR 100000000 --START_DATE $TEST_START_DATE
-          
+
       - name: Move csvs to df-sql dir
         run: |
           mv /tmp/csv/* ~/.dfcsv
-        
+
       - name: Wait a minute for df-sql to sync
         run: |
           sleep $(($(date -d "+ 1 minute + 5 seconds" +%s) - $(date +%s)))
-      
+
       - name: Test queries
         run: |
           set -e

@@ -19,7 +19,7 @@ def _contracts(key: str):
     """Returns the contract object at the currently connected network"""
     chainID = brownie.network.chain.id
     if chainID not in CONTRACTS:
-        address_file = networkutil.chainIdToAddressFile(chainID)
+        address_file = networkutil.chain_id_to_address_file(chainID)
         recordDeployedContracts(address_file)
 
     return CONTRACTS[chainID][key]
@@ -29,7 +29,7 @@ def _contracts(key: str):
 def recordDevDeployedContracts():
     assert brownie.network.is_connected()
     assert brownie.network.chain.id == networkutil.DEV_CHAINID
-    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     recordDeployedContracts(address_file)
 
 
@@ -42,7 +42,7 @@ def recordDeployedContracts(address_file: str):
     if chainID in CONTRACTS:  # already filled
         return
 
-    network_name = networkutil.chainIdToNetwork(chainID)
+    network_name = networkutil.chain_id_to_network(chainID)
     with open(address_file, "r") as json_file:
         json_dict = json.load(json_file)
         if network_name not in json_dict:

@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
@@ -7,22 +6,21 @@ import scipy
 from enforce_typing import enforce_types
 
 from df_py.util.constants import (
-    MAX_N_RANK_ASSETS,
-    RANK_SCALE_OP,
     DO_PUBREWARDS,
     DO_RANK,
+    MAX_N_RANK_ASSETS,
+    RANK_SCALE_OP,
 )
-from df_py.volume import cleancase as cc
-from df_py.volume import tousd
-from df_py.volume import csvs
 from df_py.volume import allocations
+from df_py.volume import cleancase as cc
+from df_py.volume import csvs, to_usd
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
 
 @enforce_types
-def getDfWeekNumber(dt: datetime) -> int:
+def get_df_week_number(dt: datetime) -> int:
     """Return the DF week number. This is used by boundRewardsByDcv().
     There was a gap from DF4 to DF5. Since we only care about future dates,
     don't bother to properly support this gap, just focus on future.
@@ -38,7 +36,7 @@ def getDfWeekNumber(dt: datetime) -> int:
 
 
 @enforce_types
-def calcDcvMultiplier(DF_week: int) -> float:
+def calc_dcv_multiplier(DF_week: int) -> float:
     """
     Calculate DCV multiplier, for use in bounding rewards_avail by DCV
 
@@ -61,7 +59,7 @@ def calcDcvMultiplier(DF_week: int) -> float:
 
 
 @enforce_types
-def calcRewards(
+def calc_rewards(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     owners: Dict[int, Dict[str, str]],
@@ -79,7 +77,7 @@ def calcRewards(
       owners -- dict of [chainID][nft_addr] : owner_addr
       symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
       rates -- dict of [basetoken_symbol] : USD_price_float
-      DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
+      DCV_multiplier -- via calc_dcv_multiplier(DF_week). Is an arg to help test.
       OCEAN_avail -- amount of rewards avail, in units of OCEAN
       do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
@@ -93,41 +91,41 @@ def calcRewards(
       chain where rewards go.
     """
     stakes, nftvols, symbols, rates, owners = (
-        cc.modStakes(stakes),
-        cc.modNFTvols(nftvols),
-        cc.modSymbols(symbols),
-        cc.modRates(rates),
-        cc.modOwners(owners),
+        cc.mod_stakes(stakes),
+        cc.mod_nft_vols(nftvols),
+        cc.mod_symbols(symbols),
+        cc.mod_rates(rates),
+        cc.mod_owners(owners),
     )
 
-    nftvols_USD = tousd.nftvolsToUsd(nftvols, symbols, rates)
+    nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
 
-    keys_tup = _getKeysTuple(stakes, nftvols_USD)
-    S, V_USD = _stakeVolDictsToArrays(stakes, nftvols_USD, keys_tup)
-    C = _ownerDictToArray(owners, keys_tup)
+    keys_tup = _get_keys_tuple(stakes, nftvols_USD)
+    S, V_USD = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
+    C = _owner_dict_to_array(owners, keys_tup)
 
-    R = _calcRewardsUsd(
+    R = _calc_rewards_usd(
         S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank
     )
 
-    (rewardsperlp, rewardsinfo) = _rewardArrayToDicts(R, keys_tup)
+    (rewardsperlp, rewardsinfo) = _reward_array_to_dicts(R, keys_tup)
 
     return rewardsperlp, rewardsinfo
 
 
 @enforce_types
-def _getKeysTuple(
+def _get_keys_tuple(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
 ) -> Tuple[List[str], List[Tuple[int, str]]]:
     """@return -- tuple of (LP_addrs_list, chain_nft_tups)"""
-    chain_nft_tups = _getChainNftTups(stakes, nftvols_USD)
-    LP_addrs = _getLpAddrs(stakes)
+    chain_nft_tups = _get_chain_nft_tups(stakes, nftvols_USD)
+    LP_addrs = _get_lp_addrs(stakes)
     return (LP_addrs, chain_nft_tups)
 
 
 @enforce_types
-def _stakeVolDictsToArrays(
+def _stake_vol_dicts_to_arrays(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
@@ -158,7 +156,7 @@ def _stakeVolDictsToArrays(
 
 
 @enforce_types
-def _ownerDictToArray(
+def _owner_dict_to_array(
     owners: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
 ) -> np.ndarray:
@@ -189,7 +187,7 @@ def _ownerDictToArray(
 
 
 @enforce_types
-def _calcRewardsUsd(
+def _calc_rewards_usd(
     S: np.ndarray,
     V_USD: np.ndarray,
     C: np.ndarray,
@@ -203,7 +201,7 @@ def _calcRewardsUsd(
       S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
       V_USD -- 1d array of [chain_nft j] -- nftvol for each {j}, in USD
       C -- 1d array of [chain_nft j] -- the LP i that created j. -1 if not LP
-      DCV_multiplier -- via calcDcvMultiplier(DF_week). Is an arg to help test.
+      DCV_multiplier -- via calc_dcv_multiplier(DF_week). Is an arg to help test.
       OCEAN_avail -- amount of rewards available, in OCEAN
       do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
@@ -225,7 +223,7 @@ def _calcRewardsUsd(
                 S[C[j], j] *= 2.0
     # perc_per_j
     if do_rank:
-        perc_per_j = _rankBasedAllocate(V_USD)
+        perc_per_j = _rank_based_allocate(V_USD)
     else:
         perc_per_j = V_USD / np.sum(V_USD)
 
@@ -271,7 +269,7 @@ def _calcRewardsUsd(
     return R
 
 
-def _rankBasedAllocate(
+def _rank_based_allocate(
     V_USD: np.ndarray,
     max_n_rank_assets: int = MAX_N_RANK_ASSETS,
     rank_scale_op: str = RANK_SCALE_OP,
@@ -333,7 +331,7 @@ def _rankBasedAllocate(
 
 
 @enforce_types
-def _rewardArrayToDicts(
+def _reward_array_to_dicts(
     R: np.ndarray,
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
 ) -> Tuple[dict, dict]:
@@ -376,7 +374,7 @@ def _rewardArrayToDicts(
 
 
 @enforce_types
-def _getChainNftTups(
+def _get_chain_nft_tups(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
 ) -> List[Tuple[int, str]]:
@@ -389,7 +387,7 @@ def _getChainNftTups(
       chain_nft_tups -- list of (chainID, nft_addr), indexed by j
     """
     chainIDs = list(stakes.keys())
-    nft_addrs = _getNftAddrs(nftvols_USD)
+    nft_addrs = _get_nft_addrs(nftvols_USD)
     chain_nft_tups = [
         (chainID, nft_addr)  # all (chain, nft) tups with stake
         for chainID in chainIDs
@@ -400,7 +398,7 @@ def _getChainNftTups(
 
 
 @enforce_types
-def _getNftAddrs(nftvols_USD: Dict[int, Dict[str, str]]) -> List[str]:
+def _get_nft_addrs(nftvols_USD: Dict[int, Dict[str, str]]) -> List[str]:
     """
     @arguments
       nftvols_USD -- dict of [chainID][nft_addr] : vol_USD_float
@@ -416,7 +414,7 @@ def _getNftAddrs(nftvols_USD: Dict[int, Dict[str, str]]) -> List[str]:
 
 
 @enforce_types
-def _getLpAddrs(stakes: Dict[int, Dict[str, Dict[str, float]]]) -> List[str]:
+def _get_lp_addrs(stakes: Dict[int, Dict[str, Dict[str, float]]]) -> List[str]:
     """
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
@@ -433,7 +431,7 @@ def _getLpAddrs(stakes: Dict[int, Dict[str, Dict[str, float]]]) -> List[str]:
 
 
 @enforce_types
-def flattenRewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
+def flatten_rewards(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
     """
     @arguments
       rewards -- dict of [chainID][LP_addr] : reward_float
@@ -463,7 +461,7 @@ def merge_rewards(*reward_dicts):
 def calc_rewards_volume(
     CSV_DIR, START_DATE, TOT_OCEAN, DO_PUBREWARDS=DO_PUBREWARDS, DO_RANK=DO_RANK
 ):
-    S = allocations.loadStakes(CSV_DIR)
+    S = allocations.load_stakes(CSV_DIR)
     V = csvs.load_nftvols_csvs(CSV_DIR)
     C = csvs.load_owners_csvs(CSV_DIR)
     SYM = csvs.load_symbols_csvs(CSV_DIR)
@@ -471,10 +469,10 @@ def calc_rewards_volume(
 
     prev_week = 0
     if START_DATE is None:
-        cur_week = getDfWeekNumber(datetime.now())
+        cur_week = get_df_week_number(datetime.now())
         prev_week = cur_week - 1
     else:
-        prev_week = getDfWeekNumber(START_DATE)
-    m = calcDcvMultiplier(prev_week)
+        prev_week = get_df_week_number(START_DATE)
+    m = calc_dcv_multiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-    return calcRewards(S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK)
+    return calc_rewards(S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK)

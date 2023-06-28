@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 from enforce_typing import enforce_types
 
+from df_py.challenge.calc_rewards import get_challenge_reward_amounts_in_ocean
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import (
@@ -9,47 +10,52 @@ from df_py.util.constants import (
     DFMAIN_CONSTANTS,
     PREDICTOOR_RELEASE_WEEK,
 )
-from df_py.volume.calcrewards import getDfWeekNumber
+from df_py.volume.calc_rewards import get_df_week_number
 
 
 @enforce_types
-def getActiveRewardAmountForWeekEthByStream(
+def get_active_reward_amount_for_week_eth_by_stream(
     start_dt: datetime, substream: str
 ) -> float:
     """
     Return the reward amount for the week and substream in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.
     """
-    total_reward_amount = getActiveRewardAmountForWeekEth(start_dt)
+    total_reward_amount = get_active_reward_amount_for_week_eth(start_dt)
 
-    dfweek = getDfWeekNumber(start_dt) - 1
+    dfweek = get_df_week_number(start_dt) - 1
 
     if substream == "predictoor":
         # 0.01%
         return total_reward_amount * 0.001 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
 
+    if substream == "challenge":
+        return sum(get_challenge_reward_amounts_in_ocean(start_dt))
+
     if substream == "volume":
-        return total_reward_amount - getActiveRewardAmountForWeekEthByStream(
-            start_dt, "predictoor"
+        return (
+            total_reward_amount
+            - get_active_reward_amount_for_week_eth_by_stream(start_dt, "predictoor")
+            - get_active_reward_amount_for_week_eth_by_stream(start_dt, "challenge")
         )
 
     raise ValueError("Unrecognized substream: {}".format(substream))
 
 
 @enforce_types
-def getActiveRewardAmountForWeekEth(start_dt: datetime) -> float:
+def get_active_reward_amount_for_week_eth(start_dt: datetime) -> float:
     """
     Return the reward amount for the week in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.
     """
-    total_reward_amount = getRewardAmountForWeekWei(start_dt)
+    total_reward_amount = get_reward_amount_for_week_wei(start_dt)
     active_reward_amount = int(total_reward_amount * ACTIVE_REWARDS_MULTIPLIER)
     active_reward_amount_eth = from_wei(active_reward_amount)
     return active_reward_amount_eth
 
 
 @enforce_types
-def getRewardAmountForWeekWei(start_dt: datetime) -> int:
+def get_reward_amount_for_week_wei(start_dt: datetime) -> int:
     """
     Return the total reward amount for the week in WEI starting at start_dt.
     This amount is in accordance with the vesting schedule.
@@ -57,7 +63,7 @@ def getRewardAmountForWeekWei(start_dt: datetime) -> int:
     """
 
     # hardcoded values for linear vesting schedule
-    dfweek = getDfWeekNumber(start_dt) - 1
+    dfweek = get_df_week_number(start_dt) - 1
 
     for start_week, value in DFMAIN_CONSTANTS.items():
         if dfweek < start_week:

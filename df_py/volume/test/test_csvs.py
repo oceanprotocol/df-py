@@ -342,11 +342,11 @@ def test_rewardsinfo(
 # =================================================================
 # helper funcs
 @enforce_types
-def test_assertIsEthAddr():
-    csvs.assertIsEthAddr("0xFOO")
-    csvs.assertIsEthAddr("0x967da4048cd07ab37855c090aaf366e4ce1b9f48")
+def test_assert_is_eth_addr():
+    csvs.assert_is_eth_addr("0xFOO")
+    csvs.assert_is_eth_addr("0x967da4048cd07ab37855c090aaf366e4ce1b9f48")
     with pytest.raises(AssertionError):
-        csvs.assertIsEthAddr("FOO")
+        csvs.assert_is_eth_addr("FOO")
 
 
 # =================================================================

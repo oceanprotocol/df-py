@@ -7,9 +7,9 @@ from scipy import optimize
 
 
 @enforce_types
-def getBlockNumberThursday(chain) -> int:
-    timestamp = getNextThursdayTimestamp()
-    block_number = timestampToFutureBlock(chain, timestamp)
+def get_block_number_thursday(chain) -> int:
+    timestamp = get_next_thursday_timestamp()
+    block_number = timestamp_to_future_block(chain, timestamp)
 
     ## round to upper 100th
     block_number = ceil(block_number / 100) * 100
@@ -17,7 +17,7 @@ def getBlockNumberThursday(chain) -> int:
 
 
 @enforce_types
-def getNextThursdayTimestamp() -> int:
+def get_next_thursday_timestamp() -> int:
     dd = datetime.now(timezone.utc)
     dd = dd.replace(hour=0, minute=0, second=0, microsecond=0)
 
@@ -31,7 +31,7 @@ def getNextThursdayTimestamp() -> int:
 
 
 @enforce_types
-def timestrToBlock(chain, timestr: str, test_eth: bool = False) -> int:
+def timestr_to_block(chain, timestr: str, test_eth: bool = False) -> int:
     """
     Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
@@ -42,18 +42,18 @@ def timestrToBlock(chain, timestr: str, test_eth: bool = False) -> int:
     @return
       block -- int
     """
-    timestamp = timestrToTimestamp(timestr)
+    timestamp = timestr_to_timestamp(timestr)
     if chain.id == 1 or test_eth:
         # more accurate for mainnet
-        block = ethTimestamptoBlock(chain, timestamp)
-        block = ethFindClosestBlock(chain, block, timestamp)
+        block = eth_timestamp_to_block(chain, timestamp)
+        block = eth_find_closest_block(chain, block, timestamp)
         return block
 
-    return timestampToBlock(chain, timestamp)
+    return timestamp_to_block(chain, timestamp)
 
 
 @enforce_types
-def timestrToTimestamp(timestr: str) -> float:
+def timestr_to_timestamp(timestr: str) -> float:
     """Examples: 2022-03-29_17:55 --> 1648872899.3 (unix time)
     2022-03-29 --> 1648872899.0
     Does not use local time, rather always uses UTC
@@ -73,7 +73,7 @@ def timestrToTimestamp(timestr: str) -> float:
 
 
 @enforce_types
-def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
+def timestamp_to_future_block(chain, timestamp: Union[float, int]) -> int:
     def timeSinceTimestamp(block_i):
         return chain[int(block_i)].timestamp
 
@@ -104,7 +104,7 @@ def timestampToFutureBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
+def timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
 
     class C:
@@ -145,30 +145,32 @@ def timestampToBlock(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def ethTimestamptoBlock(chain, timestamp: Union[float, int]) -> int:
+def eth_timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
     current_block = chain[-1].number
     current_time = chain[-1].timestamp
-    return ethCalcBlockNumber(
+    return eth_calc_block_number(
         int(current_time), int(current_block), int(timestamp), chain
     )
 
 
 @enforce_types
-def ethCalcBlockNumber(ts: int, block: int, target_ts: int, chain):
+def eth_calc_block_number(ts: int, block: int, target_ts: int, chain):
     AVG_BLOCK_TIME = 12.06  # seconds
     diff = target_ts - ts
     diff_blocks = int(diff // AVG_BLOCK_TIME)
     block += diff_blocks
     ts_found = chain[block].timestamp
     if abs(ts_found - target_ts) > 12 * 5:
-        return ethCalcBlockNumber(ts_found, block, target_ts, chain)
+        return eth_calc_block_number(ts_found, block, target_ts, chain)
 
     return block
 
 
 @enforce_types
-def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) -> int:
+def eth_find_closest_block(
+    chain, block_number: int, timestamp: Union[float, int]
+) -> int:
     """
     @arguments
         chain -- brownie.networks.chain
@@ -205,31 +207,31 @@ def ethFindClosestBlock(chain, block_number: int, timestamp: Union[float, int]) 
 
 
 @enforce_types
-def getfinBlock(chain, FIN):
+def get_fin_block(chain, FIN):
     fin_block = 0
     if FIN == "latest":
         fin_block = len(chain) - 5
     elif FIN == "thu":
-        fin_block = getBlockNumberThursday(chain)
+        fin_block = get_block_number_thursday(chain)
     elif "-" in str(FIN):
-        fin_block = timestrToBlock(chain, FIN)
+        fin_block = timestr_to_block(chain, FIN)
     else:
         fin_block = int(FIN)
     return fin_block
 
 
 @enforce_types
-def getstBlock(chain, ST):
+def get_st_block(chain, ST):
     st_block = 0
     if "-" in str(ST):
-        st_block = timestrToBlock(chain, ST)
+        st_block = timestr_to_block(chain, ST)
     else:
         st_block = int(ST)
     return st_block
 
 
 @enforce_types
-def getstfinBlocks(chain, ST, FIN):
-    st_block = getstBlock(chain, ST)
-    fin_block = getfinBlock(chain, FIN)
+def get_st_fin_blocks(chain, ST, FIN):
+    st_block = get_st_block(chain, ST)
+    fin_block = get_fin_block(chain, FIN)
     return (st_block, fin_block)

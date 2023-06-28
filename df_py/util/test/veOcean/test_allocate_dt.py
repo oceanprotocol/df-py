@@ -106,7 +106,7 @@ def test_batch_reverts():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     global accounts, veAllocate
     accounts = brownie.network.accounts
     veAllocate = B.veAllocate.deploy({"from": accounts[0]})

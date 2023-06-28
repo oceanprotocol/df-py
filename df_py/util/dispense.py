@@ -1,7 +1,7 @@
 import os
 
 # pylint: disable=logging-fstring-interpolation
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import brownie
 from enforce_typing import enforce_types
@@ -10,7 +10,7 @@ from df_py.util.base18 import to_wei
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
-from df_py.util.networkutil import chainIdToMultisigAddr
+from df_py.util.networkutil import chain_id_to_multisig_addr
 
 MAX_BATCH_SIZE = 500
 TRY_AGAIN = 3
@@ -47,7 +47,7 @@ def dispense(
     usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
     if usemultisig:
         logger.info("multisig enabled")
-        multisigaddr = chainIdToMultisigAddr(brownie.network.chain.id)
+        multisigaddr = chain_id_to_multisig_addr(brownie.network.chain.id)
     df_rewards = B.DFRewards.at(dfrewards_addr)
     TOK = B.Simpletoken.at(token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
@@ -113,12 +113,16 @@ def dispense(
     logger.info("dispense: done")
 
 
-def dispense_passive(ocean, feedistributor, amount):
+@enforce_types
+def dispense_passive(ocean, feedistributor, amount: Union[float, int]):
     amount_wei = to_wei(amount)
     transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
+
     checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
     checkpoint_token_data = feedistributor.checkpoint_token.encode_input()
-    multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
+
+    multisig_addr = chain_id_to_multisig_addr(brownie.network.chain.id)
     send_multisig_tx(multisig_addr, ocean.address, 0, transfer_data)
+
     for data in [checkpoint_total_supply_data, checkpoint_token_data]:
         send_multisig_tx(multisig_addr, feedistributor.address, 0, data)

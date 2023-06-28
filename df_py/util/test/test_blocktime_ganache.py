@@ -8,56 +8,56 @@ from pytest import approx
 from df_py.util import networkutil, oceanutil
 from df_py.util.blockrange import create_range
 from df_py.util.blocktime import (
-    getBlockNumberThursday,
-    getNextThursdayTimestamp,
-    getstfinBlocks,
-    timestampToBlock,
-    timestrToBlock,
-    timestrToTimestamp,
+    get_block_number_thursday,
+    get_next_thursday_timestamp,
+    get_st_fin_blocks,
+    timestamp_to_block,
+    timestr_to_block,
+    timestr_to_timestamp,
 )
 
 chain = None
 
 
 @enforce_types
-def test_timestrToBlock_1():
+def test_timestr_to_block_1():
     # tests here are light, the real tests are in test_*() below
-    assert timestrToBlock(chain, "2022-03-29") >= 0.0
-    assert timestrToBlock(chain, "2022-03-29_0:00") >= 0.0
+    assert timestr_to_block(chain, "2022-03-29") >= 0.0
+    assert timestr_to_block(chain, "2022-03-29_0:00") >= 0.0
 
 
 @enforce_types
-def test_timestampToBlock_FarLeft():
-    b = timestrToBlock(chain, "1970-01-01")
+def test_timestamp_to_block_FarLeft():
+    b = timestr_to_block(chain, "1970-01-01")
     assert b == 0 and isinstance(b, int)
 
-    b = timestrToBlock(chain, "1970-01-01_0:00")
+    b = timestr_to_block(chain, "1970-01-01_0:00")
     assert b == 0 and isinstance(b, int)
 
 
 @enforce_types
-def test_timestampToBlock_FarRight():
-    b = timestrToBlock(chain, "2150-01-01")
+def test_timestamp_to_block_FarRight():
+    b = timestr_to_block(chain, "2150-01-01")
     assert b == len(chain) and isinstance(b, int)
 
-    b = timestrToBlock(chain, "2150-01-01_0:00")
+    b = timestr_to_block(chain, "2150-01-01_0:00")
     assert b == len(chain) and isinstance(b, int)
 
 
 @enforce_types
-def test_timestrToTimestamp():
-    t = timestrToTimestamp("1970-01-01_0:00")
+def test_timestr_to_timestamp():
+    t = timestr_to_timestamp("1970-01-01_0:00")
     assert t == 0.0 and isinstance(t, float)
 
-    t = timestrToTimestamp("2022-03-29_17:55")
+    t = timestr_to_timestamp("2022-03-29_17:55")
     assert t == 1648576500.0 and isinstance(t, float)
 
-    t = timestrToTimestamp("2022-03-29")
+    t = timestr_to_timestamp("2022-03-29")
     assert t == 1648512000.0 and isinstance(t, float)
 
 
 @enforce_types
-def test_timestampToBlock():
+def test_timestamp_to_block():
     # gather timestamp and blocks at block offset 0, 9, 29
     timestamp0 = chain[-1].timestamp
     block0 = chain[-1].number
@@ -81,22 +81,22 @@ def test_timestampToBlock():
     assert timestamp29 == (timestamp9 + 200.0)
 
     # test
-    assert timestampToBlock(chain, timestamp0) == approx(block0, 1)
-    assert timestampToBlock(chain, timestamp9) == approx(block9, 1)
-    assert timestampToBlock(chain, timestamp29) == approx(block29, 1)
+    assert timestamp_to_block(chain, timestamp0) == approx(block0, 1)
+    assert timestamp_to_block(chain, timestamp9) == approx(block9, 1)
+    assert timestamp_to_block(chain, timestamp29) == approx(block29, 1)
 
-    assert timestampToBlock(chain, timestamp0 + 10.0) == approx(block0 + 1, 1)
-    assert timestampToBlock(chain, timestamp0 + 20.0) == approx(block0 + 2, 1)
+    assert timestamp_to_block(chain, timestamp0 + 10.0) == approx(block0 + 1, 1)
+    assert timestamp_to_block(chain, timestamp0 + 20.0) == approx(block0 + 2, 1)
 
-    assert timestampToBlock(chain, timestamp9 - 10.0) == approx(block9 - 1, 1)
-    assert timestampToBlock(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
+    assert timestamp_to_block(chain, timestamp9 - 10.0) == approx(block9 - 1, 1)
+    assert timestamp_to_block(chain, timestamp9 + 10.0) == approx(block9 + 1, 1)
 
-    assert timestampToBlock(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
+    assert timestamp_to_block(chain, timestamp29 - 10.0) == approx(block29 - 1, 1)
 
 
 @enforce_types
 def test_get_next_thursday():
-    next_thursday = getNextThursdayTimestamp()
+    next_thursday = get_next_thursday_timestamp()
     date = datetime.utcfromtimestamp(next_thursday)
 
     assert date.isoweekday() == 4
@@ -104,7 +104,7 @@ def test_get_next_thursday():
 
 @enforce_types
 def test_get_next_thursday_block_number():
-    next_thursday_block = getBlockNumberThursday(chain)
+    next_thursday_block = get_block_number_thursday(chain)
     assert next_thursday_block % 10 == 0
     # uncomment when #629 is done
     # assert len(chain) < next_thursday_block
@@ -116,7 +116,7 @@ def test_get_next_thursday_block_number():
 
     avgBlockTime = (t1 - t0) / now
 
-    next_thursday = getNextThursdayTimestamp()
+    next_thursday = get_next_thursday_timestamp()
     apprx = (next_thursday - t0) / avgBlockTime
     apprx = ceil(apprx / 100) * 100
 
@@ -124,27 +124,27 @@ def test_get_next_thursday_block_number():
 
 
 @enforce_types
-def test_getstfinBlocks():
+def test_get_st_fin_blocks():
     chain.mine()
     # by block number
-    (st, fin) = getstfinBlocks(chain, "0", "1")
+    (st, fin) = get_st_fin_blocks(chain, "0", "1")
     assert st == 0
     assert fin > 0
 
     # get by latest fin
-    (st, fin) = getstfinBlocks(chain, "0", "latest")
+    (st, fin) = get_st_fin_blocks(chain, "0", "latest")
     assert st == 0
     assert fin > 0
 
     # get by thu fin
-    (st, fin) = getstfinBlocks(chain, "0", "thu")
+    (st, fin) = get_st_fin_blocks(chain, "0", "thu")
     assert st == 0
     assert fin > 0
 
     # get by datetime YYYY-MM-DD
     now_date = datetime.utcfromtimestamp(chain[-1].timestamp)
     now_date = now_date.strftime("%Y-%m-%d")
-    (st, fin) = getstfinBlocks(chain, "0", now_date)
+    (st, fin) = get_st_fin_blocks(chain, "0", now_date)
     assert st == 0
     assert fin >= 0
 
@@ -156,7 +156,7 @@ def test_getstfinBlocks():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     global chain
     chain = brownie.network.chain

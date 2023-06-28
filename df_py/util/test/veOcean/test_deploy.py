@@ -21,7 +21,7 @@ def test_deploy_ve():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     global accounts
     accounts = brownie.network.accounts

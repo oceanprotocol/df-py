@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 from requests import Response
 
 from df_py.util import networkutil, oceantestutil, oceanutil
-from df_py.util.graphutil import submitQuery
+from df_py.util.graphutil import submit_query
 
 CHAINID = networkutil.DEV_CHAINID
 
@@ -17,7 +17,7 @@ accounts = None
 @enforce_types
 def test_approvedTokens():
     query = "{ opcs{approvedTokens} }"
-    result = submitQuery(query, CHAINID)
+    result = submit_query(query, CHAINID)
 
     pprint(result)
 
@@ -30,7 +30,7 @@ def test_connection_failure():
             response = Mock(spec=Response)
             response.status_code = 500
             mock.return_value = response
-            submitQuery(query, CHAINID)
+            submit_query(query, CHAINID)
 
 
 @enforce_types
@@ -39,7 +39,7 @@ def setup_function():
     global accounts
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
 
 @enforce_types
