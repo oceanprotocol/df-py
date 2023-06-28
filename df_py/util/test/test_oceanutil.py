@@ -13,7 +13,7 @@ from df_py.util.oceanutil import (
 account0, account3 = None, None
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @enforce_types
@@ -67,7 +67,7 @@ def setup_function():
     account0 = brownie.network.accounts[0]
     account3 = brownie.network.accounts[3]
     oceanutil.recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
 
 @enforce_types

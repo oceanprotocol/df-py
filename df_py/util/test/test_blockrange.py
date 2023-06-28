@@ -21,58 +21,58 @@ def test_failures():
 
 @enforce_types
 def test_startAtZero():
-    r = BlockRange(st=0, fin=3, num_samples=10).getBlocks()
+    r = BlockRange(st=0, fin=3, num_samples=10).get_blocks()
     assert r == [0, 1, 2, 3]
 
 
 @enforce_types
 def test_availableN_samples0():
-    r = BlockRange(st=10, fin=20, num_samples=0).getBlocks()
+    r = BlockRange(st=10, fin=20, num_samples=0).get_blocks()
     assert r == []
 
 
 @enforce_types
 def test_available1_samples1():
-    r = BlockRange(st=10, fin=10, num_samples=1).getBlocks()
+    r = BlockRange(st=10, fin=10, num_samples=1).get_blocks()
     assert r == [10]
 
 
 @enforce_types
 def test_available1_samplesN():
-    r = BlockRange(st=10, fin=10, num_samples=10).getBlocks()
+    r = BlockRange(st=10, fin=10, num_samples=10).get_blocks()
     assert r == [10]
 
 
 @enforce_types
 def test_available2_samples1():
     for _ in range(10):
-        r = BlockRange(st=10, fin=11, num_samples=1).getBlocks()
+        r = BlockRange(st=10, fin=11, num_samples=1).get_blocks()
         assert r in ([10], [11])
 
 
 @enforce_types
 def test_available2_samplesN():
-    r = BlockRange(st=10, fin=11, num_samples=10).getBlocks()
+    r = BlockRange(st=10, fin=11, num_samples=10).get_blocks()
     assert sorted(r) == [10, 11]
 
 
 @enforce_types
 def test_available3_samples1():
-    r = BlockRange(st=10, fin=12, num_samples=1).getBlocks()
+    r = BlockRange(st=10, fin=12, num_samples=1).get_blocks()
     assert r in ([10], [11], [12])
 
 
 @enforce_types
 def test_available3_samplesN():
     for _ in range(10):
-        r = BlockRange(st=10, fin=12, num_samples=10).getBlocks()
+        r = BlockRange(st=10, fin=12, num_samples=10).get_blocks()
         assert r == [10, 11, 12]  # should always be sorted
 
 
 @enforce_types
 def test_manyRandom():
     for _ in range(100):
-        r = BlockRange(st=10, fin=20, num_samples=3).getBlocks()
+        r = BlockRange(st=10, fin=20, num_samples=3).get_blocks()
         assert len(r) == 3
         assert min(r) >= 10
         assert max(r) <= 20
@@ -82,18 +82,18 @@ def test_manyRandom():
 @enforce_types
 def test_general():
     br = BlockRange(st=10, fin=20, num_samples=3)
-    assert len(br.getBlocks()) == 3
-    assert br.numBlocks() == 3
+    assert len(br.get_blocks()) == 3
+    assert br.num_blocks() == 3
     assert "BlockRange" in str(br)
 
 
 @enforce_types
 def test_filter_by_max():
     br = BlockRange(st=10, fin=5000, num_samples=100)
-    before = br.getBlocks()
+    before = br.get_blocks()
 
-    br.filterByMaxBlock(max_block=2500)
-    after = br.getBlocks()
+    br.filter_by_max_block(max_block=2500)
+    after = br.get_blocks()
 
     assert len(before) != len(after)  # should be different
 
@@ -108,15 +108,15 @@ def test_filter_by_max():
 def test_rnd_seed():
     r1 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
     r2 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=43)
-    assert r1.getBlocks() != r2.getBlocks()  # should be different
+    assert r1.get_blocks() != r2.get_blocks()  # should be different
 
     s1 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
     s2 = BlockRange(st=10, fin=5000, num_samples=100, random_seed=42)
-    assert s1.getBlocks() == s2.getBlocks()  # should be same
+    assert s1.get_blocks() == s2.get_blocks()  # should be same
 
 
 @enforce_types
 def test_no_sampling():
     # should return fin if num_samples is 1
     rng = BlockRange(st=10, fin=20, num_samples=1)
-    assert rng.getBlocks() == [20]
+    assert rng.get_blocks() == [20]

@@ -82,9 +82,9 @@ jobs:
         run: |
           brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
 
-      - name: Run dftool getrate
+      - name: Run dftool get_rate
         run: |
-          ./dftool getrate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool get_rate OCEAN $TEST_START_DATE $TEST_END_DATE $CSV_DIR --RETRIES $RETRY_TIMES
 
       - name: Run dftool volsym
         run: |

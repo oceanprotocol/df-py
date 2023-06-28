@@ -65,7 +65,7 @@ def test_alice_creates_boost():
 @enforce_types
 def setup_function():
     global accounts, alice, bob, veOCEAN, OCEAN, veDelegation
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
 

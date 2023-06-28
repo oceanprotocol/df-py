@@ -1,9 +1,12 @@
 from typing import Dict, Union
 
+from enforce_typing import enforce_types
+
 from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.constants import MIN_PREDICTIONS
 
 
+@enforce_types
 def filter_predictoors(
     predictoors: Dict[str, Union[PredictoorBase, Predictoor]]
 ) -> Dict[str, Union[PredictoorBase, Predictoor]]:
@@ -22,8 +25,10 @@ def filter_predictoors(
     }
 
 
+@enforce_types
 def calc_predictoor_rewards(
-    predictoors: Dict[str, Union[PredictoorBase, Predictoor]], tokens_avail: float
+    predictoors: Dict[str, Union[PredictoorBase, Predictoor]],
+    tokens_avail: Union[int, float],
 ) -> Dict[str, float]:
     """
     Calculate rewards for predictoors based on their accuracy and available tokens.
@@ -44,9 +49,12 @@ def calc_predictoor_rewards(
 
     # reward calculation function
     tot_accuracy = sum([p.accuracy for p in predictoors.values()])
+
     if tot_accuracy == 0:
         return {}
+
     rewards = {
         k: v.accuracy / tot_accuracy * tokens_avail for k, v in predictoors.items()
     }
+
     return rewards

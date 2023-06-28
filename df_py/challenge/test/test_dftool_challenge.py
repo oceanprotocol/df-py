@@ -14,7 +14,7 @@ from df_py.util.test.test_dftool_ganache import sysargs_context
 PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @enforce_types
@@ -84,7 +84,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))

@@ -79,11 +79,11 @@ jobs:
       - name: Make dftool executable
         run: chmod +x dftool
 
-      - name: Run dftool getrate
+      - name: Run dftool get_rate
         run: |
-          ./dftool getrate OCEAN $date $now $CSV_DIR --RETRIES $RETRY_TIMES
-          ./dftool getrate ETH $date $now $CSV_DIR --RETRIES $RETRY_TIMES
-          ./dftool getrate MATIC $date $now $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool get_rate OCEAN $date $now $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool get_rate ETH $date $now $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool get_rate MATIC $date $now $CSV_DIR --RETRIES $RETRY_TIMES
 
       - name: Run dftool volsym
         run: |

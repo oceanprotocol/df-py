@@ -5,19 +5,19 @@ import pytest
 from enforce_typing import enforce_types
 
 from df_py.predictoor.predictoor_testutil import create_mock_responses
-from df_py.predictoor.queries import queryPredictoors
+from df_py.predictoor.queries import query_predictoors
 from df_py.util import networkutil
 
 CHAINID = networkutil.DEV_CHAINID
 chain = None
 
 
-@patch("df_py.predictoor.queries.submitQuery")
-def test_queryPredictoors(mock_submitQuery):
+@patch("df_py.predictoor.queries.submit_query")
+def test_query_predictoors(mock_submit_query):
     responses, users, stats = create_mock_responses(100)
-    mock_submitQuery.side_effect = responses
+    mock_submit_query.side_effect = responses
 
-    predictoors = queryPredictoors(1, 2, CHAINID)
+    predictoors = query_predictoors(1, 2, CHAINID)
 
     for user in users:
         if stats[user]["total"] == 0:
@@ -29,14 +29,14 @@ def test_queryPredictoors(mock_submitQuery):
         assert predictoors[user].correct_prediction_count == user_correct
         assert predictoors[user].accuracy == user_correct / user_total
 
-    mock_submitQuery.assert_called()
+    mock_submit_query.assert_called()
 
 
 @pytest.mark.skip(reason="Requires predictoor support in subgraph")
-def test_queryPredictoors_request():
+def test_query_predictoors_request():
     ST = 0
     FIN = chain[-1].number
-    predictoors = queryPredictoors(ST, FIN, CHAINID)
+    predictoors = query_predictoors(ST, FIN, CHAINID)
     assert predictoors is not None
     assert isinstance(predictoors, dict)
 

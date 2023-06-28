@@ -22,13 +22,13 @@ from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
-from df_py.util.getrate import getrate
+from df_py.util.get_rate import get_rate
 from df_py.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chainIdToAddressFile(CHAINID)
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @contextlib.contextmanager
@@ -166,8 +166,8 @@ def test_predictoor_data(tmp_path):
     mock_query_response, users, stats = create_mock_responses(100)
 
     with sysargs_context(sys_argv):
-        with patch("df_py.predictoor.queries.submitQuery") as mock_submitQuery:
-            mock_submitQuery.side_effect = mock_query_response
+        with patch("df_py.predictoor.queries.submit_query") as mock_submit_query:
+            mock_submit_query.side_effect = mock_query_response
             do_predictoor_data()
 
     # test result
@@ -282,7 +282,7 @@ def test_calc_predictoor_substream(tmp_path):
 
 
 @patch(
-    "df_py.challenge.calcrewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
+    "df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
 )
 @enforce_types
 def test_calc_challenge_substream(tmp_path):
@@ -296,7 +296,7 @@ def test_calc_challenge_substream(tmp_path):
 0x4000000000000000000000000000000000000001,0x05,0.88
 """
     today = datetime.datetime.now().strftime("%Y-%m-%d")
-    safe_limit = 1300 * (1 / getrate("OCEAN", today, today))
+    safe_limit = 1300 * (1 / get_rate("OCEAN", today, today))
 
     challenge_data_csv = challenge_data_csv_filename(CSV_DIR)
     with open(challenge_data_csv, "w") as f:
@@ -425,22 +425,22 @@ def test_dispense(tmp_path):
 
 
 @enforce_types
-def test_manyrandom():
+def test_many_random():
     sys_argv = [
         "dftool",
-        "manyrandom",
+        "many_random",
         str(CHAINID),
     ]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_manyrandom()
+        dftool_module.do_many_random()
 
     # different chain id will fail
-    sys_argv = ["dftool", "manyrandom", "3"]
+    sys_argv = ["dftool", "many_random", "3"]
 
     with pytest.raises(SystemExit):
         with sysargs_context(sys_argv):
-            dftool_module.do_manyrandom()
+            dftool_module.do_many_random()
 
 
 @enforce_types
@@ -530,7 +530,7 @@ def test_calc_passive(tmp_path):
         assert len(lines) >= 3
 
 
-def test_initdevwallets():
+def test_init_dev_wallets():
     account8 = brownie.network.accounts[8]
     account9 = brownie.network.accounts[9]
 
@@ -539,19 +539,19 @@ def test_initdevwallets():
 
     assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
 
-    sys_argv = ["dftool", "initdevwallets", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "init_dev_wallets", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_initdevwallets()
+        dftool_module.do_init_dev_wallets()
 
     assert from_wei(OCEAN.balanceOf(account9.address)) > 1.0
 
     # different chain id will fail
-    sys_argv = ["dftool", "initdevwallets", "3"]
+    sys_argv = ["dftool", "init_dev_wallets", "3"]
 
     with pytest.raises(SystemExit):
         with sysargs_context(sys_argv):
-            dftool_module.do_initdevwallets()
+            dftool_module.do_init_dev_wallets()
 
 
 def test_volsym(tmp_path):
@@ -576,7 +576,7 @@ def test_volsym(tmp_path):
     rate_file = os.path.join(tmp_path, "rate-test.csv")
     Path(rate_file).write_text("")
 
-    with patch.object(dftool_module, "retryFunction") as mock:
+    with patch.object(dftool_module, "retry_function") as mock:
         with sysargs_context(sys_argv):
             mock.return_value = ({}, {}, {})
             dftool_module.do_volsym()
@@ -616,7 +616,7 @@ def test_nftinfo(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = []
             dftool_module.do_nftinfo()
 
@@ -637,7 +637,7 @@ def test_allocations(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = {}
             dftool_module.do_allocations()
 
@@ -663,7 +663,7 @@ def test_vebals(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = ({}, {}, {})
             dftool_module.do_vebals()
 
@@ -673,16 +673,16 @@ def test_vebals(tmp_path):
 def test_df_strategies():
     sys_argv = [
         "dftool",
-        "newdfrewards",
+        "new_df_rewards",
         str(networkutil.DEV_CHAINID),
     ]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newdfrewards()
+        dftool_module.do_new_df_rewards()
 
     sys_argv = [
         "dftool",
-        "newdfstrategy",
+        "new_df_strategy",
         str(networkutil.DEV_CHAINID),
         "0x0",
         "testStrategy",
@@ -690,7 +690,7 @@ def test_df_strategies():
 
     with sysargs_context(sys_argv):
         with patch.object(dftool_module, "B"):
-            dftool_module.do_newdfstrategy()
+            dftool_module.do_new_df_strategy()
 
     sys_argv = [
         "dftool",
@@ -707,11 +707,11 @@ def test_df_strategies():
             mock_tx.events.keys.return_value = ["StrategyAdded"]
             mock_df.addStrategy.return_value = mock_tx
             mock_B.DFRewards.at.return_value = mock_df
-            dftool_module.do_addstrategy()
+            dftool_module.do_add_strategy()
 
     sys_argv = [
         "dftool",
-        "retirestrategy",
+        "retire_strategy",
         str(networkutil.DEV_CHAINID),
         "0x0",
         "0x0",
@@ -724,15 +724,15 @@ def test_df_strategies():
             mock_tx.events.keys.return_value = ["StrategyRetired"]
             mock_df.retireStrategy.return_value = mock_tx
             mock_B.DFRewards.at.return_value = mock_df
-            dftool_module.do_retirestrategy()
+            dftool_module.do_retire_strategy()
 
 
-def test_getrate(tmp_path):
+def test_get_rate(tmp_path):
     CSV_DIR = str(tmp_path)
 
     sys_argv = [
         "dftool",
-        "getrate",
+        "get_rate",
         "OCEAN",
         "0",
         "latest",
@@ -740,9 +740,9 @@ def test_getrate(tmp_path):
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "retryFunction") as mock:
+        with patch.object(dftool_module, "retry_function") as mock:
             mock.return_value = 100.0
-            dftool_module.do_getrate()
+            dftool_module.do_get_rate()
 
     assert os.path.exists(os.path.join(CSV_DIR, "rate-OCEAN.csv"))
 
@@ -768,17 +768,17 @@ def test_mine():
 
 
 def test_new_functions():
-    sys_argv = ["dftool", "newacct", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "new_acct", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newacct()
+        dftool_module.do_new_acct()
 
-    sys_argv = ["dftool", "newtoken", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "new_token", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newtoken()
+        dftool_module.do_new_token()
 
-    sys_argv = ["dftool", "newVeOcean", str(networkutil.DEV_CHAINID), "0x0"]
+    sys_argv = ["dftool", "new_veocean", str(networkutil.DEV_CHAINID), "0x0"]
 
     with sysargs_context(sys_argv):
         with patch.object(dftool_module, "B") as mock_B:
@@ -787,19 +787,19 @@ def test_new_functions():
             mock_token.address = "0x0"
             mock_token.token = ""
             mock_B.veOcean.deploy.return_value = mock_token
-            dftool_module.do_newVeOcean()
+            dftool_module.do_new_veocean()
 
-    sys_argv = ["dftool", "newVeAllocate", str(networkutil.DEV_CHAINID)]
+    sys_argv = ["dftool", "new_ve_allocate", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_newVeAllocate()
+        dftool_module.do_new_veallocate()
 
 
-def test_veSetAllocation():
+def test_ve_set_allocation():
     OCEAN_addr = oceanutil.OCEAN_address()
     sys_argv = [
         "dftool",
-        "veSetAllocation",
+        "ve_set_allocation",
         str(networkutil.DEV_CHAINID),
         "10",
         OCEAN_addr,
@@ -811,11 +811,11 @@ def test_veSetAllocation():
 
     with patch.object(dftool_module.networkutil, "connect"):
         with sysargs_context(sys_argv):
-            dftool_module.do_veSetAllocation()
+            dftool_module.do_ve_set_allocation()
 
 
-def test_acctinfo():
-    sys_argv = ["dftool", "acctinfo", str(networkutil.DEV_CHAINID), "1"]
+def test_acct_info():
+    sys_argv = ["dftool", "acct_info", str(networkutil.DEV_CHAINID), "1"]
 
     # Mock the connection, otherwise the test setup clashes with
     # the implementation itself, and cleans up the contracts.
@@ -823,12 +823,12 @@ def test_acctinfo():
 
     with patch.object(dftool_module.networkutil, "connect"):
         with sysargs_context(sys_argv):
-            dftool_module.do_acctinfo()
+            dftool_module.do_acct_info()
 
     OCEAN_addr = oceanutil.OCEAN_address()
     sys_argv = [
         "dftool",
-        "acctinfo",
+        "acct_info",
         str(networkutil.DEV_CHAINID),
         "1",
         f"--TOKEN_ADDR={OCEAN_addr}",
@@ -840,14 +840,14 @@ def test_acctinfo():
 
     with patch.object(dftool_module.networkutil, "connect"):
         with sysargs_context(sys_argv):
-            dftool_module.do_acctinfo()
+            dftool_module.do_acct_info()
 
 
-def test_chaininfo():
-    sys_argv = ["dftool", "chaininfo", str(networkutil.DEV_CHAINID)]
+def test_chain_info():
+    sys_argv = ["dftool", "chain_info", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
-        dftool_module.do_chaininfo()
+        dftool_module.do_chain_info()
 
 
 def test_dispense_passive():
@@ -859,7 +859,7 @@ def test_dispense_passive():
         "2023-02-02",
     ]
 
-    with patch.object(dftool_module, "retryFunction"):
+    with patch.object(dftool_module, "retry_function"):
         with sysargs_context(sys_argv):
             dftool_module.do_dispense_passive()
 
@@ -871,7 +871,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
     oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
@@ -887,7 +887,7 @@ def setup_function():
 
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
-    os.environ["SUBGRAPH_URI"] = networkutil.chainIdToSubgraphUri(CHAINID)
+    os.environ["SUBGRAPH_URI"] = networkutil.chain_id_to_subgraph_uri(CHAINID)
     os.environ["SECRET_SEED"] = "1234"
     os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
 

@@ -12,13 +12,13 @@ from df_py.volume import csvs
 
 
 @enforce_types
-def test_getrate(tmp_path):
+def test_get_rate(tmp_path):
     TOKEN_SYMBOL = "OCEAN"
     ST = "2022-01-01"
     FIN = "2022-02-02"
     CSV_DIR = str(tmp_path)
 
-    cmd = f"./dftool getrate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool get_rate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
     os.system(cmd)
 
     # test result
@@ -47,12 +47,12 @@ def test_noarg_commands():
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ["help", "compile", "newacct"]
+    fail_gracefully = ["help", "compile", "new_acct"]
 
     for subarg in subargs:
         sys_argv = ["dftool", subarg]
 
-        if subarg in ["compile", "newacct"]:
+        if subarg in ["compile", "new_acct"]:
             with sysargs_context(sys_argv):
                 dftool_module._do_main()
             continue
@@ -71,7 +71,7 @@ def test_noarg_commands():
 
 @enforce_types
 def _get_HELP_subargs_in_dftool() -> List[str]:
-    """Return e.g. ["help", "compile", "getrate", "volsym", ...]"""
+    """Return e.g. ["help", "compile", "get_rate", "volsym", ...]"""
     help_content = getattr(dftool_arguments, "HELP_LONG")
     s_lines = help_content.split("\n")
 

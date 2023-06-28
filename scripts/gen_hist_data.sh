@@ -40,13 +40,13 @@ fi
 
 
 # Get data
-dftool getrate OCEAN $date $now $CSV_DIR
-dftool getrate ETH $date $now $CSV_DIR
-dftool getrate BNB $date $now $CSV_DIR
-dftool getrate EWT $date $now $CSV_DIR
-dftool getrate MOVR $date $now $CSV_DIR
-dftool getrate MATIC $date $now $CSV_DIR
-dftool getrate USDC $date $now $CSV_DIR
+dftool get_rate OCEAN $date $now $CSV_DIR
+dftool get_rate ETH $date $now $CSV_DIR
+dftool get_rate BNB $date $now $CSV_DIR
+dftool get_rate EWT $date $now $CSV_DIR
+dftool get_rate MOVR $date $now $CSV_DIR
+dftool get_rate MATIC $date $now $CSV_DIR
+dftool get_rate USDC $date $now $CSV_DIR
 USE_TESTNET="${USE_TESTNET:-0}"
 if [ $USE_TESTNET -eq 1 ]; then
     dftool query $date $now $SAMPLES $CSV_DIR 5

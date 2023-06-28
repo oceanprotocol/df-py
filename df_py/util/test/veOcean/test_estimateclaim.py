@@ -171,7 +171,7 @@ def test_rewards():
 @enforce_types
 def setup_function():
     global accounts, alice, bob, charlie, david, veOCEAN, OCEAN, feeDistributor
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
     accounts = brownie.network.accounts
 
