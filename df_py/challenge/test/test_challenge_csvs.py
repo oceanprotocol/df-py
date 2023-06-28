@@ -8,7 +8,7 @@ def test_challenge_data(tmp_path):
     csv_dir = str(tmp_path)
 
     # filename
-    assert "challenge_data.csv" in csvs.challenge_data_csv_filename(csv_dir)
+    assert "challenge.csv" in csvs.challenge_data_csv_filename(csv_dir)
 
     # save
     from_addrs = ["0xfrom1", "0xfrom2"]
