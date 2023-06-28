@@ -91,7 +91,7 @@ def test_batch_number():
 def test_dispense_passive():
     feedist = oceanutil.FeeDistributor()
     OCEAN = oceanutil.OCEANtoken()
-    with patch("df_py.util.dispense.chainIdToMultisigAddr"):
+    with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
         with patch("df_py.util.dispense.send_multisig_tx") as mock:
             dispense.dispense_passive(OCEAN, feedist, 1)
 
@@ -100,13 +100,13 @@ def test_dispense_passive():
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     global accounts, a1, a2, a3
     accounts = brownie.network.accounts
     a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
-    address_file = networkutil.chainIdToAddressFile(networkutil.DEV_CHAINID)
+    address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     oceanutil.recordDeployedContracts(address_file)
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
 
 @enforce_types

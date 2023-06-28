@@ -8,14 +8,14 @@ from enforce_typing import enforce_types
 from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
-from df_py.challenge.calcrewards import calc_challenge_rewards
+from df_py.challenge.calc_rewards import calc_challenge_rewards
 from df_py.challenge.csvs import (
     challenge_rewards_csv_filename,
     load_challenge_data_csv,
     save_challenge_data_csv,
     save_challenge_rewards_csv,
 )
-from df_py.predictoor.calcrewards import calc_predictoor_rewards
+from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     load_predictoor_rewards_csv,
@@ -24,10 +24,10 @@ from df_py.predictoor.csvs import (
     save_predictoor_data_csv,
     save_predictoor_rewards_csv,
 )
-from df_py.predictoor.queries import queryPredictoors
-from df_py.util import blockrange, dispense, getrate, networkutil
+from df_py.predictoor.queries import query_predictoors
+from df_py.util import blockrange, dispense, get_rate, networkutil
 from df_py.util.base18 import from_wei
-from df_py.util.blocktime import getfinBlock, getstfinBlocks, timestrToTimestamp
+from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_arguments import (
     CHAINID_EXAMPLES,
@@ -44,11 +44,11 @@ from df_py.util.dftool_arguments import (
     valid_date_and_convert,
 )
 from df_py.util.multisig import send_multisig_tx
-from df_py.util.networkutil import DEV_CHAINID, chainIdToMultisigAddr
+from df_py.util.networkutil import DEV_CHAINID, chain_id_to_multisig_addr
 from df_py.util.oceantestutil import (
-    randomConsumeFREs,
-    randomCreateDataNFTWithFREs,
-    randomLockAndAllocate,
+    random_consume_FREs,
+    random_create_dataNFT_with_FREs,
+    random_lock_and_allocate,
 )
 from df_py.util.oceanutil import (
     FeeDistributor,
@@ -56,13 +56,13 @@ from df_py.util.oceanutil import (
     recordDeployedContracts,
     veAllocate,
 )
-from df_py.util.retry import retryFunction
+from df_py.util.retry import retry_function
 from df_py.util.vesting_schedule import (
-    getActiveRewardAmountForWeekEth,
-    getActiveRewardAmountForWeekEthByStream,
+    get_active_reward_amount_for_week_eth,
+    get_active_reward_amount_for_week_eth_by_stream,
 )
-from df_py.volume import calcrewards, csvs, queries
-from df_py.volume.calcrewards import calc_rewards_volume
+from df_py.volume import calc_rewards, csvs, queries
+from df_py.volume.calc_rewards import calc_rewards_volume
 
 brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
@@ -72,7 +72,7 @@ def do_volsym():
     parser = StartFinArgumentParser(
         description="Query chain, output volumes, symbols, owners",
         epilog=f"""Uses these envvars:
-          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="volsym",
@@ -90,7 +90,7 @@ def do_volsym():
 
     # check files, prep dir
     if not csvs.rate_csv_filenames(CSV_DIR):
-        print("\nRates don't exist. Call 'dftool getrate' first. Exiting.")
+        print("\nRates don't exist. Call 'dftool get_rate' first. Exiting.")
         sys.exit(1)
 
     # brownie setup
@@ -102,7 +102,7 @@ def do_volsym():
     rng = blockrange.create_range(
         chain, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
     )
-    (Vi, Ci, SYMi) = retryFunction(
+    (Vi, Ci, SYMi) = retry_function(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, CHAINID
     )
 
@@ -150,11 +150,11 @@ def do_nftinfo():
     chain = brownie.network.chain
 
     # update ENDBLOCK
-    ENDBLOCK = getfinBlock(chain, ENDBLOCK)
+    ENDBLOCK = get_fin_block(chain, ENDBLOCK)
     print("Updated ENDBLOCK, new value = {ENDBLOCK}")
 
     # main work
-    nftinfo = retryFunction(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
+    nftinfo = retry_function(queries.queryNftinfo, RETRIES, DELAY_S, CHAINID, ENDBLOCK)
     csvs.save_nftinfo_csv(nftinfo, CSV_DIR, CHAINID)
 
     print("dftool nftinfo: Done")
@@ -192,7 +192,7 @@ def do_allocations():
     rng = blockrange.create_range(
         chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
     )
-    allocs = retryFunction(
+    allocs = retry_function(
         queries.queryAllocations, arguments.RETRIES, 10, rng, CHAINID
     )
     csvs.save_allocation_csv(allocs, CSV_DIR, NSAMP > 1)
@@ -230,7 +230,7 @@ def do_vebals():
         chain, arguments.ST, arguments.FIN, NSAMP, SECRET_SEED
     )
 
-    balances, locked_amt, unlock_time = retryFunction(
+    balances, locked_amt, unlock_time = retry_function(
         queries.queryVebalances, arguments.RETRIES, 10, rng, CHAINID
     )
     csvs.save_vebals_csv(balances, locked_amt, unlock_time, CSV_DIR, NSAMP > 1)
@@ -240,11 +240,11 @@ def do_vebals():
 
 # ========================================================================
 @enforce_types
-def do_getrate():
+def do_get_rate():
     parser = argparse.ArgumentParser(
         description="Get exchange rate, and output rate csv"
     )
-    parser.add_argument("command", choices=["getrate"])
+    parser.add_argument("command", choices=["get_rate"])
     parser.add_argument(
         "TOKEN_SYMBOL",
         type=str,
@@ -282,8 +282,8 @@ def do_getrate():
     _exitIfFileExists(csvs.rate_csv_filename(TOKEN_SYMBOL, CSV_DIR))
 
     # main work
-    rate = retryFunction(
-        getrate.getrate,
+    rate = retry_function(
+        get_rate.get_rate,
         arguments.RETRIES,
         60,
         TOKEN_SYMBOL,
@@ -293,7 +293,7 @@ def do_getrate():
     print(f"rate = ${rate:.4f} / {TOKEN_SYMBOL}")
     csvs.save_rate_csv(TOKEN_SYMBOL, rate, CSV_DIR)
 
-    print("dftool getrate: Done")
+    print("dftool get_rate: Done")
 
 
 # ========================================================================
@@ -381,11 +381,11 @@ def do_predictoor_data():
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
 
-    st_block, fin_block = getstfinBlocks(chain, arguments.ST, arguments.FIN)
+    st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
 
     # main work
-    predictoor_data = retryFunction(
-        queryPredictoors,
+    predictoor_data = retry_function(
+        query_predictoors,
         arguments.RETRIES,
         10,
         st_block,
@@ -448,7 +448,7 @@ def do_calc():
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
         recordDeployedContracts(address_path)
-        TOT_OCEAN = getActiveRewardAmountForWeekEthByStream(
+        TOT_OCEAN = get_active_reward_amount_for_week_eth_by_stream(
             START_DATE, arguments.SUBSTREAM
         )
         print(
@@ -576,13 +576,13 @@ def do_dispense_active():
     volume_rewards = {}
     if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
         volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
-        volume_rewards = calcrewards.flattenRewards(volume_rewards_3d)
+        volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
 
     predictoor_rewards = {}
     if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
 
-    rewards = calcrewards.merge_rewards(volume_rewards, predictoor_rewards)
+    rewards = calc_rewards.merge_rewards(volume_rewards, predictoor_rewards)
 
     # dispense
     dispense.dispense(
@@ -598,9 +598,9 @@ def do_dispense_active():
 
 # ========================================================================
 @enforce_types
-def do_newdfrewards():
+def do_new_df_rewards():
     parser = SimpleChainIdArgumentParser(
-        "Deploy new DFRewards contract", "newdfrewards"
+        "Deploy new DFRewards contract", "new_df_rewards"
     )
     CHAINID = parser.print_args_and_get_chain()
 
@@ -610,14 +610,14 @@ def do_newdfrewards():
     df_rewards = B.DFRewards.deploy({"from": from_account})
     print(f"New DFRewards contract deployed at address: {df_rewards.address}")
 
-    print("dftool newdfrewards: Done")
+    print("dftool new_dfrewards: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_newdfstrategy():
+def do_new_df_strategy():
     parser = argparse.ArgumentParser(description="Deploy new DFStrategy")
-    parser.add_argument("command", choices=["newdfstrategy"])
+    parser.add_argument("command", choices=["new_df_strategy"])
     parser.add_argument("CHAINID", type=int, help=f"{CHAINID_EXAMPLES}")
     parser.add_argument("DFREWARDS_ADDR", help="DFRewards contract's address")
     parser.add_argument("DFSTRATEGY_NAME", help="DF Strategy name")
@@ -631,12 +631,12 @@ def do_newdfstrategy():
     )
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
-    print("dftool newdfstrategy: Done")
+    print("dftool new_df_strategy: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_addstrategy():
+def do_add_strategy():
     parser = DfStrategyArgumentParser(
         "Add a strategy to DFRewards contract", "addstrategy"
     )
@@ -654,14 +654,14 @@ def do_addstrategy():
         f"Strategy {arguments.DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}"
     )
 
-    print("dftool addstrategy: Done")
+    print("dftool add_strategy: Done")
 
 
 # ========================================================================
 @enforce_types
-def do_retirestrategy():
+def do_retire_strategy():
     parser = DfStrategyArgumentParser(
-        "Retire a strategy from DFRewards contract", "retirestrategy"
+        "Retire a strategy from DFRewards contract", "retire_strategy"
     )
 
     arguments = parser.parse_args()
@@ -676,7 +676,7 @@ def do_retirestrategy():
         f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
     )
 
-    print("dftool addstrategy: Done")
+    print("dftool retire_strategy: Done")
 
 
 # ========================================================================
@@ -690,13 +690,13 @@ def do_compile():
 
 # ========================================================================
 @enforce_types
-def do_initdevwallets():
-    # UPADATE THIS
+def do_init_dev_wallets():
+    # UPDATE THIS
     parser = SimpleChainIdArgumentParser(
         "Init wallets with OCEAN. (GANACHE ONLY)",
-        "initdevwallets",
+        "init_dev_wallets",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
     CHAINID = parser.print_args_and_get_chain()
@@ -704,7 +704,7 @@ def do_initdevwallets():
     from df_py.util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     if CHAINID != DEV_CHAINID:
-        # To support other testnets, they need to initdevwallets()
+        # To support other testnets, they need to init_dev_wallets()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
         sys.exit(1)
@@ -717,27 +717,27 @@ def do_initdevwallets():
 
     # main work
     recordDeployedContracts(ADDRESS_FILE)
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
-    print("dftool initdevwallets: Done.")
+    print("dftool init_dev_wallets: Done.")
 
 
 # ========================================================================
 @enforce_types
-def do_manyrandom():
+def do_many_random():
     # UPDATE THIS
     parser = SimpleChainIdArgumentParser(
         "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
-        "manyrandom",
+        "many_random",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
 
     CHAINID = parser.print_args_and_get_chain()
 
     if CHAINID != DEV_CHAINID:
-        # To support other testnets, they need to fillAccountsWithOcean()
+        # To support other testnets, they need to fill_accounts_with_OCEAN()
         # Consider this a TODO:)
         print("Only ganache is currently supported. Exiting.")
         sys.exit(1)
@@ -753,10 +753,10 @@ def do_manyrandom():
     OCEAN = OCEANtoken()
 
     num_nfts = 10  # magic number
-    tups = randomCreateDataNFTWithFREs(num_nfts, OCEAN, brownie.network.accounts)
-    randomLockAndAllocate(tups)
-    randomConsumeFREs(tups, OCEAN)
-    print(f"dftool manyrandom: Done. {num_nfts} new nfts created.")
+    tups = random_create_dataNFT_with_FREs(num_nfts, OCEAN, brownie.network.accounts)
+    random_lock_and_allocate(tups)
+    random_consume_FREs(tups, OCEAN)
+    print(f"dftool many_random: Done. {num_nfts} new nfts created.")
 
 
 # ========================================================================
@@ -777,7 +777,7 @@ def do_mine():
     BLOCKS, TIMEDELTA = arguments.BLOCKS, arguments.TIMEDELTA
 
     # main work
-    networkutil.connectDev()
+    networkutil.connect_dev()
     chain = brownie.network.chain
     if TIMEDELTA is not None:
         chain.mine(blocks=BLOCKS, timedelta=TIMEDELTA)
@@ -789,12 +789,12 @@ def do_mine():
 
 # ========================================================================
 @enforce_types
-def do_newacct():
+def do_new_acct():
     parser = argparse.ArgumentParser(description="Generate new account")
-    parser.add_argument("command", choices=["newacct"])
+    parser.add_argument("command", choices=["new_acct"])
 
     # main work
-    networkutil.connectDev()
+    networkutil.connect_dev()
     account = brownie.network.accounts.add()
 
     print("Generated new account:")
@@ -805,9 +805,9 @@ def do_newacct():
 
 # ========================================================================
 @enforce_types
-def do_newtoken():
+def do_new_token():
     parser = argparse.ArgumentParser(description="Generate new token (for testing)")
-    parser.add_argument("command", choices=["newtoken"])
+    parser.add_argument("command", choices=["new_token"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
@@ -822,9 +822,9 @@ def do_newtoken():
 
 # ========================================================================
 @enforce_types
-def do_newVeOcean():
+def do_new_veocean():
     parser = argparse.ArgumentParser(description="Generate new veOcean (for testing)")
-    parser.add_argument("command", choices=["newVeOcean"])
+    parser.add_argument("command", choices=["new_veocean"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument("TOKEN_ADDR", type=str, help="token address")
 
@@ -847,11 +847,11 @@ def do_newVeOcean():
 
 # ========================================================================
 @enforce_types
-def do_newVeAllocate():
+def do_new_veallocate():
     parser = argparse.ArgumentParser(
         description="Generate new veAllocate (for testing)"
     )
-    parser.add_argument("command", choices=["newVeAllocate"])
+    parser.add_argument("command", choices=["new_ve_allocate"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
@@ -866,14 +866,14 @@ def do_newVeAllocate():
 
 # ========================================================================
 @enforce_types
-def do_veSetAllocation():
+def do_ve_set_allocation():
     parser = argparse.ArgumentParser(
         description="""
         Allocate weight to veAllocate contract (for testing).
         Set to 0 to trigger resetAllocation event.
     """
     )
-    parser.add_argument("command", choices=["veSetAllocation"])
+    parser.add_argument("command", choices=["ve_set_allocation"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=float, help="")
     parser.add_argument("TOKEN_ADDR", type=str, help="NFT Token Address")
@@ -902,12 +902,12 @@ def do_veSetAllocation():
 
 # ========================================================================
 @enforce_types
-def do_acctinfo():
+def do_acct_info():
     parser = argparse.ArgumentParser(
         description="Info about an account",
         epilog="If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.",
     )
-    parser.add_argument("command", choices=["acctinfo"])
+    parser.add_argument("command", choices=["acct_info"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "ACCOUNT_ADDR",
@@ -953,9 +953,9 @@ def do_acctinfo():
 
 # ========================================================================
 @enforce_types
-def do_chaininfo():
+def do_chain_info():
     parser = argparse.ArgumentParser(description="Info about a network")
-    parser.add_argument("command", choices=["chaininfo"])
+    parser.add_argument("command", choices=["chain_info"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
@@ -995,11 +995,11 @@ def do_dispense_passive():
 
     if AMOUNT == 0:
         START_DATE = arguments.ST
-        AMOUNT = getActiveRewardAmountForWeekEth(START_DATE)
+        AMOUNT = get_active_reward_amount_for_week_eth(START_DATE)
 
     feedist = FeeDistributor()
     OCEAN = OCEANtoken()
-    retryFunction(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
+    retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
 
@@ -1022,7 +1022,7 @@ def do_calculate_passive():
     CSV_DIR = arguments.CSV_DIR
 
     networkutil.connect(arguments.CHAINID)
-    timestamp = int(timestrToTimestamp(arguments.DATE))
+    timestamp = int(timestr_to_timestamp(arguments.DATE))
 
     S_PER_WEEK = 7 * 86400
     timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
@@ -1074,13 +1074,13 @@ def do_checkpoint_feedist():
 
         to = feedist.address
         value = 0
-        multisig_addr = chainIdToMultisigAddr(brownie.network.chain.id)
+        multisig_addr = chain_id_to_multisig_addr(brownie.network.chain.id)
 
         # submit transactions to multisig
-        retryFunction(
+        retry_function(
             send_multisig_tx, 3, 60, multisig_addr, to, value, total_supply_encoded
         )
-        retryFunction(
+        retry_function(
             send_multisig_tx, 3, 60, multisig_addr, to, value, checkpoint_token_encoded
         )
 
@@ -1103,7 +1103,7 @@ def _getAddressEnvvarOrExit() -> str:
     if ADDRESS_FILE is None:
         print(
             "\nNeed to set envvar ADDRESS_FILE. Exiting. "
-            f"\nEg: export ADDRESS_FILE={networkutil.chainIdToAddressFile(chainID=DEV_CHAINID)}"
+            f"\nEg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}"
         )
         sys.exit(1)
     return ADDRESS_FILE

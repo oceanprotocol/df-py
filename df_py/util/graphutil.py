@@ -3,8 +3,8 @@ import requests
 from df_py.util import networkutil
 
 
-def submitQuery(query: str, chainID: int) -> dict:
-    subgraph_url = networkutil.chainIdToSubgraphUri(chainID)
+def submit_query(query: str, chainID: int) -> dict:
+    subgraph_url = networkutil.chain_id_to_subgraph_uri(chainID)
     request = requests.post(subgraph_url, "", json={"query": query}, timeout=30)
     if request.status_code != 200:
         # pylint: disable=broad-exception-raised

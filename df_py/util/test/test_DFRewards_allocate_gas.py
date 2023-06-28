@@ -83,9 +83,9 @@ def _prep_batch_allocate(n_accounts: int) -> Any:
 
 @enforce_types
 def setup_function():
-    networkutil.connectDev()
+    networkutil.connect_dev()
     oceanutil.recordDevDeployedContracts()
-    oceantestutil.fillAccountsWithOCEAN()
+    oceantestutil.fill_accounts_with_OCEAN()
 
 
 @enforce_types

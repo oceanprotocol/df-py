@@ -46,31 +46,31 @@ DEV_CHAINID = _NETWORK_TO_CHAINID["development"]
 
 
 @enforce_types
-def chainIdToAddressFile(chainID: int) -> str:  # pylint: disable=unused-argument
+def chain_id_to_address_file(chainID: int) -> str:  # pylint: disable=unused-argument
     """Returns the address file for a given chainID"""
     return os.path.expanduser(_BARGE_ADDRESS_FILE)
 
 
 @enforce_types
-def chainIdToSubgraphUri(chainID: int) -> str:
+def chain_id_to_subgraph_uri(chainID: int) -> str:
     """Returns the subgraph URI for a given chainID"""
     sg = "/subgraphs/name/oceanprotocol/ocean-subgraph"
     if chainID == DEV_CHAINID:
         return "http://127.0.0.1:9000" + sg
 
-    network_str = chainIdToNetwork(chainID)
+    network_str = chain_id_to_network(chainID)
     return f"https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
 
 
 @enforce_types
-def chainIdToMultisigUri(chainID: int) -> str:
+def chain_id_to_multisig_uri(chainID: int) -> str:
     """Returns the multisig API URI for a given chainID"""
-    network_str = chainIdToNetwork(chainID)
+    network_str = chain_id_to_network(chainID)
     return f"https://safe-transaction-{network_str}.safe.global"
 
 
 @enforce_types
-def chainIdToMultisigAddr(chainID: int) -> str:
+def chain_id_to_multisig_addr(chainID: int) -> str:
     """Returns the multisig address for a given chainID"""
     if chainID not in MULTISIG_ADDRS:
         # pylint: disable=broad-exception-raised
@@ -79,19 +79,19 @@ def chainIdToMultisigAddr(chainID: int) -> str:
 
 
 @enforce_types
-def chainIdToNetwork(chainID: int) -> str:
+def chain_id_to_network(chainID: int) -> str:
     """Returns the network name for a given chainID"""
     return _CHAINID_TO_NETWORK[chainID]
 
 
 @enforce_types
-def networkToChainId(network: str) -> int:
+def network_to_chain_id(network: str) -> int:
     """Returns the chainID for a given network name"""
     return _NETWORK_TO_CHAINID[network]
 
 
 @enforce_types
-def getLatestBlock(chainID) -> int:
+def get_latest_block(chainID) -> int:
     network = brownie.network
     prev = None
     if not network.is_connected():
@@ -109,7 +109,7 @@ def getLatestBlock(chainID) -> int:
 
 
 @enforce_types
-def connectDev():
+def connect_dev():
     connect(DEV_CHAINID)
 
 
@@ -123,7 +123,7 @@ def connect(chainID: int):
             "ignore",
             message=".*Development network has a block height of*",
         )
-        network_name = chainIdToNetwork(chainID)
+        network_name = chain_id_to_network(chainID)
         try:
             network.connect(network_name)
         except KeyError as e:

@@ -11,7 +11,7 @@ from df_py.util.constants import BROWNIE_PROJECT as B
 
 
 def get_safe_nonce(multisig_address):
-    BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
+    BASE_URL = networkutil.chain_id_to_multisig_uri(brownie.network.chain.id)
     API_QUERY = "?limit=10&executed=false&queued=true&trusted=true"
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/{API_QUERY}"
     response = requests.request("GET", API_URL, timeout=30)
@@ -29,7 +29,7 @@ def get_safe_nonce(multisig_address):
 
 def send_multisig_tx(multisig_address, to, value, data):
     nonce = get_safe_nonce(multisig_address)
-    BASE_URL = networkutil.chainIdToMultisigUri(brownie.network.chain.id)
+    BASE_URL = networkutil.chain_id_to_multisig_uri(brownie.network.chain.id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
     contract = B.interface.IGnosisSafe(multisig_address)
     gas = 0

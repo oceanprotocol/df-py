@@ -5,9 +5,9 @@ from df_py.util import networkutil
 
 
 @enforce_types
-def test_chainIdToSubgraphUri():
+def test_chain_id_to_subgraph_uri():
     for chainID, network_str in networkutil._CHAINID_TO_NETWORK.items():
-        uri = networkutil.chainIdToSubgraphUri(chainID)
+        uri = networkutil.chain_id_to_subgraph_uri(chainID)
         if chainID == networkutil.DEV_CHAINID:
             assert uri[:21] == "http://127.0.0.1:9000"
         else:
@@ -15,21 +15,21 @@ def test_chainIdToSubgraphUri():
 
 
 @enforce_types
-def test_chainIdToNetwork():
-    assert networkutil.chainIdToNetwork(8996) == "development"
-    assert networkutil.chainIdToNetwork(1) == "mainnet"
-    assert networkutil.chainIdToNetwork(137) == "polygon"
+def test_chain_id_to_network():
+    assert networkutil.chain_id_to_network(8996) == "development"
+    assert networkutil.chain_id_to_network(1) == "mainnet"
+    assert networkutil.chain_id_to_network(137) == "polygon"
 
 
 @enforce_types
-def test_networkToChainId():
-    assert networkutil.networkToChainId("development") == 8996
-    assert networkutil.networkToChainId("mainnet") == 1
-    assert networkutil.networkToChainId("polygon") == 137
+def test_network_to_chain_id():
+    assert networkutil.network_to_chain_id("development") == 8996
+    assert networkutil.network_to_chain_id("mainnet") == 1
+    assert networkutil.network_to_chain_id("polygon") == 137
 
 
 @enforce_types
-def test_getLatestBlock():
-    networkutil.connectDev()
-    latest = networkutil.getLatestBlock(networkutil.DEV_CHAINID)
+def test_get_latest_block():
+    networkutil.connect_dev()
+    latest = networkutil.get_latest_block(networkutil.DEV_CHAINID)
     assert latest == len(network.chain) - 1

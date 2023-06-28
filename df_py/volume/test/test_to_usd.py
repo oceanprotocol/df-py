@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
 
 from df_py.util.networkutil import _CHAINID_TO_ADDRS
-from df_py.volume.tousd import nftvolsToUsd, ratesToAddrRates
+from df_py.volume.to_usd import nft_vols_to_usd, rates_to_addr_rates
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "UNAPP": 42.0}
@@ -14,62 +14,62 @@ SYMBOLS = {C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB}}
 
 
 @enforce_types
-def test_ratesToAddrRates_onechain_onetoken():
+def test_rates_to_addr_rates_onechain_onetoken():
     rates = {"OCEAN": 0.5}
     symbols = {C1: {"0xOCEAN": "OCEAN"}}
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5}}
 
 
 @enforce_types
-def test_ratesToAddrRates_onechain_twotokens():
+def test_rates_to_addr_rates_onechain_twotokens():
     rates = {"OCEAN": 0.5, "H2O": 1.6}
     symbols = {C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}}
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5, "0xH2O": 1.6}}
 
 
 @enforce_types
-def test_ratesToAddrRates_twochains_twotokens():
+def test_rates_to_addr_rates_twochains_twotokens():
     rates = {"OCEAN": 0.5}
     symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "OCEAN"}}
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {"0xOCEAN2": 0.5}}
 
 
 @enforce_types
-def test_ratesToAddrRates_extraneous_rate():
+def test_rates_to_addr_rates_extraneous_rate():
     rates = {"OCEAN": 0.5, "H2O": 1.6}  # H2O's here but not in symbols, so extraneous
     symbols = {C1: {"0xOCEAN": "OCEAN"}}
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5}}
 
 
 @enforce_types
-def test_ratesToAddrRates_extraneous_symbol():
+def test_rates_to_addr_rates_extraneous_symbol():
     rates = {"OCEAN": 0.5}
     symbols = {
         C1: {"0xOCEAN": "OCEAN", "0xH2O": "H2O"}
     }  # H2O's here but not in rates, so extraneous
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN": 0.5}}
 
 
 @enforce_types
-def test_ratesToAddrRates_symbol_changes_between_chains():
+def test_rates_to_addr_rates_symbol_changes_between_chains():
     # symbol on chain 2 is MOCEAN, not OCEAN!
     rates = {"OCEAN": 0.5}
     symbols = {C1: {"0xOCEAN1": "OCEAN"}, C2: {"0xOCEAN2": "MOCEAN"}}
 
     # the result: it simply won't have an entry for 0xOCEAN2
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {C1: {"0xOCEAN1": 0.5}, C2: {}}
 
     # here's the intervention needed
     rates["MOCEAN"] = rates["OCEAN"]
 
     # now it will work
-    addr_rates = ratesToAddrRates(rates, symbols)
+    addr_rates = rates_to_addr_rates(rates, symbols)
     assert addr_rates == {
         C1: {"0xOCEAN1": 0.5},
         C2: {"0xOCEAN2": 0.5},
@@ -77,16 +77,16 @@ def test_ratesToAddrRates_symbol_changes_between_chains():
 
 
 @enforce_types
-def test_nftvolsToUsd_onebasetoken():
+def test_nft_vols_to_usd_onebasetoken():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}}}
-    poolvols_USD = nftvolsToUsd(poolvols, SYMBOLS, RATES)
+    poolvols_USD = nft_vols_to_usd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
 
 
 @enforce_types
-def test_nftvolsToUsd_twobasetokens():
+def test_nft_vols_to_usd_twobasetokens():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PC: 13.0}}}
-    poolvols_USD = nftvolsToUsd(poolvols, SYMBOLS, RATES)
+    poolvols_USD = nft_vols_to_usd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {
         C1: {
             PA: 9.0 * 0.5,
@@ -103,5 +103,5 @@ def test_native_token_rates():
     symbols = {1: {"x": "x"}}
     nftvols = {1: {base_token: {LP1.lower(): 1.0, LP2.lower(): 2.0}}}
 
-    nftvols_USD = nftvolsToUsd(nftvols, symbols, rates)
+    nftvols_USD = nft_vols_to_usd(nftvols, symbols, rates)
     assert nftvols_USD == {1: {LP1: 100.0, LP2: 200.0}}

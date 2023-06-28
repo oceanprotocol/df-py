@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 
 @enforce_types
 # pylint: disable=keyword-arg-before-vararg
-def retryFunction(f, retries: int = 1, delay=10, *args, **kwargs):
+def retry_function(f, retries: int = 1, delay=10, *args, **kwargs):
     """
     @description
       Retry a function call if it fails.

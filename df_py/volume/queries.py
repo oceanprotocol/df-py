@@ -11,7 +11,7 @@ from df_py.util.blockrange import BlockRange
 from df_py.util.constants import AQUARIUS_BASE_URL
 from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import MAX_ALLOCATE
-from df_py.util.graphutil import submitQuery
+from df_py.util.graphutil import submit_query
 from df_py.volume.models import SimpleDataNft, TokSet
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
@@ -114,9 +114,9 @@ def queryVebalances(
     unlock_times: Dict[str, int] = {}
 
     unixEpochTime = brownie.network.chain.time()
-    n_blocks = rng.numBlocks()
+    n_blocks = rng.num_blocks()
     n_blocks_sampled = 0
-    blocks = rng.getBlocks()
+    blocks = rng.get_blocks()
     print("queryVebalances: begin")
 
     for block_i, block in enumerate(blocks):
@@ -155,7 +155,7 @@ def queryVebalances(
                 block,
             )
 
-            result = submitQuery(query, CHAINID)
+            result = submit_query(query, CHAINID)
             if "data" in result:
                 assert "veOCEANs" in result["data"]
                 veOCEANs = result["data"]["veOCEANs"]
@@ -239,9 +239,9 @@ def queryAllocations(
     # [chain_id][nft_addr][LP_addr] : percent
     allocs: Dict[int, Dict[str, Dict[str, float]]] = {}
 
-    n_blocks = rng.numBlocks()
+    n_blocks = rng.num_blocks()
     n_blocks_sampled = 0
-    blocks = rng.getBlocks()
+    blocks = rng.get_blocks()
 
     for block_i, block in enumerate(blocks):
         if (block_i % 50) == 0 or (block_i == n_blocks - 1):
@@ -267,7 +267,7 @@ def queryAllocations(
                 offset,
                 block,
             )
-            result = submitQuery(query, CHAINID)
+            result = submit_query(query, CHAINID)
             if "data" in result:
                 assert "veAllocateUsers" in result["data"]
                 _allocs = result["data"]["veAllocateUsers"]
@@ -366,7 +366,7 @@ def _populateNftAssetNames(nftInfo: List[SimpleDataNft]) -> List[SimpleDataNft]:
     did_to_name = queryAquariusAssetNames(nft_dids)
 
     for nft in nftInfo:
-        nft.setName(did_to_name[nft.did])
+        nft.set_name(did_to_name[nft.did])
 
     return nftInfo
 
@@ -385,7 +385,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     offset = 0
 
     if endBlock == "latest":
-        endBlock = networkutil.getLatestBlock(chainID)
+        endBlock = networkutil.get_latest_block(chainID)
 
     while True:
         query = """
@@ -403,7 +403,7 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
             offset,
             endBlock,
         )
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
         nft_records = result["data"]["nfts"]
         if len(nft_records) == 0:
             # means there are no records left
@@ -482,7 +482,7 @@ def _queryVolsOwners(
             chunk_size,
         )
         offset += chunk_size
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
         if "errors" in result:
             raise AssertionError(result)
         new_orders = result["data"]["orders"]
@@ -582,7 +582,7 @@ def _querySwaps(
             chunk_size,
         )
         offset += chunk_size
-        result = submitQuery(query, chainID)
+        result = submit_query(query, chainID)
         if "errors" in result:
             raise AssertionError(result)
         new_swaps = result["data"]["fixedRateExchangeSwaps"]
