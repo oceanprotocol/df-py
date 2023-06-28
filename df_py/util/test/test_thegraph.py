@@ -38,7 +38,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     global accounts
     accounts = brownie.network.accounts
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
 

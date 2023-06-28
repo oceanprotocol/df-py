@@ -27,7 +27,7 @@ def test_timestr_to_block_1():
 
 
 @enforce_types
-def test_timestamp_to_block_FarLeft():
+def test_timestamp_to_block_far_left():
     b = timestr_to_block(chain, "1970-01-01")
     assert b == 0 and isinstance(b, int)
 
@@ -36,7 +36,7 @@ def test_timestamp_to_block_FarLeft():
 
 
 @enforce_types
-def test_timestamp_to_block_FarRight():
+def test_timestamp_to_block_far_right():
     b = timestr_to_block(chain, "2150-01-01")
     assert b == len(chain) and isinstance(b, int)
 
@@ -157,7 +157,7 @@ def test_get_st_fin_blocks():
 @enforce_types
 def setup_function():
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     global chain
     chain = brownie.network.chain
 

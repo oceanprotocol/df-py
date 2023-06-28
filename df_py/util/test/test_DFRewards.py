@@ -65,8 +65,8 @@ def test_TOK():
 @enforce_types
 def test_OCEAN():
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
-    OCEAN = oceanutil.OCEANtoken()
+    oceanutil.record_deployed_contracts(address_file)
+    OCEAN = oceanutil.OCEAN_token()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
@@ -217,8 +217,8 @@ def test_strategies():
 @enforce_types
 def _test_claim_and_restake():
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
-    OCEAN = oceanutil.OCEANtoken()
+    oceanutil.record_deployed_contracts(address_file)
+    OCEAN = oceanutil.OCEAN_token()
     deployer = accounts[0]
     bob = accounts[1]
 

@@ -13,7 +13,7 @@ accounts, a1, a2, a3 = None, None, None, None
 
 @enforce_types
 def test_small_batch():
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
@@ -40,7 +40,7 @@ def test_small_batch():
 
 @enforce_types
 def test_batching():
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
     batch_size = 3
@@ -90,7 +90,7 @@ def test_batch_number():
 
 def test_dispense_passive():
     feedist = oceanutil.FeeDistributor()
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
         with patch("df_py.util.dispense.send_multisig_tx") as mock:
             dispense.dispense_passive(OCEAN, feedist, 1)
@@ -105,7 +105,7 @@ def setup_function():
     accounts = brownie.network.accounts
     a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
+    oceanutil.record_deployed_contracts(address_file)
     oceantestutil.fill_accounts_with_OCEAN()
 
 

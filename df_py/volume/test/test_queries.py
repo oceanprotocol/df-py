@@ -231,14 +231,14 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 
     assert len(allocations) > 0
 
-    for chainId in allocations:
-        for nftAddr in allocations[chainId]:
-            for userAddr in allocations[chainId][nftAddr]:
+    for chain_id in allocations:
+        for nftAddr in allocations[chain_id]:
+            for userAddr in allocations[chain_id][nftAddr]:
                 allocation_contract = (
-                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
+                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chain_id)
                     / MAX_ALLOCATE
                 )
-                allocation_query = allocations[chainId][nftAddr][userAddr]
+                allocation_query = allocations[chain_id][nftAddr][userAddr]
                 if userAddr in sampling_accounts:
                     assert allocation_query < allocation_contract
                     continue
@@ -248,9 +248,9 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 @enforce_types
 def _test_getSymbols():
     print("_test_getSymbols()...")
-    oceanToken = oceanutil.OCEANtoken()
+    OCEAN_token = oceanutil.OCEAN_token()
     tokset = TokSet()
-    tokset.add(CHAINID, oceanToken.address.lower(), "OCEAN")
+    tokset.add(CHAINID, OCEAN_token.address.lower(), "OCEAN")
     symbols_at_chain = queries.getSymbols(
         tokset, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
@@ -1048,7 +1048,7 @@ def _create_assets(n_assets: int) -> list:
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
-        tup = oceanutil.createDataNFTWithFRE(god_acct, CO2)
+        tup = oceanutil.create_data_nft_with_fre(god_acct, CO2)
         asset = SimpleAsset(tup)
         assets.append(asset)
     return assets
@@ -1069,9 +1069,9 @@ def setup_function():
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     god_acct = brownie.network.accounts[0]
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = oceanutil.veOCEAN()
 
     for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:

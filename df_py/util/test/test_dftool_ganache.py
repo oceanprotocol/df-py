@@ -356,7 +356,7 @@ def test_calc_without_amount(tmp_path):
     ST = "2023-03-16"  # first week of df main
     sys_args = ["dftool", "calc", "volume", CSV_DIR, "0", f"--START_DATE={ST}"]
 
-    with patch("df_py.util.dftool_module.recordDeployedContracts") as mock:
+    with patch("df_py.util.dftool_module.record_deployed_contracts") as mock:
         with patch(
             "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
         ) as mock:
@@ -388,7 +388,7 @@ def test_dispense(tmp_path):
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     OCEAN.transfer(DFTOOL_ACCT, to_wei(TOT_OCEAN), {"from": accounts[0]})
     assert from_wei(OCEAN.balanceOf(DFTOOL_ACCT.address)) == TOT_OCEAN
 
@@ -461,7 +461,7 @@ def test_checkpoint_feedistributor():
 def test_calc_passive(tmp_path):
     accounts = []
     account0 = brownie.network.accounts[0]
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     OCEAN_lock_amt = to_wei(10.0)
     S_PER_WEEK = 604800
     chain = brownie.network.chain
@@ -479,7 +479,7 @@ def test_calc_passive(tmp_path):
     ]
 
     # fails without vebals file
-    with patch.object(dftool_module, "recordDeployedContracts"):
+    with patch.object(dftool_module, "record_deployed_contracts"):
         with pytest.raises(SystemExit):
             with sysargs_context(sys_argv):
                 dftool_module.do_calculate_passive()
@@ -517,7 +517,7 @@ def test_calc_passive(tmp_path):
 
     sys_argv = ["dftool", "calculate_passive", str(CHAINID), str(date), CSV_DIR]
 
-    with patch.object(dftool_module, "recordDeployedContracts"):
+    with patch.object(dftool_module, "record_deployed_contracts"):
         with sysargs_context(sys_argv):
             dftool_module.do_calculate_passive()
 
@@ -534,7 +534,7 @@ def test_init_dev_wallets():
     account8 = brownie.network.accounts[8]
     account9 = brownie.network.accounts[9]
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     OCEAN.transfer(account8, OCEAN.balanceOf(account9.address), {"from": account9})
 
     assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
@@ -870,7 +870,7 @@ def setup_function():
 
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()

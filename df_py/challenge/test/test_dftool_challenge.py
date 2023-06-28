@@ -53,7 +53,7 @@ def _test(tmp_path, DEADLINE: Optional[str]):
     )
 
     # Mock the connection, use test data
-    with patch("df_py.util.dftool_module.recordDeployedContracts"):
+    with patch("df_py.util.dftool_module.record_deployed_contracts"):
         with patch.object(dftool_module.judge, "get_challenge_data") as mock:
             mock.return_value = (target_from_addrs, target_nft_addrs, target_nmses)
             with sysargs_context(sysargs):
@@ -83,7 +83,7 @@ def setup_function():
 
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()
