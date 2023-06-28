@@ -4,8 +4,6 @@ from typing import Any, Dict, List, Optional
 from enforce_typing import enforce_types
 
 from df_py.util.constants import CHALLENGE_FIRST_DATE
-from df_py.util.get_rate import get_rate
-
 
 
 @enforce_types
