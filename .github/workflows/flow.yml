@@ -32,7 +32,20 @@ jobs:
         python-version: [3.8]
     #needs: run-tests
     steps:
+      - id: df-py
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: oceanprotocol
+          repo: df-py
+          excludes: prerelease, draft
+
+      - name: Set branch to checkout
+        id: set_branch
+        run: echo "BRANCH=${{ github.event_name == 'schedule' && steps.df-py.outputs.release || github.ref }}" >> $GITHUB_ENV
+
       - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH }}
 
       - name: Set up Python {{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -138,7 +151,7 @@ jobs:
           credentials_json: "${{ secrets.GC_SECRET }}"
           #workload_identity_provider: ${{ secrets.GCLOUD_IDENTITY_PROVIDER }}
           #service_account: ${{ secrets.SERVICE_ACCOUNT }}
-      
+
       - name: Set upload destination
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
