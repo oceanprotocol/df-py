@@ -342,11 +342,7 @@ def do_challenge_data():
     # main work
     deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
     challenge_data = retry_function(
-        judge.get_challenge_data,
-         arguments.RETRIES,
-         10,
-         deadline_dt,
-         judge_acct
+        judge.get_challenge_data, arguments.RETRIES, 10, deadline_dt, judge_acct
     )
 
     save_challenge_data_csv(challenge_data, CSV_DIR)
