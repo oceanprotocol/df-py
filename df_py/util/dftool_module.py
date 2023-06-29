@@ -2,7 +2,7 @@
 import argparse
 import os
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 
 import brownie
 from enforce_typing import enforce_types
@@ -342,6 +342,7 @@ def do_challenge_data():
 
     # main work
     deadline_dt = datetime.fromtimestamp(timestr_to_timestamp(arguments.DEADLINE))
+    deadline_dt = deadline_dt.astimezone(timezone.utc)
     challenge_data = retry_function(
         judge.get_challenge_data,
          arguments.RETRIES,
