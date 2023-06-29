@@ -50,7 +50,7 @@ def _get_txs(deadline_dt) -> list:
 
     result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
     if "data" not in result:
-        print(f"_get_txs: An error occured, {result}")
+        raise Exception(f"_get_txs: An error occured, {result}")
     txs = result["data"]["nftTransferHistories"]
 
     return txs
