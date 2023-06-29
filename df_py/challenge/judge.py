@@ -22,6 +22,9 @@ def _get_txs(deadline_dt) -> list:
     # https://github.com/oceanprotocol/ocean-subgraph/blob/main/schema.graphql
     a_week_before_deadline = deadline_dt - timedelta(weeks=1)
 
+    a_week_before_deadline = str(int(a_week_before_deadline))
+    deadline_dt = str(int(deadline_dt))
+
     query_s = f"""
 {{nftTransferHistories(
     where: {{
@@ -46,7 +49,8 @@ def _get_txs(deadline_dt) -> list:
 }}"""
 
     result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
-    print(result)
+    if "nftTransferHistories" not in result:
+        print(f"_get_txs: An error occured, {result}")
     txs = result["nftTransferHistories"]
 
     return txs
