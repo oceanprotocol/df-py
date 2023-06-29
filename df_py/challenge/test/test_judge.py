@@ -16,18 +16,20 @@ def test_get_txs():
 
     with patch("df_py.util.graphutil.submit_query") as mock:
         mock.return_value = {
-            "nftTransferHistories": [
-                {
-                    "timestamp": six_days_ago.timestamp(),
-                    "nft": {"id": "0xnft1"},
-                    "oldOwner": {"id": "0xfrom1"},
-                },
-                {
-                    "timestamp": one_day_ago.timestamp(),
-                    "nft": {"id": "0xnft2"},
-                    "oldOwner": {"id": "0xfrom2"},
-                },
-            ]
+            "data": {
+                "nftTransferHistories": [
+                    {
+                        "timestamp": six_days_ago.timestamp(),
+                        "nft": {"id": "0xnft1"},
+                        "oldOwner": {"id": "0xfrom1"},
+                    },
+                    {
+                        "timestamp": one_day_ago.timestamp(),
+                        "nft": {"id": "0xnft2"},
+                        "oldOwner": {"id": "0xfrom2"},
+                    },
+                ]
+            }
         }
         txs = judge._get_txs(now)
 
