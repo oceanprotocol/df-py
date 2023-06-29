@@ -10,7 +10,7 @@ accounts = None
 @enforce_types
 def test_deploy_ve():
     """Test deploy veOCEAN contract."""
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
 
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": accounts[0]}
@@ -22,7 +22,7 @@ def test_deploy_ve():
 @enforce_types
 def setup_function():
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     global accounts
     accounts = brownie.network.accounts
 

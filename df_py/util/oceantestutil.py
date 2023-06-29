@@ -44,7 +44,7 @@ def fill_accounts_with_token(token):
 
 @enforce_types
 def fill_accounts_with_OCEAN():
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     fill_accounts_with_token(OCEAN)
 
 
@@ -118,7 +118,7 @@ def random_create_dataNFT_with_FREs(num_FRE: int, base_token, accounts):
             account_i = FRE_i
         else:
             account_i = random.randint(0, len(accounts))
-        (data_NFT, DT, exchangeId) = oceanutil.createDataNFTWithFRE(
+        (data_NFT, DT, exchangeId) = oceanutil.create_data_nft_with_fre(
             accounts[account_i], base_token
         )
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
@@ -176,7 +176,7 @@ def random_lock_and_allocate(tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
     acc1 = network.accounts[0]
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = oceanutil.veOCEAN()
 
     accounts = network.accounts[: len(tups)]

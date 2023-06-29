@@ -15,7 +15,7 @@ accounts = None
 
 
 @enforce_types
-def test_approvedTokens():
+def test_approved_tokens():
     query = "{ opcs{approvedTokens} }"
     result = submit_query(query, CHAINID)
 
@@ -38,7 +38,7 @@ def setup_function():
     networkutil.connect(CHAINID)
     global accounts
     accounts = brownie.network.accounts
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
 

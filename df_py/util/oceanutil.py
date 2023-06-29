@@ -20,21 +20,21 @@ def _contracts(key: str):
     chainID = brownie.network.chain.id
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
-        recordDeployedContracts(address_file)
+        record_deployed_contracts(address_file)
 
     return CONTRACTS[chainID][key]
 
 
 @enforce_types
-def recordDevDeployedContracts():
+def record_dev_deployed_contracts():
     assert brownie.network.is_connected()
     assert brownie.network.chain.id == networkutil.DEV_CHAINID
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    recordDeployedContracts(address_file)
+    record_deployed_contracts(address_file)
 
 
 @enforce_types
-def recordDeployedContracts(address_file: str):
+def record_deployed_contracts(address_file: str):
     """Records deployed Ocean contracts at currently connected network"""
     assert brownie.network.is_connected()
     chainID = brownie.network.chain.id
@@ -80,12 +80,12 @@ def recordDeployedContracts(address_file: str):
     CONTRACTS[chainID] = C
 
 
-def OCEANtoken():
+def OCEAN_token():
     return _contracts("Ocean")
 
 
 def OCEAN_address() -> str:
-    return OCEANtoken().address.lower()
+    return OCEAN_token().address.lower()
 
 
 def ERC721Template():
@@ -96,7 +96,7 @@ def ERC20Template():
     return _contracts("ERC20Template")
 
 
-def factoryRouter():
+def FactoryRouter():
     return _contracts("Router")
 
 
@@ -137,11 +137,11 @@ def VestingWalletV0():
 
 
 @enforce_types
-def createDataNFTWithFRE(from_account, token):
-    data_NFT = createDataNFT("1", "1", from_account)
-    DT = createDatatokenFromDataNFT("1", "1", data_NFT, from_account)
+def create_data_nft_with_fre(from_account, token):
+    data_NFT = create_data_nft("1", "1", from_account)
+    DT = create_datatoken_from_data_nft("1", "1", data_NFT, from_account)
 
-    exchangeId = createFREFromDatatoken(DT, token, 10.0, from_account)
+    exchangeId = create_FRE_from_datatoken(DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
 
 
@@ -157,11 +157,11 @@ def _get_events(tx):
 
 
 @enforce_types
-def createDataNFT(name: str, symbol: str, from_account):
+def create_data_nft(name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
     template_index = 1
     additional_metadata_updater = ZERO_ADDRESS
-    additional_erc20_deployer = factoryRouter().address
+    additional_erc20_deployer = FactoryRouter().address
     transferable = True
     owner = from_account.address
     token_uri = "https://mystorage.com/mytoken.png"
@@ -184,24 +184,26 @@ def createDataNFT(name: str, symbol: str, from_account):
     return data_NFT
 
 
-def getDataNFT(data_NFT_address):
-    return B.ERC721Template.at(data_NFT_address)
+def get_data_nft(data_nft_address):
+    return B.ERC721Template.at(data_nft_address)
 
 
-def getDataField(data_NFT, field_label: str) -> str:
+def get_data_field(data_nft, field_label: str) -> str:
     field_label_hash = Web3.keccak(text=field_label)  # to keccak256 hash
-    field_value_hex = data_NFT.getData(field_label_hash)
+    field_value_hex = data_nft.getData(field_label_hash)
     field_value = field_value_hex.decode("ascii")
 
     return field_value
 
 
 @enforce_types
-def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_account):
+def create_datatoken_from_data_nft(
+    dt_name: str, dt_symbol: str, data_nft, from_account
+):
     erc20_template_index = 1
     strings = [
-        DT_name,
-        DT_symbol,
+        dt_name,
+        dt_symbol,
     ]
     addresses = [
         from_account.address,  # minter
@@ -215,7 +217,7 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
     ]
     _bytes: List[Any] = []
 
-    tx = data_NFT.createERC20(
+    tx = data_nft.createERC20(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
 
@@ -227,21 +229,21 @@ def createDatatokenFromDataNFT(DT_name: str, DT_symbol: str, data_NFT, from_acco
 
 
 @enforce_types
-def createFREFromDatatoken(
-    datatoken, base_TOKEN, amount: float, from_account, rate=1.0
+def create_FRE_from_datatoken(
+    datatoken, base_token, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
     datatoken.approve(FixedPrice().address, to_wei(amount), {"from": from_account})
 
     addresses = [
-        base_TOKEN.address,  # baseToken
+        base_token.address,  # baseToken
         from_account.address,  # owner
         from_account.address,  # marketFeeCollector address
         ZERO_ADDRESS,  # allowed swapper
     ]
 
     uints = [
-        base_TOKEN.decimals(),  # baseTokenDecimals
+        base_token.decimals(),  # baseTokenDecimals
         datatoken.decimals(),  # datatokenDecimals
         to_wei(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
@@ -268,13 +270,13 @@ def createFREFromDatatoken(
 
 
 @enforce_types
-def set_allocation(amount: int, nft_addr: str, chainID: int, from_account):
-    veAllocate().setAllocation(amount, nft_addr, chainID, {"from": from_account})
+def set_allocation(amount: int, nft_addr: str, chain_id: int, from_account):
+    veAllocate().setAllocation(amount, nft_addr, chain_id, {"from": from_account})
 
 
 @enforce_types
 def ve_delegate(
-    from_account, to_account, percentage: float, tokenid: int, expiry: int = 0
+    from_account, to_account, percentage: float, token_id: int, expiry: int = 0
 ):
     if expiry == 0:
         expiry = veOCEAN().locked__end(from_account)
@@ -284,7 +286,7 @@ def ve_delegate(
         int(percentage * 10000),
         0,
         expiry,
-        tokenid,
+        token_id,
         {"from": from_account},
     )
 
@@ -405,7 +407,7 @@ def to_32byte_hex(val: int) -> str:
 
 
 @enforce_types
-def calcDID(nft_addr: str, chainID: int) -> str:
+def calc_did(nft_addr: str, chainID: int) -> str:
     nft_addr2 = brownie.web3.toChecksumAddress(nft_addr)
 
     # adapted from ocean.py/ocean_lib/ocean/ocean_assets.py

@@ -198,7 +198,7 @@ def test_chain_id_for_owners_csv():
 
 
 @enforce_types
-def test_ownersCsv(tmp_path):
+def test_owners_csv(tmp_path):
     csv_dir = str(tmp_path)
 
     C = {
@@ -279,7 +279,7 @@ def test_rewardsperlp_filename(tmp_path):
 
 
 @enforce_types
-def test_rewardsperlp_main(tmp_path):
+def test_rewards_per_lp_main(tmp_path):
     rewards = {1: {LP1: 1.1, LP2: 2.2, LP3: 3.3}, 137: {LP1: 137.1, LP3: 137.3}}
     target_rewards = rewards
 
@@ -299,7 +299,7 @@ def test_rewardsperlp_main(tmp_path):
 
 
 @enforce_types
-def test_rewardsinfo(
+def test_rewards_info(
     tmp_path, network_setup_and_teardown
 ):  # pylint: disable=unused-argument
     rewards = {

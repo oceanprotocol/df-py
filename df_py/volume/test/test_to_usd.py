@@ -77,14 +77,14 @@ def test_rates_to_addr_rates_symbol_changes_between_chains():
 
 
 @enforce_types
-def test_nft_vols_to_usd_onebasetoken():
+def test_nft_vols_to_usd_one_basetoken():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}}}
     poolvols_USD = nft_vols_to_usd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {C1: {PA: 9.0 * 0.5, PB: 11.0 * 0.5}}
 
 
 @enforce_types
-def test_nft_vols_to_usd_twobasetokens():
+def test_nft_vols_to_usd_two_basetokens():
     poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PC: 13.0}}}
     poolvols_USD = nft_vols_to_usd(poolvols, SYMBOLS, RATES)
     assert poolvols_USD == {

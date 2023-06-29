@@ -742,13 +742,13 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
 
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
-            nft_dids.append(oceanutil.calcDID(nft_addr, chainID))
+            nft_dids.append(oceanutil.calc_did(nft_addr, chainID))
 
     filtered_dids = _filterDids(nft_dids)
 
     for basetoken_addr in nftvols:
         for nft_addr in nftvols[basetoken_addr]:
-            did = oceanutil.calcDID(nft_addr, chainID)
+            did = oceanutil.calc_did(nft_addr, chainID)
             if did in filtered_dids:
                 if basetoken_addr not in filtered_nftvols:
                     filtered_nftvols[basetoken_addr] = {}

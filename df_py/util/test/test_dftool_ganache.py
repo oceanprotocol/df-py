@@ -50,28 +50,28 @@ def mock_connect():
 
 @enforce_types
 def test_calc_volume(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.save_allocation_csv(allocations, CSV_DIR)
+    csvs.save_allocation_csv(allocations, csv_dir)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1.0}}
-    csvs.save_nftvols_csv(nftvols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(nftvols_at_chain, csv_dir, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.save_owners_csv(owners_at_chain, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, CSV_DIR)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.save_symbols_csv(symbols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(symbols_at_chain, csv_dir, CHAINID)
 
-    csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.50, csv_dir)
 
     # main cmd
     TOT_OCEAN = 1000.0
@@ -82,7 +82,7 @@ def test_calc_volume(tmp_path):
             "dftool",
             "calc",
             "volume",
-            CSV_DIR,
+            csv_dir,
             str(TOT_OCEAN),
             f"--START_DATE={START_DATE}",
         ]
@@ -90,21 +90,21 @@ def test_calc_volume(tmp_path):
         dftool_module.do_calc()
 
     # test result
-    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
+    rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
 
 
 @enforce_types
 def test_calc_failures(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     # neither total ocean, nor given start date
     with pytest.raises(SystemExit):
-        with sysargs_context(["dftool", "calc", "volume", CSV_DIR, "0"]):
+        with sysargs_context(["dftool", "calc", "volume", csv_dir, "0"]):
             dftool_module.do_calc()
 
-    TOT_OCEAN = 1000.0
-    START_DATE = "2023-02-02"  # Only substream is volume DF
+    tot_ocean = 1000.0
+    start_date = "2023-02-02"  # Only substream is volume DF
 
     # no required input files -- volume
     with pytest.raises(SystemExit):
@@ -113,9 +113,9 @@ def test_calc_failures(tmp_path):
                 "dftool",
                 "calc",
                 "volume",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={START_DATE}",
+                csv_dir,
+                str(tot_ocean),
+                f"--START_DATE={start_date}",
             ]
         ):
             dftool_module.do_calc()
@@ -127,9 +127,9 @@ def test_calc_failures(tmp_path):
                 "dftool",
                 "calc",
                 "predictoor",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={START_DATE}",
+                csv_dir,
+                str(tot_ocean),
+                f"--START_DATE={start_date}",
             ]
         ):
             dftool_module.do_calc()
@@ -141,9 +141,9 @@ def test_calc_failures(tmp_path):
                 "dftool",
                 "calc",
                 "challenge",
-                CSV_DIR,
-                str(TOT_OCEAN),
-                f"--START_DATE={START_DATE}",
+                csv_dir,
+                str(tot_ocean),
+                f"--START_DATE={start_date}",
             ]
         ):
             dftool_module.do_calc()
@@ -151,14 +151,14 @@ def test_calc_failures(tmp_path):
 
 @enforce_types
 def test_predictoor_data(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     sys_argv = [
         "dftool",
         "predictoor_data",
         "0",
         "latest",
-        CSV_DIR,
+        csv_dir,
         str(CHAINID),
         "--RETRIES=1",
     ]
@@ -171,10 +171,10 @@ def test_predictoor_data(tmp_path):
             do_predictoor_data()
 
     # test result
-    predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR)
+    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
     assert os.path.exists(predictoor_data_csv)
 
-    predictoors = load_predictoor_data_csv(CSV_DIR)
+    predictoors = load_predictoor_data_csv(csv_dir)
     for user in users:
         if stats[user]["total"] == 0:
             assert user not in predictoors
@@ -188,7 +188,7 @@ def test_predictoor_data(tmp_path):
 
 @enforce_types
 def test_calc_predictoor_substream(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     csv_template = """predictoor_addr,accuracy,n_preds,n_correct_preds
 0x0000000000000000000000000000000000000001,0.5,1818,909
@@ -197,86 +197,86 @@ def test_calc_predictoor_substream(tmp_path):
 0x3000000000000000000000000000000000000001,0.5,754,909
 0x4000000000000000000000000000000000000001,0.5,1818,909
 """
-    predictoor_data_csv = predictoor_data_csv_filename(CSV_DIR)
+    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
     with open(predictoor_data_csv, "w") as f:
         f.write(csv_template)
 
     # main cmd
 
-    # TEST WITH TOT_OCEAN > 0
-    TOT_OCEAN = 1000.0
-    ST = "2023-03-16"  # first week of df main
+    # TEST WITH tot_ocean > 0
+    tot_ocean = 1000.0
+    start_date = "2023-03-16"  # first week of df main
 
     with sysargs_context(
         [
             "dftool",
             "calc",
             "predictoor",
-            CSV_DIR,
-            str(TOT_OCEAN),
-            f"--START_DATE={ST}",
+            csv_dir,
+            str(tot_ocean),
+            f"--START_DATE={start_date}",
         ]
     ):
         dftool_module.do_calc()
 
     # test result
-    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
+    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
-    rewards = load_predictoor_rewards_csv(CSV_DIR)
+    rewards = load_predictoor_rewards_csv(csv_dir)
     total_reward = sum(rewards.values())
     assert total_reward == 1000.0
 
     # delete rewards csv
     os.remove(rewards_csv)
 
-    # TEST WITH TOT_OCEAN = 0, DATE WITH NONZERO REWARDS
-    TOT_OCEAN = 0
-    ST = "2042-03-16"  # some date where predictoor rewards are nonzero
+    # TEST WITH tot_ocean = 0, DATE WITH NONZERO REWARDS
+    tot_ocean = 0
+    start_date = "2042-03-16"  # some date where predictoor rewards are nonzero
 
     with sysargs_context(
         [
             "dftool",
             "calc",
             "predictoor",
-            CSV_DIR,
-            str(TOT_OCEAN),
-            f"--START_DATE={ST}",
+            csv_dir,
+            str(tot_ocean),
+            f"--START_DATE={start_date}",
         ]
     ):
         dftool_module.do_calc()
 
     # test result
-    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
+    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
-    rewards = load_predictoor_rewards_csv(CSV_DIR)
+    rewards = load_predictoor_rewards_csv(csv_dir)
     total_reward = sum(rewards.values())
     assert total_reward > 0
 
     # delete rewards csv
     os.remove(rewards_csv)
 
-    # TEST WITH TOT_OCEAN = 0, DATE WITH ZERO REWARDS
-    TOT_OCEAN = 0
-    ST = "2023-01-01"  # some date where predictoor rewards are zero
+    # TEST WITH tot_ocean = 0, DATE WITH ZERO REWARDS
+    tot_ocean = 0
+    start_date = "2023-01-01"  # some date where predictoor rewards are zero
 
     with sysargs_context(
         [
             "dftool",
             "calc",
             "predictoor",
-            CSV_DIR,
-            str(TOT_OCEAN),
-            f"--START_DATE={ST}",
+            csv_dir,
+            str(tot_ocean),
+            f"--START_DATE={start_date}",
         ]
     ):
         dftool_module.do_calc()
 
     # test result
-    rewards_csv = predictoor_rewards_csv_filename(CSV_DIR)
+    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
-    rewards = load_predictoor_rewards_csv(CSV_DIR)
+    rewards = load_predictoor_rewards_csv(csv_dir)
     total_reward = sum(rewards.values())
     assert total_reward == 0
 
@@ -286,7 +286,7 @@ def test_calc_predictoor_substream(tmp_path):
 )
 @enforce_types
 def test_calc_challenge_substream(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     csv_template = """from_addr,nft_addr,nmse
 0x0000000000000000000000000000000000000001,0x01,0.1
@@ -298,21 +298,21 @@ def test_calc_challenge_substream(tmp_path):
     today = datetime.datetime.now().strftime("%Y-%m-%d")
     safe_limit = 1300 * (1 / get_rate("OCEAN", today, today))
 
-    challenge_data_csv = challenge_data_csv_filename(CSV_DIR)
+    challenge_data_csv = challenge_data_csv_filename(csv_dir)
     with open(challenge_data_csv, "w") as f:
         f.write(csv_template)
 
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
-    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]):
+    with sysargs_context(["dftool", "calc", "challenge", csv_dir, str(safe_limit)]):
         dftool_module.do_calc()
 
-    rewards = load_challenge_rewards_csv(CSV_DIR)
+    rewards = load_challenge_rewards_csv(csv_dir)
     assert len(rewards) == 3
     assert rewards["0x0000000000000000000000000000000000000001"] > 0
 
     # not enough available tokens
-    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, "750"]):
+    with sysargs_context(["dftool", "calc", "challenge", csv_dir, "750"]):
         with pytest.raises(SystemExit):
             dftool_module.do_calc()
 
@@ -322,41 +322,41 @@ def test_calc_challenge_substream(tmp_path):
     with open(challenge_data_csv, "w") as f:
         f.write(csv_template)
 
-    with sysargs_context(["dftool", "calc", "challenge", CSV_DIR, str(safe_limit)]):
+    with sysargs_context(["dftool", "calc", "challenge", csv_dir, str(safe_limit)]):
         with pytest.raises(SystemExit):
             dftool_module.do_calc()
 
 
 @enforce_types
 def test_calc_without_amount(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address()
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.save_allocation_csv(allocations, CSV_DIR)
+    csvs.save_allocation_csv(allocations, csv_dir)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1e10}}
-    csvs.save_nftvols_csv(nftvols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_nftvols_csv(nftvols_at_chain, csv_dir, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.save_owners_csv(owners_at_chain, CSV_DIR, CHAINID)
+    csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
 
     vebals = {"0xlp_addr1": 1e8}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, CSV_DIR)
+    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.save_symbols_csv(symbols_at_chain, CSV_DIR, CHAINID)
+    csvs.save_symbols_csv(symbols_at_chain, csv_dir, CHAINID)
 
-    csvs.save_rate_csv("OCEAN", 0.50, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.50, csv_dir)
 
     # main cmd
-    ST = "2023-03-16"  # first week of df main
-    sys_args = ["dftool", "calc", "volume", CSV_DIR, "0", f"--START_DATE={ST}"]
+    start_date = "2023-03-16"  # first week of df main
+    sys_args = ["dftool", "calc", "volume", csv_dir, "0", f"--START_DATE={start_date}"]
 
-    with patch("df_py.util.dftool_module.recordDeployedContracts") as mock:
+    with patch("df_py.util.dftool_module.record_deployed_contracts") as mock:
         with patch(
             "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
         ) as mock:
@@ -365,11 +365,11 @@ def test_calc_without_amount(tmp_path):
                 dftool_module.do_calc()
 
     # test result
-    rewards_csv = csvs.volume_rewards_csv_filename(CSV_DIR)
+    rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
-    rewards = csvs.load_volume_rewards_csv(CSV_DIR)
+    rewards = csvs.load_volume_rewards_csv(csv_dir)
     total_reward = 0
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
@@ -383,45 +383,45 @@ def test_dispense(tmp_path):
     accounts = brownie.network.accounts
     address1 = accounts[1].address.lower()
     address2 = accounts[2].address.lower()
-    CSV_DIR = str(tmp_path)
-    TOT_OCEAN = 1000.0
+    csv_dir = str(tmp_path)
+    tot_ocean = 1000.0
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
-    OCEAN = oceanutil.OCEANtoken()
-    OCEAN.transfer(DFTOOL_ACCT, to_wei(TOT_OCEAN), {"from": accounts[0]})
-    assert from_wei(OCEAN.balanceOf(DFTOOL_ACCT.address)) == TOT_OCEAN
+    OCEAN = oceanutil.OCEAN_token()
+    OCEAN.transfer(DFTOOL_ACCT, to_wei(tot_ocean), {"from": accounts[0]})
+    assert from_wei(OCEAN.balanceOf(DFTOOL_ACCT.address)) == tot_ocean
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
     rewards = {
         CHAINID: {address1: 400},
         "5": {address1: 300, address2: 100},
     }
-    csvs.save_volume_rewards_csv(rewards, CSV_DIR)
-    save_predictoor_rewards_csv({}, CSV_DIR)
+    csvs.save_volume_rewards_csv(rewards, csv_dir)
+    save_predictoor_rewards_csv({}, csv_dir)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
     # main command
-    CSV_DIR = str(tmp_path)
-    DFREWARDS_ADDR = df_rewards.address
-    OCEAN_ADDR = oceanutil.OCEAN_address()
+    csv_dir = str(tmp_path)
+    DFRewards_addr = df_rewards.address
+    OCEAN_addr = oceanutil.OCEAN_address()
 
     sys_argv = [
         "dftool",
         "dispense_active",
-        CSV_DIR,
+        csv_dir,
         str(CHAINID),
-        f"--DFREWARDS_ADDR={DFREWARDS_ADDR}",
-        f"--TOKEN_ADDR={OCEAN_ADDR}",
+        f"--DFREWARDS_ADDR={DFRewards_addr}",
+        f"--TOKEN_ADDR={OCEAN_addr}",
     ]
 
     with sysargs_context(sys_argv):
         dftool_module.do_dispense_active()
 
     # test result
-    assert from_wei(df_rewards.claimable(address1, OCEAN_ADDR)) == 700.0
-    assert from_wei(df_rewards.claimable(address2, OCEAN_ADDR)) == 100.0
+    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 700.0
+    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 100.0
 
 
 @enforce_types
@@ -445,14 +445,14 @@ def test_many_random():
 
 @enforce_types
 def test_checkpoint_feedistributor():
-    feeDistributor = oceanutil.FeeDistributor()
-    timecursor_before = feeDistributor.time_cursor()
+    fee_distributor = oceanutil.FeeDistributor()
+    timecursor_before = fee_distributor.time_cursor()
     brownie.network.chain.sleep(60 * 60 * 24 * 7)
     brownie.network.chain.mine()
     cmd = f"./dftool checkpoint_feedist {CHAINID}"
     os.system(cmd)
 
-    timecursor_after = feeDistributor.time_cursor()
+    timecursor_after = fee_distributor.time_cursor()
 
     assert timecursor_after > timecursor_before
 
@@ -461,13 +461,13 @@ def test_checkpoint_feedistributor():
 def test_calc_passive(tmp_path):
     accounts = []
     account0 = brownie.network.accounts[0]
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     OCEAN_lock_amt = to_wei(10.0)
     S_PER_WEEK = 604800
     chain = brownie.network.chain
     feeDistributor = oceanutil.FeeDistributor()
     veOCEAN = oceanutil.veOCEAN()
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
     unlock_time = chain.time() + S_PER_WEEK * 10
 
     sys_argv = [
@@ -475,11 +475,11 @@ def test_calc_passive(tmp_path):
         "calculate_passive",
         str(networkutil.DEV_CHAINID),
         "2023-02-02",
-        CSV_DIR,
+        csv_dir,
     ]
 
     # fails without vebals file
-    with patch.object(dftool_module, "recordDeployedContracts"):
+    with patch.object(dftool_module, "record_deployed_contracts"):
         with pytest.raises(SystemExit):
             with sysargs_context(sys_argv):
                 dftool_module.do_calculate_passive()
@@ -507,21 +507,23 @@ def test_calc_passive(tmp_path):
     fake_vebals = {}
     locked_amt = {}
     unlock_times = {}
+
     for acc in accounts:
         fake_vebals[acc.address] = from_wei(veOCEAN.balanceOf(acc.address))
         locked_amt[acc.address] = OCEAN_lock_amt
         unlock_times[acc.address] = unlock_time
-    csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, CSV_DIR, False)
+
+    csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, csv_dir, False)
     date = chain.time() // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
 
-    sys_argv = ["dftool", "calculate_passive", str(CHAINID), str(date), CSV_DIR]
+    sys_argv = ["dftool", "calculate_passive", str(CHAINID), str(date), csv_dir]
 
-    with patch.object(dftool_module, "recordDeployedContracts"):
+    with patch.object(dftool_module, "record_deployed_contracts"):
         with sysargs_context(sys_argv):
             dftool_module.do_calculate_passive()
 
-    filename = csvs.passive_csv_filename(CSV_DIR)
+    filename = csvs.passive_csv_filename(csv_dir)
     assert os.path.exists(filename)
 
     # number of lines must be >=3
@@ -534,7 +536,7 @@ def test_init_dev_wallets():
     account8 = brownie.network.accounts[8]
     account9 = brownie.network.accounts[9]
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     OCEAN.transfer(account8, OCEAN.balanceOf(account9.address), {"from": account9})
 
     assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
@@ -555,7 +557,7 @@ def test_init_dev_wallets():
 
 
 def test_volsym(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     sys_argv = [
         "dftool",
@@ -563,7 +565,7 @@ def test_volsym(tmp_path):
         "2023-03-16",  # first week of df main
         "latest",
         "10",
-        CSV_DIR,
+        csv_dir,
         str(networkutil.DEV_CHAINID),
     ]
 
@@ -581,13 +583,13 @@ def test_volsym(tmp_path):
             mock.return_value = ({}, {}, {})
             dftool_module.do_volsym()
 
-    assert os.path.exists(os.path.join(CSV_DIR, "nftvols-8996.csv"))
-    assert os.path.exists(os.path.join(CSV_DIR, "owners-8996.csv"))
-    assert os.path.exists(os.path.join(CSV_DIR, "symbols-8996.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "nftvols-8996.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "owners-8996.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "symbols-8996.csv"))
 
-    os.remove(os.path.join(CSV_DIR, "nftvols-8996.csv"))
-    os.remove(os.path.join(CSV_DIR, "owners-8996.csv"))
-    os.remove(os.path.join(CSV_DIR, "symbols-8996.csv"))
+    os.remove(os.path.join(csv_dir, "nftvols-8996.csv"))
+    os.remove(os.path.join(csv_dir, "owners-8996.csv"))
+    os.remove(os.path.join(csv_dir, "symbols-8996.csv"))
 
     del os.environ["ADDRESS_FILE"]
     # rates does not exist
@@ -606,12 +608,12 @@ def test_volsym(tmp_path):
 
 
 def test_nftinfo(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     sys_argv = [
         "dftool",
         "nftinfo",
-        CSV_DIR,
+        csv_dir,
         str(networkutil.DEV_CHAINID),
     ]
 
@@ -620,11 +622,11 @@ def test_nftinfo(tmp_path):
             mock.return_value = []
             dftool_module.do_nftinfo()
 
-    assert os.path.exists(os.path.join(CSV_DIR, "nftinfo_8996.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "nftinfo_8996.csv"))
 
 
 def test_allocations(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     sys_argv = [
         "dftool",
@@ -632,7 +634,7 @@ def test_allocations(tmp_path):
         "0",
         "latest",
         "10",
-        CSV_DIR,
+        csv_dir,
         str(networkutil.DEV_CHAINID),
     ]
 
@@ -641,7 +643,7 @@ def test_allocations(tmp_path):
             mock.return_value = {}
             dftool_module.do_allocations()
 
-    assert os.path.exists(os.path.join(CSV_DIR, "allocations.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "allocations.csv"))
 
     # file already exists
     with pytest.raises(SystemExit):
@@ -650,7 +652,7 @@ def test_allocations(tmp_path):
 
 
 def test_vebals(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     sys_argv = [
         "dftool",
@@ -658,7 +660,7 @@ def test_vebals(tmp_path):
         "0",
         "latest",
         "10",
-        CSV_DIR,
+        csv_dir,
         str(networkutil.DEV_CHAINID),
     ]
 
@@ -667,7 +669,7 @@ def test_vebals(tmp_path):
             mock.return_value = ({}, {}, {})
             dftool_module.do_vebals()
 
-    assert os.path.exists(os.path.join(CSV_DIR, "vebals.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "vebals.csv"))
 
 
 def test_df_strategies():
@@ -728,7 +730,7 @@ def test_df_strategies():
 
 
 def test_get_rate(tmp_path):
-    CSV_DIR = str(tmp_path)
+    csv_dir = str(tmp_path)
 
     sys_argv = [
         "dftool",
@@ -736,7 +738,7 @@ def test_get_rate(tmp_path):
         "OCEAN",
         "0",
         "latest",
-        CSV_DIR,
+        csv_dir,
     ]
 
     with sysargs_context(sys_argv):
@@ -744,7 +746,7 @@ def test_get_rate(tmp_path):
             mock.return_value = 100.0
             dftool_module.do_get_rate()
 
-    assert os.path.exists(os.path.join(CSV_DIR, "rate-OCEAN.csv"))
+    assert os.path.exists(os.path.join(csv_dir, "rate-OCEAN.csv"))
 
 
 def test_compile():
@@ -805,25 +807,15 @@ def test_ve_set_allocation():
         OCEAN_addr,
     ]
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(sys_argv):
-            dftool_module.do_ve_set_allocation()
+    with sysargs_context(sys_argv):
+        dftool_module.do_ve_set_allocation()
 
 
 def test_acct_info():
     sys_argv = ["dftool", "acct_info", str(networkutil.DEV_CHAINID), "1"]
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(sys_argv):
-            dftool_module.do_acct_info()
+    with sysargs_context(sys_argv):
+        dftool_module.do_acct_info()
 
     OCEAN_addr = oceanutil.OCEAN_address()
     sys_argv = [
@@ -834,13 +826,8 @@ def test_acct_info():
         f"--TOKEN_ADDR={OCEAN_addr}",
     ]
 
-    # Mock the connection, otherwise the test setup clashes with
-    # the implementation itself, and cleans up the contracts.
-    # Either way, we are already connected to ganache through tests.
-
-    with patch.object(dftool_module.networkutil, "connect"):
-        with sysargs_context(sys_argv):
-            dftool_module.do_acct_info()
+    with sysargs_context(sys_argv):
+        dftool_module.do_acct_info()
 
 
 def test_chain_info():
@@ -870,7 +857,7 @@ def setup_function():
 
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()

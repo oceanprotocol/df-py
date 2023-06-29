@@ -66,13 +66,13 @@ def test_alice_creates_boost():
 def setup_function():
     global accounts, alice, bob, veOCEAN, OCEAN, veDelegation
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     accounts = brownie.network.accounts
 
     alice = accounts.add()
     bob = accounts.add()
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
