@@ -8,7 +8,7 @@ These operations are run on a regular basis to:
 - Checkpoint `FeeDistributor` smart contract.
 
 ## DF-SQL
-The server runs a cron job that calculates the allocations, vebalances, volumes, and other data. This data is then used to update the df-sql database. The cron job is run every 10 minutes. [More info about the scripts and cronjobs.](https://github.com/oceanprotocol/df-py/df-system/README.md)
+The server runs a cron job that calculates the allocations, vebalances, volumes, and other data. This data is then used to update the df-sql database. The cron job is run every 10 minutes. [More info about the scripts and cronjobs.](df-system/README.md)
 
 ## Weekly Rewards
 Every Thursday at 12:00 UTC, Github Actions calculates the weekly rewards for the previous week. The results are then uploaded as an artifact to the Github Actions.
