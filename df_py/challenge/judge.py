@@ -138,6 +138,8 @@ def parse_deadline_str(deadline_str: Optional[str] = None) -> datetime:
 
         offset = (today.weekday() - WEDNESDAY) % 7
         if offset == 0:
+            # If offset is 0, it means today is Wednesday.
+            # In this case, we set the offset to 7 to retrieve the last Wednesday.
             offset = 7
         prev_wed = today - timedelta(days=offset)
         deadline_dt = prev_wed.replace(hour=23, minute=59, second=0, microsecond=0)
