@@ -132,6 +132,8 @@ def parse_deadline_str(deadline_str: Optional[str] = None) -> datetime:
         today = today.replace(hour=0, minute=0, second=0, microsecond=0)
 
         offset = (today.weekday() - WEDNESDAY) % 7
+        if offset == 0:
+            offset = 7
         prev_wed = today - timedelta(days=offset)
         deadline_dt = prev_wed.replace(hour=23, minute=59, second=0, microsecond=0)
     else:

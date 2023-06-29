@@ -2,7 +2,6 @@
 import argparse
 import os
 import sys
-from datetime import datetime, timezone
 
 import brownie
 from enforce_typing import enforce_types
@@ -309,7 +308,7 @@ def do_challenge_data():
     )
     parser.add_argument(
         "--DEADLINE",
-        type=block_or_valid_date,
+        type=challenge_date,
         default=None,
         required=False,
         help="""submission deadline.
@@ -341,8 +340,7 @@ def do_challenge_data():
     judge_acct = judge.get_judge_acct()
 
     # main work
-    deadline_dt = datetime.fromtimestamp(timestr_to_timestamp(arguments.DEADLINE))
-    deadline_dt = deadline_dt.astimezone(timezone.utc)
+    deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
     challenge_data = retry_function(
         judge.get_challenge_data,
          arguments.RETRIES,
