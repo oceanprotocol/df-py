@@ -22,15 +22,15 @@ def _get_txs(deadline_dt) -> list:
     # https://github.com/oceanprotocol/ocean-subgraph/blob/main/schema.graphql
     a_week_before_deadline = deadline_dt - timedelta(weeks=1)
 
-    a_week_before_deadline = str(int(a_week_before_deadline))
-    deadline_dt = str(int(deadline_dt))
+    a_week_before_deadline_ts = str(int(a_week_before_deadline.timestamp()))
+    deadline_dt_ts = str(int(deadline_dt.timestamp()))
 
     query_s = f"""
 {{nftTransferHistories(
     where: {{
              newOwner: "{JUDGE_ADDRESS.lower()}",
-             timestamp_gt: {a_week_before_deadline.timestamp()},
-             timestamp_lte: {deadline_dt.timestamp()}
+             timestamp_gt: {a_week_before_deadline_ts},
+             timestamp_lte: {deadline_dt_ts}
             }}
 )
     {{
