@@ -84,7 +84,7 @@ jobs:
         run: cat "$HOME/.ocean/ocean-contracts/artifacts/address.json"
       - name: Test with Brownie
         run: |
-          coverage run --omit="*test*" -m pytest df_py/challenge/test df_py/predictoor/test df_py/volume/test df_py/util/test
+          coverage run --omit="*test*" -m pytest
           coverage report
           coverage xml
         env:
