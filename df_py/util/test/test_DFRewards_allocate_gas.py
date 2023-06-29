@@ -73,7 +73,7 @@ def _prep_batch_allocate(n_accounts: int) -> Any:
         Account0 approves it to spend sum(rewards)
     """
     account0 = brownie.network.accounts[0]
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     df_rewards = B.DFRewards.deploy({"from": account0})
     addresses = get_random_addresses(n_accounts)
     rewards = [1 for account_i in range(n_accounts)]
@@ -84,7 +84,7 @@ def _prep_batch_allocate(n_accounts: int) -> Any:
 @enforce_types
 def setup_function():
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
 

@@ -13,16 +13,16 @@ from df_py.volume import csvs
 
 @enforce_types
 def test_get_rate(tmp_path):
-    TOKEN_SYMBOL = "OCEAN"
-    ST = "2022-01-01"
-    FIN = "2022-02-02"
-    CSV_DIR = str(tmp_path)
+    token_symbol = "OCEAN"
+    start_date = "2022-01-01"
+    fin_date = "2022-02-02"
+    csv_dir = str(tmp_path)
 
-    cmd = f"./dftool get_rate {TOKEN_SYMBOL} {ST} {FIN} {CSV_DIR}"
+    cmd = f"./dftool get_rate {token_symbol} {start_date} {fin_date} {csv_dir}"
     os.system(cmd)
 
     # test result
-    assert csvs.rate_csv_filenames(CSV_DIR)
+    assert csvs.rate_csv_filenames(csv_dir)
 
 
 @enforce_types

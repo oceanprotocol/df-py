@@ -115,16 +115,17 @@ def test_get_active_reward_amount_for_week_eth(test_input, expected_output):
 
 
 @enforce_types
-def test_compareHalflifeFunctions():
+def test_compare_halflife_functions():
     # compare python and solidity halflife function
-    VALUE = 503370000 * 1e18
-    HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
-    MONTH = 30 * 24 * 60 * 60
-    for i in range(0, int(HALF_LIFE * 1.5), int(MONTH * 4)):
-        py_result = vesting_schedule._halflife(VALUE, i, HALF_LIFE)
-        solidity_result = vesting_schedule._halflife_solidity(VALUE, i, HALF_LIFE)
+    value = 503370000 * 1e18
+    halflife = 4 * 365 * 24 * 60 * 60  # 4 years
+    month = 30 * 24 * 60 * 60
+
+    for i in range(0, int(halflife * 1.5), int(month * 4)):
+        py_result = vesting_schedule._halflife(value, i, halflife)
+        solidity_result = vesting_schedule._halflife_solidity(value, i, halflife)
         diff = abs(py_result - solidity_result)
-        assert diff < 1e10, f"diff {diff} at i {i/HALF_LIFE*2}"
+        assert diff < 1e10, f"diff {diff} at i {i/halflife*2}"
 
 
 @enforce_types
