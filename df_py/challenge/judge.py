@@ -7,7 +7,6 @@ from typing import List, Optional, Tuple
 
 import ccxt
 import numpy as np
-import pytest
 from brownie.network import accounts
 from enforce_typing import enforce_types
 

@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import numpy as np
+import pytest
+
 from enforce_typing import enforce_types
 
 from df_py.challenge import judge
