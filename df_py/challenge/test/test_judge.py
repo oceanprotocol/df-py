@@ -57,7 +57,7 @@ def test_get_txs_invalid_data():
     now = datetime.now().replace(tzinfo=timezone.utc)
     with patch("df_py.util.graphutil.submit_query") as mock:
         mock.return_value = {"error": ""}
-        with pytest.raises(Exception, match='_get_txs: An error occured, {'error': ''}"'):
+        with pytest.raises(Exception, match="_get_txs: An error occured, {'error': ''}"):
             txs = judge._get_txs(now)
 
 
