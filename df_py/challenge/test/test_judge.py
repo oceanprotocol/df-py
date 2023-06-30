@@ -45,6 +45,18 @@ def test_get_txs():
     assert nft_addrs == ["0xnft1", "0xnft2"]
     assert from_addrs == ["0xfrom1", "0xfrom2"]
 
+def test_get_txs_without_mock():
+    now = datetime.now().replace(tzinfo=timezone.utc)
+    txs = judge._get_txs(now)
+
+def test_get_txs_invalid_data():
+    now = datetime.now().replace(tzinfo=timezone.utc)
+    with patch("df_py.util.graphutil.submit_query") as mock:
+        mock.return_value = {
+            "error":""
+        }
+        with pytest.raises(Exception, match="_get_txs: An error occured, {\"error\":\"\"}"):
+            txs = judge._get_txs(now)
 
 @enforce_types
 def test_nft_addr_to_pred_vals():
