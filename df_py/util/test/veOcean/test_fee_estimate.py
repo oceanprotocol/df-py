@@ -109,7 +109,7 @@ def test_rewards():
 def setup_function():
     global accounts, alice, bob, charlie, david, veOCEAN, OCEAN, feeDistributor
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     accounts = brownie.network.accounts
 
     alice = accounts.add()
@@ -117,7 +117,7 @@ def setup_function():
     charlie = accounts.add()
     david = accounts.add()
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )

@@ -60,7 +60,7 @@ def test_alice_locks_tokens():
 @enforce_types
 def setup_function():
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     global accounts, alice, bob, veOCEAN, OCEAN
     accounts = brownie.network.accounts
 
@@ -70,7 +70,7 @@ def setup_function():
     accounts[0].transfer(alice, "0.01 ether")
     accounts[0].transfer(bob, "0.01 ether")
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )
