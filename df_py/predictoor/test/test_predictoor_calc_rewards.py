@@ -6,7 +6,7 @@ from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.constants import MIN_PREDICTIONS
 
 
-def test_filterPredictoors():
+def test_filter_predictoors():
     p1 = Predictoor("0x1")
     p1._prediction_count = MIN_PREDICTIONS - 1
     p2 = Predictoor("0x2")
@@ -23,7 +23,7 @@ def test_filterPredictoors():
     assert "0x3" in filtered
 
 
-def test_calcPredictoorRewards_no_predictions():
+def test_calc_predictoor_rewards_no_predictions():
     predictoors: Dict[str, Union[PredictoorBase, Predictoor]] = {}
 
     rewards = calc_predictoor_rewards(predictoors, 100)
@@ -31,7 +31,7 @@ def test_calcPredictoorRewards_no_predictions():
     assert len(rewards) == 0
 
 
-def test_calcPredictoorRewards_one_prediction_not_eligible():
+def test_calc_predictoor_rewards_one_prediction_not_eligible():
     p1 = Predictoor("0x1")
     p1._prediction_count = MIN_PREDICTIONS - 1
     p1._correct_prediction_count = 5
@@ -43,7 +43,7 @@ def test_calcPredictoorRewards_one_prediction_not_eligible():
     assert rewards.get(p1.address, 0) == 0
 
 
-def test_calcPredictoorRewards_one_prediction_eligible():
+def test_calc_predictoor_rewards_one_prediction_eligible():
     p1 = Predictoor("0x1")
     p1._prediction_count = MIN_PREDICTIONS + 1
     p1._correct_prediction_count = 5
@@ -55,7 +55,7 @@ def test_calcPredictoorRewards_one_prediction_eligible():
     assert rewards.get(p1.address, 0) == 100
 
 
-def test_calcPredictoorRewards_with_predictions():
+def test_calc_predictoor_rewards_with_predictions():
     p1 = Predictoor("0x1")
     p1._prediction_count = MIN_PREDICTIONS + 100
     p1._correct_prediction_count = 5
@@ -74,7 +74,7 @@ def test_calcPredictoorRewards_with_predictions():
     assert rewards["0x2"] == 50.0
 
 
-def test_calcPredictoorRewards_fuzz():
+def test_calc_predictoor_rewards_fuzz():
     predictoors = {}
     total_accuracy = 0
     for i in range(100):  # generate 100 predictoors

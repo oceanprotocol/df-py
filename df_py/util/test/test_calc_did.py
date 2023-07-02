@@ -1,4 +1,4 @@
-from df_py.util.oceanutil import calcDID
+from df_py.util.oceanutil import calc_did
 
 # pylint: disable=line-too-long
 # Example: https://v4.aquarius.oceanprotocol.com/api/aquarius/assets/ddo/did:op:8d797a40e75a73a9646e48cfb14d5c0f6afb3c897f53403d00787b00e736b9f3
@@ -15,13 +15,13 @@ did:op:9bd243f4f2fc439d095fdee56da00c34bc2d2c1f69f7c84c730f5df2bc61bf3c,1287,0x5
 did:op:8d797a40e75a73a9646e48cfb14d5c0f6afb3c897f53403d00787b00e736b9f3,4,0xf41eC22779f8a9ac16fC0707744dD8815b50EC48"""
 
 
-def test_calcDID():
+def test_calc_did():
     data = [x.split(",") for x in golden_data.split("\n")]
-    for [did, chainID, address] in data:
-        chainID = int(chainID)
+    for [did, chain_id, address] in data:
+        chain_id = int(chain_id)
 
-        assert calcDID(address, chainID) == did
+        assert calc_did(address, chain_id) == did
 
         # address is not case sensitive
-        assert calcDID(address.lower(), chainID) == did
-        assert calcDID(address.upper(), chainID) == did
+        assert calc_did(address.lower(), chain_id) == did
+        assert calc_did(address.upper(), chain_id) == did

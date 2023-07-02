@@ -22,7 +22,7 @@ class SimpleDataNft:
         self.owner_addr = owner_addr.lower()
         self.is_purgatory = is_purgatory
         self.name = name  # can be any mix of upper and lower case
-        self.did = oceanutil.calcDID(nft_addr, chain_id)
+        self.did = oceanutil.calc_did(nft_addr, chain_id)
 
     def set_name(self, name: str):
         self.name = name

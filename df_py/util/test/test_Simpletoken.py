@@ -9,7 +9,7 @@ accounts = None
 
 @enforce_types
 def test_transfer():
-    token = _deployToken()
+    token = _deploy_token()
     assert token.totalSupply() == 1e21
     token.transfer(accounts[1], 1e20, {"from": accounts[0]})
     assert token.balanceOf(accounts[1]) == 1e20
@@ -18,7 +18,7 @@ def test_transfer():
 
 @enforce_types
 def test_approve():
-    token = _deployToken()
+    token = _deploy_token()
     token.approve(accounts[1], 1e19, {"from": accounts[0]})
     assert token.allowance(accounts[0], accounts[1]) == 1e19
     assert token.allowance(accounts[0], accounts[2]) == 0
@@ -29,7 +29,7 @@ def test_approve():
 
 @enforce_types
 def test_transferFrom():
-    token = _deployToken()
+    token = _deploy_token()
     token.approve(accounts[1], 6e18, {"from": accounts[0]})
     token.transferFrom(accounts[0], accounts[2], 5e18, {"from": accounts[1]})
 
@@ -40,7 +40,7 @@ def test_transferFrom():
 
 
 @enforce_types
-def _deployToken():
+def _deploy_token():
     return B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": accounts[0]})
 
 

@@ -21,7 +21,7 @@ def test_transfer_eth_reverts():
 def test_erc20_withdraw_random():
     """owner can withdraw other erc20 tokens from the dfrewards contract"""
 
-    random_token = _deployTOK(accounts[1])
+    random_token = _deploy_token(accounts[1])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
@@ -40,36 +40,35 @@ def test_erc20_withdraw_random():
 @enforce_types
 def test_erc20_withdraw_main():
     """withdrawing the main token should revert"""
-
-    TOK = _deployTOK(accounts[0])
+    token = _deploy_token(accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
-    TOK.transfer(df_rewards, to_wei(40.0), {"from": accounts[0]})
+    token.transfer(df_rewards, to_wei(40.0), {"from": accounts[0]})
 
     tos = [accounts[1].address]
     values = [to_wei(10.0)]
-    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
-    df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
+    token.approve(df_rewards, sum(values), {"from": accounts[0]})
+    df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
 
     with brownie.reverts("Cannot withdraw allocated token"):
-        df_rewards.withdrawERCToken(to_wei(50.0), TOK.address, {"from": accounts[0]})
+        df_rewards.withdrawERCToken(to_wei(50.0), token.address, {"from": accounts[0]})
 
     with brownie.reverts("Ownable: caller is not the owner"):
-        df_rewards.withdrawERCToken(to_wei(20.0), TOK.address, {"from": accounts[1]})
+        df_rewards.withdrawERCToken(to_wei(20.0), token.address, {"from": accounts[1]})
 
-    df_rewards.withdrawERCToken(to_wei(40.0), TOK.address, {"from": accounts[0]})
+    df_rewards.withdrawERCToken(to_wei(40.0), token.address, {"from": accounts[0]})
     with brownie.reverts("Cannot withdraw allocated token"):
-        df_rewards.withdrawERCToken(to_wei(1.0), TOK.address, {"from": accounts[0]})
-    df_strategy.claim([TOK.address], {"from": accounts[1]})
+        df_rewards.withdrawERCToken(to_wei(1.0), token.address, {"from": accounts[0]})
+    df_strategy.claim([token.address], {"from": accounts[1]})
 
-    TOK.transfer(df_rewards, 100, {"from": accounts[0]})
-    df_rewards.withdrawERCToken(100, TOK.address, {"from": accounts[0]})
+    token.transfer(df_rewards, 100, {"from": accounts[0]})
+    df_rewards.withdrawERCToken(100, token.address, {"from": accounts[0]})
 
 
 @enforce_types
-def _deployTOK(account):
+def _deploy_token(account):
     return B.Simpletoken.deploy("TOK", "TOK", 18, to_wei(100.0), {"from": account})
 
 
