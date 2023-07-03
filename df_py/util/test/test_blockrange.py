@@ -20,57 +20,57 @@ def test_failures():
 
 
 @enforce_types
-def test_startAtZero():
+def test_start_at_zero():
     r = BlockRange(st=0, fin=3, num_samples=10).get_blocks()
     assert r == [0, 1, 2, 3]
 
 
 @enforce_types
-def test_availableN_samples0():
+def test_available_samples_0():
     r = BlockRange(st=10, fin=20, num_samples=0).get_blocks()
     assert r == []
 
 
 @enforce_types
-def test_available1_samples1():
+def test_available_samples_1():
     r = BlockRange(st=10, fin=10, num_samples=1).get_blocks()
     assert r == [10]
 
 
 @enforce_types
-def test_available1_samplesN():
+def test_available_samples_N():
     r = BlockRange(st=10, fin=10, num_samples=10).get_blocks()
     assert r == [10]
 
 
 @enforce_types
-def test_available2_samples1():
+def test_available_samples_N2():
     for _ in range(10):
         r = BlockRange(st=10, fin=11, num_samples=1).get_blocks()
         assert r in ([10], [11])
 
 
 @enforce_types
-def test_available2_samplesN():
+def test_available_samples_N3():
     r = BlockRange(st=10, fin=11, num_samples=10).get_blocks()
     assert sorted(r) == [10, 11]
 
 
 @enforce_types
-def test_available3_samples1():
+def test_available3_samplesN4():
     r = BlockRange(st=10, fin=12, num_samples=1).get_blocks()
     assert r in ([10], [11], [12])
 
 
 @enforce_types
-def test_available3_samplesN():
+def test_available3_samplesN5():
     for _ in range(10):
         r = BlockRange(st=10, fin=12, num_samples=10).get_blocks()
         assert r == [10, 11, 12]  # should always be sorted
 
 
 @enforce_types
-def test_manyRandom():
+def test_many_random():
     for _ in range(100):
         r = BlockRange(st=10, fin=20, num_samples=3).get_blocks()
         assert len(r) == 3

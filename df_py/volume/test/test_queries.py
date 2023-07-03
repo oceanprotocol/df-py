@@ -49,7 +49,7 @@ def test_all(tmp_path):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
 
-    _deployCO2()
+    _deploy_CO2()
 
     print("Create accts...")
     accounts = [brownie.accounts.add() for i in range(5)]
@@ -82,8 +82,8 @@ def test_all(tmp_path):
     ve_delegate(accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
     print(f"  {accounts[4].address} -> {accounts[3].address} 100%")
 
-    ST = len(chain)
-    print(f"ST = start block for querying = {ST}")
+    start_block = len(chain)
+    print(f"ST = start block for querying = {start_block}")
 
     # these accounts are used to test if sampling the range works
     # this is why we're calling the following functions after setting ST
@@ -104,12 +104,12 @@ def test_all(tmp_path):
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
-        FIN = len(chain)
+        fin_block = len(chain)
         print(f"  loop {loop_i} start")
         assert loop_i < 45, "timeout"
         # this test assumes that all actions before consume will
         # be on the graph too. Eg veOCEAN allocation or delegation
-        if _foundConsume(ST, FIN):
+        if _found_consume(start_block, fin_block):
             break
         chain.sleep(10)
         chain.mine(10)
@@ -119,30 +119,30 @@ def test_all(tmp_path):
     chain.mine(20)
     time.sleep(2)
 
-    rng = BlockRange(ST, FIN, 100, 42)
+    rng = BlockRange(start_block, fin_block, 100, 42)
     sampling_accounts_addrs = [a.address.lower() for a in sampling_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
     delegation_accounts.append(zerobal_delegation_acct.address.lower())
 
     # test single queries
     _test_getSymbols()
-    _test_queryVolsOwners(ST, FIN)
+    _test_queryVolsOwners(start_block, fin_block)
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
     _test_queryAllocations(rng, sampling_accounts_addrs)
-    _test_queryVolsOwnersSymbols(ST, FIN)
+    _test_queryVolsOwnersSymbols(start_block, fin_block)
 
     # test dftool
-    _test_dftool_query(tmp_path, ST, FIN)
-    _test_dftool_nftinfo(tmp_path, FIN)
-    _test_dftool_vebals(tmp_path, ST, FIN)
-    _test_dftool_allocations(tmp_path, ST, FIN)
+    _test_dftool_query(tmp_path, start_block, fin_block)
+    _test_dftool_nftinfo(tmp_path, fin_block)
+    _test_dftool_vebals(tmp_path, start_block, fin_block)
+    _test_dftool_allocations(tmp_path, start_block, fin_block)
 
     # end-to-end tests
     _test_end_to_end_without_csvs(rng)
     _test_end_to_end_with_csvs(rng, tmp_path)
 
     # test ghost consume
-    _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr)
+    _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr)
 
     # modifies chain time, test last
     _test_queryPassiveRewards(sampling_accounts_addrs)
@@ -163,7 +163,7 @@ def test_all(tmp_path):
 # heavy on-chain tests: support functions
 
 
-def _deployCO2():
+def _deploy_CO2():
     print("Deploy CO2 token...")
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
@@ -171,10 +171,12 @@ def _deployCO2():
     CO2_addr = CO2.address.lower()
 
 
-def _foundConsume(st, fin):
+def _found_consume(st, fin):
     V0, _, _ = queries._queryVolsOwners(st, fin, CHAINID)
+
     if CO2_addr not in V0:
         return False
+
     if sum(V0[CO2_addr].values()) == 0:
         return False
 
@@ -231,14 +233,14 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 
     assert len(allocations) > 0
 
-    for chainId in allocations:
-        for nftAddr in allocations[chainId]:
-            for userAddr in allocations[chainId][nftAddr]:
+    for chain_id in allocations:
+        for nftAddr in allocations[chain_id]:
+            for userAddr in allocations[chain_id][nftAddr]:
                 allocation_contract = (
-                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chainId)
+                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chain_id)
                     / MAX_ALLOCATE
                 )
-                allocation_query = allocations[chainId][nftAddr][userAddr]
+                allocation_query = allocations[chain_id][nftAddr][userAddr]
                 if userAddr in sampling_accounts:
                     assert allocation_query < allocation_contract
                     continue
@@ -248,14 +250,14 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 @enforce_types
 def _test_getSymbols():
     print("_test_getSymbols()...")
-    oceanToken = oceanutil.OCEANtoken()
-    tokset = TokSet()
-    tokset.add(CHAINID, oceanToken.address.lower(), "OCEAN")
+    OCEAN_token = oceanutil.OCEAN_token()
+    token_set = TokSet()
+    token_set.add(CHAINID, OCEAN_token.address.lower(), "OCEAN")
     symbols_at_chain = queries.getSymbols(
-        tokset, CHAINID
+        token_set, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
 
-    OCEAN_tok = tokset.tok_at_symbol(CHAINID, "OCEAN")
+    OCEAN_tok = token_set.tok_at_symbol(CHAINID, "OCEAN")
     assert symbols_at_chain[OCEAN_tok.address] == "OCEAN"
 
 
@@ -306,83 +308,83 @@ def _test_queryNftinfo():
 
 
 @enforce_types
-def _test_dftool_query(tmp_path, ST, FIN):
+def _test_dftool_query(tmp_path, start_block, fin_block):
     print("_test_dftool_query()...")
-    CSV_DIR = str(tmp_path)
-    _clear_dir(CSV_DIR)
+    csv_dir = str(tmp_path)
+    _clear_dir(csv_dir)
 
     # insert fake inputs: rate csv file
-    csvs.save_rate_csv("OCEAN", 0.5, CSV_DIR)
+    csvs.save_rate_csv("OCEAN", 0.5, csv_dir)
 
     # main cmd
-    NSAMP = 5
+    n_samp = 5
 
-    cmd = f"./dftool volsym {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool volsym {start_block} {fin_block} {n_samp} {csv_dir} {CHAINID}"
     os.system(cmd)
 
     # test result
-    assert csvs.nftvols_csv_filenames(CSV_DIR)
-    assert csvs.owners_csv_filenames(CSV_DIR)
-    assert csvs.symbols_csv_filenames(CSV_DIR)
+    assert csvs.nftvols_csv_filenames(csv_dir)
+    assert csvs.owners_csv_filenames(csv_dir)
+    assert csvs.symbols_csv_filenames(csv_dir)
 
 
 @enforce_types
-def _test_dftool_nftinfo(tmp_path, FIN):
+def _test_dftool_nftinfo(tmp_path, fin_block):
     print("_test_nftinfo()...")
-    CSV_DIR = str(tmp_path)
-    _clear_dir(CSV_DIR)
+    csv_dir = str(tmp_path)
+    _clear_dir(csv_dir)
 
-    cmd = f"./dftool nftinfo {CSV_DIR} {CHAINID} --FIN {FIN}"
+    cmd = f"./dftool nftinfo {csv_dir} {CHAINID} --FIN {fin_block}"
     os.system(cmd)
 
-    assert csvs.nftinfo_csv_filename(CSV_DIR, CHAINID)
+    assert csvs.nftinfo_csv_filename(csv_dir, CHAINID)
 
 
 @enforce_types
-def _test_dftool_vebals(tmp_path, ST, FIN):
+def _test_dftool_vebals(tmp_path, start_block, fin_block):
     print("_test_vebals()...")
-    CSV_DIR = str(tmp_path)
-    _clear_dir(CSV_DIR)
+    csv_dir = str(tmp_path)
+    _clear_dir(csv_dir)
 
-    NSAMP = 100
+    n_samp = 100
 
-    cmd = f"./dftool vebals {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool vebals {start_block} {fin_block} {n_samp} {csv_dir} {CHAINID}"
     os.system(cmd)
 
     # test result
-    vebals_csv = csvs.vebals_csv_filename(CSV_DIR)
+    vebals_csv = csvs.vebals_csv_filename(csv_dir)
     assert os.path.exists(vebals_csv), "vebals csv file not found"
 
     # test without sampling
-    cmd = f"./dftool vebals {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    cmd = f"./dftool vebals {start_block} {fin_block} 1 {csv_dir} {CHAINID}"  # NSAMP=1
     os.system(cmd)
 
     # test result
-    vebals_csv = csvs.vebals_csv_filename(CSV_DIR, False)
+    vebals_csv = csvs.vebals_csv_filename(csv_dir, False)
     assert os.path.exists(vebals_csv), "vebals_realtime csv not found"
 
 
 @enforce_types
-def _test_dftool_allocations(tmp_path, ST, FIN):
+def _test_dftool_allocations(tmp_path, start_block, fin_block):
     print("_test_allocations()...")
-    CSV_DIR = str(tmp_path)
-    _clear_dir(CSV_DIR)
+    csv_dir = str(tmp_path)
+    _clear_dir(csv_dir)
 
-    NSAMP = 100
+    n_samp = 100
 
-    cmd = f"./dftool allocations {ST} {FIN} {NSAMP} {CSV_DIR} {CHAINID}"
+    cmd = f"./dftool allocations {start_block} {fin_block} {n_samp} {csv_dir} {CHAINID}"
     os.system(cmd)
 
     # test result
-    allocations_csv = csvs.allocation_csv_filename(CSV_DIR)
+    allocations_csv = csvs.allocation_csv_filename(csv_dir)
     assert os.path.exists(allocations_csv), "allocations csv file not found"
 
     # test without sampling
-    cmd = f"./dftool allocations {ST} {FIN} 1 {CSV_DIR} {CHAINID}"  # NSAMP=1
+    cmd = f"./dftool allocations {start_block} {fin_block} 1 {csv_dir} {CHAINID}"  # NSAMP=1
     os.system(cmd)
 
     # test result
-    allocations_csv = csvs.allocation_csv_filename(CSV_DIR, False)
+    allocations_csv = csvs.allocation_csv_filename(csv_dir, False)
     assert os.path.exists(allocations_csv), "allocations_realtime csv not found"
 
 
@@ -476,24 +478,28 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
 @enforce_types
 def _test_queryPassiveRewards(addresses):
     print("_test_queryPassiveRewards()...")
-    feeDistributor = oceanutil.FeeDistributor()
+    fee_distributor = oceanutil.FeeDistributor()
 
     def sim_epoch():
         OCEAN.transfer(
-            feeDistributor.address,
+            fee_distributor.address,
             to_wei(1000.0),
             {"from": god_acct},
         )
         chain.sleep(WEEK)
         chain.mine()
-        feeDistributor.checkpoint_token({"from": god_acct})
-        feeDistributor.checkpoint_total_supply({"from": god_acct})
+        fee_distributor.checkpoint_token({"from": god_acct})
+        fee_distributor.checkpoint_total_supply({"from": god_acct})
 
     for _ in range(3):
         sim_epoch()
 
     alice_last_reward = 0
     bob_last_reward = 0
+    target_ts = chain.time() // WEEK * WEEK + WEEK - 100
+    chain.sleep(target_ts - chain.time())
+    chain.mine()
+
     for _ in range(3):
         timestamp = chain.time() // WEEK * WEEK
         balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
@@ -509,15 +515,15 @@ def _test_queryPassiveRewards(addresses):
         sim_epoch()
 
 
-def _test_ghost_consume(ST, FIN, rng, ghost_consume_nft_addr):
+def _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr):
     print("_test_ghost_consume()...")
     (V0, _, _) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
-    (V0, _, _) = queries._queryVolsOwners(ST, FIN, CHAINID)
+    (V0, _, _) = queries._queryVolsOwners(start_block, fin_block, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
 
-    swaps = queries._querySwaps(ST, FIN, CHAINID)
+    swaps = queries._querySwaps(start_block, fin_block, CHAINID)
     assert swaps[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
 
@@ -732,7 +738,7 @@ def test_queryAquariusAssetNames():
         "did:op:4aa86d2c10f9a352ac9ec062122e318d66be6777e9a37c982e46aab144bc1cfa",
     ]
 
-    expectedAssetNames = [
+    expected_asset_names = [
         "OCEAN/USDT orderbook",
         "BTC/USDT orderbook",
         "DEX volume in details",
@@ -743,7 +749,7 @@ def test_queryAquariusAssetNames():
     assert len(assetNames) == 4
 
     for i in range(4):
-        assert expectedAssetNames.count(assetNames[nft_dids[i]]) == 1
+        assert expected_asset_names.count(assetNames[nft_dids[i]]) == 1
 
 
 @enforce_types
@@ -785,33 +791,33 @@ def test_filter_dids():
 
 @enforce_types
 def test_filter_nft_vols_to_aquarius_assets():
-    oceanAddr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address()
     nftaddrs = [
         "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
         "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
         "0x9723488dc1524849a82917a61a38bbe24a8219c1",
-        oceanAddr,  # invalid, should filter out this one
+        OCEAN_addr,  # invalid, should filter out this one
     ]
 
     # these addresses are from polygon
-    chainID = 137
+    chain_id = 137
 
     # nftvols: dict of [basetoken_addr][nft_addr]:vol_amt
     nftvols = {}
-    nftvols[oceanAddr] = {}
+    nftvols[OCEAN_addr] = {}
     for nftaddr in nftaddrs:
-        nftvols[oceanAddr][nftaddr] = 1.0
+        nftvols[OCEAN_addr][nftaddr] = 1.0
 
     # filter out non-market assets
-    nftvols_filtered = queries._filterNftvols(nftvols, chainID)
+    nftvols_filtered = queries._filterNftvols(nftvols, chain_id)
     assert len(nftvols_filtered) == 1
-    assert len(nftvols_filtered[oceanAddr]) == 3
+    assert len(nftvols_filtered[OCEAN_addr]) == 3
 
     # match the addresses
-    assert nftaddrs[0] in nftvols_filtered[oceanAddr]
-    assert nftaddrs[1] in nftvols_filtered[oceanAddr]
-    assert nftaddrs[2] in nftvols_filtered[oceanAddr]
-    assert nftaddrs[3] not in nftvols_filtered[oceanAddr]
+    assert nftaddrs[0] in nftvols_filtered[OCEAN_addr]
+    assert nftaddrs[1] in nftvols_filtered[OCEAN_addr]
+    assert nftaddrs[2] in nftvols_filtered[OCEAN_addr]
+    assert nftaddrs[3] not in nftvols_filtered[OCEAN_addr]
 
 
 @enforce_types
@@ -862,7 +868,7 @@ def test_mark_purgatory_nftinfos():
 
 
 @enforce_types
-def test_populateNftAssetNames():
+def test_populate_nft_asset_names():
     nft_addr = "0xbff8242de628cd45173b71022648617968bd0962"
     nfts = [SimpleDataNft(137, nft_addr, "TEST", "0x123")]
     nfts = queries._populateNftAssetNames(nfts)
@@ -1048,7 +1054,7 @@ def _create_assets(n_assets: int) -> list:
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
-        tup = oceanutil.createDataNFTWithFRE(god_acct, CO2)
+        tup = oceanutil.create_data_nft_with_fre(god_acct, CO2)
         asset = SimpleAsset(tup)
         assets.append(asset)
     return assets
@@ -1069,9 +1075,9 @@ def setup_function():
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
     god_acct = brownie.network.accounts[0]
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = oceanutil.veOCEAN()
 
     for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:

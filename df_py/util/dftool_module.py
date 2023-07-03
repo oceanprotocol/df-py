@@ -52,8 +52,8 @@ from df_py.util.oceantestutil import (
 )
 from df_py.util.oceanutil import (
     FeeDistributor,
-    OCEANtoken,
-    recordDeployedContracts,
+    OCEAN_token,
+    record_deployed_contracts,
     veAllocate,
 )
 from df_py.util.retry import retry_function
@@ -96,7 +96,7 @@ def do_volsym():
     # brownie setup
     networkutil.connect(CHAINID)
     chain = brownie.network.chain
-    recordDeployedContracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE)
 
     # main work
     rng = blockrange.create_range(
@@ -329,7 +329,7 @@ def do_challenge_data():
 
     # brownie setup
     networkutil.connect(CHAINID)
-    recordDeployedContracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE)
     judge_acct = judge.get_judge_acct()
 
     # main work
@@ -447,7 +447,7 @@ def do_calc():
         address_path = os.path.join(
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
-        recordDeployedContracts(address_path)
+        record_deployed_contracts(address_path)
         TOT_OCEAN = get_active_reward_amount_for_week_eth_by_stream(
             START_DATE, arguments.SUBSTREAM
         )
@@ -716,7 +716,7 @@ def do_init_dev_wallets():
     networkutil.connect(CHAINID)
 
     # main work
-    recordDeployedContracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE)
     oceantestutil.fill_accounts_with_OCEAN()
 
     print("dftool init_dev_wallets: Done.")
@@ -749,8 +749,8 @@ def do_many_random():
     networkutil.connect(CHAINID)
 
     # main work
-    recordDeployedContracts(ADDRESS_FILE)
-    OCEAN = OCEANtoken()
+    record_deployed_contracts(ADDRESS_FILE)
+    OCEAN = OCEAN_token()
 
     num_nfts = 10  # magic number
     tups = random_create_dataNFT_with_FREs(num_nfts, OCEAN, brownie.network.accounts)
@@ -885,7 +885,7 @@ def do_ve_set_allocation():
     networkutil.connect(arguments.CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
-        recordDeployedContracts(ADDRESS_FILE)
+        record_deployed_contracts(ADDRESS_FILE)
         from_account = _getPrivateAccount()
         veAllocate().setAllocation(
             arguments.amount,
@@ -945,8 +945,8 @@ def do_acct_info():
     # Give balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
-        recordDeployedContracts(ADDRESS_FILE)
-        OCEAN = OCEANtoken()
+        record_deployed_contracts(ADDRESS_FILE)
+        OCEAN = OCEAN_token()
         if OCEAN.address != TOKEN_ADDR:
             print(f"  {from_wei(OCEAN.balanceOf(ACCOUNT_ADDR))} OCEAN")
 
@@ -989,7 +989,7 @@ def do_dispense_passive():
     networkutil.connect(arguments.CHAINID)
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    recordDeployedContracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE)
 
     AMOUNT = arguments.AMOUNT
 
@@ -998,7 +998,7 @@ def do_dispense_passive():
         AMOUNT = get_active_reward_amount_for_week_eth(START_DATE)
 
     feedist = FeeDistributor()
-    OCEAN = OCEANtoken()
+    OCEAN = OCEAN_token()
     retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, AMOUNT)
 
     print("Dispensed passive rewards")
@@ -1027,7 +1027,7 @@ def do_calculate_passive():
     S_PER_WEEK = 7 * 86400
     timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    recordDeployedContracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE)
 
     # load vebals csv file
     passive_fname = csvs.passive_csv_filename(CSV_DIR)
@@ -1059,7 +1059,7 @@ def do_checkpoint_feedist():
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    recordDeployedContracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE)
     from_account = _getPrivateAccount()
     feedist = FeeDistributor()
 

@@ -10,63 +10,63 @@ accounts, a1, a2, a3 = None, None, None, None
 
 @enforce_types
 def test_basic():
-    TOK = _deployTOK(accounts[0])
+    token = _deploy_token(accounts[0])
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    assert df_rewards.claimable(a1, TOK.address) == 0
+    assert df_rewards.claimable(a1, token.address) == 0
 
 
 @enforce_types
-def test_lostERC20():
+def test_lost_ERC20():
     # Can recover when an account accidentally sends ERC20 to DFRewards.sol?
     # test_withdrawfunc.py handles this, so no work here
     pass
 
 
 @enforce_types
-def test_lostETH():
+def test_lost_ETH():
     # Can recover when an account accidentally sends ETH to DFRewards.sol?
     # test_withdrawfunc.py handles this, so no work here
     pass
 
 
 @enforce_types
-def test_TOK():
-    TOK = _deployTOK(accounts[9])
-    TOK.transfer(accounts[0].address, to_wei(100.0), {"from": accounts[9]})
+def test_token():
+    token = _deploy_token(accounts[9])
+    token.transfer(accounts[0].address, to_wei(100.0), {"from": accounts[9]})
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
 
     tos = [a1, a2, a3]
     values = [10, 20, 30]
-    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
-    df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
+    token.approve(df_rewards, sum(values), {"from": accounts[0]})
+    df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
 
-    assert df_rewards.claimable(a1, TOK.address) == 10
-    assert df_rewards.claimable(a2, TOK.address) == 20
-    assert df_rewards.claimable(a3, TOK.address) == 30
+    assert df_rewards.claimable(a1, token.address) == 10
+    assert df_rewards.claimable(a2, token.address) == 20
+    assert df_rewards.claimable(a3, token.address) == 30
 
     # a1 claims for itself
-    assert TOK.balanceOf(a1) == 0
-    df_strategy.claim([TOK.address], {"from": accounts[1]})
-    assert TOK.balanceOf(a1) == 10
+    assert token.balanceOf(a1) == 0
+    df_strategy.claim([token.address], {"from": accounts[1]})
+    assert token.balanceOf(a1) == 10
 
     # a2 claims for itself too
-    assert TOK.balanceOf(a2) == 0
-    df_strategy.claim([TOK.address], {"from": accounts[2]})
-    assert TOK.balanceOf(a2) == 20
+    assert token.balanceOf(a2) == 0
+    df_strategy.claim([token.address], {"from": accounts[2]})
+    assert token.balanceOf(a2) == 20
 
     # a9 claims for a3
-    assert TOK.balanceOf(a3) == 0
-    df_rewards.claimFor(a3, TOK.address, {"from": accounts[9]})
-    assert TOK.balanceOf(a3) == 30
+    assert token.balanceOf(a3) == 0
+    df_rewards.claimFor(a3, token.address, {"from": accounts[9]})
+    assert token.balanceOf(a3) == 30
 
 
 @enforce_types
 def test_OCEAN():
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
-    OCEAN = oceanutil.OCEANtoken()
+    oceanutil.record_deployed_contracts(address_file)
+    OCEAN = oceanutil.OCEAN_token()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
@@ -84,9 +84,9 @@ def test_OCEAN():
 
 
 @enforce_types
-def test_multiple_TOK():
-    TOK1 = _deployTOK(accounts[0])
-    TOK2 = _deployTOK(accounts[0])
+def test_multiple_token():
+    token_1 = _deploy_token(accounts[0])
+    token_2 = _deploy_token(accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
@@ -94,51 +94,51 @@ def test_multiple_TOK():
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
-    TOK1.approve(df_rewards, sum(values), {"from": accounts[0]})
-    TOK2.approve(df_rewards, sum(values) + 15, {"from": accounts[0]})
+    token_1.approve(df_rewards, sum(values), {"from": accounts[0]})
+    token_2.approve(df_rewards, sum(values) + 15, {"from": accounts[0]})
 
-    df_rewards.allocate(tos, values, TOK1.address, {"from": accounts[0]})
+    df_rewards.allocate(tos, values, token_1.address, {"from": accounts[0]})
     df_rewards.allocate(
-        tos, [x + 5 for x in values], TOK2.address, {"from": accounts[0]}
+        tos, [x + 5 for x in values], token_2.address, {"from": accounts[0]}
     )
 
-    assert df_strategy.claimables(a1, [TOK1.address, TOK2.address]) == [10, 15]
-    assert df_strategy.claimables(a2, [TOK1.address, TOK2.address]) == [20, 25]
-    assert df_strategy.claimables(a3, [TOK1.address, TOK2.address]) == [30, 35]
+    assert df_strategy.claimables(a1, [token_1.address, token_2.address]) == [10, 15]
+    assert df_strategy.claimables(a2, [token_1.address, token_2.address]) == [20, 25]
+    assert df_strategy.claimables(a3, [token_1.address, token_2.address]) == [30, 35]
 
     # multiple claims
 
     # a1 claims for itself
-    assert TOK1.balanceOf(a1) == 0
-    assert TOK2.balanceOf(a1) == 0
-    df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
-    assert TOK1.balanceOf(a1) == 10
-    assert TOK2.balanceOf(a1) == 15
+    assert token_1.balanceOf(a1) == 0
+    assert token_2.balanceOf(a1) == 0
+    df_strategy.claim([token_1.address, token_2.address], {"from": accounts[1]})
+    assert token_1.balanceOf(a1) == 10
+    assert token_2.balanceOf(a1) == 15
 
     # a2 claims for itself
-    assert TOK1.balanceOf(a2) == 0
-    assert TOK2.balanceOf(a2) == 0
-    df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[2]})
-    assert TOK1.balanceOf(a2) == 20
-    assert TOK2.balanceOf(a2) == 25
+    assert token_1.balanceOf(a2) == 0
+    assert token_2.balanceOf(a2) == 0
+    df_strategy.claim([token_1.address, token_2.address], {"from": accounts[2]})
+    assert token_1.balanceOf(a2) == 20
+    assert token_2.balanceOf(a2) == 25
 
     # a3 claims for itself
-    assert TOK1.balanceOf(a3) == 0
-    assert TOK2.balanceOf(a3) == 0
-    df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[3]})
-    assert TOK1.balanceOf(a3) == 30
-    assert TOK2.balanceOf(a3) == 35
+    assert token_1.balanceOf(a3) == 0
+    assert token_2.balanceOf(a3) == 0
+    df_strategy.claim([token_1.address, token_2.address], {"from": accounts[3]})
+    assert token_1.balanceOf(a3) == 30
+    assert token_2.balanceOf(a3) == 35
 
     # a1 can't claim extra
-    assert TOK1.balanceOf(a1) == 10
-    assert TOK2.balanceOf(a1) == 15
-    df_strategy.claim([TOK1.address, TOK2.address], {"from": accounts[1]})
-    assert TOK1.balanceOf(a1) == 10
-    assert TOK2.balanceOf(a1) == 15
+    assert token_1.balanceOf(a1) == 10
+    assert token_2.balanceOf(a1) == 15
+    df_strategy.claim([token_1.address, token_2.address], {"from": accounts[1]})
+    assert token_1.balanceOf(a1) == 10
+    assert token_2.balanceOf(a1) == 15
 
 
 def test_bad_token():
-    badToken = B.Badtoken.deploy(
+    bad_token = B.Badtoken.deploy(
         "BAD", "BAD", 18, to_wei(10000.0), {"from": accounts[0]}
     )
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
@@ -146,14 +146,14 @@ def test_bad_token():
     tos = [a1, a2, a3]
     values = [10, 20, 30]
 
-    badToken.approve(df_rewards, sum(values), {"from": accounts[0]})
+    bad_token.approve(df_rewards, sum(values), {"from": accounts[0]})
 
     with brownie.reverts("Not enough tokens"):
-        df_rewards.allocate(tos, values, badToken.address, {"from": accounts[0]})
+        df_rewards.allocate(tos, values, bad_token.address, {"from": accounts[0]})
 
 
 def test_strategies():
-    TOK = _deployTOK(accounts[0])
+    token = _deploy_token(accounts[0])
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
     df_strategy = B.DummyStrategy.deploy(df_rewards.address, {"from": accounts[0]})
@@ -161,17 +161,17 @@ def test_strategies():
     # allocate rewards
     tos = [a1, a2, a3]
     values = [10, 20, 30]
-    TOK.approve(df_rewards, sum(values), {"from": accounts[0]})
-    df_rewards.allocate(tos, values, TOK.address, {"from": accounts[0]})
+    token.approve(df_rewards, sum(values), {"from": accounts[0]})
+    df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
 
-    assert TOK.balanceOf(df_strategy) == 0
+    assert token.balanceOf(df_strategy) == 0
     with brownie.reverts("Caller doesn't match"):
         # tx origin must be a1
-        df_strategy.claim(TOK.address, a1, {"from": accounts[2]})
+        df_strategy.claim(token.address, a1, {"from": accounts[2]})
 
     with brownie.reverts("Caller must be a strategy"):
         # non strategy addresses cannot claim
-        df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
+        df_strategy.claim(token.address, a1, {"from": accounts[1]})
 
     # add strategy
     df_rewards.addStrategy(df_strategy.address)
@@ -179,16 +179,16 @@ def test_strategies():
     assert df_rewards.live_strategies(0) == df_strategy.address
 
     # should claim since it's a strategy
-    df_strategy.claim(TOK.address, a1, {"from": accounts[1]})
+    df_strategy.claim(token.address, a1, {"from": accounts[1]})
 
     # strategy balance increases
-    assert TOK.balanceOf(df_strategy) == 10
+    assert token.balanceOf(df_strategy) == 10
 
     # should claim since it's a strategy
-    df_strategy.claim(TOK.address, a2, {"from": accounts[2]})
+    df_strategy.claim(token.address, a2, {"from": accounts[2]})
 
     # strategy balance increases
-    assert TOK.balanceOf(df_strategy) == 30
+    assert token.balanceOf(df_strategy) == 30
 
     # retire strategy
     df_rewards.retireStrategy(df_strategy.address)
@@ -196,7 +196,7 @@ def test_strategies():
 
     with brownie.reverts("Caller must be a strategy"):
         # non strategy addresses cannot claim
-        df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
+        df_strategy.claim(token.address, a3, {"from": accounts[3]})
 
     with brownie.reverts("Ownable: caller is not the owner"):
         # addresses other than the owner cannot add new strategy
@@ -208,17 +208,17 @@ def test_strategies():
     assert df_rewards.live_strategies(0) == df_strategy.address
 
     # should claim since it's a strategy
-    df_strategy.claim(TOK.address, a3, {"from": accounts[3]})
+    df_strategy.claim(token.address, a3, {"from": accounts[3]})
 
     # strategy balance increases
-    assert TOK.balanceOf(df_strategy) == 60
+    assert token.balanceOf(df_strategy) == 60
 
 
 @enforce_types
 def _test_claim_and_restake():
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.recordDeployedContracts(address_file)
-    OCEAN = oceanutil.OCEANtoken()
+    oceanutil.record_deployed_contracts(address_file)
+    OCEAN = oceanutil.OCEAN_token()
     deployer = accounts[0]
     bob = accounts[1]
 
@@ -264,7 +264,7 @@ def _test_claim_and_restake():
 
 
 @enforce_types
-def _deployTOK(account):
+def _deploy_token(account):
     return B.Simpletoken.deploy("TOK", "TOK", 18, to_wei(100.0), {"from": account})
 
 

@@ -69,8 +69,8 @@ def _from_addr(tx):
 
 @enforce_types
 def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
-    nft = oceanutil.getDataNFT(nft_addr)
-    pred_vals_str_enc = oceanutil.getDataField(nft, "predictions")
+    nft = oceanutil.get_data_nft(nft_addr)
+    pred_vals_str_enc = oceanutil.get_data_field(nft, "predictions")
     try:
         pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, judge_acct.private_key)
         pred_vals = [float(s) for s in pred_vals_str[1:-1].split(",")]

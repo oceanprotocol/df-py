@@ -18,17 +18,17 @@ ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @enforce_types
-def test1(tmp_path):
+def test_empty_deadline(tmp_path):
     _test(tmp_path, DEADLINE=None)
 
 
 @enforce_types
-def test2(tmp_path):
+def test_deadline_none_string(tmp_path):
     _test(tmp_path, DEADLINE="None")
 
 
 @enforce_types
-def test3(tmp_path):
+def test_explicit_deadlin(tmp_path):
     _test(tmp_path, DEADLINE="2023-05-03_23:59")
 
 
@@ -53,7 +53,7 @@ def _test(tmp_path, DEADLINE: Optional[str]):
     )
 
     # Mock the connection, use test data
-    with patch("df_py.util.dftool_module.recordDeployedContracts"):
+    with patch("df_py.util.dftool_module.record_deployed_contracts"):
         with patch.object(dftool_module.judge, "get_challenge_data") as mock:
             mock.return_value = (target_from_addrs, target_nft_addrs, target_nmses)
             with sysargs_context(sysargs):
@@ -83,7 +83,7 @@ def setup_function():
 
     networkutil.connect(CHAINID)
     accounts = brownie.network.accounts
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN()
 
     DFTOOL_ACCT = accounts.add()

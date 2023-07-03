@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types
@@ -63,15 +62,11 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         > 0
     )
 
-    # get_rate patches are needed because we are testing with a future start_dt
-    # for predictoor, but the get_rate function is not implemented for the future
-
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        challenge_rewards = (
-            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, challenge_substream
-            )
+    challenge_rewards = (
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, challenge_substream
         )
+    )
 
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
@@ -79,15 +74,11 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         )
     )
 
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        volume_rewards = (
-            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, volume_substream
-            )
-        )
+    volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+        start_dt, volume_substream
+    )
 
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
+    total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
 
     assert total_rewards == approx(
         challenge_rewards + predictoor_rewards + volume_rewards, 0.1
@@ -115,16 +106,17 @@ def test_get_active_reward_amount_for_week_eth(test_input, expected_output):
 
 
 @enforce_types
-def test_compareHalflifeFunctions():
+def test_compare_halflife_functions():
     # compare python and solidity halflife function
-    VALUE = 503370000 * 1e18
-    HALF_LIFE = 4 * 365 * 24 * 60 * 60  # 4 years
-    MONTH = 30 * 24 * 60 * 60
-    for i in range(0, int(HALF_LIFE * 1.5), int(MONTH * 4)):
-        py_result = vesting_schedule._halflife(VALUE, i, HALF_LIFE)
-        solidity_result = vesting_schedule._halflife_solidity(VALUE, i, HALF_LIFE)
+    value = 503370000 * 1e18
+    halflife = 4 * 365 * 24 * 60 * 60  # 4 years
+    month = 30 * 24 * 60 * 60
+
+    for i in range(0, int(halflife * 1.5), int(month * 4)):
+        py_result = vesting_schedule._halflife(value, i, halflife)
+        solidity_result = vesting_schedule._halflife_solidity(value, i, halflife)
         diff = abs(py_result - solidity_result)
-        assert diff < 1e10, f"diff {diff} at i {i/HALF_LIFE*2}"
+        assert diff < 1e10, f"diff {diff} at i {i/halflife*2}"
 
 
 @enforce_types

@@ -57,11 +57,11 @@ def test_velock_whitelisted():
 @enforce_types
 def setup_function():
     networkutil.connect_dev()
-    oceanutil.recordDevDeployedContracts()
+    oceanutil.record_dev_deployed_contracts()
     global deployer, veOCEAN, OCEAN, veLocker, smartWalletChecker
     deployer = brownie.network.accounts[0]
 
-    OCEAN = oceanutil.OCEANtoken()
+    OCEAN = oceanutil.OCEAN_token()
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
     )
