@@ -496,6 +496,10 @@ def _test_queryPassiveRewards(addresses):
 
     alice_last_reward = 0
     bob_last_reward = 0
+    target_ts = chain.time() // WEEK * WEEK + WEEK - 100
+    chain.sleep(target_ts - chain.time())
+    chain.mine()
+
     for _ in range(3):
         timestamp = chain.time() // WEEK * WEEK
         balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
