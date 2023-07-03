@@ -19,18 +19,20 @@ def get_block_number_thursday(chain) -> int:
 @enforce_types
 def get_next_thursday_timestamp(chain) -> int:
     now = len(chain) - 1
-    dd = chain[int(now)].timestamp
-    dd = datetime.fromtimestamp(dd)
+    chain_timestamp = chain[int(now)].timestamp
+    chain_time = datetime.fromtimestamp(chain_timestamp)
 
-    dd = dd.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
+    chain_time = chain_time.replace(
+        hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc
+    )
 
-    if dd.strftime("%a") == "Thu":
-        dd += timedelta(days=1)  # add a day so it doesn't return today
+    if chain_time.strftime("%a") == "Thu":
+        chain_time += timedelta(days=1)  # achain_time a day so it doesn't return today
 
-    while dd.strftime("%a") != "Thu":
-        dd += timedelta(days=1)
+    while chain_time.strftime("%a") != "Thu":
+        chain_time += timedelta(days=1)
 
-    return int(dd.timestamp())
+    return int(chain_time.timestamp())
 
 
 @enforce_types
