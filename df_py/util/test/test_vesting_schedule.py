@@ -1,5 +1,4 @@
 from datetime import datetime
-from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types
@@ -63,15 +62,11 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         > 0
     )
 
-    # get_rate patches are needed because we are testing with a future start_dt
-    # for predictoor, but the get_rate function is not implemented for the future
-
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        challenge_rewards = (
-            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, challenge_substream
-            )
+    challenge_rewards = (
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, challenge_substream
         )
+    )
 
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
@@ -79,15 +74,11 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         )
     )
 
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        volume_rewards = (
-            vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, volume_substream
-            )
-        )
+    volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+        start_dt, volume_substream
+    )
 
-    with patch("df_py.challenge.calc_rewards.get_rate", return_value=0.5):
-        total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
+    total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
 
     assert total_rewards == approx(
         challenge_rewards + predictoor_rewards + volume_rewards, 0.1
