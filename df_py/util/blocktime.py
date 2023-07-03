@@ -8,7 +8,7 @@ from scipy import optimize
 
 @enforce_types
 def get_block_number_thursday(chain) -> int:
-    timestamp = get_next_thursday_timestamp()
+    timestamp = get_next_thursday_timestamp(chain)
     block_number = timestamp_to_future_block(chain, timestamp)
 
     ## round to upper 100th
@@ -17,9 +17,12 @@ def get_block_number_thursday(chain) -> int:
 
 
 @enforce_types
-def get_next_thursday_timestamp() -> int:
-    dd = datetime.now(timezone.utc)
-    dd = dd.replace(hour=0, minute=0, second=0, microsecond=0)
+def get_next_thursday_timestamp(chain) -> int:
+    now = len(chain) - 1
+    dd = chain[int(now)].timestamp
+    dd = datetime.fromtimestamp(dd)
+
+    dd = dd.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
 
     if dd.strftime("%a") == "Thu":
         dd += timedelta(days=1)  # add a day so it doesn't return today
@@ -85,8 +88,7 @@ def timestamp_to_future_block(chain, timestamp: Union[float, int]) -> int:
     block_last_time = timeSinceTimestamp(block_last_number)  # time of last block
     block_old_time = timeSinceTimestamp(block_old_number)  # time of old block
 
-    # uncomment once #629 is done
-    # assert block_last_time < timestamp
+    assert block_last_time < timestamp
 
     # slope
     m = (block_last_number - block_old_number) / (block_last_time - block_old_time)
