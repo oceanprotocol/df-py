@@ -27,7 +27,7 @@ def get_next_thursday_timestamp(chain) -> int:
     )
 
     if chain_time.strftime("%a") == "Thu":
-        chain_time += timedelta(days=1)  # achain_time a day so it doesn't return today
+        chain_time += timedelta(days=1)  # add a day so it doesn't return today
 
     while chain_time.strftime("%a") != "Thu":
         chain_time += timedelta(days=1)
