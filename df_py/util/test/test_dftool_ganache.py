@@ -280,6 +280,7 @@ def test_calc_predictoor_substream(tmp_path):
     total_reward = sum(rewards.values())
     assert total_reward == 0
 
+
 def test_dummy_csvs(tmp_path):
     with sysargs_context(
         [
@@ -290,7 +291,7 @@ def test_dummy_csvs(tmp_path):
         ]
     ):
         dftool_module.do_dummy_csvs()
-    
+
     challenge_data_csv = challenge_data_csv_filename(tmp_path)
     challenge_rewards_csv = predictoor_rewards_csv_filename(tmp_path)
     assert os.path.exists(challenge_data_csv)
