@@ -11,15 +11,14 @@ def get_block_number_thursday(chain) -> int:
     timestamp = get_next_thursday_timestamp(chain)
     block_number = timestamp_to_future_block(chain, timestamp)
 
-    ## round to upper 100th
+    # round to upper 100th
     block_number = ceil(block_number / 100) * 100
     return block_number
 
 
 @enforce_types
 def get_next_thursday_timestamp(chain) -> int:
-    now = len(chain) - 1
-    chain_timestamp = chain[int(now)].timestamp
+    chain_timestamp = chain[-1].timestamp
     chain_time = datetime.fromtimestamp(chain_timestamp)
 
     chain_time = chain_time.replace(
