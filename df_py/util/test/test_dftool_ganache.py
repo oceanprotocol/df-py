@@ -287,7 +287,7 @@ def test_dummy_csvs(tmp_path):
             "dftool",
             "dummy_csvs",
             "challenge",
-            csv_dir,
+            tmp_path,
         ]
     ):
         dftool_module.do_dummy_csvs()
