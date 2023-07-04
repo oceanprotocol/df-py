@@ -96,7 +96,7 @@ def test_timestamp_to_block():
 
 @enforce_types
 def test_get_next_thursday():
-    next_thursday = get_next_thursday_timestamp()
+    next_thursday = get_next_thursday_timestamp(chain)
     date = datetime.utcfromtimestamp(next_thursday)
 
     assert date.isoweekday() == 4
@@ -106,8 +106,7 @@ def test_get_next_thursday():
 def test_get_next_thursday_block_number():
     next_thursday_block = get_block_number_thursday(chain)
     assert next_thursday_block % 10 == 0
-    # uncomment when #629 is done
-    # assert len(chain) < next_thursday_block
+    assert len(chain) < next_thursday_block
 
     now = len(chain) - 1
 
@@ -116,7 +115,7 @@ def test_get_next_thursday_block_number():
 
     avgBlockTime = (t1 - t0) / now
 
-    next_thursday = get_next_thursday_timestamp()
+    next_thursday = get_next_thursday_timestamp(chain)
     apprx = (next_thursday - t0) / avgBlockTime
     apprx = ceil(apprx / 100) * 100
 
