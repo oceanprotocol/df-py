@@ -112,6 +112,10 @@ jobs:
         run: |
           ./dftool calc volume $CSV_DIR 100000000 --START_DATE $TEST_START_DATE
 
+      - name: Run dftool challenge calc
+        run: |
+          ./dftool dummy_csvs challenge $CSV_DIR
+
       - name: Move csvs to df-sql dir
         run: |
           mv /tmp/csv/* ~/.dfcsv
