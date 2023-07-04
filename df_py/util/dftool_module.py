@@ -820,7 +820,7 @@ def do_dummy_csvs():
         dummy_challenge_data = (
             ["0x9", "0x8", "0x7"],
             ["0xn1", "0xn2", "0xn3"],
-            [2.3, 1.2, 0.42],
+            [0.42, 1.2, 2.3],
         )
         save_challenge_data_csv(dummy_challenge_data, CSV_DIR)
     else:
