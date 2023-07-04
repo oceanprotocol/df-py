@@ -818,11 +818,28 @@ def do_dummy_csvs():
 
     if SUBSTREAM == "challenge":
         dummy_challenge_data = (
-            ["0x9", "0x8", "0x7"],
+            ["0xfrom1", "0xfrom2", "0xfrom3"],
             ["0xn1", "0xn2", "0xn3"],
             [0.42, 1.2, 2.3],
         )
         save_challenge_data_csv(dummy_challenge_data, CSV_DIR)
+
+        dummy_challenge_rewards = [
+            {
+                "winner_addr": "0xfrom1",
+                "OCEAN_amt": 2500,
+            },
+            {
+                "winner_addr": "0xfrom2",
+                "OCEAN_amt": 1500,
+            },
+            {
+                "winner_addr": "0xfrom3",
+                "OCEAN_amt": 500,
+            },
+        ]
+
+        save_challenge_rewards_csv(dummy_challenge_rewards, CSV_DIR)
     else:
         raise NotImplementedError("This substream is not implemented yet.")
 
