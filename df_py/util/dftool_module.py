@@ -804,6 +804,30 @@ def do_new_acct():
 
 
 # ========================================================================
+def do_dummy_csvs():
+    parser = argparse.ArgumentParser(description="Generate dummy CSVs")
+    parser.add_argument("command", choices=["dummy_csvs"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument(
+        "CSV_DIR", type=autocreate_path, help="output dir for csv files"
+    )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    CSV_DIR, SUBSTREAM = arguments.CSV_DIR, arguments.SUBSTREAM
+
+    if SUBSTREAM == "challenge":
+        dummy_challenge_data = (
+            ["0x9", "0x8", "0x7"],
+            ["0xn1", "0xn2", "0xn3"],
+            [2.3, 1.2, 0.42],
+        )
+        save_challenge_data_csv(dummy_challenge_data, CSV_DIR)
+    else:
+        raise NotImplementedError("This substream is not implemented yet.")
+
+
+# ========================================================================
 @enforce_types
 def do_new_token():
     parser = argparse.ArgumentParser(description="Generate new token (for testing)")
