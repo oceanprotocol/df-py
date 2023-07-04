@@ -30,7 +30,7 @@ jobs:
         with:
           repository: "oceanprotocol/df-sql"
           path: "df-sql"
-          ref: v0.1.0
+          ref: v0.1.1
 
       - name: Create CSV dir
         run: |
