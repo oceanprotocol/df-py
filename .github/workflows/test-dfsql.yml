@@ -135,3 +135,5 @@ jobs:
           curl -X POST http://localhost:6234/allocations | grep -q "\"ocean_amt\":"
           curl -X POST http://localhost:6234/rewards | grep -q "\"LP_addr\":\"0x"
           curl -X POST http://localhost:6234/rewardsSummary | grep -q "\"curating_amt\":"
+          curl -X POST http://localhost:6234/challenge/data
+          curl -X POST http://localhost:6234/challenge/rewards
