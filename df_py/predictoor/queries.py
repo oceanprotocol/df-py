@@ -1,4 +1,4 @@
-from typing import Dict
+from typing import Dict, List
 from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Prediction, Predictoor
