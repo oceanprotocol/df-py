@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from df_py.predictoor.calc_rewards import calc_predictoor_rewards, filter_predictoors
-from df_py.predictoor.models import Predictoor, PredictoorBase
+from df_py.predictoor.models import Predictoor, PredictoorBase, Prediction
 from df_py.util.constants import MIN_PREDICTIONS
 from df_py.util.networkutil import DEV_CHAINID
 
