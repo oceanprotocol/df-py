@@ -45,7 +45,6 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
     with open(csv_file, mode="r") as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            print(row)
             address = row["address"]
             slot = int(row["slot"])
             payout = float(row["payout"])
