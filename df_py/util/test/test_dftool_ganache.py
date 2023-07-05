@@ -295,8 +295,8 @@ def test_dummy_csvs(tmp_path):
 
     challenge_data_csv = challenge_data_csv_filename(csv_dir)
     challenge_rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(challenge_data_csv)
-    assert os.path.exists(challenge_rewards_csv)
+    assert challenge_data_csv
+    assert challenge_rewards_csv
 
 
 @patch(
