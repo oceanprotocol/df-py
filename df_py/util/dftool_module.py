@@ -433,10 +433,11 @@ def do_calc():
 
     arguments = parser.parse_args()
     print_arguments(arguments)
-    tot_ocean, start_date, csv_dir = (
+    tot_ocean, start_date, csv_dir, chain_id = (
         arguments.TOT_OCEAN,
         arguments.START_DATE,
         arguments.CSV_DIR,
+        arguments.CHAINID,
     )
 
     # condition inputs
@@ -526,9 +527,9 @@ def do_calc():
 
         # calculate rewards
         predictoor_rewards = calc_predictoor_rewards(
-            predictoors, tot_ocean, arguments.CHAINID
+            predictoors, tot_ocean, chain_id
         )
-        save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR)
+        save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
     print("dftool calc: Done")
 
