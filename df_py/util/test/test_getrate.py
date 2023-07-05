@@ -59,14 +59,12 @@ def test_get_rate_fallback():
     assert r is None
 
 
-@pytest.mark.skip(reason="Temporarily skipping, fails on GH for some reason")
 @enforce_types
 def test_get_rate_BTC():
     r = get_rate.get_rate("BTC", "2022-01-31", "2022-01-31")
     assert r == approx(37983.15, 0.1)
 
 
-@pytest.mark.skip(reason="Temporarily skipping, fails on GH for some reason")
 @enforce_types
 def test_start_after_fin():
     p = get_rate.get_rate("OCEAN", "2021-01-26", "2021-12-20")
