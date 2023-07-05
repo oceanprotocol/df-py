@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Predictoor, PredictoorBase
+from df_py.predictoor.models import Predictoor, PredictoorBase, Prediction
 from df_py.predictoor.queries import query_predictoor_contracts
 from df_py.util.constants import MIN_PREDICTIONS
 
