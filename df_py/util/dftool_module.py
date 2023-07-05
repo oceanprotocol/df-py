@@ -11,6 +11,8 @@ from df_py.challenge import judge
 from df_py.challenge.calc_rewards import calc_challenge_rewards
 from df_py.challenge.csvs import (
     challenge_rewards_csv_filename,
+    get_sample_challenge_data,
+    get_sample_challenge_rewards,
     load_challenge_data_csv,
     save_challenge_data_csv,
     save_challenge_rewards_csv,
@@ -817,29 +819,8 @@ def do_dummy_csvs():
     CSV_DIR, SUBSTREAM = arguments.CSV_DIR, arguments.SUBSTREAM
 
     if SUBSTREAM == "challenge":
-        dummy_challenge_data = (
-            ["0xfrom1", "0xfrom2", "0xfrom3"],
-            ["0xn1", "0xn2", "0xn3"],
-            [0.42, 1.2, 2.3],
-        )
-        save_challenge_data_csv(dummy_challenge_data, CSV_DIR)
-
-        dummy_challenge_rewards = [
-            {
-                "winner_addr": "0xfrom1",
-                "OCEAN_amt": 2500,
-            },
-            {
-                "winner_addr": "0xfrom2",
-                "OCEAN_amt": 1500,
-            },
-            {
-                "winner_addr": "0xfrom3",
-                "OCEAN_amt": 500,
-            },
-        ]
-
-        save_challenge_rewards_csv(dummy_challenge_rewards, CSV_DIR)
+        save_challenge_data_csv(get_sample_challenge_data(), CSV_DIR)
+        save_challenge_rewards_csv(get_sample_challenge_rewards(), CSV_DIR)
     else:
         raise NotImplementedError("This substream is not implemented yet.")
 

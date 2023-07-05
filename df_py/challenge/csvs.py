@@ -1,5 +1,6 @@
 import csv
 import os
+from copy import copy
 from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
@@ -140,3 +141,32 @@ def load_challenge_rewards_csv(csv_dir: str) -> Dict[str, float]:
 
     print(f"Loaded {csv_file}")
     return rewards
+
+
+def get_sample_challenge_data():
+    return copy(
+        (
+            ["0xfrom1", "0xfrom2", "0xfrom3"],
+            ["0xn1", "0xn2", "0xn3"],
+            [0.42, 1.2, 2.3],
+        )
+    )
+
+
+def get_sample_challenge_rewards():
+    return copy(
+        [
+            {
+                "winner_addr": "0xfrom1",
+                "OCEAN_amt": 2500,
+            },
+            {
+                "winner_addr": "0xfrom2",
+                "OCEAN_amt": 1500,
+            },
+            {
+                "winner_addr": "0xfrom3",
+                "OCEAN_amt": 500,
+            },
+        ]
+    )
