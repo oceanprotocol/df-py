@@ -580,7 +580,8 @@ def do_dispense_active():
 
     predictoor_rewards = {}
     if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
-        predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
+        predictoor_rewards_3d = load_predictoor_rewards_csv(arguments.CSV_DIR)
+        predictoor_rewards = calc_rewards.flatten_rewards(predictoor_rewards)
 
     rewards = calc_rewards.merge_rewards(volume_rewards, predictoor_rewards)
 
