@@ -1,6 +1,6 @@
 import csv
 import os
-from typing import Dict, Union
+from typing import Dict
 
 from enforce_typing import enforce_types
 
