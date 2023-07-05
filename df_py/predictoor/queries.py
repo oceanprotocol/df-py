@@ -31,7 +31,7 @@ def query_predictoor_contracts(chain_id: int) -> List[str]:
             chunk_size,
         )
         offset += chunk_size
-        result = submit_query(chain_id)
+        result = submit_query(query, chain_id)
         if "error" in result:
             raise AssertionError(result)
         if "data" not in result:
