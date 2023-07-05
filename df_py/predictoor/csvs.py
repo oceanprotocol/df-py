@@ -22,7 +22,7 @@ def save_predictoor_data_csv(
     with open(csv_file, mode='w', newline='') as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
-        for predictoor in predictoor_data:
+        for predictoor in predictoor_data.values():
             address = predictoor.address
             for prediction in predictoor._predictions:
                 writer.writerow({
