@@ -286,6 +286,24 @@ def test_calc_predictoor_substream(tmp_path):
     assert total_reward == 0
 
 
+def test_dummy_csvs(tmp_path):
+    csv_dir = str(tmp_path)
+    with sysargs_context(
+        [
+            "dftool",
+            "dummy_csvs",
+            "challenge",
+            csv_dir,
+        ]
+    ):
+        dftool_module.do_dummy_csvs()
+
+    challenge_data_csv = challenge_data_csv_filename(csv_dir)
+    challenge_rewards_csv = predictoor_rewards_csv_filename(csv_dir)
+    assert challenge_data_csv
+    assert challenge_rewards_csv
+
+
 @patch(
     "df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
 )
