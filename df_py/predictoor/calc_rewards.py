@@ -51,7 +51,7 @@ def calc_predictoor_rewards(
     predictoors = filter_predictoors(predictoors)
 
     # dict to store rewards per contract
-    rewards = {contract: {} for contract in predictoor_contracts}
+    rewards: Dict[str, Dict[str, float]] = {contract: {} for contract in predictoor_contracts}
 
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
