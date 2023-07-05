@@ -506,7 +506,9 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
-        if arguments.
+        if arguments.CHAINID is None:
+            raise ValueError("CHAINID is required for predictoor")
+
         try:
             predictoors = load_predictoor_data_csv(CSV_DIR)
         except FileNotFoundError:
@@ -519,7 +521,7 @@ def do_calc():
         _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards
-        predictoor_rewards = calc_predictoor_rewards(predictoors, TOT_OCEAN)
+        predictoor_rewards = calc_predictoor_rewards(predictoors, TOT_OCEAN, arguments.CHAINID)
         save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR)
 
     print("dftool calc: Done")
