@@ -1,11 +1,53 @@
 from typing import Dict
+from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Prediction, Predictoor
 from df_py.util.constants import DEPLOYER_ADDRS
 from df_py.util.graphutil import submit_query
 from df_py.util.networkutil import DEV_CHAINID
 
+@enforce_types
+def query_predictoor_contracts(chain_id: int) -> List[str]:
+    chunk_size = 1000
+    offset = 0
+    contracts = []
+    while True:
+        query = """
+        {
+            predictContracts(skip:%s, first:%s){
+                id
+                token {
+                    nft {
+                        owner {
+                            id
+                        }
+                    }
+                }
+            }
+        }
+        """ % (
+            offset,
+            chunk_size,
+        )
+        offset += chunk_size
+        result = submit_query(chain_id)
+        if "error" in result:
+            raise AssertionError(result)
+        if "data" not in result:
+            raise AssertionError(result)
+        predictoor_contracts = result["data"]["predictContracts"]
+        if len(predictoor_contracts) == 0:
+            break
+        for contract in predictoor_contracts:
+            owner = contract["token"]["nft"]["owner"]
+            if chainID != DEV_CHAINID:
+                if owner not in DEPLOYER_ADDRS:
+                    continue
+            contracts.append(contract["id"])
+    return contracts
 
+
+@enforce_types
 def query_predictoors(
     st_block: int, end_block: int, chainID: int
 ) -> Dict[str, Predictoor]:
