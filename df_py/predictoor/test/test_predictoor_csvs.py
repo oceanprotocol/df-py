@@ -26,7 +26,7 @@ def test_predictoordata(tmp_path):
 
     for original_predictoor in predictoors.values():
         addr = original_predictoor.address
-        loaded_predictoor = loaded_predictoors_dict[addr]
+        loaded_predictoor = loaded_predictoors[addr]
         assert loaded_predictoor.accuracy == original_predictoor.accuracy
         assert (
             loaded_predictoor.prediction_count == original_predictoor.prediction_count
