@@ -130,6 +130,7 @@ def test_calc_failures(tmp_path):
                 csv_dir,
                 str(tot_ocean),
                 f"--START_DATE={start_date}",
+                f"--CHAINID={networkutil.DEV_CHAINID}",
             ]
         ):
             dftool_module.do_calc()
@@ -144,6 +145,7 @@ def test_calc_failures(tmp_path):
                 csv_dir,
                 str(tot_ocean),
                 f"--START_DATE={start_date}",
+                f"--CHAINID={networkutil.DEV_CHAINID}",
             ]
         ):
             dftool_module.do_calc()
@@ -215,6 +217,7 @@ def test_calc_predictoor_substream(tmp_path):
             csv_dir,
             str(tot_ocean),
             f"--START_DATE={start_date}",
+            f"--CHAINID={networkutil.DEV_CHAINID}",
         ]
     ):
         dftool_module.do_calc()
@@ -243,6 +246,7 @@ def test_calc_predictoor_substream(tmp_path):
             csv_dir,
             str(tot_ocean),
             f"--START_DATE={start_date}",
+            f"--CHAINID={networkutil.DEV_CHAINID}",
         ]
     ):
         dftool_module.do_calc()
@@ -269,6 +273,7 @@ def test_calc_predictoor_substream(tmp_path):
             csv_dir,
             str(tot_ocean),
             f"--START_DATE={start_date}",
+            f"--CHAINID={networkutil.DEV_CHAINID}",
         ]
     ):
         dftool_module.do_calc()
