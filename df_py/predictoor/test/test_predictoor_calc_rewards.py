@@ -13,7 +13,7 @@ from df_py.util.networkutil import DEV_CHAINID
 @pytest.fixture(autouse=True)
 def mock_query_functions():
     with patch(
-        "df_py.predictoor.queries.query_predictoor_contracts",
+        "df_py.predictoor.calc_rewards.query_predictoor_contracts",
         ["0xContract1", "0xContract2"],
     ):
         yield
