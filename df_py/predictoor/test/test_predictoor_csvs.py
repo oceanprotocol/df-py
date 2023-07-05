@@ -24,7 +24,7 @@ def test_predictoordata(tmp_path):
     loaded_predictoors = csvs.load_predictoor_data_csv(str(tmp_path))
     assert len(loaded_predictoors) == len(predictoors)
 
-    for original_predictoor in predictoors:
+    for original_predictoor in predictoors.values():
         addr = original_predictoor.address
         loaded_predictoor = loaded_predictoors_dict[addr]
         assert loaded_predictoor.accuracy == original_predictoor.accuracy
