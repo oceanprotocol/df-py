@@ -19,9 +19,9 @@ def test_predictoordata(tmp_path):
             )
         predictoors[address] = predictoor
 
-    csvs.save_predictoor_data_csv(predictoors, tmp_path)
+    csvs.save_predictoor_data_csv(predictoors, str(tmp_path))
 
-    loaded_predictoors = csvs.load_predictoor_data_csv(tmp_path)
+    loaded_predictoors = csvs.load_predictoor_data_csv(str(tmp_path))
     assert len(loaded_predictoors) == len(predictoors)
 
     for original_predictoor in predictoors:

@@ -1,5 +1,6 @@
 import random
 from typing import Dict, Union
+from unittest.mock import patch
 
 import pytest
 
@@ -11,7 +12,7 @@ from df_py.util.networkutil import DEV_CHAINID
 
 @pytest.fixture(autouse=True)
 def mock_query_functions():
-    with mock.patch(
+    with patch(
         "df_py.predictoor.queries.query_predictoor_contracts",
         ["0xContract1", "0xContract2"],
     ):
