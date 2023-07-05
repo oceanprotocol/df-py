@@ -6,9 +6,13 @@ from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.constants import MIN_PREDICTIONS
 from df_py.util.networkutil import DEV_CHAINID
 
+
 @pytest.fixture(autouse=True)
 def mock_query_functions():
-    with mock.patch('df_py.predictoor.queries.query_predictoor_contracts', ['0xContract1', '0xContract2']):
+    with mock.patch(
+        "df_py.predictoor.queries.query_predictoor_contracts",
+        ["0xContract1", "0xContract2"],
+    ):
         yield
 
 
@@ -28,6 +32,7 @@ def test_filter_predictoors():
     assert "0x2" in filtered
     assert "0x3" in filtered
 
+
 def test_calc_predictoor_rewards_no_predictions():
     predictoors: Dict[str, Predictoor] = {}
 
@@ -36,11 +41,12 @@ def test_calc_predictoor_rewards_no_predictions():
     for contract_rewards in rewards.values():
         assert len(contract_rewards) == 0
 
+
 def test_calc_predictoor_rewards_one_prediction_not_eligible():
     p1 = Predictoor("0x1")
     for i in range(MIN_PREDICTIONS - 1):
-        p1.add_prediction(Prediction(1, 1.0, '0xContract1'))
-    
+        p1.add_prediction(Prediction(1, 1.0, "0xContract1"))
+
     predictoors = {"0x1": p1}
 
     rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
@@ -53,33 +59,36 @@ def test_calc_predictoor_rewards_one_prediction_eligible():
     p1 = Predictoor("0x1")
 
     for i in range(MIN_PREDICTIONS + 1):
-        p1.add_prediction(Prediction(1, 1.0, '0xContract1'))
+        p1.add_prediction(Prediction(1, 1.0, "0xContract1"))
 
     predictoors = {"0x1": p1}
 
     rewards = calc_predictoor_rewards(predictoors, 200, DEV_CHAINID)
 
-    total_rewards_for_p1 = sum(contract_rewards.get(p1.address, 0) for contract_rewards in rewards.values())
+    total_rewards_for_p1 = sum(
+        contract_rewards.get(p1.address, 0) for contract_rewards in rewards.values()
+    )
     assert total_rewards_for_p1 == 100
+
 
 def test_calc_predictoor_rewards_with_predictions():
     p1 = Predictoor("0x1")
     for i in range(5):
-        p1.add_prediction(Prediction(1, 1.0, '0xContract1'))
+        p1.add_prediction(Prediction(1, 1.0, "0xContract1"))
     for i in range(MIN_PREDICTIONS):
-        p1.add_prediction(Prediction(1, 0.0, '0xContract1'))
+        p1.add_prediction(Prediction(1, 0.0, "0xContract1"))
 
     p2 = Predictoor("0x2")
     for i in range(20):
-        p1.add_prediction(Prediction(1, 1.0, '0xContract2'))
+        p1.add_prediction(Prediction(1, 1.0, "0xContract2"))
     for i in range(MIN_PREDICTIONS):
-        p1.add_prediction(Prediction(1, 0.0, '0xContract2'))
+        p1.add_prediction(Prediction(1, 0.0, "0xContract2"))
 
     p3 = Predictoor("0x3")
     for i in range(5):
-        p1.add_prediction(Prediction(1, 1.0, '0xContract2'))
+        p1.add_prediction(Prediction(1, 1.0, "0xContract2"))
     for i in range(MIN_PREDICTIONS):
-        p1.add_prediction(Prediction(1, 0.0, '0xContract2'))
+        p1.add_prediction(Prediction(1, 0.0, "0xContract2"))
     predictoors = {"0x1": p1, "0x2": p2, "0x3": p3}
 
     rewards = calc_predictoor_rewards(predictoors, 100)
@@ -99,9 +108,9 @@ def test_calc_predictoor_rewards_fuzz():
         prediction_count = round(MIN_PREDICTIONS * 0.9), round(MIN_PREDICTIONS * 1.2)
         correct_prediction_count = random.randint(0, p._prediction_count)
         for i in range(correct_prediction_count):
-            p.add_prediction(Prediction(1, 1.0, '0xContract1'))
+            p.add_prediction(Prediction(1, 1.0, "0xContract1"))
         for i in range(prediction_count - correct_prediction_count):
-            p.add_prediction(Prediction(1, 0.0, '0xContract1'))
+            p.add_prediction(Prediction(1, 0.0, "0xContract1"))
         if p.prediction_count >= MIN_PREDICTIONS:
             total_accuracy += p.accuracy  # used to validate results in the end
         predictoors[address] = p

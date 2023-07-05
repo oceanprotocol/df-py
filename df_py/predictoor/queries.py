@@ -6,6 +6,7 @@ from df_py.util.constants import DEPLOYER_ADDRS
 from df_py.util.graphutil import submit_query
 from df_py.util.networkutil import DEV_CHAINID
 
+
 @enforce_types
 def query_predictoor_contracts(chain_id: int) -> List[str]:
     chunk_size = 1000

@@ -70,12 +70,14 @@ class PredictoorBase:
     def accuracy(self):
         return self._accuracy
 
+
 class PredictionSummary:
     @enforce_types
     def __init__(self, prediction_count, correct_prediction_count, contract_addr):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
+
 
 class Predictoor(PredictoorBase):
     @enforce_types
@@ -99,7 +101,9 @@ class Predictoor(PredictoorBase):
             # If this contract address is not already in prediction_summaries,
             # add a new PredictionSummary with initial values
             if contract_addr not in prediction_summaries:
-                prediction_summaries[contract_addr] = PredictionSummary(0, 0, contract_addr)
+                prediction_summaries[contract_addr] = PredictionSummary(
+                    0, 0, contract_addr
+                )
 
             # Increment the prediction_count of the summary
             prediction_summaries[contract_addr].prediction_count += 1

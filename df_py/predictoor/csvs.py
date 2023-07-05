@@ -18,43 +18,44 @@ def save_predictoor_data_csv(
     csv_file = predictoor_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
-    fieldnames = ['address', 'slot', 'payout', 'contract_addr']
-    with open(csv_file, mode='w', newline='') as file:
+    fieldnames = ["address", "slot", "payout", "contract_addr"]
+    with open(csv_file, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for predictoor in predictoor_data.values():
             address = predictoor.address
             for prediction in predictoor._predictions:
-                writer.writerow({
-                    'address': address,
-                    'slot': prediction.slot,
-                    'payout': prediction.payout,
-                    'contract_addr': prediction.contract_addr
-                })
+                writer.writerow(
+                    {
+                        "address": address,
+                        "slot": prediction.slot,
+                        "payout": prediction.payout,
+                        "contract_addr": prediction.contract_addr,
+                    }
+                )
 
     print(f"Created {csv_file}")
-
 
 
 @enforce_types
 def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
     csv_file = predictoor_data_csv_filename(csv_dir)
-    
+
     predictoors = {}
-    with open(csv_dir, mode='r') as file:
+    with open(csv_dir, mode="r") as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            address = row['address']
-            slot = int(row['slot'])
-            payout = float(row['payout'])
-            contract_addr = row['contract_addr']
+            address = row["address"]
+            slot = int(row["slot"])
+            payout = float(row["payout"])
+            contract_addr = row["contract_addr"]
             prediction = Prediction(slot, payout, contract_addr)
 
             if address not in predictoors:
                 predictoors[address] = Predictoor(address)
-                
+
             predictoors[address].add_prediction(prediction)
-                
+
     print(f"Loaded {csv_file}")
     return predictoors
 

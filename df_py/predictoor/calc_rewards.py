@@ -28,9 +28,7 @@ def filter_predictoors(
 
 @enforce_types
 def calc_predictoor_rewards(
-    predictoors: Dict[str, Predictoor],
-    tokens_avail: Union[int, float],
-    chain_id: int
+    predictoors: Dict[str, Predictoor], tokens_avail: Union[int, float], chain_id: int
 ) -> Dict[str, Dict[str, float]]:
     """
     Calculate rewards for predictoors based on their accuracy and available tokens.
@@ -73,7 +71,9 @@ def calc_predictoor_rewards(
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
             if contract in predictoor.get_prediction_summaries:
-                accuracy = predictoor.get_prediction_summaries[contract].correct_prediction_count
+                accuracy = predictoor.get_prediction_summaries[
+                    contract
+                ].correct_prediction_count
                 rewards[contract][pdr_address] = (
                     accuracy / total_accuracy_per_contract * tokens_per_contract
                 )
