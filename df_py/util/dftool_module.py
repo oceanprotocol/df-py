@@ -423,6 +423,9 @@ def do_calc():
         required=False,
         default=None,
     )
+    parser.add_argument(
+        "--CHAINID", type=int, help=CHAINID_EXAMPLES, required=False, default=None
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -503,6 +506,7 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, CSV_DIR)
 
     if arguments.SUBSTREAM == "predictoor":
+        if arguments.
         try:
             predictoors = load_predictoor_data_csv(CSV_DIR)
         except FileNotFoundError:
