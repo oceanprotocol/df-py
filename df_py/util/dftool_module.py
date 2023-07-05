@@ -521,7 +521,9 @@ def do_calc():
         _exitIfFileExists(predictoor_rewards_csv_filename(CSV_DIR))
 
         # calculate rewards
-        predictoor_rewards = calc_predictoor_rewards(predictoors, TOT_OCEAN, arguments.CHAINID)
+        predictoor_rewards = calc_predictoor_rewards(
+            predictoors, TOT_OCEAN, arguments.CHAINID
+        )
         save_predictoor_rewards_csv(predictoor_rewards, CSV_DIR)
 
     print("dftool calc: Done")
