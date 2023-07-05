@@ -11,6 +11,8 @@ from df_py.challenge import judge
 from df_py.challenge.calc_rewards import calc_challenge_rewards
 from df_py.challenge.csvs import (
     challenge_rewards_csv_filename,
+    get_sample_challenge_data,
+    get_sample_challenge_rewards,
     load_challenge_data_csv,
     save_challenge_data_csv,
     save_challenge_rewards_csv,
@@ -801,6 +803,26 @@ def do_new_acct():
     print(f" private_key = {account.private_key}")
     print(f" address = {account.address}")
     print(f" For other dftools: export DFTOOL_KEY={account.private_key}")
+
+
+# ========================================================================
+def do_dummy_csvs():
+    parser = argparse.ArgumentParser(description="Generate dummy CSVs")
+    parser.add_argument("command", choices=["dummy_csvs"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument(
+        "CSV_DIR", type=autocreate_path, help="output dir for csv files"
+    )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    CSV_DIR, SUBSTREAM = arguments.CSV_DIR, arguments.SUBSTREAM
+
+    if SUBSTREAM == "challenge":
+        save_challenge_data_csv(get_sample_challenge_data(), CSV_DIR)
+        save_challenge_rewards_csv(get_sample_challenge_rewards(), CSV_DIR)
+    else:
+        raise NotImplementedError("This substream is not implemented yet.")
 
 
 # ========================================================================
