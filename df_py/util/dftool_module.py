@@ -818,11 +818,11 @@ def do_dummy_csvs():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    CSV_DIR, SUBSTREAM = arguments.CSV_DIR, arguments.SUBSTREAM
+    csv_dir = arguments.CSV_DIR
 
-    if SUBSTREAM == "challenge":
-        save_challenge_data_csv(get_sample_challenge_data(), CSV_DIR)
-        save_challenge_rewards_csv(get_sample_challenge_rewards(), CSV_DIR)
+    if arguments.SUBSTREAM == "challenge":
+        save_challenge_data_csv(get_sample_challenge_data(), csv_dir)
+        save_challenge_rewards_csv(get_sample_challenge_rewards(), csv_dir)
     else:
         raise NotImplementedError("This substream is not implemented yet.")
 
