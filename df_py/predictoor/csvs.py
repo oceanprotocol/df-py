@@ -42,7 +42,7 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
     csv_file = predictoor_data_csv_filename(csv_dir)
 
     predictoors = {}
-    with open(csv_dir, mode="r") as file:
+    with open(csv_file, mode="r") as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
             address = row["address"]
