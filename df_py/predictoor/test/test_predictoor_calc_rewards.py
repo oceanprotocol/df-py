@@ -4,6 +4,12 @@ from typing import Dict, Union
 from df_py.predictoor.calc_rewards import calc_predictoor_rewards, filter_predictoors
 from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.util.constants import MIN_PREDICTIONS
+from df_py.util.networkutil import DEV_CHAINID
+
+@pytest.fixture(autouse=True)
+def mock_query_functions():
+    with mock.patch('df_py.predictoor.queries.query_predictoor_contracts', ['0xContract1', '0xContract2']):
+        yield
 
 
 def test_filter_predictoors():
@@ -22,38 +28,39 @@ def test_filter_predictoors():
     assert "0x2" in filtered
     assert "0x3" in filtered
 
-
 def test_calc_predictoor_rewards_no_predictions():
-    predictoors: Dict[str, Union[PredictoorBase, Predictoor]] = {}
+    predictoors: Dict[str, Predictoor] = {}
 
-    rewards = calc_predictoor_rewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
 
-    assert len(rewards) == 0
-
+    for contract_rewards in rewards.values():
+        assert len(contract_rewards) == 0
 
 def test_calc_predictoor_rewards_one_prediction_not_eligible():
     p1 = Predictoor("0x1")
-    p1._prediction_count = MIN_PREDICTIONS - 1
-    p1._correct_prediction_count = 5
+    for i in range(MIN_PREDICTIONS - 1):
+        p1.add_prediction(Prediction(1, 1.0, '0xContract1'))
+    
     predictoors = {"0x1": p1}
 
-    rewards = calc_predictoor_rewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
 
-    assert len(rewards) == 0
-    assert rewards.get(p1.address, 0) == 0
+    for contract_rewards in rewards.values():
+        assert len(contract_rewards) == 0
 
 
 def test_calc_predictoor_rewards_one_prediction_eligible():
     p1 = Predictoor("0x1")
-    p1._prediction_count = MIN_PREDICTIONS + 1
-    p1._correct_prediction_count = 5
+
+    for i in range(MIN_PREDICTIONS + 1):
+        p1.add_prediction(Prediction(1, 1.0, '0xContract1'))
+
     predictoors = {"0x1": p1}
 
-    rewards = calc_predictoor_rewards(predictoors, 100)
+    rewards = calc_predictoor_rewards(predictoors, 200, DEV_CHAINID)
 
-    assert len(rewards) == 1
-    assert rewards.get(p1.address, 0) == 100
-
+    total_rewards_for_p1 = sum(contract_rewards.get(p1.address, 0) for contract_rewards in rewards.values())
+    assert total_rewards_for_p1 == 100
 
 def test_calc_predictoor_rewards_with_predictions():
     p1 = Predictoor("0x1")
