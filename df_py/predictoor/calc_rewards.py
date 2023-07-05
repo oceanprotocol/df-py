@@ -3,6 +3,7 @@ from typing import Dict, Union
 from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Predictoor, PredictoorBase
+from df_py.predictoor.queries import query_predictoor_contracts
 from df_py.util.constants import MIN_PREDICTIONS
 
 
@@ -29,7 +30,8 @@ def filter_predictoors(
 def calc_predictoor_rewards(
     predictoors: Dict[str, Union[PredictoorBase, Predictoor]],
     tokens_avail: Union[int, float],
-) -> Dict[str, float]:
+    chain_id: int
+) -> Dict[str, Dict[str, float]]:
     """
     Calculate rewards for predictoors based on their accuracy and available tokens.
 
@@ -40,21 +42,40 @@ def calc_predictoor_rewards(
         The number of tokens available for distribution as rewards.
 
     @return
-    rewards -- dict of [pdr_address] : float
-        The calculated rewards for each predictoor.
+    rewards -- dict of [contract addr][predictoor addr]: reward
+        The calculated rewards for each predictoor per contract address.
     """
+
+    predictoor_contracts = query_predictoor_contracts(chain_id)
+    tokens_per_contract = tokens_avail / len(predictoor_contracts)
 
     # filter predictoors by min prediction count
     predictoors = filter_predictoors(predictoors)
 
-    # reward calculation function
-    tot_accuracy = sum([p.accuracy for p in predictoors.values()])
+    # dict to store rewards per contract
+    rewards = {contract: {} for contract in predictoor_contracts}
 
-    if tot_accuracy == 0:
-        return {}
+    # Loop through each contract and calculate the rewards for predictions
+    # made for that specific contract
+    for contract in predictoor_contracts:
+        total_accuracy_per_contract = sum(
+            [
+                p.get_prediction_summaries[contract].correct_prediction_count
+                for p in predictoors.values()
+                if contract in p.get_prediction_summaries
+            ]
+        )
 
-    rewards = {
-        k: v.accuracy / tot_accuracy * tokens_avail for k, v in predictoors.items()
-    }
+        # If total accuracy for this contract is 0, no rewards are distributed
+        if total_accuracy_per_contract == 0:
+            continue
+
+        # Calculate rewards for each predictoor for this contract
+        for pdr_address, predictoor in predictoors.items():
+            if contract in predictoor.get_prediction_summaries:
+                accuracy = predictoor.get_prediction_summaries[contract].correct_prediction_count
+                rewards[contract][pdr_address] = (
+                    accuracy / total_accuracy_per_contract * tokens_per_contract
+                )
 
     return rewards
