@@ -4,7 +4,7 @@ from typing import Dict, Union
 
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Predictoor, PredictoorBase
+from df_py.predictoor.models import Predictoor, Prediction
 from df_py.util.csv_helpers import assert_is_eth_addr
 
 
