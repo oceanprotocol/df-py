@@ -28,7 +28,7 @@ def filter_predictoors(
 
 @enforce_types
 def calc_predictoor_rewards(
-    predictoors: Dict[str, Union[PredictoorBase, Predictoor]],
+    predictoors: Dict[str, Predictoor],
     tokens_avail: Union[int, float],
     chain_id: int
 ) -> Dict[str, Dict[str, float]]:
