@@ -1,5 +1,5 @@
+import csv
 from typing import Dict, List
-
 from enforce_typing import enforce_types
 
 
@@ -70,6 +70,12 @@ class PredictoorBase:
     def accuracy(self):
         return self._accuracy
 
+class PredictionSummary:
+    @enforce_types
+    def __init__(self, prediction_count, correct_prediction_count, contract_addr):
+        self.prediction_count = prediction_count
+        self.correct_prediction_count = correct_prediction_count
+        self.contract_addr = contract_addr
 
 class Predictoor(PredictoorBase):
     @enforce_types
@@ -78,7 +84,40 @@ class Predictoor(PredictoorBase):
         self._predictions: List[Prediction] = []
 
     @property
+    def get_prediction_summaries(self) -> Dict[str, PredictionSummary]:
+        """
+        Get the summaries of all predictions made by this Predictoor.
+
+        @return
+            Dict[str, PredictionSummary] - A dict of PredictionSummary objects.
+        """
+        prediction_summaries = {}
+
+        for prediction in self._predictions:
+            contract_addr = prediction.contract_addr
+
+            # If this contract address is not already in prediction_summaries,
+            # add a new PredictionSummary with initial values
+            if contract_addr not in prediction_summaries:
+                prediction_summaries[contract_addr] = PredictionSummary(0, 0, contract_addr)
+
+            # Increment the prediction_count of the summary
+            prediction_summaries[contract_addr].prediction_count += 1
+
+            # If the prediction is correct, also increment the correct_prediction_count
+            if prediction.is_correct:
+                prediction_summaries[contract_addr].correct_prediction_count += 1
+
+        return prediction_summaries
+
+    @property
     def accuracy(self) -> float:
+        """
+        Returns the accuracy of this Predictoor
+
+        @return
+            accuracy - float
+        """
         if self._prediction_count == 0:
             return 0
         return self._correct_prediction_count / self._prediction_count
