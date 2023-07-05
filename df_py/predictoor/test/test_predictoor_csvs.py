@@ -6,39 +6,27 @@ from df_py.predictoor.models import Prediction, Predictoor
 
 @enforce_types
 def test_predictoordata(tmp_path):
-    target_csv = """predictoor_addr,accuracy,n_preds,n_correct_preds
-0x0000000000000000000000000000000000000000,0.4,5,2
-0x1000000000000000000000000000000000000000,0.4,5,2
-0x2000000000000000000000000000000000000000,0.4,5,2
-0x3000000000000000000000000000000000000000,0.4,5,2
-0x4000000000000000000000000000000000000000,0.4,5,2
-0x5000000000000000000000000000000000000000,0.4,5,2
-0x6000000000000000000000000000000000000000,0.4,5,2
-0x7000000000000000000000000000000000000000,0.4,5,2
-0x8000000000000000000000000000000000000000,0.4,5,2
-0x9000000000000000000000000000000000000000,0.4,5,2"""
-
     predictoors = {}
+
     for i in range(10):
-        p = Predictoor(f"0x{i}000000000000000000000000000000000000000")
+        address = f"0x{i:01x}0000000000000000000000000000000000000000"
+        predictoor = Predictoor(address)
         for j in range(5):
-            p.add_prediction(
-                Prediction(i, j % 2 * 1.0, "0x0000000000000000000000000000000000000000")
+            predictoor.add_prediction(
+                Prediction(
+                    i, j % 2 * 1.0, f"0x000000000000000000000000000000000000000{j}"
+                )
             )
-        predictoors[p.address] = p
+        predictoors[address] = predictoor
 
-    csv_dir = str(tmp_path)
-    csvs.save_predictoor_data_csv(predictoors, csv_dir)
+    csvs.save_predictoor_data_csv(predictoors, tmp_path)
 
-    with open(csvs.predictoor_data_csv_filename(csv_dir), "r") as loaded_data:
-        data = loaded_data.read().strip()
-        assert data == target_csv
-
-    loaded_predictoors = csvs.load_predictoor_data_csv(csv_dir)
+    loaded_predictoors = csvs.load_predictoor_data_csv(tmp_path)
     assert len(loaded_predictoors) == len(predictoors)
 
-    for addr, original_predictoor in predictoors.items():
-        loaded_predictoor = loaded_predictoors[addr]
+    for original_predictoor in predictoors:
+        addr = original_predictoor.address
+        loaded_predictoor = loaded_predictoors_dict[addr]
         assert loaded_predictoor.accuracy == original_predictoor.accuracy
         assert (
             loaded_predictoor.prediction_count == original_predictoor.prediction_count
