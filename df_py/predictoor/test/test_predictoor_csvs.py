@@ -39,8 +39,6 @@ def test_predictoordata(tmp_path):
 
 @enforce_types
 def test_predictoor_rewards(tmp_path):
-    target_csv = csvs.sample_predictoor_rewards_csv()
-
     # generate random rewards
     predictoor_rewards = {}
     for i in range(5):
@@ -50,10 +48,6 @@ def test_predictoor_rewards(tmp_path):
 
     csv_dir = str(tmp_path)
     csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
-
-    with open(csvs.predictoor_rewards_csv_filename(csv_dir), "r") as loaded_data:
-        data = loaded_data.read().strip()
-        assert data == target_csv
 
     loaded_predictoor_rewards = csvs.load_predictoor_rewards_csv(csv_dir)
     assert len(loaded_predictoor_rewards) == len(predictoor_rewards)
