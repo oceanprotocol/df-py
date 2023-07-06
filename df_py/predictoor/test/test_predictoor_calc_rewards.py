@@ -136,7 +136,7 @@ def test_calc_predictoor_rewards_fuzz():
         acc1 = p.get_prediction_summary("0xContract1").correct_prediction_count
         acc2 = p.get_prediction_summary("0xContract2").correct_prediction_count
         expected_reward_1 = acc1 / total_accuracy_1 * tokens_avail / 2
-        expected_reward_1 = acc2 / total_accuracy_2 * tokens_avail / 2
+        expected_reward_2 = acc2 / total_accuracy_2 * tokens_avail / 2
         assert (
             abs(rewards["0xContract1"].get(address, 0) - expected_reward_1) < 1e-6
         )  # allow for small floating point differences
