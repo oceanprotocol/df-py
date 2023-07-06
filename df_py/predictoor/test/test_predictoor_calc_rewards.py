@@ -114,7 +114,7 @@ def test_calc_predictoor_rewards_fuzz():
         correct_prediction_count = random.randint(0, prediction_count)
         for i in range(correct_prediction_count):
             p.add_prediction(Prediction(1, 1.0, "0xContract1"))
-            p.add_prediction(Prediction(1, 1.0, "0xContract2"))
+            p.add_prediction(Prediction(1, random.randint(0,1), "0xContract2"))
         for i in range(prediction_count - correct_prediction_count):
             p.add_prediction(Prediction(1, 0.0, "0xContract1"))
             p.add_prediction(Prediction(1, 0.0, "0xContract2"))
@@ -127,15 +127,21 @@ def test_calc_predictoor_rewards_fuzz():
     rewards = calc_predictoor_rewards(predictoors, tokens_avail, DEV_CHAINID)
 
     # the rewards of each Predictoor should be proportionate to its accuracy
+    total_accuracy_1 = sum([p.get_prediction_summary("0xContract1") for p in predictoors])
+    total_accuracy_2 = sum([p.get_prediction_summary("0xContract2") for p in predictoors])
     for address, p in predictoors.items():
         if p.prediction_count < MIN_PREDICTIONS:
             assert rewards.get(address, 0) == 0
             continue
-        expected_reward = (
-            (p.accuracy / total_accuracy) * tokens_avail if total_accuracy != 0 else 0
-        )
+        acc1 = p.get_prediction_summary("0xContract1").accuracy
+        acc2 = p.get_prediction_summary("0xContract2").accuracy
+        expected_reward_1 = acc1 / total_accuracy_1 * tokens_avail / 2
+        expected_reward_1 = acc2 / total_accuracy_2 * tokens_avail / 2
         assert (
-            abs(rewards["0xContract1"].get(address, 0) + rewards["0xContract2"].get(address, 0) - expected_reward) < 1e-6
+            abs(rewards["0xContract1"].get(address, 0) - expected_reward_1) < 1e-6
+        )  # allow for small floating point differences
+        assert (
+            abs(rewards["0xContract2"].get(address, 0) - expected_reward_2) < 1e-6
         )  # allow for small floating point differences
 
     # Sum of all rewards should be equal to tokens available
