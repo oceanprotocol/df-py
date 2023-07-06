@@ -72,7 +72,7 @@ class PredictoorBase:
 
 class PredictionSummary:
     @enforce_types
-    def __init__(self, prediction_count, correct_prediction_count, contract_addr, accuracy):
+    def __init__(self, prediction_count, correct_prediction_count, contract_addr):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
