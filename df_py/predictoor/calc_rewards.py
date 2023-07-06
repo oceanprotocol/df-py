@@ -58,7 +58,7 @@ def calc_predictoor_rewards(
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
     for contract in predictoor_contracts:
-        total_accuracy_per_contract = sum(
+        total_accuracy_for_contract = sum(
             [
                 p.get_prediction_summary(contract).correct_prediction_count
                 for p in predictoors.values()
@@ -66,16 +66,14 @@ def calc_predictoor_rewards(
         )
 
         # If total accuracy for this contract is 0, no rewards are distributed
-        if total_accuracy_per_contract == 0:
+        if total_accuracy_for_contract == 0:
             continue
 
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
-            predictoor_summaries = predictoor.prediction_summaries
-            if contract in predictoor_summaries:
-                accuracy = predictoor_summaries[contract].correct_prediction_count
-                rewards[contract][pdr_address] = (
-                    accuracy / total_accuracy_per_contract * tokens_per_contract
-                )
+            accuracy_for_contract = predictoor.get_prediction_summary(contract).correct_prediction_count
+            rewards[contract][pdr_address] = (
+                    accuracy_for_contract / total_accuracy_for_contract * tokens_per_contract
+            )
 
     return rewards
