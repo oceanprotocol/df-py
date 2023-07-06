@@ -119,20 +119,21 @@ def predictoor_summary_csv_filename(csv_dir):
 
 
 @enforce_types
-def save_predictoor_rewards_csv(predictoor_rewards: Dict[str, float], csv_dir: str):
+def save_predictoor_rewards_csv(predictoor_rewards: Dict[str, Dict[str, float]], csv_dir: str):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = predictoor_rewards_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["predictoor_addr", "OCEAN_amt"]
+        row = ["predictoor_addr", "contract_addr", "OCEAN_amt"]
         writer.writerow(row)
 
-        for predictoor_addr, reward in predictoor_rewards.items():
+        for predictoor_addr, contracts in predictoor_rewards.items():
             assert_is_eth_addr(predictoor_addr)
-            row = [predictoor_addr.lower(), str(reward)]
-            writer.writerow(row)
+            for contract_addr, reward in contracts.items():
+                row = [predictoor_addr.lower(), contract_addr.lower(), str(reward)]
+                writer.writerow(row)
 
     print(f"Created {csv_file}")
 
@@ -147,14 +148,18 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, float]:
 
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["predictoor_addr", "OCEAN_amt"]
+                assert row == ["predictoor_addr", "contract_addr", "OCEAN_amt"]
                 continue
-            predictoor_addr, reward_s = row
+            predictoor_addr, contract_addr, reward_s = row
             predictoor_addr = predictoor_addr.lower()
+            contract_addr = contract_addr.lower()
             reward = float(reward_s)
             assert_is_eth_addr(predictoor_addr)
-
-            predictoor_rewards[predictoor_addr] = reward
+            assert_is_eth_addr(contract_addr)
+            
+            if not predictoor_addr in predictoor_rewards:
+                predictoor_rewards[predictoor_addr] = {}
+            predictoor_rewards[predictoor_addr][contract_addr] = reward
 
     print(f"Loaded {csv_file}")
     return predictoor_rewards
