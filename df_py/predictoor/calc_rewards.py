@@ -60,9 +60,8 @@ def calc_predictoor_rewards(
     for contract in predictoor_contracts:
         total_accuracy_per_contract = sum(
             [
-                p.prediction_summaries[contract].correct_prediction_count
+                p.get_prediction_summary(contract).accuracy
                 for p in predictoors.values()
-                if contract in p.prediction_summaries
             ]
         )
 
@@ -74,7 +73,7 @@ def calc_predictoor_rewards(
         for pdr_address, predictoor in predictoors.items():
             predictoor_summaries = predictoor.prediction_summaries
             if contract in predictoor_summaries:
-                accuracy = predictoor_summaries[contract].correct_prediction_count
+                accuracy = predictoor_summaries[contract].accuracy
                 rewards[contract][pdr_address] = (
                     accuracy / total_accuracy_per_contract * tokens_per_contract
                 )
