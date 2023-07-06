@@ -139,6 +139,7 @@ def test_calc_predictoor_rewards_fuzz():
         )  # allow for small floating point differences
 
     # Sum of all rewards should be equal to tokens available
+    print(rewards)
     print(flatten_rewards(rewards))
     assert (
         abs(sum(flatten_rewards(rewards).values()) - tokens_avail) < 1e-6

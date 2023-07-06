@@ -96,7 +96,10 @@ def test_calc_volume(tmp_path):
 
 
 @enforce_types
-def test_calc_failures(tmp_path):
+@patch("df_py.predictoor.calc_rewards.query_predictoor_contracts")
+def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
+    mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
+
     csv_dir = str(tmp_path)
 
     # neither total ocean, nor given start date
