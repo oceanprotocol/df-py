@@ -8,7 +8,7 @@ from df_py.predictoor.calc_rewards import calc_predictoor_rewards, filter_predic
 from df_py.predictoor.models import Predictoor, PredictoorBase, Prediction
 from df_py.util.constants import MIN_PREDICTIONS
 from df_py.util.networkutil import DEV_CHAINID
-
+from df_py.volume.calc_rewards import flatten_rewards
 
 @pytest.fixture(autouse=True)
 def mock_query_functions():
@@ -135,10 +135,10 @@ def test_calc_predictoor_rewards_fuzz():
             (p.accuracy / total_accuracy) * tokens_avail if total_accuracy != 0 else 0
         )
         assert (
-            abs(rewards.get(address, 0) - expected_reward) < 1e-6
+            abs(rewards["0xContract1"].get(address, 0) + rewards["0xContract2"].get(address, 0) - expected_reward) < 1e-6
         )  # allow for small floating point differences
 
     # Sum of all rewards should be equal to tokens available
     assert (
-        abs(sum(rewards.values()) - tokens_avail) < 1e-6
+        abs(sum(flatten_rewards(rewards).values()) - tokens_avail) < 1e-6
     )  # allow for small floating point differences
