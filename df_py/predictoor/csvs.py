@@ -40,10 +40,10 @@ def save_predictoor_data_csv(
             for prediction in predictoor._predictions:
                 writer.writerow(
                     {
-                        "address": address,
+                        "predictoor_addr": address,
+                        "contract_addr": prediction.contract_addr,
                         "slot": prediction.slot,
                         "payout": prediction.payout,
-                        "contract_addr": prediction.contract_addr,
                     }
                 )
 
@@ -58,10 +58,10 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
     with open(csv_file, mode="r") as file:
         csv_reader = csv.DictReader(file)
         for row in csv_reader:
-            address = row["address"]
+            address = row["predictoor_addr"]
+            contract_addr = row["contract_addr"]
             slot = int(row["slot"])
             payout = float(row["payout"])
-            contract_addr = row["contract_addr"]
             prediction = Prediction(slot, payout, contract_addr)
 
             if address not in predictoors:
@@ -76,6 +76,43 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
 @enforce_types
 def predictoor_data_csv_filename(csv_dir):
     f = "predictoor_data.csv"
+    return os.path.join(csv_dir, f)
+
+# ------------------------------- PREDICTOOR SUMMARY -------------------------------
+
+@enforce_types
+def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir: str):
+    """
+    Save summaries of each Predictoor's predictions to a CSV file.
+
+    @param predictoor_data: A dictionary containing Predictoor objects.
+    @param csv_dir: The directory where the CSV file will be saved.
+    """
+
+    csv_file = predictoor_summary_csv_filename(csv_dir)
+    
+    fieldnames = ['predictoor_addr', 'contract_addr', 'prediction_count', 'correct_prediction_count', 'accuracy']
+
+    with open(csv_file, 'w', newline='') as csvfile:
+        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+        writer.writeheader()
+
+        # Writing data rows
+        for predictoor_addr, predictoor in predictoor_data.items():
+            prediction_summaries = predictoor.get_prediction_summaries
+            for contract_addr, summary in prediction_summaries.items():
+                writer.writerow({
+                    'predictoor_addr': predictoor_addr,
+                    'contract_addr': contract_addr,
+                    'prediction_count': summary.prediction_count,
+                    'correct_prediction_count': summary.correct_prediction_count,
+                    'accuracy': summary.accuracy
+                })
+                
+
+@enforce_types
+def predictoor_summary_csv_filename(csv_dir):
+    f = "predictoor_summary.csv"
     return os.path.join(csv_dir, f)
 
 
