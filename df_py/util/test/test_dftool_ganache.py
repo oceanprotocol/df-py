@@ -231,6 +231,7 @@ def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
 
     # get total reward amount
     rewards = load_predictoor_rewards_csv(csv_dir)
+    print(rewards)
     total_reward = sum(flatten_rewards(rewards).values())
     assert total_reward == 1000.0
 
