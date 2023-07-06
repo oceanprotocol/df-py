@@ -15,7 +15,7 @@ def mock_query_functions():
     with patch(
         "df_py.predictoor.calc_rewards.query_predictoor_contracts"
     ) as mock:
-        mock.return_value = ["0xContract1", "0xContract2"],
+        mock.return_value = ["0xContract1", "0xContract2"]
         yield
 
 
