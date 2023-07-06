@@ -83,15 +83,15 @@ def test_calc_predictoor_rewards_with_predictions():
 
     p2 = Predictoor("0x2")
     for i in range(20):
-        p1.add_prediction(Prediction(1, 1.0, "0xContract2"))
+        p2.add_prediction(Prediction(1, 1.0, "0xContract2"))
     for i in range(MIN_PREDICTIONS):
-        p1.add_prediction(Prediction(1, 0.0, "0xContract2"))
+        p2.add_prediction(Prediction(1, 0.0, "0xContract2"))
 
     p3 = Predictoor("0x3")
     for i in range(5):
-        p1.add_prediction(Prediction(1, 1.0, "0xContract2"))
+        p3.add_prediction(Prediction(1, 1.0, "0xContract2"))
     for i in range(MIN_PREDICTIONS):
-        p1.add_prediction(Prediction(1, 0.0, "0xContract2"))
+        p3.add_prediction(Prediction(1, 0.0, "0xContract2"))
     predictoors = {"0x1": p1, "0x2": p2, "0x3": p3}
 
     rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
