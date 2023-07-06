@@ -31,16 +31,15 @@ def save_predictoor_data_csv(
     csv_file = predictoor_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
-    fieldnames = ["address", "slot", "payout", "contract_addr"]
+    fieldnames = ["predictoor_addr", "slot", "payout", "contract_addr"]
     with open(csv_file, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for predictoor in predictoor_data.values():
-            address = predictoor.address
             for prediction in predictoor._predictions:
                 writer.writerow(
                     {
-                        "predictoor_addr": address,
+                        "predictoor_addr": predictoor.address,
                         "contract_addr": prediction.contract_addr,
                         "slot": prediction.slot,
                         "payout": prediction.payout,
