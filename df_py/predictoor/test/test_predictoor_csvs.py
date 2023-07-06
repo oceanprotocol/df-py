@@ -40,9 +40,9 @@ def test_predictoordata(tmp_path):
 @enforce_types
 def test_predictoor_rewards(tmp_path):
     # generate random rewards
-    predictoor_rewards = {}
+    predictoor_rewards = {"0xcontract": {}}
     for i in range(5):
-        predictoor_rewards[f"0x{i}000000000000000000000000000000000000000"] = (
+        predictoor_rewards["0xcontract"][f"0x{i}000000000000000000000000000000000000000"] = (
             i + 1
         ) * 10.0
 
