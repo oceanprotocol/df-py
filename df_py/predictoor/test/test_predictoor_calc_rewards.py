@@ -127,14 +127,14 @@ def test_calc_predictoor_rewards_fuzz():
     rewards = calc_predictoor_rewards(predictoors, tokens_avail, DEV_CHAINID)
 
     # the rewards of each Predictoor should be proportionate to its accuracy
-    total_accuracy_1 = sum([p.get_prediction_summary("0xContract1") for p in predictoors.values()])
-    total_accuracy_2 = sum([p.get_prediction_summary("0xContract2") for p in predictoors.values()])
+    total_accuracy_1 = sum([p.get_prediction_summary("0xContract1").correct_prediction_count for p in predictoors.values()])
+    total_accuracy_2 = sum([p.get_prediction_summary("0xContract2").correct_prediction_count for p in predictoors.values()])
     for address, p in predictoors.items():
         if p.prediction_count < MIN_PREDICTIONS:
             assert rewards.get(address, 0) == 0
             continue
-        acc1 = p.get_prediction_summary("0xContract1").accuracy
-        acc2 = p.get_prediction_summary("0xContract2").accuracy
+        acc1 = p.get_prediction_summary("0xContract1").correct_prediction_count
+        acc2 = p.get_prediction_summary("0xContract2").correct_prediction_count
         expected_reward_1 = acc1 / total_accuracy_1 * tokens_avail / 2
         expected_reward_1 = acc2 / total_accuracy_2 * tokens_avail / 2
         assert (
