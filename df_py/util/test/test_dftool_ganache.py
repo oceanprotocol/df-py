@@ -16,6 +16,7 @@ from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
     save_predictoor_rewards_csv,
+    sample_predictoor_data_csv
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
@@ -192,13 +193,7 @@ def test_predictoor_data(tmp_path):
 def test_calc_predictoor_substream(tmp_path):
     csv_dir = str(tmp_path)
 
-    csv_template = """predictoor_addr,accuracy,n_preds,n_correct_preds
-0x0000000000000000000000000000000000000001,0.5,1818,909
-0x1000000000000000000000000000000000000001,0.5,234,909
-0x2000000000000000000000000000000000000001,0.5,1818,909
-0x3000000000000000000000000000000000000001,0.5,754,909
-0x4000000000000000000000000000000000000001,0.5,1818,909
-"""
+    csv_template = sample_predictoor_data_csv()
     predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
     with open(predictoor_data_csv, "w") as f:
         f.write(csv_template)

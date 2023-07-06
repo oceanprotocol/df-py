@@ -10,6 +10,19 @@ from df_py.util.csv_helpers import assert_is_eth_addr
 
 # ------------------------------- PREDICTOOR DATA -------------------------------
 @enforce_types
+def sample_predictoor_data_csv():
+    return """address,slot,payout,contract_addr
+0x1,2,1.0,0xContract1,
+0x2,5,1.0,0xContract2,
+0x3,8,0.0,0xContract1,
+0x1,4,0.0,0xContract2,
+0x1,34,1.0,0xContract1,
+0x2,23,0.0,0xContract2,
+0x2,11,1.0,0xContract2,
+0x1,19,0.0,0xContract3,
+0x3,6,0.0,0xContract1"""
+
+@enforce_types
 def save_predictoor_data_csv(
     predictoor_data: Dict[str, Predictoor],
     csv_dir: str,
