@@ -51,7 +51,9 @@ def calc_predictoor_rewards(
     predictoors = filter_predictoors(predictoors)
 
     # dict to store rewards per contract
-    rewards: Dict[str, Dict[str, float]] = {contract: {} for contract in predictoor_contracts}
+    rewards: Dict[str, Dict[str, float]] = {
+        contract: {} for contract in predictoor_contracts
+    }
 
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
@@ -70,10 +72,9 @@ def calc_predictoor_rewards(
 
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
-            if contract in predictoor.get_prediction_summaries:
-                accuracy = predictoor.get_prediction_summaries[
-                    contract
-                ].correct_prediction_count
+            predictoor_summaries = predictoor.get_prediction_summaries
+            if contract in predictoor_summaries:
+                accuracy = predictoor_summaries[contract].correct_prediction_count
                 rewards[contract][pdr_address] = (
                     accuracy / total_accuracy_per_contract * tokens_per_contract
                 )
