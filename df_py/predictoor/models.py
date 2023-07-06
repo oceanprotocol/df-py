@@ -79,7 +79,7 @@ class PredictionSummary:
     
     @property
     def accuracy(self) -> float:
-        if(self.prediction_count): 
+        if(self.prediction_count == 0):
             return 0
         return self.correct_prediction_count / self.prediction_count
 
