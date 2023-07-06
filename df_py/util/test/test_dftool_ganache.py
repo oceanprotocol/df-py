@@ -48,6 +48,10 @@ def mock_connect():
     with patch.object(dftool_module.networkutil, "connect"):
         yield
 
+@pytest.fixture
+def mock_query_predictoor_contracts():
+    with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
+        yield mock
 
 @enforce_types
 def test_calc_volume(tmp_path):
@@ -96,7 +100,6 @@ def test_calc_volume(tmp_path):
 
 
 @enforce_types
-@patch("df_py.predictoor.calc_rewards.query_predictoor_contracts")
 def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
     mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
 
@@ -193,7 +196,6 @@ def test_predictoor_data(tmp_path):
 
 
 @enforce_types
-@patch("df_py.predictoor.calc_rewards.query_predictoor_contracts")
 def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
     mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
     csv_dir = str(tmp_path)
