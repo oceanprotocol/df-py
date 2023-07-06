@@ -97,9 +97,9 @@ def test_calc_predictoor_rewards_with_predictions():
     rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
 
     assert len(rewards) == 2
-    assert rewards["0x1"] == 50.0
-    assert rewards["0x2"] == 40.0
-    assert rewards["0x3"] == 10.0
+    assert rewards["0xContract1"]["0x1"] == 50.0
+    assert rewards["0xContract2"]["0x2"] == 40.0
+    assert rewards["0xContract2"]["0x3"] == 10.0
 
 
 def test_calc_predictoor_rewards_fuzz():
