@@ -98,7 +98,7 @@ def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir:
 
         # Writing data rows
         for predictoor_addr, predictoor in predictoor_data.items():
-            prediction_summaries = predictoor.get_prediction_summaries
+            prediction_summaries = predictoor.prediction_summaries
             for contract_addr, summary in prediction_summaries.items():
                 writer.writerow({
                     'predictoor_addr': predictoor_addr,

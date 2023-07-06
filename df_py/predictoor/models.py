@@ -88,34 +88,39 @@ class Predictoor(PredictoorBase):
         super().__init__(address, 0, 0, 0)
         self._predictions: List[Prediction] = []
 
+    def get_prediction_summary(self, contract_addr: str) -> PredictionSummary:
+        """
+        Get the prediction summary for a specific contract address.
+
+        @param contract_addr: The contract address for which to get the prediction summary.
+
+        @return:
+            PredictionSummary - The prediction summary for the specified contract address.
+        """
+        prediction_count = 0
+        correct_prediction_count = 0
+        for prediction in self._predictions:
+            if prediction.contract_addr == contract_addr:
+                prediction_count += 1
+                if prediction.is_correct:
+                    correct_prediction_count += 1
+
+        return PredictionSummary(prediction_count, correct_prediction_count, contract_addr)
+
+
     @property
-    def get_prediction_summaries(self) -> Dict[str, PredictionSummary]:
+    def prediction_summaries(self) -> Dict[str, PredictionSummary]:
         """
         Get the summaries of all predictions made by this Predictoor.
 
         @return
             Dict[str, PredictionSummary] - A dict of PredictionSummary objects.
         """
-        prediction_summaries = {}
-
-        for prediction in self._predictions:
-            contract_addr = prediction.contract_addr
-
-            # If this contract address is not already in prediction_summaries,
-            # add a new PredictionSummary with initial values
-            if contract_addr not in prediction_summaries:
-                prediction_summaries[contract_addr] = PredictionSummary(
-                    0, 0, contract_addr
-                )
-
-            # Increment the prediction_count of the summary
-            prediction_summaries[contract_addr].prediction_count += 1
-
-            # If the prediction is correct, also increment the correct_prediction_count
-            if prediction.is_correct:
-                prediction_summaries[contract_addr].correct_prediction_count += 1
-
+        unique_contract_addresses = set(prediction.contract_addr for prediction in self._predictions)
+        prediction_summaries = {contract_addr: self.get_prediction_summary(contract_addr) for contract_addr in unique_contract_addresses}
         return prediction_summaries
+    
+    
 
     @property
     def accuracy(self) -> float:
