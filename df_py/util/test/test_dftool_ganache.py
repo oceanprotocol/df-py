@@ -25,6 +25,7 @@ from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.util.get_rate import get_rate
 from df_py.volume import csvs
+from df_py.volume.calc_rewards import flatten_rewards
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -230,7 +231,7 @@ def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
 
     # get total reward amount
     rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(rewards.values())
+    total_reward = sum(flatten_rewards(rewards).values())
     assert total_reward == 1000.0
 
     # delete rewards csv
@@ -257,7 +258,7 @@ def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
     rewards_csv = predictoor_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
     rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(rewards.values())
+    total_reward = sum(flatten_rewards(rewards).values())
     assert total_reward > 0
 
     # delete rewards csv
@@ -284,7 +285,7 @@ def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
     rewards_csv = predictoor_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
     rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(rewards.values())
+    total_reward = sum(flatten_rewards(rewards).values())
     assert total_reward == 0
 
 
