@@ -111,7 +111,7 @@ def test_calc_predictoor_rewards_fuzz():
         prediction_count = random.randint(
             round(MIN_PREDICTIONS * 0.9), round(MIN_PREDICTIONS * 1.2)
         )
-        correct_prediction_count = random.randint(0, p._prediction_count)
+        correct_prediction_count = random.randint(0, prediction_count)
         for i in range(correct_prediction_count):
             p.add_prediction(Prediction(1, 1.0, "0xContract1"))
             p.add_prediction(Prediction(1, 1.0, "0xContract2"))
