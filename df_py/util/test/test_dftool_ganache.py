@@ -103,8 +103,8 @@ def test_calc_volume(tmp_path):
 
 
 @enforce_types
-def test_calc_failures(tmp_path, mock_query=mock_query_predictoor_contracts):
-    mock_query.return_value = ["0xContract1", "0xContract2"]
+def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
+    mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
 
     csv_dir = str(tmp_path)
 
@@ -200,9 +200,9 @@ def test_predictoor_data(tmp_path):
 
 @enforce_types
 def test_calc_predictoor_substream(
-    tmp_path, mock_query=mock_query_predictoor_contracts
+    tmp_path, mock_query_predictoor_contracts
 ):
-    mock_query.return_value = ["0xContract1", "0xContract2"]
+    mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
     csv_dir = str(tmp_path)
 
     csv_template = sample_predictoor_data_csv()
