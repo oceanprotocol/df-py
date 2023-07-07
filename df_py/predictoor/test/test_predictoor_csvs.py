@@ -83,4 +83,4 @@ def test_save_predictoor_summary(tmp_path):
 
     with open(csv_file, "r") as file:
         lines = file.readlines()
-        assert len(lines) == 11
+        assert len(lines) == 51
