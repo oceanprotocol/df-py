@@ -9,6 +9,8 @@ from df_py.util.networkutil import DEV_CHAINID
 
 @enforce_types
 def query_predictoor_contracts(chain_id: int) -> List[str]:
+    if chain_id == DEV_CHAINID:
+        return ["0xContract1", "0xContract2"]
     chunk_size = 1000
     offset = 0
     contracts = []
