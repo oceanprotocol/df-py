@@ -76,10 +76,10 @@ class PredictionSummary:
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
-    
+
     @property
     def accuracy(self) -> float:
-        if(self.prediction_count == 0):
+        if self.prediction_count == 0:
             return 0
         return self.correct_prediction_count / self.prediction_count
 
@@ -107,8 +107,9 @@ class Predictoor(PredictoorBase):
                 if prediction.is_correct:
                     correct_prediction_count += 1
 
-        return PredictionSummary(prediction_count, correct_prediction_count, contract_addr)
-
+        return PredictionSummary(
+            prediction_count, correct_prediction_count, contract_addr
+        )
 
     @property
     def prediction_summaries(self) -> Dict[str, PredictionSummary]:
@@ -118,11 +119,14 @@ class Predictoor(PredictoorBase):
         @return
             Dict[str, PredictionSummary] - A dict of PredictionSummary objects.
         """
-        unique_contract_addresses = set(prediction.contract_addr for prediction in self._predictions)
-        prediction_summaries = {contract_addr: self.get_prediction_summary(contract_addr) for contract_addr in unique_contract_addresses}
+        unique_contract_addresses = set(
+            prediction.contract_addr for prediction in self._predictions
+        )
+        prediction_summaries = {
+            contract_addr: self.get_prediction_summary(contract_addr)
+            for contract_addr in unique_contract_addresses
+        }
         return prediction_summaries
-    
-    
 
     @property
     def accuracy(self) -> float:

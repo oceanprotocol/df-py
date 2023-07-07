@@ -42,9 +42,9 @@ def test_predictoor_rewards(tmp_path):
     # generate random rewards
     predictoor_rewards = {"0xcontract": {}}
     for i in range(5):
-        predictoor_rewards["0xcontract"][f"0x{i}000000000000000000000000000000000000000"] = (
-            i + 1
-        ) * 10.0
+        predictoor_rewards["0xcontract"][
+            f"0x{i}000000000000000000000000000000000000000"
+        ] = (i + 1) * 10.0
 
     csv_dir = str(tmp_path)
     csvs.save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
@@ -56,6 +56,7 @@ def test_predictoor_rewards(tmp_path):
     for addr, original_reward in predictoor_rewards.items():
         loaded_reward = loaded_predictoor_rewards[addr]
         assert loaded_reward == original_reward
+
 
 @enforce_types
 def test_save_predictoor_summary(tmp_path):
@@ -78,6 +79,6 @@ def test_save_predictoor_summary(tmp_path):
     csv_file = predictoor_summary_csv_filename(csv_dir)
     assert os.path.exists(csv_file)
 
-    with open(csv_file, 'r') as file:
+    with open(csv_file, "r") as file:
         lines = file.readlines()
         assert len(lines) == 11

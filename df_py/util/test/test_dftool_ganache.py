@@ -16,7 +16,7 @@ from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
     save_predictoor_rewards_csv,
-    sample_predictoor_data_csv
+    sample_predictoor_data_csv,
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
@@ -49,10 +49,12 @@ def mock_connect():
     with patch.object(dftool_module.networkutil, "connect"):
         yield
 
+
 @pytest.fixture
 def mock_query_predictoor_contracts():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
         yield mock
+
 
 @enforce_types
 def test_calc_volume(tmp_path):

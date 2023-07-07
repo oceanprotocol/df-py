@@ -10,11 +10,10 @@ from df_py.util.constants import MIN_PREDICTIONS
 from df_py.util.networkutil import DEV_CHAINID
 from df_py.volume.calc_rewards import flatten_rewards
 
+
 @pytest.fixture(autouse=True)
 def mock_query_functions():
-    with patch(
-        "df_py.predictoor.calc_rewards.query_predictoor_contracts"
-    ) as mock:
+    with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
         mock.return_value = ["0xContract1", "0xContract2"]
         yield
 
@@ -114,7 +113,7 @@ def test_calc_predictoor_rewards_fuzz():
         correct_prediction_count = random.randint(0, prediction_count)
         for i in range(correct_prediction_count):
             p.add_prediction(Prediction(1, 1.0, "0xContract1"))
-            p.add_prediction(Prediction(1, float(random.randint(0,1)), "0xContract2"))
+            p.add_prediction(Prediction(1, float(random.randint(0, 1)), "0xContract2"))
         for i in range(prediction_count - correct_prediction_count):
             p.add_prediction(Prediction(1, 0.0, "0xContract1"))
             p.add_prediction(Prediction(1, 0.0, "0xContract2"))
@@ -127,8 +126,18 @@ def test_calc_predictoor_rewards_fuzz():
     rewards = calc_predictoor_rewards(predictoors, tokens_avail, DEV_CHAINID)
 
     # the rewards of each Predictoor should be proportionate to its accuracy
-    total_accuracy_1 = sum([p.get_prediction_summary("0xContract1").correct_prediction_count for p in predictoors.values()])
-    total_accuracy_2 = sum([p.get_prediction_summary("0xContract2").correct_prediction_count for p in predictoors.values()])
+    total_accuracy_1 = sum(
+        [
+            p.get_prediction_summary("0xContract1").correct_prediction_count
+            for p in predictoors.values()
+        ]
+    )
+    total_accuracy_2 = sum(
+        [
+            p.get_prediction_summary("0xContract2").correct_prediction_count
+            for p in predictoors.values()
+        ]
+    )
     for address, p in predictoors.items():
         if p.prediction_count < MIN_PREDICTIONS:
             assert rewards.get(address, 0) == 0

@@ -10,13 +10,16 @@ from df_py.util.csv_helpers import assert_is_eth_addr
 
 
 # ------------------------------- PREDICTOOR DATA -------------------------------
-def sample_predictoor_data_csv(num_rows = 50000):
+def sample_predictoor_data_csv(num_rows=50000):
     def random_predictor_address():
         return f"0x{random.randint(1, 16):x}"
+
     def random_slot():
         return random.randint(1, 50)
+
     def random_payout():
         return random.choice([0.0, 1.0])
+
     def random_contract_address():
         return f"0xContract{random.randint(1, 3)}"
 
@@ -28,8 +31,9 @@ def sample_predictoor_data_csv(num_rows = 50000):
         payout = random_payout()
         contract_address = random_contract_address()
         result += f"{predictor_address},{slot},{payout},{contract_address}\n"
-    
+
     return result
+
 
 @enforce_types
 def save_predictoor_data_csv(
@@ -86,6 +90,7 @@ def predictoor_data_csv_filename(csv_dir):
     f = "predictoor_data.csv"
     return os.path.join(csv_dir, f)
 
+
 # ------------------------------- PREDICTOOR SUMMARY -------------------------------
 def sample_predictoor_summary_csv():
     return """predictoor_addr,contract_addr,prediction_count,correct_prediction_count,accuracy
@@ -94,6 +99,7 @@ def sample_predictoor_summary_csv():
 0x2000000000000000000000000000000000000000,0xContract1,36233,23351,0.64446775039
 0x3000000000000000000000000000000000000000,0xContract2,41640,35251,0.84656580211
 0x4000000000000000000000000000000000000000,0xContract3,54320,44246,0.81454344624"""
+
 
 @enforce_types
 def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir: str):
@@ -105,10 +111,16 @@ def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir:
     """
 
     csv_file = predictoor_summary_csv_filename(csv_dir)
-    
-    fieldnames = ['predictoor_addr', 'contract_addr', 'prediction_count', 'correct_prediction_count', 'accuracy']
 
-    with open(csv_file, 'w', newline='') as csvfile:
+    fieldnames = [
+        "predictoor_addr",
+        "contract_addr",
+        "prediction_count",
+        "correct_prediction_count",
+        "accuracy",
+    ]
+
+    with open(csv_file, "w", newline="") as csvfile:
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
 
@@ -116,14 +128,16 @@ def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir:
         for predictoor_addr, predictoor in predictoor_data.items():
             prediction_summaries = predictoor.prediction_summaries
             for contract_addr, summary in prediction_summaries.items():
-                writer.writerow({
-                    'predictoor_addr': predictoor_addr,
-                    'contract_addr': contract_addr,
-                    'prediction_count': summary.prediction_count,
-                    'correct_prediction_count': summary.correct_prediction_count,
-                    'accuracy': summary.accuracy
-                })
-                
+                writer.writerow(
+                    {
+                        "predictoor_addr": predictoor_addr,
+                        "contract_addr": contract_addr,
+                        "prediction_count": summary.prediction_count,
+                        "correct_prediction_count": summary.correct_prediction_count,
+                        "accuracy": summary.accuracy,
+                    }
+                )
+
 
 @enforce_types
 def predictoor_summary_csv_filename(csv_dir):
@@ -140,8 +154,11 @@ def sample_predictoor_rewards_csv():
 0x3000000000000000000000000000000000000000,0xContract2,40.0
 0x4000000000000000000000000000000000000000,0xContract3,50.0"""
 
+
 @enforce_types
-def save_predictoor_rewards_csv(predictoor_rewards: Dict[str, Dict[str, float]], csv_dir: str):
+def save_predictoor_rewards_csv(
+    predictoor_rewards: Dict[str, Dict[str, float]], csv_dir: str
+):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = predictoor_rewards_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
@@ -178,7 +195,7 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, float]:
             reward = float(reward_s)
             assert_is_eth_addr(predictoor_addr)
             assert_is_eth_addr(contract_addr)
-            
+
             if not predictoor_addr in predictoor_rewards:
                 predictoor_rewards[predictoor_addr] = {}
             predictoor_rewards[predictoor_addr][contract_addr] = reward
