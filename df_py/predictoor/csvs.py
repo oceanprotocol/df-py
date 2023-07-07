@@ -178,9 +178,9 @@ def save_predictoor_rewards_csv(
 
 
 @enforce_types
-def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, float]:
+def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
     csv_file = predictoor_rewards_csv_filename(csv_dir)
-    predictoor_rewards = {}
+    predictoor_rewards: Dict[str, Dict[str, float]] = {}
 
     with open(csv_file, "r") as f:
         reader = csv.reader(f)
