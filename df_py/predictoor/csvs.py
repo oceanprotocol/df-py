@@ -87,6 +87,13 @@ def predictoor_data_csv_filename(csv_dir):
     return os.path.join(csv_dir, f)
 
 # ------------------------------- PREDICTOOR SUMMARY -------------------------------
+def sample_predictoor_summary_csv():
+    return """predictoor_addr,contract_addr,prediction_count,correct_prediction_count,accuracy
+0x0000000000000000000000000000000000000000,0xContract1,14360,10123,0.70494428969
+0x1000000000000000000000000000000000000000,0xContract2,24210,12523,0.51726559273
+0x2000000000000000000000000000000000000000,0xContract1,36233,23351,0.64446775039
+0x3000000000000000000000000000000000000000,0xContract2,41640,35251,0.84656580211
+0x4000000000000000000000000000000000000000,0xContract3,54320,44246,0.81454344624"""
 
 @enforce_types
 def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir: str):
