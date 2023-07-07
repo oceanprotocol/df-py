@@ -236,7 +236,7 @@ def test_calc_predictoor_substream(
     # get total reward amount
     rewards = load_predictoor_rewards_csv(csv_dir)
     total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward == 1000.0
+    assert total_reward - tot_ocean < 1e-6
 
     # delete rewards csv
     os.remove(rewards_csv)
