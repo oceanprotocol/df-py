@@ -56,3 +56,28 @@ def test_predictoor_rewards(tmp_path):
     for addr, original_reward in predictoor_rewards.items():
         loaded_reward = loaded_predictoor_rewards[addr]
         assert loaded_reward == original_reward
+
+@enforce_types
+def test_save_predictoor_summary(tmp_path):
+    predictoors = {}
+
+    for i in range(10):
+        address = f"0x{i:01x}0000000000000000000000000000000000000000"
+        predictoor = Predictoor(address)
+        for j in range(5):
+            predictoor.add_prediction(
+                Prediction(
+                    i, j % 2 * 1.0, f"0x000000000000000000000000000000000000000{j}"
+                )
+            )
+        predictoors[address] = predictoor
+
+    csv_dir = str(tmp_path)
+    save_predictoor_summary_csv(predictoors, csv_dir)
+
+    csv_file = predictoor_summary_csv_filename(csv_dir)
+    assert os.path.exists(csv_file)
+
+    with open(csv_file, 'r') as file:
+        lines = file.readlines()
+        assert len(lines) == 11
