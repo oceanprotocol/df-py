@@ -1,5 +1,6 @@
 import csv
 import os
+import random
 from typing import Dict
 
 from enforce_typing import enforce_types
@@ -9,17 +10,26 @@ from df_py.util.csv_helpers import assert_is_eth_addr
 
 
 # ------------------------------- PREDICTOOR DATA -------------------------------
-def sample_predictoor_data_csv():
-    return """predictoor_addr,slot,payout,contract_addr
-0x1,2,1.0,0xContract1,
-0x2,5,1.0,0xContract2,
-0x3,8,0.0,0xContract1,
-0x1,4,0.0,0xContract2,
-0x1,34,1.0,0xContract1,
-0x2,23,0.0,0xContract2,
-0x2,11,1.0,0xContract2,
-0x1,19,0.0,0xContract3,
-0x3,6,0.0,0xContract1"""
+def sample_predictoor_data_csv(num_rows = 50000):
+    def random_predictor_address():
+        return f"0x{random.randint(1, 16):x}"
+    def random_slot():
+        return random.randint(1, 50)
+    def random_payout():
+        return random.choice([0.0, 1.0])
+    def random_contract_address():
+        return f"0xContract{random.randint(1, 3)}"
+
+    result = "predictoor_addr,slot,payout,contract_addr\n"
+
+    for _ in range(num_rows):
+        predictor_address = random_predictor_address()
+        slot = random_slot()
+        payout = random_payout()
+        contract_address = random_contract_address()
+        result += f"{predictor_address},{slot},{payout},{contract_address}\n"
+    
+    return result
 
 @enforce_types
 def save_predictoor_data_csv(
