@@ -199,7 +199,9 @@ def test_predictoor_data(tmp_path):
 
 
 @enforce_types
-def test_calc_predictoor_substream(tmp_path, mock_query=mock_query_predictoor_contracts):
+def test_calc_predictoor_substream(
+    tmp_path, mock_query=mock_query_predictoor_contracts
+):
     mock_query.return_value = ["0xContract1", "0xContract2"]
     csv_dir = str(tmp_path)
 
