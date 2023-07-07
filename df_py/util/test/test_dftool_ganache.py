@@ -198,11 +198,10 @@ def test_predictoor_data(tmp_path):
         assert predictoors[user].correct_prediction_count == user_correct
         assert predictoors[user].accuracy == user_correct / user_total
 
+
 # pylint: disable=redefined-outer-name
 @enforce_types
-def test_calc_predictoor_substream(
-    tmp_path, mock_query_predictoor_contracts
-):
+def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
     mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
     csv_dir = str(tmp_path)
 
