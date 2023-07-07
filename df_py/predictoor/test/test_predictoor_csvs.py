@@ -74,7 +74,7 @@ def test_save_predictoor_summary(tmp_path):
         predictoors[address] = predictoor
 
     csv_dir = str(tmp_path)
-    save_predictoor_summary_csv(predictoors, csv_dir)
+    csvs.save_predictoor_summary_csv(predictoors, csv_dir)
 
     csv_file = predictoor_summary_csv_filename(csv_dir)
     assert os.path.exists(csv_file)
