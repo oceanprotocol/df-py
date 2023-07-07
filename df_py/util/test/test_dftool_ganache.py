@@ -103,8 +103,8 @@ def test_calc_volume(tmp_path):
 
 
 @enforce_types
-def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
-    mock_query_predictoor_contracts.return_value = ["0xContract1", "0xContract2"]
+def test_calc_failures(tmp_path, mocked_query=mock_query_predictoor_contracts):
+    mocked_query.return_value = ["0xContract1", "0xContract2"]
 
     csv_dir = str(tmp_path)
 
