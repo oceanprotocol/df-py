@@ -211,7 +211,6 @@ def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
     # TEST WITH tot_ocean > 0
     tot_ocean = 1000.0
     start_date = "2023-03-16"  # first week of df main
-    print(csv_template)
     with sysargs_context(
         [
             "dftool",
@@ -231,7 +230,6 @@ def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
 
     # get total reward amount
     rewards = load_predictoor_rewards_csv(csv_dir)
-    print(rewards)
     total_reward = sum(flatten_rewards(rewards).values())
     assert total_reward == 1000.0
 
