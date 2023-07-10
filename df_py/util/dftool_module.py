@@ -512,7 +512,8 @@ def do_calc():
 
     if arguments.SUBSTREAM == "predictoor":
         if arguments.CHAINID is None:
-            raise ValueError("CHAINID is required for predictoor")
+            print("CHAINID is required for predictoor")
+            sys.exit(1)
 
         try:
             predictoors = load_predictoor_data_csv(csv_dir)
