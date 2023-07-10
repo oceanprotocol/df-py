@@ -5,7 +5,7 @@ from typing import Dict
 
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Predictoor, Prediction
+from df_py.predictoor.models import Predictoor, Prediction, PredictContract
 from df_py.util.csv_helpers import assert_is_eth_addr
 
 
@@ -221,52 +221,33 @@ def sample_predictoor_contracts_csv():
 1,0xContract3,Contract3,CTR3,300,30"""
 
 
-def save_predictoor_contracts_csv(
-    predictoor_contracts: List[Dict[str, Union[int, str]]], csv_dir: str
-):
+def save_predictoor_contracts_csv(predictoor_contracts: Dict[str, PredictContract], csv_dir: str):
     assert os.path.exists(csv_dir), csv_dir
-    csv_file = predictoor_contracts_csv_filename(csv_dir)
+    csv_file = os.path.join(csv_dir, "predictoor_contracts.csv")
     assert not os.path.exists(csv_file), csv_file
 
-    fieldnames = [
-        "chainid",
-        "address",
-        "name",
-        "symbol",
-        "blocks_per_epoch",
-        "blocks_per_subscription",
-    ]
+    fieldnames = ["chainid", "address", "name", "symbol", "blocks_per_epoch", "blocks_per_subscription"]
 
     with open(csv_file, "w") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
         writer.writeheader()
-        for contract in predictoor_contracts:
-            contract["address"] = contract["address"].lower()
-            contract["chainid"] = str(contract["chainid"])
-            contract["blocks_per_epoch"] = str(contract["blocks_per_epoch"])
-            contract["blocks_per_subscription"] = str(
-                contract["blocks_per_subscription"]
-            )
-            writer.writerow(contract)
-
+        for contract in predictoor_contracts.values():
+            writer.writerow(contract.to_dict())
     print(f"Created {csv_file}")
 
 
-def load_predictoor_contracts_csv(csv_dir: str) -> List[Dict[str, Union[int, str]]]:
-    csv_file = predictoor_contracts_csv_filename(csv_dir)
-    predictoor_contracts = []
+def load_predictoor_contracts_csv(csv_dir: str) -> Dict[str, PredictContract]:
+    csv_file = os.path.join(csv_dir, "predictoor_contracts.csv")
+    contracts = []
 
     with open(csv_file, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            row["chainid"] = int(row["chainid"])
-            row["address"] = row["address"].lower()
-            row["blocks_per_epoch"] = int(row["blocks_per_epoch"])
-            row["blocks_per_subscription"] = int(row["blocks_per_subscription"])
-            predictoor_contracts.append(row)
+            contract = PredictContract.from_dict(row)
+            contracts[contract.address] = contract
 
     print(f"Loaded {csv_file}")
-    return predictoor_contracts
+    return contracts
 
 
 def predictoor_contracts_csv_filename(csv_dir):
