@@ -43,6 +43,7 @@ def calc_predictoor_rewards(
     rewards -- dict of [contract addr][predictoor addr]: float
         The calculated rewards for each predictoor per contract address.
     """
+    tokens_avail = float(tokens_avail)
 
     predictoor_contracts = query_predictoor_contracts(chain_id)
     tokens_per_contract = tokens_avail / len(predictoor_contracts)
