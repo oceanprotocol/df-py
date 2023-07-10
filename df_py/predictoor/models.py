@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List
 from enforce_typing import enforce_types
 
 
@@ -168,7 +168,7 @@ class PredictContract:
         self.blocks_per_epoch = blocks_per_epoch
         self.blocks_per_subscription = blocks_per_subscription
 
-    def to_dict(self) -> Dict[str, Union[str, int]]:
+    def to_dict(self) -> Dict[str, str]:
         return {
             "chainid": self.chainid,
             "address": self.address,
@@ -179,7 +179,7 @@ class PredictContract:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Union[str, int]]):
+    def from_dict(cls, data: Dict[str, str]):
         chainid = int(data["chainid"])
         address = data["address"]
         name = data["name"]
