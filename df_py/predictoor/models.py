@@ -180,7 +180,12 @@ class PredictContract:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Union[str, int]]):
-        data["chainid"] = int(data["chainid"])
-        data["blocks_per_epoch"] = int(data["blocks_per_epoch"])
-        data["blocks_per_subscription"] = int(data["blocks_per_subscription"])
-        return cls(**data)
+        chainid = int(data["chainid"])
+        address = data["address"]
+        name = data["name"]
+        symbol = data["symbol"]
+        blocks_per_epoch = int(data["blocks_per_epoch"])
+        blocks_per_subscription = int(data["blocks_per_subscription"])
+        
+        return cls(chainid, address, name, symbol, blocks_per_epoch, blocks_per_subscription)
+
