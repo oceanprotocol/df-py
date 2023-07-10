@@ -168,7 +168,7 @@ class PredictContract:
         self.blocks_per_epoch = blocks_per_epoch
         self.blocks_per_subscription = blocks_per_subscription
 
-    def to_dict(self):
+    def to_dict(self) -> Dict[str, Union[str, int]]:
         return {
             "chainid": self.chainid,
             "address": self.address,
@@ -179,7 +179,7 @@ class PredictContract:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, str]):
+    def from_dict(cls, data: Dict[str, Union[str, int]]):
         data["chainid"] = int(data["chainid"])
         data["blocks_per_epoch"] = int(data["blocks_per_epoch"])
         data["blocks_per_subscription"] = int(data["blocks_per_subscription"])
