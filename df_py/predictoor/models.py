@@ -150,8 +150,17 @@ class Predictoor(PredictoorBase):
         if prediction.is_correct:
             self._correct_prediction_count += 1
 
+
 class PredictContract:
-    def __init__(self, chainid: int, address: str, name: str, symbol: str, blocks_per_epoch: int, blocks_per_subscription: int):
+    def __init__(
+        self,
+        chainid: int,
+        address: str,
+        name: str,
+        symbol: str,
+        blocks_per_epoch: int,
+        blocks_per_subscription: int,
+    ):
         self.chainid = chainid
         self.address = address.lower()
         self.name = name
@@ -166,7 +175,7 @@ class PredictContract:
             "name": self.name,
             "symbol": self.symbol,
             "blocks_per_epoch": self.blocks_per_epoch,
-            "blocks_per_subscription": self.blocks_per_subscription
+            "blocks_per_subscription": self.blocks_per_subscription,
         }
 
     @classmethod

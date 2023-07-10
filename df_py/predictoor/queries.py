@@ -18,7 +18,7 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
         chain_id (int) -- The ID of the chain to query.
 
     @return
-        contracts_dict -- A dictionary mapping contract address to 
+        contracts_dict -- A dictionary mapping contract address to
                           PredictContract objects
 
     @raises
@@ -74,12 +74,11 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
                 contract["token"]["name"],
                 contract["token"]["symbol"],
                 contract["blocksPerEpoch"],
-                contract["blocksPerSubscription"]
+                contract["blocksPerSubscription"],
             )
             contracts_dict[contract_addr] = contract_obj
 
     return contracts_dict
-
 
 
 @enforce_types

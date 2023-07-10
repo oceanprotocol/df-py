@@ -221,12 +221,21 @@ def sample_predictoor_contracts_csv():
 1,0xContract3,Contract3,CTR3,300,30"""
 
 
-def save_predictoor_contracts_csv(predictoor_contracts: Dict[str, PredictContract], csv_dir: str):
+def save_predictoor_contracts_csv(
+    predictoor_contracts: Dict[str, PredictContract], csv_dir: str
+):
     assert os.path.exists(csv_dir), csv_dir
     csv_file = os.path.join(csv_dir, "predictoor_contracts.csv")
     assert not os.path.exists(csv_file), csv_file
 
-    fieldnames = ["chainid", "address", "name", "symbol", "blocks_per_epoch", "blocks_per_subscription"]
+    fieldnames = [
+        "chainid",
+        "address",
+        "name",
+        "symbol",
+        "blocks_per_epoch",
+        "blocks_per_subscription",
+    ]
 
     with open(csv_file, "w") as f:
         writer = csv.DictWriter(f, fieldnames=fieldnames)
