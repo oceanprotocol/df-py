@@ -85,6 +85,7 @@ def test_save_predictoor_summary(tmp_path):
         lines = file.readlines()
         assert len(lines) == 51
 
+
 @enforce_types
 def test_predictoor_contracts(tmp_path):
     predictoor_contracts = {}

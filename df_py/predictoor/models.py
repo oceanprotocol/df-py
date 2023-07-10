@@ -186,6 +186,7 @@ class PredictContract:
         symbol = data["symbol"]
         blocks_per_epoch = int(data["blocks_per_epoch"])
         blocks_per_subscription = int(data["blocks_per_subscription"])
-        
-        return cls(chainid, address, name, symbol, blocks_per_epoch, blocks_per_subscription)
 
+        return cls(
+            chainid, address, name, symbol, blocks_per_epoch, blocks_per_subscription
+        )
