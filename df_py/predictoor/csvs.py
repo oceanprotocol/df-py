@@ -209,3 +209,66 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
 def predictoor_rewards_csv_filename(csv_dir):
     f = "predictoor_rewards.csv"
     return os.path.join(csv_dir, f)
+
+
+# --------------------------- PREDICTOOR CONTRACTS ---------------------------
+
+
+def sample_predictoor_contracts_csv():
+    return """chainid,address,name,symbol,blocks_per_epoch,blocks_per_subscription
+1,0xContract1,Contract1,CTR1,100,10
+1,0xContract2,Contract2,CTR2,200,20
+1,0xContract3,Contract3,CTR3,300,30"""
+
+
+def save_predictoor_contracts_csv(
+    predictoor_contracts: List[Dict[str, Union[int, str]]], csv_dir: str
+):
+    assert os.path.exists(csv_dir), csv_dir
+    csv_file = predictoor_contracts_csv_filename(csv_dir)
+    assert not os.path.exists(csv_file), csv_file
+
+    fieldnames = [
+        "chainid",
+        "address",
+        "name",
+        "symbol",
+        "blocks_per_epoch",
+        "blocks_per_subscription",
+    ]
+
+    with open(csv_file, "w") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        for contract in predictoor_contracts:
+            contract["address"] = contract["address"].lower()
+            contract["chainid"] = str(contract["chainid"])
+            contract["blocks_per_epoch"] = str(contract["blocks_per_epoch"])
+            contract["blocks_per_subscription"] = str(
+                contract["blocks_per_subscription"]
+            )
+            writer.writerow(contract)
+
+    print(f"Created {csv_file}")
+
+
+def load_predictoor_contracts_csv(csv_dir: str) -> List[Dict[str, Union[int, str]]]:
+    csv_file = predictoor_contracts_csv_filename(csv_dir)
+    predictoor_contracts = []
+
+    with open(csv_file, "r") as f:
+        reader = csv.DictReader(f)
+        for row in reader:
+            row["chainid"] = int(row["chainid"])
+            row["address"] = row["address"].lower()
+            row["blocks_per_epoch"] = int(row["blocks_per_epoch"])
+            row["blocks_per_subscription"] = int(row["blocks_per_subscription"])
+            predictoor_contracts.append(row)
+
+    print(f"Loaded {csv_file}")
+    return predictoor_contracts
+
+
+def predictoor_contracts_csv_filename(csv_dir):
+    f = "predictoor_contracts.csv"
+    return os.path.join(csv_dir, f)
