@@ -41,9 +41,8 @@ def query_predictoor_contracts(chain_id: int) -> List[str]:
             break
         for contract in predictoor_contracts:
             owner = contract["token"]["nft"]["owner"]
-            if chain_id != DEV_CHAINID:
-                if owner not in DEPLOYER_ADDRS:
-                    continue
+            if chain_id != DEV_CHAINID and owner not in DEPLOYER_ADDRS:
+                continue
             contracts.append(contract["id"])
     return contracts
 
