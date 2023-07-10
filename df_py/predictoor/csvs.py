@@ -49,6 +49,7 @@ def save_predictoor_data_csv(
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
         for predictoor in predictoor_data.values():
+            assert_is_eth_addr(predictoor.address)
             for prediction in predictoor._predictions:
                 writer.writerow(
                     {
