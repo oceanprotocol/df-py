@@ -102,10 +102,11 @@ class Predictoor(PredictoorBase):
         prediction_count = 0
         correct_prediction_count = 0
         for prediction in self._predictions:
-            if prediction.contract_addr == contract_addr:
-                prediction_count += 1
-                if prediction.is_correct:
-                    correct_prediction_count += 1
+            if prediction.contract_addr != contract_addr:
+                continue
+            prediction_count += 1
+            if prediction.is_correct:
+                correct_prediction_count += 1
 
         return PredictionSummary(
             prediction_count, correct_prediction_count, contract_addr
