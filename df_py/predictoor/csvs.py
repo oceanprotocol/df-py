@@ -247,7 +247,7 @@ def save_predictoor_contracts_csv(
 
 def load_predictoor_contracts_csv(csv_dir: str) -> Dict[str, PredictContract]:
     csv_file = os.path.join(csv_dir, "predictoor_contracts.csv")
-    contracts = []
+    contracts: Dict[str, PredictContract] = {}
 
     with open(csv_file, "r") as f:
         reader = csv.DictReader(f)
