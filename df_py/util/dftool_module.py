@@ -427,13 +427,17 @@ def do_calc():
         required=False,
         default=None,
     )
+    parser.add_argument(
+        "--CHAINID", type=int, help=CHAINID_EXAMPLES, required=False, default=None
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
-    tot_ocean, start_date, csv_dir = (
+    tot_ocean, start_date, csv_dir, chain_id = (
         arguments.TOT_OCEAN,
         arguments.START_DATE,
         arguments.CSV_DIR,
+        arguments.CHAINID,
     )
 
     # condition inputs
@@ -507,6 +511,10 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
     if arguments.SUBSTREAM == "predictoor":
+        if arguments.CHAINID is None:
+            print("CHAINID is required for predictoor")
+            sys.exit(1)
+
         try:
             predictoors = load_predictoor_data_csv(csv_dir)
         except FileNotFoundError:
@@ -519,7 +527,7 @@ def do_calc():
         _exitIfFileExists(predictoor_rewards_csv_filename(csv_dir))
 
         # calculate rewards
-        predictoor_rewards = calc_predictoor_rewards(predictoors, tot_ocean)
+        predictoor_rewards = calc_predictoor_rewards(predictoors, tot_ocean, chain_id)
         save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
     print("dftool calc: Done")
@@ -584,7 +592,8 @@ def do_dispense_active():
 
     predictoor_rewards = {}
     if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
-        predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
+        predictoor_rewards_3d = load_predictoor_rewards_csv(arguments.CSV_DIR)
+        predictoor_rewards = calc_rewards.flatten_rewards(predictoor_rewards_3d)
 
     rewards = calc_rewards.merge_rewards(volume_rewards, predictoor_rewards)
 
