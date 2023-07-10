@@ -62,7 +62,6 @@ def test_predictor_accuracy(predictions, expected_accuracy):
     assert predictoor.accuracy == expected_accuracy
 
 
-@enforce_types
 def test_predict_contract():
     contract = PredictContract(
         chainid=1,
