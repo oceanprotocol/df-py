@@ -1,29 +1,52 @@
 from typing import Dict, List
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Prediction, Predictoor
+from df_py.predictoor.models import Prediction, Predictoor, PredictContract
 from df_py.util.constants import DEPLOYER_ADDRS
 from df_py.util.graphutil import submit_query
 from df_py.util.networkutil import DEV_CHAINID
 
 
 @enforce_types
-def query_predictoor_contracts(chain_id: int) -> List[str]:
+def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
+    """
+    @description
+        Queries the predictContracts for a given chain ID,
+        and returns a dictionary of PredictContract objects.
+
+    @params
+        chain_id (int) -- The ID of the chain to query.
+
+    @return
+        contracts_dict -- A dictionary mapping contract address to 
+                          PredictContract objects
+
+    @raises
+        AssertionError: If the result of the query contains an error.
+    """
+
     chunk_size = 1000
     offset = 0
-    contracts = []
+    contracts_dict = {}
+
     while True:
         query = """
         {
             predictContracts(skip:%s, first:%s){
                 id
                 token {
+                    id
+                    name
+                    symbol
                     nft {
                         owner {
                             id
                         }
                     }
                 }
+                blocksPerEpoch
+                blocksPerSubscription
+                truevalSubmitTimeoutBlock
             }
         }
         """ % (
@@ -41,10 +64,22 @@ def query_predictoor_contracts(chain_id: int) -> List[str]:
             break
         for contract in predictoor_contracts:
             owner = contract["token"]["nft"]["owner"]
-            if chain_id != DEV_CHAINID and owner not in DEPLOYER_ADDRS:
+            if chain_id != DEV_CHAINID and owner["id"] not in DEPLOYER_ADDRS:
                 continue
-            contracts.append(contract["id"])
-    return contracts
+
+            contract_addr = contract["id"]
+            contract_obj = PredictContract(
+                chain_id,
+                contract_addr,
+                contract["token"]["name"],
+                contract["token"]["symbol"],
+                contract["blocksPerEpoch"],
+                contract["blocksPerSubscription"]
+            )
+            contracts_dict[contract_addr] = contract_obj
+
+    return contracts_dict
+
 
 
 @enforce_types
