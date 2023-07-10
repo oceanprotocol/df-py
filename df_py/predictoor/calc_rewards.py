@@ -45,7 +45,7 @@ def calc_predictoor_rewards(
     """
     tokens_avail = float(tokens_avail)
 
-    predictoor_contracts = query_predictoor_contracts(chain_id)
+    predictoor_contracts = query_predictoor_contracts(chain_id).keys()
     tokens_per_contract = tokens_avail / len(predictoor_contracts)
 
     # filter predictoors by min prediction count
