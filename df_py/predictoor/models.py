@@ -149,3 +149,29 @@ class Predictoor(PredictoorBase):
         self._prediction_count += 1
         if prediction.is_correct:
             self._correct_prediction_count += 1
+
+class PredictContract:
+    def __init__(self, chainid: int, address: str, name: str, symbol: str, blocks_per_epoch: int, blocks_per_subscription: int):
+        self.chainid = chainid
+        self.address = address.lower()
+        self.name = name
+        self.symbol = symbol
+        self.blocks_per_epoch = blocks_per_epoch
+        self.blocks_per_subscription = blocks_per_subscription
+
+    def to_dict(self):
+        return {
+            "chainid": self.chainid,
+            "address": self.address,
+            "name": self.name,
+            "symbol": self.symbol,
+            "blocks_per_epoch": self.blocks_per_epoch,
+            "blocks_per_subscription": self.blocks_per_subscription
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, str]):
+        data["chainid"] = int(data["chainid"])
+        data["blocks_per_epoch"] = int(data["blocks_per_epoch"])
+        data["blocks_per_subscription"] = int(data["blocks_per_subscription"])
+        return cls(**data)
