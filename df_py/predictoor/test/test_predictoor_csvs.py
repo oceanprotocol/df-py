@@ -3,7 +3,7 @@ import os
 from enforce_typing import enforce_types
 
 from df_py.predictoor import csvs
-from df_py.predictoor.models import Prediction, Predictoor
+from df_py.predictoor.models import Prediction, Predictoor, PredictContract
 
 
 @enforce_types
@@ -84,3 +84,27 @@ def test_save_predictoor_summary(tmp_path):
     with open(csv_file, "r") as file:
         lines = file.readlines()
         assert len(lines) == 51
+
+@enforce_types
+def test_predictoor_contracts(tmp_path):
+    predictoor_contracts = {}
+    for i in range(5):
+        contract = PredictContract(
+            chainid=1,
+            address=f"0x{i}000000000000000000000000000000000000000",
+            name=f"Contract{i}",
+            symbol=f"CTR{i}",
+            blocks_per_epoch=(i + 1) * 100,
+            blocks_per_subscription=(i + 1) * 10,
+        )
+        predictoor_contracts[contract.address] = contract
+
+    csv_dir = str(tmp_path)
+    csvs.save_predictoor_contracts_csv(predictoor_contracts, csv_dir)
+
+    loaded_predictoor_contracts = csvs.load_predictoor_contracts_csv(csv_dir)
+    assert len(loaded_predictoor_contracts) == len(predictoor_contracts)
+
+    for addr, original_contract in predictoor_contracts.items():
+        loaded_contract = loaded_predictoor_contracts[addr]
+        assert loaded_contract.to_dict() == original_contract.to_dict()
