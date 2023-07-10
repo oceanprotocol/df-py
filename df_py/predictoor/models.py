@@ -119,13 +119,13 @@ class Predictoor(PredictoorBase):
         @return
             Dict[str, PredictionSummary] - A dict of PredictionSummary objects.
         """
-        unique_contract_addresses = set(
-            prediction.contract_addr for prediction in self._predictions
-        )
-        prediction_summaries = {
-            contract_addr: self.get_prediction_summary(contract_addr)
-            for contract_addr in unique_contract_addresses
-        }
+        prediction_summaries = {}
+        for prediction in self._predictions:
+            contract_addr = prediction.contract_addr
+            if contract_addr in prediction_summaries:
+                continue
+            prediction_summaries[contract_addr] = self.get_prediction_summary(contract_addr)
+            
         return prediction_summaries
 
     @property
