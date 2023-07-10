@@ -75,7 +75,7 @@ def test_predict_contract():
     contract_dict = contract.to_dict()
     expected_dict = {
         "chainid": "1",
-        "address": "0xContract1",
+        "address": "0xcontract1",
         "name": "Contract1",
         "symbol": "CTR1",
         "blocks_per_epoch": "100",
