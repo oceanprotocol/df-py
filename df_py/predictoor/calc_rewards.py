@@ -40,7 +40,7 @@ def calc_predictoor_rewards(
         The number of tokens available for distribution as rewards.
 
     @return
-    rewards -- dict of [contract addr][predictoor addr]: reward
+    rewards -- dict of [contract addr][predictoor addr]: float
         The calculated rewards for each predictoor per contract address.
     """
 
