@@ -125,8 +125,10 @@ class Predictoor(PredictoorBase):
             contract_addr = prediction.contract_addr
             if contract_addr in prediction_summaries:
                 continue
-            prediction_summaries[contract_addr] = self.get_prediction_summary(contract_addr)
-            
+            prediction_summaries[contract_addr] = self.get_prediction_summary(
+                contract_addr
+            )
+
         return prediction_summaries
 
     @property

@@ -161,7 +161,7 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
         ):
             dftool_module.do_calc()
 
-    # no predictoor chainid
+    # no predictoor chainid
     with pytest.raises(SystemExit):
         with sysargs_context(
             [
@@ -174,6 +174,7 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
             ]
         ):
             dftool_module.do_calc()
+
 
 @enforce_types
 def test_predictoor_data(tmp_path):
