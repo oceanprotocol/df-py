@@ -170,12 +170,12 @@ class PredictContract:
 
     def to_dict(self) -> Dict[str, str]:
         return {
-            "chainid": self.chainid,
+            "chainid": str(self.chainid),
             "address": self.address,
             "name": self.name,
             "symbol": self.symbol,
-            "blocks_per_epoch": self.blocks_per_epoch,
-            "blocks_per_subscription": self.blocks_per_subscription,
+            "blocks_per_epoch": str(self.blocks_per_epoch),
+            "blocks_per_subscription": str(self.blocks_per_subscription),
         }
 
     @classmethod
