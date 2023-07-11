@@ -100,7 +100,7 @@ def _get_cex_vals(deadline_dt):
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    binance = ccxt.binanceus()
+    binance = ccxt.binance()
     from_dt_str = binance.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
     cex_x = binance.fetch_ohlcv("BTC/TUSD", "5m", since=from_dt_str, limit=500)
     allcex_uts = [xi[0] / 1000 for xi in cex_x]
