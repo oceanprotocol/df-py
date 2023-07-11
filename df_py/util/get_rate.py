@@ -33,29 +33,44 @@ def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     print("Couldn't get CoinGecko data. Returning None")
     return None
 
+from typing import Union
+from datetime import datetime, timedelta
+import requests
 
-@enforce_types
-def get_binance_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def _to_datetime(dt_str: str, hr_str: str, min_str: str) -> datetime:
+    """ Convert date strings to datetime object """
+    date_time_str = dt_str + ' ' + hr_str + ':' + min_str + ':' + '00'
+    date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
+    return date_time_obj
+
+def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00') -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
+      target_currency -- e.g. "USDT", "BTC"
       st -- start date in format "YYYY-MM-DD"
+      st_time -- start time in hours (24-hour format), default is '00'
+      st_min -- start time in minutes, default is '00'
       fin -- end date
+      fin_time -- end time in hours (24-hour format), default is '00'
+      fin_min -- end time in minutes, default is '00'
     @return
-      rate -- float or None -- USD_per_token. None if failure
+      rate -- float or None -- target_currency_per_token. None if failure
     """
     # corner case
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    (st_dt, fin_dt) = _to_datetime(st, fin)
+    st_dt = _to_datetime(st, st_time, st_min)
+    fin_dt = _to_datetime(fin, fin_time, fin_min)
+    
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
     if num_days == 0:  # binance needs >=1 days of data
         st_dt = st_dt - timedelta(days=1)
 
-    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}{target_currency}&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
     try:
         res = requests.get(req_s, timeout=30)
         data = res.json()

@@ -80,7 +80,7 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
     return pred_vals
 
 
-def _get_cex_vals(deadline_dt: datetime) -> List[Union[float, None]]:
+def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     now = datetime.now(timezone.utc)
     newest_cex_dt = deadline_dt + timedelta(minutes=(1 + 12 * 5))
     print("get_cex_vals: start")
@@ -91,10 +91,20 @@ def _get_cex_vals(deadline_dt: datetime) -> List[Union[float, None]]:
     assert deadline_dt <= now, "deadline must be past"
     assert newest_cex_dt <= now, "cex vals must be past"
 
+    start_dt = deadline_dt + timedelta(minutes=1)
+    target_dts = [
+        start_dt + timedelta(minutes=_min) for _min in range(5, 5 + 12 * 5, 5)
+    ]
+    target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
+    helpers.print_datetime_info("target times", target_uts)
+
     cex_vals = []
-    price = get_binance_rate("BTC", deadline_dt.strftime("%Y-%m-%d"), deadline_dt.strftime("%Y-%m-%d"))
-    for _ in range(12):
-        cex_vals.append(price)
+    for dt in target_dts:
+        date_str = dt.strftime("%Y-%m-%d")
+        hr_str = dt.strftime("%H")
+        min_str = dt.strftime("%M")
+        cex_val = get_binance_rate("BTC", date_str, date_str, "TUSD", hr_str, min_str, hr_str, min_str)
+        cex_vals.append(cex_val)
 
     print(f"  cex BTC price is ${cex_vals[0]} at target time 0")
     print(f"  cex_vals: {cex_vals}")
