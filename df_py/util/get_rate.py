@@ -54,8 +54,8 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    st_dt = timestr_to_timestamp(st)
-    fin_dt = timestr_to_timestamp(fin)
+    st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
+    fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
     
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
@@ -91,8 +91,8 @@ def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, Non
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    st_dt = timestr_to_timestamp(st)
-    fin_dt = timestr_to_timestamp(fin)
+    st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
+    fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
