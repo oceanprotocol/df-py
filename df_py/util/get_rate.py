@@ -8,7 +8,7 @@ from enforce_typing import enforce_types
 
 
 @enforce_types
-def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
     """
     @description
       Get the exchange rate for a token. Uses Binance. Coingecko is backup.
@@ -21,12 +21,12 @@ def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     @return
       rate -- float or None -- USD_per_token. None if failure
     """
-    rate = get_binance_rate(token_symbol, st, fin)
+    rate = get_binance_rate(token_symbol, st, fin, target_currency, st_time, st_min, fin_time, fin_min, interval)
     if rate is not None:
         return rate
 
     print("Couldn't get Binance data; trying CoinGecko")
-    rate = get_coingecko_rate(token_symbol, st, fin)
+    rate = get_coingecko_rate(token_symbol, st, fin, target_currency, st_time, st_min, fin_time, fin_min, interval)
     if rate is not None:
         return rate
 
@@ -84,7 +84,7 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
 
 
 @enforce_types
-def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def get_coingecko_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
