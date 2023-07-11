@@ -27,7 +27,7 @@ def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", inter
         return rate
 
     print("Couldn't get Binance data; trying CoinGecko")
-    rate = get_coingecko_rate(token_symbol, st, fin, target_currency, interval)
+    rate = get_coingecko_rate(token_symbol, st, fin)
     if rate is not None:
         return rate
 
@@ -78,7 +78,7 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
 
 
 @enforce_types
-def get_coingecko_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
+def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
