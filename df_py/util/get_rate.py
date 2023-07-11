@@ -6,9 +6,10 @@ from typing import Tuple, Union
 import requests
 from enforce_typing import enforce_types
 
+from df_py.utils.blocktime import timestr_to_timestamp
 
 @enforce_types
-def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
+def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
     """
     @description
       Get the exchange rate for a token. Uses Binance. Coingecko is backup.
@@ -21,12 +22,12 @@ def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_ti
     @return
       rate -- float or None -- USD_per_token. None if failure
     """
-    rate = get_binance_rate(token_symbol, st, fin, target_currency, st_time, st_min, fin_time, fin_min, interval)
+    rate = get_binance_rate(token_symbol, st, fin, target_currency, interval)
     if rate is not None:
         return rate
 
     print("Couldn't get Binance data; trying CoinGecko")
-    rate = get_coingecko_rate(token_symbol, st, fin, target_currency, st_time, st_min, fin_time, fin_min, interval)
+    rate = get_coingecko_rate(token_symbol, st, fin, target_currency, interval)
     if rate is not None:
         return rate
 
@@ -35,14 +36,7 @@ def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_ti
 
 
 @enforce_types
-def _to_datetime(dt_str: str, hr_str: str, min_str: str) -> datetime:
-    """ Convert date strings to datetime object """
-    date_time_str = dt_str + ' ' + hr_str + ':' + min_str + ':' + '00'
-    date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
-    return date_time_obj
-
-@enforce_types
-def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
+def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -60,8 +54,8 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    st_dt = _to_datetime(st, st_time, st_min)
-    fin_dt = _to_datetime(fin, fin_time, fin_min)
+    st_dt = timestr_to_timestamp(st)
+    fin_dt = timestr_to_timestamp(fin)
     
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
@@ -84,7 +78,7 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
 
 
 @enforce_types
-def get_coingecko_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
+def get_coingecko_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -97,8 +91,8 @@ def get_coingecko_rate(token_symbol: str, st: str, fin: str, target_currency="US
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    st_dt = _to_datetime(st, st_time, st_min)
-    fin_dt = _to_datetime(fin, fin_time, fin_min)
+    st_dt = timestr_to_timestamp(st)
+    fin_dt = timestr_to_timestamp(fin)
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
