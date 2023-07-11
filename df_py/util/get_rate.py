@@ -33,9 +33,6 @@ def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     print("Couldn't get CoinGecko data. Returning None")
     return None
 
-from typing import Union
-from datetime import datetime, timedelta
-import requests
 
 @enforce_types
 def _to_datetime(dt_str: str, hr_str: str, min_str: str) -> datetime:
@@ -118,20 +115,6 @@ def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, Non
         return None
     avg = sum([float(x[1]) for x in data]) / len(data)
     return avg
-
-
-@enforce_types
-def _to_datetime(st: str, fin: str) -> Tuple[datetime, datetime]:
-    """
-    @arguments
-      st, fin -- (start date, end date) in format "YYYY-MM-DD"
-
-    @return
-      st_dt, fin_dt -- (start date, end date) in datetime
-    """
-    st_dt = datetime.strptime(st, "%Y-%m-%d")
-    fin_dt = datetime.strptime(fin, "%Y-%m-%d")
-    return (st_dt, fin_dt)
 
 
 @enforce_types
