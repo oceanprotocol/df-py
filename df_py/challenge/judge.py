@@ -12,7 +12,7 @@ from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
 from df_py.util import crypto, graphutil, networkutil, oceanutil
-
+from df_py.util.get_rate import get_binance_rate
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
 
@@ -80,10 +80,8 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
     return pred_vals
 
 
-@enforce_types
-def _get_cex_vals(deadline_dt):
+def _get_cex_vals(deadline_dt: datetime) -> List[Union[float, None]]:
     now = datetime.now(timezone.utc)
-    # pylint: disable=superfluous-parens
     newest_cex_dt = deadline_dt + timedelta(minutes=(1 + 12 * 5))
     print("get_cex_vals: start")
     print(f"  now           = {now} (UTC)")
@@ -93,22 +91,12 @@ def _get_cex_vals(deadline_dt):
     assert deadline_dt <= now, "deadline must be past"
     assert newest_cex_dt <= now, "cex vals must be past"
 
-    start_dt = deadline_dt + timedelta(minutes=1)
-    target_dts = [
-        start_dt + timedelta(minutes=_min) for _min in range(5, 5 + 12 * 5, 5)
-    ]
-    target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
-    helpers.print_datetime_info("target times", target_uts)
+    cex_vals = []
+    price = get_binance_rate("BTC", deadline_dt.strftime("%Y-%m-%d"), deadline_dt.strftime("%Y-%m-%d"))
+    for _ in range(12):
+        cex_vals.append(price)
 
-    binance = ccxt.binance()
-    from_dt_str = binance.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
-    cex_x = binance.fetch_ohlcv("BTC/TUSD", "5m", since=from_dt_str, limit=500)
-    allcex_uts = [xi[0] / 1000 for xi in cex_x]
-    allcex_vals = [xi[4] for xi in cex_x]
-    helpers.print_datetime_info("CEX data info", allcex_uts)
-
-    cex_vals = helpers.filter_to_target_uts(target_uts, allcex_uts, allcex_vals)
-    print(f"  cex ETH price is ${cex_vals[0]} at target time 0")
+    print(f"  cex BTC price is ${cex_vals[0]} at target time 0")
     print(f"  cex_vals: {cex_vals}")
 
     print("get_cex_vals: done")
