@@ -6,7 +6,7 @@ from typing import Tuple, Union
 import requests
 from enforce_typing import enforce_types
 
-from df_py.utils.blocktime import timestr_to_timestamp
+from df_py.util.blocktime import timestr_to_timestamp
 
 @enforce_types
 def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
