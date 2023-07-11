@@ -97,8 +97,8 @@ def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, Non
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    st_dt = _to_datetime(st)
-    fin_dt = _to_datetime(fin)
+    st_dt = _to_datetime(st, st_time, st_min)
+    fin_dt = _to_datetime(fin, fin_time, fin_min)
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
