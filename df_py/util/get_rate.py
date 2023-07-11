@@ -43,7 +43,7 @@ def _to_datetime(dt_str: str, hr_str: str, min_str: str) -> datetime:
     date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
     return date_time_obj
 
-def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00') -> Union[float, None]:
+def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -70,7 +70,7 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
     if num_days == 0:  # binance needs >=1 days of data
         st_dt = st_dt - timedelta(days=1)
 
-    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}{target_currency}&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}{target_currency}&interval={interval}&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
     try:
         res = requests.get(req_s, timeout=30)
         data = res.json()
