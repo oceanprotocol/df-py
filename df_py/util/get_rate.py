@@ -37,12 +37,14 @@ from typing import Union
 from datetime import datetime, timedelta
 import requests
 
+@enforce_types
 def _to_datetime(dt_str: str, hr_str: str, min_str: str) -> datetime:
     """ Convert date strings to datetime object """
     date_time_str = dt_str + ' ' + hr_str + ':' + min_str + ':' + '00'
     date_time_obj = datetime.strptime(date_time_str, '%Y-%m-%d %H:%M:%S')
     return date_time_obj
 
+@enforce_types
 def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", st_time='00', st_min='00', fin_time='00', fin_min='00', interval='1d') -> Union[float, None]:
     """
     @arguments
