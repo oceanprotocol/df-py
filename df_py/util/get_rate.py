@@ -90,11 +90,10 @@ def get_binance_rate_all(
     if num_days < 0:
         raise ValueError("Start date is after end date")
 
-
     start_time_unix = int(st_dt.timestamp())*1000
     end_time_unix = int(fin_dt.timestamp())*1000
     duration = end_time_unix - start_time_unix
-    limit = int(min(1000, round(duration / (5 * 60 * 1000))))
+    limit = 1000
 
     params = {
         'symbol': token_symbol + target_currency,
