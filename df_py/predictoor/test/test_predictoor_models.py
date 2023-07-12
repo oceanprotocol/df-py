@@ -1,6 +1,6 @@
 import pytest
 
-from df_py.predictoor.models import Prediction, Predictoor
+from df_py.predictoor.models import Prediction, Predictoor, PredictContract
 
 
 def test_prediction_init():
@@ -60,3 +60,36 @@ def test_predictor_accuracy(predictions, expected_accuracy):
     for prediction in predictions:
         predictoor.add_prediction(prediction)
     assert predictoor.accuracy == expected_accuracy
+
+
+def test_predict_contract():
+    contract = PredictContract(
+        chainid=1,
+        address="0xContract1",
+        name="Contract1",
+        symbol="CTR1",
+        blocks_per_epoch=100,
+        blocks_per_subscription=10,
+    )
+
+    contract_dict = contract.to_dict()
+    expected_dict = {
+        "chainid": "1",
+        "address": "0xcontract1",
+        "name": "Contract1",
+        "symbol": "CTR1",
+        "blocks_per_epoch": "100",
+        "blocks_per_subscription": "10",
+    }
+    assert contract_dict == expected_dict
+
+    contract_from_dict = PredictContract.from_dict(contract_dict)
+
+    assert contract_from_dict.chainid == contract.chainid
+    assert contract_from_dict.address == contract.address
+    assert contract_from_dict.name == contract.name
+    assert contract_from_dict.symbol == contract.symbol
+    assert contract_from_dict.blocks_per_epoch == contract.blocks_per_epoch
+    assert (
+        contract_from_dict.blocks_per_subscription == contract.blocks_per_subscription
+    )

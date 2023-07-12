@@ -1,5 +1,4 @@
 from typing import Dict, List
-
 from enforce_typing import enforce_types
 
 
@@ -71,14 +70,75 @@ class PredictoorBase:
         return self._accuracy
 
 
+class PredictionSummary:
+    @enforce_types
+    def __init__(self, prediction_count, correct_prediction_count, contract_addr):
+        self.prediction_count = prediction_count
+        self.correct_prediction_count = correct_prediction_count
+        self.contract_addr = contract_addr
+
+    @property
+    def accuracy(self) -> float:
+        if self.prediction_count == 0:
+            return 0
+        return self.correct_prediction_count / self.prediction_count
+
+
 class Predictoor(PredictoorBase):
     @enforce_types
     def __init__(self, address: str):
         super().__init__(address, 0, 0, 0)
         self._predictions: List[Prediction] = []
 
+    def get_prediction_summary(self, contract_addr: str) -> PredictionSummary:
+        """
+        Get the prediction summary for a specific contract address.
+
+        @param contract_addr: The contract address for which to get the prediction summary.
+
+        @return:
+            PredictionSummary - The prediction summary for the specified contract address.
+        """
+        prediction_count = 0
+        correct_prediction_count = 0
+        for prediction in self._predictions:
+            if prediction.contract_addr != contract_addr:
+                continue
+            prediction_count += 1
+            if prediction.is_correct:
+                correct_prediction_count += 1
+
+        return PredictionSummary(
+            prediction_count, correct_prediction_count, contract_addr
+        )
+
+    @property
+    def prediction_summaries(self) -> Dict[str, PredictionSummary]:
+        """
+        Get the summaries of all predictions made by this Predictoor.
+
+        @return
+            Dict[str, PredictionSummary] - A dict of PredictionSummary objects.
+        """
+        prediction_summaries = {}
+        for prediction in self._predictions:
+            contract_addr = prediction.contract_addr
+            if contract_addr in prediction_summaries:
+                continue
+            prediction_summaries[contract_addr] = self.get_prediction_summary(
+                contract_addr
+            )
+
+        return prediction_summaries
+
     @property
     def accuracy(self) -> float:
+        """
+        Returns the accuracy of this Predictoor
+
+        @return
+            accuracy - float
+        """
         if self._prediction_count == 0:
             return 0
         return self._correct_prediction_count / self._prediction_count
@@ -89,3 +149,44 @@ class Predictoor(PredictoorBase):
         self._prediction_count += 1
         if prediction.is_correct:
             self._correct_prediction_count += 1
+
+
+class PredictContract:
+    def __init__(
+        self,
+        chainid: int,
+        address: str,
+        name: str,
+        symbol: str,
+        blocks_per_epoch: int,
+        blocks_per_subscription: int,
+    ):
+        self.chainid = chainid
+        self.address = address.lower()
+        self.name = name
+        self.symbol = symbol
+        self.blocks_per_epoch = blocks_per_epoch
+        self.blocks_per_subscription = blocks_per_subscription
+
+    def to_dict(self) -> Dict[str, str]:
+        return {
+            "chainid": str(self.chainid),
+            "address": self.address,
+            "name": self.name,
+            "symbol": self.symbol,
+            "blocks_per_epoch": str(self.blocks_per_epoch),
+            "blocks_per_subscription": str(self.blocks_per_subscription),
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, str]):
+        chainid = int(data["chainid"])
+        address = data["address"]
+        name = data["name"]
+        symbol = data["symbol"]
+        blocks_per_epoch = int(data["blocks_per_epoch"])
+        blocks_per_subscription = int(data["blocks_per_subscription"])
+
+        return cls(
+            chainid, address, name, symbol, blocks_per_epoch, blocks_per_subscription
+        )
