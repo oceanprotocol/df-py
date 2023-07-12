@@ -93,7 +93,6 @@ def get_binance_rate_all(
 
     start_time_unix = int(st_dt.timestamp()) * 1000
     end_time_unix = int(fin_dt.timestamp()) * 1000
-    duration = end_time_unix - start_time_unix
     limit = 1000
 
     params = {
