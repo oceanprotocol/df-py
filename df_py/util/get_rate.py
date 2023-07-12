@@ -89,6 +89,8 @@ def get_binance_rate_all(
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
+    if interval == "1d":
+        st_dt = st_dt - timedelta(days=1)
 
     start_time_unix = int(st_dt.timestamp())*1000
     end_time_unix = int(fin_dt.timestamp())*1000
