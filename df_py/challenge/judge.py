@@ -5,7 +5,6 @@ from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
-import ccxt
 import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
@@ -82,7 +81,7 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
 
 def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     now = datetime.now(timezone.utc)
-    newest_cex_dt = deadline_dt + timedelta(minutes=(1 + 12 * 5))
+    newest_cex_dt = deadline_dt + timedelta(minutes=1 + 12 * 5)
     print("get_cex_vals: start")
     print(f"  now           = {now} (UTC)")
     print(f"  deadline_dt   = {deadline_dt} (UTC)")
