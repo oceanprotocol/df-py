@@ -11,7 +11,7 @@ from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
 from df_py.util import crypto, graphutil, networkutil, oceanutil
-from df_py.util.get_rate import get_binance_rate
+from df_py.util.get_rate import get_binance_rate_all
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
@@ -98,11 +98,7 @@ def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    cex_vals = []
-    for dt in target_dts:
-        date_str = dt.strftime("%Y-%m-%d_%H:%M")
-        cex_val = get_binance_rate("BTC", date_str, date_str, "TUSD", "5m")
-        cex_vals.append(cex_val)
+    cex_vals = get_binance_rate_all("BTC", target_dts[0].strftime("%Y-%m-%d_%H:%M"), target_dts[-1].strftime("%Y-%m-%d_%H:%M"), "TUSD", "5m")
 
     print(f"  cex BTC price is ${cex_vals[0]} at target time 0")
     print(f"  cex_vals: {cex_vals}")

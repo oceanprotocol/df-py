@@ -58,7 +58,28 @@ def get_binance_rate(
     # corner case
     if token_symbol.upper() == "H2O":
         return 1.618
+    data = get_binance_rate_all(token_symbol, st, fin, target_currency, interval)
+    return sum(data) / len(data)
+    
 
+
+@enforce_types
+def get_binance_rate_all(
+    token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
+) -> Union[float, None]:
+    """
+    @arguments
+      token_symbol -- e.g. "OCEAN", "BTC"
+      target_currency -- e.g. "USDT", "BTC"
+      st -- start date in format "YYYY-MM-DD"
+      st_time -- start time in hours (24-hour format), default is '00'
+      st_min -- start time in minutes, default is '00'
+      fin -- end date
+      fin_time -- end time in hours (24-hour format), default is '00'
+      fin_min -- end time in minutes, default is '00'
+    @return
+      rate -- float or None -- target_currency_per_token. None if failure
+    """
     st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
     fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
 
@@ -74,13 +95,12 @@ def get_binance_rate(
         data = res.json()
         if not data:
             return None
-        avg = sum([float(x[4]) for x in data]) / len(data)
-        return avg
+        data = [float(x[4]) for x in data]
+        return data
     # pylint: disable=broad-exception-caught
     except Exception as e:
         print(f"Error in get_binance_rate: {e}")
         return None
-
 
 @enforce_types
 def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
