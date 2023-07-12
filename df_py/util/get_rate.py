@@ -11,7 +11,7 @@ from df_py.util.blocktime import timestr_to_timestamp
 
 @enforce_types
 def get_rate(
-    token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
+    token_symbol: str, st: str, fin: str
 ) -> Union[float, None]:
     """
     @description
@@ -25,7 +25,7 @@ def get_rate(
     @return
       rate -- float or None -- USD_per_token. None if failure
     """
-    rate = get_binance_rate(token_symbol, st, fin, target_currency, interval)
+    rate = get_binance_rate(token_symbol, st, fin)
     if rate is not None:
         return rate
 
