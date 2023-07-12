@@ -84,10 +84,10 @@ def get_binance_rate_all(
     url = "https://data.binance.com/api/v3/klines"
     st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
     fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
+    if st_dt > fin_dt:
+        raise ValueError("Start date is after end date")
 
     num_days = (fin_dt - st_dt).days
-    if num_days < 0:
-        raise ValueError("Start date is after end date")
     if num_days == 0 and interval == "1d":
         st_dt = st_dt - timedelta(days=1)
 
