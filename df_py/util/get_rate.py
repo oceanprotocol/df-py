@@ -59,6 +59,8 @@ def get_binance_rate(
     if token_symbol.upper() == "H2O":
         return 1.618
     data = get_binance_rate_all(token_symbol, st, fin, target_currency, interval)
+    if not data:
+        return None
     return sum(data) / len(data)
     
 
