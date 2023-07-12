@@ -8,8 +8,11 @@ from enforce_typing import enforce_types
 
 from df_py.util.blocktime import timestr_to_timestamp
 
+
 @enforce_types
-def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
+def get_rate(
+    token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
+) -> Union[float, None]:
     """
     @description
       Get the exchange rate for a token. Uses Binance. Coingecko is backup.
@@ -36,7 +39,9 @@ def get_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", inter
 
 
 @enforce_types
-def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT", interval='1d') -> Union[float, None]:
+def get_binance_rate(
+    token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
+) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
@@ -56,7 +61,7 @@ def get_binance_rate(token_symbol: str, st: str, fin: str, target_currency="USDT
 
     st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
     fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
-    
+
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")

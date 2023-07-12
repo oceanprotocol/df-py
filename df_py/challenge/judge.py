@@ -12,6 +12,7 @@ from enforce_typing import enforce_types
 from df_py.challenge import helpers
 from df_py.util import crypto, graphutil, networkutil, oceanutil
 from df_py.util.get_rate import get_binance_rate
+
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
 
