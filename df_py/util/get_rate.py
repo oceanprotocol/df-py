@@ -82,18 +82,29 @@ def get_binance_rate_all(
     @return
       rate -- float or None -- target_currency_per_token. None if failure
     """
+    url = 'https://data.binance.com/api/v3/klines'
     st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
     fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
 
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
-    if num_days == 0:  # binance needs >=1 days of data
-        st_dt = st_dt - timedelta(days=1)
 
-    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}{target_currency}&interval={interval}&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+
+    start_time_unix = int(st_dt.timestamp())*1000
+    end_time_unix = int(fin_dt.timestamp())*1000
+    duration = end_time_unix - start_time_unix
+    limit = int(min(1000, round(duration / (5 * 60 * 1000))))
+
+    params = {
+        'symbol': token_symbol + target_currency,
+        'interval': interval,
+        'startTime': start_time_unix,
+        'endTime': end_time_unix,
+        'limit': limit
+    }
     try:
-        res = requests.get(req_s, timeout=30)
+        res = requests.get(url, params=params, timeout=30)
         data = res.json()
         if not data:
             return None
