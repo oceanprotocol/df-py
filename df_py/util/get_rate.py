@@ -45,13 +45,10 @@ def get_binance_rate(
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
+      st -- start date in format "YYYY-MM-DD[_HH:MM]"
+      fin -- end date in format "YYYY-MM-DD[_HH:MM]"
       target_currency -- e.g. "USDT", "BTC"
-      st -- start date in format "YYYY-MM-DD"
-      st_time -- start time in hours (24-hour format), default is '00'
-      st_min -- start time in minutes, default is '00'
-      fin -- end date
-      fin_time -- end time in hours (24-hour format), default is '00'
-      fin_min -- end time in minutes, default is '00'
+      interval -- time interval e.g. "5m", "1d"
     @return
       rate -- float or None -- target_currency_per_token. None if failure
     """
@@ -71,13 +68,10 @@ def get_binance_rate_all(
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
+      st -- start date in format "YYYY-MM-DD[_HH:MM]"
+      fin -- end date in format "YYYY-MM-DD[_HH:MM]"
       target_currency -- e.g. "USDT", "BTC"
-      st -- start date in format "YYYY-MM-DD"
-      st_time -- start time in hours (24-hour format), default is '00'
-      st_min -- start time in minutes, default is '00'
-      fin -- end date
-      fin_time -- end time in hours (24-hour format), default is '00'
-      fin_min -- end time in minutes, default is '00'
+      interval -- time interval e.g. "5m", "1d"
     @return
       rate -- float or None -- target_currency_per_token. None if failure
     """
