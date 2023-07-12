@@ -62,7 +62,6 @@ def get_binance_rate(
     if not data:
         return None
     return sum(data) / len(data)
-    
 
 
 @enforce_types
@@ -82,7 +81,7 @@ def get_binance_rate_all(
     @return
       rate -- float or None -- target_currency_per_token. None if failure
     """
-    url = 'https://data.binance.com/api/v3/klines'
+    url = "https://data.binance.com/api/v3/klines"
     st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
     fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
 
@@ -92,17 +91,17 @@ def get_binance_rate_all(
     if num_days == 0 and interval == "1d":
         st_dt = st_dt - timedelta(days=1)
 
-    start_time_unix = int(st_dt.timestamp())*1000
-    end_time_unix = int(fin_dt.timestamp())*1000
+    start_time_unix = int(st_dt.timestamp()) * 1000
+    end_time_unix = int(fin_dt.timestamp()) * 1000
     duration = end_time_unix - start_time_unix
     limit = 1000
 
     params = {
-        'symbol': token_symbol + target_currency,
-        'interval': interval,
-        'startTime': start_time_unix,
-        'endTime': end_time_unix,
-        'limit': limit
+        "symbol": token_symbol + target_currency,
+        "interval": interval,
+        "startTime": start_time_unix,
+        "endTime": end_time_unix,
+        "limit": limit,
     }
     try:
         res = requests.get(url, params=params, timeout=30)
@@ -115,6 +114,7 @@ def get_binance_rate_all(
     except Exception as e:
         print(f"Error in get_binance_rate: {e}")
         return None
+
 
 @enforce_types
 def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
