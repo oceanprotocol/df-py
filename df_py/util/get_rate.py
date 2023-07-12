@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Union
+from typing import Union, List
 
 import requests
 from enforce_typing import enforce_types
@@ -67,7 +67,7 @@ def get_binance_rate(
 @enforce_types
 def get_binance_rate_all(
     token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
-) -> Union[float, None]:
+) -> Union[List[float], None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
