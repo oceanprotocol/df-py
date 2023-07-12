@@ -10,9 +10,7 @@ from df_py.util.blocktime import timestr_to_timestamp
 
 
 @enforce_types
-def get_rate(
-    token_symbol: str, st: str, fin: str
-) -> Union[float, None]:
+def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
     """
     @description
       Get the exchange rate for a token. Uses Binance. Coingecko is backup.
