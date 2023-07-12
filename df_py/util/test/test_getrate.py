@@ -15,8 +15,8 @@ def test_get_binance_rate_OCEAN_sameday():
 @enforce_types
 def test_get_binance_5m_tusd():
     interval = '5m'
-    start_time = '2023-05-02 00:05'
-    end_time = '2023-05-02 01:00'
+    start_time = '2023-05-02_00:05'
+    end_time = '2023-05-02_01:00'
     r = get_rate.get_binance_rate("BTC", start_time, end_time, "TUSD", interval)
     assert r == []
 
