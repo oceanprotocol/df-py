@@ -14,7 +14,7 @@ from df_py.util.constants import (
 from df_py.volume import allocations
 from df_py.volume import cleancase as cc
 from df_py.volume import csvs, to_usd
-
+from df_py.predictoor.csvs import load_predictoor_contracts_csv
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
@@ -460,13 +460,16 @@ def merge_rewards(*reward_dicts):
 
 
 def calc_rewards_volume(
-    CSV_DIR, START_DATE, TOT_OCEAN, DO_PUBREWARDS=DO_PUBREWARDS, DO_RANK=DO_RANK, contract_multipliers = {}
+    CSV_DIR, START_DATE, TOT_OCEAN, DO_PUBREWARDS=DO_PUBREWARDS, DO_RANK=DO_RANK
 ):
     S = allocations.load_stakes(CSV_DIR)
     V = csvs.load_nftvols_csvs(CSV_DIR)
     C = csvs.load_owners_csvs(CSV_DIR)
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
+    predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
+
+    contract_multipliers = {i:0.2 for i in predict_contracts.keys()}
 
     prev_week = 0
     if START_DATE is None:
@@ -476,4 +479,4 @@ def calc_rewards_volume(
         prev_week = get_df_week_number(START_DATE)
     m = calc_dcv_multiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-    return calc_rewards(S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK)
+    return calc_rewards(S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK, contract_multipliers)
