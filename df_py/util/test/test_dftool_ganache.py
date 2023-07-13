@@ -134,20 +134,6 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
         ):
             dftool_module.do_calc()
 
-    # no required input files -- predictoor
-    with pytest.raises(SystemExit):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                csv_dir,
-                str(tot_ocean),
-                f"--START_DATE={start_date}",
-                f"--CHAINID={networkutil.DEV_CHAINID}",
-            ]
-        ):
-            dftool_module.do_calc()
 
     # no required input files -- challenge
     with pytest.raises(SystemExit):
@@ -160,20 +146,6 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
                 str(tot_ocean),
                 f"--START_DATE={start_date}",
                 f"--CHAINID={networkutil.DEV_CHAINID}",
-            ]
-        ):
-            dftool_module.do_calc()
-
-    # no predictoor chainid
-    with pytest.raises(SystemExit):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                csv_dir,
-                str(tot_ocean),
-                f"--START_DATE={start_date}",
             ]
         ):
             dftool_module.do_calc()
@@ -214,102 +186,6 @@ def test_predictoor_data(tmp_path):
         assert predictoors[user].prediction_count == user_total
         assert predictoors[user].correct_prediction_count == user_correct
         assert predictoors[user].accuracy == user_correct / user_total
-
-
-# pylint: disable=redefined-outer-name
-@enforce_types
-def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
-    mock_query_predictoor_contracts.return_value = {
-        "0xContract1": "",
-        "0xContract2": "",
-    }
-    csv_dir = str(tmp_path)
-
-    csv_template = sample_predictoor_data_csv()
-    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
-    with open(predictoor_data_csv, "w") as f:
-        f.write(csv_template)
-
-    # main cmd
-
-    # TEST WITH tot_ocean > 0
-    tot_ocean = 1000.0
-    start_date = "2023-03-16"  # first week of df main
-    with sysargs_context(
-        [
-            "dftool",
-            "calc",
-            "predictoor",
-            csv_dir,
-            str(tot_ocean),
-            f"--START_DATE={start_date}",
-            f"--CHAINID={networkutil.DEV_CHAINID}",
-        ]
-    ):
-        dftool_module.do_calc()
-
-    # test result
-    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(rewards_csv)
-
-    # get total reward amount
-    rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward - tot_ocean < 1e-6
-
-    # delete rewards csv
-    os.remove(rewards_csv)
-
-    # TEST WITH tot_ocean = 0, DATE WITH NONZERO REWARDS
-    tot_ocean = 0
-    start_date = "2042-03-16"  # some date where predictoor rewards are nonzero
-
-    with sysargs_context(
-        [
-            "dftool",
-            "calc",
-            "predictoor",
-            csv_dir,
-            str(tot_ocean),
-            f"--START_DATE={start_date}",
-            f"--CHAINID={networkutil.DEV_CHAINID}",
-        ]
-    ):
-        dftool_module.do_calc()
-
-    # test result
-    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(rewards_csv)
-    rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward > 0
-
-    # delete rewards csv
-    os.remove(rewards_csv)
-
-    # TEST WITH tot_ocean = 0, DATE WITH ZERO REWARDS
-    tot_ocean = 0
-    start_date = "2023-01-01"  # some date where predictoor rewards are zero
-
-    with sysargs_context(
-        [
-            "dftool",
-            "calc",
-            "predictoor",
-            csv_dir,
-            str(tot_ocean),
-            f"--START_DATE={start_date}",
-            f"--CHAINID={networkutil.DEV_CHAINID}",
-        ]
-    ):
-        dftool_module.do_calc()
-
-    # test result
-    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(rewards_csv)
-    rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward == 0
 
 
 def test_dummy_csvs(tmp_path):
@@ -447,7 +323,6 @@ def test_dispense(tmp_path):
         "5": {address1: 300, address2: 100},
     }
     csvs.save_volume_rewards_csv(rewards, csv_dir)
-    save_predictoor_rewards_csv({}, csv_dir)
 
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
