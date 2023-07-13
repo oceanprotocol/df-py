@@ -148,7 +148,7 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
 
 
 @enforce_types
-@patch.object(df_py.util.dftool_module, "query_predictoor_contracts")
+@patch.object("df_py.util.dftool_module.query_predictoor_contracts")
 def test_predictoor_data(tmp_path, mock_query):
     mock_query.return_value = {
         "0xContract1": PredictContract(8996, "0x1" , "c1", "c1", 10, 20),
