@@ -15,6 +15,7 @@ from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
 )
+from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
@@ -49,6 +50,10 @@ def mock_connect():
 @pytest.fixture
 def mock_query_predictoor_contracts():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
+        mock.return_value = {
+            "0xContract1": PredictContract(8996, "0x1" , "c1", "c1", 10, 20),
+            "0xContract2": PredictContract(8996, "0x2" , "c2", "c2", 10, 20),
+        }
         yield mock
 
 
@@ -147,6 +152,7 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
             dftool_module.do_calc()
 
 
+# pylint: disable=redefined-outer-name
 @enforce_types
 def test_predictoor_data(tmp_path):
     csv_dir = str(tmp_path)
