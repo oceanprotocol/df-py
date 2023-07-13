@@ -1045,6 +1045,7 @@ def _calc_rewards(
         OCEAN_avail,
         do_pubrewards,
         do_rank,
+        contract_multipliers
     )
 
 
