@@ -421,6 +421,26 @@ def test_bound_by_DCV_one_nft():
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
 
+@enforce_types
+def test_custom_multipliers():
+    DCV_OCEAN = 100.0
+    DCV_USD = DCV_OCEAN / RATES["OCEAN"]
+
+    stakes = {C1: {NA: {LP1: 1e6}}}
+    nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
+    contract_multipliers = { NA: 1.0 }
+
+    rewards_per_lp, rewards_info = _calc_rewards_C1(
+        stakes, nftvols, OCEAN_avail, DCV_multiplier=0.1, contract_multipliers=contract_multipliers
+    )
+    assert rewards_per_lp == {LP1: 100.0}
+    assert rewards_info == {NA: {LP1: 100.0}}
+
+    rewards_per_lp, rewards_info = _calc_rewards_C1(
+        stakes, nftvols, OCEAN_avail, DCV_multiplier=0.5, contract_multipliers=contract_multipliers
+    )
+    assert rewards_per_lp == {LP1: 100.0}
+    assert rewards_info == {NA: {LP1: 100.0}}
 
 @enforce_types
 def test_divide_by_zero():
@@ -978,6 +998,7 @@ def _calc_rewards_C1(
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
+    contract_multipliers: Dict[str, float] = {}
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
@@ -989,6 +1010,7 @@ def _calc_rewards_C1(
         DCV_multiplier,
         do_pubrewards,
         do_rank,
+        contract_multipliers
     )
     rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
     rewards_info = {} if not rewards_info else rewards_info[C1]
