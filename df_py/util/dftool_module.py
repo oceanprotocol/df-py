@@ -20,8 +20,9 @@ from df_py.challenge.csvs import (
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     save_predictoor_data_csv,
+    save_predictoor_contracts_csv
 )
-from df_py.predictoor.queries import query_predictoors
+from df_py.predictoor.queries import query_predictoors, query_predictoor_contracts
 from df_py.util import blockrange, dispense, get_rate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
@@ -383,6 +384,13 @@ def do_predictoor_data():
     st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
 
     # main work
+    predictoor_contracts = retry_function(
+        query_predictoor_contracts,
+        arguments.RETRIES,
+        10,
+        chain_id
+    )
+
     predictoor_data = retry_function(
         query_predictoors,
         arguments.RETRIES,
@@ -391,6 +399,8 @@ def do_predictoor_data():
         fin_block,
         chain_id,
     )
+
+    save_predictoor_contracts_csv(predictoor_contracts, csv_dir)
     save_predictoor_data_csv(predictoor_data, csv_dir)
     print("dftool predictoor_data: Done")
 
