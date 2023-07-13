@@ -1006,6 +1006,7 @@ def _calc_rewards(
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
+    contract_multipliers: Dict[str, float] = {}
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if owners is None:

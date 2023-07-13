@@ -70,7 +70,7 @@ def calc_rewards(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
-    contract_multipliers = {}
+    contract_multipliers: Dict[str, float] = {}
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
@@ -131,7 +131,7 @@ def _stake_vol_dicts_to_arrays(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
-    contract_multipliers = {}
+    contract_multipliers: Dict[str, float] = {}
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     @arguments
@@ -475,7 +475,7 @@ def calc_rewards_volume(
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
     
-    contract_multipliers = {}
+    contract_multipliers: Dict[str, float] = {}
 
     if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
         predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
