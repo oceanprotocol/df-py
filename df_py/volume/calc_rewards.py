@@ -69,6 +69,7 @@ def calc_rewards(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
+    contract_multipliers = {}
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
@@ -459,7 +460,7 @@ def merge_rewards(*reward_dicts):
 
 
 def calc_rewards_volume(
-    CSV_DIR, START_DATE, TOT_OCEAN, DO_PUBREWARDS=DO_PUBREWARDS, DO_RANK=DO_RANK
+    CSV_DIR, START_DATE, TOT_OCEAN, DO_PUBREWARDS=DO_PUBREWARDS, DO_RANK=DO_RANK, contract_multipliers = {}
 ):
     S = allocations.load_stakes(CSV_DIR)
     V = csvs.load_nftvols_csvs(CSV_DIR)
