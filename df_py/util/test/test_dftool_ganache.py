@@ -12,11 +12,8 @@ from enforce_typing import enforce_types
 from df_py.challenge.csvs import challenge_data_csv_filename, load_challenge_rewards_csv
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
-    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
-    save_predictoor_rewards_csv,
-    sample_predictoor_data_csv,
 )
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
@@ -25,7 +22,6 @@ from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.util.get_rate import get_rate
 from df_py.volume import csvs
-from df_py.volume.calc_rewards import flatten_rewards
 
 PREV, DFTOOL_ACCT = {}, None
 
