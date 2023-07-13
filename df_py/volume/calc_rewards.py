@@ -102,11 +102,11 @@ def calc_rewards(
     nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
 
     keys_tup = _get_keys_tuple(stakes, nftvols_USD)
-    S, V_USD = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
+    S, V_USD, M = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup, contract_multipliers)
     C = _owner_dict_to_array(owners, keys_tup)
 
     R = _calc_rewards_usd(
-        S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank
+        S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank, M
     )
 
     (rewardsperlp, rewardsinfo) = _reward_array_to_dicts(R, keys_tup)
@@ -130,6 +130,7 @@ def _stake_vol_dicts_to_arrays(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
+    contract_multipliers = {}
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
     @arguments
@@ -144,7 +145,7 @@ def _stake_vol_dicts_to_arrays(
     LP_addrs, chain_nft_tups = keys_tup
     N_j = len(chain_nft_tups)
     N_i = len(LP_addrs)
-
+    M = np.zeros(N_j, dtype=float)
     S = np.zeros((N_i, N_j), dtype=float)
     V_USD = np.zeros(N_j, dtype=float)
     for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
@@ -152,8 +153,10 @@ def _stake_vol_dicts_to_arrays(
             assert nft_addr in stakes[chainID], "each tup should be in stakes"
             S[i, j] = stakes[chainID][nft_addr].get(LP_addr, 0.0)
         V_USD[j] += nftvols_USD[chainID].get(nft_addr, 0.0)
+        if nft_addr in contract_multipliers:
+            M[j] = contract_multipliers[nft_addr]
 
-    return S, V_USD
+    return S, V_USD, M
 
 
 @enforce_types
@@ -196,6 +199,7 @@ def _calc_rewards_usd(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
+    M: np.ndarray = np.array([])
 ) -> np.ndarray:
     """
     @arguments
@@ -206,6 +210,7 @@ def _calc_rewards_usd(
       OCEAN_avail -- amount of rewards available, in OCEAN
       do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
+      M -- 1d array of [chain_nft j] -- the custom multiplier for that nft
 
     @return
       R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -243,10 +248,11 @@ def _calc_rewards_usd(
             perc_at_ij = stake_ij / stake_j
 
             # main formula!
+            multiplier = max(M[j], DCV_multiplier)
             R[i, j] = min(
                 perc_at_j * perc_at_ij * OCEAN_avail,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
-                DCV_j * DCV_multiplier,  # bound rewards by DCV
+                DCV_j * multiplier,  # bound rewards by DCV
             )
 
     # filter negligible values
