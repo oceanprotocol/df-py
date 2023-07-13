@@ -154,7 +154,11 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
 
 # pylint: disable=redefined-outer-name
 @enforce_types
-def test_predictoor_data(tmp_path):
+def test_predictoor_data(tmp_path, mock_query_predictoor_contracts):
+    mock_query_predictoor_contracts.return_value = {
+        "0xContract1": PredictContract(8996, "0x1" , "c1", "c1", 10, 20),
+        "0xContract2": PredictContract(8996, "0x2" , "c2", "c2", 10, 20),
+    }
     csv_dir = str(tmp_path)
 
     sys_argv = [
