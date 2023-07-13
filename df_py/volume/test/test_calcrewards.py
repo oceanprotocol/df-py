@@ -428,6 +428,7 @@ def test_custom_multipliers():
 
     stakes = {C1: {NA: {LP1: 1e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
+    OCEAN_avail = 10000.0
     contract_multipliers = { NA: 1.0 }
 
     rewards_per_lp, rewards_info = _calc_rewards_C1(
