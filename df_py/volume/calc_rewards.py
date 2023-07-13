@@ -14,7 +14,7 @@ from df_py.util.constants import (
 from df_py.volume import allocations
 from df_py.volume import cleancase as cc
 from df_py.volume import csvs, to_usd
-from df_py.predictoor.csvs import load_predictoor_contracts_csv
+from df_py.predictoor.csvs import load_predictoor_contracts_csv, predictoor_contracts_csv_filename
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
@@ -467,9 +467,12 @@ def calc_rewards_volume(
     C = csvs.load_owners_csvs(CSV_DIR)
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
-    predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
+    
+    contract_multipliers = {}
 
-    contract_multipliers = {i:0.2 for i in predict_contracts.keys()}
+    if predictoor_contracts_csv_filename(CSV_DIR):
+        predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
+        contract_multipliers = {i:0.2 for i in predict_contracts.keys()}
 
     prev_week = 0
     if START_DATE is None:
