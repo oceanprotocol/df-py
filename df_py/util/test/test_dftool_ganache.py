@@ -106,11 +106,6 @@ def test_calc_volume(tmp_path):
 # pylint: disable=redefined-outer-name
 @enforce_types
 def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
-    mock_query_predictoor_contracts.return_value = {
-        "0xContract1": "",
-        "0xContract2": "",
-    }
-
     csv_dir = str(tmp_path)
 
     # neither total ocean, nor given start date
@@ -152,13 +147,8 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
             dftool_module.do_calc()
 
 
-# pylint: disable=redefined-outer-name
 @enforce_types
 def test_predictoor_data(tmp_path, mock_query_predictoor_contracts):
-    mock_query_predictoor_contracts.return_value = {
-        "0xContract1": PredictContract(8996, "0x1" , "c1", "c1", 10, 20),
-        "0xContract2": PredictContract(8996, "0x2" , "c2", "c2", 10, 20),
-    }
     csv_dir = str(tmp_path)
 
     sys_argv = [
