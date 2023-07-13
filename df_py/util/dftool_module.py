@@ -409,7 +409,7 @@ def do_calc():
         description="From substream data files, output rewards csvs."
     )
     parser.add_argument("command", choices=["calc"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
     parser.add_argument(
         "CSV_DIR",
         type=existing_path,
@@ -509,26 +509,6 @@ def do_calc():
             sys.exit(1)
 
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
-
-    if arguments.SUBSTREAM == "predictoor":
-        if arguments.CHAINID is None:
-            print("CHAINID is required for predictoor")
-            sys.exit(1)
-
-        try:
-            predictoors = load_predictoor_data_csv(csv_dir)
-        except FileNotFoundError:
-            print("Predictoor data file not found")
-            sys.exit(1)
-
-        if len(predictoors) == 0:
-            print("No predictoors found")
-            sys.exit(0)
-        _exitIfFileExists(predictoor_rewards_csv_filename(csv_dir))
-
-        # calculate rewards
-        predictoor_rewards = calc_predictoor_rewards(predictoors, tot_ocean, chain_id)
-        save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
     print("dftool calc: Done")
 
@@ -815,7 +795,7 @@ def do_new_acct():
 def do_dummy_csvs():
     parser = argparse.ArgumentParser(description="Generate dummy CSVs")
     parser.add_argument("command", choices=["dummy_csvs"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
     parser.add_argument(
         "CSV_DIR", type=autocreate_path, help="output dir for csv files"
     )
