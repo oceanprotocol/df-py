@@ -19,12 +19,8 @@ from df_py.challenge.csvs import (
 )
 from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
-    load_predictoor_data_csv,
-    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
-    predictoor_rewards_csv_filename,
     save_predictoor_data_csv,
-    save_predictoor_rewards_csv,
 )
 from df_py.predictoor.queries import query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil
@@ -427,17 +423,13 @@ def do_calc():
         required=False,
         default=None,
     )
-    parser.add_argument(
-        "--CHAINID", type=int, help=CHAINID_EXAMPLES, required=False, default=None
-    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
-    tot_ocean, start_date, csv_dir, chain_id = (
+    tot_ocean, start_date, csv_dir = (
         arguments.TOT_OCEAN,
         arguments.START_DATE,
         arguments.CSV_DIR,
-        arguments.CHAINID,
     )
 
     # condition inputs
@@ -570,7 +562,7 @@ def do_dispense_active():
         volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
         volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
 
-    rewards = calc_rewards.merge_rewards(volume_rewards, predictoor_rewards)
+    rewards = volume_rewards
 
     # dispense
     dispense.dispense(
