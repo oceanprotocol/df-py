@@ -26,7 +26,7 @@ def get_active_reward_amount_for_week_eth_by_stream(
     dfweek = get_df_week_number(start_dt) - 1
 
     if substream == "predictoor":
-        return 35000
+        return 35000 if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
 
     if substream == "challenge":
         return sum(get_challenge_reward_amounts_in_ocean(start_dt))
