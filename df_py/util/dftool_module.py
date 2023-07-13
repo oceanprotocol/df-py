@@ -17,7 +17,6 @@ from df_py.challenge.csvs import (
     save_challenge_data_csv,
     save_challenge_rewards_csv,
 )
-from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     save_predictoor_data_csv,
