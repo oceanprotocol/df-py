@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
@@ -476,7 +477,7 @@ def calc_rewards_volume(
     
     contract_multipliers = {}
 
-    if predictoor_contracts_csv_filename(CSV_DIR):
+    if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
         predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
         contract_multipliers = {i:0.2 for i in predict_contracts.keys()}
 
