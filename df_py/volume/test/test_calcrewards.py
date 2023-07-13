@@ -866,7 +866,7 @@ def test_stake_vol_dicts_to_arrays():
         [(1, "nft_addr1"), (1, "nft_addr2"), (2, "nft_addr3"), (2, "nft_addr4")],
     )
 
-    S, V_USD = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
+    S, V_USD, _ = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
 
     expected_S = np.array(
         [
