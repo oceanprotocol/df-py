@@ -16,7 +16,7 @@ from df_py.challenge.csvs import (
     load_challenge_data_csv,
     save_challenge_data_csv,
     save_challenge_rewards_csv,
-    load_challenge_rewards_csv
+    load_challenge_rewards_csv,
 )
 from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
@@ -600,7 +600,9 @@ def do_dispense_active():
     if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
         challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
 
-    rewards = calc_rewards.merge_rewards(volume_rewards, predictoor_rewards, challenge_rewards)
+    rewards = calc_rewards.merge_rewards(
+        volume_rewards, predictoor_rewards, challenge_rewards
+    )
 
     # dispense
     dispense.dispense(
