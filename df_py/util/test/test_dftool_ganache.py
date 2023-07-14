@@ -110,7 +110,7 @@ def test_calc_volume(tmp_path):
 
 # pylint: disable=redefined-outer-name
 @enforce_types
-def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
+def test_calc_failures(tmp_path):
     csv_dir = str(tmp_path)
 
     # neither total ocean, nor given start date
