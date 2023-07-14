@@ -9,7 +9,11 @@ import brownie
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.challenge.csvs import challenge_data_csv_filename, load_challenge_rewards_csv, save_challenge_rewards_csv
+from df_py.challenge.csvs import (
+    challenge_data_csv_filename,
+    load_challenge_rewards_csv,
+    save_challenge_rewards_csv,
+)
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     load_predictoor_rewards_csv,
