@@ -155,39 +155,39 @@ def test_predictoor_data(tmp_path):
             "0xContract2": PredictContract(8996, "0x2" , "c2", "c2", 10, 20),
         }
 
-    csv_dir = str(tmp_path)
+        csv_dir = str(tmp_path)
 
-    sys_argv = [
-        "dftool",
-        "predictoor_data",
-        "0",
-        "latest",
-        csv_dir,
-        str(CHAINID),
-        "--RETRIES=1",
-    ]
+        sys_argv = [
+            "dftool",
+            "predictoor_data",
+            "0",
+            "latest",
+            csv_dir,
+            str(CHAINID),
+            "--RETRIES=1",
+        ]
 
-    mock_query_response, users, stats = create_mock_responses(100)
+        mock_query_response, users, stats = create_mock_responses(100)
 
-    with sysargs_context(sys_argv):
-        with patch("df_py.predictoor.queries.submit_query") as mock_submit_query:
-            mock_submit_query.side_effect = mock_query_response
-            do_predictoor_data()
+        with sysargs_context(sys_argv):
+            with patch("df_py.predictoor.queries.submit_query") as mock_submit_query:
+                mock_submit_query.side_effect = mock_query_response
+                do_predictoor_data()
 
-    # test result
-    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
-    assert os.path.exists(predictoor_data_csv)
+        # test result
+        predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
+        assert os.path.exists(predictoor_data_csv)
 
-    predictoors = load_predictoor_data_csv(csv_dir)
-    for user in users:
-        if stats[user]["total"] == 0:
-            assert user not in predictoors
-            continue
-        user_total = stats[user]["total"]
-        user_correct = stats[user]["correct"]
-        assert predictoors[user].prediction_count == user_total
-        assert predictoors[user].correct_prediction_count == user_correct
-        assert predictoors[user].accuracy == user_correct / user_total
+        predictoors = load_predictoor_data_csv(csv_dir)
+        for user in users:
+            if stats[user]["total"] == 0:
+                assert user not in predictoors
+                continue
+            user_total = stats[user]["total"]
+            user_correct = stats[user]["correct"]
+            assert predictoors[user].prediction_count == user_total
+            assert predictoors[user].correct_prediction_count == user_correct
+            assert predictoors[user].accuracy == user_correct / user_total
 
 
 def test_dummy_csvs(tmp_path):
