@@ -18,7 +18,6 @@ from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
-    sample_predictoor_data_csv,
 )
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
