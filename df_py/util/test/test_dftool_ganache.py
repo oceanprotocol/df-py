@@ -436,7 +436,7 @@ def test_dispense(tmp_path):
     address1 = accounts[1].address.lower()
     address2 = accounts[2].address.lower()
     csv_dir = str(tmp_path)
-    tot_ocean = 1000.0
+    tot_ocean = 4000.0
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
