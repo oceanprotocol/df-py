@@ -16,6 +16,7 @@ from df_py.challenge.csvs import (
     load_challenge_data_csv,
     save_challenge_data_csv,
     save_challenge_rewards_csv,
+    load_challenge_rewards_csv,
 )
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
@@ -570,7 +571,16 @@ def do_dispense_active():
         volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
         volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
 
-    rewards = volume_rewards
+    challenge_rewards = {}
+    if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
+        challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
+    if len(challenge_rewards) == 0:
+        print("Distributing only VOLUME DF rewards")
+    else:
+        print("Distributing for VOLUME DF and CHALLENGE DF rewards")
+    rewards = calc_rewards.merge_rewards(
+        volume_rewards, predictoor_rewards, challenge_rewards
+    )
 
     # dispense
     dispense.dispense(

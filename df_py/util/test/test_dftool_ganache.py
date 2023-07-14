@@ -9,11 +9,16 @@ import brownie
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.challenge.csvs import challenge_data_csv_filename, load_challenge_rewards_csv
+from df_py.challenge.csvs import (
+    challenge_data_csv_filename,
+    load_challenge_rewards_csv,
+    save_challenge_rewards_csv,
+)
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
+    sample_predictoor_data_csv,
 )
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
@@ -311,7 +316,7 @@ def test_dispense(tmp_path):
     address1 = accounts[1].address.lower()
     address2 = accounts[2].address.lower()
     csv_dir = str(tmp_path)
-    tot_ocean = 1000.0
+    tot_ocean = 4000.0
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
@@ -325,7 +330,11 @@ def test_dispense(tmp_path):
         "5": {address1: 300, address2: 100},
     }
     csvs.save_volume_rewards_csv(rewards, csv_dir)
-
+    challenge_rewards = [
+        {"winner_addr": address1, "OCEAN_amt": 2000},
+        {"winner_addr": address2, "OCEAN_amt": 1000},
+    ]
+    save_challenge_rewards_csv(challenge_rewards, csv_dir)
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
     # main command
@@ -346,8 +355,8 @@ def test_dispense(tmp_path):
         dftool_module.do_dispense_active()
 
     # test result
-    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 700.0
-    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 100.0
+    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 2700.0
+    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 1100.0
 
 
 @enforce_types
