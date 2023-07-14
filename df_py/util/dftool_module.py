@@ -599,7 +599,10 @@ def do_dispense_active():
     challenge_rewards = {}
     if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
         challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
-
+    if len(challenge_rewards) == 0:
+        print("Distributing only VOLUME DF rewards")
+    else:
+        print("Distributing for VOLUME DF and CHALLENGE DF rewards")
     rewards = calc_rewards.merge_rewards(
         volume_rewards, predictoor_rewards, challenge_rewards
     )
