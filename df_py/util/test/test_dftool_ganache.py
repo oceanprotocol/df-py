@@ -447,8 +447,11 @@ def test_dispense(tmp_path):
         "5": {address1: 300, address2: 100},
     }
     csvs.save_volume_rewards_csv(rewards, csv_dir)
-    save_predictoor_rewards_csv({}, csv_dir)
-
+    challenge_rewards = [
+        {"winner_addr": address1, "OCEAN_amt": 2000},
+        {"winner_addr": address2, "OCEAN_amt": 1000},
+    ]
+    save_challenge_rewards_csv(challenge_rewards, csv_dir)
     df_rewards = B.DFRewards.deploy({"from": accounts[0]})
 
     # main command
@@ -469,8 +472,8 @@ def test_dispense(tmp_path):
         dftool_module.do_dispense_active()
 
     # test result
-    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 700.0
-    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 100.0
+    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 2700.0
+    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 1100.0
 
 
 @enforce_types
