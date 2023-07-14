@@ -579,7 +579,7 @@ def do_dispense_active():
     else:
         print("Distributing for VOLUME DF and CHALLENGE DF rewards")
     rewards = calc_rewards.merge_rewards(
-        volume_rewards, predictoor_rewards, challenge_rewards
+        volume_rewards, challenge_rewards
     )
 
     # dispense
