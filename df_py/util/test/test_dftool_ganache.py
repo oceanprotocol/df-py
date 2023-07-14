@@ -56,8 +56,8 @@ def mock_connect():
 def mock_query_predictoor_contracts():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
         mock.return_value = {
-            "0xContract1": PredictContract(8996, "0x1" , "c1", "c1", 10, 20),
-            "0xContract2": PredictContract(8996, "0x2" , "c2", "c2", 10, 20),
+            "0xContract1": PredictContract(8996, "0x1", "c1", "c1", 10, 20),
+            "0xContract2": PredictContract(8996, "0x2", "c2", "c2", 10, 20),
         }
         yield mock
 
@@ -135,7 +135,6 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
         ):
             dftool_module.do_calc()
 
-
     # no required input files -- challenge
     with pytest.raises(SystemExit):
         with sysargs_context(
@@ -156,8 +155,8 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
 def test_predictoor_data(tmp_path):
     with patch("df_py.util.dftool_module.query_predictoor_contracts") as mock:
         mock.return_value = {
-            "0xContract1": PredictContract(8996, "0x1" , "c1", "c1", 10, 20),
-            "0xContract2": PredictContract(8996, "0x2" , "c2", "c2", 10, 20),
+            "0xContract1": PredictContract(8996, "0x1", "c1", "c1", 10, 20),
+            "0xContract2": PredictContract(8996, "0x2", "c2", "c2", 10, 20),
         }
 
         csv_dir = str(tmp_path)

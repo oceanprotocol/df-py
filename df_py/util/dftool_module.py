@@ -386,7 +386,7 @@ def do_predictoor_data():
 
     # main work
     predictoor_contracts = query_predictoor_contracts(chain_id)
-    
+
     # retry_function(
     #     query_predictoor_contracts, arguments.RETRIES, 10, chain_id
     # )
@@ -578,9 +578,7 @@ def do_dispense_active():
         print("Distributing only VOLUME DF rewards")
     else:
         print("Distributing for VOLUME DF and CHALLENGE DF rewards")
-    rewards = calc_rewards.merge_rewards(
-        volume_rewards, challenge_rewards
-    )
+    rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
 
     # dispense
     dispense.dispense(

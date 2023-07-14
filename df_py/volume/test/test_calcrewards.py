@@ -421,6 +421,7 @@ def test_bound_by_DCV_one_nft():
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
 
+
 @enforce_types
 def test_custom_multipliers():
     DCV_OCEAN = 100.0
@@ -429,19 +430,28 @@ def test_custom_multipliers():
     stakes = {C1: {NA: {LP1: 1e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
     OCEAN_avail = 10000.0
-    contract_multipliers = { NA: 1.0 }
+    contract_multipliers = {NA: 1.0}
 
     rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes, nftvols, OCEAN_avail, DCV_multiplier=0.1, contract_multipliers=contract_multipliers
+        stakes,
+        nftvols,
+        OCEAN_avail,
+        DCV_multiplier=0.1,
+        contract_multipliers=contract_multipliers,
     )
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
     rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes, nftvols, OCEAN_avail, DCV_multiplier=0.5, contract_multipliers=contract_multipliers
+        stakes,
+        nftvols,
+        OCEAN_avail,
+        DCV_multiplier=0.5,
+        contract_multipliers=contract_multipliers,
     )
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
+
 
 @enforce_types
 def test_divide_by_zero():
@@ -968,7 +978,6 @@ def test_calc_rewards_volume():
     ), patch(
         "df_py.volume.calc_rewards.get_df_week_number", return_value=30
     ):
-
         rewards_per_lp, rewards_info = calc_rewards_volume(
             "somedir", None, 1000.0, True, False
         )
@@ -999,7 +1008,7 @@ def _calc_rewards_C1(
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
-    contract_multipliers: Dict[str, float] = {}
+    contract_multipliers: Dict[str, float] = {},
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
@@ -1011,7 +1020,7 @@ def _calc_rewards_C1(
         DCV_multiplier,
         do_pubrewards,
         do_rank,
-        contract_multipliers
+        contract_multipliers,
     )
     rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
     rewards_info = {} if not rewards_info else rewards_info[C1]
@@ -1029,7 +1038,7 @@ def _calc_rewards(
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
-    contract_multipliers: Dict[str, float] = {}
+    contract_multipliers: Dict[str, float] = {},
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if owners is None:
@@ -1045,7 +1054,7 @@ def _calc_rewards(
         OCEAN_avail,
         do_pubrewards,
         do_rank,
-        contract_multipliers
+        contract_multipliers,
     )
 
 
