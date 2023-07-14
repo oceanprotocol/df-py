@@ -15,7 +15,11 @@ from df_py.util.constants import (
 from df_py.volume import allocations
 from df_py.volume import cleancase as cc
 from df_py.volume import csvs, to_usd
-from df_py.predictoor.csvs import load_predictoor_contracts_csv, predictoor_contracts_csv_filename
+from df_py.predictoor.csvs import (
+    load_predictoor_contracts_csv,
+    predictoor_contracts_csv_filename,
+)
+
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
 
@@ -70,7 +74,7 @@ def calc_rewards(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
-    contract_multipliers: Dict[str, float] = {}
+    contract_multipliers: Dict[str, float] = {},
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
@@ -103,7 +107,9 @@ def calc_rewards(
     nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
 
     keys_tup = _get_keys_tuple(stakes, nftvols_USD)
-    S, V_USD, M = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup, contract_multipliers)
+    S, V_USD, M = _stake_vol_dicts_to_arrays(
+        stakes, nftvols_USD, keys_tup, contract_multipliers
+    )
     C = _owner_dict_to_array(owners, keys_tup)
 
     R = _calc_rewards_usd(
@@ -131,8 +137,8 @@ def _stake_vol_dicts_to_arrays(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
-    contract_multipliers: Dict[str, float] = {}
-) -> Tuple[np.ndarray, np.ndarray]:
+    contract_multipliers: Dict[str, float] = {},
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
@@ -200,7 +206,7 @@ def _calc_rewards_usd(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
-    M: np.ndarray = np.array([])
+    M: np.ndarray = np.array([]),
 ) -> np.ndarray:
     """
     @arguments
@@ -474,12 +480,12 @@ def calc_rewards_volume(
     C = csvs.load_owners_csvs(CSV_DIR)
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
-    
+
     contract_multipliers: Dict[str, float] = {}
 
     if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
         predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
-        contract_multipliers = {i:0.2 for i in predict_contracts.keys()}
+        contract_multipliers = {i: 0.2 for i in predict_contracts.keys()}
 
     prev_week = 0
     if START_DATE is None:
@@ -489,4 +495,6 @@ def calc_rewards_volume(
         prev_week = get_df_week_number(START_DATE)
     m = calc_dcv_multiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-    return calc_rewards(S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK, contract_multipliers)
+    return calc_rewards(
+        S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK, contract_multipliers
+    )
