@@ -87,6 +87,7 @@ def calc_rewards(
       OCEAN_avail -- amount of rewards avail, in units of OCEAN
       do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
+      [contract_multipliers] - custom multiplier per contract address, optional
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_reward_float
@@ -255,7 +256,7 @@ def _calc_rewards_usd(
             perc_at_ij = stake_ij / stake_j
 
             # main formula!
-            multiplier = max(M[j], DCV_multiplier)
+            multiplier = M[j] if M[j] != 0 else DCV_multiplier
             R[i, j] = min(
                 perc_at_j * perc_at_ij * OCEAN_avail,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
