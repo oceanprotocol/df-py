@@ -1002,7 +1002,7 @@ def test_calc_rewards_volume_predictoor_mul():
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
         },
-        "owners": {1:{}, 2: {"0xnft_addr2": "0xlp_addr2"}},
+        "owners": {1:{"0xnft_addr1": "0xlp_addr5"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
         "symbols": {
             1: {"0xbasetoken_addr1": "basetoken_symbol1"},
             2: {"0xbasetoken_addr2": "basetoken_symbol1"},
