@@ -996,7 +996,7 @@ def test_calc_rewards_volume():
 def test_calc_rewards_volume_predictoor_mul():
     mock_data = {
         "stakes": {
-            1: {"0xnft_addr1": {"0xlp_addr1": 300.0}},
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
             2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
         },
         "volumes": {
