@@ -1040,13 +1040,9 @@ def test_calc_rewards_volume_predictoor_mul():
         rewards_per_lp, rewards_info = calc_rewards_volume(
             "somedir", None, 1000.0, True, False
         )
-        assert rewards_per_lp[2]["0xlp_addr2"] == approx(
-            444.44444444
-        )
+        assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
-        assert rewards_per_lp[1]["0xlp_addr1"] == approx(
-            60
-        ) 
+        assert rewards_per_lp[1]["0xlp_addr1"] == approx(60)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(60)
