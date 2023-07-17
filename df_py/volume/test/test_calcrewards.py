@@ -1002,7 +1002,7 @@ def test_calc_rewards_volume_predictoor_mul():
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
         },
-        "owners": {1: {"0xnft_addr1": "0xlp_addr1"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
+        "owners": {2: {"0xnft_addr2": "0xlp_addr2"}},
         "symbols": {
             1: {"0xbasetoken_addr1": "basetoken_symbol1"},
             2: {"0xbasetoken_addr2": "basetoken_symbol1"},
@@ -1046,7 +1046,7 @@ def test_calc_rewards_volume_predictoor_mul():
         )  # pub rewards extra
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(
-            300
+            60
         )  # pub rewards extra - bounded to 300 due to DCV
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)

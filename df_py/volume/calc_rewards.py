@@ -486,7 +486,7 @@ def calc_rewards_volume(
     if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
         predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
         contract_multipliers = {i: 0.2 for i in predict_contracts.keys()}
-
+    print("muls:", contract_multipliers)
     prev_week = 0
     if START_DATE is None:
         cur_week = get_df_week_number(datetime.now())
