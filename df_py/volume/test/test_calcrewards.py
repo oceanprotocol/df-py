@@ -1011,6 +1011,9 @@ def test_calc_rewards_volume_predictoor_mul():
             "basetoken_symbol1": 1.0,
         },
         "multiplier": 1.0,
+        "predictoor_contracts": {
+            "0xnft_addr1": {}
+        }
     }
 
     with patch(
@@ -1031,7 +1034,7 @@ def test_calc_rewards_volume_predictoor_mul():
         return_value=True,
     ), patch(
         "df_py.volume.calc_rewards.load_predictoor_contracts_csv",
-        return_value={"0xnft_addr1":""},
+        return_value=mock_data["predictoor_contracts"]
     ), patch(
         "df_py.volume.calc_rewards.get_df_week_number", return_value=30
     ):
