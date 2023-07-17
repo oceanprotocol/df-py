@@ -992,6 +992,64 @@ def test_calc_rewards_volume():
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
 
+def test_calc_rewards_volume_predictoor_mul():
+    mock_data = {
+        "stakes": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
+        "volumes": {
+            1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
+            2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
+        },
+        "owners": {1: {"0xnft_addr1": "0xlp_addr1"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
+        "symbols": {
+            1: {"0xbasetoken_addr1": "basetoken_symbol1"},
+            2: {"0xbasetoken_addr2": "basetoken_symbol1"},
+        },
+        "rates": {
+            "basetoken_symbol1": 1.0,
+        },
+        "multiplier": 1.0,
+    }
+
+    with patch(
+        "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
+    ), patch(
+        "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
+    ), patch(
+        "df_py.volume.csvs.load_owners_csvs", return_value=mock_data["owners"]
+    ), patch(
+        "df_py.volume.csvs.load_symbols_csvs", return_value=mock_data["symbols"]
+    ), patch(
+        "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
+    ), patch(
+        "df_py.volume.calc_rewards.calc_dcv_multiplier",
+        return_value=mock_data["multiplier"],
+    ), patch(
+        "os.path.exists",
+        return_value=True,
+    ), patch(
+        "df_py.volume.calc_rewards.load_predictoor_contracts_csv",
+        return_value={"0xnft_addr1":""},
+    ), patch(
+        "df_py.volume.calc_rewards.get_df_week_number", return_value=30
+    ):
+        rewards_per_lp, rewards_info = calc_rewards_volume(
+            "somedir", None, 1000.0, True, False
+        )
+        assert rewards_per_lp[2]["0xlp_addr2"] == approx(
+            444.44444444
+        )  # pub rewards extra
+        assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
+        assert rewards_per_lp[1]["0xlp_addr1"] == approx(
+            300
+        )  # pub rewards extra - bounded to 300 due to DCV
+        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
+        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
+        assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
+
+
 
 # ========================================================================
 # Helpers to keep function calls compact, and return vals compact.
