@@ -996,7 +996,7 @@ def test_calc_rewards_volume():
 def test_calc_rewards_volume_predictoor_mul():
     mock_data = {
         "stakes": {
-            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            1: {"0xnft_addr1": {"0xlp_addr1": 300.0}},
             2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
         },
         "volumes": {
@@ -1042,11 +1042,11 @@ def test_calc_rewards_volume_predictoor_mul():
         )
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(
             444.44444444
-        )  # pub rewards extra
+        )
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(
             60
-        )  # pub rewards extra - bounded to 300 due to DCV
+        ) 
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(60)
