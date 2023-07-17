@@ -992,6 +992,7 @@ def test_calc_rewards_volume():
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
 
+
 def test_calc_rewards_volume_predictoor_mul():
     mock_data = {
         "stakes": {
@@ -1002,7 +1003,7 @@ def test_calc_rewards_volume_predictoor_mul():
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
         },
-        "owners": {1:{"0xnft_addr1": "0xlp_addr5"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
+        "owners": {1: {"0xnft_addr1": "0xlp_addr5"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
         "symbols": {
             1: {"0xbasetoken_addr1": "basetoken_symbol1"},
             2: {"0xbasetoken_addr2": "basetoken_symbol1"},
@@ -1011,9 +1012,7 @@ def test_calc_rewards_volume_predictoor_mul():
             "basetoken_symbol1": 1.0,
         },
         "multiplier": 1.0,
-        "predictoor_contracts": {
-            "0xnft_addr1": {}
-        }
+        "predictoor_contracts": {"0xnft_addr1": {}},
     }
 
     with patch(
@@ -1034,7 +1033,7 @@ def test_calc_rewards_volume_predictoor_mul():
         return_value=True,
     ), patch(
         "df_py.volume.calc_rewards.load_predictoor_contracts_csv",
-        return_value=mock_data["predictoor_contracts"]
+        return_value=mock_data["predictoor_contracts"],
     ), patch(
         "df_py.volume.calc_rewards.get_df_week_number", return_value=30
     ):
@@ -1051,7 +1050,6 @@ def test_calc_rewards_volume_predictoor_mul():
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(60)
-
 
 
 # ========================================================================
