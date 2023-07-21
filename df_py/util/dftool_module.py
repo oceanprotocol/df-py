@@ -385,7 +385,7 @@ def do_predictoor_data():
     st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
 
     # main work
-    retry_function(
+    predictoor_contracts = retry_function(
         query_predictoor_contracts, arguments.RETRIES, 10, chain_id
     )
 
