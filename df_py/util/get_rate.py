@@ -1,10 +1,12 @@
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Tuple, Union
+from typing import Union, List
 
 import requests
 from enforce_typing import enforce_types
+
+from df_py.util.blocktime import timestr_to_timestamp
 
 
 @enforce_types
@@ -35,34 +37,70 @@ def get_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
 
 
 @enforce_types
-def get_binance_rate(token_symbol: str, st: str, fin: str) -> Union[float, None]:
+def get_binance_rate(
+    token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
+) -> Union[float, None]:
     """
     @arguments
       token_symbol -- e.g. "OCEAN", "BTC"
-      st -- start date in format "YYYY-MM-DD"
-      fin -- end date
+      st -- start date in format "YYYY-MM-DD[_HH:MM]"
+      fin -- end date in format "YYYY-MM-DD[_HH:MM]"
+      target_currency -- e.g. "USDT", "BTC"
+      interval -- time interval e.g. "5m", "1d"
     @return
-      rate -- float or None -- USD_per_token. None if failure
+      rate -- float or None -- target_currency_per_token. None if failure
     """
     # corner case
     if token_symbol.upper() == "H2O":
         return 1.618
+    data = get_binance_rate_all(token_symbol, st, fin, target_currency, interval)
+    if not data:
+        return None
+    return sum(data) / len(data)
 
-    (st_dt, fin_dt) = _to_datetime(st, fin)
-    num_days = (fin_dt - st_dt).days
-    if num_days < 0:
+
+@enforce_types
+def get_binance_rate_all(
+    token_symbol: str, st: str, fin: str, target_currency="USDT", interval="1d"
+) -> Union[List[float], None]:
+    """
+    @arguments
+      token_symbol -- e.g. "OCEAN", "BTC"
+      st -- start date in format "YYYY-MM-DD[_HH:MM]"
+      fin -- end date in format "YYYY-MM-DD[_HH:MM]"
+      target_currency -- e.g. "USDT", "BTC"
+      interval -- time interval e.g. "5m", "1d"
+    @return
+      rate -- float or None -- target_currency_per_token. None if failure
+    """
+    url = "https://data.binance.com/api/v3/klines"
+    st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
+    fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
+    if st_dt > fin_dt:
         raise ValueError("Start date is after end date")
-    if num_days == 0:  # binance needs >=1 days of data
+
+    num_days = (fin_dt - st_dt).days
+    if num_days == 0 and interval == "1d":
         st_dt = st_dt - timedelta(days=1)
 
-    req_s = f"https://data.binance.com/api/v3/klines?symbol={token_symbol}USDT&interval=1d&startTime={int(st_dt.timestamp())*1000}&endTime={int(fin_dt.timestamp())*1000}"  # pylint: disable=line-too-long
+    start_time_unix = int(st_dt.timestamp()) * 1000
+    end_time_unix = int(fin_dt.timestamp()) * 1000
+    limit = 1000
+
+    params = {
+        "symbol": token_symbol + target_currency,
+        "interval": interval,
+        "startTime": start_time_unix,
+        "endTime": end_time_unix,
+        "limit": limit,
+    }
     try:
-        res = requests.get(req_s, timeout=30)
+        res = requests.get(url, params=params, timeout=30)
         data = res.json()
         if not data:
             return None
-        avg = sum([float(x[4]) for x in data]) / len(data)
-        return avg
+        data = [float(x[4]) for x in data]
+        return data
     # pylint: disable=broad-exception-caught
     except Exception as e:
         print(f"Error in get_binance_rate: {e}")
@@ -83,7 +121,8 @@ def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, Non
     if token_symbol.upper() == "H2O":
         return 1.618
 
-    (st_dt, fin_dt) = _to_datetime(st, fin)
+    st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
+    fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
     num_days = (fin_dt - st_dt).days
     if num_days < 0:
         raise ValueError("Start date is after end date")
@@ -101,20 +140,6 @@ def get_coingecko_rate(token_symbol: str, st: str, fin: str) -> Union[float, Non
         return None
     avg = sum([float(x[1]) for x in data]) / len(data)
     return avg
-
-
-@enforce_types
-def _to_datetime(st: str, fin: str) -> Tuple[datetime, datetime]:
-    """
-    @arguments
-      st, fin -- (start date, end date) in format "YYYY-MM-DD"
-
-    @return
-      st_dt, fin_dt -- (start date, end date) in datetime
-    """
-    st_dt = datetime.strptime(st, "%Y-%m-%d")
-    fin_dt = datetime.strptime(fin, "%Y-%m-%d")
-    return (st_dt, fin_dt)
 
 
 @enforce_types
