@@ -51,6 +51,7 @@ Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
   dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
   dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
+  dftool dummy_csvs SUBSTREAM CSV_DIR
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
