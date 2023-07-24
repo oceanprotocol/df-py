@@ -14,6 +14,31 @@ def test_get_binance_rate_OCEAN_sameday():
 
 
 @enforce_types
+def test_get_binance_5m_tusd():
+    interval = "5m"
+    start_time = "2023-05-02_00:05"
+    end_time = "2023-05-02_01:00"
+    r = get_rate.get_binance_rate("BTC", start_time, end_time, "TUSD", interval)
+    assert r == 27975.8475
+
+    r = get_rate.get_binance_rate_all("BTC", start_time, end_time, "TUSD", interval)
+    assert r == [
+        27977.69,
+        27928.0,
+        27925.0,
+        27904.42,
+        27994.6,
+        27941.39,
+        28007.86,
+        28045.71,
+        28012.72,
+        28005.68,
+        27984.4,
+        27982.7,
+    ]
+
+
+@enforce_types
 def test_get_coingecko_rate_OCEAN_sameday():
     r = get_rate.get_coingecko_rate("OCEAN", "2022-01-20", "2022-01-20")
     assert r == approx(0.75, 0.1)
