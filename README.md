@@ -3,7 +3,7 @@
 <div align="center">
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/black.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/mypy.yml/badge.svg"/>
-<img src="https://github.com/oceanprotocol/d-py/actions/workflows/pylint.yml/badge.svg"/>
+<img src="https://github.com/oceanprotocol/df-py/actions/workflows/pylint.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/test.yml/badge.svg"/>
 </div>
 <br/>
