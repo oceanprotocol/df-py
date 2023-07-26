@@ -46,5 +46,5 @@ PREDICTOOR_OCEAN_BUDGET = 35_000
 
 # challenge
 CHALLENGE_FIRST_DATE = datetime(
-    2024, 7, 15
+    2023, 8, 3
 )  # change me if Challenge release is postponed

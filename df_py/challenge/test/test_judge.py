@@ -2,6 +2,8 @@ from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import numpy as np
+import pytest
+
 from enforce_typing import enforce_types
 
 from df_py.challenge import judge
@@ -16,18 +18,20 @@ def test_get_txs():
 
     with patch("df_py.util.graphutil.submit_query") as mock:
         mock.return_value = {
-            "nftTransferHistories": [
-                {
-                    "timestamp": six_days_ago.timestamp(),
-                    "nft": {"id": "0xnft1"},
-                    "oldOwner": {"id": "0xfrom1"},
-                },
-                {
-                    "timestamp": one_day_ago.timestamp(),
-                    "nft": {"id": "0xnft2"},
-                    "oldOwner": {"id": "0xfrom2"},
-                },
-            ]
+            "data": {
+                "nftTransferHistories": [
+                    {
+                        "timestamp": six_days_ago.timestamp(),
+                        "nft": {"id": "0xnft1"},
+                        "oldOwner": {"id": "0xfrom1"},
+                    },
+                    {
+                        "timestamp": one_day_ago.timestamp(),
+                        "nft": {"id": "0xnft2"},
+                        "oldOwner": {"id": "0xfrom2"},
+                    },
+                ]
+            }
         }
         txs = judge._get_txs(now)
 
@@ -42,6 +46,21 @@ def test_get_txs():
 
     assert nft_addrs == ["0xnft1", "0xnft2"]
     assert from_addrs == ["0xfrom1", "0xfrom2"]
+
+
+def test_get_txs_without_mock():
+    now = datetime.now().replace(tzinfo=timezone.utc)
+    txs = judge._get_txs(now)
+
+
+def test_get_txs_invalid_data():
+    now = datetime.now().replace(tzinfo=timezone.utc)
+    with patch("df_py.util.graphutil.submit_query") as mock:
+        mock.return_value = {"error": ""}
+        with pytest.raises(
+            Exception, match="_get_txs: An error occured, {'error': ''}"
+        ):
+            txs = judge._get_txs(now)
 
 
 @enforce_types
