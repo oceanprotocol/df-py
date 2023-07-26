@@ -41,6 +41,8 @@ CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 MIN_PREDICTIONS = 1818
 DEPLOYER_ADDRS: List[str] = []
 PREDICTOOR_RELEASE_WEEK = 150  # change me when Predictoor is released
+PREDICTOOR_MULTIPLIER = 0.2
+PREDICTOOR_OCEAN_BUDGET = 35_000
 
 # challenge
 CHALLENGE_FIRST_DATE = datetime(

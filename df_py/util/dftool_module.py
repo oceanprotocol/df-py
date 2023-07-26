@@ -18,16 +18,12 @@ from df_py.challenge.csvs import (
     save_challenge_rewards_csv,
     load_challenge_rewards_csv,
 )
-from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.csvs import (
-    load_predictoor_data_csv,
-    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
-    predictoor_rewards_csv_filename,
     save_predictoor_data_csv,
-    save_predictoor_rewards_csv,
+    save_predictoor_contracts_csv,
 )
-from df_py.predictoor.queries import query_predictoors
+from df_py.predictoor.queries import query_predictoors, query_predictoor_contracts
 from df_py.util import blockrange, dispense, get_rate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
@@ -398,6 +394,10 @@ def do_predictoor_data():
     st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
 
     # main work
+    predictoor_contracts = retry_function(
+        query_predictoor_contracts, arguments.RETRIES, 10, chain_id
+    )
+
     predictoor_data = retry_function(
         query_predictoors,
         arguments.RETRIES,
@@ -406,6 +406,8 @@ def do_predictoor_data():
         fin_block,
         chain_id,
     )
+
+    save_predictoor_contracts_csv(predictoor_contracts, csv_dir)
     save_predictoor_data_csv(predictoor_data, csv_dir)
     print("dftool predictoor_data: Done")
 
@@ -419,7 +421,7 @@ def do_calc():
         description="From substream data files, output rewards csvs."
     )
     parser.add_argument("command", choices=["calc"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
     parser.add_argument(
         "CSV_DIR",
         type=existing_path,
@@ -437,17 +439,13 @@ def do_calc():
         required=False,
         default=None,
     )
-    parser.add_argument(
-        "--CHAINID", type=int, help=CHAINID_EXAMPLES, required=False, default=None
-    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
-    tot_ocean, start_date, csv_dir, chain_id = (
+    tot_ocean, start_date, csv_dir = (
         arguments.TOT_OCEAN,
         arguments.START_DATE,
         arguments.CSV_DIR,
-        arguments.CHAINID,
     )
 
     # condition inputs
@@ -520,26 +518,6 @@ def do_calc():
 
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
-    if arguments.SUBSTREAM == "predictoor":
-        if arguments.CHAINID is None:
-            print("CHAINID is required for predictoor")
-            sys.exit(1)
-
-        try:
-            predictoors = load_predictoor_data_csv(csv_dir)
-        except FileNotFoundError:
-            print("Predictoor data file not found")
-            sys.exit(1)
-
-        if len(predictoors) == 0:
-            print("No predictoors found")
-            sys.exit(0)
-        _exitIfFileExists(predictoor_rewards_csv_filename(csv_dir))
-
-        # calculate rewards
-        predictoor_rewards = calc_predictoor_rewards(predictoors, tot_ocean, chain_id)
-        save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
-
     print("dftool calc: Done")
 
 
@@ -600,11 +578,6 @@ def do_dispense_active():
         volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
         volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
 
-    predictoor_rewards = {}
-    if os.path.exists(predictoor_rewards_csv_filename(arguments.CSV_DIR)):
-        predictoor_rewards_3d = load_predictoor_rewards_csv(arguments.CSV_DIR)
-        predictoor_rewards = calc_rewards.flatten_rewards(predictoor_rewards_3d)
-
     challenge_rewards = {}
     if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
         challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
@@ -612,9 +585,7 @@ def do_dispense_active():
         print("Distributing only VOLUME DF rewards")
     else:
         print("Distributing for VOLUME DF and CHALLENGE DF rewards")
-    rewards = calc_rewards.merge_rewards(
-        volume_rewards, predictoor_rewards, challenge_rewards
-    )
+    rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
 
     # dispense
     dispense.dispense(
@@ -839,7 +810,7 @@ def do_new_acct():
 def do_dummy_csvs():
     parser = argparse.ArgumentParser(description="Generate dummy CSVs")
     parser.add_argument("command", choices=["dummy_csvs"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
     parser.add_argument(
         "CSV_DIR", type=autocreate_path, help="output dir for csv files"
     )

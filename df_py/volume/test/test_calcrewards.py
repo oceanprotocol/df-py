@@ -423,6 +423,37 @@ def test_bound_by_DCV_one_nft():
 
 
 @enforce_types
+def test_custom_multipliers():
+    DCV_OCEAN = 100.0
+    DCV_USD = DCV_OCEAN / RATES["OCEAN"]
+
+    stakes = {C1: {NA: {LP1: 1e6}}}
+    nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
+    OCEAN_avail = 10000.0
+    contract_multipliers = {NA: 1.0}
+
+    rewards_per_lp, rewards_info = _calc_rewards_C1(
+        stakes,
+        nftvols,
+        OCEAN_avail,
+        DCV_multiplier=0.1,
+        contract_multipliers=contract_multipliers,
+    )
+    assert rewards_per_lp == {LP1: 100.0}
+    assert rewards_info == {NA: {LP1: 100.0}}
+
+    rewards_per_lp, rewards_info = _calc_rewards_C1(
+        stakes,
+        nftvols,
+        OCEAN_avail,
+        DCV_multiplier=0.5,
+        contract_multipliers=contract_multipliers,
+    )
+    assert rewards_per_lp == {LP1: 100.0}
+    assert rewards_info == {NA: {LP1: 100.0}}
+
+
+@enforce_types
 def test_divide_by_zero():
     stakes = {C1: {NA: {LP1: 10000.0}, NB: {LP2: 10000.0}}}
     nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
@@ -866,7 +897,7 @@ def test_stake_vol_dicts_to_arrays():
         [(1, "nft_addr1"), (1, "nft_addr2"), (2, "nft_addr3"), (2, "nft_addr4")],
     )
 
-    S, V_USD = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
+    S, V_USD, _ = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
 
     expected_S = np.array(
         [
@@ -947,7 +978,6 @@ def test_calc_rewards_volume():
     ), patch(
         "df_py.volume.calc_rewards.get_df_week_number", return_value=30
     ):
-
         rewards_per_lp, rewards_info = calc_rewards_volume(
             "somedir", None, 1000.0, True, False
         )
@@ -961,6 +991,61 @@ def test_calc_rewards_volume():
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
+
+
+def test_calc_rewards_volume_predictoor_mul():
+    mock_data = {
+        "stakes": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
+        "volumes": {
+            1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
+            2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
+        },
+        "owners": {1: {"0xnft_addr1": "0xlp_addr5"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
+        "symbols": {
+            1: {"0xbasetoken_addr1": "basetoken_symbol1"},
+            2: {"0xbasetoken_addr2": "basetoken_symbol1"},
+        },
+        "rates": {
+            "basetoken_symbol1": 1.0,
+        },
+        "multiplier": 1.0,
+        "predictoor_contracts": {"0xnft_addr1": {}},
+    }
+
+    with patch(
+        "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
+    ), patch(
+        "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
+    ), patch(
+        "df_py.volume.csvs.load_owners_csvs", return_value=mock_data["owners"]
+    ), patch(
+        "df_py.volume.csvs.load_symbols_csvs", return_value=mock_data["symbols"]
+    ), patch(
+        "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
+    ), patch(
+        "df_py.volume.calc_rewards.calc_dcv_multiplier",
+        return_value=mock_data["multiplier"],
+    ), patch(
+        "os.path.exists",
+        return_value=True,
+    ), patch(
+        "df_py.volume.calc_rewards.load_predictoor_contracts_csv",
+        return_value=mock_data["predictoor_contracts"],
+    ), patch(
+        "df_py.volume.calc_rewards.get_df_week_number", return_value=30
+    ):
+        rewards_per_lp, rewards_info = calc_rewards_volume(
+            "somedir", None, 1000.0, True, False
+        )
+        assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
+        assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
+        assert rewards_per_lp[1]["0xlp_addr1"] == approx(60)
+        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
+        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
+        assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(60)
 
 
 # ========================================================================
@@ -978,6 +1063,7 @@ def _calc_rewards_C1(
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
+    contract_multipliers: Dict[str, float] = {},
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
@@ -989,6 +1075,7 @@ def _calc_rewards_C1(
         DCV_multiplier,
         do_pubrewards,
         do_rank,
+        contract_multipliers,
     )
     rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
     rewards_info = {} if not rewards_info else rewards_info[C1]
@@ -1006,6 +1093,7 @@ def _calc_rewards(
     DCV_multiplier: float = np.inf,
     do_pubrewards: bool = False,
     do_rank: bool = False,
+    contract_multipliers: Dict[str, float] = {},
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if owners is None:
@@ -1021,6 +1109,7 @@ def _calc_rewards(
         OCEAN_avail,
         do_pubrewards,
         do_rank,
+        contract_multipliers,
     )
 
 
