@@ -16,6 +16,7 @@ from setuptools import find_packages, setup
 # or pip install -e .
 install_requirements = [
     "coverage",
+    "ccxt==3.0.84",
     "eciespy",
     "eth-brownie",
     "enforce_typing",
