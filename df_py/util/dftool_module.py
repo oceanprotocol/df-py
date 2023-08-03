@@ -511,7 +511,8 @@ def do_calc():
 
         # calculate rewards
         try:
-            challenge_rewards = calc_challenge_rewards(from_addrs, start_date)
+            end_date = start_date + timedelta(weeks=1)
+            challenge_rewards = calc_challenge_rewards(from_addrs, end_date)
         except ValueError as e:
             print(e)
             sys.exit(1)
