@@ -515,7 +515,7 @@ def do_calc():
         except ValueError as e:
             print(e)
             sys.exit(1)
-
+        print(challenge_rewards)
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
     print("dftool calc: Done")
