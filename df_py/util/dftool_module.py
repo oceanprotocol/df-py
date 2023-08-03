@@ -779,13 +779,13 @@ def do_mine():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    blocks, timedelta = arguments.BLOCKS, arguments.TIMEDELTA
+    blocks, td = arguments.BLOCKS, arguments.TIMEDELTA
 
     # main work
     networkutil.connect_dev()
     chain = brownie.network.chain
-    if timedelta is not None:
-        chain.mine(blocks=blocks, timedelta=timedelta)
+    if td is not None:
+        chain.mine(blocks=blocks, timedelta=td)
     else:
         chain.mine(blocks=blocks)
 
