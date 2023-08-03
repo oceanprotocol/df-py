@@ -35,6 +35,7 @@ def calc_challenge_rewards(
     """
     rewards = []
     rewards_amts = get_challenge_reward_amounts_in_ocean(at_date)
+    print("Challenge DF reward amts:", rewards_amts)
 
     for i, reward_amt in enumerate(rewards_amts):
         rewards.append(
