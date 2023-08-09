@@ -49,7 +49,7 @@ def create_mock_response(statuses: List[str], payouts: List[float], users: List[
                         "status": status,
                         "predictContract": {
                             "id": "0x1733696512e69cd0c4430f909dcbf54c54c15441",
-                            "token": {"nft": {"owner": {"id": "0x0"}}},
+                            "token": {"nft": {"id":"0x0000cB88fbf9F240835fCd26BD903C4de1761cEa", "owner": {"id": "0x0"}}},
                         },
                         "slot": "5520",
                     },
