@@ -32,7 +32,7 @@ class Prediction:
             ValueError: If the input dictionary is invalid.
         """
         try:
-            contract_addr = prediction_dict["slot"]["predictContract"]["id"]
+            contract_addr = prediction_dict["slot"]["predictContract"]["token"]["nft"]["id"]
             slot = int(prediction_dict["slot"]["slot"])
             payout = float(prediction_dict["payout"]["payout"])
         except (KeyError, TypeError, ValueError) as exc:
