@@ -120,11 +120,11 @@ def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     print(target_dts[-1].strftime("%Y-%m-%d_%H:%M"))
 
     cex_vals = get_binance_rate_all(
-        "ETH",
-        target_dts[0].strftime("%Y-%m-%d_%H:%M"),
-        target_dts[-1].strftime("%Y-%m-%d_%H:%M"),
-        "USDT",
-        "5m",
+        token_symbol = "ETH",
+        st = target_dts[0].strftime("%Y-%m-%d_%H:%M"),
+        fin = target_dts[-1].strftime("%Y-%m-%d_%H:%M"),
+        target_currency = "USDT",
+        interval = "5m",
     )
     cex_vals = cex_vals[:12]
     print(f"  cex BTC price is ${cex_vals[0]} at target time 0")
