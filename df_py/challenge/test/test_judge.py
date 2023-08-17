@@ -17,27 +17,24 @@ def test_get_txs():
     one_day_ago = now - timedelta(days=1)
 
     with patch("df_py.util.graphutil.submit_query") as mock:
-        mock.side_effect = [{
-            "data": {
-                "nftTransferHistories": [
-                    {
-                        "timestamp": six_days_ago.timestamp(),
-                        "nft": {"id": "0xnft1"},
-                        "oldOwner": {"id": "0xfrom1"},
-                    },
-                    {
-                        "timestamp": one_day_ago.timestamp(),
-                        "nft": {"id": "0xnft2"},
-                        "oldOwner": {"id": "0xfrom2"},
-                    },
-                ]
-            }
-        }, 
-        {
-            "data": {
-                "nftTransferHistories": []
-            }
-        }
+        mock.side_effect = [
+            {
+                "data": {
+                    "nftTransferHistories": [
+                        {
+                            "timestamp": six_days_ago.timestamp(),
+                            "nft": {"id": "0xnft1"},
+                            "oldOwner": {"id": "0xfrom1"},
+                        },
+                        {
+                            "timestamp": one_day_ago.timestamp(),
+                            "nft": {"id": "0xnft2"},
+                            "oldOwner": {"id": "0xfrom2"},
+                        },
+                    ]
+                }
+            },
+            {"data": {"nftTransferHistories": []}},
         ]
         txs = judge._get_txs(now)
 
