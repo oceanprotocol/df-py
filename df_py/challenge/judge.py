@@ -99,7 +99,7 @@ def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     assert deadline_dt <= now, "deadline must be past"
     assert newest_cex_dt <= now, "cex vals must be past"
 
-    start_dt = deadline_dt + timedelta(minutes=1)
+    start_dt = deadline_dt
     target_dts = [
         start_dt + timedelta(minutes=_min) for _min in range(5, 5 + 12 * 5, 5)
     ]
