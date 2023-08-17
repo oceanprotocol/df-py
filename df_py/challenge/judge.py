@@ -12,6 +12,7 @@ from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
 from df_py.util import crypto, graphutil, networkutil, oceanutil
+from df_py.util.get_rate import get_binance_rate_all
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
@@ -25,44 +26,35 @@ def _get_txs(deadline_dt) -> list:
     a_week_before_deadline_ts = str(int(a_week_before_deadline.timestamp()))
     deadline_dt_ts = str(int(deadline_dt.timestamp()))
 
-    offset = 0
-    chunk_size = 1000
-    all_txs = []
-
-    while True:
-        query_s = f"""
-        {{nftTransferHistories(first: {chunk_size}, skip: {offset},
-            where: {{
-                    newOwner: "{JUDGE_ADDRESS.lower()}",
-                    timestamp_gt: {a_week_before_deadline_ts},
-                    timestamp_lte: {deadline_dt_ts}
-                    }}
-        )
-            {{
-                id,
-                timestamp,
-                nft {{
-                    id
-                }},
-                oldOwner {{
-                    id
-                }},
-                newOwner {{
-                    id
-                }}
+    query_s = f"""
+{{nftTransferHistories(
+    where: {{
+             newOwner: "{JUDGE_ADDRESS.lower()}",
+             timestamp_gt: {a_week_before_deadline_ts},
+             timestamp_lte: {deadline_dt_ts}
             }}
-        }}"""
+)
+    {{
+        id,
+        timestamp,
+        nft {{
+            id
+        }},
+        oldOwner {{
+            id
+        }},
+        newOwner {{
+            id
+        }}
+     }}
+}}"""
 
-        result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
-        if "data" not in result:
-            raise Exception(f"_get_txs: An error occured, {result}")
-        offset += chunk_size
-        txs = result["data"]["nftTransferHistories"]
-        if len(txs) == 0:
-            break
-        all_txs.extend(txs)
+    result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
+    if "data" not in result:
+        raise Exception(f"_get_txs: An error occured, {result}")
+    txs = result["data"]["nftTransferHistories"]
 
-    return all_txs
+    return txs
 
 
 @enforce_types
@@ -95,7 +87,7 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
 
 
 @enforce_types
-def _get_cex_vals(deadline_dt):
+def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     now = datetime.now(timezone.utc)
     # pylint: disable=superfluous-parens
     newest_cex_dt = deadline_dt + timedelta(minutes=(1 + 12 * 5))
@@ -113,16 +105,20 @@ def _get_cex_vals(deadline_dt):
     ]
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
+    
+    print(target_dts[0].strftime("%Y-%m-%d_%H:%M"))
+    print(target_dts[-1].strftime("%Y-%m-%d_%H:%M"))
 
-    binance = ccxt.binance()
-    from_dt_str = binance.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
-    cex_x = binance.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
-    allcex_uts = [xi[0] / 1000 for xi in cex_x]
-    allcex_vals = [xi[4] for xi in cex_x]
-    helpers.print_datetime_info("CEX data info", allcex_uts)
+    cex_vals = get_binance_rate_all(
+        "BTC",
+        target_dts[0].strftime("%Y-%m-%d_%H:%M"),
+        target_dts[-1].strftime("%Y-%m-%d_%H:%M"),
+        "TUSD",
+        "5m",
+    )
+    cex_vals = cex_vals[:12]
+    print(f"  cex BTC price is ${cex_vals[0]} at target time 0")
 
-    cex_vals = helpers.filter_to_target_uts(target_uts, allcex_uts, allcex_vals)
-    print(f"  cex ETH price is ${cex_vals[0]} at target time 0")
     print(f"  cex_vals: {cex_vals}")
 
     print("get_cex_vals: done")
