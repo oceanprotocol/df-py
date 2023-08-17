@@ -1152,7 +1152,7 @@ def _getPrivateAccount():
 
 @enforce_types
 def _do_main():
-    if sys.argv[1] == "help":
+    if len(sys.argv) <= 1 or sys.argv[1] == "help":
         do_help_long(0)
 
     func_name = f"do_{sys.argv[1]}"
