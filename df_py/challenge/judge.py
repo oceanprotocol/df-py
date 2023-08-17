@@ -25,35 +25,44 @@ def _get_txs(deadline_dt) -> list:
     a_week_before_deadline_ts = str(int(a_week_before_deadline.timestamp()))
     deadline_dt_ts = str(int(deadline_dt.timestamp()))
 
-    query_s = f"""
-{{nftTransferHistories(
-    where: {{
-             newOwner: "{JUDGE_ADDRESS.lower()}",
-             timestamp_gt: {a_week_before_deadline_ts},
-             timestamp_lte: {deadline_dt_ts}
+    offset = 0
+    chunk_size = 1000
+    all_txs = []
+
+    while True:
+        query_s = f"""
+        {{nftTransferHistories(first: {chunk_size}, skip: {offset})(
+            where: {{
+                    newOwner: "{JUDGE_ADDRESS.lower()}",
+                    timestamp_gt: {a_week_before_deadline_ts},
+                    timestamp_lte: {deadline_dt_ts}
+                    }}
+        )
+            {{
+                id,
+                timestamp,
+                nft {{
+                    id
+                }},
+                oldOwner {{
+                    id
+                }},
+                newOwner {{
+                    id
+                }}
             }}
-)
-    {{
-        id,
-        timestamp,
-        nft {{
-            id
-        }},
-        oldOwner {{
-            id
-        }},
-        newOwner {{
-            id
-        }}
-     }}
-}}"""
+        }}"""
 
-    result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
-    if "data" not in result:
-        raise Exception(f"_get_txs: An error occured, {result}")
-    txs = result["data"]["nftTransferHistories"]
+        result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
+        if "data" not in result:
+            raise Exception(f"_get_txs: An error occured, {result}")
+        offset += chunk_size
+        txs = result["data"]["nftTransferHistories"]
+        if len(txs) == 0:
+            break
+        all_txs.extend(txs)
 
-    return txs
+    return all_txs
 
 
 @enforce_types
