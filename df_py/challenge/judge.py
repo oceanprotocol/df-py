@@ -32,7 +32,7 @@ def _get_txs(deadline_dt) -> list:
 
     while True:
         query_s = f"""
-        {{nftTransferHistories(first: {chunk_size}, skip: {offset})(
+        {{nftTransferHistories(first: {chunk_size}, skip: {offset},
             where: {{
                     newOwner: "{JUDGE_ADDRESS.lower()}",
                     timestamp_gt: {a_week_before_deadline_ts},
