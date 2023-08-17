@@ -5,7 +5,6 @@ from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
-import ccxt
 import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
@@ -54,7 +53,9 @@ def _get_txs(deadline_dt) -> list:
             }}
         }}"""
 
-        result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
+        result = graphutil.submit_query(
+            query_s, networkutil.network_to_chain_id("mumbai")
+        )
         if "data" not in result:
             raise Exception(f"_get_txs: An error occured, {result}")
         offset += chunk_size
@@ -114,7 +115,7 @@ def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     ]
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
-    
+
     print(target_dts[0].strftime("%Y-%m-%d_%H:%M"))
     print(target_dts[-1].strftime("%Y-%m-%d_%H:%M"))
 
