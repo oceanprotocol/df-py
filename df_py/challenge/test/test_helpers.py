@@ -1,10 +1,15 @@
 import datetime
 from datetime import timezone
 
-import pytest
 from enforce_typing import enforce_types
+import pytest
+from pytest import approx
 
-from df_py.challenge import helpers
+from df_py.challenge.helpers import (
+    dt_to_ut,
+    ut_to_dt,
+    calc_nmse,
+    )
 
 
 @enforce_types
@@ -22,24 +27,24 @@ def test_dt_to_ut_timezone():
 
     # run dt_to_ut(). unaware_dt should fail, others should pass
     with pytest.raises(Exception) as e_info:
-        helpers.dt_to_ut(unaware_dt)
+        dt_to_ut(unaware_dt)
     error_str = str(e_info.value)
     assert error_str == "must be in UTC"
 
-    _ = helpers.dt_to_ut(aware_dt)
-    _ = helpers.dt_to_ut(now_aware_dt)
+    _ = dt_to_ut(aware_dt)
+    _ = dt_to_ut(now_aware_dt)
 
 
 @enforce_types
 def test_dt_to_ut_main():
     # time = when unix time starts
     dt = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
-    ut = helpers.dt_to_ut(dt)
+    ut = dt_to_ut(dt)
     assert ut == 0
 
     # time = one minute after when unix time starts
     dt = datetime.datetime(1970, 1, 1, 0, 1, 0, 0, tzinfo=timezone.utc)
-    ut = helpers.dt_to_ut(dt)
+    ut = dt_to_ut(dt)
     assert ut == 60
 
 
@@ -49,7 +54,7 @@ def test_ut_to_dt_main():
     ut = 0
     target_dt = datetime.datetime(1970, 1, 1, 0, 0, 0, 0, tzinfo=timezone.utc)
 
-    dt = helpers.ut_to_dt(ut)
+    dt = ut_to_dt(ut)
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     assert dt == target_dt
 
@@ -57,7 +62,7 @@ def test_ut_to_dt_main():
     ut = 60
     target_dt = datetime.datetime(1970, 1, 1, 0, 1, 0, 0, tzinfo=timezone.utc)
 
-    dt = helpers.ut_to_dt(ut)
+    dt = ut_to_dt(ut)
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     assert dt == target_dt
 
@@ -73,18 +78,43 @@ def test_calc_nmse():
     # - old nmse measure = 1.154e-06
     rank1_vals = [1909.8423071678906, 1909.3890122067048, 1909.0222544696958, 1908.606595942218, 1908.221036039253, 1907.8194953230318, 1907.4288513924025, 1907.0334268573008, 1906.6423661565814, 1906.250335445668, 1905.8604458939187, 1905.4708827925176]
     rank1_nmse_target = 1.154e-06
+    rank1_nmse_measured = calc_nmse(cex_vals, rank1_vals)
+    assert rank1_nmse_measured == approx(rank1_nmse_target, rel=0.50, abs=0.1e-6)
 
     # rank2 is NFT #108/252. From 0xca27c95f0eea6a0645dd7dddac46dfa893099fd6
     # - old nmse measure = 2.062e-06
     rank2_vals = [1911.36499651, 1911.45471804, 1907.85007032, 1907.76035838, 1908.34218631, 1908.09114526, 1907.87335393, 1907.54652541, 1907.35899274, 1907.67254935, 1907.21127253, 1907.06131286]
     rank2_nmse_target = 2.062e-06
+    rank2_nmse_measured = calc_nmse(cex_vals, rank2_vals)
+    assert rank2_nmse_measured == approx(rank2_nmse_target, rel=0.50, abs=0.1e-6)
 
     # rank3 is NFT #237/252. From 0x9cb9a72299f715cbd58bcdf8b7fdc1107631114e
     # - old nmse measure = 2.463e-06
     rank3_vals = [1910.3733053054548, 1910.082665202505, 1910.0324737706073, 1909.7306240431174, 1909.687171551225, 1909.38118747041, 1909.337257891959, 1909.0343962949887, 1908.9827923561074, 1908.6900915386434, 1908.624031004779, 1908.3479237283066]
     rank3_nmse_target = 2.463e-06
+    rank3_nmse_measured = calc_nmse(cex_vals, rank3_vals)
+    assert rank3_nmse_measured == approx(rank3_nmse_target, rel=0.50, abs=0.1e-6)
 
     # rank83 is NFT #106/252. From 0xd9b371ad6d6ee59315b7c1bb891fc4e85fbeaae5
     # - old nmse measure = 6.856e-03
     rank83_vals = [2065.89, 2065.62, 2065.62, 2065.62, 2063.42, 2068.25, 2065.89, 2068.36, 2065.89, 2065.89, 2063.82, 2063.72]
     rank83_nmse_target = 6.856e-03
+    rank83_nmse_measured = calc_nmse(cex_vals, rank83_vals)
+    assert rank83_nmse_measured == approx(rank83_nmse_target, rel=0.50, abs=0.1e-6)
+
+    assert (
+        0.0 <
+        rank1_nmse_target
+        < rank2_nmse_target
+        < rank3_nmse_target
+        < rank83_nmse_target
+        < 1.0)
+
+    assert (
+        0.0 <
+        rank1_nmse_measured
+        < rank2_nmse_measured
+        < rank3_nmse_measured
+        < rank83_nmse_measured
+        < 1.0)
+    
