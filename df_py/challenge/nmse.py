@@ -30,11 +30,11 @@ def plot_prices(cex_vals, pred_vals, extra_title=""):
     # pre-requisite, from console:
     #  pip3 install matplotlib
     #  sudo apt-get install python3-tk
-    import matplotlib
-    import matplotlib.pyplot as plt
+    import matplotlib # pylint: disable=import-outside-toplevel
+    plt = matplotlib.pyplot
 
     matplotlib.rcParams.update({"font.size": 10})
-    x = [h for h in range(0, 12)]
+    x = list(range(0, 12))
     assert len(x) == len(cex_vals) == len(pred_vals)
     fig, ax = plt.subplots()
     ax.plot(x, cex_vals, "--o", label="CEX values")
