@@ -2,10 +2,10 @@ from enforce_typing import enforce_types
 import pytest
 from pytest import approx
 
-from df_py.challenge.helpers import calc_nmse
+from df_py.challenge.nmse import calc_nmse, plot_prices
 
 @enforce_types
-def test_calc_nmse1():
+def test_nmse1():
     # values taken from Predict-ETH round 7, see https://rb.gy/2bzw9
     # rank1 is first place, rank2 is second-place, rank3 third-place.
     # rank83 is 83rd place, the lowest-ranked for nmses < 1.0 (in round 7)
@@ -14,9 +14,13 @@ def test_calc_nmse1():
     rank2_vals = _rank2_vals()
     rank3_vals = _rank3_vals()
     rank83_vals = _rank83_vals()
-    
-    rank1_nmse_target = 1.154e-06
+
+    do_plot = False # only set to True for local testing
+
     rank1_nmse_measured = calc_nmse(cex_vals, rank1_vals)
+    if do_plot:
+        plot_prices(cex_vals, rank1_vals, f"Rank1. nmse={rank1_nmse_measured:.3e}")
+    rank1_nmse_target = 1.154e-06
     assert rank1_nmse_measured == approx(rank1_nmse_target, rel=0.50, abs=0.1e-6)
 
     rank2_nmse_target = 2.062e-06

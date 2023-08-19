@@ -55,11 +55,3 @@ def filter_to_target_uts(
         filtered_vals[i] = unfiltered_vals[j]
     return filtered_vals
 
-
-@enforce_types
-def calc_nmse(y, yhat) -> float:
-    assert len(y) == len(yhat)
-    mse_xy = np.sum(np.square(np.asarray(y) - np.asarray(yhat)))
-    mse_x = np.sum(np.square(np.asarray(y)))
-    nmse = mse_xy / mse_x
-    return nmse
