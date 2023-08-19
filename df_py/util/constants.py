@@ -45,6 +45,4 @@ PREDICTOOR_MULTIPLIER = 0.2
 PREDICTOOR_OCEAN_BUDGET = 35_000
 
 # challenge
-CHALLENGE_FIRST_DATE = datetime(
-    2023, 8, 3
-)  # change me if Challenge release is postponed
+CHALLENGE_FIRST_DATE = datetime(2023, 7, 27)  # First round start date of Challenge DF
