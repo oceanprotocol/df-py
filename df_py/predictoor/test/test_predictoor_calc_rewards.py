@@ -36,7 +36,7 @@ def test_filter_predictoors():
 
 
 def test_calc_predictoor_rewards_no_predictions():
-    predictoors: Dict[str, Predictoor] = {} # type: ignore
+    predictoors: Dict[str, Predictoor] = {}  # type: ignore
 
     rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
 

@@ -10,6 +10,7 @@ from brownie.network import accounts
 from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
+from df_py.challenge.nmse import calc_nmse
 from df_py.util import crypto, graphutil, networkutil, oceanutil
 from df_py.util.get_rate import get_binance_rate_all
 
@@ -282,7 +283,7 @@ def get_challenge_data(
             nmses[i] = 1.0
             print("nmse = 1.0 because improper # pred_vals")
         else:
-            nmses[i] = helpers.calc_nmse(cex_vals, pred_vals)
+            nmses[i] = calc_nmse(cex_vals, pred_vals)
             # plot_prices(cex_vals, pred_vals)
             print(f"nmse = {nmses[i]:.3e}. (May become 1.0, eg if duplicates)")
 

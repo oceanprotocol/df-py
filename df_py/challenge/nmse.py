@@ -3,7 +3,7 @@ from enforce_typing import enforce_types
 
 
 @enforce_types
-def calc_nmse(y: list, yhat: list) -> float:
+def calc_nmse(y, yhat) -> float:
     assert len(y) == len(yhat)
 
     y, yhat = np.asarray(y), np.asarray(yhat)
@@ -25,7 +25,7 @@ def calc_nmse(y: list, yhat: list) -> float:
 
 
 @enforce_types
-def plot_prices(cex_vals: list, pred_vals: list, extra_title=""):
+def plot_prices(cex_vals, pred_vals, extra_title=""):
     # this is used for local testing only. Therefore import last-minute
     # pre-requisite, from console:
     #  pip3 install matplotlib

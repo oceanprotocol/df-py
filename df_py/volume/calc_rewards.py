@@ -483,7 +483,7 @@ def calc_rewards_volume(
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
 
-    contract_multipliers: Dict[str, float] = {} # type: ignore
+    contract_multipliers: Dict[str, float] = {}  # type: ignore
 
     if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
         print("Found predictoor contracts")
