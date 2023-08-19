@@ -10,6 +10,9 @@ def calc_nmse(y: list, yhat: list) -> float:
     ymin, ymax = min(y), max(y)
     yrange = ymax - ymin
 
+    # First, scale true values and predicted values such that:
+    # - true values are in range [0.0, 1.0]
+    # - predicted values follow the same scaling factors
     y01 = (y - ymin) / yrange
     yhat01 = (yhat - ymin) / yrange
     
