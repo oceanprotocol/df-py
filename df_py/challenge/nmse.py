@@ -30,7 +30,8 @@ def plot_prices(cex_vals, pred_vals, extra_title=""):
     # pre-requisite, from console:
     #  pip3 install matplotlib
     #  sudo apt-get install python3-tk
-    import matplotlib # pylint: disable=import-outside-toplevel
+    import matplotlib  # pylint: disable=import-outside-toplevel
+
     plt = matplotlib.pyplot
 
     matplotlib.rcParams.update({"font.size": 10})
