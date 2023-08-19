@@ -4,9 +4,19 @@ from enforce_typing import enforce_types
 @enforce_types
 def calc_nmse(y: list, yhat: list) -> float:
     assert len(y) == len(yhat)
-    mse_xy = np.sum(np.square(np.asarray(y) - np.asarray(yhat)))
-    mse_x = np.sum(np.square(np.asarray(y)))
+
+    y, yhat = np.asarray(y), np.asarray(yhat)
+
+    ymin, ymax = min(y), max(y)
+    yrange = ymax - ymin
+
+    y01 = (y - ymin) / yrange
+    yhat01 = (yhat - ymin) / yrange
+    
+    mse_xy = np.sum(np.square(y01 - yhat01))
+    mse_x = np.sum(np.square(y01))
     nmse = mse_xy / mse_x
+
     return nmse
 
 

@@ -17,28 +17,28 @@ def test_nmse1():
 
     do_plot = False # only set to True for local testing
 
-    rank1_nmse_measured = calc_nmse(cex_vals, rank1_vals)
+    rank1_nmse_meas = calc_nmse(cex_vals, rank1_vals)
     if do_plot:
-        plot_prices(cex_vals, rank1_vals, f"Rank1. nmse={rank1_nmse_measured:.3e}")
-    rank1_nmse_target = 1.154e-06
-    assert rank1_nmse_measured == approx(rank1_nmse_target, rel=0.50, abs=0.1e-6)
+        plot_prices(cex_vals, rank1_vals, f"Rank1. nmse={rank1_nmse_meas:.3e}")
+    rank1_nmse_target = 1.569e-01
+    assert rank1_nmse_meas == approx(rank1_nmse_target, rel=0.50, abs=0.1e-6)
 
-    rank2_nmse_measured = calc_nmse(cex_vals, rank2_vals)
+    rank2_nmse_meas = calc_nmse(cex_vals, rank2_vals)
     if do_plot:
-        plot_prices(cex_vals, rank1_vals, f"Rank2. nmse={rank2_nmse_measured:.3e}")
-    rank2_nmse_target = 2.062e-06
-    assert rank2_nmse_measured == approx(rank2_nmse_target, rel=0.50, abs=0.1e-6)
+        plot_prices(cex_vals, rank1_vals, f"Rank2. nmse={rank2_nmse_meas:.3e}")
+    rank2_nmse_target = 2.803e-01
+    assert rank2_nmse_meas == approx(rank2_nmse_target, rel=0.50, abs=0.1e-6)
 
-    rank3_nmse_measured = calc_nmse(cex_vals, rank3_vals)
+    rank3_nmse_meas = calc_nmse(cex_vals, rank3_vals)
     if do_plot:
-        plot_prices(cex_vals, rank2_vals, f"Rank3. nmse={rank1_nmse_measured:.3e}")
-    rank3_nmse_target = 2.463e-06
-    assert rank3_nmse_measured == approx(rank3_nmse_target, rel=0.50, abs=0.1e-6)
-    rank83_nmse_measured = calc_nmse(cex_vals, rank83_vals)
+        plot_prices(cex_vals, rank2_vals, f"Rank3. nmse={rank3_nmse_meas:.3e}")
+    rank3_nmse_target = 3.349e-01
+    assert rank3_nmse_meas == approx(rank3_nmse_target, rel=0.50, abs=0.1e-6)
+    rank83_nmse_meas = calc_nmse(cex_vals, rank83_vals)
     if do_plot:
-        plot_prices(cex_vals, rank83_vals, f"Rank83. nmse={rank1_nmse_measured:.3e}")
-    rank83_nmse_target = 6.856e-03
-    assert rank83_nmse_measured == approx(rank83_nmse_target, rel=0.50, abs=0.1e-6)
+        plot_prices(cex_vals, rank83_vals, f"Rank83. nmse={rank83_nmse_meas:.3e}")
+    rank83_nmse_target = 9.323e+02
+    assert rank83_nmse_meas == approx(rank83_nmse_target, rel=0.50, abs=0.1e-6)
 
     assert (
         0.0
@@ -46,17 +46,17 @@ def test_nmse1():
         < rank2_nmse_target
         < rank3_nmse_target
         < rank83_nmse_target
-        < 1.0
     )
+    assert rank3_nmse_target < 1.0 # rank83 nmse could be >1.0
 
     assert (
         0.0
-        < rank1_nmse_measured
-        < rank2_nmse_measured
-        < rank3_nmse_measured
-        < rank83_nmse_measured
-        < 1.0
+        < rank1_nmse_meas
+        < rank2_nmse_meas
+        < rank3_nmse_meas
+        < rank83_nmse_meas
     )
+    assert rank3_nmse_meas < 1.0 # rank83 nmse could be >1.0
 
 
 @enforce_types
