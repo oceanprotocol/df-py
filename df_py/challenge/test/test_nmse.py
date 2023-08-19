@@ -4,6 +4,7 @@ from pytest import approx
 
 from df_py.challenge.nmse import calc_nmse, plot_prices
 
+
 @enforce_types
 def test_nmse1():
     # values taken from Predict-ETH round 7, see https://rb.gy/2bzw9
@@ -15,7 +16,7 @@ def test_nmse1():
     rank3_vals = _rank3_vals()
     rank83_vals = _rank83_vals()
 
-    do_plot = False # only set to True for local testing
+    do_plot = False  # only set to True for local testing
 
     rank1_nmse_meas = calc_nmse(cex_vals, rank1_vals)
     if do_plot:
@@ -37,7 +38,7 @@ def test_nmse1():
     rank83_nmse_meas = calc_nmse(cex_vals, rank83_vals)
     if do_plot:
         plot_prices(cex_vals, rank83_vals, f"Rank83. nmse={rank83_nmse_meas:.3e}")
-    rank83_nmse_target = 9.323e+02
+    rank83_nmse_target = 9.323e02
     assert rank83_nmse_meas == approx(rank83_nmse_target, rel=0.50, abs=0.1e-6)
 
     assert (
@@ -47,16 +48,10 @@ def test_nmse1():
         < rank3_nmse_target
         < rank83_nmse_target
     )
-    assert rank3_nmse_target < 1.0 # rank83 nmse could be >1.0
+    assert rank3_nmse_target < 1.0  # rank83 nmse could be >1.0
 
-    assert (
-        0.0
-        < rank1_nmse_meas
-        < rank2_nmse_meas
-        < rank3_nmse_meas
-        < rank83_nmse_meas
-    )
-    assert rank3_nmse_meas < 1.0 # rank83 nmse could be >1.0
+    assert 0.0 < rank1_nmse_meas < rank2_nmse_meas < rank3_nmse_meas < rank83_nmse_meas
+    assert rank3_nmse_meas < 1.0  # rank83 nmse could be >1.0
 
 
 @enforce_types
@@ -76,6 +71,7 @@ def _cex_vals():
         1904.94,
     ]
 
+
 def _rank1_vals():
     # rank1 is NFT #232/252. From 0xa98e504040b68e6a281fd489fcd1658df9703a91
     # - old nmse measure = 1.154e-06
@@ -93,6 +89,7 @@ def _rank1_vals():
         1905.8604458939187,
         1905.4708827925176,
     ]
+
 
 def _rank2_vals():
     # rank2 is NFT #108/252. From 0xca27c95f0eea6a0645dd7dddac46dfa893099fd6
@@ -112,6 +109,7 @@ def _rank2_vals():
         1907.06131286,
     ]
 
+
 def _rank3_vals():
     # rank3 is NFT #237/252. From 0x9cb9a72299f715cbd58bcdf8b7fdc1107631114e
     # - old nmse measure = 2.463e-06
@@ -130,6 +128,7 @@ def _rank3_vals():
         1908.3479237283066,
     ]
 
+
 def _rank83_vals():
     # rank83 is NFT #106/252. From 0xd9b371ad6d6ee59315b7c1bb891fc4e85fbeaae5
     # - old nmse measure = 6.856e-03
@@ -147,4 +146,3 @@ def _rank83_vals():
         2063.82,
         2063.72,
     ]
-

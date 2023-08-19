@@ -1,6 +1,7 @@
 import numpy as np
 from enforce_typing import enforce_types
 
+
 @enforce_types
 def calc_nmse(y: list, yhat: list) -> float:
     assert len(y) == len(yhat)
@@ -15,7 +16,7 @@ def calc_nmse(y: list, yhat: list) -> float:
     # - predicted values follow the same scaling factors
     y01 = (y - ymin) / yrange
     yhat01 = (yhat - ymin) / yrange
-    
+
     mse_xy = np.sum(np.square(y01 - yhat01))
     mse_x = np.sum(np.square(y01))
     nmse = mse_xy / mse_x

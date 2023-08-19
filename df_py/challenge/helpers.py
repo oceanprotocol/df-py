@@ -54,4 +54,3 @@ def filter_to_target_uts(
         j = np.argmin(time_diffs)
         filtered_vals[i] = unfiltered_vals[j]
     return filtered_vals
-
