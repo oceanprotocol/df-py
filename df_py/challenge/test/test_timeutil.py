@@ -4,7 +4,12 @@ from datetime import timezone
 from enforce_typing import enforce_types
 import pytest
 
-from df_py.challenge.helpers import dt_to_ut, ut_to_dt
+from df_py.challenge.timeutil import (
+    dt_to_ut,
+    ut_to_dt,
+    pretty_time,
+    print_datetime_info,
+    )
 
 
 @enforce_types
@@ -60,3 +65,18 @@ def test_ut_to_dt_main():
     dt = ut_to_dt(ut)
     assert dt.tzinfo == timezone.utc, "must be in UTC"
     assert dt == target_dt
+
+
+@enforce_types
+def test_pretty_time():
+    dt = datetime.datetime(1980, 12, 25, 2, 59, 1, 0, tzinfo=timezone.utc)
+    s = pretty_time(dt)
+    assert s == '1980/12/25, 02:59:01'
+
+
+@enforce_types
+def test_print_datetime_info():
+    uts = [60, 1200, 10000]
+    print_datetime_info("my descr", uts)
+
+    
