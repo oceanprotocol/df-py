@@ -21,7 +21,7 @@ def test_prediction_is_correct():
 def test_prediction_from_query_result():
     prediction_dict = {
         "slot": {
-            "predictContract": {"id": "0x1"},
+            "predictContract": {"id": "0x1", "token": {"nft": {"id": "0x2"}}},
             "slot": "123",
         },
         "payout": {"payout": "1.23"},
@@ -29,7 +29,7 @@ def test_prediction_from_query_result():
     prediction = Prediction.from_query_result(prediction_dict)
     assert prediction.slot == 123
     assert prediction.payout == 1.23
-    assert prediction.contract_addr == "0x1"
+    assert prediction.contract_addr == "0x2"
     with pytest.raises(ValueError):
         prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
         Prediction.from_query_result(prediction_dict)
