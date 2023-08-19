@@ -3,7 +3,7 @@
 <div align="center">
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/black.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/mypy.yml/badge.svg"/>
-<img src="https://github.com/oceanprotocol/d-py/actions/workflows/pylint.yml/badge.svg"/>
+<img src="https://github.com/oceanprotocol/df-py/actions/workflows/pylint.yml/badge.svg"/>
 <img src="https://github.com/oceanprotocol/df-py/actions/workflows/test.yml/badge.svg"/>
 </div>
 <br/>
@@ -101,10 +101,10 @@ Then, simply follow the usage directions:)
 In terminal:
 ```console
 #run tests for one method, with print statements to console. "-s" is to show output
-brownie test util/test/test_calcrewards.py::test_simple -s
+brownie test df_py/volume/test/test_calcrewards.py::test_simple -s
 
 #run tests for one module
-brownie test util/test/test_calcrewards.py
+brownie test df_py/volume/test/test_calcrewards.py
 
 #run all tests. Note: util is the only directory _with_ tests
 brownie test util

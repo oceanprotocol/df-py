@@ -2,7 +2,7 @@ name: Dispense Active Rewards
 
 on:
   schedule:
-    - cron: "0 0 * * 4"
+    - cron: "2 1 * * 4"
   push:
     branches: [main]
   pull_request:
@@ -119,6 +119,16 @@ jobs:
         run: |
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
           sed -i -e 's/MOCEAN/OCEAN/g' $CSV_DIR/rate-MOCEAN.csv
+
+      - name: Challenge DF data
+        run: |
+          ./dftool challenge_data $CSV_DIR --RETRIES 3
+        env:
+          JUDGE_PRIVATE_KEY: ${{secrets.JUDGE_PRIVATE_KEY}}
+        
+      - name: Run dftool calc rewards for DF Challenge
+        run: |
+          ./dftool calc challenge $CSV_DIR 0 --START_DATE $date
 
       - name: Run dftool calc rewards for volume
         run: |

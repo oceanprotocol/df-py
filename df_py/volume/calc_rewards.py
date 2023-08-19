@@ -1,3 +1,4 @@
+import os
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
@@ -10,10 +11,15 @@ from df_py.util.constants import (
     DO_RANK,
     MAX_N_RANK_ASSETS,
     RANK_SCALE_OP,
+    PREDICTOOR_MULTIPLIER,
 )
 from df_py.volume import allocations
 from df_py.volume import cleancase as cc
 from df_py.volume import csvs, to_usd
+from df_py.predictoor.csvs import (
+    load_predictoor_contracts_csv,
+    predictoor_contracts_csv_filename,
+)
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717
@@ -69,6 +75,7 @@ def calc_rewards(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
+    contract_multipliers: Dict[str, float] = {},
 ) -> Tuple[Dict[int, Dict[str, float]], Dict[int, Dict[str, Dict[str, float]]]]:
     """
     @arguments
@@ -81,6 +88,7 @@ def calc_rewards(
       OCEAN_avail -- amount of rewards avail, in units of OCEAN
       do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
+      [contract_multipliers] - custom multiplier per contract address, optional
 
     @return
       rewardsperlp -- dict of [chainID][LP_addr] : OCEAN_reward_float
@@ -101,11 +109,13 @@ def calc_rewards(
     nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
 
     keys_tup = _get_keys_tuple(stakes, nftvols_USD)
-    S, V_USD = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
+    S, V_USD, M = _stake_vol_dicts_to_arrays(
+        stakes, nftvols_USD, keys_tup, contract_multipliers
+    )
     C = _owner_dict_to_array(owners, keys_tup)
 
     R = _calc_rewards_usd(
-        S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank
+        S, V_USD, C, DCV_multiplier, OCEAN_avail, do_pubrewards, do_rank, M
     )
 
     (rewardsperlp, rewardsinfo) = _reward_array_to_dicts(R, keys_tup)
@@ -129,7 +139,8 @@ def _stake_vol_dicts_to_arrays(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols_USD: Dict[int, Dict[str, str]],
     keys_tup: Tuple[List[str], List[Tuple[int, str]]],
-) -> Tuple[np.ndarray, np.ndarray]:
+    contract_multipliers: Dict[str, float] = {},
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
     """
     @arguments
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
@@ -143,7 +154,7 @@ def _stake_vol_dicts_to_arrays(
     LP_addrs, chain_nft_tups = keys_tup
     N_j = len(chain_nft_tups)
     N_i = len(LP_addrs)
-
+    M = np.zeros(N_j, dtype=float)
     S = np.zeros((N_i, N_j), dtype=float)
     V_USD = np.zeros(N_j, dtype=float)
     for j, (chainID, nft_addr) in enumerate(chain_nft_tups):
@@ -151,8 +162,10 @@ def _stake_vol_dicts_to_arrays(
             assert nft_addr in stakes[chainID], "each tup should be in stakes"
             S[i, j] = stakes[chainID][nft_addr].get(LP_addr, 0.0)
         V_USD[j] += nftvols_USD[chainID].get(nft_addr, 0.0)
+        if nft_addr in contract_multipliers:
+            M[j] = contract_multipliers[nft_addr]
 
-    return S, V_USD
+    return S, V_USD, M
 
 
 @enforce_types
@@ -195,6 +208,7 @@ def _calc_rewards_usd(
     OCEAN_avail: float,
     do_pubrewards: bool,
     do_rank: bool,
+    M: np.ndarray = np.array([]),
 ) -> np.ndarray:
     """
     @arguments
@@ -205,6 +219,7 @@ def _calc_rewards_usd(
       OCEAN_avail -- amount of rewards available, in OCEAN
       do_pubrewards -- 2x effective stake to publishers?
       do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
+      M -- 1d array of [chain_nft j] -- the custom multiplier for that nft
 
     @return
       R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -242,10 +257,11 @@ def _calc_rewards_usd(
             perc_at_ij = stake_ij / stake_j
 
             # main formula!
+            multiplier = M[j] if M[j] != 0 else DCV_multiplier
             R[i, j] = min(
                 perc_at_j * perc_at_ij * OCEAN_avail,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
-                DCV_j * DCV_multiplier,  # bound rewards by DCV
+                DCV_j * multiplier,  # bound rewards by DCV
             )
 
     # filter negligible values
@@ -467,6 +483,14 @@ def calc_rewards_volume(
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
 
+    contract_multipliers: Dict[str, float] = {}
+
+    if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
+        print("Found predictoor contracts")
+        predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
+        contract_multipliers = {
+            i: PREDICTOOR_MULTIPLIER for i in predict_contracts.keys()
+        }
     prev_week = 0
     if START_DATE is None:
         cur_week = get_df_week_number(datetime.now())
@@ -475,4 +499,6 @@ def calc_rewards_volume(
         prev_week = get_df_week_number(START_DATE)
     m = calc_dcv_multiplier(prev_week)
     print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
-    return calc_rewards(S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK)
+    return calc_rewards(
+        S, V, C, SYM, R, m, TOT_OCEAN, DO_PUBREWARDS, DO_RANK, contract_multipliers
+    )

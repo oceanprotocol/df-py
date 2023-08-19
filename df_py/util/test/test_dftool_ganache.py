@@ -16,11 +16,10 @@ from df_py.challenge.csvs import (
 )
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
-    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
-    sample_predictoor_data_csv,
 )
+from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
@@ -28,7 +27,6 @@ from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.util.get_rate import get_rate
 from df_py.volume import csvs
-from df_py.volume.calc_rewards import flatten_rewards
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -56,6 +54,10 @@ def mock_connect():
 @pytest.fixture
 def mock_query_predictoor_contracts():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
+        mock.return_value = {
+            "0xContract1": PredictContract(8996, "0x1", "c1", "c1", 10, 20),
+            "0xContract2": PredictContract(8996, "0x2", "c2", "c2", 10, 20),
+        }
         yield mock
 
 
@@ -107,12 +109,7 @@ def test_calc_volume(tmp_path):
 
 # pylint: disable=redefined-outer-name
 @enforce_types
-def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
-    mock_query_predictoor_contracts.return_value = {
-        "0xContract1": "",
-        "0xContract2": "",
-    }
-
+def test_calc_failures(tmp_path):
     csv_dir = str(tmp_path)
 
     # neither total ocean, nor given start date
@@ -137,21 +134,6 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
         ):
             dftool_module.do_calc()
 
-    # no required input files -- predictoor
-    with pytest.raises(SystemExit):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                csv_dir,
-                str(tot_ocean),
-                f"--START_DATE={start_date}",
-                f"--CHAINID={networkutil.DEV_CHAINID}",
-            ]
-        ):
-            dftool_module.do_calc()
-
     # no required input files -- challenge
     with pytest.raises(SystemExit):
         with sysargs_context(
@@ -167,152 +149,48 @@ def test_calc_failures(tmp_path, mock_query_predictoor_contracts):
         ):
             dftool_module.do_calc()
 
-    # no predictoor chainid
-    with pytest.raises(SystemExit):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "predictoor",
-                csv_dir,
-                str(tot_ocean),
-                f"--START_DATE={start_date}",
-            ]
-        ):
-            dftool_module.do_calc()
-
 
 @enforce_types
 def test_predictoor_data(tmp_path):
-    csv_dir = str(tmp_path)
+    with patch("df_py.util.dftool_module.query_predictoor_contracts") as mock:
+        mock.return_value = {
+            "0xContract1": PredictContract(8996, "0x1", "c1", "c1", 10, 20),
+            "0xContract2": PredictContract(8996, "0x2", "c2", "c2", 10, 20),
+        }
 
-    sys_argv = [
-        "dftool",
-        "predictoor_data",
-        "0",
-        "latest",
-        csv_dir,
-        str(CHAINID),
-        "--RETRIES=1",
-    ]
+        csv_dir = str(tmp_path)
 
-    mock_query_response, users, stats = create_mock_responses(100)
-
-    with sysargs_context(sys_argv):
-        with patch("df_py.predictoor.queries.submit_query") as mock_submit_query:
-            mock_submit_query.side_effect = mock_query_response
-            do_predictoor_data()
-
-    # test result
-    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
-    assert os.path.exists(predictoor_data_csv)
-
-    predictoors = load_predictoor_data_csv(csv_dir)
-    for user in users:
-        if stats[user]["total"] == 0:
-            assert user not in predictoors
-            continue
-        user_total = stats[user]["total"]
-        user_correct = stats[user]["correct"]
-        assert predictoors[user].prediction_count == user_total
-        assert predictoors[user].correct_prediction_count == user_correct
-        assert predictoors[user].accuracy == user_correct / user_total
-
-
-# pylint: disable=redefined-outer-name
-@enforce_types
-def test_calc_predictoor_substream(tmp_path, mock_query_predictoor_contracts):
-    mock_query_predictoor_contracts.return_value = {
-        "0xContract1": "",
-        "0xContract2": "",
-    }
-    csv_dir = str(tmp_path)
-
-    csv_template = sample_predictoor_data_csv()
-    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
-    with open(predictoor_data_csv, "w") as f:
-        f.write(csv_template)
-
-    # main cmd
-
-    # TEST WITH tot_ocean > 0
-    tot_ocean = 1000.0
-    start_date = "2023-03-16"  # first week of df main
-    with sysargs_context(
-        [
+        sys_argv = [
             "dftool",
-            "calc",
-            "predictoor",
+            "predictoor_data",
+            "0",
+            "latest",
             csv_dir,
-            str(tot_ocean),
-            f"--START_DATE={start_date}",
-            f"--CHAINID={networkutil.DEV_CHAINID}",
+            str(CHAINID),
+            "--RETRIES=1",
         ]
-    ):
-        dftool_module.do_calc()
 
-    # test result
-    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(rewards_csv)
+        mock_query_response, users, stats = create_mock_responses(100)
 
-    # get total reward amount
-    rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward - tot_ocean < 1e-6
+        with sysargs_context(sys_argv):
+            with patch("df_py.predictoor.queries.submit_query") as mock_submit_query:
+                mock_submit_query.side_effect = mock_query_response
+                do_predictoor_data()
 
-    # delete rewards csv
-    os.remove(rewards_csv)
+        # test result
+        predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
+        assert os.path.exists(predictoor_data_csv)
 
-    # TEST WITH tot_ocean = 0, DATE WITH NONZERO REWARDS
-    tot_ocean = 0
-    start_date = "2042-03-16"  # some date where predictoor rewards are nonzero
-
-    with sysargs_context(
-        [
-            "dftool",
-            "calc",
-            "predictoor",
-            csv_dir,
-            str(tot_ocean),
-            f"--START_DATE={start_date}",
-            f"--CHAINID={networkutil.DEV_CHAINID}",
-        ]
-    ):
-        dftool_module.do_calc()
-
-    # test result
-    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(rewards_csv)
-    rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward > 0
-
-    # delete rewards csv
-    os.remove(rewards_csv)
-
-    # TEST WITH tot_ocean = 0, DATE WITH ZERO REWARDS
-    tot_ocean = 0
-    start_date = "2023-01-01"  # some date where predictoor rewards are zero
-
-    with sysargs_context(
-        [
-            "dftool",
-            "calc",
-            "predictoor",
-            csv_dir,
-            str(tot_ocean),
-            f"--START_DATE={start_date}",
-            f"--CHAINID={networkutil.DEV_CHAINID}",
-        ]
-    ):
-        dftool_module.do_calc()
-
-    # test result
-    rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert os.path.exists(rewards_csv)
-    rewards = load_predictoor_rewards_csv(csv_dir)
-    total_reward = sum(flatten_rewards(rewards).values())
-    assert total_reward == 0
+        predictoors = load_predictoor_data_csv(csv_dir)
+        for user in users:
+            if stats[user]["total"] == 0:
+                assert user not in predictoors
+                continue
+            user_total = stats[user]["total"]
+            user_correct = stats[user]["correct"]
+            assert predictoors[user].prediction_count == user_total
+            assert predictoors[user].correct_prediction_count == user_correct
+            assert predictoors[user].accuracy == user_correct / user_total
 
 
 def test_dummy_csvs(tmp_path):

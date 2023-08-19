@@ -5,13 +5,13 @@ from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
-import ccxt
 import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
 
 from df_py.challenge import helpers
 from df_py.util import crypto, graphutil, networkutil, oceanutil
+from df_py.util.get_rate import get_binance_rate_all
 
 # this is the address that contestants encrypt their data to, and send to
 JUDGE_ADDRESS = "0xA54ABd42b11B7C97538CAD7C6A2820419ddF703E"
@@ -22,33 +22,49 @@ def _get_txs(deadline_dt) -> list:
     # https://github.com/oceanprotocol/ocean-subgraph/blob/main/schema.graphql
     a_week_before_deadline = deadline_dt - timedelta(weeks=1)
 
-    query_s = f"""
-{{nftTransferHistories(
-    where: {{
-             newOwner: "{JUDGE_ADDRESS.lower()}",
-             timestamp_gt: {a_week_before_deadline.timestamp()},
-             timestamp_lte: {deadline_dt.timestamp()}
+    a_week_before_deadline_ts = str(int(a_week_before_deadline.timestamp()))
+    deadline_dt_ts = str(int(deadline_dt.timestamp()))
+
+    offset = 0
+    chunk_size = 1000
+    all_txs = []
+
+    while True:
+        query_s = f"""
+        {{nftTransferHistories(first: {chunk_size}, skip: {offset},
+            where: {{
+                    newOwner: "{JUDGE_ADDRESS.lower()}",
+                    timestamp_gt: {a_week_before_deadline_ts},
+                    timestamp_lte: {deadline_dt_ts}
+                    }}
+        )
+            {{
+                id,
+                timestamp,
+                nft {{
+                    id
+                }},
+                oldOwner {{
+                    id
+                }},
+                newOwner {{
+                    id
+                }}
             }}
-)
-    {{
-        id,
-        timestamp,
-        nft {{
-            id
-        }},
-        oldOwner {{
-            id
-        }},
-        newOwner {{
-            id
-        }}
-     }}
-}}"""
+        }}"""
 
-    result = graphutil.submit_query(query_s, networkutil.network_to_chain_id("mumbai"))
-    txs = result["nftTransferHistories"]
+        result = graphutil.submit_query(
+            query_s, networkutil.network_to_chain_id("mumbai")
+        )
+        if "data" not in result:
+            raise Exception(f"_get_txs: An error occured, {result}")
+        offset += chunk_size
+        txs = result["data"]["nftTransferHistories"]
+        if len(txs) == 0:
+            break
+        all_txs.extend(txs)
 
-    return txs
+    return all_txs
 
 
 @enforce_types
@@ -81,7 +97,7 @@ def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
 
 
 @enforce_types
-def _get_cex_vals(deadline_dt):
+def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     now = datetime.now(timezone.utc)
     # pylint: disable=superfluous-parens
     newest_cex_dt = deadline_dt + timedelta(minutes=(1 + 12 * 5))
@@ -100,15 +116,19 @@ def _get_cex_vals(deadline_dt):
     target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
     helpers.print_datetime_info("target times", target_uts)
 
-    binance = ccxt.binanceus()
-    from_dt_str = binance.parse8601(deadline_dt.strftime("%Y-%m-%d %H:%M:00"))
-    cex_x = binance.fetch_ohlcv("ETH/USDT", "5m", since=from_dt_str, limit=500)
-    allcex_uts = [xi[0] / 1000 for xi in cex_x]
-    allcex_vals = [xi[4] for xi in cex_x]
-    helpers.print_datetime_info("CEX data info", allcex_uts)
+    print(target_dts[0].strftime("%Y-%m-%d_%H:%M"))
+    print(target_dts[-1].strftime("%Y-%m-%d_%H:%M"))
 
-    cex_vals = helpers.filter_to_target_uts(target_uts, allcex_uts, allcex_vals)
-    print(f"  cex ETH price is ${cex_vals[0]} at target time 0")
+    cex_vals = get_binance_rate_all(
+        token_symbol="ETH",
+        st=target_dts[0].strftime("%Y-%m-%d_%H:%M"),
+        fin=target_dts[-1].strftime("%Y-%m-%d_%H:%M"),
+        target_currency="USDT",
+        interval="5m",
+    )
+    cex_vals = cex_vals[:12]
+    print(f"  cex BTC price is ${cex_vals[0]} at target time 0")
+
     print(f"  cex_vals: {cex_vals}")
 
     print("get_cex_vals: done")
@@ -132,6 +152,10 @@ def parse_deadline_str(deadline_str: Optional[str] = None) -> datetime:
         today = today.replace(hour=0, minute=0, second=0, microsecond=0)
 
         offset = (today.weekday() - WEDNESDAY) % 7
+        if offset == 0:
+            # If offset is 0, it means today is Wednesday.
+            # In this case, we set the offset to 7 to retrieve the last Wednesday.
+            offset = 7
         prev_wed = today - timedelta(days=offset)
         deadline_dt = prev_wed.replace(hour=23, minute=59, second=0, microsecond=0)
     else:
