@@ -9,7 +9,6 @@ from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.random_addresses import get_random_addresses
 
 
-@pytest.mark.skip("Fails sometimes. See #702. When fixed, un-skip this test")
 @enforce_types
 def test_allocate_gas():
     one = _batch_allocate(1)

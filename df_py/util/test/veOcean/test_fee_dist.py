@@ -131,7 +131,6 @@ def test_alice_locks_tokens_exact():
     assert (alice_after - alice_before) == estimate
 
 
-@pytest.mark.skip("Fails sometimes. See #705. When fixed, un-skip this test")
 @enforce_types
 def test_alice_claims_after_lock_ends():
     """Alice claim rewards after her lock is expired."""
