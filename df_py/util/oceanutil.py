@@ -1,23 +1,27 @@
 import hashlib
 import json
+import os
 import warnings
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
-import brownie
 from enforce_typing import enforce_types
 from web3.main import Web3
+from df_py.util.contract_base import ContractBase
 
 from df_py.util import networkutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import CONTRACTS, ZERO_ADDRESS
+from df_py.util.http_provider import get_web3_connection_provider
+from web3.exceptions import ExtraDataLengthError
 
 
 @enforce_types
 def _contracts(key: str):
     """Returns the contract object at the currently connected network"""
-    chainID = brownie.network.chain.id
+    # TODO: actual chainId
+    #chainID = brownie.network.chain.id
+    chainID = 8996
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
         record_deployed_contracts(address_file)
@@ -27,8 +31,9 @@ def _contracts(key: str):
 
 @enforce_types
 def record_dev_deployed_contracts():
-    assert brownie.network.is_connected()
-    assert brownie.network.chain.id == networkutil.DEV_CHAINID
+    # TODO: uncomment and adapt
+    #assert brownie.network.is_connected()
+    #assert brownie.network.chain.id == networkutil.DEV_CHAINID
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     record_deployed_contracts(address_file)
 
@@ -36,8 +41,11 @@ def record_dev_deployed_contracts():
 @enforce_types
 def record_deployed_contracts(address_file: str):
     """Records deployed Ocean contracts at currently connected network"""
-    assert brownie.network.is_connected()
-    chainID = brownie.network.chain.id
+    # TODO: uncomment and adapt
+    # assert brownie.network.is_connected()
+    # TODO: actual chainId
+    # chainID = brownie.network.chain.id
+    chainID = 8996
 
     if chainID in CONTRACTS:  # already filled
         return
@@ -52,30 +60,35 @@ def record_deployed_contracts(address_file: str):
         a = json_dict[network_name]  # dict of contract_name: address
 
     C = {}
-    C["Ocean"] = B.Simpletoken.at(a["Ocean"])
-    C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
-    C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
-    C["Router"] = B.FactoryRouter.at(a["Router"])
-    C["Staking"] = B.SideStaking.at(a["Staking"])
-    C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
-    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+
+    web3 = get_web3(get_rpc_url(network_name))
+
+    C["Ocean"] = ContractBase(web3, "Simpletoken", a["Ocean"])
+    C["ERC721Template"] = ContractBase(web3, "ERC721Template", a["ERC721Template"]["1"])
+    C["ERC20Template"] = ContractBase(web3, "ERC20Template", a["ERC20Template"]["1"])
+    C["Router"] = ContractBase(web3, "FactoryRouter", a["Router"])
+    C["Staking"] = ContractBase(web3, "SideStaking", a["Staking"])
+    C["ERC721Factory"] = ContractBase(web3, "ERC721Factory", a["ERC721Factory"])
+    C["FixedPrice"] = ContractBase(web3, "FixedRateExchange", a["FixedPrice"])
 
     if "veOCEAN" in a:
-        C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
+        C["veOCEAN"] = ContractBase(web3, "veOcean", a["veOCEAN"])
 
     if "veAllocate" in a:
-        C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
+        C["veAllocate"] = ContractBase(web3, "veAllocate", a["veAllocate"])
 
     if "veFeeDistributor" in a:
-        C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
+        C["veFeeDistributor"] = ContractBase(web3, "FeeDistributor", a["veFeeDistributor"])
 
     if "veDelegation" in a:
-        C["veDelegation"] = B.veDelegation.at(a["veDelegation"])
+        C["veDelegation"] = ContractBase(web3, "veDelegation", a["veDelegation"])
 
     if "VestingWalletV0" in a:
-        C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
+        C["VestingWalletV0"] = ContractBase(web3, "VestingWalletV0", a["VestingWalletV0"])
     elif chainID == networkutil.DEV_CHAINID:
-        C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
+        pass
+        # TODO
+        # C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
 
     CONTRACTS[chainID] = C
 
@@ -422,3 +435,34 @@ def create_checksum(text: str) -> str:
     :return: str
     """
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+@enforce_types
+def get_web3(network_url: str) -> Web3:
+    provider = get_web3_connection_provider(network_url)
+    web3 = Web3(provider)
+
+    try:
+        web3.eth.get_block("latest")
+    except ExtraDataLengthError:
+        from web3.middleware import geth_poa_middleware
+        web3.middleware_onion.inject(geth_poa_middleware, layer=0)
+
+    web3.strict_bytes_type_checking = False
+    return web3
+
+
+def get_rpc_url(network_name: str) -> str:
+    """Return the RPC URL for a given network."""
+    base_url = None
+
+    if os.getenv(f"{network_name.upper()}_RPC_URL"):
+        base_url = os.getenv(f"{network_name.upper()}_RPC_URL")
+
+    if os.getenv("WEB3_INFURA_PROJECT_ID"):
+        base_url = f"{base_url}{os.getenv('WEB3_INFURA_PROJECT_ID')}"
+
+    if base_url:
+        return base_url
+
+    raise Exception(f"Need to set {network_name.upper()}_RPC_URL env variable.")

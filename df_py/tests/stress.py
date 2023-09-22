@@ -64,7 +64,7 @@ def main():
     accounts = brownie.network.accounts
     assert len(test_accounts) == NUMBER_OF_ACCOUNTS
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEANtoken()
 
     ## Deploy pool
     print("Deploying pool")

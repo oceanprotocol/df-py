@@ -1,7 +1,6 @@
 import os
 import warnings
 
-import brownie
 from enforce_typing import enforce_types
 
 from df_py.util.constants import CONTRACTS, MULTISIG_ADDRS
@@ -92,7 +91,8 @@ def network_to_chain_id(network: str) -> int:
 
 @enforce_types
 def get_latest_block(chainID) -> int:
-    network = brownie.network
+    # TODO
+    #network = brownie.network
     prev = None
     if not network.is_connected():
         connect(chainID)
@@ -115,6 +115,9 @@ def connect_dev():
 
 @enforce_types
 def connect(chainID: int):
+    # TODO
+    pass
+    """
     network = brownie.network
     if network.is_connected():
         disconnect()  # call networkutil.disconnect(), *NOT* brownie directly
@@ -131,10 +134,14 @@ def connect(chainID: int):
                 raise e
 
             network.connect("polygon-test")
+    """
 
 
 @enforce_types
 def disconnect():
+    # TODO
+    pass
+    """
     network = brownie.network
     if not network.is_connected():
         return
@@ -149,3 +156,4 @@ def disconnect():
         # overcome brownie issue
         # https://github.com/eth-brownie/brownie/issues/1144
         pass
+    """

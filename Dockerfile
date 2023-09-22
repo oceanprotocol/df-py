@@ -15,7 +15,6 @@ RUN brownie networks add oasis-sapphire-testnet oasis-sapphire-testnet host=http
 
 COPY . .
 RUN rm -rf build
-RUN brownie compile
 
 ENV PATH="/app/df-py:${PATH}"
 
