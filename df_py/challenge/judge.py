@@ -6,8 +6,8 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
 import numpy as np
-from brownie.network import accounts
 from enforce_typing import enforce_types
+from eth_account import Account
 
 from df_py.challenge.timeutil import dt_to_ut, ut_to_dt, print_datetime_info
 from df_py.challenge.nmse import calc_nmse
@@ -230,7 +230,7 @@ def get_judge_acct():
     judge_private_key = os.getenv("JUDGE_PRIVATE_KEY")
     assert judge_private_key, "need to set envvar JUDGE_PRIVATE_KEY"
 
-    judge_acct = accounts.add(judge_private_key)
+    judge_acct = Account.from_key(private_key=judge_private_key)
     assert judge_acct.address.lower() == JUDGE_ADDRESS.lower(), (
         f"JUDGE_PRIVATE_KEY is wrong, it must give address={JUDGE_ADDRESS}"
         "\nGet it at private repo https://github.com/oceanprotocol/private-keys"

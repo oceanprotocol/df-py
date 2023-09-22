@@ -4,6 +4,7 @@ import os
 
 from df_py.util import networkutil
 from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
+from df_py.util.base18 import from_wei, to_wei
 
 
 def pytest_sessionstart():
@@ -16,4 +17,4 @@ def pytest_sessionstart():
 
     # TODO: check
     # OCEAN_token().mint(accs[0], 1e24, {"from": accs[0]})
-    OCEAN_token().mint(accs[0], 1, {"from": accs[0]})
+    OCEAN_token().mint(accs[0], to_wei(10000), {"from": accs[0]})

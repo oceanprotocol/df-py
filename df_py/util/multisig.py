@@ -1,13 +1,10 @@
 import json
 import os
 
-import brownie
 import requests
-from brownie import web3
 
 # from web3 import Web3
 from df_py.util import networkutil
-from df_py.util.constants import BROWNIE_PROJECT as B
 
 
 def get_safe_nonce(multisig_address):
@@ -31,7 +28,7 @@ def send_multisig_tx(multisig_address, to, value, data):
     nonce = get_safe_nonce(multisig_address)
     BASE_URL = networkutil.chain_id_to_multisig_uri(brownie.network.chain.id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
-    contract = B.interface.IGnosisSafe(multisig_address)
+    contract = ContractBase(web3, "interfaces/IGnosisSafe", multisig_address)
     gas = 0
     gasPrice = 0
     safe_hash = contract.getTransactionHash(

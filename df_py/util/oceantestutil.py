@@ -1,12 +1,9 @@
 import random
 
-import brownie
 from enforce_typing import enforce_types
 
 from df_py.util import constants, oceanutil
 from df_py.util.base18 import from_wei, to_wei
-
-network = brownie.network
 
 # pool constants
 NUM_STAKERS_PER_POOL = 2  # 3
@@ -29,23 +26,25 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
 @enforce_types
-def fill_accounts_with_token(token):
-    accounts = network.accounts
-    for i in range(1, 10):
-        bal_before = from_wei(token.balanceOf(accounts[i]))
+def fill_accounts_with_token(accounts, token):
+    for i, account in enumerate(accounts):
+        if i == 0:
+            continue
+
+        bal_before = from_wei(token.balanceOf(account))
         if bal_before < 1000.0:
-            token.transfer(accounts[i], to_wei(1000.0), {"from": accounts[0]})
+            token.transfer(account, to_wei(1000.0), {"from": accounts[0]})
 
     print(f"fill_accounts_with_token({token.symbol()}), balances after:")
-    for i in range(10):
-        amt = from_wei(token.balanceOf(accounts[i]))
+    for account in accounts:
+        amt = from_wei(token.balanceOf(account))
         print(f"  Account #{i} has {amt} {token.symbol()}")
 
 
 @enforce_types
-def fill_accounts_with_OCEAN():
+def fill_accounts_with_OCEAN(accounts):
     OCEAN = oceanutil.OCEAN_token()
-    fill_accounts_with_token(OCEAN)
+    fill_accounts_with_token(accounts, OCEAN)
 
 
 @enforce_types

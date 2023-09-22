@@ -3,11 +3,10 @@ import os
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional, Union
 
-import brownie
 from enforce_typing import enforce_types
+from df_py.util.contract_base import ContractBase
 
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import chain_id_to_multisig_addr
@@ -48,8 +47,8 @@ def dispense(
     if usemultisig:
         logger.info("multisig enabled")
         multisigaddr = chain_id_to_multisig_addr(brownie.network.chain.id)
-    df_rewards = B.DFRewards.at(dfrewards_addr)
-    TOK = B.Simpletoken.at(token_addr)
+    df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
+    TOK = ContractBase(web3, "Simpletoken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
     to_addrs = list(rewards.keys())
     values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]

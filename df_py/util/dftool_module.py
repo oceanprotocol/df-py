@@ -24,10 +24,9 @@ from df_py.predictoor.csvs import (
     save_predictoor_contracts_csv,
 )
 from df_py.predictoor.queries import query_predictoors, query_predictoor_contracts
-from df_py.util import blockrange, dispense, get_rate, networkutil
+from df_py.util import blockrange, get_rate, networkutil
 from df_py.util.base18 import from_wei
 from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.dftool_arguments import (
     CHAINID_EXAMPLES,
     DfStrategyArgumentParser,
@@ -62,8 +61,6 @@ from df_py.util.vesting_schedule import (
 )
 from df_py.volume import calc_rewards, csvs, queries
 from df_py.volume.calc_rewards import calc_rewards_volume
-
-brownie.network.web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
 
 @enforce_types

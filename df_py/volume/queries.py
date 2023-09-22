@@ -9,7 +9,6 @@ from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei
 from df_py.util.blockrange import BlockRange
 from df_py.util.constants import AQUARIUS_BASE_URL
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import MAX_ALLOCATE
 from df_py.util.graphutil import submit_query
 from df_py.volume.models import SimpleDataNft, TokSet

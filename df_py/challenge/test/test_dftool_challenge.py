@@ -1,8 +1,8 @@
 import os
 from typing import Optional
 from unittest.mock import patch
+from eth_account import Account
 
-import brownie
 import pytest
 from enforce_typing import enforce_types
 
@@ -81,10 +81,12 @@ def test_challenge_help():
 def setup_function():
     global PREV, DFTOOL_ACCT
 
-    networkutil.connect(CHAINID)
-    accounts = brownie.network.accounts
+    accounts = [
+        Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
+        for index in range(0, 8)
+    ]
     oceanutil.record_dev_deployed_contracts()
-    oceantestutil.fill_accounts_with_OCEAN()
+    oceantestutil.fill_accounts_with_OCEAN(accounts)
 
     DFTOOL_ACCT = accounts.add()
     accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
