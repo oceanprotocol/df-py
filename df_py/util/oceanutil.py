@@ -6,21 +6,21 @@ from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
+from web3.exceptions import ExtraDataLengthError
 from web3.main import Web3
-from df_py.util.contract_base import ContractBase
 
 from df_py.util import networkutil
 from df_py.util.base18 import to_wei
 from df_py.util.constants import CONTRACTS, ZERO_ADDRESS
+from df_py.util.contract_base import ContractBase
 from df_py.util.http_provider import get_web3_connection_provider
-from web3.exceptions import ExtraDataLengthError
 
 
 @enforce_types
 def _contracts(key: str):
     """Returns the contract object at the currently connected network"""
     # TODO: actual chainId
-    #chainID = brownie.network.chain.id
+    # chainID = brownie.network.chain.id
     chainID = 8996
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
@@ -32,8 +32,8 @@ def _contracts(key: str):
 @enforce_types
 def record_dev_deployed_contracts():
     # TODO: uncomment and adapt
-    #assert brownie.network.is_connected()
-    #assert brownie.network.chain.id == networkutil.DEV_CHAINID
+    # assert brownie.network.is_connected()
+    # assert brownie.network.chain.id == networkutil.DEV_CHAINID
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     record_deployed_contracts(address_file)
 
@@ -78,13 +78,17 @@ def record_deployed_contracts(address_file: str):
         C["veAllocate"] = ContractBase(web3, "veAllocate", a["veAllocate"])
 
     if "veFeeDistributor" in a:
-        C["veFeeDistributor"] = ContractBase(web3, "FeeDistributor", a["veFeeDistributor"])
+        C["veFeeDistributor"] = ContractBase(
+            web3, "FeeDistributor", a["veFeeDistributor"]
+        )
 
     if "veDelegation" in a:
         C["veDelegation"] = ContractBase(web3, "veDelegation", a["veDelegation"])
 
     if "VestingWalletV0" in a:
-        C["VestingWalletV0"] = ContractBase(web3, "VestingWalletV0", a["VestingWalletV0"])
+        C["VestingWalletV0"] = ContractBase(
+            web3, "VestingWalletV0", a["VestingWalletV0"]
+        )
     elif chainID == networkutil.DEV_CHAINID:
         pass
         # TODO
@@ -446,6 +450,7 @@ def get_web3(network_url: str) -> Web3:
         web3.eth.get_block("latest")
     except ExtraDataLengthError:
         from web3.middleware import geth_poa_middleware
+
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     web3.strict_bytes_type_checking = False

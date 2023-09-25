@@ -1,12 +1,11 @@
 import os
-
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional, Union
 
 from enforce_typing import enforce_types
-from df_py.util.contract_base import ContractBase
 
 from df_py.util.base18 import to_wei
+from df_py.util.contract_base import ContractBase
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import chain_id_to_multisig_addr

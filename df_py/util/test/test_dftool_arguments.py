@@ -3,13 +3,9 @@ from datetime import datetime
 
 import pytest
 
-from df_py.util.dftool_arguments import (
-    autocreate_path,
-    block_or_valid_date,
-    existing_path,
-    valid_date,
-    valid_date_and_convert,
-)
+from df_py.util.dftool_arguments import (autocreate_path, block_or_valid_date,
+                                         existing_path, valid_date,
+                                         valid_date_and_convert)
 
 
 def test_valid_date_and_convert():

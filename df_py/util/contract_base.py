@@ -5,12 +5,13 @@
 
 """All contracts inherit from `ContractBase` class."""
 import logging
-from typing import Optional
+from typing import Optional, Union
 
 from enforce_typing import enforce_types
+from web3.contract import Contract as Web3Contract
 from web3.main import Web3
 
-from df_py.util.contract_utils import load_contract
+from df_py.util.contract_utils import deploy_contract, load_contract
 
 logger = logging.getLogger(__name__)
 
@@ -74,11 +75,18 @@ class ContractBase(object):
     """Base class for all contract objects."""
 
     @enforce_types
-    def __init__(self, web3: Web3, path: str, address: Optional[str]) -> None:
+    def __init__(
+        self,
+        web3: Web3,
+        path: str,
+        address: Optional[str] = None,
+        constructor_args: Optional[list] = None,
+    ) -> None:
         """Initialises Contract Base object."""
-        self.contract = load_contract(
-            web3, path, address
-        )
+        if constructor_args is not None:
+            self.contract = deploy_contract(web3, path, constructor_args)
+        else:
+            self.contract = load_contract(web3, path, address)
         assert not address or (self.contract.address.lower() == address.lower())
 
         transferable = [

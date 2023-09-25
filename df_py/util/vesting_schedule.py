@@ -5,12 +5,9 @@ from enforce_typing import enforce_types
 from df_py.challenge.calc_rewards import get_challenge_reward_amounts_in_ocean
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
-from df_py.util.constants import (
-    ACTIVE_REWARDS_MULTIPLIER,
-    DFMAIN_CONSTANTS,
-    PREDICTOOR_RELEASE_WEEK,
-    PREDICTOOR_OCEAN_BUDGET,
-)
+from df_py.util.constants import (ACTIVE_REWARDS_MULTIPLIER, DFMAIN_CONSTANTS,
+                                  PREDICTOOR_OCEAN_BUDGET,
+                                  PREDICTOOR_RELEASE_WEEK)
 from df_py.volume.calc_rewards import get_df_week_number
 
 

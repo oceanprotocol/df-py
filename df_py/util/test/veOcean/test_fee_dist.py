@@ -1,6 +1,6 @@
 import brownie
-from enforce_typing import enforce_types
 import pytest
+from enforce_typing import enforce_types
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import to_wei

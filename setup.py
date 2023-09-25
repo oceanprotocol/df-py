@@ -19,6 +19,7 @@ install_requirements = [
     "ccxt==3.0.84",
     "eciespy",
     "web3",
+    "py-solc-x",
     "enforce_typing",
     "mypy",
     "numpy",

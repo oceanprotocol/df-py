@@ -92,7 +92,7 @@ def network_to_chain_id(network: str) -> int:
 @enforce_types
 def get_latest_block(chainID) -> int:
     # TODO
-    #network = brownie.network
+    # network = brownie.network
     prev = None
     if not network.is_connected():
         connect(chainID)

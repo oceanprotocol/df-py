@@ -7,7 +7,9 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional
 
+import solcx
 from enforce_typing import enforce_types
+from solcx import compile_source
 from web3.contract import Contract
 from web3.main import Web3
 
@@ -28,6 +30,18 @@ def get_contract_definition(path: str) -> Dict[str, Any]:
 
 
 @enforce_types
+def get_contract_source(path: str) -> Dict[str, Any]:
+    """Returns the abi JSON for a contract name."""
+    path = os.path.join(Path.cwd(), f"contracts/{path}.sol")
+    path = Path(path).expanduser().resolve()
+
+    if not path.exists():
+        raise TypeError("Contract name does not exist in artifacts.")
+
+    return open(path, "r").read()
+
+
+@enforce_types
 def load_contract(web3: Web3, path: str, address: Optional[str]) -> Contract:
     """Loads a contract using its name and address."""
     contract_definition = get_contract_definition(path)
@@ -35,6 +49,35 @@ def load_contract(web3: Web3, path: str, address: Optional[str]) -> Contract:
     bytecode = contract_definition["bytecode"]
 
     return web3.eth.contract(address=address, abi=abi, bytecode=bytecode)
+
+
+@enforce_types
+def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
+    contract_source = get_contract_source(path)
+    solcx.install_solc(version="0.8.12")
+    solcx.set_solc_version("0.8.12")
+
+    remapping = "OpenZeppelin/openzeppelin-contracts@4.2.0=node_modules/@openzeppelin"
+    compiled_sol = compile_source(
+        contract_source, output_values=["abi", "bin"], import_remappings=remapping
+    )
+
+    # popitems succesively because the compiler also
+    # returns the interfaces of imported contracts e.g. OpenZeppelin
+    contract_name = None
+    while contract_name != path:
+        contract_id, contract_interface = compiled_sol.popitem()
+        contract_name = contract_id.split(":")[1]
+
+    bytecode = contract_interface["bin"]
+    abi = contract_interface["abi"]
+
+    contract = web3.eth.contract(abi=abi, bytecode=bytecode)
+    tx_hash = contract.constructor(*constructor_args).transact()
+
+    tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
+
+    return web3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
 
 
 @enforce_types

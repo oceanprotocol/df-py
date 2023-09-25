@@ -7,14 +7,10 @@ from pytest import approx
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.blockrange import create_range
-from df_py.util.blocktime import (
-    get_block_number_thursday,
-    get_next_thursday_timestamp,
-    get_st_fin_blocks,
-    timestamp_to_block,
-    timestr_to_block,
-    timestr_to_timestamp,
-)
+from df_py.util.blocktime import (get_block_number_thursday,
+                                  get_next_thursday_timestamp,
+                                  get_st_fin_blocks, timestamp_to_block,
+                                  timestr_to_block, timestr_to_timestamp)
 
 chain = None
 
