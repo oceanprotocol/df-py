@@ -54,18 +54,23 @@ def load_contract(web3: Web3, path: str, address: Optional[str]) -> Contract:
 @enforce_types
 def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
     contract_source = get_contract_source(path)
+    contract_base_name = path if "/" not in path else path.split("/")[-1]
     solcx.install_solc(version="0.8.12")
     solcx.set_solc_version("0.8.12")
 
-    remapping = "OpenZeppelin/openzeppelin-contracts@4.2.0=node_modules/@openzeppelin"
+    remapping = {
+        "OpenZeppelin/openzeppelin-contracts@4.2.0": "node_modules/@openzeppelin",
+        "interfaces": "contracts/interfaces",
+    }
+
     compiled_sol = compile_source(
         contract_source, output_values=["abi", "bin"], import_remappings=remapping
     )
 
     # popitems succesively because the compiler also
     # returns the interfaces of imported contracts e.g. OpenZeppelin
-    contract_name = None
-    while contract_name != path:
+    contract_name = ""
+    while contract_name.lower() != contract_base_name.lower():
         contract_id, contract_interface = compiled_sol.popitem()
         contract_name = contract_id.split(":")[1]
 

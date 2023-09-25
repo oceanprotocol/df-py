@@ -1,17 +1,27 @@
-import brownie
 from enforce_typing import enforce_types
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
+from df_py.util.contract_base import ContractBase
+from eth_account import Account
+import os
+import pytest
+from web3.exceptions import ContractLogicError
 
-accounts, a1, a2, a3 = None, None, None, None
+accounts = [
+    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
+    for index in range(0, 9)
+]
+
+a1 = accounts[1]
+a2 = accounts[2]
+a3 = accounts[3]
 
 
 @enforce_types
-def test_basic():
-    token = _deploy_token(accounts[0])
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+def test_basic(w3):
+    token = _deploy_token(w3, accounts[0])
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
     assert df_rewards.claimable(a1, token.address) == 0
 
 
@@ -30,14 +40,15 @@ def test_lost_ETH():
 
 
 @enforce_types
-def test_token():
-    token = _deploy_token(accounts[9])
-    token.transfer(accounts[0].address, to_wei(100.0), {"from": accounts[9]})
+def test_token(w3):
+    token = _deploy_token(w3, accounts[8])
+    token.transfer(accounts[0].address, to_wei(100.0), {"from": accounts[8]})
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
+    w3.eth.default_account = accounts[0].address
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
 
-    tos = [a1, a2, a3]
+    tos = [a1.address, a2.address, a3.address]
     values = [10, 20, 30]
     token.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
@@ -58,22 +69,23 @@ def test_token():
 
     # a9 claims for a3
     assert token.balanceOf(a3) == 0
-    df_rewards.claimFor(a3, token.address, {"from": accounts[9]})
+    df_rewards.claimFor(a3, token.address, {"from": accounts[8]})
     assert token.balanceOf(a3) == 30
 
 
 @enforce_types
-def test_OCEAN():
+def test_OCEAN(w3):
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
     oceanutil.record_deployed_contracts(address_file)
     OCEAN = oceanutil.OCEAN_token()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
+    w3.eth.default_account = accounts[0].address
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
 
     OCEAN.approve(df_rewards, 10, {"from": accounts[0]})
-    df_rewards.allocate([a1], [10], OCEAN.address, {"from": accounts[0]})
+    df_rewards.allocate([a1.address], [10], OCEAN.address, {"from": accounts[0]})
 
     assert df_rewards.claimable(a1, OCEAN.address) == 10
 
@@ -84,14 +96,15 @@ def test_OCEAN():
 
 
 @enforce_types
-def test_multiple_token():
-    token_1 = _deploy_token(accounts[0])
-    token_2 = _deploy_token(accounts[0])
+def test_multiple_token(w3):
+    token_1 = _deploy_token(w3, accounts[0])
+    token_2 = _deploy_token(w3, accounts[0])
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
+    w3.eth.default_account = accounts[0].address
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
 
-    tos = [a1, a2, a3]
+    tos = [a1.address, a2.address, a3.address]
     values = [10, 20, 30]
 
     token_1.approve(df_rewards, sum(values), {"from": accounts[0]})
@@ -137,39 +150,40 @@ def test_multiple_token():
     assert token_2.balanceOf(a1) == 15
 
 
-def test_bad_token():
-    bad_token = B.Badtoken.deploy(
-        "BAD", "BAD", 18, to_wei(10000.0), {"from": accounts[0]}
+def test_bad_token(w3):
+    bad_token = ContractBase(
+        w3, "test/BadToken", constructor_args=["BAD", "BAD", 18, to_wei(10000.0)]
     )
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
-    tos = [a1, a2, a3]
+    tos = [a1.address, a2.address, a3.address]
     values = [10, 20, 30]
 
     bad_token.approve(df_rewards, sum(values), {"from": accounts[0]})
 
-    with brownie.reverts("Not enough tokens"):
+    with pytest.raises(ContractLogicError, match="Not enough tokens"):
         df_rewards.allocate(tos, values, bad_token.address, {"from": accounts[0]})
 
 
-def test_strategies():
-    token = _deploy_token(accounts[0])
+def test_strategies(w3):
+    token = _deploy_token(w3, accounts[0])
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DummyStrategy.deploy(df_rewards.address, {"from": accounts[0]})
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
 
     # allocate rewards
-    tos = [a1, a2, a3]
+    tos = [a1.address, a2.address, a3.address]
     values = [10, 20, 30]
     token.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
 
+    # TODO: fix these
     assert token.balanceOf(df_strategy) == 0
-    with brownie.reverts("Caller doesn't match"):
+    with pytest.raises(ContractLogicError, match="Caller doesn't match"):
         # tx origin must be a1
-        df_strategy.claim(token.address, a1, {"from": accounts[2]})
+        df_strategy.claim(token.address, a1.address, {"from": accounts[2]})
 
-    with brownie.reverts("Caller must be a strategy"):
+    with pytest.raises(ContractLogicError, match="Caller must be a strategy"):
         # non strategy addresses cannot claim
         df_strategy.claim(token.address, a1, {"from": accounts[1]})
 
@@ -194,11 +208,11 @@ def test_strategies():
     df_rewards.retireStrategy(df_strategy.address)
     assert not df_rewards.isStrategy(df_strategy.address)
 
-    with brownie.reverts("Caller must be a strategy"):
+    with pytest.raises(ContractLogicError, match="Caller must be a strategy"):
         # non strategy addresses cannot claim
         df_strategy.claim(token.address, a3, {"from": accounts[3]})
 
-    with brownie.reverts("Ownable: caller is not the owner"):
+    with pytest.raises(ContractLogicError, match="Ownable: caller is not the owner"):
         # addresses other than the owner cannot add new strategy
         df_rewards.addStrategy(df_strategy.address, {"from": accounts[3]})
 
@@ -243,7 +257,7 @@ def _test_claim_and_restake():
 
     assert df_rewards.claimable(a1, OCEAN.address) == 50
 
-    with brownie.reverts("Not enough rewards"):
+    with pytest.raises(ContractLogicError, match="Not enough rewards"):
         # Cannot claim what you don't have
         df_strategy.claimAndStake(
             OCEAN,
@@ -264,18 +278,10 @@ def _test_claim_and_restake():
 
 
 @enforce_types
-def _deploy_token(account):
-    return B.Simpletoken.deploy("TOK", "TOK", 18, to_wei(100.0), {"from": account})
+def _deploy_token(w3, account=None):
+    if account:
+        w3.eth.default_account = account.address
 
-
-@enforce_types
-def setup_function():
-    networkutil.connect_dev()
-    global accounts, a1, a2, a3
-    accounts = brownie.network.accounts
-    a1, a2, a3 = accounts[1].address, accounts[2].address, accounts[3].address
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    return ContractBase(
+        w3, "Simpletoken", constructor_args=["TOK", "TOK", 18, to_wei(100.0)]
+    )

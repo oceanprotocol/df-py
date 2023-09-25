@@ -1,4 +1,3 @@
-from brownie import network
 from enforce_typing import enforce_types
 
 from df_py.util import networkutil
@@ -29,7 +28,6 @@ def test_network_to_chain_id():
 
 
 @enforce_types
-def test_get_latest_block():
-    networkutil.connect_dev()
+def test_get_latest_block(w3):
     latest = networkutil.get_latest_block(networkutil.DEV_CHAINID)
     assert latest == len(network.chain) - 1

@@ -4,7 +4,6 @@ import os
 import random
 import time
 
-import brownie
 import pytest
 from enforce_typing import enforce_types
 from pytest import approx

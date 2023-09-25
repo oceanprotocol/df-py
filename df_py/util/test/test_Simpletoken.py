@@ -5,7 +5,6 @@ from eth_account import Account
 
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
-from df_py.util.oceanutil import get_rpc_url, get_web3
 
 accounts = [
     Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
@@ -14,8 +13,8 @@ accounts = [
 
 
 @enforce_types
-def test_transfer():
-    token = _deploy_token()
+def test_transfer(w3):
+    token = _deploy_token(w3)
     # TODO: no to_weis in previous version. TBD!!
     assert token.totalSupply() == to_wei(1e21)
     token.transfer(accounts[1], to_wei(1e20), {"from": accounts[0]})
@@ -25,8 +24,8 @@ def test_transfer():
 
 
 @enforce_types
-def test_approve():
-    token = _deploy_token()
+def test_approve(w3):
+    token = _deploy_token(w3)
     # TODO: no to_weis in previous version. TBD!!
     token.approve(accounts[1], to_wei(1e19), {"from": accounts[0]})
     assert token.allowance(accounts[0], accounts[1]) == to_wei(1e19)
@@ -37,8 +36,8 @@ def test_approve():
 
 
 @enforce_types
-def test_transferFrom():
-    token = _deploy_token()
+def test_transferFrom(w3):
+    token = _deploy_token(w3)
     # TODO: no to_weis in previous version. TBD!!
     token.approve(accounts[1], to_wei(6e18), {"from": accounts[0]})
     token.transferFrom(accounts[0], accounts[2], to_wei(5e18), {"from": accounts[1]})
@@ -51,10 +50,7 @@ def test_transferFrom():
 
 
 @enforce_types
-def _deploy_token():
-    w3 = get_web3(get_rpc_url("development"))
-    w3.eth.default_account = w3.eth.accounts[0]
-
+def _deploy_token(w3):
     # TODO: no to_weis in previous version. TBD!!
     return ContractBase(
         w3, "Simpletoken", constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
