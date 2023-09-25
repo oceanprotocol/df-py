@@ -2,93 +2,89 @@ import os
 import types
 from datetime import datetime
 
-import brownie
 from enforce_typing import enforce_types
 from pytest import approx
 
+from df_py.util.oceanutil import get_rpc_url, get_web3
 from df_py.util import networkutil
 from df_py.util.blocktime import (eth_find_closest_block,
                                   eth_timestamp_to_block, timestr_to_block)
 
-PREV = None
-chain = None
 
-
+# TODO: replace chain usage with web3 for blocktime utils!!
 @enforce_types
-def test_eth_timestamp_to_block():
-    ts = chain[-5000].timestamp
-    block = chain[-5000].number
+def test_eth_timestamp_to_block(monkeypatch):
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
+    monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    web3 = get_web3(get_rpc_url("mainnet"))
+    current_block = web3.eth.get_block("latest").number
+    blocks_ago = web3.eth.get_block(current_block - 5000)
 
-    guess = eth_timestamp_to_block(chain, ts)
+    ts = blocks_ago.timestamp
+    block = blocks_ago.number
+
+    guess = eth_timestamp_to_block(web3, ts)
 
     assert guess == approx(block, 10)
 
 
-def test_timestr_to_block_eth_1():
-    ts = chain[-5000].timestamp
-    block = chain[-5000].number
+def test_timestr_to_block_eth_1(monkeypatch):
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
+    monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    web3 = get_web3(get_rpc_url("mainnet"))
+    current_block = web3.eth.get_block("latest").number
+    blocks_ago = web3.eth.get_block(current_block - 5000)
+
+    ts = blocks_ago.timestamp
+    block = blocks_ago.number
 
     # convert ts to YYYY-MM-DD_HH:MM
     dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
-    guess = timestr_to_block(chain, dt_str, True)
+    guess = timestr_to_block(web3, dt_str, True)
 
     assert guess == block
 
 
 @enforce_types
-def test_timestr_to_block_eth_2():
+def test_timestr_to_block_eth_2(monkeypatch):
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
+    monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    web3 = get_web3(get_rpc_url("mainnet"))
+
     expected = 15735470
     ts = 1665619200
     dt = datetime.utcfromtimestamp(ts)
     dt_str = dt.strftime("%Y-%m-%d_%H:%M:%S")
 
-    guess = timestr_to_block(chain, dt_str, True)
+    guess = timestr_to_block(web3, dt_str, True)
     assert guess == expected
 
 
 @enforce_types
-def test_timestr_to_block_eth_3():
+def test_timestr_to_block_eth_3(monkeypatch):
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
+    monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    web3 = get_web3(get_rpc_url("mainnet"))
+
     expected = 15835686
     dt_str = "2022-10-27"
-    guess = timestr_to_block(chain, dt_str, True)
+    guess = timestr_to_block(web3, dt_str, True)
     assert guess == expected
 
 
 @enforce_types
-def test_eth_find_closest_block():
+def test_eth_find_closest_block(monkeypatch):
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
+    monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    web3 = get_web3(get_rpc_url("mainnet"))
+
     expected = 15835686
 
     # get timestamp last thu
     last_thu = 1666828800
-    last_thu_block_guess = eth_timestamp_to_block(chain, last_thu)
-    last_thu_block = eth_find_closest_block(chain, last_thu_block_guess, last_thu)
+    last_thu_block_guess = eth_timestamp_to_block(web3, last_thu)
+    last_thu_block = eth_find_closest_block(web3, last_thu_block_guess, last_thu)
 
     assert last_thu_block == expected
-
-
-@enforce_types
-def setup_function():
-    global chain, PREV
-    chain = brownie.network.chain
-
-    PREV = types.SimpleNamespace()
-
-    PREV.WEB3_INFURA_PROJECT_ID = os.environ.get("WEB3_INFURA_PROJECT_ID")
-
-    # got this value from https://rpc.info/. We could also use our own
-    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
-    networkutil.connect(1)  # mainnet
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
-
-    global PREV
-
-    if PREV.WEB3_INFURA_PROJECT_ID is None:
-        del os.environ["WEB3_INFURA_PROJECT_ID"]
-    else:
-        os.environ["WEB3_INFURA_PROJECT_ID"] = PREV.WEB3_INFURA_PROJECT_ID
