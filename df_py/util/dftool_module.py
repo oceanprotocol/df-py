@@ -3,9 +3,7 @@ import argparse
 import os
 import sys
 
-import brownie
 from enforce_typing import enforce_types
-from web3.middleware import geth_poa_middleware
 
 from df_py.challenge import judge
 from df_py.challenge.calc_rewards import calc_challenge_rewards

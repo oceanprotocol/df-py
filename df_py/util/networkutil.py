@@ -1,5 +1,5 @@
 import os
-import warnings
+from typing import Union
 
 from enforce_typing import enforce_types
 
@@ -157,3 +157,30 @@ def disconnect():
         # https://github.com/eth-brownie/brownie/issues/1144
         pass
     """
+
+
+@enforce_types
+def send_ether(
+    web3, from_wallet, to_address: str, amount: Union[int, float]
+):
+    chain_id = web3.eth.chain_id
+    tx = {
+        "from": from_wallet.address,
+        "to": to_address,
+        "value": amount,
+        "chainId": chain_id,
+        "nonce": web3.eth.get_transaction_count(from_wallet.address),
+        "type": 2,
+    }
+    tx["gas"] = web3.eth.estimate_gas(tx)
+
+    priority_fee = web3.eth.max_priority_fee
+    base_fee = web3.eth.get_block("latest")["baseFeePerGas"]
+
+    tx["maxPriorityFeePerGas"] = priority_fee
+    tx["maxFeePerGas"] = base_fee * 2 + priority_fee
+
+    signed_tx = web3.eth.account.sign_transaction(tx, from_wallet._private_key)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+    return web3.eth.wait_for_transaction_receipt(tx_hash)

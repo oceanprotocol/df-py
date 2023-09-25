@@ -1,7 +1,6 @@
 import json
 from typing import Dict, List, Tuple
 
-import brownie
 import requests
 from enforce_typing import enforce_types
 

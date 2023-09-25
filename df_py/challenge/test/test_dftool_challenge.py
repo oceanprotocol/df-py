@@ -7,9 +7,11 @@ import pytest
 from enforce_typing import enforce_types
 
 from df_py.challenge import csvs
+from df_py.util.networkutil import send_ether
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
 from df_py.util.test.test_dftool_ganache import sysargs_context
+from df_py.util.oceanutil import get_rpc_url, get_web3
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -88,8 +90,10 @@ def setup_function():
     oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN(accounts)
 
-    DFTOOL_ACCT = accounts.add()
-    accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
+    w3 = get_web3(get_rpc_url("development"))
+    DFTOOL_ACCT = w3.eth.account.create()
+
+    send_ether(w3, accounts[0], DFTOOL_ACCT.address, to_wei(0.001))
 
     for envvar in [
         "DFTOOL_KEY",
@@ -99,7 +103,7 @@ def setup_function():
     ]:
         PREV[envvar] = os.environ.get(envvar)
 
-    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
+    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT._private_key.hex()
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
     os.environ["SECRET_SEED"] = "1234"
     os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
@@ -107,8 +111,6 @@ def setup_function():
 
 @enforce_types
 def teardown_function():
-    networkutil.disconnect()
-
     global PREV
     for envvar, envval in PREV.items():
         if envval is None:
