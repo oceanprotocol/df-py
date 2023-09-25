@@ -34,7 +34,7 @@ def test_timestamp_to_block_far_right(w3):
     assert b == w3.eth.get_block("latest").number and isinstance(b, int)
 
     b = timestr_to_block(w3, "2150-01-01_0:00")
-    assert b == w3.eth.get_block("latest") and isinstance(b, int)
+    assert b == w3.eth.get_block("latest").number and isinstance(b, int)
 
 
 @enforce_types
@@ -58,21 +58,28 @@ def test_timestamp_to_block(w3):
 
     provider = w3.provider
 
-    chain.mine(blocks=1, timestamp=timestamp0 + 10.0)
+    provider.make_request("evm_mine", [timestamp0+10])
+    provider.make_request("evm_increaseTime", [10])
     latest_block = w3.eth.get_block("latest")
     timestamp1 = latest_block.timestamp
     block1 = latest_block.number
     assert block1 == (block0 + 1)
     assert timestamp1 == (timestamp0 + 10.0)
 
-    chain.mine(blocks=9, timestamp=timestamp1 + 90.0)
+    for _ in range(9):
+        provider.make_request("evm_mine", [])
+        provider.make_request("evm_increaseTime", [10])
+
     latest_block = w3.eth.get_block("latest")
     timestamp9 = latest_block.timestamp
     block9 = latest_block.number
     assert block9 == (block1 + 9)
     assert timestamp9 == (timestamp1 + 90.0)
 
-    chain.mine(blocks=20, timestamp=timestamp9 + 200.0)
+    for _ in range(20):
+        provider.make_request("evm_mine", [])
+        provider.make_request("evm_increaseTime", [10])
+
     latest_block = w3.eth.get_block("latest")
     timestamp29 = latest_block.timestamp
     block29 = latest_block.number
@@ -122,31 +129,33 @@ def test_get_next_thursday_block_number(w3):
 
 
 @enforce_types
-def test_get_st_fin_blocks():
-    chain.mine()
+def test_get_st_fin_blocks(w3):
+    provider = w3.provider
+    provider.make_request("evm_mine", [])
+
     # by block number
-    (st, fin) = get_st_fin_blocks(chain, "0", "1")
+    (st, fin) = get_st_fin_blocks(w3, "0", "1")
     assert st == 0
     assert fin > 0
 
     # get by latest fin
-    (st, fin) = get_st_fin_blocks(chain, "0", "latest")
+    (st, fin) = get_st_fin_blocks(w3, "0", "latest")
     assert st == 0
     assert fin > 0
 
     # get by thu fin
-    (st, fin) = get_st_fin_blocks(chain, "0", "thu")
+    (st, fin) = get_st_fin_blocks(w3, "0", "thu")
     assert st == 0
     assert fin > 0
 
     # get by datetime YYYY-MM-DD
-    now_date = datetime.utcfromtimestamp(chain[-1].timestamp)
+    now_date = datetime.utcfromtimestamp(w3.eth.get_block("latest").timestamp)
     now_date = now_date.strftime("%Y-%m-%d")
-    (st, fin) = get_st_fin_blocks(chain, "0", now_date)
+    (st, fin) = get_st_fin_blocks(w3, "0", now_date)
     assert st == 0
     assert fin >= 0
 
     # test in conjunction with create_range in blockrange
     # to avoid extra setup in test_blockrange.py just for one test
-    rng = create_range(chain, 10, 5000, 100, 42)
+    rng = create_range(w3, 10, 5000, 100, 42)
     assert rng

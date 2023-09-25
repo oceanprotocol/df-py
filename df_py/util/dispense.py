@@ -9,6 +9,7 @@ from df_py.util.contract_base import ContractBase
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import chain_id_to_multisig_addr
+from web3.main import Web3
 
 MAX_BATCH_SIZE = 500
 TRY_AGAIN = 3
@@ -16,6 +17,7 @@ TRY_AGAIN = 3
 
 @enforce_types
 def dispense(
+    web3: Web3,
     rewards: Dict[str, float],
     dfrewards_addr: str,
     token_addr: str,
@@ -45,7 +47,7 @@ def dispense(
     usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
     if usemultisig:
         logger.info("multisig enabled")
-        multisigaddr = chain_id_to_multisig_addr(brownie.network.chain.id)
+        multisigaddr = chain_id_to_multisig_addr(web3.eth.chain.id)
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "Simpletoken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
@@ -111,15 +113,16 @@ def dispense(
     logger.info("dispense: done")
 
 
+# TODO: encode_input
 @enforce_types
-def dispense_passive(ocean, feedistributor, amount: Union[float, int]):
+def dispense_passive(web3, ocean, feedistributor, amount: Union[float, int]):
     amount_wei = to_wei(amount)
     transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
 
     checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
     checkpoint_token_data = feedistributor.checkpoint_token.encode_input()
 
-    multisig_addr = chain_id_to_multisig_addr(brownie.network.chain.id)
+    multisig_addr = chain_id_to_multisig_addr(web3.eth.chain_id)
     send_multisig_tx(multisig_addr, ocean.address, 0, transfer_data)
 
     for data in [checkpoint_total_supply_data, checkpoint_token_data]:

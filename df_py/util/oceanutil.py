@@ -425,7 +425,7 @@ def to_32byte_hex(val: int) -> str:
 
 @enforce_types
 def calc_did(nft_addr: str, chainID: int) -> str:
-    nft_addr2 = brownie.web3.toChecksumAddress(nft_addr)
+    nft_addr2 = Web3.to_checksum_address(nft_addr)
 
     # adapted from ocean.py/ocean_lib/ocean/ocean_assets.py
     did = f"did:op:{create_checksum(nft_addr2 + str(chainID))}"

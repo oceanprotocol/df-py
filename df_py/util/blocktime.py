@@ -81,7 +81,7 @@ def timestamp_to_future_block(web3, timestamp: Union[float, int]) -> int:
     def timeSinceTimestamp(block_i):
         return web3.eth.get_block(int(block_i)).timestamp
 
-    block_last_number = web3.eth.get_block("latest").number - 1
+    block_last_number = web3.eth.get_block("latest").number
 
     # 40,000 is the average number of blocks per week
     block_old_number = max(0, block_last_number - 40_000)  # go back 40,000 blocks
@@ -115,12 +115,12 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
             self.target_timestamp = target_timestamp
 
         def timeSinceTimestamp(self, block_i):
-            block_timestamp = web3.eth.get_block(block_i).timestamp
+            block_timestamp = web3.eth.get_block(int(block_i)).timestamp
             return block_timestamp - self.target_timestamp
 
     f = C(timestamp).timeSinceTimestamp
     a = 0
-    b = web3.eth.get_block("latest").number - 1
+    b = web3.eth.get_block("latest").number
 
     if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
         return 0
@@ -213,31 +213,31 @@ def eth_find_closest_block(
 
 
 @enforce_types
-def get_fin_block(chain, FIN):
+def get_fin_block(web3, FIN):
     fin_block = 0
     if FIN == "latest":
-        fin_block = len(chain) - 5
+        fin_block = web3.eth.get_block("latest").number - 4
     elif FIN == "thu":
-        fin_block = get_block_number_thursday(chain)
+        fin_block = get_block_number_thursday(web3)
     elif "-" in str(FIN):
-        fin_block = timestr_to_block(chain, FIN)
+        fin_block = timestr_to_block(web3, FIN)
     else:
         fin_block = int(FIN)
     return fin_block
 
 
 @enforce_types
-def get_st_block(chain, ST):
+def get_st_block(web3, ST):
     st_block = 0
     if "-" in str(ST):
-        st_block = timestr_to_block(chain, ST)
+        st_block = timestr_to_block(web3, ST)
     else:
         st_block = int(ST)
     return st_block
 
 
 @enforce_types
-def get_st_fin_blocks(chain, ST, FIN):
-    st_block = get_st_block(chain, ST)
-    fin_block = get_fin_block(chain, FIN)
+def get_st_fin_blocks(web3, ST, FIN):
+    st_block = get_st_block(web3, ST)
+    fin_block = get_fin_block(web3, FIN)
     return (st_block, fin_block)

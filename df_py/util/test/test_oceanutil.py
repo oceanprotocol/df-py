@@ -1,15 +1,24 @@
-import brownie
 from enforce_typing import enforce_types
 
 from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.oceanutil import (OCEAN_token, calc_did, create_data_nft,
                                   create_datatoken_from_data_nft,
                                   record_deployed_contracts)
+from eth_account import Account
+import os
 
 account0, account3 = None, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
+
+accounts = [
+    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
+    for index in range(0, 9)
+]
+
+account0 = accounts[0]
+account3 = accounts[3]
 
 
 @enforce_types
@@ -58,14 +67,4 @@ def test_calc_did():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(CHAINID)
-    global account0, account3
-    account0 = brownie.network.accounts[0]
-    account3 = brownie.network.accounts[3]
-    oceanutil.record_deployed_contracts(ADDRESS_FILE)
-    oceantestutil.fill_accounts_with_OCEAN()
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    oceantestutil.fill_accounts_with_OCEAN(accounts)
