@@ -1,32 +1,19 @@
-import brownie
 from enforce_typing import enforce_types
+from df_py.util.contract_base import ContractBase
 
-from df_py.util import networkutil, oceanutil
-from df_py.util.constants import BROWNIE_PROJECT as B
-
-accounts = None
+from df_py.util import oceanutil
 
 
 @enforce_types
-def test_deploy_ve():
+def test_deploy_ve(w3, account0):
     """Test deploy veOCEAN contract."""
+    oceanutil.record_dev_deployed_contracts()
     OCEAN = oceanutil.OCEAN_token()
 
-    veOCEAN = B.veOcean.deploy(
-        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": accounts[0]}
+    veOCEAN = ContractBase(
+        w3,
+        "ve/veOcean",
+        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"]
     )
 
-    assert veOCEAN.admin() == accounts[0].address
-
-
-@enforce_types
-def setup_function():
-    networkutil.connect_dev()
-    oceanutil.record_dev_deployed_contracts()
-    global accounts
-    accounts = brownie.network.accounts
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    assert veOCEAN.admin() == account0.address
