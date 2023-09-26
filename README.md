@@ -75,9 +75,6 @@ export PATH=$PATH:.
 #  - get at private repo https://github.com/oceanprotocol/private-keys
 #  - CI automatically sees it via Github Actions Secrets
 export JUDGE_PRIVATE_KEY=<judge key>
-
-#compile contracts
-dftool compile
 ```
 
 

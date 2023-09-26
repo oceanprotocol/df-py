@@ -4,6 +4,7 @@ import os
 from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
+from web3.main import Web3
 
 import numpy as np
 from enforce_typing import enforce_types
@@ -85,8 +86,8 @@ def _from_addr(tx):
 
 
 @enforce_types
-def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
-    nft = oceanutil.get_data_nft(nft_addr)
+def _nft_addr_to_pred_vals(web3: Web3, nft_addr: str, judge_acct) -> List[float]:
+    nft = oceanutil.get_data_nft(web3, nft_addr)
     pred_vals_str_enc = oceanutil.get_data_field(nft, "predictions")
     try:
         pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, judge_acct.private_key)
@@ -241,7 +242,7 @@ def get_judge_acct():
 
 @enforce_types
 def get_challenge_data(
-    deadline_dt: datetime, judge_acct
+    web3: Web3, deadline_dt: datetime, judge_acct
 ) -> Tuple[List[str], List[str], list]:
     """
     @arguments
@@ -276,7 +277,7 @@ def get_challenge_data(
         print(f"nft_addr = {nft_addr}")
 
         # get predicted ETH values
-        pred_vals = _nft_addr_to_pred_vals(nft_addr, judge_acct)  # main call
+        pred_vals = _nft_addr_to_pred_vals(web3, nft_addr, judge_acct)  # main call
         print(f"pred_vals: {pred_vals}")
 
         if len(pred_vals) != len(cex_vals):

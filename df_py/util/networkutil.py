@@ -97,6 +97,7 @@ def network_to_chain_id(network: str) -> int:
     return _NETWORK_TO_CHAINID[network]
 
 
+# TODO: remove all connect/disconnect boilerplate
 @enforce_types
 def get_latest_block(chainID) -> int:
     # TODO

@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import Mock, patch
+from df_py.util.contract_base import ContractBase
 
 import pytest
 from enforce_typing import enforce_types
@@ -303,18 +304,17 @@ def test_calc_without_amount(tmp_path):
 
 
 @enforce_types
-def test_dispense(tmp_path):
+def test_dispense(tmp_path, all_accounts, account0, w3):
     # values used for inputs or main cmd
-    accounts = brownie.network.accounts
-    address1 = accounts[1].address.lower()
-    address2 = accounts[2].address.lower()
+    address1 = all_accounts[1].address
+    address2 = all_accounts[2].address
     csv_dir = str(tmp_path)
     tot_ocean = 4000.0
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
     OCEAN = oceanutil.OCEAN_token()
-    OCEAN.transfer(DFTOOL_ACCT, to_wei(tot_ocean), {"from": accounts[0]})
+    OCEAN.transfer(DFTOOL_ACCT, to_wei(tot_ocean), {"from": account0})
     assert from_wei(OCEAN.balanceOf(DFTOOL_ACCT.address)) == tot_ocean
 
     # insert fake inputs: rewards csv, new dfrewards.sol contract
@@ -328,12 +328,12 @@ def test_dispense(tmp_path):
         {"winner_addr": address2, "OCEAN_amt": 1000},
     ]
     save_challenge_rewards_csv(challenge_rewards, csv_dir)
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
     # main command
     csv_dir = str(tmp_path)
     DFRewards_addr = df_rewards.address
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = w3.to_checksum_address(oceanutil.OCEAN_address())
 
     sys_argv = [
         "dftool",
@@ -460,9 +460,9 @@ def test_calc_passive(tmp_path):
         assert len(lines) >= 3
 
 
-def test_init_dev_wallets():
-    account8 = brownie.network.accounts[8]
-    account9 = brownie.network.accounts[9]
+def test_init_dev_wallets(all_accounts):
+    account8 = all_accounts[7]
+    account9 = all_accounts[8]
 
     OCEAN = oceanutil.OCEAN_token()
     OCEAN.transfer(account8, OCEAN.balanceOf(account9.address), {"from": account9})
@@ -675,14 +675,6 @@ def test_get_rate(tmp_path):
             dftool_module.do_get_rate()
 
     assert os.path.exists(os.path.join(csv_dir, "rate-OCEAN.csv"))
-
-
-def test_compile():
-    sys_argv = ["dftool", "compile"]
-
-    with sysargs_context(sys_argv):
-        with patch("os.system"):
-            dftool_module.do_compile()
 
 
 def test_mine():

@@ -3,7 +3,12 @@ import argparse
 import os
 import sys
 
+from eth_account import Account
 from enforce_typing import enforce_types
+from df_py.util.contract_base import ContractBase
+from df_py.util import dispense
+from web3.main import Web3
+from df_py.util.base18 import to_wei
 
 from df_py.challenge import judge
 from df_py.challenge.calc_rewards import calc_challenge_rewards
@@ -122,12 +127,10 @@ def do_nftinfo():
     DELAY_S = 10
     print(f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
 
-    # brownie setup
-    networkutil.connect(chain_id)
-    chain = brownie.network.chain
+    web3 = networkutil.chain_id_to_web3(chain_id)
 
     # update ENDBLOCK
-    end_block = get_fin_block(chain, end_block)
+    end_block = get_fin_block(web3, end_block)
     print("Updated ENDBLOCK, new value = {end_block}")
 
     # main work
@@ -163,13 +166,11 @@ def do_allocations():
 
     _exitIfFileExists(csvs.allocation_csv_filename(csv_dir, n_samp > 1))
 
-    # brownie setup
-    networkutil.connect(chain_id)
-    chain = brownie.network.chain
+    web3 = networkutil.chain_id_to_web3(chain_id)
 
     # main work
     rng = blockrange.create_range(
-        chain, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
+        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
     )
     allocs = retry_function(
         queries.queryAllocations, arguments.RETRIES, 10, rng, chain_id
@@ -202,11 +203,9 @@ def do_vebals():
 
     _exitIfFileExists(csvs.vebals_csv_filename(csv_dir, n_samp > 1))
 
-    # brownie setup
-    networkutil.connect(chain_id)
-    chain = brownie.network.chain
+    web3 = networkutil.chain_id_to_web3(chain_id)
     rng = blockrange.create_range(
-        chain, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
+        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
     )
 
     balances, locked_amt, unlock_time = retry_function(
@@ -313,15 +312,14 @@ def do_challenge_data():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    # brownie setup
-    networkutil.connect(MUMBAI_CHAINID)
+    web3 = networkutil.chain_id_to_web3(MUMBAI_CHAINID)
     record_deployed_contracts(ADDRESS_FILE)
     judge_acct = judge.get_judge_acct()
 
     # main work
     deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
     challenge_data = retry_function(
-        judge.get_challenge_data, arguments.RETRIES, 10, deadline_dt, judge_acct
+        judge.get_challenge_data, arguments.RETRIES, 10, web3, deadline_dt, judge_acct
     )
 
     save_challenge_data_csv(challenge_data, csv_dir)
@@ -365,11 +363,8 @@ def do_predictoor_data():
     # check files, prep dir
     _exitIfFileExists(predictoor_data_csv_filename(csv_dir))
 
-    # brownie setup
-    networkutil.connect(chain_id)
-    chain = brownie.network.chain
-
-    st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
+    web3 = networkutil.chain_id_to_web3(chain_id)
+    st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN)
 
     # main work
     predictoor_contracts = retry_function(
@@ -432,11 +427,10 @@ def do_calc():
         sys.exit(1)
 
     if tot_ocean == 0:
-        # brownie setup
-
         # Vesting wallet contract is used to calculate the reward amount for given week / start date
         # currently only deployed on Goerli
-        networkutil.connect(5)
+        # TODO: should web3 be injected anywhere?
+        web3 = networkutil.chain_id_to_web3(5)
         current_dir = os.path.dirname(os.path.abspath(__file__))
         address_path = os.path.join(
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
@@ -543,12 +537,12 @@ def do_dispense_active():
     assert arguments.DFREWARDS_ADDR is not None
     assert arguments.TOKEN_ADDR is not None
 
-    # brownie setup
-    networkutil.connect(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
 
     # main work
     from_account = _getPrivateAccount()
-    token_symbol = B.Simpletoken.at(arguments.TOKEN_ADDR).symbol().upper()
+    web3.eth.default_account = from_account.address
+    token_symbol = ContractBase(web3, "Simpletoken", web3.to_checksum_address(arguments.TOKEN_ADDR)).symbol().upper()
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
     volume_rewards = {}
@@ -567,6 +561,7 @@ def do_dispense_active():
 
     # dispense
     dispense.dispense(
+        web3,
         rewards,
         arguments.DFREWARDS_ADDR,
         arguments.TOKEN_ADDR,
@@ -586,9 +581,10 @@ def do_new_df_rewards():
     chain_id = parser.print_args_and_get_chain()
 
     # main work
-    networkutil.connect(chain_id)
+    web3 = networkutil.chain_id_to_web3(chain_id)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.deploy({"from": from_account})
+    web3.eth.default_account = from_account.address
+    df_rewards = ContractBase(web3, "DFRewards", constructor_args=[])
     print(f"New DFRewards contract deployed at address: {df_rewards.address}")
 
     print("dftool new_dfrewards: Done")
@@ -605,11 +601,11 @@ def do_new_df_strategy():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    networkutil.connect(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_strategy = B[arguments.DFSTRATEGY_NAME].deploy(
-        arguments.DFREWARDS_ADDR, {"from": from_account}
-    )
+    web3.eth.default_account = from_account.address
+
+    df_strategy = ContractBase(web3, arguments.DFSTRATEGY_NAME, constructor_args=[arguments.DFREWARDS_ADDR])
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
     print("dftool new_df_strategy: Done")
@@ -625,9 +621,10 @@ def do_add_strategy():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    networkutil.connect(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.at(arguments.DFREWARDS_ADDR)
+    df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
+
     tx = df_rewards.addStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
     assert tx.events.keys()[0] == "StrategyAdded"
 
@@ -648,10 +645,12 @@ def do_retire_strategy():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    networkutil.connect(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    df_rewards = B.DFRewards.at(arguments.DFREWARDS_ADDR)
+    df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
+
     tx = df_rewards.retireStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
+    # TODO: transform the events part for regular web3
     assert tx.events.keys()[0] == "StrategyRetired"
     print(
         f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
@@ -662,17 +661,7 @@ def do_retire_strategy():
 
 # ========================================================================
 @enforce_types
-def do_compile():
-    parser = argparse.ArgumentParser(description="Compile contracts")
-    parser.add_argument("command", choices=["compile"])
-
-    os.system("brownie compile")
-
-
-# ========================================================================
-@enforce_types
 def do_init_dev_wallets():
-    # UPDATE THIS
     parser = SimpleChainIdArgumentParser(
         "Init wallets with OCEAN. (GANACHE ONLY)",
         "init_dev_wallets",
@@ -694,12 +683,12 @@ def do_init_dev_wallets():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    # brownie setup
-    networkutil.connect(chain_id)
+    web3 = networkutil.chain_id_to_web3(chain_id)
 
     # main work
     record_deployed_contracts(ADDRESS_FILE)
-    oceantestutil.fill_accounts_with_OCEAN()
+    # TODO: test this
+    oceantestutil.fill_accounts_with_OCEAN(web3.eth.accounts)
 
     print("dftool init_dev_wallets: Done.")
 
@@ -727,15 +716,14 @@ def do_many_random():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    # brownie setup
-    networkutil.connect(chain_id)
+    web3 = networkutil.chain_id_to_web3(chain_id)
 
     # main work
     record_deployed_contracts(ADDRESS_FILE)
     OCEAN = OCEAN_token()
 
     num_nfts = 10  # magic number
-    tups = random_create_dataNFT_with_FREs(num_nfts, OCEAN, brownie.network.accounts)
+    tups = random_create_dataNFT_with_FREs(num_nfts, OCEAN, web3.eth.accounts)
     random_lock_and_allocate(tups)
     random_consume_FREs(tups, OCEAN)
     print(f"dftool many_random: Done. {num_nfts} new nfts created.")
@@ -776,13 +764,14 @@ def do_new_acct():
     parser.add_argument("command", choices=["new_acct"])
 
     # main work
-    networkutil.connect_dev()
-    account = brownie.network.accounts.add()
+    # TODO: test
+    web3 = networkutil.chain_id_to_web3(8996)
+    account = web3.eth.account.create()
 
     print("Generated new account:")
-    print(f" private_key = {account.private_key}")
+    print(f" private_key = {account._private_key.hex()}")
     print(f" address = {account.address}")
-    print(f" For other dftools: export DFTOOL_KEY={account.private_key}")
+    print(f" For other dftools: export DFTOOL_KEY={account._private_key.hex()}")
 
 
 # ========================================================================
@@ -816,9 +805,15 @@ def do_new_token():
     print_arguments(arguments)
 
     # main work
-    networkutil.connect(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(8996)
     from_account = _getPrivateAccount()
-    token = B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": from_account})
+    web3.eth.default_account = from_account.address
+    token = ContractBase(
+        web3,
+        "Simpletoken",
+        # TODO: to_wei?
+        constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
+    )
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
 
 
@@ -877,7 +872,7 @@ def do_ve_set_allocation():
     )
     parser.add_argument("command", choices=["ve_set_allocation"])
     parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
-    parser.add_argument("amount", type=float, help="")
+    parser.add_argument("amount", type=int, help="")
     parser.add_argument("TOKEN_ADDR", type=str, help="NFT Token Address")
 
     arguments = parser.parse_args()
@@ -891,7 +886,7 @@ def do_ve_set_allocation():
         from_account = _getPrivateAccount()
         veAllocate().setAllocation(
             arguments.amount,
-            arguments.TOKEN_ADDR,
+            Web3.to_checksum_address(arguments.TOKEN_ADDR),
             arguments.CHAINID,
             {"from": from_account},
         )
@@ -933,14 +928,15 @@ def do_acct_info():
         arguments.TOKEN_ADDR,
     )
 
-    networkutil.connect(chain_id)
+    web3 = networkutil.chain_id_to_web3(chain_id)
+
     if len(account_addr) == 1:
         addr_i = int(account_addr)
-        account_addr = brownie.accounts[addr_i]
+        account_addr = web3.eth.accounts[addr_i]
     print(f"  Address = {account_addr}")
 
     if token_addr is not None:
-        token = B.Simpletoken.at(token_addr)
+        token = ContractBase(web3, "Simpletoken", web3.to_checksum_address(token_addr))
         balance = token.balanceOf(account_addr)
         print(f"  {from_wei(balance)} {token.symbol()}")
 
@@ -964,10 +960,10 @@ def do_chain_info():
     print_arguments(arguments)
 
     # do work
-    networkutil.connect(arguments.CHAINID)
-    # blocks = len(brownie.network.chain)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    block_number = web3.eth.get_block('latest').number
     print("\nChain info:")
-    print(f"  # blocks: {len(brownie.network.chain)}")
+    print(f"  # blocks: {block_number}")
 
 
 # ========================================================================
@@ -1057,7 +1053,7 @@ def do_checkpoint_feedist():
     )
 
     chain_id = parser.print_args_and_get_chain()
-    networkutil.connect(chain_id)
+    web3 = networkutil.chain_id_to_web3(chain_id)
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
@@ -1076,7 +1072,7 @@ def do_checkpoint_feedist():
 
         to = feedist.address
         value = 0
-        multisig_addr = chain_id_to_multisig_addr(brownie.network.chain.id)
+        multisig_addr = chain_id_to_multisig_addr(web3.eth.chain_id)
 
         # submit transactions to multisig
         retry_function(
@@ -1124,7 +1120,7 @@ def _getSecretSeedOrExit() -> int:
 def _getPrivateAccount():
     private_key = os.getenv("DFTOOL_KEY")
     assert private_key is not None, "Need to set envvar DFTOOL_KEY"
-    account = brownie.network.accounts.add(private_key=private_key)
+    account = Account.from_key(private_key=private_key)
     print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
 

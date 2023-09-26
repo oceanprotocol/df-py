@@ -17,11 +17,10 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_LONG = """Data Farming tool, for use by OPF.
 
-Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
+Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
 
   dftool help - full command list
 
-  dftool compile - compile contracts
   dftool get_rate TOKEN_SYMBOL ST FIN CSV_DIR --RETRIES
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID --RETRIES - query chain, output volumes, symbols, owners
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID --RETRIES
