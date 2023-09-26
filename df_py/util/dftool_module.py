@@ -72,14 +72,12 @@ def do_volsym():
         print("\nRates don't exist. Call 'dftool get_rate' first. Exiting.")
         sys.exit(1)
 
-    # brownie setup
-    networkutil.connect(chain_id)
-    chain = brownie.network.chain
+    web3 = networkutil.chain_id_to_web3(chain_id)
     record_deployed_contracts(ADDRESS_FILE)
 
     # main work
     rng = blockrange.create_range(
-        chain, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
+        web3, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
     )
     (Vi, Ci, SYMi) = retry_function(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, chain_id

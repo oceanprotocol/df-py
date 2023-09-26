@@ -21,6 +21,7 @@ from df_py.util.base18 import from_wei, to_wei
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.util.get_rate import get_rate
 from df_py.volume import csvs
+from eth_account import Account
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -780,15 +781,18 @@ def test_dispense_passive():
 
 @enforce_types
 def setup_function():
-    global PREV, DFTOOL_ACCT
-
-    networkutil.connect(CHAINID)
-    accounts = brownie.network.accounts
+    global DFTOOL_ACCT
+    accounts = [
+        Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
+        for index in range(0, 8)
+    ]
     oceanutil.record_dev_deployed_contracts()
-    oceantestutil.fill_accounts_with_OCEAN()
+    oceantestutil.fill_accounts_with_OCEAN(accounts)
 
-    DFTOOL_ACCT = accounts.add()
-    accounts[0].transfer(DFTOOL_ACCT, to_wei(0.001))
+    w3 = networkutil.chain_id_to_web3(8996)
+    DFTOOL_ACCT = w3.eth.account.create()
+
+    networkutil.send_ether(w3, accounts[0], DFTOOL_ACCT.address, to_wei(0.001))
 
     for envvar in [
         "DFTOOL_KEY",
@@ -799,21 +803,8 @@ def setup_function():
     ]:
         PREV[envvar] = os.environ.get(envvar)
 
-    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT.private_key
+    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT._private_key.hex()
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
     os.environ["SUBGRAPH_URI"] = networkutil.chain_id_to_subgraph_uri(CHAINID)
     os.environ["SECRET_SEED"] = "1234"
-    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
-
-    global PREV
-    for envvar, envval in PREV.items():
-        if envval is None:
-            del os.environ[envvar]
-        else:
-            os.environ[envvar] = envval
-    PREV = {}
+    os.environ["WEB3_INFURA_PROJECT_ID"] = ""

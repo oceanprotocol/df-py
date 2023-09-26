@@ -55,6 +55,10 @@ def load_contract(web3: Web3, path: str, address: Optional[str]) -> Contract:
 def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
     contract_source = get_contract_source(path)
     contract_base_name = path if "/" not in path else path.split("/")[-1]
+
+    if contract_base_name == "VestingWallet":
+        contract_base_name = "VestingWalletV0"
+
     solcx.install_solc(version="0.8.12")
     solcx.set_solc_version("0.8.12")
 

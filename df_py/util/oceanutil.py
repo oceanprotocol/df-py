@@ -90,9 +90,11 @@ def record_deployed_contracts(address_file: str):
             web3, "VestingWalletV0", a["VestingWalletV0"]
         )
     elif chainID == networkutil.DEV_CHAINID:
+        web3.eth.default_account = web3.eth.accounts[0]
+        C["VestingWalletV0"] = ContractBase(
+            web3, "test/VestingWallet", constructor_args=[]
+        )
         pass
-        # TODO
-        # C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
 
     CONTRACTS[chainID] = C
 
