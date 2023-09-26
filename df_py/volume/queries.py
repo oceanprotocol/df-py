@@ -3,7 +3,9 @@ from typing import Dict, List, Tuple
 
 import requests
 from enforce_typing import enforce_types
+from web3.main import Web3
 
+from df_py.util.contract_base import ContractBase
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei
 from df_py.util.blockrange import BlockRange
@@ -111,7 +113,8 @@ def queryVebalances(
     # [LP_addr] : lock_time
     unlock_times: Dict[str, int] = {}
 
-    unixEpochTime = brownie.network.chain.time()
+    web3 = networkutil.chain_id_to_web3(CHAINID)
+    unixEpochTime = web3.eth.get_block("latest").timestamp
     n_blocks = rng.num_blocks()
     n_blocks_sampled = 0
     blocks = rng.get_blocks()
@@ -816,11 +819,11 @@ _ADDR_TO_SYMBOL = networkutil._ADDRS_TO_SYMBOL  # address : TOKEN_symbol
 
 
 @enforce_types
-def symbol(addr: str):
+def symbol(web3, addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
     if addr not in _ADDR_TO_SYMBOL:
-        _symbol = B.Simpletoken.at(addr).symbol()
+        _symbol = ContractBase(web3, "Simpletoken", addr).symbol()
         _symbol = _symbol.upper()  # follow lower-upper rules
         _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]

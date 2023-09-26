@@ -6,7 +6,7 @@ from web3.exceptions import ContractLogicError
 import pytest
 from web3.logs import DISCARD
 
-from df_py.util.oceanutil import get_rpc_url, get_web3
+from df_py.util import networkutil
 
 veAllocate = None
 
@@ -122,6 +122,6 @@ def test_batch_reverts():
 @enforce_types
 def setup_function():
     global veAllocate
-    w3 = get_web3(get_rpc_url("development"))
+    w3 = networkutil.chain_id_to_web3(8996)
     w3.eth.default_account = accounts[0].address
     veAllocate = ContractBase(w3, "ve/veAllocate", constructor_args=[])

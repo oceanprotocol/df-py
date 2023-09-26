@@ -7,25 +7,22 @@ import time
 import pytest
 from enforce_typing import enforce_types
 from pytest import approx
+from eth_account import Account
 
 from df_py.util import dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, str_with_wei, to_wei
 from df_py.util.blockrange import BlockRange
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import MAX_ALLOCATE
 from df_py.util.oceanutil import ve_delegate
 from df_py.volume import calc_rewards, csvs, queries
 from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
+from df_py.util.contract_base import ContractBase
 
-PREV = {}
-god_acct = None
-chain = None
 OCEAN, veOCEAN = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
-
-CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
+CHAINID = 8996
+god_acct = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
 
 DAY = 86400
 WEEK = 7 * DAY
@@ -44,16 +41,18 @@ class SimpleAsset:
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
-def test_all(tmp_path):
+def test_all(tmp_path, w3, account0, monkeypatch):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
+    monkeypatch.setenv("SUBGRAPH_URI", networkutil.chain_id_to_subgraph_uri(CHAINID))
+    monkeypatch.setenv("SECRET_SEED", "1234")
 
-    _deploy_CO2()
+    _deploy_CO2(w3)
 
     print("Create accts...")
-    accounts = [brownie.accounts.add() for i in range(5)]
-    sampling_accounts = [brownie.accounts.add() for i in range(2)]
-    zerobal_delegation_acct = brownie.accounts.add()
+    accounts = [w3.eth.account.create() for i in range(5)]
+    sampling_accounts = [w3.eth.account.create() for i in range(2)]
+    zerobal_delegation_acct = w3.eth.account.create()
 
     _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
 
@@ -92,14 +91,14 @@ def test_all(tmp_path):
     print("Consume...")
     for i, acct in enumerate(accounts):
         oceantestutil.buy_DT_FRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
-        oceantestutil.consume_DT(assets[i].dt, god_acct, acct)
+        oceantestutil.consume_DT(assets[i].dt, account0, acct)
 
     print("Ghost consume...")
     ghost_consume_asset = assets[0]
     ghost_consume_nft_addr = ghost_consume_asset.nft.address.lower()
-    ghost_consume_asset.dt.mint(god_acct, to_wei(1000.0), {"from": god_acct})
+    ghost_consume_asset.dt.mint(account0, to_wei(1000.0), {"from": account0})
     for _ in range(20):
-        oceantestutil.consume_DT(ghost_consume_asset.dt, god_acct, god_acct)
+        oceantestutil.consume_DT(ghost_consume_asset.dt, account0, account0)
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
@@ -154,7 +153,7 @@ def test_all(tmp_path):
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
 
     # Running this test before other tests causes the following error:
-    #   brownie.exceptions.ContractNotFound: This contract no longer exists.
+    # This contract no longer exists.
     _test_queryNftinfo()
 
 
@@ -162,11 +161,14 @@ def test_all(tmp_path):
 # heavy on-chain tests: support functions
 
 
-def _deploy_CO2():
+def _deploy_CO2(w3):
     print("Deploy CO2 token...")
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
+    # TODO: should have to_wei?
+    CO2 = ContractBase(w3, "Simpletoken", constructor_args=[
+        CO2_sym, CO2_sym, 18, to_wei(1e26)
+    ])
     CO2_addr = CO2.address.lower()
 
 
@@ -538,16 +540,16 @@ def test_queryAllocations_empty():
 
 
 @enforce_types
-def test_queryVebalances_empty():
+def test_queryVebalances_empty(w3):
     rng = BlockRange(st=0, fin=10, num_samples=1)
-    tup = queries.queryVebalances(rng, CHAINID)
+    tup = queries.queryVebalances(rng, w3.eth.chain_id)
     assert tup == ({}, {}, {})
 
 
 # pylint: disable=too-many-statements
 @enforce_types
-def test_allocation_sampling():
-    alice, bob, carol, karen, james = [brownie.accounts.add() for _ in range(5)]
+def test_allocation_sampling(w3):
+    alice, bob, carol, karen, james = [w3.eth.account.create() for _ in range(5)]
     god_acct.transfer(alice, "1 ether")
     god_acct.transfer(bob, "1 ether")
     god_acct.transfer(carol, "1 ether")
@@ -714,17 +716,21 @@ def test_allocation_sampling():
     assert allocations[allocate_addrs[0]][_j] == approx(_j_expected, 0.03)
 
 
-def test_symbol():
-    testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": god_acct})
-    assert queries.symbol(testToken.address) == "CO2"
+def test_symbol(w3):
+    testToken = ContractBase(w3, "Simpletoken", constructor_args=[
+        "CO2", "", 18, to_wei(1e26)
+    ])
+    assert queries.symbol(w3, testToken.address) == "CO2"
 
-    testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": god_acct})
-    assert queries.symbol(testToken.address) == "ASDASDASD"
+    testToken = ContractBase(w3, "Simpletoken", constructor_args=[
+        "ASDASDASD", "", 18, to_wei(1e26)
+    ])
+    assert queries.symbol(w3, testToken.address) == "ASDASDASD"
 
-    testToken = B.Simpletoken.deploy(
-        "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": god_acct}
-    )
-    assert queries.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
+    testToken = ContractBase(w3, "Simpletoken", constructor_args=[
+        "!@#$@!%$#^%$&~!@", "", 18, to_wei(1e26)
+    ])
+    assert queries.symbol(w3, testToken.address) == "!@#$@!%$#^%$&~!@"
 
 
 @enforce_types
@@ -1070,33 +1076,8 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global god_acct, PREV, OCEAN, veOCEAN, chain
-    networkutil.connect(CHAINID)
-    chain = brownie.network.chain
-    god_acct = brownie.network.accounts[0]
+    global OCEAN, veOCEAN
     oceanutil.record_dev_deployed_contracts()
 
     OCEAN = oceanutil.OCEAN_token()
     veOCEAN = oceanutil.veOCEAN()
-
-    for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
-        PREV[envvar] = os.environ.get(envvar)
-
-    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
-    os.environ["SUBGRAPH_URI"] = networkutil.chain_id_to_subgraph_uri(CHAINID)
-    os.environ["SECRET_SEED"] = "1234"
-
-
-@enforce_types
-def teardown_function():
-    global PREV
-
-    networkutil.disconnect()
-
-    for envvar, envval in PREV.items():
-        if envval is None:
-            del os.environ[envvar]
-        else:
-            os.environ[envvar] = envval
-
-    PREV = {}

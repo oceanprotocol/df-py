@@ -7,11 +7,10 @@ import pytest
 from enforce_typing import enforce_types
 
 from df_py.challenge import csvs
-from df_py.util.networkutil import send_ether
+from df_py.util.networkutil import send_ether, chain_id_to_web3
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
 from df_py.util.test.test_dftool_ganache import sysargs_context
-from df_py.util.oceanutil import get_rpc_url, get_web3
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -90,7 +89,7 @@ def setup_function():
     oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN(accounts)
 
-    w3 = get_web3(get_rpc_url("development"))
+    w3 = chain_id_to_web3(8996)
     DFTOOL_ACCT = w3.eth.account.create()
 
     send_ether(w3, accounts[0], DFTOOL_ACCT.address, to_wei(0.001))

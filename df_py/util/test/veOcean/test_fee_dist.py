@@ -1,49 +1,49 @@
-import brownie
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import networkutil, oceanutil
+from df_py.util import oceanutil, networkutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
+from df_py.util.contract_base import ContractBase
+import os
+from eth_account import Account
 
-accounts = None
 alice = None
 bob = None
 veOCEAN = None
 OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
-chain = brownie.network.chain
+chain = 8996
 TA = to_wei(10.0)
 DAY = 86400
 
 
 @enforce_types
-def test_alice_locks_tokens_after():
+def test_alice_locks_tokens_after(account0):
     """Alice locks tokens after fee distribution checkpoint. There should be no reward."""
 
     fee_distributor = B.FeeDistributor.deploy(
         veOCEAN.address,
         chain.time(),
         OCEAN.address,
-        accounts[0].address,
-        accounts[0].address,
+        account0.address,
+        account0.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
     fee_estimate = B.FeeEstimate.deploy(
         veOCEAN.address,
         fee_distributor.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
     t0 = chain.time()
     t1 = t0 + WEEK * 10
 
     for _ in range(14):  # 2 weeks
-        OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
+        OCEAN.transfer(fee_distributor.address, TA, {"from": account0})
         fee_distributor.checkpoint_token()
         fee_distributor.checkpoint_total_supply()
         chain.sleep(DAY)
@@ -96,21 +96,21 @@ def test_alice_locks_tokens_exact():
         veOCEAN.address,
         start_time,
         OCEAN.address,
-        accounts[0].address,
-        accounts[0].address,
+        accounts0.address,
+        account0.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
     fee_estimate = B.FeeEstimate.deploy(
         veOCEAN.address,
         fee_distributor.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
 
-    OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
+    OCEAN.transfer(fee_distributor.address, TA, {"from": account0})
     fee_distributor.checkpoint_token()
     fee_distributor.checkpoint_total_supply()
     chain.sleep(WEEK)
@@ -133,7 +133,7 @@ def test_alice_locks_tokens_exact():
 
 @pytest.mark.skip("Fails sometimes. See #705. When fixed, un-skip this test")
 @enforce_types
-def test_alice_claims_after_lock_ends():
+def test_alice_claims_after_lock_ends(account0):
     """Alice claim rewards after her lock is expired."""
 
     veOCEAN.checkpoint()
@@ -154,21 +154,21 @@ def test_alice_claims_after_lock_ends():
         veOCEAN.address,
         start_time,
         OCEAN.address,
-        accounts[0].address,
-        accounts[0].address,
+        account0.address,
+        account0.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
     fee_estimate = B.FeeEstimate.deploy(
         veOCEAN.address,
         fee_distributor.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
 
-    OCEAN.transfer(fee_distributor.address, TA, {"from": accounts[0]})
+    OCEAN.transfer(fee_distributor.address, TA, {"from": account0})
     fee_distributor.checkpoint_token()
     fee_distributor.checkpoint_total_supply()
     chain.sleep(WEEK)
@@ -195,23 +195,22 @@ def test_alice_claims_after_lock_ends():
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, veOCEAN, OCEAN, feeDistributor
-    networkutil.connect_dev()
+    global alice, bob, veOCEAN, OCEAN
     oceanutil.record_dev_deployed_contracts()
-    accounts = brownie.network.accounts
 
-    alice = accounts.add()
-    bob = accounts.add()
+    w3 = networkutil.chain_id_to_web3(8996)
+    account0 = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
+
+    alice = w3.eth.account.create()
+    bob = w3.eth.account.create()
 
     OCEAN = oceanutil.OCEAN_token()
-    veOCEAN = B.veOcean.deploy(
-        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
+    w3.eth.default_account = alice.address
+    veOCEAN = ContractBase(
+        w3,
+        "ve/veOcean",
+        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"]
     )
 
-    OCEAN.transfer(alice, TA, {"from": accounts[0]})
-    OCEAN.transfer(bob, TA, {"from": accounts[0]})
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    OCEAN.transfer(alice, TA, {"from": account0})
+    OCEAN.transfer(bob, TA, {"from": account0})

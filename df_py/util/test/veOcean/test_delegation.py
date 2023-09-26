@@ -1,12 +1,11 @@
-import brownie
-from brownie import convert
 from enforce_typing import enforce_types
+from df_py.util.contract_base import ContractBase
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
+import os
+from eth_account import Account
 
-accounts = None
 alice = None
 bob = None
 veOCEAN = None
@@ -14,7 +13,7 @@ veDelegation = None
 OCEAN = None
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
-chain = brownie.network.chain
+chain = 8996
 TA = to_wei(10.0)
 
 
@@ -64,31 +63,26 @@ def test_alice_creates_boost():
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, veOCEAN, OCEAN, veDelegation
-    networkutil.connect_dev()
+    global alice, bob, veOCEAN, OCEAN, veDelegation
     oceanutil.record_dev_deployed_contracts()
-    accounts = brownie.network.accounts
+    w3 = networkutil.chain_id_to_web3(8996)
+    account0 = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
 
-    alice = accounts.add()
-    bob = accounts.add()
+    alice = w3.eth.account.create()
+    bob = w3.eth.account.create()
 
     OCEAN = oceanutil.OCEAN_token()
-    veOCEAN = B.veOcean.deploy(
-        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
+    w3.eth.default_account = alice.address
+    veOCEAN = ContractBase(
+        w3,
+        "ve/veOcean",
+        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"]
+    )
+    veDelegation = ContractBase(
+        w3,
+        "ve/veDelegation",
+        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"]
     )
 
-    veDelegation = B.veDelegation.deploy(
-        "Voting Escrow Boost Delegation",
-        "veDelegation",
-        "",
-        veOCEAN.address,
-        {"from": alice},
-    )
-
-    OCEAN.transfer(alice, TA, {"from": accounts[0]})
-    OCEAN.transfer(bob, TA, {"from": accounts[0]})
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    OCEAN.transfer(alice, TA, {"from": account0})
+    OCEAN.transfer(bob, TA, {"from": account0})

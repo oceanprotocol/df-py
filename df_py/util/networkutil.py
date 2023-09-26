@@ -4,6 +4,7 @@ from typing import Union
 from enforce_typing import enforce_types
 
 from df_py.util.constants import CONTRACTS, MULTISIG_ADDRS
+from df_py.util.oceanutil import get_rpc_url, get_web3
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 
@@ -81,6 +82,13 @@ def chain_id_to_multisig_addr(chainID: int) -> str:
 def chain_id_to_network(chainID: int) -> str:
     """Returns the network name for a given chainID"""
     return _CHAINID_TO_NETWORK[chainID]
+
+
+@enforce_types
+def chain_id_to_web3(chainID: int) -> str:
+    """Returns the web3 instance for a given chainID"""
+    network_name = _CHAINID_TO_NETWORK[chainID]
+    return get_web3(get_rpc_url(network_name))
 
 
 @enforce_types

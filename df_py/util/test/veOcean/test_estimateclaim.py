@@ -1,14 +1,13 @@
 from datetime import datetime
-
-import brownie
+import os
 import pytest
 from enforce_typing import enforce_types
+from eth_account import Account
+from df_py.util.contract_base import ContractBase
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
 
-accounts = None
 alice = None
 bob = None
 veOCEAN = None
@@ -16,13 +15,13 @@ OCEAN = None
 DAY = 86400
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
-chain = brownie.network.chain
+chain = 8996
 TA = to_wei(10000.0)
 DAY = 86400
 
 
 @enforce_types
-def test_rewards():
+def test_rewards(account0):
     # pylint: disable=line-too-long
     """Tests over 52 weeks for multiple users & cases if FeeEstimate.estimateClaim equals with the amount that you get after claim"""
 
@@ -30,17 +29,17 @@ def test_rewards():
         veOCEAN.address,
         chain.time(),
         OCEAN.address,
-        accounts[0].address,
-        accounts[0].address,
+        account0.address,
+        account0.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
     fee_estimate = B.FeeEstimate.deploy(
         veOCEAN.address,
         fee_distributor.address,
         {
-            "from": accounts[0],
+            "from": account0,
         },
     )
     # weekly , OPF adds 10 Ocean as rewards
@@ -75,7 +74,7 @@ def test_rewards():
 
         # every week, OPC adds rewards
         print(f"\t OPF is adding {opffees} OCEAN as rewards")
-        OCEAN.transfer(fee_distributor.address, to_wei(opffees), {"from": accounts[0]})
+        OCEAN.transfer(fee_distributor.address, to_wei(opffees), {"from": account0})
         with brownie.reverts("Call checkpoint function"):
             fee_estimate.estimateClaimAcc(alice)
         fee_distributor.checkpoint_total_supply()
@@ -170,27 +169,27 @@ def test_rewards():
 
 @enforce_types
 def setup_function():
-    global accounts, alice, bob, charlie, david, veOCEAN, OCEAN, feeDistributor
-    networkutil.connect_dev()
-    oceanutil.record_dev_deployed_contracts()
-    accounts = brownie.network.accounts
+    global alice, bob, charlie, david, veOCEAN, OCEAN
 
-    alice = accounts.add()
-    bob = accounts.add()
-    charlie = accounts.add()
-    david = accounts.add()
+    oceanutil.record_dev_deployed_contracts()
+    w3 = networkutil.chain_id_to_web3(8996)
+    account0 = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
+
+    alice = w3.eth.account.create()
+    bob = w3.eth.account.create()
+    charlie = w3.eth.account.create()
+    david = w3.eth.account.create()
 
     OCEAN = oceanutil.OCEAN_token()
-    veOCEAN = B.veOcean.deploy(
-        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
+
+    w3.eth.default_account = alice.address
+    veOCEAN = ContractBase(
+        w3,
+        "ve/veOcean",
+        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"]
     )
 
-    OCEAN.transfer(alice, TA, {"from": accounts[0]})
-    OCEAN.transfer(bob, TA, {"from": accounts[0]})
-    OCEAN.transfer(charlie, TA, {"from": accounts[0]})
-    OCEAN.transfer(david, TA, {"from": accounts[0]})
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    OCEAN.transfer(alice, TA, {"from": account0})
+    OCEAN.transfer(bob, TA, {"from": account0})
+    OCEAN.transfer(charlie, TA, {"from": account0})
+    OCEAN.transfer(david, TA, {"from": account0})

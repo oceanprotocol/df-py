@@ -1,9 +1,7 @@
-import brownie
 from enforce_typing import enforce_types
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
 
 accounts = None
 alice = None
@@ -13,7 +11,7 @@ OCEAN = None
 DAY = 86400
 WEEK = 7 * 86400
 MAXTIME = 4 * 365 * 86400  # 4 years
-chain = brownie.network.chain
+chain = 8996
 TA = to_wei(10000.0)
 DAY = 86400
 

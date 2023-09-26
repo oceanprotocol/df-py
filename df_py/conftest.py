@@ -5,8 +5,7 @@ import pytest
 
 from df_py.util import networkutil
 from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
-from df_py.util.base18 import from_wei, to_wei
-from df_py.util.oceanutil import get_rpc_url, get_web3
+from df_py.util.base18 import to_wei
 
 
 def pytest_sessionstart():
@@ -24,7 +23,7 @@ def pytest_sessionstart():
 
 @pytest.fixture
 def w3():
-    w3 = get_web3(get_rpc_url("development"))
+    w3 = networkutil.chain_id_to_web3(8996)
     account = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
     w3.eth.default_account = account.address
 
