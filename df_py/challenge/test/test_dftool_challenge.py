@@ -19,17 +19,20 @@ ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
 
 @enforce_types
-def test_empty_deadline(tmp_path):
+def test_empty_deadline(tmp_path, monkeypatch):
+    monkeypatch.setenv("MUMBAI_RPC_URL", "http://localhost:8545")
     _test(tmp_path, DEADLINE=None)
 
 
 @enforce_types
-def test_deadline_none_string(tmp_path):
+def test_deadline_none_string(tmp_path, monkeypatch):
+    monkeypatch.setenv("MUMBAI_RPC_URL", "http://localhost:8545")
     _test(tmp_path, DEADLINE="None")
 
 
 @enforce_types
-def test_explicit_deadlin(tmp_path):
+def test_explicit_deadline(tmp_path, monkeypatch):
+    monkeypatch.setenv("MUMBAI_RPC_URL", "http://localhost:8545")
     _test(tmp_path, DEADLINE="2023-05-03_23:59")
 
 
@@ -98,14 +101,12 @@ def setup_function():
         "DFTOOL_KEY",
         "ADDRESS_FILE",
         "SECRET_SEED",
-        "WEB3_INFURA_PROJECT_ID",
     ]:
         PREV[envvar] = os.environ.get(envvar)
 
     os.environ["DFTOOL_KEY"] = DFTOOL_ACCT._private_key.hex()
     os.environ["ADDRESS_FILE"] = ADDRESS_FILE
     os.environ["SECRET_SEED"] = "1234"
-    os.environ["WEB3_INFURA_PROJECT_ID"] = "9aa3d95b3bc440fa88ea12eaa4456161"
 
 
 @enforce_types
