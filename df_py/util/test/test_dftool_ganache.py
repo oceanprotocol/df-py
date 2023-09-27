@@ -363,11 +363,12 @@ def test_many_random():
 
 
 @enforce_types
-def test_checkpoint_feedistributor():
+def test_checkpoint_feedistributor(w3):
     fee_distributor = oceanutil.FeeDistributor()
     timecursor_before = fee_distributor.time_cursor()
-    brownie.network.chain.sleep(60 * 60 * 24 * 7)
-    brownie.network.chain.mine()
+    provider = w3.provider
+    provider.make_request("evm_mine", [])
+    provider.make_request("evm_increaseTime", [60 * 60 * 24 * 7])
     cmd = f"./dftool checkpoint_feedist {CHAINID}"
     os.system(cmd)
 
@@ -377,17 +378,17 @@ def test_checkpoint_feedistributor():
 
 
 @enforce_types
-def test_calc_passive(tmp_path):
+def test_calc_passive(tmp_path, account0, w3):
     accounts = []
-    account0 = brownie.network.accounts[0]
     OCEAN = oceanutil.OCEAN_token()
     OCEAN_lock_amt = to_wei(10.0)
     S_PER_WEEK = 604800
-    chain = brownie.network.chain
+
     feeDistributor = oceanutil.FeeDistributor()
     veOCEAN = oceanutil.veOCEAN()
     csv_dir = str(tmp_path)
-    unlock_time = chain.time() + S_PER_WEEK * 10
+    unlock_time = w3.eth.get_block("latest").timestamp + S_PER_WEEK * 10
+    provider = w3.provider
 
     sys_argv = [
         "dftool",
@@ -404,8 +405,8 @@ def test_calc_passive(tmp_path):
                 dftool_module.do_calculate_passive()
 
     for _ in range(2):
-        acc = brownie.network.accounts.add()
-        account0.transfer(acc, to_wei(0.1))
+        acc = w3.eth.account.create()
+        networkutil.send_ether(w3, account0, acc.address, OCEAN_lock_amt)
         OCEAN.transfer(acc, OCEAN_lock_amt, {"from": account0})
         # create lock
         OCEAN.approve(veOCEAN, OCEAN_lock_amt, {"from": acc})
@@ -416,12 +417,13 @@ def test_calc_passive(tmp_path):
         OCEAN.transfer(
             feeDistributor.address,
             to_wei(1000.0),
-            {"from": brownie.accounts[0]},
+            {"from": account0},
         )
-        chain.sleep(S_PER_WEEK)
-        chain.mine()
-        feeDistributor.checkpoint_token({"from": brownie.accounts[0]})
-        feeDistributor.checkpoint_total_supply({"from": brownie.accounts[0]})
+        provider.make_request("evm_increaseTime", [S_PER_WEEK])
+        provider.make_request("evm_mine", [])
+
+        feeDistributor.checkpoint_token({"from": account0})
+        feeDistributor.checkpoint_total_supply({"from": account0})
 
     fake_vebals = {}
     locked_amt = {}
@@ -433,7 +435,7 @@ def test_calc_passive(tmp_path):
         unlock_times[acc.address] = unlock_time
 
     csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, csv_dir, False)
-    date = chain.time() // S_PER_WEEK * S_PER_WEEK
+    date = w3.eth.get_block("latest").timestamp // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
 
     sys_argv = ["dftool", "calculate_passive", str(CHAINID), str(date), csv_dir]
