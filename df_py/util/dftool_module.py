@@ -717,14 +717,16 @@ def do_many_random():
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     web3 = networkutil.chain_id_to_web3(chain_id)
+    from_account = _getPrivateAccount()
+    web3.eth.default_account = from_account
 
     # main work
     record_deployed_contracts(ADDRESS_FILE)
     OCEAN = OCEAN_token()
 
     num_nfts = 10  # magic number
-    tups = random_create_dataNFT_with_FREs(num_nfts, OCEAN, web3.eth.accounts)
-    random_lock_and_allocate(tups)
+    tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
+    random_lock_and_allocate(web3, tups)
     random_consume_FREs(tups, OCEAN)
     print(f"dftool many_random: Done. {num_nfts} new nfts created.")
 
@@ -736,23 +738,18 @@ def do_mine():
         description="Force chain to pass time (ganache only)"
     )
     parser.add_argument("command", choices=["mine"])
-    parser.add_argument("BLOCKS", type=int, help="e.g. 3")
     parser.add_argument(
-        "--TIMEDELTA", type=int, help="e.g. 100", default=None, required=False
+        "TIMEDELTA", type=int, help="e.g. 100"
     )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    blocks, timedelta = arguments.BLOCKS, arguments.TIMEDELTA
-
     # main work
-    networkutil.connect_dev()
-    chain = brownie.network.chain
-    if timedelta is not None:
-        chain.mine(blocks=blocks, timedelta=timedelta)
-    else:
-        chain.mine(blocks=blocks)
+    web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
+    provider = web3.provider
+    provider.make_request("evm_increaseTime", [arguments.TIMEDELTA])
+    provider.make_request("evm_mine", [])
 
     print("dftool mine: Done")
 

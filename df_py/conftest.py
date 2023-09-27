@@ -34,6 +34,7 @@ def w3():
 def account0():
     return Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
 
+
 @pytest.fixture
 def all_accounts():
     return [

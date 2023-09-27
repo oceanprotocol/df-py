@@ -38,7 +38,7 @@ Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
   dftool acct_info CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chain_info CHAINID - info about a network
 
-  dftool mine BLOCKS --TIMEDELTA - force chain to pass time (ganache only)
+  dftool mine TIMEDELTA - force chain to pass time (ganache only)
 
   dftool new_veocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool new_veallocate CHAINID - deploy veAllocate (for testing)

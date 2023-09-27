@@ -56,7 +56,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
 
     _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
 
-    assets = _create_assets(n_assets=5)
+    assets = _create_assets(w3, n_assets=5)
 
     print("Sleep & mine")
     t0 = chain.time()
@@ -1054,12 +1054,12 @@ def _fund_accts(accts_to_fund: list, amt_to_fund: float):
 
 
 @enforce_types
-def _create_assets(n_assets: int) -> list:
+def _create_assets(w3, n_assets: int) -> list:
     print("Create assets...")
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
-        tup = oceanutil.create_data_nft_with_fre(god_acct, CO2)
+        tup = oceanutil.create_data_nft_with_fre(w3, god_acct, CO2)
         asset = SimpleAsset(tup)
         assets.append(asset)
     return assets

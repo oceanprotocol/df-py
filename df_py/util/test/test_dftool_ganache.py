@@ -683,7 +683,7 @@ def test_mine():
     with sysargs_context(sys_argv):
         dftool_module.do_mine()
 
-    sys_argv = ["dftool", "mine", "10", "--TIMEDELTA=100"]
+    sys_argv = ["dftool", "mine", "10"]
 
     with sysargs_context(sys_argv):
         dftool_module.do_mine()

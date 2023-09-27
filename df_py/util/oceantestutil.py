@@ -1,7 +1,7 @@
 import random
 
 from enforce_typing import enforce_types
-
+from web3.main import Web3
 from df_py.util import constants, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 
@@ -109,16 +109,18 @@ def buy_DT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_tok
 
 
 @enforce_types
-def random_create_dataNFT_with_FREs(num_FRE: int, base_token, accounts):
+def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
     # create random num_FRE.
+    accounts = web3.eth.accounts
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
         if FRE_i < len(accounts):
             account_i = FRE_i
         else:
             account_i = random.randint(0, len(accounts))
+
         (data_NFT, DT, exchangeId) = oceanutil.create_data_nft_with_fre(
-            accounts[account_i], base_token
+            web3, accounts[account_i], base_token
         )
         assert oceanutil.FixedPrice().isActive(exchangeId) is True
         tups.append((account_i, data_NFT, DT, exchangeId))
@@ -171,24 +173,27 @@ def random_consume_FREs(FRE_tup: list, base_token):
 
 
 @enforce_types
-def random_lock_and_allocate(tups: list):
+def random_lock_and_allocate(web3, tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
-    acc1 = network.accounts[0]
+    acc1 = web3.eth.accounts[0]
     OCEAN = oceanutil.OCEAN_token()
     veOCEAN = oceanutil.veOCEAN()
 
-    accounts = network.accounts[: len(tups)]
+    accounts = web3.eth.accounts[: len(tups)]
 
     for account in accounts:
         OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
 
-    network.chain.sleep(WEEK * 20)
-    t0 = network.chain.time()
+    provider = web3.provider
+    provider.make_request("evm_mine", [])
+    provider.make_request("evm_increaseTime", [WEEK * 20])
+
+    t0 = web3.get_block("latest").timestamp
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + WEEK
-    network.chain.sleep(t1 - t0)
-    network.chain.mine()
+    provider.make_request("evm_mine", [])
+    provider.make_request("evm_increaseTime", [t1 - t0])
 
     # Lock randomly
     for (i, tup) in enumerate(tups):
