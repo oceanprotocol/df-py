@@ -106,7 +106,6 @@ def test_rewards():
 @enforce_types
 def setup_function():
     global accounts, alice, bob, charlie, david, veOCEAN, OCEAN, feeDistributor
-    networkutil.connect_dev()
     oceanutil.record_dev_deployed_contracts()
     accounts = brownie.network.accounts
 
@@ -124,8 +123,3 @@ def setup_function():
     OCEAN.transfer(bob, TA, {"from": accounts[0]})
     OCEAN.transfer(charlie, TA, {"from": accounts[0]})
     OCEAN.transfer(david, TA, {"from": accounts[0]})
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()

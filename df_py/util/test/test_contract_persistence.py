@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 
-from df_py.util import networkutil, oceanutil
+from df_py.util import oceanutil
 
 
 @enforce_types
@@ -17,10 +17,4 @@ def test_2():
 
 @enforce_types
 def setup_function():
-    networkutil.connect_dev()
     oceanutil.record_dev_deployed_contracts()
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()

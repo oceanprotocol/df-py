@@ -74,7 +74,7 @@ def get_reward_amount_for_week_wei(start_dt: datetime) -> int:
     vesting_start_dt = datetime(2025, 3, 13)
     vesting_tot_amount = TOT_SUPPLY - 32530000
 
-    # TODO: maybe to_wei for the amount?
+    # TODO: to_wei for the amount?
     reward = _halflife_solidity(
         vesting_tot_amount, int((end_dt - vesting_start_dt).total_seconds()), HALF_LIFE
     ) - _halflife_solidity(

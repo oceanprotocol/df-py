@@ -44,7 +44,7 @@ NUMBER_OF_ACCOUNTS = 1000
 
 
 def main():
-    networkutil.connect(CHAINID)  # Connect to ganache
+    #networkutil.connect(CHAINID)  # Connect to ganache
     oceanutil.record_dev_deployed_contracts()  # Record deployed contract addresses on ganache
 
     CSV_DIR = str("/tmp/df_stress_test")

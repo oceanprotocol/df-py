@@ -38,15 +38,6 @@ def sysargs_context(arguments):
     sys.argv = old_sys_argv
 
 
-# Mock the connection, otherwise the test setup clashes with
-# the implementation itself, and cleans up the contracts.
-# Either way, we are already connected to ganache through tests.
-@pytest.fixture(autouse=True)
-def mock_connect():
-    with patch.object(dftool_module.networkutil, "connect"):
-        yield
-
-
 @pytest.fixture
 def mock_query_predictoor_contracts():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:

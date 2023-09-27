@@ -826,7 +826,7 @@ def do_new_veocean():
     print_arguments(arguments)
 
     # main work
-    networkutil.connect(arguments.CHAINID)
+    #networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
 
     # deploy veOcean
@@ -852,7 +852,7 @@ def do_new_veallocate():
     print_arguments(arguments)
 
     # main work
-    networkutil.connect(arguments.CHAINID)
+    #networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
     contract = B.veAllocate.deploy({"from": from_account})
     print(f"veAllocate contract deployed at: {contract.address}")
@@ -876,7 +876,7 @@ def do_ve_set_allocation():
     print_arguments(arguments)
 
     # main work
-    networkutil.connect(arguments.CHAINID)
+    #networkutil.connect(arguments.CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
         record_deployed_contracts(ADDRESS_FILE)
@@ -981,7 +981,7 @@ def do_dispense_passive():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    networkutil.connect(arguments.CHAINID)
+    #networkutil.connect(arguments.CHAINID)
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     record_deployed_contracts(ADDRESS_FILE)
@@ -1016,7 +1016,7 @@ def do_calculate_passive():
     print_arguments(arguments)
     csv_dir = arguments.CSV_DIR
 
-    networkutil.connect(arguments.CHAINID)
+    #networkutil.connect(arguments.CHAINID)
     timestamp = int(timestr_to_timestamp(arguments.DATE))
 
     S_PER_WEEK = 7 * 86400

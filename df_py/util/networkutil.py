@@ -97,58 +97,6 @@ def network_to_chain_id(network: str) -> int:
     return _NETWORK_TO_CHAINID[network]
 
 
-# TODO: remove all connect/disconnect boilerplate
-@enforce_types
-def connect_dev():
-    connect(DEV_CHAINID)
-
-
-@enforce_types
-def connect(chainID: int):
-    # TODO
-    pass
-    """
-    network = brownie.network
-    if network.is_connected():
-        disconnect()  # call networkutil.disconnect(), *NOT* brownie directly
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=".*Development network has a block height of*",
-        )
-        network_name = chain_id_to_network(chainID)
-        try:
-            network.connect(network_name)
-        except KeyError as e:
-            if network_name != "mumbai":
-                raise e
-
-            network.connect("polygon-test")
-    """
-
-
-@enforce_types
-def disconnect():
-    # TODO
-    pass
-    """
-    network = brownie.network
-    if not network.is_connected():
-        return
-
-    chainID = network.chain.id
-    if chainID in CONTRACTS:
-        del CONTRACTS[chainID]
-
-    try:
-        network.disconnect()
-    except:  # pylint: disable=bare-except
-        # overcome brownie issue
-        # https://github.com/eth-brownie/brownie/issues/1144
-        pass
-    """
-
-
 @enforce_types
 def send_ether(
     web3, from_wallet, to_address: str, amount: Union[int, float]

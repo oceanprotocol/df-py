@@ -68,10 +68,8 @@ def test_get_txs_invalid_data():
 
 @enforce_types
 def test_nft_addr_to_pred_vals(w3):
-    mumbai_chainid = 80001
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
 
-    networkutil.connect(mumbai_chainid)
     judge_acct = judge.get_judge_acct()
     pred_vals = judge._nft_addr_to_pred_vals(w3, known_nft_addr, judge_acct)
 
@@ -83,8 +81,6 @@ def test_nft_addr_to_pred_vals(w3):
         pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
 
     assert pred_vals == []
-
-    networkutil.disconnect()
 
 
 @enforce_types

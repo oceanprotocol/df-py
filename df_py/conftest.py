@@ -9,7 +9,6 @@ from df_py.util.base18 import to_wei
 
 
 def pytest_sessionstart():
-    networkutil.connect_dev()
     record_dev_deployed_contracts()
     accs = [
         Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))

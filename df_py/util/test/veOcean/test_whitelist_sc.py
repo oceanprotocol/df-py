@@ -54,7 +54,6 @@ def test_velock_whitelisted():
 
 @enforce_types
 def setup_function():
-    networkutil.connect_dev()
     oceanutil.record_dev_deployed_contracts()
     global deployer, veOCEAN, OCEAN, veLocker, smartWalletChecker
     deployer = brownie.network.accounts[0]
@@ -70,8 +69,3 @@ def setup_function():
     # apply smart wallet checker
     veOCEAN.commit_smart_wallet_checker(smartWalletChecker.address, {"from": deployer})
     veOCEAN.apply_smart_wallet_checker({"from": deployer})
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
