@@ -8,6 +8,7 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 from eth_account import Account
+from df_py.util.networkutil import send_ether
 
 from df_py.util import dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, str_with_wei, to_wei
@@ -54,7 +55,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     sampling_accounts = [w3.eth.account.create() for i in range(2)]
     zerobal_delegation_acct = w3.eth.account.create()
 
-    _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
+    _fund_accts(w3, accounts + sampling_accounts, amt_to_fund=1000.0)
 
     assets = _create_assets(w3, n_assets=5)
 
@@ -550,11 +551,11 @@ def test_queryVebalances_empty(w3):
 @enforce_types
 def test_allocation_sampling(w3):
     alice, bob, carol, karen, james = [w3.eth.account.create() for _ in range(5)]
-    god_acct.transfer(alice, "1 ether")
-    god_acct.transfer(bob, "1 ether")
-    god_acct.transfer(carol, "1 ether")
-    god_acct.transfer(karen, "1 ether")
-    god_acct.transfer(james, "1 ether")
+    send_ether(w3, god_acct, alice.address, to_wei(1))
+    send_ether(w3, god_acct, bob.address, to_wei(1))
+    send_ether(w3, god_acct, carol.address, to_wei(1))
+    send_ether(w3, god_acct, karen.address, to_wei(1))
+    send_ether(w3, god_acct, james.address, to_wei(1))
 
     allocate_addrs = [
         f"0x000000000000000000000000000000000000000{i}" for i in range(1, 8)
@@ -566,11 +567,13 @@ def test_allocation_sampling(w3):
     # Karen allocates at 10% 0-0, 20% 2-2 and 100% 6-6
     # James allocates 10% 0-0, 20% 1-0, 30% 2-0, 5% 3-0, 50% 4-0, 0% 5-0, 100% 6-0
 
-    def forward(blocks):
-        chain.sleep(1)
-        chain.mine(blocks)
+    provider = w3.provider
 
-    start_block = len(chain)
+    def forward(blocks):
+        provider.make_request("evm_increaseTime", [1])
+        provider.make_request("evm_mine", [])
+
+    start_block = w3.eth.get_block("latest").number
 
     # DAY 0
     oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
@@ -667,7 +670,7 @@ def test_allocation_sampling(w3):
 
     # FIN
     forward(100)
-    end_block = len(chain)
+    end_block = w3.eth.get_block("latest").number
 
     # query
     rng = BlockRange(start_block, end_block, end_block - start_block, 42)
@@ -1042,12 +1045,13 @@ def _allocate(accts: list, assets: list):
 
 
 @enforce_types
-def _fund_accts(accts_to_fund: list, amt_to_fund: float):
+def _fund_accts(w3, accts_to_fund: list, amt_to_fund: float):
     print("Fund accts...")
     amt_to_fund_wei = to_wei(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
-        god_acct.transfer(acct, "0.1 ether")
+        w3.eth.default_account = god_acct
+        send_ether(w3, god_acct, acct.address, to_wei(1))
         OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
         if CO2 is not None:
             CO2.transfer(acct, amt_to_fund_wei, {"from": god_acct})
