@@ -67,13 +67,13 @@ def test_get_txs_invalid_data():
 
 
 @enforce_types
-def test_nft_addr_to_pred_vals():
+def test_nft_addr_to_pred_vals(w3):
     mumbai_chainid = 80001
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
 
     networkutil.connect(mumbai_chainid)
     judge_acct = judge.get_judge_acct()
-    pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
+    pred_vals = judge._nft_addr_to_pred_vals(w3, known_nft_addr, judge_acct)
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798
@@ -138,7 +138,7 @@ def test_get_judge_acct():
 
 
 @enforce_types
-def test_get_challenge_data():
+def test_get_challenge_data(w3):
     dt = datetime(2021, 9, 1, 12, 59, tzinfo=timezone.utc)
     judge_acct = judge.get_judge_acct()
 
@@ -172,7 +172,7 @@ def test_get_challenge_data():
                 assert len(predvals_0x123) == len(cex_vals)
                 assert len(predvals_0x456) != len(cex_vals)
                 mock3.side_effect = [predvals_0x123, predvals_0x456, predvals_0x123]
-                challenge_data = judge.get_challenge_data(dt, judge_acct)
+                challenge_data = judge.get_challenge_data(w3, dt, judge_acct)
 
     (from_addrs, nft_addrs, nmses) = challenge_data
 

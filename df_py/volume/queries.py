@@ -386,7 +386,8 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     offset = 0
 
     if endBlock == "latest":
-        endBlock = networkutil.get_latest_block(chainID)
+        w3 = networkutil.chain_id_to_web3(chainID)
+        endBlock = w3.eth.get_block("latest").number
 
     while True:
         query = """

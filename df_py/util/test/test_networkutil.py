@@ -25,9 +25,3 @@ def test_network_to_chain_id():
     assert networkutil.network_to_chain_id("development") == 8996
     assert networkutil.network_to_chain_id("mainnet") == 1
     assert networkutil.network_to_chain_id("polygon") == 137
-
-
-@enforce_types
-def test_get_latest_block(w3):
-    latest = networkutil.get_latest_block(networkutil.DEV_CHAINID)
-    assert latest == len(network.chain) - 1

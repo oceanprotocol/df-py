@@ -1,9 +1,9 @@
 import hashlib
 import json
 import os
-import warnings
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
+from web3.logs import DISCARD
 
 from enforce_typing import enforce_types
 from web3.exceptions import ExtraDataLengthError
@@ -156,27 +156,16 @@ def VestingWalletV0():
 
 
 @enforce_types
-def create_data_nft_with_fre(from_account, token):
-    data_NFT = create_data_nft("1", "1", from_account)
-    DT = create_datatoken_from_data_nft("1", "1", data_NFT, from_account)
+def create_data_nft_with_fre(web3, from_account, token):
+    data_NFT = create_data_nft(web3, "1", "1", from_account)
+    DT = create_datatoken_from_data_nft(web3, "1", "1", data_NFT, from_account)
 
     exchangeId = create_FRE_from_datatoken(DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
 
 
-def _get_events(tx):
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=".*Event log does not contain enough topics for the given ABI.*",
-        )
-        events = tx.events
-
-    return events
-
-
 @enforce_types
-def create_data_nft(name: str, symbol: str, from_account):
+def create_data_nft(web3: Web3, name: str, symbol: str, from_account):
     erc721_factory = ERC721Factory()
     template_index = 1
     additional_metadata_updater = ZERO_ADDRESS
@@ -197,14 +186,16 @@ def create_data_nft(name: str, symbol: str, from_account):
         {"from": from_account},
     )
 
-    events = _get_events(tx)
-    data_NFT_address = events["NFTCreated"]["newTokenAddress"]
-    data_NFT = B.ERC721Template.at(data_NFT_address)
+    event = erc721_factory.contract.events.NFTCreated().process_receipt(
+        tx, errors=DISCARD
+    )[0]
+    data_NFT_address = event.args.newTokenAddress
+    data_NFT = ContractBase(web3, "ERC721Template", data_NFT_address)
     return data_NFT
 
 
-def get_data_nft(data_nft_address):
-    return B.ERC721Template.at(data_nft_address)
+def get_data_nft(web3: Web3, data_nft_address):
+    return ContractBase(web3, "ERC721Template", data_nft_address)
 
 
 def get_data_field(data_nft, field_label: str) -> str:
@@ -217,7 +208,7 @@ def get_data_field(data_nft, field_label: str) -> str:
 
 @enforce_types
 def create_datatoken_from_data_nft(
-    dt_name: str, dt_symbol: str, data_nft, from_account
+    web3: Web3, dt_name: str, dt_symbol: str, data_nft, from_account
 ):
     erc20_template_index = 1
     strings = [
@@ -240,9 +231,9 @@ def create_datatoken_from_data_nft(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
 
-    events = _get_events(tx)
-    DT_address = events["TokenCreated"]["newTokenAddress"]
-    DT = B.ERC20Template.at(DT_address)
+    event = data_nft.contract.events.TokenCreated().process_receipt(tx, errors=DISCARD)[0]
+    DT_address = event.args.newTokenAddress
+    DT = ContractBase(web3, "ERC20Template", DT_address)
 
     return DT
 
@@ -279,7 +270,8 @@ def create_FRE_from_datatoken(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
 
-    exchange_id: str = tx.events["NewFixedRate"]["exchangeId"]
+    event = datatoken.contract.events.NewFixedRate().process_receipt(tx, errors=DISCARD)[0]
+    exchange_id: str = event.args.exchangeId
 
     return exchange_id
 

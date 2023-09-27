@@ -99,25 +99,6 @@ def network_to_chain_id(network: str) -> int:
 
 # TODO: remove all connect/disconnect boilerplate
 @enforce_types
-def get_latest_block(chainID) -> int:
-    # TODO
-    # network = brownie.network
-    prev = None
-    if not network.is_connected():
-        connect(chainID)
-    else:
-        prev = network.chain.id
-        if prev != chainID:
-            disconnect()
-            connect(chainID)
-    lastBlock = network.chain.height
-    if prev is not None:
-        disconnect()
-        connect(prev)
-    return lastBlock
-
-
-@enforce_types
 def connect_dev():
     connect(DEV_CHAINID)
 

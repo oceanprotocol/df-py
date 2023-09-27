@@ -41,18 +41,18 @@ def test_OCEAN_token():
 
 
 @enforce_types
-def test_create_data_nft():
+def test_create_data_nft(w3):
     record_deployed_contracts(ADDRESS_FILE)
-    data_nft = create_data_nft("nft_name", "nft_symbol", account0)
+    data_nft = create_data_nft(w3, "nft_name", "nft_symbol", account0)
     assert data_nft.name() == "nft_name"
     assert data_nft.symbol() == "nft_symbol"
 
 
 @enforce_types
-def test_create_datatoken_from_data_nft():
+def test_create_datatoken_from_data_nft(w3):
     record_deployed_contracts(ADDRESS_FILE)
-    data_nft = create_data_nft("foo", "foo", account0)
-    DT = create_datatoken_from_data_nft("dt_name", "dt_symbol", data_nft, account0)
+    data_nft = create_data_nft(w3, "foo", "foo", account0)
+    DT = create_datatoken_from_data_nft(w3, "dt_name", "dt_symbol", data_nft, account0)
     assert DT.name() == "dt_name"
     assert DT.symbol() == "dt_symbol"
 
