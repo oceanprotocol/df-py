@@ -186,7 +186,7 @@ def eth_find_closest_block(
         Finds the closest block number to given timestamp
     """
 
-    block_ts = web3.eth.get_block("latest").timestamp
+    block_ts = web3.eth.get_block(block_number).timestamp
     found = block_number
 
     last = None

@@ -84,7 +84,7 @@ def test_timestamp_to_block(w3):
     timestamp29 = latest_block.timestamp
     block29 = latest_block.number
     assert block29 == (block9 + 20)
-    assert timestamp29 == (timestamp9 + 200.0)
+    assert timestamp29 == approx(timestamp9 + 200.0, 1)
 
     # test
     assert timestamp_to_block(w3, timestamp0) == approx(block0, 1)

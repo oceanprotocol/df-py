@@ -11,7 +11,6 @@ from df_py.util.blocktime import (eth_find_closest_block,
                                   eth_timestamp_to_block, timestr_to_block)
 
 
-# TODO: replace chain usage with web3 for blocktime utils!! + create_range
 @enforce_types
 def test_eth_timestamp_to_block(monkeypatch):
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")

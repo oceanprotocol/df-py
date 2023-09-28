@@ -181,7 +181,7 @@ def test_strategies(w3):
     assert token.balanceOf(df_strategy) == 0
     with pytest.raises(ContractLogicError, match="Caller doesn't match"):
         # tx origin must be a1
-        df_strategy.claim(token.address, a1.address, {"from": accounts[2]})
+        df_strategy.claim([token.address, a1.address], {"from": accounts[2]})
 
     with pytest.raises(ContractLogicError, match="Caller must be a strategy"):
         # non strategy addresses cannot claim
