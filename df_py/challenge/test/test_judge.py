@@ -67,8 +67,12 @@ def test_get_txs_invalid_data():
 
 
 @enforce_types
-def test_nft_addr_to_pred_vals(w3):
+def test_nft_addr_to_pred_vals(monkeypatch):
+    monkeypatch.setenv("MUMBAI_RPC_URL", "https://polygon-mumbai.blockpi.network/v1/rpc/public")
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "")
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
+
+    w3 = networkutil.chain_id_to_web3(80001)
 
     judge_acct = judge.get_judge_acct()
     pred_vals = judge._nft_addr_to_pred_vals(w3, known_nft_addr, judge_acct)
@@ -78,7 +82,7 @@ def test_nft_addr_to_pred_vals(w3):
 
     with patch("df_py.challenge.judge.crypto.asym_decrypt") as mock:
         mock.side_effect = Exception("mocked exception")
-        pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
+        pred_vals = judge._nft_addr_to_pred_vals(w3, known_nft_addr, judge_acct)
 
     assert pred_vals == []
 

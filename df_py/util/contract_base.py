@@ -86,7 +86,7 @@ class ContractBase(object):
         if constructor_args is not None:
             self.contract = deploy_contract(web3, path, constructor_args)
         else:
-            self.contract = load_contract(web3, path, address)
+            self.contract = load_contract(web3, path, web3.to_checksum_address(address))
         assert not address or (self.contract.address.lower() == address.lower())
 
         transferable = [

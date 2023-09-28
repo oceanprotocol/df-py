@@ -23,7 +23,6 @@ from df_py.util.contract_base import ContractBase
 OCEAN, veOCEAN = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
 CHAINID = 8996
-god_acct = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
 
 DAY = 86400
 WEEK = 7 * DAY
@@ -55,9 +54,9 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     sampling_accounts = [w3.eth.account.create() for i in range(2)]
     zerobal_delegation_acct = w3.eth.account.create()
 
-    _fund_accts(w3, accounts + sampling_accounts, amt_to_fund=1000.0)
+    _fund_accts(w3, accounts + sampling_accounts, amt_to_fund=1000.0, god_acct=account0)
 
-    assets = _create_assets(w3, n_assets=5)
+    assets = _create_assets(w3, n_assets=5, god_acct=account0)
 
     print("Sleep & mine")
     t0 = chain.time()
@@ -138,13 +137,13 @@ def test_all(tmp_path, w3, account0, monkeypatch):
 
     # end-to-end tests
     _test_end_to_end_without_csvs(rng)
-    _test_end_to_end_with_csvs(rng, tmp_path)
+    _test_end_to_end_with_csvs(rng, tmp_path, account0)
 
     # test ghost consume
     _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr)
 
     # modifies chain time, test last
-    _test_queryPassiveRewards(sampling_accounts_addrs)
+    _test_queryPassiveRewards(sampling_accounts_addrs, account0)
 
     # sleep 20 weeks
     chain.sleep(60 * 60 * 24 * 7 * 20)
@@ -422,7 +421,7 @@ def _test_end_to_end_without_csvs(rng):
 
 
 @enforce_types
-def _test_end_to_end_with_csvs(rng, tmp_path):
+def _test_end_to_end_with_csvs(rng, tmp_path, god_acct):
     print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
@@ -478,7 +477,7 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
 
 
 @enforce_types
-def _test_queryPassiveRewards(addresses):
+def _test_queryPassiveRewards(addresses, god_acct):
     print("_test_queryPassiveRewards()...")
     fee_distributor = oceanutil.FeeDistributor()
 
@@ -549,7 +548,7 @@ def test_queryVebalances_empty(w3):
 
 # pylint: disable=too-many-statements
 @enforce_types
-def test_allocation_sampling(w3):
+def test_allocation_sampling(w3, god_acct):
     alice, bob, carol, karen, james = [w3.eth.account.create() for _ in range(5)]
     send_ether(w3, god_acct, alice.address, to_wei(1))
     send_ether(w3, god_acct, bob.address, to_wei(1))
@@ -1045,7 +1044,7 @@ def _allocate(accts: list, assets: list):
 
 
 @enforce_types
-def _fund_accts(w3, accts_to_fund: list, amt_to_fund: float):
+def _fund_accts(w3, accts_to_fund: list, amt_to_fund: float, god_acct):
     print("Fund accts...")
     amt_to_fund_wei = to_wei(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
@@ -1058,7 +1057,7 @@ def _fund_accts(w3, accts_to_fund: list, amt_to_fund: float):
 
 
 @enforce_types
-def _create_assets(w3, n_assets: int) -> list:
+def _create_assets(w3, n_assets: int, god_acct) -> list:
     print("Create assets...")
     assets = []
     for i in range(n_assets):

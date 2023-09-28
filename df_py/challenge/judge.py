@@ -90,7 +90,7 @@ def _nft_addr_to_pred_vals(web3: Web3, nft_addr: str, judge_acct) -> List[float]
     nft = oceanutil.get_data_nft(web3, nft_addr)
     pred_vals_str_enc = oceanutil.get_data_field(nft, "predictions")
     try:
-        pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, judge_acct.private_key)
+        pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, judge_acct._private_key.hex())
         pred_vals = [float(s) for s in pred_vals_str[1:-1].split(",")]
     except:  # pylint: disable=W0702
         return []
