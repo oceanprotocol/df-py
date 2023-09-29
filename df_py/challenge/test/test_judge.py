@@ -183,7 +183,7 @@ def test_get_challenge_data():
     # second entry is invalid
     # third entry is outdated
     assert from_addrs == ["0xfrom1"]
-    assert nft_addrs == ["0xnft1"] # keep the most recent one
+    assert nft_addrs == ["0xnft1"]  # keep the most recent one
 
 
 def test_filter_marked_indices():
