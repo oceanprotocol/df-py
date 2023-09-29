@@ -178,12 +178,12 @@ def test_get_challenge_data():
 
     assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
     assert nmses[0] != 1.0
-    assert nmses[1] != 1.0
-    assert len(nmses) == 2
+    assert len(nmses) == 1
 
-    # should we elliminate the second entry from 0xfrom1?
-    assert from_addrs == ["0xfrom1", "0xfrom2", "0xfrom1"]
-    assert nft_addrs == ["0xnft1", "0xnft2", "0xnft3"]
+    # second entry is invalid
+    # third entry is outdated
+    assert from_addrs == ["0xfrom1"]
+    assert nft_addrs == ["0xnft1"] # keep the most recent one
 
 
 def test_filter_marked_indices():
