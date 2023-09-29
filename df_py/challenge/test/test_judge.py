@@ -178,7 +178,8 @@ def test_get_challenge_data():
 
     assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
     assert nmses[0] != 1.0
-    assert len(nmses) == 1
+    assert nmses[1] != 1.0
+    assert len(nmses) == 2
 
     # should we elliminate the second entry from 0xfrom1?
     assert from_addrs == ["0xfrom1", "0xfrom2", "0xfrom1"]
