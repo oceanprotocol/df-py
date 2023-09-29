@@ -192,7 +192,7 @@ def print_results(challenge_data):
 
 @enforce_types
 def _keep_youngest_entry_per_competitor(txs: list, nmses: list) -> list:
-    """For each from_addr with >1 entry, filter out all nmses except youngest"""
+    """For each from_addr with >1 entry, make all nmses 1.0 except youngest"""
     print()
     print("Keep-youngest: begin")
     from_addrs = [_from_addr(tx) for tx in txs]
@@ -215,18 +215,12 @@ def _keep_youngest_entry_per_competitor(txs: list, nmses: list) -> list:
 
         for j, i in enumerate(entries):
             if j != youngest_j:
-                # if not youngest, mark it for removal
                 nmses[entries[j]] = 1.0
                 print(
                     f"  Non-youngest #{[entries_p1[j]]}, at {dates[j]} gets nmse = 1.0"
                 )
-
-    # filter out 1.0s
-    nmses = [nmse for nmse in nmses if nmse != 1.0]
-    
     print()
     print("Keep-youngest: done")
-
 
     return nmses
 
@@ -295,7 +289,7 @@ def get_challenge_data(
 
         print(f"NFT #{i+1}/{n}: Done")
 
-    # For each from_addr with >1 entry, filter out all nmses except youngest
+    # For each from_addr with >1 entry, make all nmses 1.0 except youngest
     nmses = _keep_youngest_entry_per_competitor(txs, nmses)
 
     # Sort results for lowest-nmse first
