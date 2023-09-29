@@ -8,7 +8,7 @@ from typing import Optional
 from enforce_typing import enforce_types
 
 from df_py.challenge import judge
-from df_py.util.networkutil import DEV_CHAINID
+from df_py.util.networkutil import DEV_CHAINID, chain_id_to_rpc_url
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
@@ -71,6 +71,19 @@ def valid_date_and_convert(s: str):
 
     msg = "not a valid date: {s}"
     raise argparse.ArgumentTypeError(msg)
+
+
+@enforce_types
+def chain_type(s: str):
+    if not s.isnumeric():
+        raise argparse.ArgumentTypeError("CHAINID must be an integer")
+
+    try:
+        chain_id_to_rpc_url(int(s))
+
+        return int(s)
+    except ValueError as e:
+        raise argparse.ArgumentTypeError(str(e)) from e
 
 
 @enforce_types
@@ -185,7 +198,7 @@ class StartFinArgumentParser(argparse.ArgumentParser):
             type=existing_path,
             help=f"output dir for {csv_names}",
         )
-        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
         self.add_argument(
             "--RETRIES",
             default=1,
@@ -207,7 +220,7 @@ class SimpleChainIdArgumentParser(argparse.ArgumentParser):
             epilog=epilog,
         )
         self.add_argument("command", choices=[command_name])
-        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
 
     @enforce_types
     def print_args_and_get_chain(self) -> int:
@@ -223,7 +236,7 @@ class DfStrategyArgumentParser(argparse.ArgumentParser):
     def __init__(self, description: str, command_name: str):
         super().__init__(description=description)
         self.add_argument("command", choices=[command_name])
-        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
         self.add_argument("DFREWARDS_ADDR", type=str, help="DFRewards contract address")
         self.add_argument(
             "DFSTRATEGY_ADDR", type=str, help="DFStrategy contract address"

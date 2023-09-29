@@ -77,17 +77,19 @@ def test_calc_volume(tmp_path):
     TOT_OCEAN = 1000.0
     START_DATE = "2023-02-02"  # Only substream is volume DF
 
-    with sysargs_context(
-        [
-            "dftool",
-            "calc",
-            "volume",
-            csv_dir,
-            str(TOT_OCEAN),
-            f"--START_DATE={START_DATE}",
-        ]
-    ):
-        dftool_module.do_calc()
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        with sysargs_context(
+            [
+                "dftool",
+                "calc",
+                "volume",
+                csv_dir,
+                str(TOT_OCEAN),
+                f"--START_DATE={START_DATE}",
+            ]
+        ):
+            dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)

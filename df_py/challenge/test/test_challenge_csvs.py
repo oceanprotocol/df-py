@@ -1,6 +1,7 @@
 from enforce_typing import enforce_types
 
 from df_py.challenge import csvs
+from unittest.mock import patch
 
 
 @enforce_types
@@ -35,7 +36,11 @@ def test_challenge_rewards(tmp_path):
     rewards = csvs.get_sample_challenge_rewards()
 
     assert csvs.save_challenge_rewards_csv(rewards, csv_dir)
-    loaded_rewards = csvs.load_challenge_rewards_csv(csv_dir)
+
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        loaded_rewards = csvs.load_challenge_rewards_csv(csv_dir)
+
     assert loaded_rewards == {
         "0xfrom1": 2500,
         "0xfrom2": 1500,

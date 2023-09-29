@@ -12,7 +12,7 @@ from eth_account import Account
 
 accounts = [
     Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 9)
+    for index in range(0, 4)
 ]
 
 a1 = accounts[1]

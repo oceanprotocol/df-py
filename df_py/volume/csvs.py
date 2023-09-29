@@ -2,6 +2,7 @@ import csv
 import glob
 import os
 from typing import Any, Dict, List, Tuple
+from web3.main import Web3
 
 from enforce_typing import enforce_types
 
@@ -66,7 +67,7 @@ def load_allocation_csvs(csv_dir: str) -> Dict[int, Dict[str, Dict[str, float]]]
 
             chainID = int(_chainID)
             nft_addr = nft_addr.lower()
-            LP_addr = LP_addr.lower()
+            LP_addr = Web3.to_checksum_address(LP_addr.lower())
             percent = float(_percent)
 
             assert_is_eth_addr(nft_addr)
@@ -151,7 +152,7 @@ def load_vebals_csv(
                 continue
             LP_addr, _balance, _locked_amt, _unlock_time = row
 
-            LP_addr = LP_addr.lower()
+            LP_addr = Web3.to_checksum_address(LP_addr.lower())
             balance = float(_balance)
             locked_amt = float(_locked_amt)
             unlock_time = int(_unlock_time)
@@ -759,7 +760,7 @@ def load_volume_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
                 assert row == ["chainID", "LP_addr", "OCEAN_amt"]
             else:
                 chainID = int(row[0])
-                LP_addr = row[1].lower()
+                LP_addr = Web3.to_checksum_address(row[1].lower())
                 amt = float(row[2])
 
                 assert_is_eth_addr(LP_addr)

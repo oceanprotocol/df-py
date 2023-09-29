@@ -563,8 +563,8 @@ def do_dispense_active():
     dispense.dispense(
         web3,
         rewards,
-        arguments.DFREWARDS_ADDR,
-        arguments.TOKEN_ADDR,
+        web3.to_checksum_address(arguments.DFREWARDS_ADDR),
+        web3.to_checksum_address(arguments.TOKEN_ADDR),
         from_account,
         batch_number=arguments.BATCH_NBR,
     )
@@ -981,8 +981,6 @@ def do_dispense_passive():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    #networkutil.connect(arguments.CHAINID)
-
     ADDRESS_FILE = _getAddressEnvvarOrExit()
     record_deployed_contracts(ADDRESS_FILE)
 
@@ -1016,7 +1014,6 @@ def do_calculate_passive():
     print_arguments(arguments)
     csv_dir = arguments.CSV_DIR
 
-    #networkutil.connect(arguments.CHAINID)
     timestamp = int(timestr_to_timestamp(arguments.DATE))
 
     S_PER_WEEK = 7 * 86400

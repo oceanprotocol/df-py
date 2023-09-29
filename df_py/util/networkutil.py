@@ -92,6 +92,13 @@ def chain_id_to_web3(chainID: int) -> str:
 
 
 @enforce_types
+def chain_id_to_rpc_url(chainID: int) -> str:
+    """Returns the web3 instance for a given chainID"""
+    network_name = _CHAINID_TO_NETWORK[chainID]
+    return get_rpc_url(network_name)
+
+
+@enforce_types
 def network_to_chain_id(network: str) -> int:
     """Returns the chainID for a given network name"""
     return _NETWORK_TO_CHAINID[network]
