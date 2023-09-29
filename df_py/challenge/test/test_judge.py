@@ -185,3 +185,19 @@ def test_get_challenge_data():
     # should we elliminate the second entry from 0xfrom1?
     assert from_addrs == ["0xfrom1", "0xfrom2", "0xfrom1"]
     assert nft_addrs == ["0xnft1", "0xnft2", "0xnft3"]
+
+
+def test_filter_marked_indices():
+    nmses = [0.5, 1.0, 0.2, 1.0, 0.8]
+    from_addrs = ['addr1', 'addr2', 'addr3', 'addr4', 'addr5']
+    nft_addrs = ['nft1', 'nft2', 'nft3', 'nft4', 'nft5']
+    
+    expected_nmses = [0.5, 0.2, 0.8]
+    expected_from_addrs = ['addr1', 'addr3', 'addr5']
+    expected_nft_addrs = ['nft1', 'nft3', 'nft5']
+    
+    filtered_nmses, filtered_from_addrs, filtered_nft_addrs = judge._filter_marked_indices(nmses, from_addrs, nft_addrs)
+    
+    assert filtered_nmses == expected_nmses
+    assert filtered_from_addrs == expected_from_addrs
+    assert filtered_nft_addrs == expected_nft_addrs
