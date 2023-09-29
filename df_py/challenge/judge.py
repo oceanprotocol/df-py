@@ -238,6 +238,15 @@ def get_judge_acct():
 
     return judge_acct
 
+@enforce_types
+def _filter_marked_indices(nmses: list, from_addrs: list, nft_addrs: list) -> tuple:
+    """Filter out the marked indices from nmses, from_addrs, and nft_addrs"""
+    keep_indices = [i for i, nmse in enumerate(nmses) if nmse != 1.0]
+    nmses = [nmses[i] for i in keep_indices]
+    from_addrs = [from_addrs[i] for i in keep_indices]
+    nft_addrs = [nft_addrs[i] for i in keep_indices]
+    
+    return nmses, from_addrs, nft_addrs
 
 @enforce_types
 def get_challenge_data(
@@ -291,6 +300,9 @@ def get_challenge_data(
 
     # For each from_addr with >1 entry, make all nmses 1.0 except youngest
     nmses = _keep_youngest_entry_per_competitor(txs, nmses)
+
+    # Filter out the marked indices (1.0)
+    nmses, from_addrs, nft_addrs = _filter_marked_indices(nmses, from_addrs, nft_addrs)
 
     # Sort results for lowest-nmse first
     entries = np.argsort(nmses)
