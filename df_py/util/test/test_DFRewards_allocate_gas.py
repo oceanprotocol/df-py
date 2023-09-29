@@ -4,8 +4,8 @@ import pytest
 from enforce_typing import enforce_types
 
 from df_py.util import networkutil, oceantestutil, oceanutil
-from df_py.util.random_addresses import get_random_addresses
 from df_py.util.contract_base import ContractBase
+from df_py.util.random_addresses import get_random_addresses
 
 
 @pytest.mark.skip("Fails sometimes. See #702. When fixed, un-skip this test")
@@ -29,7 +29,7 @@ def test_allocate_gas(w3, account0):
     assert per_iteration1 * 1250 < 30_000_000
 
 
-#TODO: fix this test
+# TODO: fix this test
 @pytest.mark.skip("Skip after fixing and removing brownie")
 @enforce_types
 def test_1250_addresses(w3, account0):
@@ -39,11 +39,13 @@ def test_1250_addresses(w3, account0):
     assert big_batch.gas_used < 30_000_000
 
 
-#TODO: fix this test
+# TODO: fix this test
 @pytest.mark.skip("Skip after fixing and removing brownie")
 @enforce_types
 def test_insufficient_gas_reverts(w3, account0):
-    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(w3, account0, 1250)
+    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(
+        w3, account0, 1250
+    )
     with pytest.raises(Exception) as e_info:
         df_rewards.allocate(
             addresses, rewards, token_addr, {"from": account0, "gas_limit": 100000}
@@ -55,7 +57,9 @@ def test_insufficient_gas_reverts(w3, account0):
 
 @enforce_types
 def _batch_allocate(w3, account0, n_accounts: int) -> str:
-    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(w3, account0, n_accounts)
+    addresses, rewards, token_addr, df_rewards = _prep_batch_allocate(
+        w3, account0, n_accounts
+    )
     tx = df_rewards.allocate(addresses, rewards, token_addr, {"from": account0})
     return tx
 

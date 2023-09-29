@@ -1,6 +1,6 @@
 import pytest
 
-from df_py.predictoor.models import Prediction, Predictoor, PredictContract
+from df_py.predictoor.models import PredictContract, Prediction, Predictoor
 
 
 def test_prediction_init():

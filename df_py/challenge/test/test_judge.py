@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-
 from enforce_typing import enforce_types
 
 from df_py.challenge import judge
@@ -68,7 +67,9 @@ def test_get_txs_invalid_data():
 
 @enforce_types
 def test_nft_addr_to_pred_vals(monkeypatch):
-    monkeypatch.setenv("MUMBAI_RPC_URL", "https://polygon-mumbai.blockpi.network/v1/rpc/public")
+    monkeypatch.setenv(
+        "MUMBAI_RPC_URL", "https://polygon-mumbai.blockpi.network/v1/rpc/public"
+    )
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "")
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
 

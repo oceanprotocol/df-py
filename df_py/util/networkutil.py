@@ -105,9 +105,7 @@ def network_to_chain_id(network: str) -> int:
 
 
 @enforce_types
-def send_ether(
-    web3, from_wallet, to_address: str, amount: Union[int, float]
-):
+def send_ether(web3, from_wallet, to_address: str, amount: Union[int, float]):
     chain_id = web3.eth.chain_id
     tx = {
         "from": from_wallet.address,

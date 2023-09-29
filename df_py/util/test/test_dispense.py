@@ -1,14 +1,13 @@
+import os
 from unittest.mock import patch
 
-from df_py.util.base18 import to_wei
 import pytest
-import os
 from enforce_typing import enforce_types
+from eth_account import Account
 
 from df_py.util import dispense, oceantestutil, oceanutil
-from df_py.util.base18 import from_wei
+from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
-from eth_account import Account
 
 accounts = [
     Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
@@ -25,7 +24,9 @@ a3 = accounts[3]
 def test_small_batch(w3):
     OCEAN = oceanutil.OCEAN_token()
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     rewards_at_chain = {a1.address: 0.1, a2.address: 0.2, a3.address: 0.3}
     dispense.dispense(
@@ -117,4 +118,3 @@ def test_dispense_passive(w3):
 @enforce_types
 def setup_function():
     oceantestutil.fill_accounts_with_OCEAN(accounts)
-

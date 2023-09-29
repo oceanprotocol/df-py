@@ -1,11 +1,16 @@
+import os
+
 from enforce_typing import enforce_types
+from eth_account import Account
 
 from df_py.util import networkutil, oceantestutil, oceanutil
-from df_py.util.oceanutil import (OCEAN_token, calc_did, create_data_nft,
-                                  create_datatoken_from_data_nft,
-                                  record_deployed_contracts)
-from eth_account import Account
-import os
+from df_py.util.oceanutil import (
+    OCEAN_token,
+    calc_did,
+    create_data_nft,
+    create_datatoken_from_data_nft,
+    record_deployed_contracts,
+)
 
 account0, account3 = None, None
 

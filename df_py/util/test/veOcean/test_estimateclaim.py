@@ -1,12 +1,13 @@
-from datetime import datetime
 import os
+from datetime import datetime
+
 import pytest
 from enforce_typing import enforce_types
 from eth_account import Account
-from df_py.util.contract_base import ContractBase
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
+from df_py.util.contract_base import ContractBase
 
 alice = None
 bob = None
@@ -186,7 +187,7 @@ def setup_function():
     veOCEAN = ContractBase(
         w3,
         "ve/veOcean",
-        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"]
+        constructor_args=[OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0"],
     )
 
     OCEAN.transfer(alice, TA, {"from": account0})

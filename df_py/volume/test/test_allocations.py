@@ -1,5 +1,6 @@
-from enforce_typing import enforce_types
 from unittest.mock import patch
+
+from enforce_typing import enforce_types
 
 from df_py.volume import csvs
 from df_py.volume.allocations import allocs_to_stakes, load_stakes

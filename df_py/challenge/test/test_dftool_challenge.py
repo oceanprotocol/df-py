@@ -1,15 +1,15 @@
 import os
 from typing import Optional
 from unittest.mock import patch
-from eth_account import Account
 
 import pytest
 from enforce_typing import enforce_types
+from eth_account import Account
 
 from df_py.challenge import csvs
-from df_py.util.networkutil import send_ether, chain_id_to_web3
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
+from df_py.util.networkutil import chain_id_to_web3, send_ether
 from df_py.util.test.test_dftool_ganache import sysargs_context
 
 PREV, DFTOOL_ACCT = {}, None

@@ -1,6 +1,7 @@
+from unittest.mock import patch
+
 import pytest
 from enforce_typing import enforce_types
-from unittest.mock import patch
 
 from df_py.volume import csvs
 from df_py.volume.models import SimpleDataNft
@@ -317,9 +318,7 @@ def test_rewards_per_lp_main(tmp_path):
 
 
 @enforce_types
-def test_rewards_info(
-    tmp_path
-):  # pylint: disable=unused-argument
+def test_rewards_info(tmp_path):  # pylint: disable=unused-argument
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},

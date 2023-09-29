@@ -6,19 +6,19 @@ import time
 
 import pytest
 from enforce_typing import enforce_types
-from pytest import approx
 from eth_account import Account
-from df_py.util.networkutil import send_ether
+from pytest import approx
 
 from df_py.util import dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, str_with_wei, to_wei
 from df_py.util.blockrange import BlockRange
 from df_py.util.constants import MAX_ALLOCATE
+from df_py.util.contract_base import ContractBase
+from df_py.util.networkutil import send_ether
 from df_py.util.oceanutil import ve_delegate
 from df_py.volume import calc_rewards, csvs, queries
 from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
-from df_py.util.contract_base import ContractBase
 
 OCEAN, veOCEAN = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
@@ -166,9 +166,9 @@ def _deploy_CO2(w3):
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
     # TODO: should have to_wei?
-    CO2 = ContractBase(w3, "Simpletoken", constructor_args=[
-        CO2_sym, CO2_sym, 18, to_wei(1e26)
-    ])
+    CO2 = ContractBase(
+        w3, "Simpletoken", constructor_args=[CO2_sym, CO2_sym, 18, to_wei(1e26)]
+    )
     CO2_addr = CO2.address.lower()
 
 
@@ -720,19 +720,19 @@ def test_allocation_sampling(w3, account0):
 
 
 def test_symbol(w3):
-    testToken = ContractBase(w3, "Simpletoken", constructor_args=[
-        "CO2", "", 18, to_wei(1e26)
-    ])
+    testToken = ContractBase(
+        w3, "Simpletoken", constructor_args=["CO2", "", 18, to_wei(1e26)]
+    )
     assert queries.symbol(w3, testToken.address) == "CO2"
 
-    testToken = ContractBase(w3, "Simpletoken", constructor_args=[
-        "ASDASDASD", "", 18, to_wei(1e26)
-    ])
+    testToken = ContractBase(
+        w3, "Simpletoken", constructor_args=["ASDASDASD", "", 18, to_wei(1e26)]
+    )
     assert queries.symbol(w3, testToken.address) == "ASDASDASD"
 
-    testToken = ContractBase(w3, "Simpletoken", constructor_args=[
-        "!@#$@!%$#^%$&~!@", "", 18, to_wei(1e26)
-    ])
+    testToken = ContractBase(
+        w3, "Simpletoken", constructor_args=["!@#$@!%$#^%$&~!@", "", 18, to_wei(1e26)]
+    )
     assert queries.symbol(w3, testToken.address) == "!@#$@!%$#^%$&~!@"
 
 

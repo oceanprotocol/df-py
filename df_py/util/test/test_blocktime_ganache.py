@@ -6,10 +6,14 @@ from pytest import approx
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.blockrange import create_range
-from df_py.util.blocktime import (get_block_number_thursday,
-                                  get_next_thursday_timestamp,
-                                  get_st_fin_blocks, timestamp_to_block,
-                                  timestr_to_block, timestr_to_timestamp)
+from df_py.util.blocktime import (
+    get_block_number_thursday,
+    get_next_thursday_timestamp,
+    get_st_fin_blocks,
+    timestamp_to_block,
+    timestr_to_block,
+    timestr_to_timestamp,
+)
 
 
 @enforce_types
@@ -58,7 +62,7 @@ def test_timestamp_to_block(w3):
 
     provider = w3.provider
 
-    provider.make_request("evm_mine", [timestamp0+10])
+    provider.make_request("evm_mine", [timestamp0 + 10])
     provider.make_request("evm_increaseTime", [10])
     latest_block = w3.eth.get_block("latest")
     timestamp1 = latest_block.timestamp

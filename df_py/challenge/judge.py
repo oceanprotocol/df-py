@@ -4,14 +4,14 @@ import os
 from calendar import WEDNESDAY
 from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
-from web3.main import Web3
 
 import numpy as np
 from enforce_typing import enforce_types
 from eth_account import Account
+from web3.main import Web3
 
-from df_py.challenge.timeutil import dt_to_ut, ut_to_dt, print_datetime_info
 from df_py.challenge.nmse import calc_nmse
+from df_py.challenge.timeutil import dt_to_ut, print_datetime_info, ut_to_dt
 from df_py.util import crypto, graphutil, networkutil, oceanutil
 from df_py.util.get_rate import get_binance_rate_all
 
@@ -90,7 +90,9 @@ def _nft_addr_to_pred_vals(web3: Web3, nft_addr: str, judge_acct) -> List[float]
     nft = oceanutil.get_data_nft(web3, nft_addr)
     pred_vals_str_enc = oceanutil.get_data_field(nft, "predictions")
     try:
-        pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, judge_acct._private_key.hex())
+        pred_vals_str = crypto.asym_decrypt(
+            pred_vals_str_enc, judge_acct._private_key.hex()
+        )
         pred_vals = [float(s) for s in pred_vals_str[1:-1].split(",")]
     except:  # pylint: disable=W0702
         return []

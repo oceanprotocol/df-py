@@ -1,12 +1,13 @@
+import os
+
+import pytest
 from enforce_typing import enforce_types
+from eth_account import Account
+from web3.exceptions import ContractLogicError
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
-from eth_account import Account
-import os
-import pytest
-from web3.exceptions import ContractLogicError
 
 accounts = [
     Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
@@ -46,7 +47,9 @@ def test_token(w3):
 
     w3.eth.default_account = accounts[0].address
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     tos = [a1.address, a2.address, a3.address]
     values = [10, 20, 30]
@@ -82,7 +85,9 @@ def test_OCEAN(w3):
 
     w3.eth.default_account = accounts[0].address
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     OCEAN.approve(df_rewards, 10, {"from": accounts[0]})
     df_rewards.allocate([a1.address], [10], OCEAN.address, {"from": accounts[0]})
@@ -102,7 +107,9 @@ def test_multiple_token(w3):
 
     w3.eth.default_account = accounts[0].address
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     tos = [a1.address, a2.address, a3.address]
     values = [10, 20, 30]
@@ -169,7 +176,9 @@ def test_strategies(w3):
     token = _deploy_token(w3, accounts[0])
 
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     # allocate rewards
     tos = [a1.address, a2.address, a3.address]

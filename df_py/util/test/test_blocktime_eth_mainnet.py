@@ -5,10 +5,13 @@ from datetime import datetime
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util.oceanutil import get_rpc_url, get_web3
 from df_py.util import networkutil
-from df_py.util.blocktime import (eth_find_closest_block,
-                                  eth_timestamp_to_block, timestr_to_block)
+from df_py.util.blocktime import (
+    eth_find_closest_block,
+    eth_timestamp_to_block,
+    timestr_to_block,
+)
+from df_py.util.oceanutil import get_rpc_url, get_web3
 
 
 @enforce_types

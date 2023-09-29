@@ -3,10 +3,10 @@ import json
 import os
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
-from web3.logs import DISCARD
 
 from enforce_typing import enforce_types
 from web3.exceptions import ExtraDataLengthError
+from web3.logs import DISCARD
 from web3.main import Web3
 
 from df_py.util import networkutil
@@ -231,7 +231,9 @@ def create_datatoken_from_data_nft(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
 
-    event = data_nft.contract.events.TokenCreated().process_receipt(tx, errors=DISCARD)[0]
+    event = data_nft.contract.events.TokenCreated().process_receipt(tx, errors=DISCARD)[
+        0
+    ]
     DT_address = event.args.newTokenAddress
     DT = ContractBase(web3, "ERC20Template", DT_address)
 
@@ -270,7 +272,9 @@ def create_FRE_from_datatoken(
         FixedPrice().address, addresses, uints, {"from": from_account}
     )
 
-    event = datatoken.contract.events.NewFixedRate().process_receipt(tx, errors=DISCARD)[0]
+    event = datatoken.contract.events.NewFixedRate().process_receipt(
+        tx, errors=DISCARD
+    )[0]
     exchange_id: str = event.args.exchangeId
 
     return exchange_id

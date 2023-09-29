@@ -5,12 +5,11 @@ import requests
 from enforce_typing import enforce_types
 from web3.main import Web3
 
-from df_py.util.contract_base import ContractBase
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei
 from df_py.util.blockrange import BlockRange
-from df_py.util.constants import AQUARIUS_BASE_URL
-from df_py.util.constants import MAX_ALLOCATE
+from df_py.util.constants import AQUARIUS_BASE_URL, MAX_ALLOCATE
+from df_py.util.contract_base import ContractBase
 from df_py.util.graphutil import submit_query
 from df_py.volume.models import SimpleDataNft, TokSet
 

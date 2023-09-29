@@ -1,11 +1,12 @@
+import os
+
+import pytest
 from enforce_typing import enforce_types
 from eth_account import Account
-import os
-import pytest
 
 from df_py.util import networkutil
-from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
 from df_py.util.base18 import to_wei
+from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
 
 
 def pytest_sessionstart():

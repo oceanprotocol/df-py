@@ -1,13 +1,13 @@
+import os
+
+import pytest
 from enforce_typing import enforce_types
+from eth_account import Account
+from web3.exceptions import ContractLogicError
 
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
-from web3.exceptions import ContractLogicError
 from df_py.util.networkutil import send_ether
-from eth_account import Account
-import pytest
-import os
-
 
 accounts = [
     Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
@@ -53,7 +53,9 @@ def test_erc20_withdraw_main(w3):
 
     w3.eth.default_account = accounts[0].address
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    df_strategy = ContractBase(w3, "DFStrategyV1", constructor_args=[df_rewards.address])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     token.transfer(df_rewards, to_wei(40.0), {"from": accounts[0]})
 

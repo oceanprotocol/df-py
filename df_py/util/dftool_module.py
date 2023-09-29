@@ -3,51 +3,64 @@ import argparse
 import os
 import sys
 
-from eth_account import Account
 from enforce_typing import enforce_types
-from df_py.util.contract_base import ContractBase
-from df_py.util import dispense
+from eth_account import Account
 from web3.main import Web3
-from df_py.util.base18 import to_wei
 
 from df_py.challenge import judge
 from df_py.challenge.calc_rewards import calc_challenge_rewards
-from df_py.challenge.csvs import (challenge_rewards_csv_filename,
-                                  get_sample_challenge_data,
-                                  get_sample_challenge_rewards,
-                                  load_challenge_data_csv,
-                                  load_challenge_rewards_csv,
-                                  save_challenge_data_csv,
-                                  save_challenge_rewards_csv)
-from df_py.predictoor.csvs import (predictoor_data_csv_filename,
-                                   save_predictoor_contracts_csv,
-                                   save_predictoor_data_csv)
-from df_py.predictoor.queries import (query_predictoor_contracts,
-                                      query_predictoors)
-from df_py.util import blockrange, get_rate, networkutil
-from df_py.util.base18 import from_wei
-from df_py.util.blocktime import (get_fin_block, get_st_fin_blocks,
-                                  timestr_to_timestamp)
-from df_py.util.dftool_arguments import (CHAINID_EXAMPLES,
-                                         chain_type,
-                                         DfStrategyArgumentParser,
-                                         SimpleChainIdArgumentParser,
-                                         StartFinArgumentParser,
-                                         autocreate_path, block_or_valid_date,
-                                         challenge_date, do_help_long,
-                                         existing_path, print_arguments,
-                                         valid_date, valid_date_and_convert)
+from df_py.challenge.csvs import (
+    challenge_rewards_csv_filename,
+    get_sample_challenge_data,
+    get_sample_challenge_rewards,
+    load_challenge_data_csv,
+    load_challenge_rewards_csv,
+    save_challenge_data_csv,
+    save_challenge_rewards_csv,
+)
+from df_py.predictoor.csvs import (
+    predictoor_data_csv_filename,
+    save_predictoor_contracts_csv,
+    save_predictoor_data_csv,
+)
+from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
+from df_py.util import blockrange, dispense, get_rate, networkutil
+from df_py.util.base18 import from_wei, to_wei
+from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
+from df_py.util.contract_base import ContractBase
+from df_py.util.dftool_arguments import (
+    CHAINID_EXAMPLES,
+    DfStrategyArgumentParser,
+    SimpleChainIdArgumentParser,
+    StartFinArgumentParser,
+    autocreate_path,
+    block_or_valid_date,
+    chain_type,
+    challenge_date,
+    do_help_long,
+    existing_path,
+    print_arguments,
+    valid_date,
+    valid_date_and_convert,
+)
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import DEV_CHAINID, chain_id_to_multisig_addr
-from df_py.util.oceantestutil import (random_consume_FREs,
-                                      random_create_dataNFT_with_FREs,
-                                      random_lock_and_allocate)
-from df_py.util.oceanutil import (FeeDistributor, OCEAN_token,
-                                  record_deployed_contracts, veAllocate)
+from df_py.util.oceantestutil import (
+    random_consume_FREs,
+    random_create_dataNFT_with_FREs,
+    random_lock_and_allocate,
+)
+from df_py.util.oceanutil import (
+    FeeDistributor,
+    OCEAN_token,
+    record_deployed_contracts,
+    veAllocate,
+)
 from df_py.util.retry import retry_function
 from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth,
-    get_active_reward_amount_for_week_eth_by_stream)
+    get_active_reward_amount_for_week_eth_by_stream,
+)
 from df_py.volume import calc_rewards, csvs, queries
 from df_py.volume.calc_rewards import calc_rewards_volume
 
@@ -543,7 +556,13 @@ def do_dispense_active():
     # main work
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
-    token_symbol = ContractBase(web3, "Simpletoken", web3.to_checksum_address(arguments.TOKEN_ADDR)).symbol().upper()
+    token_symbol = (
+        ContractBase(
+            web3, "Simpletoken", web3.to_checksum_address(arguments.TOKEN_ADDR)
+        )
+        .symbol()
+        .upper()
+    )
     token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
     volume_rewards = {}
@@ -606,7 +625,9 @@ def do_new_df_strategy():
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
 
-    df_strategy = ContractBase(web3, arguments.DFSTRATEGY_NAME, constructor_args=[arguments.DFREWARDS_ADDR])
+    df_strategy = ContractBase(
+        web3, arguments.DFSTRATEGY_NAME, constructor_args=[arguments.DFREWARDS_ADDR]
+    )
     print(f"New DFStrategy contract deployed at address: {df_strategy.address}")
 
     print("dftool new_df_strategy: Done")
@@ -672,8 +693,7 @@ def do_init_dev_wallets():
     )
     chain_id = parser.print_args_and_get_chain()
 
-    from df_py.util import \
-        oceantestutil  # pylint: disable=import-outside-toplevel
+    from df_py.util import oceantestutil  # pylint: disable=import-outside-toplevel
 
     if chain_id != DEV_CHAINID:
         # To support other testnets, they need to init_dev_wallets()
@@ -739,9 +759,7 @@ def do_mine():
         description="Force chain to pass time (ganache only)"
     )
     parser.add_argument("command", choices=["mine"])
-    parser.add_argument(
-        "TIMEDELTA", type=int, help="e.g. 100"
-    )
+    parser.add_argument("TIMEDELTA", type=int, help="e.g. 100")
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -810,7 +828,7 @@ def do_new_token():
         web3,
         "Simpletoken",
         # TODO: to_wei?
-        constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
+        constructor_args=["TST", "Test Token", 18, to_wei(1e21)],
     )
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
 
@@ -827,7 +845,7 @@ def do_new_veocean():
     print_arguments(arguments)
 
     # main work
-    #networkutil.connect(arguments.CHAINID)
+    # networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
 
     # deploy veOcean
@@ -853,7 +871,7 @@ def do_new_veallocate():
     print_arguments(arguments)
 
     # main work
-    #networkutil.connect(arguments.CHAINID)
+    # networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
     contract = B.veAllocate.deploy({"from": from_account})
     print(f"veAllocate contract deployed at: {contract.address}")
@@ -877,7 +895,7 @@ def do_ve_set_allocation():
     print_arguments(arguments)
 
     # main work
-    #networkutil.connect(arguments.CHAINID)
+    # networkutil.connect(arguments.CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
         record_deployed_contracts(ADDRESS_FILE)
@@ -961,7 +979,7 @@ def do_chain_info():
 
     # do work
     web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
-    block_number = web3.eth.get_block('latest').number
+    block_number = web3.eth.get_block("latest").number
     print("\nChain info:")
     print(f"  # blocks: {block_number}")
 

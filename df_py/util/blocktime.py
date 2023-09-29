@@ -206,7 +206,9 @@ def eth_find_closest_block(
             if web3.eth.get_block(found).timestamp > timestamp:
                 break
 
-    if abs(web3.eth.get_block(last).timestamp - timestamp) < abs(web3.eth.get_block(found).timestamp - timestamp):
+    if abs(web3.eth.get_block(last).timestamp - timestamp) < abs(
+        web3.eth.get_block(found).timestamp - timestamp
+    ):
         found = last
 
     return found

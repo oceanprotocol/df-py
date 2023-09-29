@@ -3,7 +3,7 @@ import os
 from enforce_typing import enforce_types
 
 from df_py.predictoor import csvs
-from df_py.predictoor.models import Prediction, Predictoor, PredictContract
+from df_py.predictoor.models import PredictContract, Prediction, Predictoor
 
 
 @enforce_types

@@ -1,7 +1,8 @@
+from unittest.mock import patch
+
 from enforce_typing import enforce_types
 
 from df_py.challenge import csvs
-from unittest.mock import patch
 
 
 @enforce_types

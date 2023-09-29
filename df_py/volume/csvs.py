@@ -2,9 +2,9 @@ import csv
 import glob
 import os
 from typing import Any, Dict, List, Tuple
-from web3.main import Web3
 
 from enforce_typing import enforce_types
+from web3.main import Web3
 
 from df_py.util.csv_helpers import _last_int, assert_is_eth_addr
 from df_py.volume.models import SimpleDataNft

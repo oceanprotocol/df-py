@@ -1,12 +1,13 @@
+import os
+
+import pytest
 from enforce_typing import enforce_types
 from eth_account import Account
-import os
-from df_py.util.contract_base import ContractBase
 from web3.exceptions import ContractLogicError
-import pytest
 from web3.logs import DISCARD
 
 from df_py.util import networkutil
+from df_py.util.contract_base import ContractBase
 
 veAllocate = None
 

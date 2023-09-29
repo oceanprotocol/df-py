@@ -1,14 +1,14 @@
+import os
 from pprint import pprint
 from unittest.mock import Mock, patch
 
 import pytest
 from enforce_typing import enforce_types
+from eth_account import Account
 from requests import Response
 
 from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.graphutil import submit_query
-from eth_account import Account
-import os
 
 CHAINID = networkutil.DEV_CHAINID
 
