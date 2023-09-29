@@ -295,7 +295,7 @@ def get_challenge_data(
             continue
         nmses[i] = calc_nmse(cex_vals, pred_vals)
         # plot_prices(cex_vals, pred_vals)
-        print(f"nmse = {nmses[i]:.3e}. (May become 1.0, eg if duplicates)")
+        print(f"nmse = {nmses[i]:.3e}.")
 
         print(f"NFT #{i+1}/{n}: Done")
 
