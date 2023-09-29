@@ -548,7 +548,8 @@ def test_queryVebalances_empty(w3):
 
 # pylint: disable=too-many-statements
 @enforce_types
-def test_allocation_sampling(w3, god_acct):
+def test_allocation_sampling(w3, account0):
+    god_acct = account0
     alice, bob, carol, karen, james = [w3.eth.account.create() for _ in range(5)]
     send_ether(w3, god_acct, alice.address, to_wei(1))
     send_ether(w3, god_acct, bob.address, to_wei(1))
