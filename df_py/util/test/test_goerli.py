@@ -23,7 +23,7 @@ def test_chain_id_to_subgraph_uri():
 
 
 @enforce_types
-def test_main(tmp_path):
+def test_main(tmp_path, monkeypatch):
     # brownie has a bug when trying to shut down non-ganache networks
     # details in https://github.com/eth-brownie/brownie/issues/1144
     # in file venv/lib/python3.8/site-packages/brownie/network/state.py
@@ -32,6 +32,8 @@ def test_main(tmp_path):
 
     # This isn't a problem from cli, since it cleans up mem
     # But it is a problem for unit tests. Our workaround is to do a system call.
+    monkeypatch.setenv("GOERLI_RPC_URL", "https://rpc.ankr.com/eth_goerli")
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "")
 
     ACCOUNT_ADDR = "0xc945a5a960fef1a9c3fef8593fc2446d1d7c6146"
     TOKEN_ADDR = "0xb4fbf271143f4fbf7b91a5ded31805e42b2208d6"
@@ -39,11 +41,11 @@ def test_main(tmp_path):
     cmd = f"./dftool acct_info {CHAINID} {ACCOUNT_ADDR} --TOKEN_ADDR={TOKEN_ADDR}>{fn} 2>{fn}"
     os.system(cmd)
 
-    s = None
+    ess = None
     with open(fn, "r") as f:
-        s = f.read()
+        ess = f.read()
 
-    assert " WETH" in s, cmd
+    assert " WETH" in ess, cmd
 
 
 @enforce_types

@@ -458,10 +458,10 @@ def get_rpc_url(network_name: str) -> str:
     if os.getenv(f"{network_name.upper()}_RPC_URL"):
         base_url = os.getenv(f"{network_name.upper()}_RPC_URL")
 
-    if os.getenv("WEB3_INFURA_PROJECT_ID"):
+    if os.getenv("WEB3_INFURA_PROJECT_ID") and base_url:
         base_url = f"{base_url}{os.getenv('WEB3_INFURA_PROJECT_ID')}"
 
     if base_url:
         return base_url
 
-    raise Exception(f"Need to set {network_name.upper()}_RPC_URL env variable.")
+    raise ValueError(f"Need to set {network_name.upper()}_RPC_URL env variable.")

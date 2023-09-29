@@ -29,6 +29,7 @@ from df_py.util.base18 import from_wei
 from df_py.util.blocktime import (get_fin_block, get_st_fin_blocks,
                                   timestr_to_timestamp)
 from df_py.util.dftool_arguments import (CHAINID_EXAMPLES,
+                                         chain_type,
                                          DfStrategyArgumentParser,
                                          SimpleChainIdArgumentParser,
                                          StartFinArgumentParser,
@@ -105,7 +106,7 @@ def do_nftinfo():
     parser.add_argument(
         "CSV_DIR", type=autocreate_path, help="output dir for nftinfo-CHAINID.csv, etc"
     )
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "--FIN",
         default="latest",
@@ -347,7 +348,7 @@ def do_predictoor_data():
         type=autocreate_path,
         help="output directory for predictoordata_CHAINID.csv",
     )
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "--RETRIES",
         default=1,
@@ -505,7 +506,7 @@ def do_dispense_active():
     )
     parser.add_argument(
         "CHAINID",
-        type=int,
+        type=chain_type,
         help=f"DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).",
     )
     parser.add_argument(
@@ -595,7 +596,7 @@ def do_new_df_rewards():
 def do_new_df_strategy():
     parser = argparse.ArgumentParser(description="Deploy new DFStrategy")
     parser.add_argument("command", choices=["new_df_strategy"])
-    parser.add_argument("CHAINID", type=int, help=f"{CHAINID_EXAMPLES}")
+    parser.add_argument("CHAINID", type=chain_type, help=f"{CHAINID_EXAMPLES}")
     parser.add_argument("DFREWARDS_ADDR", help="DFRewards contract's address")
     parser.add_argument("DFSTRATEGY_NAME", help="DF Strategy name")
     arguments = parser.parse_args()
@@ -796,7 +797,7 @@ def do_dummy_csvs():
 def do_new_token():
     parser = argparse.ArgumentParser(description="Generate new token (for testing)")
     parser.add_argument("command", choices=["new_token"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -819,7 +820,7 @@ def do_new_token():
 def do_new_veocean():
     parser = argparse.ArgumentParser(description="Generate new veOcean (for testing)")
     parser.add_argument("command", choices=["new_veocean"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument("TOKEN_ADDR", type=str, help="token address")
 
     arguments = parser.parse_args()
@@ -846,7 +847,7 @@ def do_new_veallocate():
         description="Generate new veAllocate (for testing)"
     )
     parser.add_argument("command", choices=["new_ve_allocate"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -868,7 +869,7 @@ def do_ve_set_allocation():
     """
     )
     parser.add_argument("command", choices=["ve_set_allocation"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=int, help="")
     parser.add_argument("TOKEN_ADDR", type=str, help="NFT Token Address")
 
@@ -902,7 +903,7 @@ def do_acct_info():
         epilog="If envvar ADDRESS_FILE is not None, it gives balance for OCEAN token too.",
     )
     parser.add_argument("command", choices=["acct_info"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "ACCOUNT_ADDR",
         type=str,
@@ -929,7 +930,9 @@ def do_acct_info():
 
     if len(account_addr) == 1:
         addr_i = int(account_addr)
-        account_addr = web3.eth.accounts[addr_i]
+        account_addr = web3.to_checksum_address(web3.eth.accounts[addr_i])
+    else:
+        account_addr = web3.to_checksum_address(account_addr)
     print(f"  Address = {account_addr}")
 
     if token_addr is not None:
@@ -951,7 +954,7 @@ def do_acct_info():
 def do_chain_info():
     parser = argparse.ArgumentParser(description="Info about a network")
     parser.add_argument("command", choices=["chain_info"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -968,7 +971,7 @@ def do_chain_info():
 def do_dispense_passive():
     parser = argparse.ArgumentParser(description="Dispense passive rewards")
     parser.add_argument("command", choices=["dispense_passive"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "AMOUNT",
         type=float,
@@ -1002,7 +1005,7 @@ def do_dispense_passive():
 def do_calculate_passive():
     parser = argparse.ArgumentParser(description="Calculate passive rewards")
     parser.add_argument("command", choices=["calculate_passive"])
-    parser.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument("DATE", type=valid_date, help="date in format YYYY-MM-DD")
     parser.add_argument(
         "CSV_DIR",
