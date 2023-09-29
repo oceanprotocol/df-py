@@ -31,6 +31,7 @@ install_requirements = [
     "scipy",
     "types-requests",
     "bumpversion",
+    "black",
 ]
 
 # Required to run setup.py:
