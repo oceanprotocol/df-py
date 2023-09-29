@@ -1,0 +1,241 @@
+{
+  "contracts": {
+    "Address": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "BConst": "b09555bd5c2d8301a0c153b45b845e238c415f4f",
+    "BFactory": "f8f126e7ed2d9ee8274ed19a126c7d2c7688628b",
+    "BMath": "847e2936a90d375d7f6adfc763ef0e03b950c3fe",
+    "BNum": "b09555bd5c2d8301a0c153b45b845e238c415f4f",
+    "BPool": "34c53e17aa2af6c34e80f96078ac5002172d2d4c",
+    "BToken": "e78d82f9593e909a5b08cfbdb92b8e7e85cd32f2",
+    "BTokenBase": "b09555bd5c2d8301a0c153b45b845e238c415f4f",
+    "Badtoken": "6e2d9db7faf61996a4b6a878de9bfada88af5bf9",
+    "DFRewards": "5d1192112585208d0f74bb721b5d7c2ab6133002",
+    "DFStrategyV1": "1e358ad632590053cb45e715f17dd92a998f342d",
+    "DelegationProxy": "69c4f4e20cf954f9e18048d6e4eefdceb8792fcc",
+    "Deployer": "73df0a6f5d0123eb2b2db0faf62b602aa77c123a",
+    "Dispenser": "2a9401f7fa0488b967952e0af5704016d77bca31",
+    "DummyStrategy": "1b61069e73376450833a10634d4231c7289a3977",
+    "ERC20Roles": "da6c15408b067df5f945e3fb0763c3fc3f6f8abf",
+    "ERC20Template": "de606e8aeba84e21f529001f314de990b3370168",
+    "ERC20TemplateEnterprise": "c3113532597c6b1eede6dc6f9989b30fa1c82e70",
+    "ERC721": "9cb8b76f7a7c3ad97b723ee1d9733b46358cba76",
+    "ERC721Factory": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    "ERC721RolesAddress": "1cb187e7ee371b037d812441fab576c251e016ec",
+    "ERC721Template": "184a8872bfd690af24caf1fdaf31979e2347f386",
+    "ERC725Ocean": "9b8eb1f9b1c5f3ca78f403607df75181a761058b",
+    "EnumerableMap": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "EnumerableSet": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "FactoryRouter": "1005ec2a7f9a2f49798ea3bedc527e32d0e38713",
+    "FeeDistributor": "75e8ae00df15a2d3c3efae28e3db22c3afe8a1bd",
+    "FeeEstimate": "8359cac0cdf07c93a1fbfce6cfcbf0fe3f41c6fc",
+    "FixedRateExchange": "8c00bb6ba6fb1580b1f4c0ec7aafa3c1fe61180e",
+    "GNSPS/solidity-bytes-utils@0.8.0/BytesLib": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "MockERC20": "fde976fcc3f3eb299083afd812dcbdd617d82819",
+    "MockERC20Decimals": "f21f8c6f48443d9d10c897504138ed8e2e60d672",
+    "MockExchange": "27167311267ec3d0cfb5f2f47f43ae0b33fbdfc5",
+    "MockOcean": "349aae9da192d0f21467afb541317a8de6e8a81e",
+    "MockOldDT": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+    "OPFCommunityFeeCollector": "beed93d7133744e5ac66ac650470bf8eb43bc740",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/Address": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/Create2": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/ERC20": "5c27d7156fdbfe889902cc167df697405a50ad20",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/SafeERC20": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "OpenZeppelin/openzeppelin-contracts@4.2.0/SafeMath": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "SafeERC20": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "SideStaking": "7d36335c0f023c8e1160ab8b1f04f93e77217898",
+    "Simpletoken": "6e102c7e6f3919f4130f625a6231de1476cb7bf3",
+    "SmartWalletChecker": "0c1ef754dc7804387f84d2029ea43b82d8a8c0be",
+    "Strings": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "UtilsLib": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+    "VestingWalletV0": "ee7ca471ff05740460689207d410fa06aa6884d2",
+    "veAllocate": "f977f26938a99f71a707c5b1b2e8d01b56a52be3",
+    "veDelegation": "38852386fe893b6159a53e3398e4844220293db9",
+    "veLocker": "d3923995a6555edf02c85644c42bd63154130be3",
+    "veOcean": "f32a69e6833cf243f4d920f227459e049d9d3eff"
+  },
+  "tests": {
+    "df_py/challenge/test/test_challenge_calc_rewards.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "..",
+      "sha1": "d07e86e54630aa194aed2dffb4bc71d624772799",
+      "txhash": []
+    },
+    "df_py/challenge/test/test_challenge_csvs.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "..",
+      "sha1": "5305bdacce3dcb94b2f2f3dd1fdddc3716379f40",
+      "txhash": []
+    },
+    "df_py/challenge/test/test_dftool_challenge.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "....",
+      "sha1": "fff786ec656660a9a438607e0c75176524a1b6b9",
+      "txhash": []
+    },
+    "df_py/challenge/test/test_helpers.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "...",
+      "sha1": "1fd22239e58cd3bfc026f927b08e98c44ae193d9",
+      "txhash": []
+    },
+    "df_py/challenge/test/test_judge.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".F.......",
+      "sha1": "4b5e6318a586bfda4437adf99ca4f938e4a33622",
+      "txhash": []
+    },
+    "df_py/predictoor/test/test_predictoor_csvs.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "..",
+      "sha1": "9cff6a76c0a8bf18dd0725fc414e051101a7ed44",
+      "txhash": []
+    },
+    "df_py/predictoor/test/test_predictoor_models.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".........",
+      "sha1": "b8385695998e383e8827e5b400bf48f4eb08b609",
+      "txhash": []
+    },
+    "df_py/predictoor/test/test_predictoor_queries.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".s",
+      "sha1": "76b3a614e112fda971be5f04e095ba77cfd2ef92",
+      "txhash": []
+    },
+    "df_py/util/test/test_base18.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".",
+      "sha1": "d0060e8387be03255e8f541015d3efdfb147c1be",
+      "txhash": []
+    },
+    "df_py/util/test/test_crypto.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".",
+      "sha1": "2dc8a8665aa5f6e5803196b20ba5fb6c0c667295",
+      "txhash": []
+    },
+    "df_py/util/test/test_goerli.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "...",
+      "sha1": "cf74ca52baca58b7acc5f6caeba75a29079e25c1",
+      "txhash": []
+    },
+    "df_py/util/test/test_networkutil.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "....",
+      "sha1": "f69aec96e639cdc15e6b6ec5104988366dcf0f94",
+      "txhash": []
+    },
+    "df_py/util/test/veOcean/test_allocate_dt.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".......",
+      "sha1": "223d2cab85216ee48f8c6ed57b976d1b4ab2baec",
+      "txhash": [
+        "212b03c3848acffd7e72dd571cd2943a1ef48457",
+        "3fc76ecfc88d7153a4bdad88531cbaa4535b55b5",
+        "6cb7473b4622ec4443af19a8359051374c7a72ba",
+        "ea61ecfc29f1e01ae9dbc0d9297dcac7ac6af07b"
+      ]
+    },
+    "df_py/volume/test/test_allocations.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": ".....",
+      "sha1": "974d806243e5028d6c13eba9d370259f7fff6976",
+      "txhash": []
+    },
+    "df_py/volume/test/test_cleancase.py": {
+      "coverage": false,
+      "isolated": false,
+      "results": "..........",
+      "sha1": "e1d9cc1052b95975beac9425de0c97127968b604",
+      "txhash": []
+    }
+  },
+  "tx": {
+    "212b03c3848acffd7e72dd571cd2943a1ef48457": {
+      "veAllocate": {
+        "74": [
+          [
+            6,
+            7,
+            8,
+            9,
+            10,
+            11,
+            12
+          ],
+          [
+            18
+          ],
+          [
+            15,
+            16,
+            17
+          ]
+        ]
+      }
+    },
+    "3fc76ecfc88d7153a4bdad88531cbaa4535b55b5": {
+      "veAllocate": {
+        "74": [
+          [
+            6,
+            7
+          ],
+          [
+            16
+          ],
+          [
+            15
+          ]
+        ]
+      }
+    },
+    "6cb7473b4622ec4443af19a8359051374c7a72ba": {
+      "veAllocate": {
+        "74": [
+          [
+            2,
+            3
+          ],
+          [
+            14
+          ],
+          []
+        ]
+      }
+    },
+    "ea61ecfc29f1e01ae9dbc0d9297dcac7ac6af07b": {
+      "veAllocate": {
+        "74": [
+          [
+            6,
+            7,
+            8
+          ],
+          [
+            17
+          ],
+          [
+            15,
+            16
+          ]
+        ]
+      }
+    }
+  }
+}

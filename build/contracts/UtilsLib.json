@@ -1,0 +1,343 @@
+{
+  "abi": [],
+  "allSourcePaths": {
+    "63": "contracts/oceanv4/utils/UtilsLib.sol"
+  },
+  "ast": {
+    "absolutePath": "contracts/oceanv4/utils/UtilsLib.sol",
+    "exportedSymbols": {
+      "UtilsLib": [
+        25839
+      ]
+    },
+    "id": 25840,
+    "license": "Apache-2.0",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 25828,
+        "literals": [
+          "solidity",
+          "0.8",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "153:23:63"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "UtilsLib",
+        "contractDependencies": [],
+        "contractKind": "library",
+        "fullyImplemented": true,
+        "id": 25839,
+        "linearizedBaseContracts": [
+          25839
+        ],
+        "name": "UtilsLib",
+        "nameLocation": "187:8:63",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 25837,
+              "nodeType": "Block",
+              "src": "479:150:63",
+              "statements": [
+                {
+                  "AST": {
+                    "nodeType": "YulBlock",
+                    "src": "562:61:63",
+                    "statements": [
+                      {
+                        "nodeType": "YulAssignment",
+                        "src": "576:37:63",
+                        "value": {
+                          "arguments": [
+                            {
+                              "arguments": [
+                                {
+                                  "name": "_target",
+                                  "nodeType": "YulIdentifier",
+                                  "src": "601:7:63"
+                                }
+                              ],
+                              "functionName": {
+                                "name": "extcodesize",
+                                "nodeType": "YulIdentifier",
+                                "src": "589:11:63"
+                              },
+                              "nodeType": "YulFunctionCall",
+                              "src": "589:20:63"
+                            },
+                            {
+                              "kind": "number",
+                              "nodeType": "YulLiteral",
+                              "src": "611:1:63",
+                              "type": "",
+                              "value": "0"
+                            }
+                          ],
+                          "functionName": {
+                            "name": "gt",
+                            "nodeType": "YulIdentifier",
+                            "src": "586:2:63"
+                          },
+                          "nodeType": "YulFunctionCall",
+                          "src": "586:27:63"
+                        },
+                        "variableNames": [
+                          {
+                            "name": "result",
+                            "nodeType": "YulIdentifier",
+                            "src": "576:6:63"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  "evmVersion": "istanbul",
+                  "externalReferences": [
+                    {
+                      "declaration": 25831,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "601:7:63",
+                      "valueSize": 1
+                    },
+                    {
+                      "declaration": 25834,
+                      "isOffset": false,
+                      "isSlot": false,
+                      "src": "576:6:63",
+                      "valueSize": 1
+                    }
+                  ],
+                  "id": 25836,
+                  "nodeType": "InlineAssembly",
+                  "src": "553:70:63"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 25829,
+              "nodeType": "StructuredDocumentation",
+              "src": "203:199:63",
+              "text": " @dev Internal function to determine if an address is a contract\n @param _target The address being queried\n @return result Returns TRUE if `_target` is a contract"
+            },
+            "id": 25838,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "isContract",
+            "nameLocation": "416:10:63",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 25832,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 25831,
+                  "mutability": "mutable",
+                  "name": "_target",
+                  "nameLocation": "435:7:63",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 25838,
+                  "src": "427:15:63",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 25830,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "427:7:63",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "426:17:63"
+            },
+            "returnParameters": {
+              "id": 25835,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 25834,
+                  "mutability": "mutable",
+                  "name": "result",
+                  "nameLocation": "471:6:63",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 25838,
+                  "src": "466:11:63",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 25833,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "466:4:63",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "465:13:63"
+            },
+            "scope": 25839,
+            "src": "407:222:63",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "internal"
+          }
+        ],
+        "scope": 25840,
+        "src": "179:452:63",
+        "usedErrors": []
+      }
+    ],
+    "src": "153:478:63"
+  },
+  "bytecode": "60566037600b82828239805160001a607314602a57634e487b7160e01b600052600060045260246000fd5b30600052607381538281f3fe73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122018b3e6d77d3ec75bdff9d9aed79097447855387d82097f338b29b0ea26e782c464736f6c634300080c0033",
+  "bytecodeSha1": "1ce946f6a4eaa185320328620ccf999b9e86db7c",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.8.12+commit.f00d7308"
+  },
+  "contractName": "UtilsLib",
+  "coverageMap": {
+    "branches": {
+      "63": {}
+    },
+    "statements": {
+      "63": {}
+    }
+  },
+  "dependencies": [],
+  "deployedBytecode": "73000000000000000000000000000000000000000030146080604052600080fdfea264697066735822122018b3e6d77d3ec75bdff9d9aed79097447855387d82097f338b29b0ea26e782c464736f6c634300080c0033",
+  "deployedSourceMap": "179:452:63:-:0;;;;;;;;",
+  "language": "Solidity",
+  "natspec": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "offset": [
+    179,
+    631
+  ],
+  "opcodes": "PUSH20 0x0 ADDRESS EQ PUSH1 0x80 PUSH1 0x40 MSTORE PUSH1 0x0 DUP1 REVERT INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 XOR 0xB3 0xE6 0xD7 PUSH30 0x3EC75BDFF9D9AED79097447855387D82097F338B29B0EA26E782C464736F PUSH13 0x634300080C0033000000000000 ",
+  "pcMap": {
+    "0": {
+      "offset": [
+        179,
+        631
+      ],
+      "op": "PUSH20",
+      "path": "63",
+      "value": "0x0"
+    },
+    "21": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "ADDRESS",
+      "path": "63"
+    },
+    "22": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "EQ",
+      "path": "63"
+    },
+    "23": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "PUSH1",
+      "path": "63",
+      "value": "0x80"
+    },
+    "25": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "PUSH1",
+      "path": "63",
+      "value": "0x40"
+    },
+    "27": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "MSTORE",
+      "path": "63"
+    },
+    "28": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "PUSH1",
+      "path": "63",
+      "value": "0x0"
+    },
+    "30": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "DUP1",
+      "path": "63"
+    },
+    "31": {
+      "fn": null,
+      "offset": [
+        179,
+        631
+      ],
+      "op": "REVERT",
+      "path": "63"
+    }
+  },
+  "sha1": "3a75f4d65e813ec9d16850bddc8ee94c8dafac2f",
+  "source": "// SPDX-License-Identifier: Apache-2.0\n/*\n * @title Solidity Utils\n * @author Fabian Vogelsteller <fabian@lukso.network>\n *\n * @dev Utils functions\n */\n\npragma solidity 0.8.12;\n\n\nlibrary UtilsLib {\n\n    /**\n     * @dev Internal function to determine if an address is a contract\n     * @param _target The address being queried\n     *\n     * @return result Returns TRUE if `_target` is a contract\n     */\n    function isContract(address _target) internal view returns(bool result) {\n        // solium-disable-next-line security/no-inline-assembly\n        assembly {\n            result := gt(extcodesize(_target), 0)\n        }\n    }\n}",
+  "sourceMap": "179:452:63:-:0;;;;;;;;;;;;;;;-1:-1:-1;;;179:452:63;;;;;;;;;;;;;;;;;",
+  "sourcePath": "contracts/oceanv4/utils/UtilsLib.sol",
+  "type": "library"
+}

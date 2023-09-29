@@ -1,0 +1,4314 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        }
+      ],
+      "name": "deposit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_token",
+          "type": "address"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_amount",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint256",
+          "name": "_deadline",
+          "type": "uint256"
+        },
+        {
+          "internalType": "uint8",
+          "name": "v",
+          "type": "uint8"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "r",
+          "type": "bytes32"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "s",
+          "type": "bytes32"
+        }
+      ],
+      "name": "depositWithPermit",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "allSourcePaths": {
+    "23": "contracts/oceanv4/interfaces/IERC20Template.sol",
+    "66": "contracts/oceanv4/utils/mock/MockExchange.sol"
+  },
+  "ast": {
+    "absolutePath": "contracts/oceanv4/utils/mock/MockExchange.sol",
+    "exportedSymbols": {
+      "IERC20Template": [
+        3402
+      ],
+      "MockExchange": [
+        26490
+      ]
+    },
+    "id": 26491,
+    "license": "(Apache-2.0 AND CC-BY-4.0)",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 26421,
+        "literals": [
+          "solidity",
+          "0.8",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:66"
+      },
+      {
+        "absolutePath": "contracts/oceanv4/interfaces/IERC20Template.sol",
+        "file": "../../interfaces/IERC20Template.sol",
+        "id": 26422,
+        "nameLocation": "-1:-1:-1",
+        "nodeType": "ImportDirective",
+        "scope": 26491,
+        "sourceUnit": 3403,
+        "src": "186:45:66",
+        "symbolAliases": [],
+        "unitAlias": ""
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "MockExchange",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 26490,
+        "linearizedBaseContracts": [
+          26490
+        ],
+        "name": "MockExchange",
+        "nameLocation": "243:12:66",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "body": {
+              "id": 26467,
+              "nodeType": "Block",
+              "src": "438:277:66",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "expression": {
+                          "id": 26441,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": -15,
+                          "src": "491:3:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 26442,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "src": "491:10:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "arguments": [
+                          {
+                            "id": 26445,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": -28,
+                            "src": "523:4:66",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_MockExchange_$26490",
+                              "typeString": "contract MockExchange"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_MockExchange_$26490",
+                              "typeString": "contract MockExchange"
+                            }
+                          ],
+                          "id": 26444,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "515:7:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 26443,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "515:7:66",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 26446,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "515:13:66",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 26447,
+                        "name": "_amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26426,
+                        "src": "542:7:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 26448,
+                        "name": "_deadline",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26428,
+                        "src": "563:9:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      },
+                      {
+                        "id": 26449,
+                        "name": "v",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26430,
+                        "src": "586:1:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        }
+                      },
+                      {
+                        "id": 26450,
+                        "name": "r",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26432,
+                        "src": "601:1:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      },
+                      {
+                        "id": 26451,
+                        "name": "s",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26434,
+                        "src": "616:1:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        },
+                        {
+                          "typeIdentifier": "t_uint8",
+                          "typeString": "uint8"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        },
+                        {
+                          "typeIdentifier": "t_bytes32",
+                          "typeString": "bytes32"
+                        }
+                      ],
+                      "expression": {
+                        "arguments": [
+                          {
+                            "id": 26438,
+                            "name": "_token",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 26424,
+                            "src": "463:6:66",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "id": 26437,
+                          "name": "IERC20Template",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3402,
+                          "src": "448:14:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_contract$_IERC20Template_$3402_$",
+                            "typeString": "type(contract IERC20Template)"
+                          }
+                        },
+                        "id": 26439,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "448:22:66",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC20Template_$3402",
+                          "typeString": "contract IERC20Template"
+                        }
+                      },
+                      "id": 26440,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "permit",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 3261,
+                      "src": "448:29:66",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$_t_uint256_$_t_uint8_$_t_bytes32_$_t_bytes32_$returns$__$",
+                        "typeString": "function (address,address,uint256,uint256,uint8,bytes32,bytes32) external"
+                      }
+                    },
+                    "id": 26452,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "448:179:66",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 26453,
+                  "nodeType": "ExpressionStatement",
+                  "src": "448:179:66"
+                },
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "expression": {
+                          "id": 26458,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": -15,
+                          "src": "673:3:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 26459,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "src": "673:10:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "arguments": [
+                          {
+                            "id": 26462,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": -28,
+                            "src": "693:4:66",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_MockExchange_$26490",
+                              "typeString": "contract MockExchange"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_MockExchange_$26490",
+                              "typeString": "contract MockExchange"
+                            }
+                          ],
+                          "id": 26461,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "685:7:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 26460,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "685:7:66",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 26463,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "685:13:66",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 26464,
+                        "name": "_amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26426,
+                        "src": "700:7:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "arguments": [
+                          {
+                            "id": 26455,
+                            "name": "_token",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 26424,
+                            "src": "652:6:66",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "id": 26454,
+                          "name": "IERC20Template",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3402,
+                          "src": "637:14:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_contract$_IERC20Template_$3402_$",
+                            "typeString": "type(contract IERC20Template)"
+                          }
+                        },
+                        "id": 26456,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "637:22:66",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC20Template_$3402",
+                          "typeString": "contract IERC20Template"
+                        }
+                      },
+                      "id": 26457,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "transferFrom",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 3205,
+                      "src": "637:35:66",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
+                        "typeString": "function (address,address,uint256) external returns (bool)"
+                      }
+                    },
+                    "id": 26465,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "637:71:66",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 26466,
+                  "nodeType": "ExpressionStatement",
+                  "src": "637:71:66"
+                }
+              ]
+            },
+            "functionSelector": "12a62cff",
+            "id": 26468,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "depositWithPermit",
+            "nameLocation": "274:17:66",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 26435,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 26424,
+                  "mutability": "mutable",
+                  "name": "_token",
+                  "nameLocation": "309:6:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26468,
+                  "src": "301:14:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 26423,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "301:7:66",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 26426,
+                  "mutability": "mutable",
+                  "name": "_amount",
+                  "nameLocation": "333:7:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26468,
+                  "src": "325:15:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 26425,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "325:7:66",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 26428,
+                  "mutability": "mutable",
+                  "name": "_deadline",
+                  "nameLocation": "358:9:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26468,
+                  "src": "350:17:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 26427,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "350:7:66",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 26430,
+                  "mutability": "mutable",
+                  "name": "v",
+                  "nameLocation": "383:1:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26468,
+                  "src": "377:7:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint8",
+                    "typeString": "uint8"
+                  },
+                  "typeName": {
+                    "id": 26429,
+                    "name": "uint8",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "377:5:66",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint8",
+                      "typeString": "uint8"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 26432,
+                  "mutability": "mutable",
+                  "name": "r",
+                  "nameLocation": "402:1:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26468,
+                  "src": "394:9:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 26431,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "394:7:66",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 26434,
+                  "mutability": "mutable",
+                  "name": "s",
+                  "nameLocation": "421:1:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26468,
+                  "src": "413:9:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 26433,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "413:7:66",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "291:137:66"
+            },
+            "returnParameters": {
+              "id": 26436,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "438:0:66"
+            },
+            "scope": 26490,
+            "src": "265:450:66",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 26488,
+              "nodeType": "Block",
+              "src": "780:88:66",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "expression": {
+                          "id": 26479,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": -15,
+                          "src": "826:3:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 26480,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "src": "826:10:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "arguments": [
+                          {
+                            "id": 26483,
+                            "name": "this",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": -28,
+                            "src": "846:4:66",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_contract$_MockExchange_$26490",
+                              "typeString": "contract MockExchange"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_contract$_MockExchange_$26490",
+                              "typeString": "contract MockExchange"
+                            }
+                          ],
+                          "id": 26482,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": true,
+                          "lValueRequested": false,
+                          "nodeType": "ElementaryTypeNameExpression",
+                          "src": "838:7:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_address_$",
+                            "typeString": "type(address)"
+                          },
+                          "typeName": {
+                            "id": 26481,
+                            "name": "address",
+                            "nodeType": "ElementaryTypeName",
+                            "src": "838:7:66",
+                            "typeDescriptions": {}
+                          }
+                        },
+                        "id": 26484,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "838:13:66",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      {
+                        "id": 26485,
+                        "name": "_amount",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 26472,
+                        "src": "853:7:66",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        },
+                        {
+                          "typeIdentifier": "t_uint256",
+                          "typeString": "uint256"
+                        }
+                      ],
+                      "expression": {
+                        "arguments": [
+                          {
+                            "id": 26476,
+                            "name": "_token",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": 26470,
+                            "src": "805:6:66",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          }
+                        ],
+                        "expression": {
+                          "argumentTypes": [
+                            {
+                              "typeIdentifier": "t_address",
+                              "typeString": "address"
+                            }
+                          ],
+                          "id": 26475,
+                          "name": "IERC20Template",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 3402,
+                          "src": "790:14:66",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_type$_t_contract$_IERC20Template_$3402_$",
+                            "typeString": "type(contract IERC20Template)"
+                          }
+                        },
+                        "id": 26477,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "kind": "typeConversion",
+                        "lValueRequested": false,
+                        "names": [],
+                        "nodeType": "FunctionCall",
+                        "src": "790:22:66",
+                        "tryCall": false,
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_contract$_IERC20Template_$3402",
+                          "typeString": "contract IERC20Template"
+                        }
+                      },
+                      "id": 26478,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": false,
+                      "lValueRequested": false,
+                      "memberName": "transferFrom",
+                      "nodeType": "MemberAccess",
+                      "referencedDeclaration": 3205,
+                      "src": "790:35:66",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_external_nonpayable$_t_address_$_t_address_$_t_uint256_$returns$_t_bool_$",
+                        "typeString": "function (address,address,uint256) external returns (bool)"
+                      }
+                    },
+                    "id": 26486,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "790:71:66",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 26487,
+                  "nodeType": "ExpressionStatement",
+                  "src": "790:71:66"
+                }
+              ]
+            },
+            "functionSelector": "47e7ef24",
+            "id": 26489,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "deposit",
+            "nameLocation": "730:7:66",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 26473,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 26470,
+                  "mutability": "mutable",
+                  "name": "_token",
+                  "nameLocation": "746:6:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26489,
+                  "src": "738:14:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 26469,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "738:7:66",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 26472,
+                  "mutability": "mutable",
+                  "name": "_amount",
+                  "nameLocation": "762:7:66",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 26489,
+                  "src": "754:15:66",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 26471,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "754:7:66",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "737:33:66"
+            },
+            "returnParameters": {
+              "id": 26474,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "780:0:66"
+            },
+            "scope": 26490,
+            "src": "721:147:66",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 26491,
+        "src": "234:636:66",
+        "usedErrors": []
+      }
+    ],
+    "src": "0:871:66"
+  },
+  "bytecode": "608060405234801561001057600080fd5b506102e8806100206000396000f3fe608060405234801561001057600080fd5b50600436106100365760003560e01c806312a62cff1461003b57806347e7ef2414610050575b600080fd5b61004e6100493660046101ff565b610063565b005b61004e61005e36600461025f565b610167565b60405163d505accf60e01b8152336004820152306024820152604481018690526064810185905260ff8416608482015260a4810183905260c481018290526001600160a01b0387169063d505accf9060e401600060405180830381600087803b1580156100cf57600080fd5b505af11580156100e3573d6000803e3d6000fd5b50506040516323b872dd60e01b8152336004820152306024820152604481018890526001600160a01b03891692506323b872dd91506064016020604051808303816000875af115801561013a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061015e9190610289565b50505050505050565b6040516323b872dd60e01b8152336004820152306024820152604481018290526001600160a01b038316906323b872dd906064016020604051808303816000875af11580156101ba573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101de9190610289565b505050565b80356001600160a01b03811681146101fa57600080fd5b919050565b60008060008060008060c0878903121561021857600080fd5b610221876101e3565b95506020870135945060408701359350606087013560ff8116811461024557600080fd5b9598949750929560808101359460a0909101359350915050565b6000806040838503121561027257600080fd5b61027b836101e3565b946020939093013593505050565b60006020828403121561029b57600080fd5b815180151581146102ab57600080fd5b939250505056fea2646970667358221220b6ef11c5764c210aa5821f03b673b687a8a3d227647ed02e6ea61be68318d73e64736f6c634300080c0033",
+  "bytecodeSha1": "27167311267ec3d0cfb5f2f47f43ae0b33fbdfc5",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.8.12+commit.f00d7308"
+  },
+  "contractName": "MockExchange",
+  "coverageMap": {
+    "branches": {
+      "23": {},
+      "66": {}
+    },
+    "statements": {
+      "23": {},
+      "66": {
+        "MockExchange.deposit": {
+          "2": [
+            790,
+            861
+          ]
+        },
+        "MockExchange.depositWithPermit": {
+          "0": [
+            448,
+            627
+          ],
+          "1": [
+            637,
+            708
+          ]
+        }
+      }
+    }
+  },
+  "dependencies": [
+    "IERC20Template"
+  ],
+  "deployedBytecode": "608060405234801561001057600080fd5b50600436106100365760003560e01c806312a62cff1461003b57806347e7ef2414610050575b600080fd5b61004e6100493660046101ff565b610063565b005b61004e61005e36600461025f565b610167565b60405163d505accf60e01b8152336004820152306024820152604481018690526064810185905260ff8416608482015260a4810183905260c481018290526001600160a01b0387169063d505accf9060e401600060405180830381600087803b1580156100cf57600080fd5b505af11580156100e3573d6000803e3d6000fd5b50506040516323b872dd60e01b8152336004820152306024820152604481018890526001600160a01b03891692506323b872dd91506064016020604051808303816000875af115801561013a573d6000803e3d6000fd5b505050506040513d601f19601f8201168201806040525081019061015e9190610289565b50505050505050565b6040516323b872dd60e01b8152336004820152306024820152604481018290526001600160a01b038316906323b872dd906064016020604051808303816000875af11580156101ba573d6000803e3d6000fd5b505050506040513d601f19601f820116820180604052508101906101de9190610289565b505050565b80356001600160a01b03811681146101fa57600080fd5b919050565b60008060008060008060c0878903121561021857600080fd5b610221876101e3565b95506020870135945060408701359350606087013560ff8116811461024557600080fd5b9598949750929560808101359460a0909101359350915050565b6000806040838503121561027257600080fd5b61027b836101e3565b946020939093013593505050565b60006020828403121561029b57600080fd5b815180151581146102ab57600080fd5b939250505056fea2646970667358221220b6ef11c5764c210aa5821f03b673b687a8a3d227647ed02e6ea61be68318d73e64736f6c634300080c0033",
+  "deployedSourceMap": "234:636:66:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;265:450;;;;;;:::i;:::-;;:::i;:::-;;721:147;;;;;;:::i;:::-;;:::i;265:450::-;448:179;;-1:-1:-1;;;448:179:66;;491:10;448:179;;;1423:34:75;523:4:66;1473:18:75;;;1466:43;1525:18;;;1518:34;;;1568:18;;;1561:34;;;1644:4;1632:17;;1611:19;;;1604:46;1666:19;;;1659:35;;;1710:19;;;1703:35;;;-1:-1:-1;;;;;448:29:66;;;;;1357:19:75;;448:179:66;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;-1:-1:-1;;637:71:66;;-1:-1:-1;;;637:71:66;;673:10;637:71;;;1989:34:75;693:4:66;2039:18:75;;;2032:43;2091:18;;;2084:34;;;-1:-1:-1;;;;;637:35:66;;;-1:-1:-1;637:35:66;;-1:-1:-1;1924:18:75;;637:71:66;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;265:450;;;;;;:::o;721:147::-;790:71;;-1:-1:-1;;;790:71:66;;826:10;790:71;;;1989:34:75;846:4:66;2039:18:75;;;2032:43;2091:18;;;2084:34;;;-1:-1:-1;;;;;790:35:66;;;;;1924:18:75;;790:71:66;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;721:147;;:::o;14:173:75:-;82:20;;-1:-1:-1;;;;;131:31:75;;121:42;;111:70;;177:1;174;167:12;111:70;14:173;;;:::o;192:618::-;294:6;302;310;318;326;334;387:3;375:9;366:7;362:23;358:33;355:53;;;404:1;401;394:12;355:53;427:29;446:9;427:29;:::i;:::-;417:39;;503:2;492:9;488:18;475:32;465:42;;554:2;543:9;539:18;526:32;516:42;;608:2;597:9;593:18;580:32;652:4;645:5;641:16;634:5;631:27;621:55;;672:1;669;662:12;621:55;192:618;;;;-1:-1:-1;192:618:75;;747:3;732:19;;719:33;;799:3;784:19;;;771:33;;-1:-1:-1;192:618:75;-1:-1:-1;;192:618:75:o;815:254::-;883:6;891;944:2;932:9;923:7;919:23;915:32;912:52;;;960:1;957;950:12;912:52;983:29;1002:9;983:29;:::i;:::-;973:39;1059:2;1044:18;;;;1031:32;;-1:-1:-1;;;815:254:75:o;2129:277::-;2196:6;2249:2;2237:9;2228:7;2224:23;2220:32;2217:52;;;2265:1;2262;2255:12;2217:52;2297:9;2291:16;2350:5;2343:13;2336:21;2329:5;2326:32;2316:60;;2372:1;2369;2362:12;2316:60;2395:5;2129:277;-1:-1:-1;;;2129:277:75:o",
+  "language": "Solidity",
+  "natspec": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "offset": [
+    234,
+    870
+  ],
+  "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x36 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x12A62CFF EQ PUSH2 0x3B JUMPI DUP1 PUSH4 0x47E7EF24 EQ PUSH2 0x50 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x4E PUSH2 0x49 CALLDATASIZE PUSH1 0x4 PUSH2 0x1FF JUMP JUMPDEST PUSH2 0x63 JUMP JUMPDEST STOP JUMPDEST PUSH2 0x4E PUSH2 0x5E CALLDATASIZE PUSH1 0x4 PUSH2 0x25F JUMP JUMPDEST PUSH2 0x167 JUMP JUMPDEST PUSH1 0x40 MLOAD PUSH4 0xD505ACCF PUSH1 0xE0 SHL DUP2 MSTORE CALLER PUSH1 0x4 DUP3 ADD MSTORE ADDRESS PUSH1 0x24 DUP3 ADD MSTORE PUSH1 0x44 DUP2 ADD DUP7 SWAP1 MSTORE PUSH1 0x64 DUP2 ADD DUP6 SWAP1 MSTORE PUSH1 0xFF DUP5 AND PUSH1 0x84 DUP3 ADD MSTORE PUSH1 0xA4 DUP2 ADD DUP4 SWAP1 MSTORE PUSH1 0xC4 DUP2 ADD DUP3 SWAP1 MSTORE PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP8 AND SWAP1 PUSH4 0xD505ACCF SWAP1 PUSH1 0xE4 ADD PUSH1 0x0 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 DUP1 EXTCODESIZE ISZERO DUP1 ISZERO PUSH2 0xCF JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP GAS CALL ISZERO DUP1 ISZERO PUSH2 0xE3 JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP PUSH1 0x40 MLOAD PUSH4 0x23B872DD PUSH1 0xE0 SHL DUP2 MSTORE CALLER PUSH1 0x4 DUP3 ADD MSTORE ADDRESS PUSH1 0x24 DUP3 ADD MSTORE PUSH1 0x44 DUP2 ADD DUP9 SWAP1 MSTORE PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP10 AND SWAP3 POP PUSH4 0x23B872DD SWAP2 POP PUSH1 0x64 ADD PUSH1 0x20 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 GAS CALL ISZERO DUP1 ISZERO PUSH2 0x13A JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x1F NOT PUSH1 0x1F DUP3 ADD AND DUP3 ADD DUP1 PUSH1 0x40 MSTORE POP DUP2 ADD SWAP1 PUSH2 0x15E SWAP2 SWAP1 PUSH2 0x289 JUMP JUMPDEST POP POP POP POP POP POP POP JUMP JUMPDEST PUSH1 0x40 MLOAD PUSH4 0x23B872DD PUSH1 0xE0 SHL DUP2 MSTORE CALLER PUSH1 0x4 DUP3 ADD MSTORE ADDRESS PUSH1 0x24 DUP3 ADD MSTORE PUSH1 0x44 DUP2 ADD DUP3 SWAP1 MSTORE PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP4 AND SWAP1 PUSH4 0x23B872DD SWAP1 PUSH1 0x64 ADD PUSH1 0x20 PUSH1 0x40 MLOAD DUP1 DUP4 SUB DUP2 PUSH1 0x0 DUP8 GAS CALL ISZERO DUP1 ISZERO PUSH2 0x1BA JUMPI RETURNDATASIZE PUSH1 0x0 DUP1 RETURNDATACOPY RETURNDATASIZE PUSH1 0x0 REVERT JUMPDEST POP POP POP POP PUSH1 0x40 MLOAD RETURNDATASIZE PUSH1 0x1F NOT PUSH1 0x1F DUP3 ADD AND DUP3 ADD DUP1 PUSH1 0x40 MSTORE POP DUP2 ADD SWAP1 PUSH2 0x1DE SWAP2 SWAP1 PUSH2 0x289 JUMP JUMPDEST POP POP POP JUMP JUMPDEST DUP1 CALLDATALOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP2 AND DUP2 EQ PUSH2 0x1FA JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST SWAP2 SWAP1 POP JUMP JUMPDEST PUSH1 0x0 DUP1 PUSH1 0x0 DUP1 PUSH1 0x0 DUP1 PUSH1 0xC0 DUP8 DUP10 SUB SLT ISZERO PUSH2 0x218 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x221 DUP8 PUSH2 0x1E3 JUMP JUMPDEST SWAP6 POP PUSH1 0x20 DUP8 ADD CALLDATALOAD SWAP5 POP PUSH1 0x40 DUP8 ADD CALLDATALOAD SWAP4 POP PUSH1 0x60 DUP8 ADD CALLDATALOAD PUSH1 0xFF DUP2 AND DUP2 EQ PUSH2 0x245 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST SWAP6 SWAP9 SWAP5 SWAP8 POP SWAP3 SWAP6 PUSH1 0x80 DUP2 ADD CALLDATALOAD SWAP5 PUSH1 0xA0 SWAP1 SWAP2 ADD CALLDATALOAD SWAP4 POP SWAP2 POP POP JUMP JUMPDEST PUSH1 0x0 DUP1 PUSH1 0x40 DUP4 DUP6 SUB SLT ISZERO PUSH2 0x272 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x27B DUP4 PUSH2 0x1E3 JUMP JUMPDEST SWAP5 PUSH1 0x20 SWAP4 SWAP1 SWAP4 ADD CALLDATALOAD SWAP4 POP POP POP JUMP JUMPDEST PUSH1 0x0 PUSH1 0x20 DUP3 DUP5 SUB SLT ISZERO PUSH2 0x29B JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP2 MLOAD DUP1 ISZERO ISZERO DUP2 EQ PUSH2 0x2AB JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST SWAP4 SWAP3 POP POP POP JUMP INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 0xB6 0xEF GT 0xC5 PUSH23 0x4C210AA5821F03B673B687A8A3D227647ED02E6EA61BE6 DUP4 XOR 0xD7 RETURNDATACOPY PUSH5 0x736F6C6343 STOP ADDMOD 0xC STOP CALLER ",
+  "pcMap": {
+    "0": {
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x80"
+    },
+    "2": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "4": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "MSTORE",
+      "path": "66"
+    },
+    "5": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "CALLVALUE",
+      "path": "66"
+    },
+    "6": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "7": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "8": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x10"
+    },
+    "11": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "12": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "14": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "15": {
+      "dev": "Cannot send ether to nonpayable function",
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "REVERT",
+      "path": "66"
+    },
+    "16": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "17": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "18": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x4"
+    },
+    "20": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "CALLDATASIZE",
+      "path": "66"
+    },
+    "21": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "LT",
+      "path": "66"
+    },
+    "22": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x36"
+    },
+    "25": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "26": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "28": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "CALLDATALOAD",
+      "path": "66"
+    },
+    "29": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0xE0"
+    },
+    "31": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "SHR",
+      "path": "66"
+    },
+    "32": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "33": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH4",
+      "path": "66",
+      "value": "0x12A62CFF"
+    },
+    "38": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "EQ",
+      "path": "66"
+    },
+    "39": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x3B"
+    },
+    "42": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "43": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "44": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH4",
+      "path": "66",
+      "value": "0x47E7EF24"
+    },
+    "49": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "EQ",
+      "path": "66"
+    },
+    "50": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x50"
+    },
+    "53": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "54": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "55": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "57": {
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "58": {
+      "first_revert": true,
+      "fn": null,
+      "offset": [
+        234,
+        870
+      ],
+      "op": "REVERT",
+      "path": "66"
+    },
+    "59": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "60": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x4E"
+    },
+    "63": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x49"
+    },
+    "66": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "CALLDATASIZE",
+      "path": "66"
+    },
+    "67": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x4"
+    },
+    "69": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x1FF"
+    },
+    "72": {
+      "fn": "MockExchange.depositWithPermit",
+      "jump": "i",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "73": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "74": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x63"
+    },
+    "77": {
+      "fn": "MockExchange.depositWithPermit",
+      "jump": "i",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "78": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "79": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "STOP",
+      "path": "66"
+    },
+    "80": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "81": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x4E"
+    },
+    "84": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x5E"
+    },
+    "87": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "CALLDATASIZE",
+      "path": "66"
+    },
+    "88": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x4"
+    },
+    "90": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x25F"
+    },
+    "93": {
+      "fn": "MockExchange.deposit",
+      "jump": "i",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "94": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "95": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x167"
+    },
+    "98": {
+      "fn": "MockExchange.deposit",
+      "jump": "i",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "99": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "100": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "statement": 0,
+      "value": "0x40"
+    },
+    "102": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "103": {
+      "op": "PUSH4",
+      "value": "0xD505ACCF"
+    },
+    "108": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "110": {
+      "op": "SHL"
+    },
+    "111": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "112": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "MSTORE",
+      "path": "66"
+    },
+    "113": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        491,
+        501
+      ],
+      "op": "CALLER",
+      "path": "66"
+    },
+    "114": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x4"
+    },
+    "116": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "117": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "118": {
+      "op": "MSTORE"
+    },
+    "119": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        523,
+        527
+      ],
+      "op": "ADDRESS",
+      "path": "66"
+    },
+    "120": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "122": {
+      "op": "DUP3"
+    },
+    "123": {
+      "op": "ADD"
+    },
+    "124": {
+      "op": "MSTORE"
+    },
+    "125": {
+      "op": "PUSH1",
+      "value": "0x44"
+    },
+    "127": {
+      "op": "DUP2"
+    },
+    "128": {
+      "op": "ADD"
+    },
+    "129": {
+      "op": "DUP7"
+    },
+    "130": {
+      "op": "SWAP1"
+    },
+    "131": {
+      "op": "MSTORE"
+    },
+    "132": {
+      "op": "PUSH1",
+      "value": "0x64"
+    },
+    "134": {
+      "op": "DUP2"
+    },
+    "135": {
+      "op": "ADD"
+    },
+    "136": {
+      "op": "DUP6"
+    },
+    "137": {
+      "op": "SWAP1"
+    },
+    "138": {
+      "op": "MSTORE"
+    },
+    "139": {
+      "op": "PUSH1",
+      "value": "0xFF"
+    },
+    "141": {
+      "op": "DUP5"
+    },
+    "142": {
+      "op": "AND"
+    },
+    "143": {
+      "op": "PUSH1",
+      "value": "0x84"
+    },
+    "145": {
+      "op": "DUP3"
+    },
+    "146": {
+      "op": "ADD"
+    },
+    "147": {
+      "op": "MSTORE"
+    },
+    "148": {
+      "op": "PUSH1",
+      "value": "0xA4"
+    },
+    "150": {
+      "op": "DUP2"
+    },
+    "151": {
+      "op": "ADD"
+    },
+    "152": {
+      "op": "DUP4"
+    },
+    "153": {
+      "op": "SWAP1"
+    },
+    "154": {
+      "op": "MSTORE"
+    },
+    "155": {
+      "op": "PUSH1",
+      "value": "0xC4"
+    },
+    "157": {
+      "op": "DUP2"
+    },
+    "158": {
+      "op": "ADD"
+    },
+    "159": {
+      "op": "DUP3"
+    },
+    "160": {
+      "op": "SWAP1"
+    },
+    "161": {
+      "op": "MSTORE"
+    },
+    "162": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "164": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "166": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "168": {
+      "op": "SHL"
+    },
+    "169": {
+      "op": "SUB"
+    },
+    "170": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        477
+      ],
+      "op": "DUP8",
+      "path": "66"
+    },
+    "171": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        477
+      ],
+      "op": "AND",
+      "path": "66"
+    },
+    "172": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        477
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "173": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        477
+      ],
+      "op": "PUSH4",
+      "path": "66",
+      "value": "0xD505ACCF"
+    },
+    "178": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        477
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "179": {
+      "op": "PUSH1",
+      "value": "0xE4"
+    },
+    "181": {
+      "op": "ADD"
+    },
+    "182": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "184": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "186": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "187": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "188": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP4",
+      "path": "66"
+    },
+    "189": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "SUB",
+      "path": "66"
+    },
+    "190": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "191": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "193": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP8",
+      "path": "66"
+    },
+    "194": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "195": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "EXTCODESIZE",
+      "path": "66"
+    },
+    "196": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "197": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "198": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "199": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0xCF"
+    },
+    "202": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "203": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "205": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "206": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "REVERT",
+      "path": "66"
+    },
+    "207": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "208": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "209": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "GAS",
+      "path": "66"
+    },
+    "210": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "CALL",
+      "path": "66"
+    },
+    "211": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "212": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "213": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "214": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0xE3"
+    },
+    "217": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "218": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "219": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "221": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "222": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "RETURNDATACOPY",
+      "path": "66"
+    },
+    "223": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "224": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "226": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "REVERT",
+      "path": "66"
+    },
+    "227": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        448,
+        627
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "228": {
+      "op": "POP"
+    },
+    "229": {
+      "op": "POP"
+    },
+    "230": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "statement": 1,
+      "value": "0x40"
+    },
+    "232": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "233": {
+      "op": "PUSH4",
+      "value": "0x23B872DD"
+    },
+    "238": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "240": {
+      "op": "SHL"
+    },
+    "241": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "242": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "MSTORE",
+      "path": "66"
+    },
+    "243": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        673,
+        683
+      ],
+      "op": "CALLER",
+      "path": "66"
+    },
+    "244": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x4"
+    },
+    "246": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "247": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "248": {
+      "op": "MSTORE"
+    },
+    "249": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        693,
+        697
+      ],
+      "op": "ADDRESS",
+      "path": "66"
+    },
+    "250": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "252": {
+      "op": "DUP3"
+    },
+    "253": {
+      "op": "ADD"
+    },
+    "254": {
+      "op": "MSTORE"
+    },
+    "255": {
+      "op": "PUSH1",
+      "value": "0x44"
+    },
+    "257": {
+      "op": "DUP2"
+    },
+    "258": {
+      "op": "ADD"
+    },
+    "259": {
+      "op": "DUP9"
+    },
+    "260": {
+      "op": "SWAP1"
+    },
+    "261": {
+      "op": "MSTORE"
+    },
+    "262": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "264": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "266": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "268": {
+      "op": "SHL"
+    },
+    "269": {
+      "op": "SUB"
+    },
+    "270": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        672
+      ],
+      "op": "DUP10",
+      "path": "66"
+    },
+    "271": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        672
+      ],
+      "op": "AND",
+      "path": "66"
+    },
+    "272": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        672
+      ],
+      "op": "SWAP3",
+      "path": "66"
+    },
+    "273": {
+      "op": "POP"
+    },
+    "274": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        672
+      ],
+      "op": "PUSH4",
+      "path": "66",
+      "value": "0x23B872DD"
+    },
+    "279": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        672
+      ],
+      "op": "SWAP2",
+      "path": "66"
+    },
+    "280": {
+      "op": "POP"
+    },
+    "281": {
+      "op": "PUSH1",
+      "value": "0x64"
+    },
+    "283": {
+      "op": "ADD"
+    },
+    "284": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x20"
+    },
+    "286": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "288": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "289": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "290": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP4",
+      "path": "66"
+    },
+    "291": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "SUB",
+      "path": "66"
+    },
+    "292": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "293": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "295": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP8",
+      "path": "66"
+    },
+    "296": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "GAS",
+      "path": "66"
+    },
+    "297": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "CALL",
+      "path": "66"
+    },
+    "298": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "299": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "300": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "301": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x13A"
+    },
+    "304": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "305": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "306": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "308": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "309": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "RETURNDATACOPY",
+      "path": "66"
+    },
+    "310": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "311": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "313": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "REVERT",
+      "path": "66"
+    },
+    "314": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "315": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "316": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "317": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "318": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "319": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "321": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "322": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "323": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x1F"
+    },
+    "325": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "NOT",
+      "path": "66"
+    },
+    "326": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x1F"
+    },
+    "328": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "329": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "330": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "AND",
+      "path": "66"
+    },
+    "331": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "332": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "333": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "334": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "336": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "MSTORE",
+      "path": "66"
+    },
+    "337": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "338": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "339": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "340": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "341": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x15E"
+    },
+    "344": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "SWAP2",
+      "path": "66"
+    },
+    "345": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "346": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x289"
+    },
+    "349": {
+      "fn": "MockExchange.depositWithPermit",
+      "jump": "i",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "350": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "351": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        637,
+        708
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "352": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "353": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "354": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "355": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "356": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "357": {
+      "fn": "MockExchange.depositWithPermit",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "358": {
+      "fn": "MockExchange.depositWithPermit",
+      "jump": "o",
+      "offset": [
+        265,
+        715
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "359": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "360": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "statement": 2,
+      "value": "0x40"
+    },
+    "362": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "363": {
+      "op": "PUSH4",
+      "value": "0x23B872DD"
+    },
+    "368": {
+      "op": "PUSH1",
+      "value": "0xE0"
+    },
+    "370": {
+      "op": "SHL"
+    },
+    "371": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "372": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "MSTORE",
+      "path": "66"
+    },
+    "373": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        826,
+        836
+      ],
+      "op": "CALLER",
+      "path": "66"
+    },
+    "374": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x4"
+    },
+    "376": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "377": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "378": {
+      "op": "MSTORE"
+    },
+    "379": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        846,
+        850
+      ],
+      "op": "ADDRESS",
+      "path": "66"
+    },
+    "380": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "382": {
+      "op": "DUP3"
+    },
+    "383": {
+      "op": "ADD"
+    },
+    "384": {
+      "op": "MSTORE"
+    },
+    "385": {
+      "op": "PUSH1",
+      "value": "0x44"
+    },
+    "387": {
+      "op": "DUP2"
+    },
+    "388": {
+      "op": "ADD"
+    },
+    "389": {
+      "op": "DUP3"
+    },
+    "390": {
+      "op": "SWAP1"
+    },
+    "391": {
+      "op": "MSTORE"
+    },
+    "392": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "394": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "396": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "398": {
+      "op": "SHL"
+    },
+    "399": {
+      "op": "SUB"
+    },
+    "400": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        825
+      ],
+      "op": "DUP4",
+      "path": "66"
+    },
+    "401": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        825
+      ],
+      "op": "AND",
+      "path": "66"
+    },
+    "402": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        825
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "403": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        825
+      ],
+      "op": "PUSH4",
+      "path": "66",
+      "value": "0x23B872DD"
+    },
+    "408": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        825
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "409": {
+      "op": "PUSH1",
+      "value": "0x64"
+    },
+    "411": {
+      "op": "ADD"
+    },
+    "412": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x20"
+    },
+    "414": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "416": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "417": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "418": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP4",
+      "path": "66"
+    },
+    "419": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "SUB",
+      "path": "66"
+    },
+    "420": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "421": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "423": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP8",
+      "path": "66"
+    },
+    "424": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "GAS",
+      "path": "66"
+    },
+    "425": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "CALL",
+      "path": "66"
+    },
+    "426": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "427": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "428": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "ISZERO",
+      "path": "66"
+    },
+    "429": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x1BA"
+    },
+    "432": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "JUMPI",
+      "path": "66"
+    },
+    "433": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "434": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "436": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "437": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "RETURNDATACOPY",
+      "path": "66"
+    },
+    "438": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "439": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x0"
+    },
+    "441": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "REVERT",
+      "path": "66"
+    },
+    "442": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "443": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "444": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "445": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "446": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "447": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "449": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "MLOAD",
+      "path": "66"
+    },
+    "450": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "RETURNDATASIZE",
+      "path": "66"
+    },
+    "451": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x1F"
+    },
+    "453": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "NOT",
+      "path": "66"
+    },
+    "454": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x1F"
+    },
+    "456": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "457": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "458": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "AND",
+      "path": "66"
+    },
+    "459": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP3",
+      "path": "66"
+    },
+    "460": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "461": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP1",
+      "path": "66"
+    },
+    "462": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH1",
+      "path": "66",
+      "value": "0x40"
+    },
+    "464": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "MSTORE",
+      "path": "66"
+    },
+    "465": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "466": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "DUP2",
+      "path": "66"
+    },
+    "467": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "ADD",
+      "path": "66"
+    },
+    "468": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "469": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x1DE"
+    },
+    "472": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "SWAP2",
+      "path": "66"
+    },
+    "473": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "SWAP1",
+      "path": "66"
+    },
+    "474": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "PUSH2",
+      "path": "66",
+      "value": "0x289"
+    },
+    "477": {
+      "fn": "MockExchange.deposit",
+      "jump": "i",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "478": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "JUMPDEST",
+      "path": "66"
+    },
+    "479": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        790,
+        861
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "480": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "481": {
+      "fn": "MockExchange.deposit",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "POP",
+      "path": "66"
+    },
+    "482": {
+      "fn": "MockExchange.deposit",
+      "jump": "o",
+      "offset": [
+        721,
+        868
+      ],
+      "op": "JUMP",
+      "path": "66"
+    },
+    "483": {
+      "op": "JUMPDEST"
+    },
+    "484": {
+      "op": "DUP1"
+    },
+    "485": {
+      "op": "CALLDATALOAD"
+    },
+    "486": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "488": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "490": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "492": {
+      "op": "SHL"
+    },
+    "493": {
+      "op": "SUB"
+    },
+    "494": {
+      "op": "DUP2"
+    },
+    "495": {
+      "op": "AND"
+    },
+    "496": {
+      "op": "DUP2"
+    },
+    "497": {
+      "op": "EQ"
+    },
+    "498": {
+      "op": "PUSH2",
+      "value": "0x1FA"
+    },
+    "501": {
+      "op": "JUMPI"
+    },
+    "502": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "504": {
+      "op": "DUP1"
+    },
+    "505": {
+      "op": "REVERT"
+    },
+    "506": {
+      "op": "JUMPDEST"
+    },
+    "507": {
+      "op": "SWAP2"
+    },
+    "508": {
+      "op": "SWAP1"
+    },
+    "509": {
+      "op": "POP"
+    },
+    "510": {
+      "jump": "o",
+      "op": "JUMP"
+    },
+    "511": {
+      "op": "JUMPDEST"
+    },
+    "512": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "514": {
+      "op": "DUP1"
+    },
+    "515": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "517": {
+      "op": "DUP1"
+    },
+    "518": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "520": {
+      "op": "DUP1"
+    },
+    "521": {
+      "op": "PUSH1",
+      "value": "0xC0"
+    },
+    "523": {
+      "op": "DUP8"
+    },
+    "524": {
+      "op": "DUP10"
+    },
+    "525": {
+      "op": "SUB"
+    },
+    "526": {
+      "op": "SLT"
+    },
+    "527": {
+      "op": "ISZERO"
+    },
+    "528": {
+      "op": "PUSH2",
+      "value": "0x218"
+    },
+    "531": {
+      "op": "JUMPI"
+    },
+    "532": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "534": {
+      "op": "DUP1"
+    },
+    "535": {
+      "op": "REVERT"
+    },
+    "536": {
+      "op": "JUMPDEST"
+    },
+    "537": {
+      "op": "PUSH2",
+      "value": "0x221"
+    },
+    "540": {
+      "op": "DUP8"
+    },
+    "541": {
+      "op": "PUSH2",
+      "value": "0x1E3"
+    },
+    "544": {
+      "jump": "i",
+      "op": "JUMP"
+    },
+    "545": {
+      "op": "JUMPDEST"
+    },
+    "546": {
+      "op": "SWAP6"
+    },
+    "547": {
+      "op": "POP"
+    },
+    "548": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "550": {
+      "op": "DUP8"
+    },
+    "551": {
+      "op": "ADD"
+    },
+    "552": {
+      "op": "CALLDATALOAD"
+    },
+    "553": {
+      "op": "SWAP5"
+    },
+    "554": {
+      "op": "POP"
+    },
+    "555": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "557": {
+      "op": "DUP8"
+    },
+    "558": {
+      "op": "ADD"
+    },
+    "559": {
+      "op": "CALLDATALOAD"
+    },
+    "560": {
+      "op": "SWAP4"
+    },
+    "561": {
+      "op": "POP"
+    },
+    "562": {
+      "op": "PUSH1",
+      "value": "0x60"
+    },
+    "564": {
+      "op": "DUP8"
+    },
+    "565": {
+      "op": "ADD"
+    },
+    "566": {
+      "op": "CALLDATALOAD"
+    },
+    "567": {
+      "op": "PUSH1",
+      "value": "0xFF"
+    },
+    "569": {
+      "op": "DUP2"
+    },
+    "570": {
+      "op": "AND"
+    },
+    "571": {
+      "op": "DUP2"
+    },
+    "572": {
+      "op": "EQ"
+    },
+    "573": {
+      "op": "PUSH2",
+      "value": "0x245"
+    },
+    "576": {
+      "op": "JUMPI"
+    },
+    "577": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "579": {
+      "op": "DUP1"
+    },
+    "580": {
+      "op": "REVERT"
+    },
+    "581": {
+      "op": "JUMPDEST"
+    },
+    "582": {
+      "op": "SWAP6"
+    },
+    "583": {
+      "op": "SWAP9"
+    },
+    "584": {
+      "op": "SWAP5"
+    },
+    "585": {
+      "op": "SWAP8"
+    },
+    "586": {
+      "op": "POP"
+    },
+    "587": {
+      "op": "SWAP3"
+    },
+    "588": {
+      "op": "SWAP6"
+    },
+    "589": {
+      "op": "PUSH1",
+      "value": "0x80"
+    },
+    "591": {
+      "op": "DUP2"
+    },
+    "592": {
+      "op": "ADD"
+    },
+    "593": {
+      "op": "CALLDATALOAD"
+    },
+    "594": {
+      "op": "SWAP5"
+    },
+    "595": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "597": {
+      "op": "SWAP1"
+    },
+    "598": {
+      "op": "SWAP2"
+    },
+    "599": {
+      "op": "ADD"
+    },
+    "600": {
+      "op": "CALLDATALOAD"
+    },
+    "601": {
+      "op": "SWAP4"
+    },
+    "602": {
+      "op": "POP"
+    },
+    "603": {
+      "op": "SWAP2"
+    },
+    "604": {
+      "op": "POP"
+    },
+    "605": {
+      "op": "POP"
+    },
+    "606": {
+      "jump": "o",
+      "op": "JUMP"
+    },
+    "607": {
+      "op": "JUMPDEST"
+    },
+    "608": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "610": {
+      "op": "DUP1"
+    },
+    "611": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "613": {
+      "op": "DUP4"
+    },
+    "614": {
+      "op": "DUP6"
+    },
+    "615": {
+      "op": "SUB"
+    },
+    "616": {
+      "op": "SLT"
+    },
+    "617": {
+      "op": "ISZERO"
+    },
+    "618": {
+      "op": "PUSH2",
+      "value": "0x272"
+    },
+    "621": {
+      "op": "JUMPI"
+    },
+    "622": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "624": {
+      "op": "DUP1"
+    },
+    "625": {
+      "op": "REVERT"
+    },
+    "626": {
+      "op": "JUMPDEST"
+    },
+    "627": {
+      "op": "PUSH2",
+      "value": "0x27B"
+    },
+    "630": {
+      "op": "DUP4"
+    },
+    "631": {
+      "op": "PUSH2",
+      "value": "0x1E3"
+    },
+    "634": {
+      "jump": "i",
+      "op": "JUMP"
+    },
+    "635": {
+      "op": "JUMPDEST"
+    },
+    "636": {
+      "op": "SWAP5"
+    },
+    "637": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "639": {
+      "op": "SWAP4"
+    },
+    "640": {
+      "op": "SWAP1"
+    },
+    "641": {
+      "op": "SWAP4"
+    },
+    "642": {
+      "op": "ADD"
+    },
+    "643": {
+      "op": "CALLDATALOAD"
+    },
+    "644": {
+      "op": "SWAP4"
+    },
+    "645": {
+      "op": "POP"
+    },
+    "646": {
+      "op": "POP"
+    },
+    "647": {
+      "op": "POP"
+    },
+    "648": {
+      "jump": "o",
+      "op": "JUMP"
+    },
+    "649": {
+      "op": "JUMPDEST"
+    },
+    "650": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "652": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "654": {
+      "op": "DUP3"
+    },
+    "655": {
+      "op": "DUP5"
+    },
+    "656": {
+      "op": "SUB"
+    },
+    "657": {
+      "op": "SLT"
+    },
+    "658": {
+      "op": "ISZERO"
+    },
+    "659": {
+      "op": "PUSH2",
+      "value": "0x29B"
+    },
+    "662": {
+      "op": "JUMPI"
+    },
+    "663": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "665": {
+      "op": "DUP1"
+    },
+    "666": {
+      "op": "REVERT"
+    },
+    "667": {
+      "op": "JUMPDEST"
+    },
+    "668": {
+      "op": "DUP2"
+    },
+    "669": {
+      "op": "MLOAD"
+    },
+    "670": {
+      "op": "DUP1"
+    },
+    "671": {
+      "op": "ISZERO"
+    },
+    "672": {
+      "op": "ISZERO"
+    },
+    "673": {
+      "op": "DUP2"
+    },
+    "674": {
+      "op": "EQ"
+    },
+    "675": {
+      "op": "PUSH2",
+      "value": "0x2AB"
+    },
+    "678": {
+      "op": "JUMPI"
+    },
+    "679": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "681": {
+      "op": "DUP1"
+    },
+    "682": {
+      "op": "REVERT"
+    },
+    "683": {
+      "op": "JUMPDEST"
+    },
+    "684": {
+      "op": "SWAP4"
+    },
+    "685": {
+      "op": "SWAP3"
+    },
+    "686": {
+      "op": "POP"
+    },
+    "687": {
+      "op": "POP"
+    },
+    "688": {
+      "op": "POP"
+    },
+    "689": {
+      "jump": "o",
+      "op": "JUMP"
+    }
+  },
+  "sha1": "c5af1ae5248f3a6729c612ce7cee5bd051969e01",
+  "source": "pragma solidity 0.8.12;\n// Copyright BigchainDB GmbH and Ocean Protocol contributors\n// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n// Code is Apache-2.0 and docs are CC-BY-4.0\n\nimport \"../../interfaces/IERC20Template.sol\";\n\n\ncontract MockExchange {\n\n\n\n    function depositWithPermit(\n        address _token,\n        uint256 _amount,\n        uint256 _deadline,\n        uint8 v,\n        bytes32 r,\n        bytes32 s\n    ) external {\n        IERC20Template(_token).permit(\n            msg.sender,\n            address(this),\n            _amount,\n            _deadline,\n            v,\n            r,\n            s\n        );\n        IERC20Template(_token).transferFrom(msg.sender, address(this), _amount);\n    }\n\n    function deposit(address _token, uint256 _amount) external {\n        IERC20Template(_token).transferFrom(msg.sender, address(this), _amount);\n    }\n}\n",
+  "sourceMap": "234:636:66:-:0;;;;;;;;;;;;;;;;;;;",
+  "sourcePath": "contracts/oceanv4/utils/mock/MockExchange.sol",
+  "type": "contract"
+}

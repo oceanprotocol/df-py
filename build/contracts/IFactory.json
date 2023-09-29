@@ -1,0 +1,2510 @@
+{
+  "abi": [
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "transferable",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IFactory.NftCreateData",
+          "name": "_NftCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string[]",
+              "name": "strings",
+              "type": "string[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "addresses",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "uints",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "bytess",
+              "type": "bytes[]"
+            }
+          ],
+          "internalType": "struct IFactory.ErcCreateData",
+          "name": "_ErcCreateData",
+          "type": "tuple"
+        }
+      ],
+      "name": "createNftWithErc20",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "transferable",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IFactory.NftCreateData",
+          "name": "_NftCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string[]",
+              "name": "strings",
+              "type": "string[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "addresses",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "uints",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "bytess",
+              "type": "bytes[]"
+            }
+          ],
+          "internalType": "struct IFactory.ErcCreateData",
+          "name": "_ErcCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "dispenserAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxTokens",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "maxBalance",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "withMint",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "allowedSwapper",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IFactory.DispenserData",
+          "name": "_DispenserData",
+          "type": "tuple"
+        }
+      ],
+      "name": "createNftWithErc20WithDispenser",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "transferable",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IFactory.NftCreateData",
+          "name": "_NftCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string[]",
+              "name": "strings",
+              "type": "string[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "addresses",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "uints",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "bytess",
+              "type": "bytes[]"
+            }
+          ],
+          "internalType": "struct IFactory.ErcCreateData",
+          "name": "_ErcCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "address",
+              "name": "fixedPriceAddress",
+              "type": "address"
+            },
+            {
+              "internalType": "address[]",
+              "name": "addresses",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "uints",
+              "type": "uint256[]"
+            }
+          ],
+          "internalType": "struct IFactory.FixedData",
+          "name": "_FixedData",
+          "type": "tuple"
+        }
+      ],
+      "name": "createNftWithErc20WithFixedRate",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "symbol",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string",
+              "name": "tokenURI",
+              "type": "string"
+            },
+            {
+              "internalType": "bool",
+              "name": "transferable",
+              "type": "bool"
+            },
+            {
+              "internalType": "address",
+              "name": "owner",
+              "type": "address"
+            }
+          ],
+          "internalType": "struct IFactory.NftCreateData",
+          "name": "_NftCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "templateIndex",
+              "type": "uint256"
+            },
+            {
+              "internalType": "string[]",
+              "name": "strings",
+              "type": "string[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "addresses",
+              "type": "address[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "uints",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "bytes[]",
+              "name": "bytess",
+              "type": "bytes[]"
+            }
+          ],
+          "internalType": "struct IFactory.ErcCreateData",
+          "name": "_ErcCreateData",
+          "type": "tuple"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[]",
+              "name": "ssParams",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "uint256[]",
+              "name": "swapFees",
+              "type": "uint256[]"
+            },
+            {
+              "internalType": "address[]",
+              "name": "addresses",
+              "type": "address[]"
+            }
+          ],
+          "internalType": "struct IFactory.PoolData",
+          "name": "_PoolData",
+          "type": "tuple"
+        }
+      ],
+      "name": "createNftWithErc20WithPool",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        },
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "_templateIndex",
+          "type": "uint256"
+        },
+        {
+          "internalType": "string[]",
+          "name": "strings",
+          "type": "string[]"
+        },
+        {
+          "internalType": "address[]",
+          "name": "addresses",
+          "type": "address[]"
+        },
+        {
+          "internalType": "uint256[]",
+          "name": "uints",
+          "type": "uint256[]"
+        },
+        {
+          "internalType": "bytes[]",
+          "name": "bytess",
+          "type": "bytes[]"
+        }
+      ],
+      "name": "createToken",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "token",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "erc20dt",
+          "type": "address"
+        }
+      ],
+      "name": "erc20List",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "ERC721address",
+          "type": "address"
+        }
+      ],
+      "name": "erc721List",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "allSourcePaths": {
+    "27": "contracts/oceanv4/interfaces/IFactory.sol"
+  },
+  "ast": {
+    "absolutePath": "contracts/oceanv4/interfaces/IFactory.sol",
+    "exportedSymbols": {
+      "IFactory": [
+        3895
+      ]
+    },
+    "id": 3896,
+    "license": "(Apache-2.0 AND CC-BY-4.0)",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 3738,
+        "literals": [
+          "solidity",
+          "0.8",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "0:23:27"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "IFactory",
+        "contractDependencies": [],
+        "contractKind": "interface",
+        "fullyImplemented": false,
+        "id": 3895,
+        "linearizedBaseContracts": [
+          3895
+        ],
+        "name": "IFactory",
+        "nameLocation": "196:8:27",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "functionSelector": "557fcfb0",
+            "id": 3757,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "createToken",
+            "nameLocation": "220:11:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3753,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3740,
+                  "mutability": "mutable",
+                  "name": "_templateIndex",
+                  "nameLocation": "249:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3757,
+                  "src": "241:22:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  },
+                  "typeName": {
+                    "id": 3739,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "241:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3743,
+                  "mutability": "mutable",
+                  "name": "strings",
+                  "nameLocation": "291:7:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3757,
+                  "src": "273:25:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_string_calldata_ptr_$dyn_calldata_ptr",
+                    "typeString": "string[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 3741,
+                      "name": "string",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "273:6:27",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_string_storage_ptr",
+                        "typeString": "string"
+                      }
+                    },
+                    "id": 3742,
+                    "nodeType": "ArrayTypeName",
+                    "src": "273:8:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_string_storage_$dyn_storage_ptr",
+                      "typeString": "string[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3746,
+                  "mutability": "mutable",
+                  "name": "addresses",
+                  "nameLocation": "327:9:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3757,
+                  "src": "308:28:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_calldata_ptr",
+                    "typeString": "address[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 3744,
+                      "name": "address",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "308:7:27",
+                      "stateMutability": "nonpayable",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "id": 3745,
+                    "nodeType": "ArrayTypeName",
+                    "src": "308:9:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                      "typeString": "address[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3749,
+                  "mutability": "mutable",
+                  "name": "uints",
+                  "nameLocation": "365:5:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3757,
+                  "src": "346:24:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_calldata_ptr",
+                    "typeString": "uint256[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 3747,
+                      "name": "uint256",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "346:7:27",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_uint256",
+                        "typeString": "uint256"
+                      }
+                    },
+                    "id": 3748,
+                    "nodeType": "ArrayTypeName",
+                    "src": "346:9:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                      "typeString": "uint256[]"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3752,
+                  "mutability": "mutable",
+                  "name": "bytess",
+                  "nameLocation": "397:6:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3757,
+                  "src": "380:23:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_bytes_calldata_ptr_$dyn_calldata_ptr",
+                    "typeString": "bytes[]"
+                  },
+                  "typeName": {
+                    "baseType": {
+                      "id": 3750,
+                      "name": "bytes",
+                      "nodeType": "ElementaryTypeName",
+                      "src": "380:5:27",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bytes_storage_ptr",
+                        "typeString": "bytes"
+                      }
+                    },
+                    "id": 3751,
+                    "nodeType": "ArrayTypeName",
+                    "src": "380:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_array$_t_bytes_storage_$dyn_storage_ptr",
+                      "typeString": "bytes[]"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "231:178:27"
+            },
+            "returnParameters": {
+              "id": 3756,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3755,
+                  "mutability": "mutable",
+                  "name": "token",
+                  "nameLocation": "436:5:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3757,
+                  "src": "428:13:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3754,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "428:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "427:15:27"
+            },
+            "scope": 3895,
+            "src": "211:232:27",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "72f670f0",
+            "id": 3764,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "erc721List",
+            "nameLocation": "458:10:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3760,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3759,
+                  "mutability": "mutable",
+                  "name": "ERC721address",
+                  "nameLocation": "477:13:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3764,
+                  "src": "469:21:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3758,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "469:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "468:23:27"
+            },
+            "returnParameters": {
+              "id": 3763,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3762,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3764,
+                  "src": "510:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3761,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "510:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "509:9:27"
+            },
+            "scope": 3895,
+            "src": "449:70:27",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "226e7615",
+            "id": 3771,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "erc20List",
+            "nameLocation": "534:9:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3767,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3766,
+                  "mutability": "mutable",
+                  "name": "erc20dt",
+                  "nameLocation": "552:7:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3771,
+                  "src": "544:15:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3765,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "544:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "543:17:27"
+            },
+            "returnParameters": {
+              "id": 3770,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3769,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3771,
+                  "src": "583:4:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 3768,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "583:4:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "582:6:27"
+            },
+            "scope": 3895,
+            "src": "525:64:27",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "canonicalName": "IFactory.NftCreateData",
+            "id": 3784,
+            "members": [
+              {
+                "constant": false,
+                "id": 3773,
+                "mutability": "mutable",
+                "name": "name",
+                "nameLocation": "633:4:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3784,
+                "src": "626:11:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                },
+                "typeName": {
+                  "id": 3772,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "626:6:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3775,
+                "mutability": "mutable",
+                "name": "symbol",
+                "nameLocation": "654:6:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3784,
+                "src": "647:13:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                },
+                "typeName": {
+                  "id": 3774,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "647:6:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3777,
+                "mutability": "mutable",
+                "name": "templateIndex",
+                "nameLocation": "678:13:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3784,
+                "src": "670:21:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 3776,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "670:7:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3779,
+                "mutability": "mutable",
+                "name": "tokenURI",
+                "nameLocation": "708:8:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3784,
+                "src": "701:15:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_string_storage_ptr",
+                  "typeString": "string"
+                },
+                "typeName": {
+                  "id": 3778,
+                  "name": "string",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "701:6:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_string_storage_ptr",
+                    "typeString": "string"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3781,
+                "mutability": "mutable",
+                "name": "transferable",
+                "nameLocation": "731:12:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3784,
+                "src": "726:17:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 3780,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "726:4:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3783,
+                "mutability": "mutable",
+                "name": "owner",
+                "nameLocation": "761:5:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3784,
+                "src": "753:13:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 3782,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "753:7:27",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "NftCreateData",
+            "nameLocation": "603:13:27",
+            "nodeType": "StructDefinition",
+            "scope": 3895,
+            "src": "596:177:27",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "IFactory.ErcCreateData",
+            "id": 3799,
+            "members": [
+              {
+                "constant": false,
+                "id": 3786,
+                "mutability": "mutable",
+                "name": "templateIndex",
+                "nameLocation": "816:13:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3799,
+                "src": "808:21:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 3785,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "808:7:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3789,
+                "mutability": "mutable",
+                "name": "strings",
+                "nameLocation": "848:7:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3799,
+                "src": "839:16:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_string_storage_$dyn_storage_ptr",
+                  "typeString": "string[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3787,
+                    "name": "string",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "839:6:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_string_storage_ptr",
+                      "typeString": "string"
+                    }
+                  },
+                  "id": 3788,
+                  "nodeType": "ArrayTypeName",
+                  "src": "839:8:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_string_storage_$dyn_storage_ptr",
+                    "typeString": "string[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3792,
+                "mutability": "mutable",
+                "name": "addresses",
+                "nameLocation": "875:9:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3799,
+                "src": "865:19:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3790,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "865:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3791,
+                  "nodeType": "ArrayTypeName",
+                  "src": "865:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3795,
+                "mutability": "mutable",
+                "name": "uints",
+                "nameLocation": "904:5:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3799,
+                "src": "894:15:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                  "typeString": "uint256[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3793,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "894:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 3794,
+                  "nodeType": "ArrayTypeName",
+                  "src": "894:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                    "typeString": "uint256[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3798,
+                "mutability": "mutable",
+                "name": "bytess",
+                "nameLocation": "927:6:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3799,
+                "src": "919:14:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_bytes_storage_$dyn_storage_ptr",
+                  "typeString": "bytes[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3796,
+                    "name": "bytes",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "919:5:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes_storage_ptr",
+                      "typeString": "bytes"
+                    }
+                  },
+                  "id": 3797,
+                  "nodeType": "ArrayTypeName",
+                  "src": "919:7:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_bytes_storage_$dyn_storage_ptr",
+                    "typeString": "bytes[]"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "ErcCreateData",
+            "nameLocation": "785:13:27",
+            "nodeType": "StructDefinition",
+            "scope": 3895,
+            "src": "778:162:27",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "IFactory.PoolData",
+            "id": 3809,
+            "members": [
+              {
+                "constant": false,
+                "id": 3802,
+                "mutability": "mutable",
+                "name": "ssParams",
+                "nameLocation": "981:8:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3809,
+                "src": "971:18:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                  "typeString": "uint256[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3800,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "971:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 3801,
+                  "nodeType": "ArrayTypeName",
+                  "src": "971:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                    "typeString": "uint256[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3805,
+                "mutability": "mutable",
+                "name": "swapFees",
+                "nameLocation": "1009:8:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3809,
+                "src": "999:18:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                  "typeString": "uint256[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3803,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "999:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 3804,
+                  "nodeType": "ArrayTypeName",
+                  "src": "999:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                    "typeString": "uint256[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3808,
+                "mutability": "mutable",
+                "name": "addresses",
+                "nameLocation": "1037:9:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3809,
+                "src": "1027:19:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3806,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1027:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3807,
+                  "nodeType": "ArrayTypeName",
+                  "src": "1027:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "PoolData",
+            "nameLocation": "953:8:27",
+            "nodeType": "StructDefinition",
+            "scope": 3895,
+            "src": "946:107:27",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "IFactory.FixedData",
+            "id": 3818,
+            "members": [
+              {
+                "constant": false,
+                "id": 3811,
+                "mutability": "mutable",
+                "name": "fixedPriceAddress",
+                "nameLocation": "1093:17:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3818,
+                "src": "1085:25:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 3810,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1085:7:27",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3814,
+                "mutability": "mutable",
+                "name": "addresses",
+                "nameLocation": "1130:9:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3818,
+                "src": "1120:19:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                  "typeString": "address[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3812,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1120:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "id": 3813,
+                  "nodeType": "ArrayTypeName",
+                  "src": "1120:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_address_$dyn_storage_ptr",
+                    "typeString": "address[]"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3817,
+                "mutability": "mutable",
+                "name": "uints",
+                "nameLocation": "1159:5:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3818,
+                "src": "1149:15:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                  "typeString": "uint256[]"
+                },
+                "typeName": {
+                  "baseType": {
+                    "id": 3815,
+                    "name": "uint256",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1149:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_uint256",
+                      "typeString": "uint256"
+                    }
+                  },
+                  "id": 3816,
+                  "nodeType": "ArrayTypeName",
+                  "src": "1149:9:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_array$_t_uint256_$dyn_storage_ptr",
+                    "typeString": "uint256[]"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "FixedData",
+            "nameLocation": "1066:9:27",
+            "nodeType": "StructDefinition",
+            "scope": 3895,
+            "src": "1059:112:27",
+            "visibility": "public"
+          },
+          {
+            "canonicalName": "IFactory.DispenserData",
+            "id": 3829,
+            "members": [
+              {
+                "constant": false,
+                "id": 3820,
+                "mutability": "mutable",
+                "name": "dispenserAddress",
+                "nameLocation": "1215:16:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3829,
+                "src": "1207:24:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 3819,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1207:7:27",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3822,
+                "mutability": "mutable",
+                "name": "maxTokens",
+                "nameLocation": "1249:9:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3829,
+                "src": "1241:17:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 3821,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1241:7:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3824,
+                "mutability": "mutable",
+                "name": "maxBalance",
+                "nameLocation": "1276:10:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3829,
+                "src": "1268:18:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_uint256",
+                  "typeString": "uint256"
+                },
+                "typeName": {
+                  "id": 3823,
+                  "name": "uint256",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1268:7:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_uint256",
+                    "typeString": "uint256"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3826,
+                "mutability": "mutable",
+                "name": "withMint",
+                "nameLocation": "1301:8:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3829,
+                "src": "1296:13:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                },
+                "typeName": {
+                  "id": 3825,
+                  "name": "bool",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1296:4:27",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  }
+                },
+                "visibility": "internal"
+              },
+              {
+                "constant": false,
+                "id": 3828,
+                "mutability": "mutable",
+                "name": "allowedSwapper",
+                "nameLocation": "1327:14:27",
+                "nodeType": "VariableDeclaration",
+                "scope": 3829,
+                "src": "1319:22:27",
+                "stateVariable": false,
+                "storageLocation": "default",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                },
+                "typeName": {
+                  "id": 3827,
+                  "name": "address",
+                  "nodeType": "ElementaryTypeName",
+                  "src": "1319:7:27",
+                  "stateMutability": "nonpayable",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  }
+                },
+                "visibility": "internal"
+              }
+            ],
+            "name": "DispenserData",
+            "nameLocation": "1184:13:27",
+            "nodeType": "StructDefinition",
+            "scope": 3895,
+            "src": "1177:171:27",
+            "visibility": "public"
+          },
+          {
+            "functionSelector": "f86b2bcf",
+            "id": 3842,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "createNftWithErc20",
+            "nameLocation": "1367:18:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3836,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3832,
+                  "mutability": "mutable",
+                  "name": "_NftCreateData",
+                  "nameLocation": "1418:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3842,
+                  "src": "1395:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_NftCreateData_$3784_calldata_ptr",
+                    "typeString": "struct IFactory.NftCreateData"
+                  },
+                  "typeName": {
+                    "id": 3831,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3830,
+                      "name": "NftCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3784,
+                      "src": "1395:13:27"
+                    },
+                    "referencedDeclaration": 3784,
+                    "src": "1395:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_NftCreateData_$3784_storage_ptr",
+                      "typeString": "struct IFactory.NftCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3835,
+                  "mutability": "mutable",
+                  "name": "_ErcCreateData",
+                  "nameLocation": "1465:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3842,
+                  "src": "1442:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ErcCreateData_$3799_calldata_ptr",
+                    "typeString": "struct IFactory.ErcCreateData"
+                  },
+                  "typeName": {
+                    "id": 3834,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3833,
+                      "name": "ErcCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3799,
+                      "src": "1442:13:27"
+                    },
+                    "referencedDeclaration": 3799,
+                    "src": "1442:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ErcCreateData_$3799_storage_ptr",
+                      "typeString": "struct IFactory.ErcCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1385:100:27"
+            },
+            "returnParameters": {
+              "id": 3841,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3838,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3842,
+                  "src": "1504:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3837,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1504:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3840,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3842,
+                  "src": "1514:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3839,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1514:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1503:19:27"
+            },
+            "scope": 3895,
+            "src": "1358:165:27",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "50447fd5",
+            "id": 3860,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "createNftWithErc20WithPool",
+            "nameLocation": "1538:26:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3852,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3845,
+                  "mutability": "mutable",
+                  "name": "_NftCreateData",
+                  "nameLocation": "1597:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3860,
+                  "src": "1574:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_NftCreateData_$3784_calldata_ptr",
+                    "typeString": "struct IFactory.NftCreateData"
+                  },
+                  "typeName": {
+                    "id": 3844,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3843,
+                      "name": "NftCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3784,
+                      "src": "1574:13:27"
+                    },
+                    "referencedDeclaration": 3784,
+                    "src": "1574:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_NftCreateData_$3784_storage_ptr",
+                      "typeString": "struct IFactory.NftCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3848,
+                  "mutability": "mutable",
+                  "name": "_ErcCreateData",
+                  "nameLocation": "1644:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3860,
+                  "src": "1621:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ErcCreateData_$3799_calldata_ptr",
+                    "typeString": "struct IFactory.ErcCreateData"
+                  },
+                  "typeName": {
+                    "id": 3847,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3846,
+                      "name": "ErcCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3799,
+                      "src": "1621:13:27"
+                    },
+                    "referencedDeclaration": 3799,
+                    "src": "1621:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ErcCreateData_$3799_storage_ptr",
+                      "typeString": "struct IFactory.ErcCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3851,
+                  "mutability": "mutable",
+                  "name": "_PoolData",
+                  "nameLocation": "1686:9:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3860,
+                  "src": "1668:27:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_PoolData_$3809_calldata_ptr",
+                    "typeString": "struct IFactory.PoolData"
+                  },
+                  "typeName": {
+                    "id": 3850,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3849,
+                      "name": "PoolData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3809,
+                      "src": "1668:8:27"
+                    },
+                    "referencedDeclaration": 3809,
+                    "src": "1668:8:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_PoolData_$3809_storage_ptr",
+                      "typeString": "struct IFactory.PoolData"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1564:137:27"
+            },
+            "returnParameters": {
+              "id": 3859,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3854,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3860,
+                  "src": "1720:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3853,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1720:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3856,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3860,
+                  "src": "1729:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3855,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1729:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3858,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3860,
+                  "src": "1739:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3857,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1739:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1719:28:27"
+            },
+            "scope": 3895,
+            "src": "1529:219:27",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "d282aa86",
+            "id": 3878,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "createNftWithErc20WithFixedRate",
+            "nameLocation": "1768:31:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3870,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3863,
+                  "mutability": "mutable",
+                  "name": "_NftCreateData",
+                  "nameLocation": "1833:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1810:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_NftCreateData_$3784_calldata_ptr",
+                    "typeString": "struct IFactory.NftCreateData"
+                  },
+                  "typeName": {
+                    "id": 3862,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3861,
+                      "name": "NftCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3784,
+                      "src": "1810:13:27"
+                    },
+                    "referencedDeclaration": 3784,
+                    "src": "1810:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_NftCreateData_$3784_storage_ptr",
+                      "typeString": "struct IFactory.NftCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3866,
+                  "mutability": "mutable",
+                  "name": "_ErcCreateData",
+                  "nameLocation": "1880:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1857:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ErcCreateData_$3799_calldata_ptr",
+                    "typeString": "struct IFactory.ErcCreateData"
+                  },
+                  "typeName": {
+                    "id": 3865,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3864,
+                      "name": "ErcCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3799,
+                      "src": "1857:13:27"
+                    },
+                    "referencedDeclaration": 3799,
+                    "src": "1857:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ErcCreateData_$3799_storage_ptr",
+                      "typeString": "struct IFactory.ErcCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3869,
+                  "mutability": "mutable",
+                  "name": "_FixedData",
+                  "nameLocation": "1923:10:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1904:29:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_FixedData_$3818_calldata_ptr",
+                    "typeString": "struct IFactory.FixedData"
+                  },
+                  "typeName": {
+                    "id": 3868,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3867,
+                      "name": "FixedData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3818,
+                      "src": "1904:9:27"
+                    },
+                    "referencedDeclaration": 3818,
+                    "src": "1904:9:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_FixedData_$3818_storage_ptr",
+                      "typeString": "struct IFactory.FixedData"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1799:140:27"
+            },
+            "returnParameters": {
+              "id": 3877,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3872,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1958:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3871,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1958:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3874,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1967:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3873,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1967:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3876,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3878,
+                  "src": "1977:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bytes32",
+                    "typeString": "bytes32"
+                  },
+                  "typeName": {
+                    "id": 3875,
+                    "name": "bytes32",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1977:7:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bytes32",
+                      "typeString": "bytes32"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1957:29:27"
+            },
+            "scope": 3895,
+            "src": "1759:228:27",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "functionSelector": "aa897ddc",
+            "id": 3894,
+            "implemented": false,
+            "kind": "function",
+            "modifiers": [],
+            "name": "createNftWithErc20WithDispenser",
+            "nameLocation": "2007:31:27",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 3888,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3881,
+                  "mutability": "mutable",
+                  "name": "_NftCreateData",
+                  "nameLocation": "2071:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3894,
+                  "src": "2048:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_NftCreateData_$3784_calldata_ptr",
+                    "typeString": "struct IFactory.NftCreateData"
+                  },
+                  "typeName": {
+                    "id": 3880,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3879,
+                      "name": "NftCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3784,
+                      "src": "2048:13:27"
+                    },
+                    "referencedDeclaration": 3784,
+                    "src": "2048:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_NftCreateData_$3784_storage_ptr",
+                      "typeString": "struct IFactory.NftCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3884,
+                  "mutability": "mutable",
+                  "name": "_ErcCreateData",
+                  "nameLocation": "2118:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3894,
+                  "src": "2095:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_ErcCreateData_$3799_calldata_ptr",
+                    "typeString": "struct IFactory.ErcCreateData"
+                  },
+                  "typeName": {
+                    "id": 3883,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3882,
+                      "name": "ErcCreateData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3799,
+                      "src": "2095:13:27"
+                    },
+                    "referencedDeclaration": 3799,
+                    "src": "2095:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_ErcCreateData_$3799_storage_ptr",
+                      "typeString": "struct IFactory.ErcCreateData"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3887,
+                  "mutability": "mutable",
+                  "name": "_DispenserData",
+                  "nameLocation": "2165:14:27",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3894,
+                  "src": "2142:37:27",
+                  "stateVariable": false,
+                  "storageLocation": "calldata",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_struct$_DispenserData_$3829_calldata_ptr",
+                    "typeString": "struct IFactory.DispenserData"
+                  },
+                  "typeName": {
+                    "id": 3886,
+                    "nodeType": "UserDefinedTypeName",
+                    "pathNode": {
+                      "id": 3885,
+                      "name": "DispenserData",
+                      "nodeType": "IdentifierPath",
+                      "referencedDeclaration": 3829,
+                      "src": "2142:13:27"
+                    },
+                    "referencedDeclaration": 3829,
+                    "src": "2142:13:27",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_struct$_DispenserData_$3829_storage_ptr",
+                      "typeString": "struct IFactory.DispenserData"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2038:147:27"
+            },
+            "returnParameters": {
+              "id": 3893,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 3890,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3894,
+                  "src": "2204:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3889,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2204:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 3892,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 3894,
+                  "src": "2213:7:27",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 3891,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "2213:7:27",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "2203:18:27"
+            },
+            "scope": 3895,
+            "src": "1998:224:27",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 3896,
+        "src": "186:2038:27",
+        "usedErrors": []
+      }
+    ],
+    "src": "0:2224:27"
+  },
+  "bytecode": "",
+  "bytecodeSha1": "da39a3ee5e6b4b0d3255bfef95601890afd80709",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.8.12+commit.f00d7308"
+  },
+  "contractName": "IFactory",
+  "coverageMap": {
+    "branches": {},
+    "statements": {}
+  },
+  "dependencies": [],
+  "deployedBytecode": "",
+  "deployedSourceMap": "",
+  "language": "Solidity",
+  "natspec": {
+    "kind": "dev",
+    "methods": {},
+    "version": 1
+  },
+  "offset": [
+    186,
+    2224
+  ],
+  "opcodes": "",
+  "pcMap": {},
+  "sha1": "2c27e4d3e4b0be65506bc0c2996a0bace067f351",
+  "source": "pragma solidity 0.8.12;\n// Copyright BigchainDB GmbH and Ocean Protocol contributors\n// SPDX-License-Identifier: (Apache-2.0 AND CC-BY-4.0)\n// Code is Apache-2.0 and docs are CC-BY-4.0\n\ninterface IFactory {\n    function createToken(\n        uint256 _templateIndex,\n        string[] calldata strings,\n        address[] calldata addresses,\n        uint256[] calldata uints,\n        bytes[] calldata bytess\n    ) external returns (address token);\n\n    function erc721List(address ERC721address) external returns (address);\n\n    function erc20List(address erc20dt) external view returns(bool);\n\n\n    struct NftCreateData{\n        string name;\n        string symbol;\n        uint256 templateIndex;\n        string tokenURI;\n        bool transferable;\n        address owner;\n    }\n    struct ErcCreateData{\n        uint256 templateIndex;\n        string[] strings;\n        address[] addresses;\n        uint256[] uints;\n        bytes[] bytess;\n    }\n\n    struct PoolData{\n        uint256[] ssParams;\n        uint256[] swapFees;\n        address[] addresses;\n    }\n\n    struct FixedData{\n        address fixedPriceAddress;\n        address[] addresses;\n        uint256[] uints;\n    }\n\n    struct DispenserData{\n        address dispenserAddress;\n        uint256 maxTokens;\n        uint256 maxBalance;\n        bool withMint;\n        address allowedSwapper;\n    }\n    \n    function createNftWithErc20(\n        NftCreateData calldata _NftCreateData,\n        ErcCreateData calldata _ErcCreateData\n    ) external returns (address , address);\n\n    function createNftWithErc20WithPool(\n        NftCreateData calldata _NftCreateData,\n        ErcCreateData calldata _ErcCreateData,\n        PoolData calldata _PoolData\n    ) external returns (address, address , address);\n\n    \n    function createNftWithErc20WithFixedRate(\n         NftCreateData calldata _NftCreateData,\n        ErcCreateData calldata _ErcCreateData,\n        FixedData calldata _FixedData\n    ) external returns (address, address , bytes32 );\n\n    \n    function createNftWithErc20WithDispenser(\n        NftCreateData calldata _NftCreateData,\n        ErcCreateData calldata _ErcCreateData,\n        DispenserData calldata _DispenserData\n    ) external returns (address, address);\n}",
+  "sourceMap": "",
+  "sourcePath": "contracts/oceanv4/interfaces/IFactory.sol",
+  "type": "interface"
+}

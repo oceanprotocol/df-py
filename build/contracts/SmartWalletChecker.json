@@ -1,0 +1,4127 @@
+{
+  "abi": [
+    {
+      "inputs": [],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_address",
+          "type": "address"
+        }
+      ],
+      "name": "check",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isAllowed",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "",
+          "type": "address"
+        }
+      ],
+      "name": "isManager",
+      "outputs": [
+        {
+          "internalType": "bool",
+          "name": "",
+          "type": "bool"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_contract",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "_status",
+          "type": "bool"
+        }
+      ],
+      "name": "setAllowedContract",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "address",
+          "name": "_manager",
+          "type": "address"
+        },
+        {
+          "internalType": "bool",
+          "name": "_status",
+          "type": "bool"
+        }
+      ],
+      "name": "setManager",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    }
+  ],
+  "allSourcePaths": {
+    "73": "contracts/ve/SmartWalletChecker.sol"
+  },
+  "ast": {
+    "absolutePath": "contracts/ve/SmartWalletChecker.sol",
+    "exportedSymbols": {
+      "SmartWalletChecker": [
+        27377
+      ]
+    },
+    "id": 27378,
+    "license": "MIT",
+    "nodeType": "SourceUnit",
+    "nodes": [
+      {
+        "id": 27298,
+        "literals": [
+          "solidity",
+          "^",
+          "0.8",
+          ".12"
+        ],
+        "nodeType": "PragmaDirective",
+        "src": "32:24:73"
+      },
+      {
+        "abstract": false,
+        "baseContracts": [],
+        "canonicalName": "SmartWalletChecker",
+        "contractDependencies": [],
+        "contractKind": "contract",
+        "fullyImplemented": true,
+        "id": 27377,
+        "linearizedBaseContracts": [
+          27377
+        ],
+        "name": "SmartWalletChecker",
+        "nameLocation": "68:18:73",
+        "nodeType": "ContractDefinition",
+        "nodes": [
+          {
+            "constant": false,
+            "functionSelector": "f3ae2415",
+            "id": 27302,
+            "mutability": "mutable",
+            "name": "isManager",
+            "nameLocation": "125:9:73",
+            "nodeType": "VariableDeclaration",
+            "scope": 27377,
+            "src": "93:41:73",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+              "typeString": "mapping(address => bool)"
+            },
+            "typeName": {
+              "id": 27301,
+              "keyType": {
+                "id": 27299,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "101:7:73",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "93:24:73",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                "typeString": "mapping(address => bool)"
+              },
+              "valueType": {
+                "id": 27300,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "112:4:73",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "visibility": "public"
+          },
+          {
+            "constant": false,
+            "functionSelector": "babcc539",
+            "id": 27306,
+            "mutability": "mutable",
+            "name": "isAllowed",
+            "nameLocation": "172:9:73",
+            "nodeType": "VariableDeclaration",
+            "scope": 27377,
+            "src": "140:41:73",
+            "stateVariable": true,
+            "storageLocation": "default",
+            "typeDescriptions": {
+              "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+              "typeString": "mapping(address => bool)"
+            },
+            "typeName": {
+              "id": 27305,
+              "keyType": {
+                "id": 27303,
+                "name": "address",
+                "nodeType": "ElementaryTypeName",
+                "src": "148:7:73",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_address",
+                  "typeString": "address"
+                }
+              },
+              "nodeType": "Mapping",
+              "src": "140:24:73",
+              "typeDescriptions": {
+                "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                "typeString": "mapping(address => bool)"
+              },
+              "valueType": {
+                "id": 27304,
+                "name": "bool",
+                "nodeType": "ElementaryTypeName",
+                "src": "159:4:73",
+                "typeDescriptions": {
+                  "typeIdentifier": "t_bool",
+                  "typeString": "bool"
+                }
+              }
+            },
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 27317,
+              "nodeType": "Block",
+              "src": "212:70:73",
+              "statements": [
+                {
+                  "expression": {
+                    "arguments": [
+                      {
+                        "baseExpression": {
+                          "id": 27309,
+                          "name": "isManager",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": 27302,
+                          "src": "230:9:73",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                            "typeString": "mapping(address => bool)"
+                          }
+                        },
+                        "id": 27312,
+                        "indexExpression": {
+                          "expression": {
+                            "id": 27310,
+                            "name": "msg",
+                            "nodeType": "Identifier",
+                            "overloadedDeclarations": [],
+                            "referencedDeclaration": -15,
+                            "src": "240:3:73",
+                            "typeDescriptions": {
+                              "typeIdentifier": "t_magic_message",
+                              "typeString": "msg"
+                            }
+                          },
+                          "id": 27311,
+                          "isConstant": false,
+                          "isLValue": false,
+                          "isPure": false,
+                          "lValueRequested": false,
+                          "memberName": "sender",
+                          "nodeType": "MemberAccess",
+                          "src": "240:10:73",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_address",
+                            "typeString": "address"
+                          }
+                        },
+                        "isConstant": false,
+                        "isLValue": true,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "nodeType": "IndexAccess",
+                        "src": "230:21:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        }
+                      },
+                      {
+                        "hexValue": "216d616e61676572",
+                        "id": 27313,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": true,
+                        "kind": "string",
+                        "lValueRequested": false,
+                        "nodeType": "Literal",
+                        "src": "253:10:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_stringliteral_d649ec84ef7f6f9041461728f89423e9a28995fb09d4368e3ac8eb8640ff9e67",
+                          "typeString": "literal_string \"!manager\""
+                        },
+                        "value": "!manager"
+                      }
+                    ],
+                    "expression": {
+                      "argumentTypes": [
+                        {
+                          "typeIdentifier": "t_bool",
+                          "typeString": "bool"
+                        },
+                        {
+                          "typeIdentifier": "t_stringliteral_d649ec84ef7f6f9041461728f89423e9a28995fb09d4368e3ac8eb8640ff9e67",
+                          "typeString": "literal_string \"!manager\""
+                        }
+                      ],
+                      "id": 27308,
+                      "name": "require",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [
+                        -18,
+                        -18
+                      ],
+                      "referencedDeclaration": -18,
+                      "src": "222:7:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_function_require_pure$_t_bool_$_t_string_memory_ptr_$returns$__$",
+                        "typeString": "function (bool,string memory) pure"
+                      }
+                    },
+                    "id": 27314,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "kind": "functionCall",
+                    "lValueRequested": false,
+                    "names": [],
+                    "nodeType": "FunctionCall",
+                    "src": "222:42:73",
+                    "tryCall": false,
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_tuple$__$",
+                      "typeString": "tuple()"
+                    }
+                  },
+                  "id": 27315,
+                  "nodeType": "ExpressionStatement",
+                  "src": "222:42:73"
+                },
+                {
+                  "id": 27316,
+                  "nodeType": "PlaceholderStatement",
+                  "src": "274:1:73"
+                }
+              ]
+            },
+            "id": 27318,
+            "name": "onlyManager",
+            "nameLocation": "198:11:73",
+            "nodeType": "ModifierDefinition",
+            "parameters": {
+              "id": 27307,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "209:2:73"
+            },
+            "src": "189:93:73",
+            "virtual": false,
+            "visibility": "internal"
+          },
+          {
+            "body": {
+              "id": 27328,
+              "nodeType": "Block",
+              "src": "306:45:73",
+              "statements": [
+                {
+                  "expression": {
+                    "id": 27326,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "baseExpression": {
+                        "id": 27321,
+                        "name": "isManager",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 27302,
+                        "src": "316:9:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 27324,
+                      "indexExpression": {
+                        "expression": {
+                          "id": 27322,
+                          "name": "msg",
+                          "nodeType": "Identifier",
+                          "overloadedDeclarations": [],
+                          "referencedDeclaration": -15,
+                          "src": "326:3:73",
+                          "typeDescriptions": {
+                            "typeIdentifier": "t_magic_message",
+                            "typeString": "msg"
+                          }
+                        },
+                        "id": 27323,
+                        "isConstant": false,
+                        "isLValue": false,
+                        "isPure": false,
+                        "lValueRequested": false,
+                        "memberName": "sender",
+                        "nodeType": "MemberAccess",
+                        "src": "326:10:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "316:21:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "hexValue": "74727565",
+                      "id": 27325,
+                      "isConstant": false,
+                      "isLValue": false,
+                      "isPure": true,
+                      "kind": "bool",
+                      "lValueRequested": false,
+                      "nodeType": "Literal",
+                      "src": "340:4:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      },
+                      "value": "true"
+                    },
+                    "src": "316:28:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 27327,
+                  "nodeType": "ExpressionStatement",
+                  "src": "316:28:73"
+                }
+              ]
+            },
+            "id": 27329,
+            "implemented": true,
+            "kind": "constructor",
+            "modifiers": [],
+            "name": "",
+            "nameLocation": "-1:-1:-1",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 27319,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "303:2:73"
+            },
+            "returnParameters": {
+              "id": 27320,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "306:0:73"
+            },
+            "scope": 27377,
+            "src": "292:59:73",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "public"
+          },
+          {
+            "body": {
+              "id": 27345,
+              "nodeType": "Block",
+              "src": "637:46:73",
+              "statements": [
+                {
+                  "expression": {
+                    "id": 27343,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "baseExpression": {
+                        "id": 27339,
+                        "name": "isManager",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 27302,
+                        "src": "647:9:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 27341,
+                      "indexExpression": {
+                        "id": 27340,
+                        "name": "_manager",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 27332,
+                        "src": "657:8:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "647:19:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 27342,
+                      "name": "_status",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 27334,
+                      "src": "669:7:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "647:29:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 27344,
+                  "nodeType": "ExpressionStatement",
+                  "src": "647:29:73"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 27330,
+              "nodeType": "StructuredDocumentation",
+              "src": "357:160:73",
+              "text": " @notice Sets the status of a manager\n @param _manager The address of the manager\n @param _status The status to allow the manager "
+            },
+            "functionSelector": "a5e90eee",
+            "id": 27346,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 27337,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 27336,
+                  "name": "onlyManager",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 27318,
+                  "src": "621:11:73"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "621:11:73"
+              }
+            ],
+            "name": "setManager",
+            "nameLocation": "531:10:73",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 27335,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 27332,
+                  "mutability": "mutable",
+                  "name": "_manager",
+                  "nameLocation": "559:8:73",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 27346,
+                  "src": "551:16:73",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 27331,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "551:7:73",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 27334,
+                  "mutability": "mutable",
+                  "name": "_status",
+                  "nameLocation": "582:7:73",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 27346,
+                  "src": "577:12:73",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 27333,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "577:4:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "541:54:73"
+            },
+            "returnParameters": {
+              "id": 27338,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "637:0:73"
+            },
+            "scope": 27377,
+            "src": "522:161:73",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 27362,
+              "nodeType": "Block",
+              "src": "1009:47:73",
+              "statements": [
+                {
+                  "expression": {
+                    "id": 27360,
+                    "isConstant": false,
+                    "isLValue": false,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "leftHandSide": {
+                      "baseExpression": {
+                        "id": 27356,
+                        "name": "isAllowed",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 27306,
+                        "src": "1019:9:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                          "typeString": "mapping(address => bool)"
+                        }
+                      },
+                      "id": 27358,
+                      "indexExpression": {
+                        "id": 27357,
+                        "name": "_contract",
+                        "nodeType": "Identifier",
+                        "overloadedDeclarations": [],
+                        "referencedDeclaration": 27349,
+                        "src": "1029:9:73",
+                        "typeDescriptions": {
+                          "typeIdentifier": "t_address",
+                          "typeString": "address"
+                        }
+                      },
+                      "isConstant": false,
+                      "isLValue": true,
+                      "isPure": false,
+                      "lValueRequested": true,
+                      "nodeType": "IndexAccess",
+                      "src": "1019:20:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "nodeType": "Assignment",
+                    "operator": "=",
+                    "rightHandSide": {
+                      "id": 27359,
+                      "name": "_status",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 27351,
+                      "src": "1042:7:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_bool",
+                        "typeString": "bool"
+                      }
+                    },
+                    "src": "1019:30:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "id": 27361,
+                  "nodeType": "ExpressionStatement",
+                  "src": "1019:30:73"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 27347,
+              "nodeType": "StructuredDocumentation",
+              "src": "689:191:73",
+              "text": " @notice Sets the status of a contract to be allowed or disallowed\n @param _contract The address of the contract\n @param _status The status to allow the manager "
+            },
+            "functionSelector": "55de1faf",
+            "id": 27363,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [
+              {
+                "id": 27354,
+                "kind": "modifierInvocation",
+                "modifierName": {
+                  "id": 27353,
+                  "name": "onlyManager",
+                  "nodeType": "IdentifierPath",
+                  "referencedDeclaration": 27318,
+                  "src": "993:11:73"
+                },
+                "nodeType": "ModifierInvocation",
+                "src": "993:11:73"
+              }
+            ],
+            "name": "setAllowedContract",
+            "nameLocation": "894:18:73",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 27352,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 27349,
+                  "mutability": "mutable",
+                  "name": "_contract",
+                  "nameLocation": "930:9:73",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 27363,
+                  "src": "922:17:73",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 27348,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "922:7:73",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                },
+                {
+                  "constant": false,
+                  "id": 27351,
+                  "mutability": "mutable",
+                  "name": "_status",
+                  "nameLocation": "954:7:73",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 27363,
+                  "src": "949:12:73",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 27350,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "949:4:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "912:55:73"
+            },
+            "returnParameters": {
+              "id": 27355,
+              "nodeType": "ParameterList",
+              "parameters": [],
+              "src": "1009:0:73"
+            },
+            "scope": 27377,
+            "src": "885:171:73",
+            "stateMutability": "nonpayable",
+            "virtual": false,
+            "visibility": "external"
+          },
+          {
+            "body": {
+              "id": 27375,
+              "nodeType": "Block",
+              "src": "1281:43:73",
+              "statements": [
+                {
+                  "expression": {
+                    "baseExpression": {
+                      "id": 27371,
+                      "name": "isAllowed",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 27306,
+                      "src": "1298:9:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_mapping$_t_address_$_t_bool_$",
+                        "typeString": "mapping(address => bool)"
+                      }
+                    },
+                    "id": 27373,
+                    "indexExpression": {
+                      "id": 27372,
+                      "name": "_address",
+                      "nodeType": "Identifier",
+                      "overloadedDeclarations": [],
+                      "referencedDeclaration": 27366,
+                      "src": "1308:8:73",
+                      "typeDescriptions": {
+                        "typeIdentifier": "t_address",
+                        "typeString": "address"
+                      }
+                    },
+                    "isConstant": false,
+                    "isLValue": true,
+                    "isPure": false,
+                    "lValueRequested": false,
+                    "nodeType": "IndexAccess",
+                    "src": "1298:19:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "functionReturnParameters": 27370,
+                  "id": 27374,
+                  "nodeType": "Return",
+                  "src": "1291:26:73"
+                }
+              ]
+            },
+            "documentation": {
+              "id": 27364,
+              "nodeType": "StructuredDocumentation",
+              "src": "1062:110:73",
+              "text": " @notice returns true is _address is whitelisted\n @param _address The address to check"
+            },
+            "functionSelector": "c23697a8",
+            "id": 27376,
+            "implemented": true,
+            "kind": "function",
+            "modifiers": [],
+            "name": "check",
+            "nameLocation": "1186:5:73",
+            "nodeType": "FunctionDefinition",
+            "parameters": {
+              "id": 27367,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 27366,
+                  "mutability": "mutable",
+                  "name": "_address",
+                  "nameLocation": "1210:8:73",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 27376,
+                  "src": "1202:16:73",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_address",
+                    "typeString": "address"
+                  },
+                  "typeName": {
+                    "id": 27365,
+                    "name": "address",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1202:7:73",
+                    "stateMutability": "nonpayable",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_address",
+                      "typeString": "address"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1192:32:73"
+            },
+            "returnParameters": {
+              "id": 27370,
+              "nodeType": "ParameterList",
+              "parameters": [
+                {
+                  "constant": false,
+                  "id": 27369,
+                  "mutability": "mutable",
+                  "name": "",
+                  "nameLocation": "-1:-1:-1",
+                  "nodeType": "VariableDeclaration",
+                  "scope": 27376,
+                  "src": "1271:4:73",
+                  "stateVariable": false,
+                  "storageLocation": "default",
+                  "typeDescriptions": {
+                    "typeIdentifier": "t_bool",
+                    "typeString": "bool"
+                  },
+                  "typeName": {
+                    "id": 27368,
+                    "name": "bool",
+                    "nodeType": "ElementaryTypeName",
+                    "src": "1271:4:73",
+                    "typeDescriptions": {
+                      "typeIdentifier": "t_bool",
+                      "typeString": "bool"
+                    }
+                  },
+                  "visibility": "internal"
+                }
+              ],
+              "src": "1270:6:73"
+            },
+            "scope": 27377,
+            "src": "1177:147:73",
+            "stateMutability": "view",
+            "virtual": false,
+            "visibility": "external"
+          }
+        ],
+        "scope": 27378,
+        "src": "59:1268:73",
+        "usedErrors": []
+      }
+    ],
+    "src": "32:1295:73"
+  },
+  "bytecode": "608060405234801561001057600080fd5b50336000908152602081905260409020805460ff191660011790556102a98061003a6000396000f3fe608060405234801561001057600080fd5b50600436106100575760003560e01c806355de1faf1461005c578063a5e90eee14610071578063babcc53914610084578063c23697a8146100bb578063f3ae2415146100e7575b600080fd5b61006f61006a366004610215565b61010a565b005b61006f61007f366004610215565b610184565b6100a7610092366004610251565b60016020526000908152604090205460ff1681565b604051901515815260200160405180910390f35b6100a76100c9366004610251565b6001600160a01b031660009081526001602052604090205460ff1690565b6100a76100f5366004610251565b60006020819052908152604090205460ff1681565b3360009081526020819052604090205460ff166101595760405162461bcd60e51b815260206004820152600860248201526710b6b0b730b3b2b960c11b60448201526064015b60405180910390fd5b6001600160a01b03919091166000908152600160205260409020805460ff1916911515919091179055565b3360009081526020819052604090205460ff166101ce5760405162461bcd60e51b815260206004820152600860248201526710b6b0b730b3b2b960c11b6044820152606401610150565b6001600160a01b03919091166000908152602081905260409020805460ff1916911515919091179055565b80356001600160a01b038116811461021057600080fd5b919050565b6000806040838503121561022857600080fd5b610231836101f9565b91506020830135801515811461024657600080fd5b809150509250929050565b60006020828403121561026357600080fd5b61026c826101f9565b939250505056fea2646970667358221220f63d97fdff8e2c2c6442195941e0689b847ee97d60dcd6c4dc26662c70387a0b64736f6c634300080c0033",
+  "bytecodeSha1": "0c1ef754dc7804387f84d2029ea43b82d8a8c0be",
+  "compiler": {
+    "evm_version": "istanbul",
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "version": "0.8.12+commit.f00d7308"
+  },
+  "contractName": "SmartWalletChecker",
+  "coverageMap": {
+    "branches": {
+      "73": {
+        "SmartWalletChecker.setManager": {
+          "3": [
+            230,
+            251,
+            true
+          ]
+        }
+      }
+    },
+    "statements": {
+      "73": {
+        "SmartWalletChecker.check": {
+          "0": [
+            1291,
+            1317
+          ]
+        },
+        "SmartWalletChecker.setAllowedContract": {
+          "1": [
+            1019,
+            1049
+          ]
+        },
+        "SmartWalletChecker.setManager": {
+          "2": [
+            647,
+            676
+          ]
+        }
+      }
+    }
+  },
+  "dependencies": [],
+  "deployedBytecode": "608060405234801561001057600080fd5b50600436106100575760003560e01c806355de1faf1461005c578063a5e90eee14610071578063babcc53914610084578063c23697a8146100bb578063f3ae2415146100e7575b600080fd5b61006f61006a366004610215565b61010a565b005b61006f61007f366004610215565b610184565b6100a7610092366004610251565b60016020526000908152604090205460ff1681565b604051901515815260200160405180910390f35b6100a76100c9366004610251565b6001600160a01b031660009081526001602052604090205460ff1690565b6100a76100f5366004610251565b60006020819052908152604090205460ff1681565b3360009081526020819052604090205460ff166101595760405162461bcd60e51b815260206004820152600860248201526710b6b0b730b3b2b960c11b60448201526064015b60405180910390fd5b6001600160a01b03919091166000908152600160205260409020805460ff1916911515919091179055565b3360009081526020819052604090205460ff166101ce5760405162461bcd60e51b815260206004820152600860248201526710b6b0b730b3b2b960c11b6044820152606401610150565b6001600160a01b03919091166000908152602081905260409020805460ff1916911515919091179055565b80356001600160a01b038116811461021057600080fd5b919050565b6000806040838503121561022857600080fd5b610231836101f9565b91506020830135801515811461024657600080fd5b809150509250929050565b60006020828403121561026357600080fd5b61026c826101f9565b939250505056fea2646970667358221220f63d97fdff8e2c2c6442195941e0689b847ee97d60dcd6c4dc26662c70387a0b64736f6c634300080c0033",
+  "deployedSourceMap": "59:1268:73:-:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;885:171;;;;;;:::i;:::-;;:::i;:::-;;522:161;;;;;;:::i;:::-;;:::i;140:41::-;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;;;900:14:75;;893:22;875:41;;863:2;848:18;140:41:73;;;;;;;1177:147;;;;;;:::i;:::-;-1:-1:-1;;;;;1298:19:73;1271:4;1298:19;;;:9;:19;;;;;;;;;1177:147;93:41;;;;;;:::i;:::-;;;;;;;;;;;;;;;;;885:171;240:10;230:9;:21;;;;;;;;;;;;;222:42;;;;-1:-1:-1;;;222:42:73;;1129:2:75;222:42:73;;;1111:21:75;1168:1;1148:18;;;1141:29;-1:-1:-1;;;1186:18:75;;;1179:38;1234:18;;222:42:73;;;;;;;;;-1:-1:-1;;;;;1019:20:73;;;::::1;;::::0;;;:9:::1;:20;::::0;;;;:30;;-1:-1:-1;;1019:30:73::1;::::0;::::1;;::::0;;;::::1;::::0;;885:171::o;522:161::-;240:10;230:9;:21;;;;;;;;;;;;;222:42;;;;-1:-1:-1;;;222:42:73;;1129:2:75;222:42:73;;;1111:21:75;1168:1;1148:18;;;1141:29;-1:-1:-1;;;1186:18:75;;;1179:38;1234:18;;222:42:73;927:331:75;222:42:73;-1:-1:-1;;;;;647:19:73;;;::::1;:9;:19:::0;;;::::1;::::0;;;;;;:29;;-1:-1:-1;;647:29:73::1;::::0;::::1;;::::0;;;::::1;::::0;;522:161::o;14:173:75:-;82:20;;-1:-1:-1;;;;;131:31:75;;121:42;;111:70;;177:1;174;167:12;111:70;14:173;;;:::o;192:347::-;257:6;265;318:2;306:9;297:7;293:23;289:32;286:52;;;334:1;331;324:12;286:52;357:29;376:9;357:29;:::i;:::-;347:39;;436:2;425:9;421:18;408:32;483:5;476:13;469:21;462:5;459:32;449:60;;505:1;502;495:12;449:60;528:5;518:15;;;192:347;;;;;:::o;544:186::-;603:6;656:2;644:9;635:7;631:23;627:32;624:52;;;672:1;669;662:12;624:52;695:29;714:9;695:29;:::i;:::-;685:39;544:186;-1:-1:-1;;;544:186:75:o",
+  "language": "Solidity",
+  "natspec": {
+    "kind": "dev",
+    "methods": {
+      "check(address)": {
+        "notice": "returns true is _address is whitelisted",
+        "params": {
+          "_address": "The address to check"
+        }
+      },
+      "setAllowedContract(address,bool)": {
+        "notice": "Sets the status of a contract to be allowed or disallowed",
+        "params": {
+          "_contract": "The address of the contract",
+          "_status": "The status to allow the manager "
+        }
+      },
+      "setManager(address,bool)": {
+        "notice": "Sets the status of a manager",
+        "params": {
+          "_manager": "The address of the manager",
+          "_status": "The status to allow the manager "
+        }
+      }
+    },
+    "version": 1
+  },
+  "offset": [
+    59,
+    1327
+  ],
+  "opcodes": "PUSH1 0x80 PUSH1 0x40 MSTORE CALLVALUE DUP1 ISZERO PUSH2 0x10 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST POP PUSH1 0x4 CALLDATASIZE LT PUSH2 0x57 JUMPI PUSH1 0x0 CALLDATALOAD PUSH1 0xE0 SHR DUP1 PUSH4 0x55DE1FAF EQ PUSH2 0x5C JUMPI DUP1 PUSH4 0xA5E90EEE EQ PUSH2 0x71 JUMPI DUP1 PUSH4 0xBABCC539 EQ PUSH2 0x84 JUMPI DUP1 PUSH4 0xC23697A8 EQ PUSH2 0xBB JUMPI DUP1 PUSH4 0xF3AE2415 EQ PUSH2 0xE7 JUMPI JUMPDEST PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x6F PUSH2 0x6A CALLDATASIZE PUSH1 0x4 PUSH2 0x215 JUMP JUMPDEST PUSH2 0x10A JUMP JUMPDEST STOP JUMPDEST PUSH2 0x6F PUSH2 0x7F CALLDATASIZE PUSH1 0x4 PUSH2 0x215 JUMP JUMPDEST PUSH2 0x184 JUMP JUMPDEST PUSH2 0xA7 PUSH2 0x92 CALLDATASIZE PUSH1 0x4 PUSH2 0x251 JUMP JUMPDEST PUSH1 0x1 PUSH1 0x20 MSTORE PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x40 SWAP1 KECCAK256 SLOAD PUSH1 0xFF AND DUP2 JUMP JUMPDEST PUSH1 0x40 MLOAD SWAP1 ISZERO ISZERO DUP2 MSTORE PUSH1 0x20 ADD PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 RETURN JUMPDEST PUSH2 0xA7 PUSH2 0xC9 CALLDATASIZE PUSH1 0x4 PUSH2 0x251 JUMP JUMPDEST PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB AND PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x1 PUSH1 0x20 MSTORE PUSH1 0x40 SWAP1 KECCAK256 SLOAD PUSH1 0xFF AND SWAP1 JUMP JUMPDEST PUSH2 0xA7 PUSH2 0xF5 CALLDATASIZE PUSH1 0x4 PUSH2 0x251 JUMP JUMPDEST PUSH1 0x0 PUSH1 0x20 DUP2 SWAP1 MSTORE SWAP1 DUP2 MSTORE PUSH1 0x40 SWAP1 KECCAK256 SLOAD PUSH1 0xFF AND DUP2 JUMP JUMPDEST CALLER PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x20 DUP2 SWAP1 MSTORE PUSH1 0x40 SWAP1 KECCAK256 SLOAD PUSH1 0xFF AND PUSH2 0x159 JUMPI PUSH1 0x40 MLOAD PUSH3 0x461BCD PUSH1 0xE5 SHL DUP2 MSTORE PUSH1 0x20 PUSH1 0x4 DUP3 ADD MSTORE PUSH1 0x8 PUSH1 0x24 DUP3 ADD MSTORE PUSH8 0x10B6B0B730B3B2B9 PUSH1 0xC1 SHL PUSH1 0x44 DUP3 ADD MSTORE PUSH1 0x64 ADD JUMPDEST PUSH1 0x40 MLOAD DUP1 SWAP2 SUB SWAP1 REVERT JUMPDEST PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB SWAP2 SWAP1 SWAP2 AND PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x1 PUSH1 0x20 MSTORE PUSH1 0x40 SWAP1 KECCAK256 DUP1 SLOAD PUSH1 0xFF NOT AND SWAP2 ISZERO ISZERO SWAP2 SWAP1 SWAP2 OR SWAP1 SSTORE JUMP JUMPDEST CALLER PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x20 DUP2 SWAP1 MSTORE PUSH1 0x40 SWAP1 KECCAK256 SLOAD PUSH1 0xFF AND PUSH2 0x1CE JUMPI PUSH1 0x40 MLOAD PUSH3 0x461BCD PUSH1 0xE5 SHL DUP2 MSTORE PUSH1 0x20 PUSH1 0x4 DUP3 ADD MSTORE PUSH1 0x8 PUSH1 0x24 DUP3 ADD MSTORE PUSH8 0x10B6B0B730B3B2B9 PUSH1 0xC1 SHL PUSH1 0x44 DUP3 ADD MSTORE PUSH1 0x64 ADD PUSH2 0x150 JUMP JUMPDEST PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB SWAP2 SWAP1 SWAP2 AND PUSH1 0x0 SWAP1 DUP2 MSTORE PUSH1 0x20 DUP2 SWAP1 MSTORE PUSH1 0x40 SWAP1 KECCAK256 DUP1 SLOAD PUSH1 0xFF NOT AND SWAP2 ISZERO ISZERO SWAP2 SWAP1 SWAP2 OR SWAP1 SSTORE JUMP JUMPDEST DUP1 CALLDATALOAD PUSH1 0x1 PUSH1 0x1 PUSH1 0xA0 SHL SUB DUP2 AND DUP2 EQ PUSH2 0x210 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST SWAP2 SWAP1 POP JUMP JUMPDEST PUSH1 0x0 DUP1 PUSH1 0x40 DUP4 DUP6 SUB SLT ISZERO PUSH2 0x228 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x231 DUP4 PUSH2 0x1F9 JUMP JUMPDEST SWAP2 POP PUSH1 0x20 DUP4 ADD CALLDATALOAD DUP1 ISZERO ISZERO DUP2 EQ PUSH2 0x246 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST DUP1 SWAP2 POP POP SWAP3 POP SWAP3 SWAP1 POP JUMP JUMPDEST PUSH1 0x0 PUSH1 0x20 DUP3 DUP5 SUB SLT ISZERO PUSH2 0x263 JUMPI PUSH1 0x0 DUP1 REVERT JUMPDEST PUSH2 0x26C DUP3 PUSH2 0x1F9 JUMP JUMPDEST SWAP4 SWAP3 POP POP POP JUMP INVALID LOG2 PUSH5 0x6970667358 0x22 SLT KECCAK256 0xF6 RETURNDATASIZE SWAP8 REVERT SELFDESTRUCT DUP15 0x2C 0x2C PUSH5 0x42195941E0 PUSH9 0x9B847EE97D60DCD6C4 0xDC 0x26 PUSH7 0x2C70387A0B6473 PUSH16 0x6C634300080C00330000000000000000 ",
+  "pcMap": {
+    "0": {
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x80"
+    },
+    "2": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "4": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "5": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "CALLVALUE",
+      "path": "73"
+    },
+    "6": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "7": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "ISZERO",
+      "path": "73"
+    },
+    "8": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x10"
+    },
+    "11": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "12": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "14": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "15": {
+      "dev": "Cannot send ether to nonpayable function",
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "REVERT",
+      "path": "73"
+    },
+    "16": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "17": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "POP",
+      "path": "73"
+    },
+    "18": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "20": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "CALLDATASIZE",
+      "path": "73"
+    },
+    "21": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "LT",
+      "path": "73"
+    },
+    "22": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x57"
+    },
+    "25": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "26": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "28": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "CALLDATALOAD",
+      "path": "73"
+    },
+    "29": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0xE0"
+    },
+    "31": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "SHR",
+      "path": "73"
+    },
+    "32": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "33": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH4",
+      "path": "73",
+      "value": "0x55DE1FAF"
+    },
+    "38": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "EQ",
+      "path": "73"
+    },
+    "39": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x5C"
+    },
+    "42": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "43": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "44": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH4",
+      "path": "73",
+      "value": "0xA5E90EEE"
+    },
+    "49": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "EQ",
+      "path": "73"
+    },
+    "50": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x71"
+    },
+    "53": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "54": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "55": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH4",
+      "path": "73",
+      "value": "0xBABCC539"
+    },
+    "60": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "EQ",
+      "path": "73"
+    },
+    "61": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x84"
+    },
+    "64": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "65": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "66": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH4",
+      "path": "73",
+      "value": "0xC23697A8"
+    },
+    "71": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "EQ",
+      "path": "73"
+    },
+    "72": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xBB"
+    },
+    "75": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "76": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "77": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH4",
+      "path": "73",
+      "value": "0xF3AE2415"
+    },
+    "82": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "EQ",
+      "path": "73"
+    },
+    "83": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xE7"
+    },
+    "86": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "87": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "88": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "90": {
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "91": {
+      "first_revert": true,
+      "fn": null,
+      "offset": [
+        59,
+        1327
+      ],
+      "op": "REVERT",
+      "path": "73"
+    },
+    "92": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "93": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x6F"
+    },
+    "96": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x6A"
+    },
+    "99": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "CALLDATASIZE",
+      "path": "73"
+    },
+    "100": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "102": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x215"
+    },
+    "105": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "jump": "i",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "106": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "107": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x10A"
+    },
+    "110": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "jump": "i",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "111": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "112": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "STOP",
+      "path": "73"
+    },
+    "113": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "114": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x6F"
+    },
+    "117": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x7F"
+    },
+    "120": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "CALLDATASIZE",
+      "path": "73"
+    },
+    "121": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "123": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x215"
+    },
+    "126": {
+      "fn": "SmartWalletChecker.setManager",
+      "jump": "i",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "127": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "128": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x184"
+    },
+    "131": {
+      "fn": "SmartWalletChecker.setManager",
+      "jump": "i",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "132": {
+      "offset": [
+        140,
+        181
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "133": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xA7"
+    },
+    "136": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x92"
+    },
+    "139": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "CALLDATASIZE",
+      "path": "73"
+    },
+    "140": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "142": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x251"
+    },
+    "145": {
+      "fn": "SmartWalletChecker.setManager",
+      "jump": "i",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "146": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "147": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x1"
+    },
+    "149": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "151": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "152": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "154": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "155": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "156": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "157": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "159": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "160": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "161": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "162": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0xFF"
+    },
+    "164": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "165": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "166": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "167": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "168": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "170": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "MLOAD",
+      "path": "73"
+    },
+    "171": {
+      "op": "SWAP1"
+    },
+    "172": {
+      "op": "ISZERO"
+    },
+    "173": {
+      "op": "ISZERO"
+    },
+    "174": {
+      "op": "DUP2"
+    },
+    "175": {
+      "op": "MSTORE"
+    },
+    "176": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "178": {
+      "op": "ADD"
+    },
+    "179": {
+      "offset": [
+        140,
+        181
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "181": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "MLOAD",
+      "path": "73"
+    },
+    "182": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "183": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "184": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "SUB",
+      "path": "73"
+    },
+    "185": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "186": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        140,
+        181
+      ],
+      "op": "RETURN",
+      "path": "73"
+    },
+    "187": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "188": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xA7"
+    },
+    "191": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xC9"
+    },
+    "194": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "CALLDATASIZE",
+      "path": "73"
+    },
+    "195": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "197": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x251"
+    },
+    "200": {
+      "fn": "SmartWalletChecker.check",
+      "jump": "i",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "201": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "202": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "204": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "206": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "208": {
+      "op": "SHL"
+    },
+    "209": {
+      "op": "SUB"
+    },
+    "210": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "AND",
+      "path": "73",
+      "statement": 0
+    },
+    "211": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1271,
+        1275
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "213": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "214": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "215": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "216": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1307
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x1"
+    },
+    "218": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "220": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "221": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "223": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "224": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "225": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "226": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0xFF"
+    },
+    "228": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "229": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1298,
+        1317
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "230": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        1177,
+        1324
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "231": {
+      "offset": [
+        93,
+        134
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "232": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xA7"
+    },
+    "235": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0xF5"
+    },
+    "238": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "CALLDATASIZE",
+      "path": "73"
+    },
+    "239": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "241": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x251"
+    },
+    "244": {
+      "fn": "SmartWalletChecker.check",
+      "jump": "i",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "245": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "246": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "248": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "250": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "251": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "252": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "253": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "254": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "255": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "256": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "258": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "259": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "260": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "261": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0xFF"
+    },
+    "263": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "264": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "265": {
+      "fn": "SmartWalletChecker.check",
+      "offset": [
+        93,
+        134
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "266": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "267": {
+      "offset": [
+        240,
+        250
+      ],
+      "op": "CALLER",
+      "path": "73"
+    },
+    "268": {
+      "offset": [
+        230,
+        239
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "270": {
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "271": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "272": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "273": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "275": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "276": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "277": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "278": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "280": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "281": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "282": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "283": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0xFF"
+    },
+    "285": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "286": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x159"
+    },
+    "289": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "290": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "292": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "MLOAD",
+      "path": "73"
+    },
+    "293": {
+      "op": "PUSH3",
+      "value": "0x461BCD"
+    },
+    "297": {
+      "op": "PUSH1",
+      "value": "0xE5"
+    },
+    "299": {
+      "op": "SHL"
+    },
+    "300": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "301": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "302": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "304": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "306": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "DUP3",
+      "path": "73"
+    },
+    "307": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "ADD",
+      "path": "73"
+    },
+    "308": {
+      "op": "MSTORE"
+    },
+    "309": {
+      "op": "PUSH1",
+      "value": "0x8"
+    },
+    "311": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "313": {
+      "op": "DUP3"
+    },
+    "314": {
+      "op": "ADD"
+    },
+    "315": {
+      "op": "MSTORE"
+    },
+    "316": {
+      "op": "PUSH8",
+      "value": "0x10B6B0B730B3B2B9"
+    },
+    "325": {
+      "op": "PUSH1",
+      "value": "0xC1"
+    },
+    "327": {
+      "op": "SHL"
+    },
+    "328": {
+      "op": "PUSH1",
+      "value": "0x44"
+    },
+    "330": {
+      "op": "DUP3"
+    },
+    "331": {
+      "op": "ADD"
+    },
+    "332": {
+      "op": "MSTORE"
+    },
+    "333": {
+      "op": "PUSH1",
+      "value": "0x64"
+    },
+    "335": {
+      "op": "ADD"
+    },
+    "336": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "337": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "339": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "MLOAD",
+      "path": "73"
+    },
+    "340": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "341": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "342": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "SUB",
+      "path": "73"
+    },
+    "343": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "344": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "REVERT",
+      "optimizer_revert": true,
+      "path": "73"
+    },
+    "345": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "346": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "348": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "350": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "352": {
+      "op": "SHL"
+    },
+    "353": {
+      "op": "SUB"
+    },
+    "354": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "SWAP2",
+      "path": "73",
+      "statement": 1
+    },
+    "355": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "356": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "357": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "358": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "360": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "361": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "362": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "363": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1028
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x1"
+    },
+    "365": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "367": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "368": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "370": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "371": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1039
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "372": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "373": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "374": {
+      "op": "PUSH1",
+      "value": "0xFF"
+    },
+    "376": {
+      "op": "NOT"
+    },
+    "377": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "378": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "379": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "ISZERO",
+      "path": "73"
+    },
+    "380": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "ISZERO",
+      "path": "73"
+    },
+    "381": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "382": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "383": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "384": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "OR",
+      "path": "73"
+    },
+    "385": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "386": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "offset": [
+        1019,
+        1049
+      ],
+      "op": "SSTORE",
+      "path": "73"
+    },
+    "387": {
+      "fn": "SmartWalletChecker.setAllowedContract",
+      "jump": "o",
+      "offset": [
+        885,
+        1056
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "388": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "389": {
+      "offset": [
+        240,
+        250
+      ],
+      "op": "CALLER",
+      "path": "73"
+    },
+    "390": {
+      "offset": [
+        230,
+        239
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "392": {
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "393": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "394": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "395": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "397": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "398": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "399": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "400": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "402": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "403": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "404": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "405": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0xFF"
+    },
+    "407": {
+      "branch": 3,
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        230,
+        251
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "408": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x1CE"
+    },
+    "411": {
+      "branch": 3,
+      "offset": [
+        222,
+        264
+      ],
+      "op": "JUMPI",
+      "path": "73"
+    },
+    "412": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "414": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "MLOAD",
+      "path": "73"
+    },
+    "415": {
+      "op": "PUSH3",
+      "value": "0x461BCD"
+    },
+    "419": {
+      "op": "PUSH1",
+      "value": "0xE5"
+    },
+    "421": {
+      "op": "SHL"
+    },
+    "422": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "423": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "424": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "426": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x4"
+    },
+    "428": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "DUP3",
+      "path": "73"
+    },
+    "429": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        222,
+        264
+      ],
+      "op": "ADD",
+      "path": "73"
+    },
+    "430": {
+      "op": "MSTORE"
+    },
+    "431": {
+      "op": "PUSH1",
+      "value": "0x8"
+    },
+    "433": {
+      "op": "PUSH1",
+      "value": "0x24"
+    },
+    "435": {
+      "op": "DUP3"
+    },
+    "436": {
+      "op": "ADD"
+    },
+    "437": {
+      "op": "MSTORE"
+    },
+    "438": {
+      "op": "PUSH8",
+      "value": "0x10B6B0B730B3B2B9"
+    },
+    "447": {
+      "op": "PUSH1",
+      "value": "0xC1"
+    },
+    "449": {
+      "op": "SHL"
+    },
+    "450": {
+      "op": "PUSH1",
+      "value": "0x44"
+    },
+    "452": {
+      "op": "DUP3"
+    },
+    "453": {
+      "op": "ADD"
+    },
+    "454": {
+      "op": "MSTORE"
+    },
+    "455": {
+      "op": "PUSH1",
+      "value": "0x64"
+    },
+    "457": {
+      "op": "ADD"
+    },
+    "458": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "PUSH2",
+      "path": "73",
+      "value": "0x150"
+    },
+    "461": {
+      "op": "JUMP"
+    },
+    "462": {
+      "offset": [
+        222,
+        264
+      ],
+      "op": "JUMPDEST",
+      "path": "73"
+    },
+    "463": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "465": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "467": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "469": {
+      "op": "SHL"
+    },
+    "470": {
+      "op": "SUB"
+    },
+    "471": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "SWAP2",
+      "path": "73",
+      "statement": 2
+    },
+    "472": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "473": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "474": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "475": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        656
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x0"
+    },
+    "477": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "478": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "479": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "480": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x20"
+    },
+    "482": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "DUP2",
+      "path": "73"
+    },
+    "483": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "484": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "MSTORE",
+      "path": "73"
+    },
+    "485": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "PUSH1",
+      "path": "73",
+      "value": "0x40"
+    },
+    "487": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "488": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        666
+      ],
+      "op": "KECCAK256",
+      "path": "73"
+    },
+    "489": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "DUP1",
+      "path": "73"
+    },
+    "490": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SLOAD",
+      "path": "73"
+    },
+    "491": {
+      "op": "PUSH1",
+      "value": "0xFF"
+    },
+    "493": {
+      "op": "NOT"
+    },
+    "494": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "AND",
+      "path": "73"
+    },
+    "495": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "496": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "ISZERO",
+      "path": "73"
+    },
+    "497": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "ISZERO",
+      "path": "73"
+    },
+    "498": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "499": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "500": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SWAP2",
+      "path": "73"
+    },
+    "501": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "OR",
+      "path": "73"
+    },
+    "502": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SWAP1",
+      "path": "73"
+    },
+    "503": {
+      "fn": "SmartWalletChecker.setManager",
+      "offset": [
+        647,
+        676
+      ],
+      "op": "SSTORE",
+      "path": "73"
+    },
+    "504": {
+      "fn": "SmartWalletChecker.setManager",
+      "jump": "o",
+      "offset": [
+        522,
+        683
+      ],
+      "op": "JUMP",
+      "path": "73"
+    },
+    "505": {
+      "op": "JUMPDEST"
+    },
+    "506": {
+      "op": "DUP1"
+    },
+    "507": {
+      "op": "CALLDATALOAD"
+    },
+    "508": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "510": {
+      "op": "PUSH1",
+      "value": "0x1"
+    },
+    "512": {
+      "op": "PUSH1",
+      "value": "0xA0"
+    },
+    "514": {
+      "op": "SHL"
+    },
+    "515": {
+      "op": "SUB"
+    },
+    "516": {
+      "op": "DUP2"
+    },
+    "517": {
+      "op": "AND"
+    },
+    "518": {
+      "op": "DUP2"
+    },
+    "519": {
+      "op": "EQ"
+    },
+    "520": {
+      "op": "PUSH2",
+      "value": "0x210"
+    },
+    "523": {
+      "op": "JUMPI"
+    },
+    "524": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "526": {
+      "op": "DUP1"
+    },
+    "527": {
+      "op": "REVERT"
+    },
+    "528": {
+      "op": "JUMPDEST"
+    },
+    "529": {
+      "op": "SWAP2"
+    },
+    "530": {
+      "op": "SWAP1"
+    },
+    "531": {
+      "op": "POP"
+    },
+    "532": {
+      "jump": "o",
+      "op": "JUMP"
+    },
+    "533": {
+      "op": "JUMPDEST"
+    },
+    "534": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "536": {
+      "op": "DUP1"
+    },
+    "537": {
+      "op": "PUSH1",
+      "value": "0x40"
+    },
+    "539": {
+      "op": "DUP4"
+    },
+    "540": {
+      "op": "DUP6"
+    },
+    "541": {
+      "op": "SUB"
+    },
+    "542": {
+      "op": "SLT"
+    },
+    "543": {
+      "op": "ISZERO"
+    },
+    "544": {
+      "op": "PUSH2",
+      "value": "0x228"
+    },
+    "547": {
+      "op": "JUMPI"
+    },
+    "548": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "550": {
+      "op": "DUP1"
+    },
+    "551": {
+      "op": "REVERT"
+    },
+    "552": {
+      "op": "JUMPDEST"
+    },
+    "553": {
+      "op": "PUSH2",
+      "value": "0x231"
+    },
+    "556": {
+      "op": "DUP4"
+    },
+    "557": {
+      "op": "PUSH2",
+      "value": "0x1F9"
+    },
+    "560": {
+      "jump": "i",
+      "op": "JUMP"
+    },
+    "561": {
+      "op": "JUMPDEST"
+    },
+    "562": {
+      "op": "SWAP2"
+    },
+    "563": {
+      "op": "POP"
+    },
+    "564": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "566": {
+      "op": "DUP4"
+    },
+    "567": {
+      "op": "ADD"
+    },
+    "568": {
+      "op": "CALLDATALOAD"
+    },
+    "569": {
+      "op": "DUP1"
+    },
+    "570": {
+      "op": "ISZERO"
+    },
+    "571": {
+      "op": "ISZERO"
+    },
+    "572": {
+      "op": "DUP2"
+    },
+    "573": {
+      "op": "EQ"
+    },
+    "574": {
+      "op": "PUSH2",
+      "value": "0x246"
+    },
+    "577": {
+      "op": "JUMPI"
+    },
+    "578": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "580": {
+      "op": "DUP1"
+    },
+    "581": {
+      "op": "REVERT"
+    },
+    "582": {
+      "op": "JUMPDEST"
+    },
+    "583": {
+      "op": "DUP1"
+    },
+    "584": {
+      "op": "SWAP2"
+    },
+    "585": {
+      "op": "POP"
+    },
+    "586": {
+      "op": "POP"
+    },
+    "587": {
+      "op": "SWAP3"
+    },
+    "588": {
+      "op": "POP"
+    },
+    "589": {
+      "op": "SWAP3"
+    },
+    "590": {
+      "op": "SWAP1"
+    },
+    "591": {
+      "op": "POP"
+    },
+    "592": {
+      "jump": "o",
+      "op": "JUMP"
+    },
+    "593": {
+      "op": "JUMPDEST"
+    },
+    "594": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "596": {
+      "op": "PUSH1",
+      "value": "0x20"
+    },
+    "598": {
+      "op": "DUP3"
+    },
+    "599": {
+      "op": "DUP5"
+    },
+    "600": {
+      "op": "SUB"
+    },
+    "601": {
+      "op": "SLT"
+    },
+    "602": {
+      "op": "ISZERO"
+    },
+    "603": {
+      "op": "PUSH2",
+      "value": "0x263"
+    },
+    "606": {
+      "op": "JUMPI"
+    },
+    "607": {
+      "op": "PUSH1",
+      "value": "0x0"
+    },
+    "609": {
+      "op": "DUP1"
+    },
+    "610": {
+      "op": "REVERT"
+    },
+    "611": {
+      "op": "JUMPDEST"
+    },
+    "612": {
+      "op": "PUSH2",
+      "value": "0x26C"
+    },
+    "615": {
+      "op": "DUP3"
+    },
+    "616": {
+      "op": "PUSH2",
+      "value": "0x1F9"
+    },
+    "619": {
+      "jump": "i",
+      "op": "JUMP"
+    },
+    "620": {
+      "op": "JUMPDEST"
+    },
+    "621": {
+      "op": "SWAP4"
+    },
+    "622": {
+      "op": "SWAP3"
+    },
+    "623": {
+      "op": "POP"
+    },
+    "624": {
+      "op": "POP"
+    },
+    "625": {
+      "op": "POP"
+    },
+    "626": {
+      "jump": "o",
+      "op": "JUMP"
+    }
+  },
+  "sha1": "e406dea24ccd5301c4a2248e11f9d69c5f3231c2",
+  "source": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.12;\n\n\ncontract SmartWalletChecker {\n    mapping(address => bool) public isManager;\n    mapping(address => bool) public isAllowed;\n\n\n    modifier onlyManager() {\n        require(isManager[msg.sender], \"!manager\");\n        _;\n    }\n    \n    constructor() {\n        isManager[msg.sender] = true;\n    }\n\n    /**\n     * @notice Sets the status of a manager\n     * @param _manager The address of the manager\n     * @param _status The status to allow the manager \n     */\n    function setManager(\n        address _manager,\n        bool _status\n    )\n        external\n        onlyManager\n    {\n        isManager[_manager] = _status;\n    }\n\n    /**\n     * @notice Sets the status of a contract to be allowed or disallowed\n     * @param _contract The address of the contract\n     * @param _status The status to allow the manager \n     */\n    function setAllowedContract(\n        address _contract,\n        bool _status\n    )\n        external\n        onlyManager\n    {\n        isAllowed[_contract] = _status;\n    }\n\n    /**\n     * @notice returns true is _address is whitelisted\n     * @param _address The address to check\n     */\n    function check (\n        address _address\n    )\n        external\n        view\n        returns(bool)\n    {\n        return isAllowed[_address];\n    }\n\n}",
+  "sourceMap": "59:1268:73:-:0;;;292:59;;;;;;;;;-1:-1:-1;326:10:73;316:9;:21;;;;;;;;;;:28;;-1:-1:-1;;316:28:73;340:4;316:28;;;59:1268;;;;;;",
+  "sourcePath": "contracts/ve/SmartWalletChecker.sol",
+  "type": "contract"
+}
