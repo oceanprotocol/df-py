@@ -238,6 +238,7 @@ def get_judge_acct():
 
     return judge_acct
 
+
 @enforce_types
 def _filter_marked_indices(nmses: list, from_addrs: list, nft_addrs: list) -> tuple:
     """Filter out the marked indices from nmses, from_addrs, and nft_addrs"""
@@ -245,8 +246,9 @@ def _filter_marked_indices(nmses: list, from_addrs: list, nft_addrs: list) -> tu
     nmses = [nmses[i] for i in keep_indices]
     from_addrs = [from_addrs[i] for i in keep_indices]
     nft_addrs = [nft_addrs[i] for i in keep_indices]
-    
+
     return nmses, from_addrs, nft_addrs
+
 
 @enforce_types
 def get_challenge_data(
@@ -291,10 +293,9 @@ def get_challenge_data(
         if len(pred_vals) != len(cex_vals):
             print(f"NFT #{i+1}/{n}: skipping because improper # pred_vals")
             continue
-        else:
-            nmses[i] = calc_nmse(cex_vals, pred_vals)
-            # plot_prices(cex_vals, pred_vals)
-            print(f"nmse = {nmses[i]:.3e}. (May become 1.0, eg if duplicates)")
+        nmses[i] = calc_nmse(cex_vals, pred_vals)
+        # plot_prices(cex_vals, pred_vals)
+        print(f"nmse = {nmses[i]:.3e}. (May become 1.0, eg if duplicates)")
 
         print(f"NFT #{i+1}/{n}: Done")
 
