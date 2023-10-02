@@ -29,10 +29,14 @@ MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 @enforce_types
 def fill_accounts_with_token(accounts, token):
     for i, account in enumerate(accounts):
+        bal_before = from_wei(token.balanceOf(account))
+
         if i == 0:
+            if bal_before < 10000.0:
+                token.mint(account, to_wei(10000.0), {"from": accounts[0]})
+
             continue
 
-        bal_before = from_wei(token.balanceOf(account))
         if bal_before < 1000.0:
             token.transfer(account, to_wei(1000.0), {"from": accounts[0]})
 
