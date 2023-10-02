@@ -12,7 +12,6 @@ from df_py.util.base18 import to_wei
 from df_py.util.networkutil import chain_id_to_web3, send_ether
 from df_py.util.test.test_dftool_ganache import sysargs_context
 
-PREV, DFTOOL_ACCT = {}, None
 
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
@@ -21,18 +20,24 @@ ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 @enforce_types
 def test_empty_deadline(tmp_path, monkeypatch):
     monkeypatch.setenv("MUMBAI_RPC_URL", "http://localhost:8545")
+    monkeypatch.setenv("ADDRESS_FILE", ADDRESS_FILE)
+    monkeypatch.setenv("SECRET_SEED", "1234")
     _test(tmp_path, DEADLINE=None)
 
 
 @enforce_types
 def test_deadline_none_string(tmp_path, monkeypatch):
     monkeypatch.setenv("MUMBAI_RPC_URL", "http://localhost:8545")
+    monkeypatch.setenv("ADDRESS_FILE", ADDRESS_FILE)
+    monkeypatch.setenv("SECRET_SEED", "1234")
     _test(tmp_path, DEADLINE="None")
 
 
 @enforce_types
 def test_explicit_deadline(tmp_path, monkeypatch):
     monkeypatch.setenv("MUMBAI_RPC_URL", "http://localhost:8545")
+    monkeypatch.setenv("ADDRESS_FILE", ADDRESS_FILE)
+    monkeypatch.setenv("SECRET_SEED", "1234")
     _test(tmp_path, DEADLINE="2023-05-03_23:59")
 
 
@@ -83,8 +88,6 @@ def test_challenge_help():
 
 @enforce_types
 def setup_function():
-    global PREV, DFTOOL_ACCT
-
     accounts = [
         Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
         for index in range(0, 8)
@@ -92,29 +95,5 @@ def setup_function():
     oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN(accounts)
 
-    w3 = chain_id_to_web3(8996)
-    DFTOOL_ACCT = w3.eth.account.create()
 
-    send_ether(w3, accounts[0], DFTOOL_ACCT.address, to_wei(0.001))
-
-    for envvar in [
-        "DFTOOL_KEY",
-        "ADDRESS_FILE",
-        "SECRET_SEED",
-    ]:
-        PREV[envvar] = os.environ.get(envvar)
-
-    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT._private_key.hex()
-    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
-    os.environ["SECRET_SEED"] = "1234"
-
-
-@enforce_types
-def teardown_function():
-    global PREV
-    for envvar, envval in PREV.items():
-        if envval is None:
-            del os.environ[envvar]
-        else:
-            os.environ[envvar] = envval
-    PREV = {}
+#    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT._private_key.hex()
