@@ -6,7 +6,6 @@ import time
 
 import pytest
 from enforce_typing import enforce_types
-from eth_account import Account
 from pytest import approx
 
 from df_py.util import dispense, networkutil, oceantestutil, oceanutil
@@ -137,7 +136,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
 
     # end-to-end tests
     _test_end_to_end_without_csvs(rng)
-    _test_end_to_end_with_csvs(rng, tmp_path, account0)
+    _test_end_to_end_with_csvs(w3, rng, tmp_path, account0)
 
     # test ghost consume
     _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr)
@@ -251,7 +250,7 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 @enforce_types
 def _test_getSymbols():
     print("_test_getSymbols()...")
-    OCEAN_token = oceanutil.OCEAN_token()
+    OCEAN_token = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     token_set = TokSet()
     token_set.add(CHAINID, OCEAN_token.address.lower(), "OCEAN")
     symbols_at_chain = queries.getSymbols(
@@ -472,7 +471,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     # 6. simulate "dftool dispense_active"
     rewardsperlp = csvs.load_volume_rewards_csv(csv_dir)
     dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(CHAINID)
     dispense.dispense(w3, rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
 
@@ -799,7 +798,7 @@ def test_filter_dids():
 
 @enforce_types
 def test_filter_nft_vols_to_aquarius_assets():
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
     nftaddrs = [
         "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
         "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
@@ -846,7 +845,7 @@ def test_filter_nftinfos():
     addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(),  # invalid
+        oceanutil.OCEAN_address(networkutil.DEV_CHAINID),  # invalid
     ]
     # addresses are from polygon
     nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
@@ -864,7 +863,7 @@ def test_mark_purgatory_nftinfos():
     addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(),  # invalid
+        oceanutil.OCEAN_address(networkutil.DEV_CHAINID),  # invalid
     ]
     # addresses are from polygon
     nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
@@ -1083,5 +1082,5 @@ def setup_function():
     global OCEAN, veOCEAN
     oceanutil.record_dev_deployed_contracts()
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = oceanutil.veOCEAN()

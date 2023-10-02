@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import dispense, oceantestutil, oceanutil
+from df_py.util import dispense, oceantestutil, oceanutil, networkutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
 
@@ -16,7 +16,7 @@ a3 = accounts[3]
 
 @enforce_types
 def test_small_batch(w3):
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
     df_strategy = ContractBase(
         w3, "DFStrategyV1", constructor_args=[df_rewards.address]
@@ -46,7 +46,7 @@ def test_small_batch(w3):
 
 @enforce_types
 def test_batching(w3):
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
     batch_size = 3
@@ -101,7 +101,7 @@ def test_batch_number(w3):
 
 def test_dispense_passive(w3):
     fee_distributor = oceanutil.FeeDistributor()
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
         with patch("df_py.util.dispense.send_multisig_tx") as mock:
             dispense.dispense_passive(w3, OCEAN, fee_distributor, 1)

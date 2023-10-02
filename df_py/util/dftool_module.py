@@ -743,7 +743,7 @@ def do_many_random():
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
-    OCEAN = OCEAN_token()
+    OCEAN = OCEAN_token(chain_id)
 
     num_nfts = 10  # magic number
     tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
@@ -960,7 +960,7 @@ def do_acct_info():
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
         record_deployed_contracts(ADDRESS_FILE, chain_id)
-        OCEAN = OCEAN_token()
+        OCEAN = OCEAN_token(chain_id)
         if OCEAN.address != token_addr:
             print(f"  {from_wei(OCEAN.balanceOf(account_addr))} OCEAN")
 
@@ -1010,7 +1010,7 @@ def do_dispense_passive():
         amount = get_active_reward_amount_for_week_eth(start_date)
 
     feedist = FeeDistributor()
-    OCEAN = OCEAN_token()
+    OCEAN = OCEAN_token(arguments.CHAINID)
     retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, amount)
 
     print("Dispensed passive rewards")

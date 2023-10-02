@@ -72,7 +72,7 @@ def setup_function():
     alice = w3.eth.account.create()
     bob = w3.eth.account.create()
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     w3.eth.default_account = alice.address
     veOCEAN = ContractBase(
         w3,

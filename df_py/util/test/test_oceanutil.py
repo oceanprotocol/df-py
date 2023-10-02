@@ -20,19 +20,19 @@ def test_record_deployed_contracts():
     chain_id = networkutil.DEV_CHAINID
     address_file = networkutil.chain_id_to_address_file(chain_id)
     record_deployed_contracts(address_file, chain_id)
-    assert oceanutil.OCEAN_token()
-    assert oceanutil.OCEAN_address() == oceanutil.OCEAN_address().lower()
-    assert oceanutil.ERC721Template()
-    assert oceanutil.ERC20Template()
-    assert oceanutil.FactoryRouter()
-    assert oceanutil.Staking()
-    assert oceanutil.ERC721Factory()
+    assert oceanutil.OCEAN_token(chain_id)
+    assert oceanutil.OCEAN_address(chain_id) == oceanutil.OCEAN_address(chain_id).lower()
+    assert oceanutil.ERC721Template(chain_id)
+    assert oceanutil.ERC20Template(chain_id)
+    assert oceanutil.FactoryRouter(chain_id)
+    assert oceanutil.Staking(chain_id)
+    assert oceanutil.ERC721Factory(chain_id)
 
 
 @enforce_types
 def test_OCEAN_token():
     record_dev_deployed_contracts()
-    OCEAN = OCEAN_token()
+    OCEAN = OCEAN_token(networkutil.DEV_CHAINID)
     assert OCEAN.symbol().lower() == "ocean"
 
 

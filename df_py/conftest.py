@@ -11,7 +11,7 @@ def pytest_sessionstart():
 
     # TODO: check
     # OCEAN_token().mint(accs[0], 1e24, {"from": accs[0]})
-    OCEAN_token().mint(accs[0], to_wei(10000), {"from": accs[0]})
+    OCEAN_token(networkutil.DEV_CHAINID).mint(accs[0], to_wei(10000), {"from": accs[0]})
 
 
 @pytest.fixture

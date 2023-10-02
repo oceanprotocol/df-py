@@ -180,7 +180,7 @@ def setup_function():
     charlie = w3.eth.account.create()
     david = w3.eth.account.create()
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
 
     w3.eth.default_account = alice.address
     veOCEAN = ContractBase(

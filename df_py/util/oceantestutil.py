@@ -5,7 +5,7 @@ from eth_account import Account
 from enforce_typing import enforce_types
 from web3.main import Web3
 
-from df_py.util import constants, oceanutil
+from df_py.util import constants, oceanutil, networkutil
 from df_py.util.base18 import from_wei, to_wei
 
 # pool constants
@@ -50,7 +50,7 @@ def fill_accounts_with_token(accounts, token):
 
 @enforce_types
 def fill_accounts_with_OCEAN(accounts):
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     fill_accounts_with_token(accounts, OCEAN)
 
 
@@ -184,7 +184,7 @@ def random_lock_and_allocate(web3, tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
     acc1 = web3.eth.accounts[0]
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = oceanutil.veOCEAN()
 
     accounts = web3.eth.accounts[: len(tups)]

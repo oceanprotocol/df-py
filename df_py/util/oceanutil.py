@@ -17,11 +17,19 @@ from df_py.util.http_provider import get_web3_connection_provider
 
 
 @enforce_types
-def _contracts(key: str):
+def _contracts(key: str, chainID):
     """Returns the contract object at the currently connected network"""
-    # TODO: actual chainId
-    # chainID = brownie.network.chain.id
-    chainID = 8996
+    # TODO: inject chainID everywhere
+    if not chainID and key in [
+        "veOCEAN",
+        "veAllocate",
+        "veDelegation",
+        "FixedPrice",
+        "FeeDistributor",
+        "VestingWalletV0"
+    ]:
+        chainID = 8996
+
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
         record_deployed_contracts(address_file, chainID)
@@ -90,32 +98,33 @@ def record_deployed_contracts(address_file: str, chainID: int):
     CONTRACTS[chainID] = C
 
 
-def OCEAN_token():
-    return _contracts("Ocean")
+# TODO: inject chain_id everywhere
+def OCEAN_token(chain_id):
+    return _contracts("Ocean", chain_id)
 
 
-def OCEAN_address() -> str:
-    return OCEAN_token().address.lower()
+def OCEAN_address(chain_id) -> str:
+    return OCEAN_token(chain_id).address.lower()
 
 
-def ERC721Template():
-    return _contracts("ERC721Template")
+def ERC721Template(chain_id):
+    return _contracts("ERC721Template", chain_id)
 
 
-def ERC20Template():
-    return _contracts("ERC20Template")
+def ERC20Template(chain_id):
+    return _contracts("ERC20Template", chain_id)
 
 
-def FactoryRouter():
-    return _contracts("Router")
+def FactoryRouter(chain_id):
+    return _contracts("Router", chain_id)
 
 
-def Staking():
-    return _contracts("Staking")
+def Staking(chain_id):
+    return _contracts("Staking", chain_id)
 
 
-def ERC721Factory():
-    return _contracts("ERC721Factory")
+def ERC721Factory(chain_id):
+    return _contracts("ERC721Factory", chain_id)
 
 
 def veOCEAN():
@@ -157,10 +166,11 @@ def create_data_nft_with_fre(web3, from_account, token):
 
 @enforce_types
 def create_data_nft(web3: Web3, name: str, symbol: str, from_account):
-    erc721_factory = ERC721Factory()
+    chain_id = web3.eth.chain_id
+    erc721_factory = ERC721Factory(chain_id)
     template_index = 1
     additional_metadata_updater = ZERO_ADDRESS
-    additional_erc20_deployer = FactoryRouter().address
+    additional_erc20_deployer = FactoryRouter(chain_id).address
     transferable = True
     owner = from_account.address
     token_uri = "https://mystorage.com/mytoken.png"

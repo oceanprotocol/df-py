@@ -67,7 +67,7 @@ def setup_function():
     accounts[0].transfer(alice, "0.01 ether")
     accounts[0].transfer(bob, "0.01 ether")
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": alice}
     )

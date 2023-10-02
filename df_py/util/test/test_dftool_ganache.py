@@ -54,7 +54,7 @@ def mock_query_predictoor_contracts():
 @enforce_types
 def test_calc_volume(tmp_path):
     csv_dir = str(tmp_path)
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
@@ -252,7 +252,7 @@ def test_calc_challenge_substream(tmp_path):
 @enforce_types
 def test_calc_without_amount(tmp_path):
     csv_dir = str(tmp_path)
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
@@ -309,7 +309,7 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     OCEAN.transfer(DFTOOL_ACCT, to_wei(tot_ocean), {"from": account0})
     assert from_wei(OCEAN.balanceOf(DFTOOL_ACCT.address)) == tot_ocean
 
@@ -329,7 +329,7 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
     # main command
     csv_dir = str(tmp_path)
     DFRewards_addr = df_rewards.address
-    OCEAN_addr = w3.to_checksum_address(oceanutil.OCEAN_address())
+    OCEAN_addr = w3.to_checksum_address(oceanutil.OCEAN_address(CHAINID))
 
     sys_argv = [
         "dftool",
@@ -385,7 +385,7 @@ def test_checkpoint_feedistributor(w3):
 @enforce_types
 def test_calc_passive(tmp_path, account0, w3):
     accounts = []
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     OCEAN_lock_amt = to_wei(10.0)
     S_PER_WEEK = 604800
 
@@ -462,7 +462,7 @@ def test_init_dev_wallets(all_accounts):
     account8 = all_accounts[7]
     account9 = all_accounts[8]
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     OCEAN.transfer(account8, OCEAN.balanceOf(account9.address), {"from": account9})
 
     assert from_wei(OCEAN.balanceOf(account9.address)) == 0.0
@@ -693,7 +693,6 @@ def test_new_functions():
     with sysargs_context(sys_argv):
         dftool_module.do_new_acct()
 
-    import pdb; pdb.set_trace()
     sys_argv = ["dftool", "new_token", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):
@@ -717,7 +716,7 @@ def test_new_functions():
 
 
 def test_ve_set_allocation():
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
     sys_argv = [
         "dftool",
         "ve_set_allocation",
@@ -736,7 +735,7 @@ def test_acct_info():
     with sysargs_context(sys_argv):
         dftool_module.do_acct_info()
 
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
     sys_argv = [
         "dftool",
         "acct_info",

@@ -78,7 +78,7 @@ def _prep_batch_allocate(w3, account0, n_accounts: int) -> Any:
       df_rewards -- DFRewards contract, controlled by account0.
         Account0 approves it to spend sum(rewards)
     """
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
     addresses = get_random_addresses(n_accounts)
     rewards = [1 for account_i in range(n_accounts)]

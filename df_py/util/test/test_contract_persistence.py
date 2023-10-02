@@ -1,17 +1,17 @@
 from enforce_typing import enforce_types
 
-from df_py.util import oceanutil
+from df_py.util import oceanutil, networkutil
 
 
 @enforce_types
 def test_1():
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     assert OCEAN.symbol().lower() == "ocean"
 
 
 @enforce_types
 def test_2():
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     assert OCEAN.symbol().lower() == "ocean"
 
 

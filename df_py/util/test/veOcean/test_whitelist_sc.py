@@ -58,7 +58,7 @@ def setup_function():
     global deployer, veOCEAN, OCEAN, veLocker, smartWalletChecker
     deployer = brownie.network.accounts[0]
 
-    OCEAN = oceanutil.OCEAN_token()
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = B.veOcean.deploy(
         OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
     )
