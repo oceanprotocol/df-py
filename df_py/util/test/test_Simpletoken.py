@@ -1,19 +1,12 @@
-import os
-
 from enforce_typing import enforce_types
-from eth_account import Account
 
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
 
-accounts = [
-    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 8)
-]
-
 
 @enforce_types
-def test_transfer(w3):
+def test_transfer(w3, all_accounts):
+    accounts = all_accounts
     token = _deploy_token(w3)
     # TODO: no to_weis in previous version. TBD!!
     assert token.totalSupply() == to_wei(1e21)
@@ -24,7 +17,8 @@ def test_transfer(w3):
 
 
 @enforce_types
-def test_approve(w3):
+def test_approve(w3, all_accounts):
+    accounts = all_accounts
     token = _deploy_token(w3)
     # TODO: no to_weis in previous version. TBD!!
     token.approve(accounts[1], to_wei(1e19), {"from": accounts[0]})
@@ -36,7 +30,8 @@ def test_approve(w3):
 
 
 @enforce_types
-def test_transferFrom(w3):
+def test_transferFrom(w3, all_accounts):
+    accounts = all_accounts
     token = _deploy_token(w3)
     # TODO: no to_weis in previous version. TBD!!
     token.approve(accounts[1], to_wei(6e18), {"from": accounts[0]})

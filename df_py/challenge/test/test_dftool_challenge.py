@@ -88,9 +88,6 @@ def test_challenge_help():
 
 @enforce_types
 def setup_function():
-    accounts = [
-        Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-        for index in range(0, 8)
-    ]
+    accounts = oceantestutil.get_all_accounts()
     oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN(accounts)

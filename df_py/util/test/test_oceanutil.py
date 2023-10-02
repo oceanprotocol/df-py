@@ -12,16 +12,10 @@ from df_py.util.oceanutil import (
     record_deployed_contracts,
 )
 
-account0, account3 = None, None
-
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
-accounts = [
-    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 9)
-]
-
+accounts = oceantestutil.get_all_accounts()
 account0 = accounts[0]
 account3 = accounts[3]
 

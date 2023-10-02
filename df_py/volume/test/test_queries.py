@@ -421,7 +421,7 @@ def _test_end_to_end_without_csvs(rng):
 
 
 @enforce_types
-def _test_end_to_end_with_csvs(rng, tmp_path, god_acct):
+def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
@@ -473,7 +473,7 @@ def _test_end_to_end_with_csvs(rng, tmp_path, god_acct):
     rewardsperlp = csvs.load_volume_rewards_csv(csv_dir)
     dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
     OCEAN_addr = oceanutil.OCEAN_address()
-    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
+    dispense.dispense(w3, rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
 
 @enforce_types

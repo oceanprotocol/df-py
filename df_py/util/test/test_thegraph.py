@@ -1,21 +1,14 @@
-import os
 from pprint import pprint
 from unittest.mock import Mock, patch
 
 import pytest
 from enforce_typing import enforce_types
-from eth_account import Account
 from requests import Response
 
-from df_py.util import networkutil, oceantestutil, oceanutil
+from df_py.util import networkutil, oceantestutil
 from df_py.util.graphutil import submit_query
 
 CHAINID = networkutil.DEV_CHAINID
-
-accounts = [
-    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 9)
-]
 
 
 @enforce_types
@@ -39,4 +32,4 @@ def test_connection_failure():
 
 @enforce_types
 def setup_function():
-    oceantestutil.fill_accounts_with_OCEAN(accounts)
+    oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())

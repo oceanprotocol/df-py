@@ -1,18 +1,12 @@
-import os
-
 import pytest
 from enforce_typing import enforce_types
-from eth_account import Account
 from web3.exceptions import ContractLogicError
 
-from df_py.util import networkutil, oceanutil
+from df_py.util import networkutil, oceanutil, oceantestutil
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
 
-accounts = [
-    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 9)
-]
+accounts = oceantestutil.get_all_accounts()
 
 a1 = accounts[1]
 a2 = accounts[2]

@@ -1,34 +1,26 @@
-import os
-
 import pytest
 from enforce_typing import enforce_types
-from eth_account import Account
 from web3.exceptions import ContractLogicError
 
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
 from df_py.util.networkutil import send_ether
 
-accounts = [
-    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 9)
-]
-
 
 @enforce_types
-def test_transfer_eth_reverts(w3):
+def test_transfer_eth_reverts(w3, account0):
     """sending native tokens to dfrewards contract should revert"""
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
     with pytest.raises(ContractLogicError):
         # transfer native eth to dfrewards contract
-        send_ether(w3, accounts[0], df_rewards.address, to_wei(1))
+        send_ether(w3, account0, df_rewards.address, to_wei(1))
 
 
 @enforce_types
-def test_erc20_withdraw_random(w3):
+def test_erc20_withdraw_random(w3, all_accounts):
     """owner can withdraw other erc20 tokens from the dfrewards contract"""
-
+    accounts = all_accounts
     random_token = _deploy_token(w3, accounts[1])
 
     w3.eth.default_account = accounts[0].address
@@ -47,8 +39,9 @@ def test_erc20_withdraw_random(w3):
 
 
 @enforce_types
-def test_erc20_withdraw_main(w3):
+def test_erc20_withdraw_main(w3, all_accounts):
     """withdrawing the main token should revert"""
+    accounts = all_accounts
     token = _deploy_token(w3, accounts[0])
 
     w3.eth.default_account = accounts[0].address

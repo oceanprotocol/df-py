@@ -1,25 +1,19 @@
-import os
 from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types
-from eth_account import Account
 
 from df_py.util import dispense, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
 
-accounts = [
-    Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-    for index in range(0, 4)
-]
+accounts = oceantestutil.get_all_accounts()[0:4]
 
 a1 = accounts[1]
 a2 = accounts[2]
 a3 = accounts[3]
 
 
-# TODO: everywhere dispense is used, make sure web3 is the first arg
 @enforce_types
 def test_small_batch(w3):
     OCEAN = oceanutil.OCEAN_token()

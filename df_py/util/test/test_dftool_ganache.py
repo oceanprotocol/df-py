@@ -1,13 +1,12 @@
 import contextlib
 import datetime
-import os
 import sys
+import os
 from pathlib import Path
 from unittest.mock import Mock, patch
 
 import pytest
 from enforce_typing import enforce_types
-from eth_account import Account
 
 from df_py.challenge.csvs import (
     challenge_data_csv_filename,
@@ -773,10 +772,7 @@ def test_dispense_passive():
 @enforce_types
 def setup_function():
     global DFTOOL_ACCT
-    accounts = [
-        Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-        for index in range(0, 8)
-    ]
+    accounts = oceantestutil.get_all_accounts()
     oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN(accounts)
 

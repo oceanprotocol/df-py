@@ -4,7 +4,7 @@ import pytest
 from enforce_typing import enforce_types
 from eth_account import Account
 
-from df_py.util import networkutil, oceanutil
+from df_py.util import networkutil, oceanutil, oceantestutil
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
 
@@ -200,7 +200,7 @@ def setup_function():
     oceanutil.record_dev_deployed_contracts()
 
     w3 = networkutil.chain_id_to_web3(8996)
-    account0 = Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
+    account0 = oceantestutil.get_account0()
 
     alice = w3.eth.account.create()
     bob = w3.eth.account.create()

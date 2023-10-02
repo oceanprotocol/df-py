@@ -1,5 +1,7 @@
 import random
+import os
 
+from eth_account import Account
 from enforce_typing import enforce_types
 from web3.main import Web3
 
@@ -227,3 +229,14 @@ def random_lock_and_allocate(web3, tups: list):
             8996,
             lock_account,
         )
+
+
+def get_account0():
+    return Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
+
+
+def get_all_accounts():
+    return [
+        Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
+        for index in range(0, 9)
+    ]
