@@ -94,6 +94,3 @@ def setup_function():
     ]
     oceanutil.record_dev_deployed_contracts()
     oceantestutil.fill_accounts_with_OCEAN(accounts)
-
-
-#    os.environ["DFTOOL_KEY"] = DFTOOL_ACCT._private_key.hex()
