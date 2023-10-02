@@ -693,6 +693,7 @@ def test_new_functions():
     with sysargs_context(sys_argv):
         dftool_module.do_new_acct()
 
+    import pdb; pdb.set_trace()
     sys_argv = ["dftool", "new_token", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):

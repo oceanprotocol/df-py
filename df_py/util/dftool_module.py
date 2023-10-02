@@ -780,8 +780,7 @@ def do_new_acct():
     parser.add_argument("command", choices=["new_acct"])
 
     # main work
-    # TODO: test
-    web3 = networkutil.chain_id_to_web3(8996)
+    web3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
     account = web3.eth.account.create()
 
     print("Generated new account:")

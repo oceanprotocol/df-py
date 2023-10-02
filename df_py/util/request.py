@@ -41,14 +41,6 @@ def make_post_request(endpoint_uri, data, *args, **kwargs):
     kwargs.setdefault("timeout", 10)
     session = _get_session(endpoint_uri)
 
-    version = "TODO"  # TODO
-    version_header = {"User-Agent": f"OceanAquarius/{version}"}
-
-    if "headers" in kwargs:
-        kwargs["headers"].update(version_header)
-    else:
-        kwargs["headers"] = version_header
-
     response = session.post(endpoint_uri, data=data, *args, **kwargs)
     response.raise_for_status()
 
