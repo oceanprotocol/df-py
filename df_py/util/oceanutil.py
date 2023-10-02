@@ -24,29 +24,20 @@ def _contracts(key: str):
     chainID = 8996
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
-        record_deployed_contracts(address_file)
+        record_deployed_contracts(address_file, chainID)
 
     return CONTRACTS[chainID][key]
 
 
 @enforce_types
 def record_dev_deployed_contracts():
-    # TODO: uncomment and adapt
-    # assert brownie.network.is_connected()
-    # assert brownie.network.chain.id == networkutil.DEV_CHAINID
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    record_deployed_contracts(address_file)
+    record_deployed_contracts(address_file, networkutil.DEV_CHAINID)
 
 
 @enforce_types
-def record_deployed_contracts(address_file: str):
+def record_deployed_contracts(address_file: str, chainID: int):
     """Records deployed Ocean contracts at currently connected network"""
-    # TODO: uncomment and adapt
-    # assert brownie.network.is_connected()
-    # TODO: actual chainId
-    # chainID = brownie.network.chain.id
-    chainID = 8996
-
     if chainID in CONTRACTS:  # already filled
         return
 

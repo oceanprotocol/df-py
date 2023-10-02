@@ -72,8 +72,7 @@ def test_token(w3):
 
 @enforce_types
 def test_OCEAN(w3):
-    address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.record_deployed_contracts(address_file)
+    oceanutil.record_dev_deployed_contracts()
     OCEAN = oceanutil.OCEAN_token()
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
@@ -233,8 +232,7 @@ def test_strategies(w3):
 
 @enforce_types
 def _test_claim_and_restake():
-    address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    oceanutil.record_deployed_contracts(address_file)
+    oceanutil.record_dev_deployed_contracts()
     OCEAN = oceanutil.OCEAN_token()
     deployer = accounts[0]
     bob = accounts[1]

@@ -92,7 +92,7 @@ def do_volsym():
         sys.exit(1)
 
     web3 = networkutil.chain_id_to_web3(chain_id)
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, chain_id)
 
     # main work
     rng = blockrange.create_range(
@@ -327,7 +327,7 @@ def do_challenge_data():
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     web3 = networkutil.chain_id_to_web3(MUMBAI_CHAINID)
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, MUMBAI_CHAINID)
     judge_acct = judge.get_judge_acct()
 
     # main work
@@ -449,7 +449,7 @@ def do_calc():
         address_path = os.path.join(
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
-        record_deployed_contracts(address_path)
+        record_deployed_contracts(address_path, chain_id)  # TODO: which chain id?
         tot_ocean = get_active_reward_amount_for_week_eth_by_stream(
             start_date, arguments.SUBSTREAM
         )
@@ -672,7 +672,7 @@ def do_retire_strategy():
     df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
 
     tx = df_rewards.retireStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
-    # TODO: transform the events part for regular web3
+    # TODO: transform the events part for regular web3, after fixing prev failure
     assert tx.events.keys()[0] == "StrategyRetired"
     print(
         f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
@@ -707,7 +707,7 @@ def do_init_dev_wallets():
     web3 = networkutil.chain_id_to_web3(chain_id)
 
     # main work
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, chain_id)
     # TODO: test this
     oceantestutil.fill_accounts_with_OCEAN(web3.eth.accounts)
 
@@ -742,7 +742,7 @@ def do_many_random():
     web3.eth.default_account = from_account
 
     # main work
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token()
 
     num_nfts = 10  # magic number
@@ -895,10 +895,9 @@ def do_ve_set_allocation():
     print_arguments(arguments)
 
     # main work
-    # networkutil.connect(arguments.CHAINID)
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
-        record_deployed_contracts(ADDRESS_FILE)
+        record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
         from_account = _getPrivateAccount()
         veAllocate().setAllocation(
             arguments.amount,
@@ -961,7 +960,7 @@ def do_acct_info():
     # Give balance for OCEAN token too.
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     if ADDRESS_FILE is not None:
-        record_deployed_contracts(ADDRESS_FILE)
+        record_deployed_contracts(ADDRESS_FILE, chain_id)
         OCEAN = OCEAN_token()
         if OCEAN.address != token_addr:
             print(f"  {from_wei(OCEAN.balanceOf(account_addr))} OCEAN")
@@ -1003,7 +1002,7 @@ def do_dispense_passive():
     print_arguments(arguments)
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
 
     amount = arguments.AMOUNT
 
@@ -1040,7 +1039,7 @@ def do_calculate_passive():
     S_PER_WEEK = 7 * 86400
     timestamp = timestamp // S_PER_WEEK * S_PER_WEEK
     ADDRESS_FILE = _getAddressEnvvarOrExit()
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
 
     # load vebals csv file
     passive_fname = csvs.passive_csv_filename(csv_dir)
@@ -1072,7 +1071,7 @@ def do_checkpoint_feedist():
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    record_deployed_contracts(ADDRESS_FILE)
+    record_deployed_contracts(ADDRESS_FILE, chain_id)
     from_account = _getPrivateAccount()
     feedist = FeeDistributor()
 
