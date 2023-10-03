@@ -185,7 +185,7 @@ def random_lock_and_allocate(web3, tups: list):
 
     acc1 = web3.eth.accounts[0]
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
-    veOCEAN = oceanutil.veOCEAN()
+    veOCEAN = oceanutil.veOCEAN(web3.eth.chain_id)
 
     accounts = web3.eth.accounts[: len(tups)]
 
@@ -220,7 +220,7 @@ def random_lock_and_allocate(web3, tups: list):
             veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
         assert veOCEAN.balanceOf(lock_account) != 0
-        allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate().getTotalAllocation(
+        allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate(web3.eth.chain_id).getTotalAllocation(
             lock_account
         )
         oceanutil.set_allocation(

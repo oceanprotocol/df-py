@@ -17,12 +17,10 @@ from df_py.util.http_provider import get_web3_connection_provider
 
 
 @enforce_types
-def _contracts(key: str, chainID):
+def _contracts(key: str, chainID = None):
     """Returns the contract object at the currently connected network"""
-    # TODO: inject chainID everywhere
+    # TODO: inject chainID everywhere and remove the default
     if not chainID and key in [
-        "veOCEAN",
-        "veAllocate",
         "veDelegation",
         "FixedPrice",
         "FeeDistributor",
@@ -127,16 +125,16 @@ def ERC721Factory(chain_id):
     return _contracts("ERC721Factory", chain_id)
 
 
-def veOCEAN():
-    return _contracts("veOCEAN")
+def veOCEAN(chain_id):
+    return _contracts("veOCEAN", chain_id)
 
 
-def veAllocate():
-    return _contracts("veAllocate")
+def veAllocate(chain_id):
+    return _contracts("veAllocate", chain_id)
 
 
-def veDelegation():
-    return _contracts("veDelegation")
+def veDelegation(chain_id):
+    return _contracts("veDelegation", chain_id)
 
 
 def FixedPrice():
@@ -287,16 +285,16 @@ def create_FRE_from_datatoken(
 
 @enforce_types
 def set_allocation(amount: int, nft_addr: str, chain_id: int, from_account):
-    veAllocate().setAllocation(amount, nft_addr, chain_id, {"from": from_account})
+    veAllocate(chain_id).setAllocation(amount, nft_addr, chain_id, {"from": from_account})
 
 
 @enforce_types
 def ve_delegate(
-    from_account, to_account, percentage: float, token_id: int, expiry: int = 0
+    chain_id: int, from_account, to_account, percentage: float, token_id: int, expiry: int = 0
 ):
     if expiry == 0:
-        expiry = veOCEAN().locked__end(from_account)
-    veDelegation().create_boost(
+        expiry = veOCEAN(chain_id).locked__end(from_account)
+    veDelegation(chain_id).create_boost(
         from_account,
         to_account,
         int(percentage * 10000),

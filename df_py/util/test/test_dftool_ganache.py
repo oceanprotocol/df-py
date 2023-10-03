@@ -390,7 +390,7 @@ def test_calc_passive(tmp_path, account0, w3):
     S_PER_WEEK = 604800
 
     feeDistributor = oceanutil.FeeDistributor()
-    veOCEAN = oceanutil.veOCEAN()
+    veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
     csv_dir = str(tmp_path)
     unlock_time = w3.eth.get_block("latest").timestamp + S_PER_WEEK * 10
     provider = w3.provider

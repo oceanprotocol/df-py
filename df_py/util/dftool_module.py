@@ -187,7 +187,7 @@ def do_allocations():
         web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
     )
     allocs = retry_function(
-        queries.queryAllocations, arguments.RETRIES, 10, rng, chain_id
+        queries.queryAllocations, arguments.RETRIES, 10, rng
     )
     csvs.save_allocation_csv(allocs, csv_dir, n_samp > 1)
 
@@ -223,7 +223,7 @@ def do_vebals():
     )
 
     balances, locked_amt, unlock_time = retry_function(
-        queries.queryVebalances, arguments.RETRIES, 10, rng, chain_id
+        queries.queryVebalances, arguments.RETRIES, 10, rng
     )
     csvs.save_vebals_csv(balances, locked_amt, unlock_time, csv_dir, n_samp > 1)
 
@@ -898,13 +898,13 @@ def do_ve_set_allocation():
     if ADDRESS_FILE is not None:
         record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
         from_account = _getPrivateAccount()
-        veAllocate().setAllocation(
+        veAllocate(arguments.CHAINID).setAllocation(
             arguments.amount,
             Web3.to_checksum_address(arguments.TOKEN_ADDR),
             arguments.CHAINID,
             {"from": from_account},
         )
-        allocation = veAllocate().getTotalAllocation(from_account)
+        allocation = veAllocate(arguments.CHAINID).getTotalAllocation(from_account)
         print(
             "veAllocate current total allocated voting power is: "
             f"{(allocation/10000 * 100)}%"
