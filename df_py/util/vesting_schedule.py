@@ -107,4 +107,5 @@ def _halflife_solidity(value, t, h) -> int:
     Halflife function in Solidity, requires network connection and
     deployed VestingWallet contract
     """
-    return oceanutil.VestingWalletV0().getAmount(value, t, h)
+    chain_id = 8996  # TODO: real chain_id
+    return oceanutil.VestingWalletV0(chain_id).getAmount(value, t, h)

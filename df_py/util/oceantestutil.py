@@ -129,7 +129,7 @@ def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
         (data_NFT, DT, exchangeId) = oceanutil.create_data_nft_with_fre(
             web3, accounts[account_i], base_token
         )
-        assert oceanutil.FixedPrice().isActive(exchangeId) is True
+        assert oceanutil.FixedPrice(web3.eth.chain_id).isActive(exchangeId) is True
         tups.append((account_i, data_NFT, DT, exchangeId))
 
     return tups
@@ -139,12 +139,13 @@ def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
 def buy_DT_FRE(
     exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token
 ):
+    chain_id = 8966  # TODO! real chainid
     base_token.approve(
-        oceanutil.FixedPrice().address, to_wei(max_TOKEN), {"from": from_account}
+        oceanutil.FixedPrice(chain_id).address, to_wei(max_TOKEN), {"from": from_account}
     )
 
-    feesInfo = oceanutil.FixedPrice().getFeesInfo(exchangeId)
-    oceanutil.FixedPrice().buyDT(
+    feesInfo = oceanutil.FixedPrice(chain_id).getFeesInfo(exchangeId)
+    oceanutil.FixedPrice(chain_id).buyDT(
         exchangeId,
         to_wei(DT_buy_amt),
         to_wei(max_TOKEN),

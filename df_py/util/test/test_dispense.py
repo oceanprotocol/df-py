@@ -100,7 +100,7 @@ def test_batch_number(w3):
 
 
 def test_dispense_passive(w3):
-    fee_distributor = oceanutil.FeeDistributor()
+    fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
         with patch("df_py.util.dispense.send_multisig_tx") as mock:

@@ -606,6 +606,7 @@ def _querySwaps(
 
 @enforce_types
 def queryPassiveRewards(
+    chain_id: int,
     timestamp: int,
     addresses: List[str],
 ) -> Tuple[Dict[str, float], Dict[str, float]]:
@@ -625,7 +626,7 @@ def queryPassiveRewards(
     rewards: Dict[str, float] = {}
     balances: Dict[str, float] = {}
 
-    fee_distributor = oceanutil.FeeDistributor()
+    fee_distributor = oceanutil.FeeDistributor(chain_id)
     ve_supply = fee_distributor.ve_supply(timestamp)
     total_rewards = fee_distributor.tokens_per_week(timestamp)
     ve_supply_float = from_wei(ve_supply)

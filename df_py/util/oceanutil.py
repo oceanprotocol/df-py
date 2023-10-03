@@ -17,17 +17,8 @@ from df_py.util.http_provider import get_web3_connection_provider
 
 
 @enforce_types
-def _contracts(key: str, chainID = None):
+def _contracts(key: str, chainID):
     """Returns the contract object at the currently connected network"""
-    # TODO: inject chainID everywhere and remove the default
-    if not chainID and key in [
-        "veDelegation",
-        "FixedPrice",
-        "FeeDistributor",
-        "VestingWalletV0"
-    ]:
-        chainID = 8996
-
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
         record_deployed_contracts(address_file, chainID)
@@ -96,7 +87,6 @@ def record_deployed_contracts(address_file: str, chainID: int):
     CONTRACTS[chainID] = C
 
 
-# TODO: inject chain_id everywhere
 def OCEAN_token(chain_id):
     return _contracts("Ocean", chain_id)
 
@@ -137,16 +127,16 @@ def veDelegation(chain_id):
     return _contracts("veDelegation", chain_id)
 
 
-def FixedPrice():
-    return _contracts("FixedPrice")
+def FixedPrice(chain_id):
+    return _contracts("FixedPrice", chain_id)
 
 
-def FeeDistributor():
-    return _contracts("veFeeDistributor")
+def FeeDistributor(chain_id):
+    return _contracts("veFeeDistributor", chain_id)
 
 
-def VestingWalletV0():
-    return _contracts("VestingWalletV0")
+def VestingWalletV0(chain_id):
+    return _contracts("VestingWalletV0", chain_id)
 
 
 # ===========================================================================
@@ -244,7 +234,8 @@ def create_FRE_from_datatoken(
     datatoken, base_token, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
-    datatoken.approve(FixedPrice().address, to_wei(amount), {"from": from_account})
+    chain_id = 8996  # TODO: real chain id
+    datatoken.approve(FixedPrice(chain_id).address, to_wei(amount), {"from": from_account})
 
     addresses = [
         base_token.address,  # baseToken
@@ -268,7 +259,7 @@ def create_FRE_from_datatoken(
     #      datatoken: address, addresses: list, uints: list)
     # Creates an Exchange struct (defined at FixedRateExchange.sol)
     tx = datatoken.createFixedRate(
-        FixedPrice().address, addresses, uints, {"from": from_account}
+        FixedPrice(chain_id).address, addresses, uints, {"from": from_account}
     )
 
     event = datatoken.contract.events.NewFixedRate().process_receipt(

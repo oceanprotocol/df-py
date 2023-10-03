@@ -1009,7 +1009,7 @@ def do_dispense_passive():
         start_date = arguments.ST
         amount = get_active_reward_amount_for_week_eth(start_date)
 
-    feedist = FeeDistributor()
+    feedist = FeeDistributor(arguments.CHAINID)
     OCEAN = OCEAN_token(arguments.CHAINID)
     retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, amount)
 
@@ -1052,7 +1052,7 @@ def do_calculate_passive():
     vebals, _, _ = csvs.load_vebals_csv(csv_dir, False)
     addresses = list(vebals.keys())
 
-    balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
+    balances, rewards = queries.queryPassiveRewards(arguments.CHAINID, timestamp, addresses)
 
     # save to csv
     csvs.save_passive_csv(rewards, balances, csv_dir)
@@ -1072,7 +1072,7 @@ def do_checkpoint_feedist():
 
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     from_account = _getPrivateAccount()
-    feedist = FeeDistributor()
+    feedist = FeeDistributor(chain_id)
 
     try:
         feedist.checkpoint_total_supply({"from": from_account})

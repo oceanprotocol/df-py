@@ -369,7 +369,7 @@ def test_many_random():
 
 @enforce_types
 def test_checkpoint_feedistributor(w3):
-    fee_distributor = oceanutil.FeeDistributor()
+    fee_distributor = oceanutil.FeeDistributor(CHAINID)
     timecursor_before = fee_distributor.time_cursor()
     provider = w3.provider
     provider.make_request("evm_mine", [])
@@ -389,7 +389,7 @@ def test_calc_passive(tmp_path, account0, w3):
     OCEAN_lock_amt = to_wei(10.0)
     S_PER_WEEK = 604800
 
-    feeDistributor = oceanutil.FeeDistributor()
+    feeDistributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
     veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
     csv_dir = str(tmp_path)
     unlock_time = w3.eth.get_block("latest").timestamp + S_PER_WEEK * 10

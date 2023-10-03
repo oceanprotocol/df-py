@@ -31,7 +31,7 @@ YEAR = 365 * DAY
 class SimpleAsset:
     def __init__(self, tup):
         self.nft, self.dt, self.exchangeId = tup
-        assert oceanutil.FixedPrice().isActive(self.exchangeId)
+        assert oceanutil.FixedPrice(networkutil.DEV_CHAINID).isActive(self.exchangeId)
 
 
 # =========================================================================
@@ -480,7 +480,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
 @enforce_types
 def _test_queryPassiveRewards(addresses, god_acct):
     print("_test_queryPassiveRewards()...")
-    fee_distributor = oceanutil.FeeDistributor()
+    fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
 
     def sim_epoch():
         OCEAN.transfer(
@@ -504,7 +504,7 @@ def _test_queryPassiveRewards(addresses, god_acct):
 
     for _ in range(3):
         timestamp = chain.time() // WEEK * WEEK
-        balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
+        balances, rewards = queries.queryPassiveRewards(chain_id, timestamp, addresses)
         alice = addresses[0]
         bob = addresses[1]
         assert balances[alice] == balances[bob]
