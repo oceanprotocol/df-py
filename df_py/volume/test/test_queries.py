@@ -59,11 +59,12 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     assets = _create_assets(w3, n_assets=5, god_acct=account0)
 
     print("Sleep & mine")
-    t0 = chain.time()
+    provider = w3.provider
+    t0 = w3.eth.get_block("latest").timestamp
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + 4 * YEAR
-    chain.sleep(t1 - t0)
-    chain.mine()
+    provider.make_request("evm_increaseTime", [t1 - t0])
+    provider.make_request("evm_mine", [])
 
     lock_amt = 5.0
     _lock(accounts, lock_amt, t2)
@@ -81,7 +82,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     ve_delegate(chain_id, accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
     print(f"  {accounts[4].address} -> {accounts[3].address} 100%")
 
-    start_block = len(chain)
+    start_block = w3.eth.get_block("latest").number
     print(f"ST = start block for querying = {start_block}")
 
     # these accounts are used to test if sampling the range works
@@ -110,12 +111,15 @@ def test_all(tmp_path, w3, account0, monkeypatch):
         # be on the graph too. Eg veOCEAN allocation or delegation
         if _found_consume(start_block, fin_block):
             break
-        chain.sleep(10)
-        chain.mine(10)
+
+        for _ in range(10):
+            provider.make_request("evm_increaseTime", [])
+            provider.make_request("evm_mine", [])
+
         time.sleep(2)
 
-    chain.sleep(10)
-    chain.mine(20)
+    provider.make_request("evm_increaseTime", [])
+    provider.make_request("evm_mine", [])
     time.sleep(2)
 
     rng = BlockRange(chain_id, start_block, fin_block, 100, 42)
@@ -147,8 +151,9 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     _test_queryPassiveRewards(sampling_accounts_addrs, account0)
 
     # sleep 20 weeks
-    chain.sleep(60 * 60 * 24 * 7 * 20)
-    chain.mine(10)
+    provider.make_request("evm_increaseTime", [60 * 60 * 24 * 7 * 20])
+    for _ in range(10):
+        provider.make_request("evm_mine", [])
 
     # check balances again
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
@@ -481,6 +486,8 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
 def _test_queryPassiveRewards(addresses, god_acct):
     print("_test_queryPassiveRewards()...")
     fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
+    w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
+    provider = w3.provider
 
     def sim_epoch():
         OCEAN.transfer(
@@ -488,8 +495,8 @@ def _test_queryPassiveRewards(addresses, god_acct):
             to_wei(1000.0),
             {"from": god_acct},
         )
-        chain.sleep(WEEK)
-        chain.mine()
+        provider.make_request("evm_increaseTime", [WEEK])
+        provider.make_request("evm_mine", [])
         fee_distributor.checkpoint_token({"from": god_acct})
         fee_distributor.checkpoint_total_supply({"from": god_acct})
 
@@ -498,13 +505,15 @@ def _test_queryPassiveRewards(addresses, god_acct):
 
     alice_last_reward = 0
     bob_last_reward = 0
-    target_ts = chain.time() // WEEK * WEEK + WEEK - 100
-    chain.sleep(target_ts - chain.time())
-    chain.mine()
+    target_ts = w3.eth.get_block("latest").timestamp // WEEK * WEEK + WEEK - 100
+    provider.make_request("evm_increaseTime", [
+        target_ts - w3.eth.get_block("latest").timestamp
+    ])
+    provider.make_request("evm_mine", [])
 
     for _ in range(3):
-        timestamp = chain.time() // WEEK * WEEK
-        balances, rewards = queries.queryPassiveRewards(chain_id, timestamp, addresses)
+        timestamp = w3.eth.get_block("latest").timestamp // WEEK * WEEK
+        balances, rewards = queries.queryPassiveRewards(w3.eth.chain_id, timestamp, addresses)
         alice = addresses[0]
         bob = addresses[1]
         assert balances[alice] == balances[bob]
@@ -1024,13 +1033,15 @@ def test_process_delegations():
 @enforce_types
 def _lock(accts: list, lock_amt: float, lock_time: int):
     print("Lock...")
+    w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
     lock_amt_wei = to_wei(lock_amt)
     for i, acct in enumerate(accts):
         s = str_with_wei(lock_amt_wei)
+        chain_time = w3.eth.get_block("latest").timestamp
         print(f"  Lock {s} OCEAN on acct #{i+1}/{len(accts)}...")
-        print(f"    chain.time() = {chain.time()}")
+        print(f"    chain_time = {chain_time}")
         print(f"    lock_time =    {lock_time}")
-        print(f"    chain.time() <= lock_time? {chain.time() <= lock_time}")
+        print(f"    chain_time <= lock_time? {chain_time <= lock_time}")
         veOCEAN.checkpoint({"from": acct})
         OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
         veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
@@ -1051,7 +1062,7 @@ def _fund_accts(w3, accts_to_fund: list, amt_to_fund: float, god_acct):
     amt_to_fund_wei = to_wei(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
-        w3.eth.default_account = god_acct
+        w3.eth.default_account = god_acct.address
         send_ether(w3, god_acct, acct.address, to_wei(1))
         OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
         if CO2 is not None:

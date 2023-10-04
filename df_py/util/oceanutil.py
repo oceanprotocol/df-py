@@ -180,6 +180,7 @@ def create_data_nft(web3: Web3, name: str, symbol: str, from_account):
     )[0]
     data_NFT_address = event.args.newTokenAddress
     data_NFT = ContractBase(web3, "ERC721Template", data_NFT_address)
+
     return data_NFT
 
 
@@ -285,6 +286,7 @@ def ve_delegate(
 ):
     if expiry == 0:
         expiry = veOCEAN(chain_id).locked__end(from_account)
+
     veDelegation(chain_id).create_boost(
         from_account,
         to_account,
