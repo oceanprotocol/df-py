@@ -698,17 +698,6 @@ def test_new_functions():
     with sysargs_context(sys_argv):
         dftool_module.do_new_token()
 
-    sys_argv = ["dftool", "new_veocean", str(networkutil.DEV_CHAINID), "0x0"]
-
-    with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "B") as mock_B:
-            mock_token = Mock()
-            mock_token.symbol.return_value = "SYMB"
-            mock_token.address = "0x0"
-            mock_token.token = ""
-            mock_B.veOcean.deploy.return_value = mock_token
-            dftool_module.do_new_veocean()
-
     sys_argv = ["dftool", "new_ve_allocate", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):

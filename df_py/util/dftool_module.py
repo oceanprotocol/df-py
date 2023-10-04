@@ -834,31 +834,6 @@ def do_new_token():
 
 # ========================================================================
 @enforce_types
-def do_new_veocean():
-    parser = argparse.ArgumentParser(description="Generate new veOcean (for testing)")
-    parser.add_argument("command", choices=["new_veocean"])
-    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
-    parser.add_argument("TOKEN_ADDR", type=str, help="token address")
-
-    arguments = parser.parse_args()
-    print_arguments(arguments)
-
-    # main work
-    # networkutil.connect(arguments.CHAINID)
-    from_account = _getPrivateAccount()
-
-    # deploy veOcean
-    veOcean = B.veOcean.deploy(
-        arguments.TOKEN_ADDR, "veOCEAN", "veOCEAN", "0.1", {"from": from_account}
-    )
-    # pylint: disable=line-too-long
-    print(
-        f"veOcean '{veOcean.symbol()}' deployed at address: {veOcean.address} with token parameter pointing at: {veOcean.token}"
-    )
-
-
-# ========================================================================
-@enforce_types
 def do_new_veallocate():
     parser = argparse.ArgumentParser(
         description="Generate new veAllocate (for testing)"

@@ -40,7 +40,6 @@ Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
 
   dftool mine TIMEDELTA - force chain to pass time (ganache only)
 
-  dftool new_veocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool new_veallocate CHAINID - deploy veAllocate (for testing)
   dftool ve_set_allocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
