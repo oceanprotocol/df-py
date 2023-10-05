@@ -77,7 +77,6 @@ def get_reward_amount_for_week_wei(start_dt: datetime) -> int:
     vesting_start_dt = datetime(2025, 3, 13)
     vesting_tot_amount = TOT_SUPPLY - 32530000
 
-    # TODO: to_wei for the amount?
     reward = _halflife_solidity(
         vesting_tot_amount, int((end_dt - vesting_start_dt).total_seconds()), HALF_LIFE
     ) - _halflife_solidity(
@@ -95,6 +94,8 @@ def _halflife(value, t, h) -> int:
     """
     t = int(t)
     h = int(h)
+    # TODO: clarify this part with to_wei, corresponding to the same part in halflife solidity
+    value = to_wei(value)
     value = int(value)
     p = value >> int(t // h)
     t %= h
@@ -108,4 +109,5 @@ def _halflife_solidity(value, t, h) -> int:
     deployed VestingWallet contract
     """
     chain_id = 8996  # TODO: real chain_id
-    return oceanutil.VestingWalletV0(chain_id).getAmount(value, t, h)
+    # TODO: clarify this part with to_wei, corresponding to the same part in halflife
+    return oceanutil.VestingWalletV0(chain_id).getAmount(int(value), t, h)
