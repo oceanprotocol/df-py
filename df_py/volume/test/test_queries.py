@@ -45,7 +45,6 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     re-loop or sleep until the info we want is there."""
     monkeypatch.setenv("SUBGRAPH_URI", networkutil.chain_id_to_subgraph_uri(CHAINID))
     monkeypatch.setenv("SECRET_SEED", "1234")
-    chain_id = w3.eth.chain_id
 
     _deploy_CO2(w3)
 
@@ -69,17 +68,16 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     lock_amt = 5.0
     _lock(accounts, lock_amt, t2)
 
-    _allocate(chain_id, accounts, assets)
+    _allocate(accounts, assets)
 
-    chain_id = w3.eth.chain_id
     print("Delegate...")
-    ve_delegate(chain_id, accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
+    ve_delegate(CHAINID, accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
     print(f"  {accounts[0].address} -> {accounts[1].address} 50%")
-    ve_delegate(chain_id, accounts[0], zerobal_delegation_acct, 0.1, 1)  # 0 -> zerobal 5%
+    ve_delegate(CHAINID, accounts[0], zerobal_delegation_acct, 0.1, 1)  # 0 -> zerobal 5%
     print(f"  {accounts[0].address} -> {zerobal_delegation_acct.address} 10%")
-    ve_delegate(chain_id, accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
+    ve_delegate(CHAINID, accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
     print(f"  {accounts[3].address} -> {accounts[4].address} 100%")
-    ve_delegate(chain_id, accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
+    ve_delegate(CHAINID, accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
     print(f"  {accounts[4].address} -> {accounts[3].address} 100%")
 
     start_block = w3.eth.get_block("latest").number
@@ -88,7 +86,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     # these accounts are used to test if sampling the range works
     # this is why we're calling the following functions after setting ST
     _lock(sampling_accounts, lock_amt * 100, t2)
-    _allocate(chain_id, sampling_accounts, assets)
+    _allocate(sampling_accounts, assets)
 
     print("Consume...")
     for i, acct in enumerate(accounts):
@@ -122,7 +120,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     provider.make_request("evm_mine", [])
     time.sleep(2)
 
-    rng = BlockRange(chain_id, start_block, fin_block, 100, 42)
+    rng = BlockRange(start_block, fin_block, 100, 42)
     sampling_accounts_addrs = [a.address.lower() for a in sampling_accounts]
     delegation_accounts = [a.address.lower() for a in accounts[:2]]
     delegation_accounts.append(zerobal_delegation_acct.address.lower())
@@ -201,7 +199,7 @@ def _test_queryVebalances(
 ):
     print("_test_queryVebalances()...")
 
-    veBalances, locked_amts, unlock_times = queries.queryVebalances(rng)
+    veBalances, locked_amts, unlock_times = queries.queryVebalances(rng, CHAINID)
     assert len(veBalances) > 0
     assert sum(veBalances.values()) > 0
 
@@ -222,7 +220,7 @@ def _test_queryVebalances(
     )
 
     for account in veBalances:
-        bal = from_wei(oceanutil.veDelegation(rng.chain_id).adjusted_balance_of(account))
+        bal = from_wei(oceanutil.veDelegation(CHAINID).adjusted_balance_of(account))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
@@ -236,7 +234,7 @@ def _test_queryVebalances(
 @enforce_types
 def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
     print("_test_queryAllocations()...")
-    allocations = queries.queryAllocations(rng)
+    allocations = queries.queryAllocations(rng, CHAINID)
 
     assert len(allocations) > 0
 
@@ -244,7 +242,7 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
         for nftAddr in allocations[chain_id]:
             for userAddr in allocations[chain_id][nftAddr]:
                 allocation_contract = (
-                    oceanutil.veAllocate(chain_id).getveAllocation(userAddr, nftAddr, chain_id)
+                    oceanutil.veAllocate(CHAINID).getveAllocation(userAddr, nftAddr, chain_id)
                     / MAX_ALLOCATE
                 )
                 allocation_query = allocations[chain_id][nftAddr][userAddr]
@@ -288,8 +286,8 @@ def _test_queryVolsOwners(st, fin):
 def _test_queryVolsOwnersSymbols(st, fin):
     print("_test_queryVolsOwnersSymbols()...")
     n = 500
-    rng = BlockRange(networkutil.DEV_CHAINID, st, fin, n)
-    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng)
+    rng = BlockRange(st, fin, n)
+    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
     assert C0
@@ -402,13 +400,13 @@ def _test_dftool_allocations(tmp_path, start_block, fin_block):
 @enforce_types
 def _test_end_to_end_without_csvs(rng):
     print("_test_end_to_end_without_csvs()...")
-    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng)
+    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     V = {CHAINID: V0}
     C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
 
-    vebals, _, _ = queries.queryVebalances(rng)
-    allocs = queries.queryAllocations(rng)
+    vebals, _, _ = queries.queryVebalances(rng, CHAINID)
+    allocs = queries.queryAllocations(rng, CHAINID)
     S = allocs_to_stakes(allocs, vebals)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
@@ -438,19 +436,19 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     csvs.save_rate_csv(CO2_sym, 1.00, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng)
+    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     csvs.save_nftvols_csv(V0, csv_dir, CHAINID)
     csvs.save_owners_csv(C0, csv_dir, CHAINID)
     csvs.save_symbols_csv(SYM0, csv_dir, CHAINID)
     V0 = C0 = SYM0 = None  # ensure not used later
 
     # 3. simulate "dftool allocations"
-    allocs = queries.queryAllocations(rng)
+    allocs = queries.queryAllocations(rng, CHAINID)
     csvs.save_allocation_csv(allocs, csv_dir)
     allocs = None  # ensure not used later
 
     # 4. simulate "dftool vebals"
-    vebals, locked_amt, unlock_time = queries.queryVebalances(rng)
+    vebals, locked_amt, unlock_time = queries.queryVebalances(rng, CHAINID)
     csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
     vebals = locked_amt = unlock_time = None  # ensure not used later
 
@@ -528,7 +526,7 @@ def _test_queryPassiveRewards(addresses, god_acct):
 
 def _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr):
     print("_test_ghost_consume()...")
-    (V0, _, _) = queries.queryVolsOwnersSymbols(rng)
+    (V0, _, _) = queries.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
     (V0, _, _) = queries._queryVolsOwners(start_block, fin_block, CHAINID)
@@ -544,15 +542,15 @@ def _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr):
 
 @enforce_types
 def test_queryAllocations_empty():
-    rng = BlockRange(networkutil.DEV_CHAINID, st=0, fin=10, num_samples=1)
-    allocs = queries.queryAllocations(rng)
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    allocs = queries.queryAllocations(rng, CHAINID)
     assert allocs == {}
 
 
 @enforce_types
-def test_queryVebalances_empty():
-    rng = BlockRange(networkutil.DEV_CHAINID, st=0, fin=10, num_samples=1)
-    tup = queries.queryVebalances(rng)
+def test_queryVebalances_empty(w3):
+    rng = BlockRange(st=0, fin=10, num_samples=1)
+    tup = queries.queryVebalances(rng, w3.eth.chain_id)
     assert tup == ({}, {}, {})
 
 
@@ -688,7 +686,7 @@ def test_allocation_sampling(w3, account0):
     allocations = None
     while True:
         try:
-            allocations = queries.queryAllocations(rng)
+            allocations = queries.queryAllocations(rng, CHAINID)
         # pylint: disable=bare-except
         except:
             pass
@@ -1048,9 +1046,9 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
 
 
 @enforce_types
-def _allocate(chain_id: int, accts: list, assets: list):
+def _allocate(accts: list, assets: list):
     print("Allocate...")
-    veAllocate = oceanutil.veAllocate(chain_id)
+    veAllocate = oceanutil.veAllocate(CHAINID)
     for i, (acct, asset) in enumerate(zip(accts, assets)):
         print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
         veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acct})

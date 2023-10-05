@@ -3,6 +3,7 @@ from typing import Dict, List, Tuple
 
 import requests
 from enforce_typing import enforce_types
+from web3.main import Web3
 
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei
@@ -17,7 +18,7 @@ MAX_TIME = 4 * 365 * 86400  # max lock time
 
 @enforce_types
 def queryVolsOwnersSymbols(
-    rng: BlockRange
+    rng: BlockRange, chainID: int
 ) -> Tuple[Dict[str, Dict[str, float]], Dict[str, str], Dict[str, str]]:
     """
     @description
@@ -32,9 +33,9 @@ def queryVolsOwnersSymbols(
       A stake or nftvol value is denominated in basetoken (amt of OCEAN, H2O).
       Basetoken symbols are full uppercase, addresses are full lowercase.
     """
-    Vi_unfiltered, Ci, gasvols = _queryVolsOwners(rng.st, rng.fin, rng.chain_id)
-    swaps = _querySwaps(rng.st, rng.fin, rng.chain_id)
-    Vi = _filterNftvols(Vi_unfiltered, rng.chain_id)
+    Vi_unfiltered, Ci, gasvols = _queryVolsOwners(rng.st, rng.fin, chainID)
+    swaps = _querySwaps(rng.st, rng.fin, chainID)
+    Vi = _filterNftvols(Vi_unfiltered, chainID)
     Vi = _filterbyMaxVolume(Vi, swaps)
 
     # merge Vi and gasvols
@@ -50,8 +51,8 @@ def queryVolsOwnersSymbols(
     basetokens = TokSet()
     for basetoken in Vi:
         _symbol = symbol(basetoken)
-        basetokens.add(rng.chain_id, basetoken, _symbol)
-    SYMi = getSymbols(basetokens, rng.chain_id)
+        basetokens.add(chainID, basetoken, _symbol)
+    SYMi = getSymbols(basetokens, chainID)
     return (Vi, Ci, SYMi)
 
 
@@ -91,7 +92,7 @@ def _process_delegation(
 
 @enforce_types
 def queryVebalances(
-    rng: BlockRange
+    rng: BlockRange, CHAINID: int
 ) -> Tuple[Dict[str, float], Dict[str, float], Dict[str, int]]:
     """
     @description
@@ -111,7 +112,7 @@ def queryVebalances(
     # [LP_addr] : lock_time
     unlock_times: Dict[str, int] = {}
 
-    web3 = networkutil.chain_id_to_web3(rng.chain_id)
+    web3 = networkutil.chain_id_to_web3(CHAINID)
     unixEpochTime = web3.eth.get_block("latest").timestamp
     n_blocks = rng.num_blocks()
     n_blocks_sampled = 0
@@ -154,7 +155,7 @@ def queryVebalances(
                 block,
             )
 
-            result = submit_query(query, rng.chain_id)
+            result = submit_query(query, CHAINID)
             if "data" in result:
                 assert "veOCEANs" in result["data"]
                 veOCEANs = result["data"]["veOCEANs"]
@@ -225,7 +226,7 @@ def queryVebalances(
 
 @enforce_types
 def queryAllocations(
-    rng: BlockRange
+    rng: BlockRange, CHAINID: int
 ) -> Dict[int, Dict[str, Dict[str, float]]]:
     """
     @description
@@ -266,7 +267,7 @@ def queryAllocations(
                 offset,
                 block,
             )
-            result = submit_query(query, rng.chain_id)
+            result = submit_query(query, CHAINID)
             if "data" in result:
                 assert "veAllocateUsers" in result["data"]
                 _allocs = result["data"]["veAllocateUsers"]

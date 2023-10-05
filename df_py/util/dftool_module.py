@@ -187,7 +187,7 @@ def do_allocations():
         web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
     )
     allocs = retry_function(
-        queries.queryAllocations, arguments.RETRIES, 10, rng
+        queries.queryAllocations, arguments.RETRIES, 10, rng, chain_id
     )
     csvs.save_allocation_csv(allocs, csv_dir, n_samp > 1)
 
@@ -223,7 +223,7 @@ def do_vebals():
     )
 
     balances, locked_amt, unlock_time = retry_function(
-        queries.queryVebalances, arguments.RETRIES, 10, rng
+        queries.queryVebalances, arguments.RETRIES, 10, rng, chain_id
     )
     csvs.save_vebals_csv(balances, locked_amt, unlock_time, csv_dir, n_samp > 1)
 
