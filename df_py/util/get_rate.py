@@ -73,7 +73,8 @@ def get_binance_rate_all(
     @return
       rate -- float or None -- target_currency_per_token. None if failure
     """
-    url = "https://data.binance.com/api/v3/klines"
+    url_base = os.getenv("BINANCE_API_URL", "https://api.binance.com")
+    url = url_base + "/api/v3/klines"
     st_dt = datetime.fromtimestamp(timestr_to_timestamp(st))
     fin_dt = datetime.fromtimestamp(timestr_to_timestamp(fin))
     if st_dt > fin_dt:
