@@ -91,7 +91,8 @@ jobs:
 
       - name: Make dftool executable
         run: chmod +x dftool
-
+      - name: Setup upterm session
+        uses: lhotari/action-upterm@v1
       - name: Run dftool get_rate
         run: |
           ./dftool get_rate OCEAN $date $now $CSV_DIR --RETRIES $RETRY_TIMES
