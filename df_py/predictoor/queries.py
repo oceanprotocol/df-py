@@ -47,7 +47,7 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
                 }
                 secondsPerEpoch
                 secondsPerSubscription
-                truevalSubmitTimeoutBlock
+                truevalSubmitTimeoutSeconds
             }
         }
         """ % (
