@@ -50,7 +50,7 @@ def test_batching(w3):
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
-    batch_size = 3
+    batch_size = 2
     total_number = batch_size * 3 + 1  # enough accounts to ensure batching
     assert len(accounts) >= total_number
 
@@ -77,7 +77,7 @@ def test_batch_number(w3):
     )
 
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
-    batch_size = 3
+    batch_size = 2
     total_number = batch_size * 3 + 1  # enough accounts to ensure batching
     assert len(accounts) >= total_number
 
@@ -96,8 +96,7 @@ def test_batch_number(w3):
     assert df_rewards.claimable(accounts[batch_size - 1], token.address) == 0
     assert df_rewards.claimable(accounts[batch_size], token.address) > 0
     assert df_rewards.claimable(accounts[batch_size + 1], token.address) > 0
-    assert df_rewards.claimable(accounts[batch_size + 2], token.address) > 0
-    assert df_rewards.claimable(accounts[batch_size + 3], token.address) == 0
+    assert df_rewards.claimable(accounts[batch_size + 2], token.address) == 0
 
 
 def test_dispense_passive(w3):
