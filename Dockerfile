@@ -10,7 +10,7 @@ RUN python3.8 -m pip install .
 RUN brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
 RUN brownie pm install GNSPS/solidity-bytes-utils@0.8.0
 RUN brownie networks add mumbai mumbai host=https://polygon-mumbai.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=80001 explorer=https://api.etherscan.io/api provider=infura >/dev/null
-RUN brownie networks add sapphire sapphire host=https://sapphire.oasis.io chainid=23294
+RUN brownie networks add sapphire-mainnetsapphire-mainnethost=https://sapphire.oasis.io chainid=23294
 RUN brownie networks add sapphire-testnet sapphire-testnet host=https://testnet.sapphire.oasis.dev chainid=23295
 
 COPY . .
