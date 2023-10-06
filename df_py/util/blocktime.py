@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import Union
+from web3.main import Web3
 
 from enforce_typing import enforce_types
 from scipy import optimize
@@ -173,11 +174,11 @@ def eth_calc_block_number(ts: int, block: int, target_ts: int, web3):
 
 @enforce_types
 def eth_find_closest_block(
-    web3, block_number: int, timestamp: Union[float, int]
+        web3: Web3, block_number: int, timestamp: Union[float, int]
 ) -> int:
     """
     @arguments
-        chain -- brownie.networks.chain
+        web3 -- Web3 instance
         block_number -- int
         timestamp -- int
     @return

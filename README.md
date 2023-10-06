@@ -29,7 +29,7 @@ Ensure prerequisites:
 
 #### Setup for Local: Install & Run Barge
 
-We use [Ocean Barge](https://github.com/oceanprotocol/barge) to run ganache, deploy contracts to Ganache, and run TheGraph with Ocean subgraphs. The deployed contracts come from github.com/oceanprotocol/contracts. df-py has a local redundant copy in its directory so that brownie easily knows what objects look like.
+We use [Ocean Barge](https://github.com/oceanprotocol/barge) to run ganache, deploy contracts to Ganache, and run TheGraph with Ocean subgraphs. The deployed contracts come from github.com/oceanprotocol/contracts. df-py has a local redundant copy in its directory so that the system easily knows what objects look like.
 
 Let's get Barge going. Open a new terminal and:
 
@@ -64,9 +64,8 @@ source venv/bin/activate
 pip install wheel
 pip install -r requirements.txt
 
-#install openzeppelin library, to import from .sol (ignore FileExistsErrors)
-brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
-brownie pm install GNSPS/solidity-bytes-utils@0.8.0
+#install openzeppelin library, to import from .sol
+npm install @openzeppelin/contracts
 
 #add pwd to bash path
 export PATH=$PATH:.
@@ -98,13 +97,13 @@ Then, simply follow the usage directions:)
 In terminal:
 ```console
 #run tests for one method, with print statements to console. "-s" is to show output
-brownie test df_py/volume/test/test_calcrewards.py::test_simple -s
+pytest df_py/volume/test/test_calcrewards.py::test_simple -s
 
 #run tests for one module
-brownie test df_py/volume/test/test_calcrewards.py
+pytest df_py/volume/test/test_calcrewards.py
 
 #run all tests. Note: util is the only directory _with_ tests
-brownie test df_py/util
+pytest test df_py/util
 
 #run static type-checking. By default, uses config mypy.ini. Note: pytest does dynamic type-checking.
 mypy ./
@@ -116,22 +115,18 @@ pylint *
 black ./
 ```
 
-Brownie uses `pytest` plus [Brownie-specific goodies](https://eth-brownie.readthedocs.io/en/stable/tests-pytest-intro.html).
-
-If you encounter issues like `KeyError "development"` or `No contract deployed at {address}`, please see the "Gotchas" section.
-
 # Setup for Remote Networks
 
 Examples so far were on a local chain. Let's do a one-time setup for remote networks. In console:
 ```console
-brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
-brownie networks add mumbai mumbai host=https://polygon-mumbai.blockpi.network/v1/rpc/public chainid=80001
+export POLYGON_RPC_URL=https://polygon-rpc.com/
+export MUMBAI_RPC_URL=https://polygon-mumbai.blockpi.network/v1/rpc/public
 ```
 
-Or using an Infura ID, here is an example for polygon:
+Or using an Infura ID, here is an example for polygon (please note that you do not need to include the Infura Id in the URL, they will be glued together at runtime):
 ```
 export WEB3_INFURA_PROJECT_ID=***
-brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
+export POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/
 ```
 
 Now, you can use those networks simply by specifying a different chainid in `dftool` calls.
@@ -182,10 +177,10 @@ Created /app/data/rate-OCEAN.csv
 
 ### Docker Using Remote Networks
 
-Expand brownie's configured networks in the Docker container by editing the `Dockerfile` as follows:
+Expand configured networks in the Docker container by editing the `Dockerfile` as follows:
 ```
 ...
-RUN brownie networks add polygon polygon host=https://polygon-rpc.com/ chainid=137
+RUN export POLYGON_URL=https://polygon-rpc.com/
 ...
 COPY . .
 RUN rm -rf build
@@ -244,7 +239,7 @@ You can adjust this by changing this path in both repositories and redeploying.
 
 ## Gotchas and workarounds
 
-This section provides tactics if you encounter issues like `KeyError "development"` or `No contract deployed at {address}`.
+This section provides tactics if you encounter issues like `KeyError "development"`.
 
 ### Gotcha: KeyError "development"
 
@@ -256,30 +251,3 @@ How to fix:
 - Tactic: in barge console: `./cleanup.sh`
 - Tactic: in any console: `rm -rf ~/.ocean`
 - More tactics at [barge README](https://github.com/oceanprotocol/barge)
-
-### Gotcha: KeyError in pytest wind-down
-
-When pytest winds down, Brownie emits a KeyError:
-```text
-  File "brownie/project/main.py", line 494, in close
-    _remove_contract(contract)
-  File "brownie/network/state.py", line 586, in _remove_contract
-    del _contract_map[contract.address]
-KeyError: '0x02175de5A7F168517688e3E93f55936C9c2C7A19'
-```
-
-The problem: it's attempting `del _contract_map[contract.address]` but that contract has already been deleted.
-This was reported in [brownie#1144](https://github.com/eth-brownie/brownie/issues/1144) for `Contract.at()` calls.
-
-The workaround: open `./venv/lib/python3.10/site-packages/brownie/network/state.py`, and change `_remove_contract()` to the following:
-```python
-def _remove_contract(contract: Any) -> None:
-    try:
-        del _contract_map[contract.address]
-    except:
-        # workaround for brownie issue
-        # https://github.com/eth-brownie/brownie/issues/1144
-        pass
-```
-
-This rewrite is part of the Github Actions CI setup for tests.
