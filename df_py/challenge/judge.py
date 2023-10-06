@@ -9,7 +9,8 @@ import numpy as np
 from brownie.network import accounts
 from enforce_typing import enforce_types
 
-from df_py.challenge import helpers
+from df_py.challenge.timeutil import dt_to_ut, ut_to_dt, print_datetime_info
+from df_py.challenge.nmse import calc_nmse
 from df_py.util import crypto, graphutil, networkutil, oceanutil
 from df_py.util.get_rate import get_binance_rate_all
 
@@ -70,7 +71,7 @@ def _get_txs(deadline_dt) -> list:
 @enforce_types
 def _date(tx):
     ut = int(tx["timestamp"])
-    return helpers.ut_to_dt(ut)
+    return ut_to_dt(ut)
 
 
 @enforce_types
@@ -113,8 +114,8 @@ def _get_cex_vals(deadline_dt: datetime) -> List[float]:
     target_dts = [
         start_dt + timedelta(minutes=_min) for _min in range(5, 5 + 12 * 5, 5)
     ]
-    target_uts = [helpers.dt_to_ut(dt) for dt in target_dts]
-    helpers.print_datetime_info("target times", target_uts)
+    target_uts = [dt_to_ut(dt) for dt in target_dts]
+    print_datetime_info("target times", target_uts)
 
     print(target_dts[0].strftime("%Y-%m-%d_%H:%M"))
     print(target_dts[-1].strftime("%Y-%m-%d_%H:%M"))
@@ -239,6 +240,17 @@ def get_judge_acct():
 
 
 @enforce_types
+def _filter_marked_indices(nmses: list, from_addrs: list, nft_addrs: list) -> tuple:
+    """Filter out the marked indices from nmses, from_addrs, and nft_addrs"""
+    keep_indices = [i for i, nmse in enumerate(nmses) if nmse != 1.0]
+    nmses = [nmses[i] for i in keep_indices]
+    from_addrs = [from_addrs[i] for i in keep_indices]
+    nft_addrs = [nft_addrs[i] for i in keep_indices]
+
+    return nmses, from_addrs, nft_addrs
+
+
+@enforce_types
 def get_challenge_data(
     deadline_dt: datetime, judge_acct
 ) -> Tuple[List[str], List[str], list]:
@@ -279,17 +291,19 @@ def get_challenge_data(
         print(f"pred_vals: {pred_vals}")
 
         if len(pred_vals) != len(cex_vals):
-            nmses[i] = 1.0
-            print("nmse = 1.0 because improper # pred_vals")
-        else:
-            nmses[i] = helpers.calc_nmse(cex_vals, pred_vals)
-            # plot_prices(cex_vals, pred_vals)
-            print(f"nmse = {nmses[i]:.3e}. (May become 1.0, eg if duplicates)")
+            print(f"NFT #{i+1}/{n}: skipping because improper # pred_vals")
+            continue
+        nmses[i] = calc_nmse(cex_vals, pred_vals)
+        # plot_prices(cex_vals, pred_vals)
+        print(f"nmse = {nmses[i]:.3e}.")
 
         print(f"NFT #{i+1}/{n}: Done")
 
     # For each from_addr with >1 entry, make all nmses 1.0 except youngest
     nmses = _keep_youngest_entry_per_competitor(txs, nmses)
+
+    # Filter out the marked indices (1.0)
+    nmses, from_addrs, nft_addrs = _filter_marked_indices(nmses, from_addrs, nft_addrs)
 
     # Sort results for lowest-nmse first
     entries = np.argsort(nmses)

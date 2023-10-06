@@ -13,3 +13,4 @@ setup-local.sh
 
 .eggs/
 util.egg-info/
+df_py.egg-info/

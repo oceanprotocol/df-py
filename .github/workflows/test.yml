@@ -9,6 +9,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
 
 jobs:
   build:

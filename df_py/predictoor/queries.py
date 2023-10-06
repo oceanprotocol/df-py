@@ -39,6 +39,7 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
                     name
                     symbol
                     nft {
+                        id
                         owner {
                             id
                         }
@@ -67,16 +68,16 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
             if chain_id != DEV_CHAINID and owner["id"] not in DEPLOYER_ADDRS:
                 continue
 
-            contract_addr = contract["id"]
+            nft_addr = contract["nft"]["id"]
             contract_obj = PredictContract(
                 chain_id,
-                contract_addr,
+                nft_addr,
                 contract["token"]["name"],
                 contract["token"]["symbol"],
                 contract["blocksPerEpoch"],
                 contract["blocksPerSubscription"],
             )
-            contracts_dict[contract_addr] = contract_obj
+            contracts_dict[nft_addr] = contract_obj
 
     return contracts_dict
 
@@ -120,6 +121,7 @@ def query_predictoors(
                         id
                         token {
                             nft {
+                                id
                                 owner {
                                     id
                                 }

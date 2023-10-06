@@ -107,7 +107,7 @@ brownie test df_py/volume/test/test_calcrewards.py::test_simple -s
 brownie test df_py/volume/test/test_calcrewards.py
 
 #run all tests. Note: util is the only directory _with_ tests
-brownie test util
+brownie test df_py/util
 
 #run static type-checking. By default, uses config mypy.ini. Note: pytest does dynamic type-checking.
 mypy ./

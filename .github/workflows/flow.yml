@@ -22,6 +22,7 @@ jobs:
 
   dispense-active:
     env:
+      BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
     permissions:
       contents: "read"
