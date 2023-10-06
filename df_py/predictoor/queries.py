@@ -45,8 +45,8 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
                         }
                     }
                 }
-                blocksPerEpoch
-                blocksPerSubscription
+                secondsPerEpoch
+                secondsPerSubscription
                 truevalSubmitTimeoutBlock
             }
         }
@@ -74,8 +74,8 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
                 nft_addr,
                 contract["token"]["name"],
                 contract["token"]["symbol"],
-                contract["blocksPerEpoch"],
-                contract["blocksPerSubscription"],
+                contract["secondsPerEpoch"],
+                contract["secondsPerSubscription"],
             )
             contracts_dict[nft_addr] = contract_obj
 
