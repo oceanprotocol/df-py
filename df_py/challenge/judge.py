@@ -146,7 +146,7 @@ def parse_deadline_str(deadline_str: Optional[str] = None) -> datetime:
       deadline_str - submission deadline
         Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
         Example for Round 5: 2023-05-03_23:59
-      judge_acct -- brownie account
+      judge_acct -- web3 account
 
     @return
       deadline_dt -- datetime object, in UTC
@@ -249,7 +249,7 @@ def get_challenge_data(
     """
     @arguments
       deadline_dt -- submission deadline, in UTC
-      judge_acct -- brownie account, must have JUDGE_ADDR
+      judge_acct -- web3 account, must have JUDGE_ADDR
 
     @return -- three lists, all ordered with lowest nmse first
       from_addrs -- list of [tx_i] : from_addr_str

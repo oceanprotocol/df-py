@@ -1064,10 +1064,10 @@ def do_checkpoint_feedist():
 
         # submit transactions to multisig
         retry_function(
-            send_multisig_tx, 3, 60, multisig_addr, to, value, total_supply_encoded
+            send_multisig_tx, 3, 60, multisig_addr, web3, to, value, total_supply_encoded
         )
         retry_function(
-            send_multisig_tx, 3, 60, multisig_addr, to, value, checkpoint_token_encoded
+            send_multisig_tx, 3, 60, multisig_addr, web3, to, value, checkpoint_token_encoded
         )
 
     print("Checkpointed FeeDistributor")

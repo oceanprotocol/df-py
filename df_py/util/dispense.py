@@ -64,13 +64,13 @@ def dispense(
             value = 0
             to = TOK.address
             # data = bytes.fromhex(data[2:])
-            send_multisig_tx(multisigaddr, to, value, data)
+            send_multisig_tx(multisigaddr, web3, to, value, data)
             return
         TOK.approve(df_rewards, amt, {"from": from_account})
 
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
-        approveAmt(sum(values[b_st : b_st + batch_size]))
+        approveAmt(sum(values[b_st: b_st + batch_size]))
     else:
         approveAmt(sum(values))
 
@@ -98,7 +98,7 @@ def dispense(
                 # convert data to bytes
                 # data = bytes.fromhex(data[2:])
 
-                send_multisig_tx(multisigaddr, to, value, data)
+                send_multisig_tx(multisigaddr, web3, to, value, data)
             else:
                 df_rewards.allocate(
                     to_addrs[st:fin],
@@ -123,7 +123,7 @@ def dispense_passive(web3, ocean, feedistributor, amount: Union[float, int]):
     checkpoint_token_data = feedistributor.contract.encodeABI(fn_name="checkpoint_token")
 
     multisig_addr = chain_id_to_multisig_addr(web3.eth.chain_id)
-    send_multisig_tx(multisig_addr, ocean.address, 0, transfer_data)
+    send_multisig_tx(multisig_addr, web3, ocean.address, 0, transfer_data)
 
     for data in [checkpoint_total_supply_data, checkpoint_token_data]:
-        send_multisig_tx(multisig_addr, feedistributor.address, 0, data)
+        send_multisig_tx(multisig_addr, web3, feedistributor.address, 0, data)

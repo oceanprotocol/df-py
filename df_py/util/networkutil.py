@@ -8,7 +8,7 @@ from df_py.util.oceanutil import get_rpc_url, get_web3
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 
-# Development chainid is from brownie, rest are from chainlist.org
+# Development chainid is implicit, rest are from chainlist.org
 # Chain values to fit Ocean subgraph urls as given in
 # https://v3.docs.oceanprotocol.com/concepts/networks/
 

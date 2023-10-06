@@ -1,14 +1,14 @@
 import json
 import os
+from df_py.util.contract_base import ContractBase
 
 import requests
 
-# from web3 import Web3
 from df_py.util import networkutil
 
 
-def get_safe_nonce(multisig_address):
-    BASE_URL = networkutil.chain_id_to_multisig_uri(brownie.network.chain.id)
+def get_safe_nonce(multisig_address, chain_id):
+    BASE_URL = networkutil.chain_id_to_multisig_uri(chain_id)
     API_QUERY = "?limit=10&executed=false&queued=true&trusted=true"
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/all-transactions/{API_QUERY}"
     response = requests.request("GET", API_URL, timeout=30)
@@ -24,9 +24,10 @@ def get_safe_nonce(multisig_address):
     return nonce + 1
 
 
-def send_multisig_tx(multisig_address, to, value, data):
-    nonce = get_safe_nonce(multisig_address)
-    BASE_URL = networkutil.chain_id_to_multisig_uri(brownie.network.chain.id)
+def send_multisig_tx(multisig_address, web3, to, value, data):
+    chain_id = web3.eth.chain_id
+    nonce = get_safe_nonce(multisig_address, chain_id)
+    BASE_URL = networkutil.chain_id_to_multisig_uri(chain_id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
     contract = ContractBase(web3, "interfaces/IGnosisSafe", multisig_address)
     gas = 0
