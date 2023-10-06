@@ -7,7 +7,8 @@ from df_py.util import dispense, oceantestutil, oceanutil, networkutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
 
-accounts = oceantestutil.get_all_accounts()[0:4]
+all_accounts = oceantestutil.get_all_accounts()
+accounts = all_accounts
 
 a1 = accounts[1]
 a2 = accounts[2]
