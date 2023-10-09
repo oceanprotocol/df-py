@@ -756,18 +756,18 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
         # get all assets deployed by OPF
         opf_contracts = query_predictoor_contracts(chainID)
 
-        filtered_nftvols: Dict[str, Dict[str, float]] = {}
+        filtered_nftvols_predictoor: Dict[str, Dict[str, float]] = {}
 
         for basetoken_addr in nftvols:
             for nft_addr in nftvols[basetoken_addr]:
                 if nft_addr not in opf_contracts:
                     continue
-                if basetoken_addr not in filtered_nftvols:
-                    filtered_nftvols[basetoken_addr] = {}
-                filtered_nftvols[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
-                    nft_addr
-                ]
-        return filtered_nftvols
+                if basetoken_addr not in filtered_nftvols_predictoor:
+                    filtered_nftvols_predictoor[basetoken_addr] = {}
+                filtered_nftvols_predictoor[basetoken_addr][nft_addr] = nftvols[
+                    basetoken_addr
+                ][nft_addr]
+        return filtered_nftvols_predictoor
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []
