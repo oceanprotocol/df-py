@@ -170,7 +170,7 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
             # 1 - Paying
             # 2 - Canceled
             status = prediction_dict["slot"]["status"]
-            if status != "Paying" or prediction_dict["payout"] == None:
+            if status != "Paying" or prediction_dict["payout"] is None:
                 continue
 
             prediction = Prediction.from_query_result(prediction_dict)
