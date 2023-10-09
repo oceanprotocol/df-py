@@ -146,7 +146,6 @@ def query_predictoors(
         offset += chunk_size
         result = submit_query(query, chainID)
 
-
         if "error" in result:
             raise AssertionError(result)
         if "data" not in result:

@@ -764,9 +764,9 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
                     continue
                 if basetoken_addr not in filtered_nftvols:
                     filtered_nftvols[basetoken_addr] = {}
-                filtered_nftvols[basetoken_addr][nft_addr] = nftvols[
-                    basetoken_addr
-                ][nft_addr]
+                filtered_nftvols[basetoken_addr][nft_addr] = nftvols[basetoken_addr][
+                    nft_addr
+                ]
         return filtered_nftvols
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
