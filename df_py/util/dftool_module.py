@@ -389,9 +389,9 @@ def do_predictoor_data():
 
     # brownie setup
     networkutil.connect(chain_id)
-    chain = brownie.network.chain
 
-    st_block, fin_block = get_st_fin_blocks(chain, arguments.ST, arguments.FIN)
+    st_ts = int(timestr_to_timestamp(arguments.ST))
+    end_ts = int(timestr_to_timestamp(arguments.FIN))
 
     # main work
     predictoor_contracts = retry_function(
@@ -402,8 +402,8 @@ def do_predictoor_data():
         query_predictoors,
         arguments.RETRIES,
         10,
-        st_block,
-        fin_block,
+        st_ts,
+        end_ts,
         chain_id,
     )
 
