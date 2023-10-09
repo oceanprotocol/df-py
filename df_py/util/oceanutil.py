@@ -56,7 +56,8 @@ def record_deployed_contracts(address_file: str):
     C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
     C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
     C["Router"] = B.FactoryRouter.at(a["Router"])
-    C["Staking"] = B.SideStaking.at(a["Staking"])
+    if "Staking" in a:
+        C["Staking"] = B.SideStaking.at(a["Staking"])
     C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
     C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
 
