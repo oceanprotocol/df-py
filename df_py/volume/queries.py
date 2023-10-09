@@ -348,10 +348,8 @@ def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
         "sapphire-mainnet"
     ) or chainID == networkutil.network_to_chain_id("sapphire-testnet"):
         opf_contracts = query_predictoor_contracts(chainID)
-        print("opf", opf_contracts)
         nftinfo = _markPurgatoryNfts(nftinfo)
         nftinfo = [i for i in nftinfo if i.nft_addr in opf_contracts]
-        print("opf", nftinfo)
         for nft in nftinfo:
             nft.set_name(opf_contracts[nft.nft_addr].name)
 
