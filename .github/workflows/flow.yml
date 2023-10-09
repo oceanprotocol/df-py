@@ -90,7 +90,6 @@ jobs:
           brownie networks add mumbai mumbai host=https://polygon-mumbai.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=80001 explorer=https://api.etherscan.io/api provider=infura
           brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
           brownie networks add sapphire-mainnet sapphire-mainnet host=https://sapphire.oasis.io chainid=23294
-          brownie networks add sapphire-testnet sapphire-testnet host=https://testnet.sapphire.oasis.dev chainid=23295
 
       - name: Make dftool executable
         run: chmod +x dftool
@@ -100,11 +99,13 @@ jobs:
           ./dftool get_rate OCEAN $date $now $CSV_DIR --RETRIES $RETRY_TIMES
           ./dftool get_rate ETH $date $now $CSV_DIR --RETRIES $RETRY_TIMES
           ./dftool get_rate MATIC $date $now $CSV_DIR --RETRIES $RETRY_TIMES
+          ./dftool get_rate ROSE $date $now $CSV_DIR --RETRIES $RETRY_TIMES
 
       - name: Run dftool volsym
         run: |
           ./dftool volsym $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
           ./dftool volsym $date $now 200 $CSV_DIR 137 --RETRIES $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 23294 --RETRIES $RETRY_TIMES
 
       - name: Run dftool vebals
         run: |
@@ -128,7 +129,7 @@ jobs:
           ./dftool challenge_data $CSV_DIR --RETRIES 3
         env:
           JUDGE_PRIVATE_KEY: ${{secrets.JUDGE_PRIVATE_KEY}}
-        
+
       - name: Run dftool calc rewards for DF Challenge
         run: |
           ./dftool calc challenge $CSV_DIR 0 --START_DATE $date
