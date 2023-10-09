@@ -129,7 +129,6 @@ jobs:
           ./dftool challenge_data $CSV_DIR --RETRIES 3
         env:
           JUDGE_PRIVATE_KEY: ${{secrets.JUDGE_PRIVATE_KEY}}
-
       - name: Run dftool calc rewards for DF Challenge
         run: |
           ./dftool calc challenge $CSV_DIR 0 --START_DATE $date
