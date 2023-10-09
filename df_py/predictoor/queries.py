@@ -64,8 +64,8 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
         if len(predictoor_contracts) == 0:
             break
         for contract in predictoor_contracts:
-            owner = contract["token"]["nft"]["owner"]
-            if chain_id != DEV_CHAINID and owner["id"] not in DEPLOYER_ADDRS[chain_id]:
+            owner = contract["token"]["nft"]["owner"]["id"]
+            if chain_id != DEV_CHAINID and owner not in DEPLOYER_ADDRS[chain_id]:
                 continue
 
             nft_addr = contract["token"]["nft"]["id"]
@@ -82,9 +82,7 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
 
 
 @enforce_types
-def query_predictoors(
-    st_block: int, end_block: int, chainID: int
-) -> Dict[str, Predictoor]:
+def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predictoor]:
     """
     @description
         Queries the predictPredictions GraphQL endpoint for a given
@@ -93,8 +91,8 @@ def query_predictoors(
         a unique user who has made predictions during the given block range.
 
     @params
-        st_block (int) -- The starting block number for the query.
-        end_block (int) -- The ending block number for the query.
+        st_ts (int) -- The start timestamp of the query.
+        end_ts (int) -- The end timestamp of the query.
         chainID (int) -- The ID of the chain to query.
 
     @return
@@ -112,7 +110,7 @@ def query_predictoors(
         # pylint: disable=line-too-long
         query = """
         {
-            predictPredictions(where: {block_gte:%s, block_lte:%s}, skip:%s, first:%s) {
+            predictPredictions(    where: {slot_: {slot_gt: %s, slot_lte: %s}}, skip:%s, first:%s) {
                 id,
                 slot{
                     status,
@@ -132,13 +130,16 @@ def query_predictoors(
                 user {
                     id
                 }
-                payout
+                payout {
+                    id
+                    payout
+                }
                 block
             }
         }
         """ % (
-            st_block,
-            end_block,
+            st_ts,
+            end_ts,
             offset,
             chunk_size,
         )
@@ -156,9 +157,12 @@ def query_predictoors(
             break
 
         for prediction_dict in predictions:
-            owner = prediction_dict["slot"]["predictContract"]["token"]["nft"]["owner"]
+            owner = prediction_dict["slot"]["predictContract"]["token"]["nft"]["owner"][
+                "id"
+            ]
             if chainID != DEV_CHAINID:
                 if owner not in DEPLOYER_ADDRS[chainID]:
+                    print("noowner", owner, chainID, DEPLOYER_ADDRS)
                     continue
             predictoor_addr = prediction_dict["user"]["id"]
 
@@ -166,7 +170,7 @@ def query_predictoors(
             # 1 - Paying
             # 2 - Canceled
             status = prediction_dict["slot"]["status"]
-            if status != "Paying":
+            if status != "Paying" or prediction_dict["payout"] == None:
                 continue
 
             prediction = Prediction.from_query_result(prediction_dict)
