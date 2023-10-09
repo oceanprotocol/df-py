@@ -8,10 +8,10 @@ RUN python3.8 -m pip install --upgrade pip
 RUN python3.8 -m pip install .
 
 RUN npm install @openzeppelin/contracts
-# TODO: web 3 infura will concat to sapphire as well, and that is not right
 ENV MUMBAI_RPC_URL="https://polygon-mumbai.infura.io/v3/"
 ENV OASIS_SAPPHIRE_RPC_URL="https://sapphire.oasis.io"
 ENV OASIS_SAPPHIRE_TESTNET_RPC_URL="https://testnet.sapphire.oasis.dev"
+ENV INFURA_NETWORKS="mumbai"
 
 COPY . .
 RUN rm -rf build

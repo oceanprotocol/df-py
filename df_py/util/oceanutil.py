@@ -455,7 +455,10 @@ def get_rpc_url(network_name: str) -> str:
         base_url = os.getenv(f"{network_name.upper()}_RPC_URL")
 
     if os.getenv("WEB3_INFURA_PROJECT_ID") and base_url:
-        base_url = f"{base_url}{os.getenv('WEB3_INFURA_PROJECT_ID')}"
+        infura_networks = [nt.lower() for nt in os.getenv("INFURA_NETWORKS", "").split(",")]
+
+        if network_name.lower() in infura_networks or "all" in infura_networks:
+            base_url = f"{base_url}{os.getenv('WEB3_INFURA_PROJECT_ID')}"
 
     if base_url:
         return base_url

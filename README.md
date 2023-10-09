@@ -123,10 +123,14 @@ export POLYGON_RPC_URL=https://polygon-rpc.com/
 export MUMBAI_RPC_URL=https://polygon-mumbai.blockpi.network/v1/rpc/public
 ```
 
-Or using an Infura ID, here is an example for polygon (please note that you do not need to include the Infura Id in the URL, they will be glued together at runtime):
+Or using an Infura ID, here is an example for polygon.
+Please note that you do not need to include the Infura Id in the URL,
+they will be glued together at runtime. However, you need to specify which networks use the infura project id,
+by a comma separated value list in the INFURA_NETWORKS env var.
 ```
 export WEB3_INFURA_PROJECT_ID=***
 export POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/
+export INFURA_NETWORKS=polygon,mumbai
 ```
 
 Now, you can use those networks simply by specifying a different chainid in `dftool` calls.

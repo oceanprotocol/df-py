@@ -18,6 +18,7 @@ from df_py.util.oceanutil import get_rpc_url, get_web3
 def test_eth_timestamp_to_block(monkeypatch):
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
     current_block = web3.eth.get_block("latest").number
     blocks_ago = web3.eth.get_block(current_block - 5000)
@@ -33,6 +34,7 @@ def test_eth_timestamp_to_block(monkeypatch):
 def test_timestr_to_block_eth_1(monkeypatch):
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
     current_block = web3.eth.get_block("latest").number
     blocks_ago = web3.eth.get_block(current_block - 5000)
@@ -53,6 +55,7 @@ def test_timestr_to_block_eth_1(monkeypatch):
 def test_timestr_to_block_eth_2(monkeypatch):
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
 
     expected = 15735470
@@ -68,6 +71,7 @@ def test_timestr_to_block_eth_2(monkeypatch):
 def test_timestr_to_block_eth_3(monkeypatch):
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
 
     expected = 15835686
@@ -80,6 +84,7 @@ def test_timestr_to_block_eth_3(monkeypatch):
 def test_eth_find_closest_block(monkeypatch):
     monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
 
     expected = 15835686
