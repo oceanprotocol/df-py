@@ -192,7 +192,7 @@ def random_lock_and_allocate(tups: list):
     network.chain.mine()
 
     # Lock randomly
-    for (i, tup) in enumerate(tups):
+    for i, tup in enumerate(tups):
         data_nft = tup[1]
 
         # choose lock account
