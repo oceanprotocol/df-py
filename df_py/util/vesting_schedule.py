@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from enforce_typing import enforce_types
+from typing import Optional
 
 from df_py.challenge.calc_rewards import get_challenge_reward_amounts_in_ocean
 from df_py.util import oceanutil
@@ -16,13 +17,13 @@ from df_py.volume.calc_rewards import get_df_week_number
 
 @enforce_types
 def get_active_reward_amount_for_week_eth_by_stream(
-    start_dt: datetime, substream: str
+    start_dt: datetime, substream: str, chain_id: Optional[int] = None
 ) -> float:
     """
     Return the reward amount for the week and substream in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.
     """
-    total_reward_amount = get_active_reward_amount_for_week_eth(start_dt)
+    total_reward_amount = get_active_reward_amount_for_week_eth(start_dt, chain_id)
 
     dfweek = get_df_week_number(start_dt) - 1
 
@@ -35,27 +36,28 @@ def get_active_reward_amount_for_week_eth_by_stream(
     if substream == "volume":
         return (
             total_reward_amount
-            - get_active_reward_amount_for_week_eth_by_stream(start_dt, "predictoor")
-            - get_active_reward_amount_for_week_eth_by_stream(start_dt, "challenge")
+            - get_active_reward_amount_for_week_eth_by_stream(start_dt, "predictoor", chain_id)
+            - get_active_reward_amount_for_week_eth_by_stream(start_dt, "challenge", chain_id)
         )
 
     raise ValueError("Unrecognized substream: {}".format(substream))
 
 
 @enforce_types
-def get_active_reward_amount_for_week_eth(start_dt: datetime) -> float:
+def get_active_reward_amount_for_week_eth(start_dt: datetime, chain_id: Optional[int] = None) -> float:
     """
     Return the reward amount for the week in ETH starting at start_dt.
     This is the amount that will be allocated to active rewards.
     """
-    total_reward_amount = get_reward_amount_for_week_wei(start_dt)
+    total_reward_amount = get_reward_amount_for_week_wei(start_dt, chain_id)
     active_reward_amount = int(total_reward_amount * ACTIVE_REWARDS_MULTIPLIER)
     active_reward_amount_eth = from_wei(active_reward_amount)
+
     return active_reward_amount_eth
 
 
 @enforce_types
-def get_reward_amount_for_week_wei(start_dt: datetime) -> int:
+def get_reward_amount_for_week_wei(start_dt: datetime, chain_id: Optional[int] = None) -> int:
     """
     Return the total reward amount for the week in WEI starting at start_dt.
     This amount is in accordance with the vesting schedule.
@@ -78,11 +80,15 @@ def get_reward_amount_for_week_wei(start_dt: datetime) -> int:
     vesting_tot_amount = TOT_SUPPLY - 32530000
 
     reward = _halflife_solidity(
-        vesting_tot_amount, int((end_dt - vesting_start_dt).total_seconds()), HALF_LIFE
+        vesting_tot_amount,
+        int((end_dt - vesting_start_dt).total_seconds()),
+        HALF_LIFE,
+        chain_id
     ) - _halflife_solidity(
         vesting_tot_amount,
         int((start_dt - vesting_start_dt).total_seconds()),
         HALF_LIFE,
+        chain_id
     )
     return int(reward)
 
@@ -95,19 +101,18 @@ def _halflife(value, t, h) -> int:
     t = int(t)
     h = int(h)
     # TODO: clarify this part with to_wei, corresponding to the same part in halflife solidity
-    value = to_wei(value)
-    value = int(value)
+    value = int(to_wei(value))
     p = value >> int(t // h)
     t %= h
     return int(value - p + (p * t) // h // 2)
 
 
 @enforce_types
-def _halflife_solidity(value, t, h) -> int:
+def _halflife_solidity(value, t, h, chain_id: Optional[int] = None) -> int:
     """
     Halflife function in Solidity, requires network connection and
     deployed VestingWallet contract
     """
-    chain_id = 8996  # TODO: real chain_id
-    # TODO: clarify this part with to_wei, corresponding to the same part in halflife
+    chain_id = chain_id if chain_id else 5  # TODO: vesting wallet is deployed on Goerli only, check if I got this right
+
     return oceanutil.VestingWalletV0(chain_id).getAmount(int(value), t, h)

@@ -42,14 +42,14 @@ test_params = [
 ]
 
 
-def test_get_active_reward_amount_for_week_eth_by_stream():
+def test_get_active_reward_amount_for_week_eth_by_stream(monkeypatch):
     challenge_substream = "challenge"
     predictoor_substream = "predictoor"
     volume_substream = "volume"
     start_dt = datetime(2022, 1, 1)
     assert (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream
+            start_dt, predictoor_substream, networkutil.DEV_CHAINID
         )
         == 0
     )
@@ -57,28 +57,28 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
     start_dt = datetime(2042, 1, 1)
     assert (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream
+            start_dt, predictoor_substream, networkutil.DEV_CHAINID
         )
         > 0
     )
 
     challenge_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, challenge_substream
+            start_dt, challenge_substream, networkutil.DEV_CHAINID
         )
     )
 
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream
+            start_dt, predictoor_substream, networkutil.DEV_CHAINID
         )
     )
 
     volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-        start_dt, volume_substream
+        start_dt, volume_substream, networkutil.DEV_CHAINID
     )
 
-    total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
+    total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt, networkutil.DEV_CHAINID)
 
     assert total_rewards == approx(
         challenge_rewards + predictoor_rewards + volume_rewards, 0.1
@@ -87,20 +87,20 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
     predictoor_substream = "invalid_substream"
     with pytest.raises(ValueError):
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream
+            start_dt, predictoor_substream, networkutil.DEV_CHAINID
         )
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_get_reward_amount_for_week_wei(test_input, expected_output):
     assert from_wei(
-        vesting_schedule.get_reward_amount_for_week_wei(test_input)
+        vesting_schedule.get_reward_amount_for_week_wei(test_input, networkutil.DEV_CHAINID)
     ) == approx(expected_output)
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_get_active_reward_amount_for_week_eth(test_input, expected_output):
-    assert vesting_schedule.get_active_reward_amount_for_week_eth(test_input) == approx(
+    assert vesting_schedule.get_active_reward_amount_for_week_eth(test_input, networkutil.DEV_CHAINID) == approx(
         expected_output * ACTIVE_REWARDS_MULTIPLIER
     )
 
@@ -114,6 +114,6 @@ def test_compare_halflife_functions():
 
     for i in range(0, int(halflife * 1.5), int(month * 4)):
         py_result = vesting_schedule._halflife(value, i, halflife)
-        solidity_result = vesting_schedule._halflife_solidity(value, i, halflife)
+        solidity_result = vesting_schedule._halflife_solidity(value, i, halflife, networkutil.DEV_CHAINID)
         diff = abs(py_result - solidity_result)
         assert diff < 1e10, f"diff {diff} at i {i/halflife*2}"

@@ -250,7 +250,8 @@ def test_calc_challenge_substream(tmp_path):
 
 
 @enforce_types
-def test_calc_without_amount(tmp_path):
+def test_calc_without_amount(tmp_path, monkeypatch):
+    monkeypatch.setenv("GOERLI_RPC_URL", "http://localhost:8545")
     csv_dir = str(tmp_path)
     OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
 
@@ -278,20 +279,25 @@ def test_calc_without_amount(tmp_path):
     start_date = "2023-03-16"  # first week of df main
     sys_args = ["dftool", "calc", "volume", csv_dir, "0", f"--START_DATE={start_date}"]
 
-    with patch("df_py.util.dftool_module.record_deployed_contracts") as mock:
-        with patch(
-            "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
-        ) as mock:
-            with sysargs_context(sys_args):
-                mock.return_value = [30, 20]
-                dftool_module.do_calc()
+    with patch("web3.main.Web3.to_checksum_address") as mock_checksum:
+        mock_checksum.side_effect = lambda value: value
+        with patch("df_py.util.dftool_module.record_deployed_contracts") as mock:
+            with patch(
+                "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
+            ) as mock:
+                with sysargs_context(sys_args):
+                    mock.return_value = [30, 20]
+                    dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
-    rewards = csvs.load_volume_rewards_csv(csv_dir)
+    with patch("web3.main.Web3.to_checksum_address") as mock_checksum:
+        mock_checksum.side_effect = lambda value: value
+        rewards = csvs.load_volume_rewards_csv(csv_dir)
+
     total_reward = 0
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
