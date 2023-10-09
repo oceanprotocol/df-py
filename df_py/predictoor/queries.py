@@ -65,10 +65,10 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
             break
         for contract in predictoor_contracts:
             owner = contract["token"]["nft"]["owner"]
-            if chain_id != DEV_CHAINID and owner["id"] not in DEPLOYER_ADDRS:
+            if chain_id != DEV_CHAINID and owner["id"] not in DEPLOYER_ADDRS[chain_id]:
                 continue
 
-            nft_addr = contract["nft"]["id"]
+            nft_addr = contract["token"]["nft"]["id"]
             contract_obj = PredictContract(
                 chain_id,
                 nft_addr,
@@ -78,7 +78,6 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
                 contract["secondsPerSubscription"],
             )
             contracts_dict[nft_addr] = contract_obj
-
     return contracts_dict
 
 
@@ -147,6 +146,7 @@ def query_predictoors(
         offset += chunk_size
         result = submit_query(query, chainID)
 
+
         if "error" in result:
             raise AssertionError(result)
         if "data" not in result:
@@ -159,7 +159,7 @@ def query_predictoors(
         for prediction_dict in predictions:
             owner = prediction_dict["slot"]["predictContract"]["token"]["nft"]["owner"]
             if chainID != DEV_CHAINID:
-                if owner not in DEPLOYER_ADDRS:
+                if owner not in DEPLOYER_ADDRS[chainID]:
                     continue
             predictoor_addr = prediction_dict["user"]["id"]
 
