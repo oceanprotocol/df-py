@@ -351,7 +351,7 @@ def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
         nftinfo = _markPurgatoryNfts(nftinfo)
         nftinfo = [i for i in nftinfo if i.nft_addr in opf_contracts]
         for nft in nftinfo:
-            nft.set_name(opf_contracts[nft.nft_addr].name)
+            nft.set_name("Predictoor Asset: " + opf_contracts[nft.nft_addr].name)
 
     elif chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
