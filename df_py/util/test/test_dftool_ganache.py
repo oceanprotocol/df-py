@@ -686,7 +686,8 @@ def test_mine():
         dftool_module.do_mine()
 
 
-def test_new_functions():
+def test_new_functions(monkeypatch):
+    monkeypatch.setenv("DFTOOL_KEY", os.getenv("TEST_PRIVATE_KEY0"))
     sys_argv = ["dftool", "new_acct", str(networkutil.DEV_CHAINID)]
 
     with sysargs_context(sys_argv):

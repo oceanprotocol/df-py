@@ -825,7 +825,6 @@ def do_new_token():
     token = ContractBase(
         web3,
         "Simpletoken",
-        # TODO: to_wei?
         constructor_args=["TST", "Test Token", 18, to_wei(1e21)],
     )
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
@@ -844,9 +843,10 @@ def do_new_veallocate():
     print_arguments(arguments)
 
     # main work
-    # networkutil.connect(arguments.CHAINID)
     from_account = _getPrivateAccount()
-    contract = B.veAllocate.deploy({"from": from_account})
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3.eth.default_account = from_account.address
+    contract = ContractBase(web3, "ve/veAllocate", constructor_args=[])
     print(f"veAllocate contract deployed at: {contract.address}")
 
 
