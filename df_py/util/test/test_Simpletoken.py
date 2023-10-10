@@ -8,7 +8,6 @@ from df_py.util.contract_base import ContractBase
 def test_transfer(w3, all_accounts):
     accounts = all_accounts
     token = _deploy_token(w3)
-    # TODO: no to_weis in previous version. TBD!!
     assert token.totalSupply() == to_wei(1e21)
     token.transfer(accounts[1], to_wei(1e20), {"from": accounts[0]})
     assert token.balanceOf(accounts[1]) == to_wei(1e20)
@@ -20,7 +19,6 @@ def test_transfer(w3, all_accounts):
 def test_approve(w3, all_accounts):
     accounts = all_accounts
     token = _deploy_token(w3)
-    # TODO: no to_weis in previous version. TBD!!
     token.approve(accounts[1], to_wei(1e19), {"from": accounts[0]})
     assert token.allowance(accounts[0], accounts[1]) == to_wei(1e19)
     assert token.allowance(accounts[0], accounts[2]) == 0
@@ -33,7 +31,6 @@ def test_approve(w3, all_accounts):
 def test_transferFrom(w3, all_accounts):
     accounts = all_accounts
     token = _deploy_token(w3)
-    # TODO: no to_weis in previous version. TBD!!
     token.approve(accounts[1], to_wei(6e18), {"from": accounts[0]})
     token.transferFrom(accounts[0], accounts[2], to_wei(5e18), {"from": accounts[1]})
 
@@ -46,7 +43,6 @@ def test_transferFrom(w3, all_accounts):
 
 @enforce_types
 def _deploy_token(w3):
-    # TODO: no to_weis in previous version. TBD!!
     return ContractBase(
         w3, "Simpletoken", constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
     )
