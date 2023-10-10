@@ -5,6 +5,7 @@ import sys
 
 from enforce_typing import enforce_types
 from eth_account import Account
+from web3.logs import DISCARD
 from web3.main import Web3
 
 from df_py.challenge import judge
@@ -645,8 +646,8 @@ def do_add_strategy():
     from_account = _getPrivateAccount()
     df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
 
-    tx = df_rewards.addStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
-    assert tx.events.keys()[0] == "StrategyAdded"
+    df_rewards.addStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
+    assert df_rewards.isStrategy(arguments.DFSTRATEGY_ADDR)
 
     print(
         f"Strategy {arguments.DFSTRATEGY_ADDR} added to DFRewards {df_rewards.address}"
@@ -669,9 +670,9 @@ def do_retire_strategy():
     from_account = _getPrivateAccount()
     df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
 
-    tx = df_rewards.retireStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
-    # TODO: transform the events part for regular web3, after fixing prev failure
-    assert tx.events.keys()[0] == "StrategyRetired"
+    df_rewards.retireStrategy(arguments.DFSTRATEGY_ADDR, {"from": from_account})
+    assert not df_rewards.isStrategy(arguments.DFSTRATEGY_ADDR)
+
     print(
         f"Strategy {arguments.DFSTRATEGY_ADDR} retired from DFRewards {df_rewards.address}"
     )

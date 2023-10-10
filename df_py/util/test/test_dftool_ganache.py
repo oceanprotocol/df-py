@@ -604,7 +604,8 @@ def test_vebals(tmp_path):
     assert os.path.exists(os.path.join(csv_dir, "vebals.csv"))
 
 
-def test_df_strategies():
+def test_df_strategies(monkeypatch, w3):
+    monkeypatch.setenv("DFTOOL_KEY", os.getenv("TEST_PRIVATE_KEY0"))
     sys_argv = [
         "dftool",
         "new_df_rewards",
@@ -614,51 +615,43 @@ def test_df_strategies():
     with sysargs_context(sys_argv):
         dftool_module.do_new_df_rewards()
 
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
+
     sys_argv = [
         "dftool",
         "new_df_strategy",
         str(networkutil.DEV_CHAINID),
-        "0x0",
-        "testStrategy",
+        df_rewards.address,
+        "DFStrategyV1",
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "B"):
-            dftool_module.do_new_df_strategy()
+        dftool_module.do_new_df_strategy()
 
     sys_argv = [
         "dftool",
         "addstrategy",
         str(networkutil.DEV_CHAINID),
-        "0x0",
-        "0x0",
+        df_rewards.address,
+        df_strategy.address,
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "B") as mock_B:
-            mock_df = Mock()
-            mock_tx = Mock()
-            mock_tx.events.keys.return_value = ["StrategyAdded"]
-            mock_df.addStrategy.return_value = mock_tx
-            mock_B.DFRewards.at.return_value = mock_df
-            dftool_module.do_add_strategy()
+        dftool_module.do_add_strategy()
 
     sys_argv = [
         "dftool",
         "retire_strategy",
         str(networkutil.DEV_CHAINID),
-        "0x0",
-        "0x0",
+        df_rewards.address,
+        df_strategy.address,
     ]
 
     with sysargs_context(sys_argv):
-        with patch.object(dftool_module, "B") as mock_B:
-            mock_df = Mock()
-            mock_tx = Mock()
-            mock_tx.events.keys.return_value = ["StrategyRetired"]
-            mock_df.retireStrategy.return_value = mock_tx
-            mock_B.DFRewards.at.return_value = mock_df
-            dftool_module.do_retire_strategy()
+        dftool_module.do_retire_strategy()
 
 
 def test_get_rate(tmp_path):
