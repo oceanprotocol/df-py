@@ -243,6 +243,17 @@ def get_judge_acct():
 
 
 @enforce_types
+def _filter_marked_indices(nmses: list, from_addrs: list, nft_addrs: list) -> tuple:
+    """Filter out the marked indices from nmses, from_addrs, and nft_addrs"""
+    keep_indices = [i for i, nmse in enumerate(nmses) if nmse != 1.0]
+    nmses = [nmses[i] for i in keep_indices]
+    from_addrs = [from_addrs[i] for i in keep_indices]
+    nft_addrs = [nft_addrs[i] for i in keep_indices]
+
+    return nmses, from_addrs, nft_addrs
+
+
+@enforce_types
 def get_challenge_data(
     web3: Web3, deadline_dt: datetime, judge_acct
 ) -> Tuple[List[str], List[str], list]:
@@ -283,17 +294,19 @@ def get_challenge_data(
         print(f"pred_vals: {pred_vals}")
 
         if len(pred_vals) != len(cex_vals):
-            nmses[i] = 1.0
-            print("nmse = 1.0 because improper # pred_vals")
-        else:
-            nmses[i] = calc_nmse(cex_vals, pred_vals)
-            # plot_prices(cex_vals, pred_vals)
-            print(f"nmse = {nmses[i]:.3e}. (May become 1.0, eg if duplicates)")
+            print(f"NFT #{i+1}/{n}: skipping because improper # pred_vals")
+            continue
+        nmses[i] = calc_nmse(cex_vals, pred_vals)
+        # plot_prices(cex_vals, pred_vals)
+        print(f"nmse = {nmses[i]:.3e}.")
 
         print(f"NFT #{i+1}/{n}: Done")
 
     # For each from_addr with >1 entry, make all nmses 1.0 except youngest
     nmses = _keep_youngest_entry_per_competitor(txs, nmses)
+
+    # Filter out the marked indices (1.0)
+    nmses, from_addrs, nft_addrs = _filter_marked_indices(nmses, from_addrs, nft_addrs)
 
     # Sort results for lowest-nmse first
     entries = np.argsort(nmses)

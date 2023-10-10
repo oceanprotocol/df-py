@@ -177,12 +177,31 @@ def test_get_challenge_data(w3):
 
     (from_addrs, nft_addrs, nmses) = challenge_data
 
-    assert nmses[2] == 1.0  # using keep youngest entry logic
-
     assert nmses == sorted(nmses), "should be sorted by lowest-nmse first"
     assert nmses[0] != 1.0
-    assert nmses[1] == 1.0
+    assert len(nmses) == 1
 
-    # should we elliminate the second entry from 0xfrom1?
-    assert from_addrs == ["0xfrom1", "0xfrom2", "0xfrom1"]
-    assert nft_addrs == ["0xnft1", "0xnft2", "0xnft3"]
+    # second entry is invalid
+    # third entry is outdated
+    assert from_addrs == ["0xfrom1"]
+    assert nft_addrs == ["0xnft1"]  # keep the most recent one
+
+
+def test_filter_marked_indices():
+    nmses = [0.5, 1.0, 0.2, 1.0, 0.8]
+    from_addrs = ["addr1", "addr2", "addr3", "addr4", "addr5"]
+    nft_addrs = ["nft1", "nft2", "nft3", "nft4", "nft5"]
+
+    expected_nmses = [0.5, 0.2, 0.8]
+    expected_from_addrs = ["addr1", "addr3", "addr5"]
+    expected_nft_addrs = ["nft1", "nft3", "nft5"]
+
+    (
+        filtered_nmses,
+        filtered_from_addrs,
+        filtered_nft_addrs,
+    ) = judge._filter_marked_indices(nmses, from_addrs, nft_addrs)
+
+    assert filtered_nmses == expected_nmses
+    assert filtered_from_addrs == expected_from_addrs
+    assert filtered_nft_addrs == expected_nft_addrs
