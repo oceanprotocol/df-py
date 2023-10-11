@@ -148,7 +148,7 @@ def create_data_nft_with_fre(web3, from_account, token):
     data_NFT = create_data_nft(web3, "1", "1", from_account)
     DT = create_datatoken_from_data_nft(web3, "1", "1", data_NFT, from_account)
 
-    exchangeId = create_FRE_from_datatoken(DT, token, 10.0, from_account)
+    exchangeId = create_FRE_from_datatoken(web3, DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
 
 
@@ -232,10 +232,10 @@ def create_datatoken_from_data_nft(
 
 @enforce_types
 def create_FRE_from_datatoken(
-    datatoken, base_token, amount: float, from_account, rate=1.0
+    web3, datatoken, base_token, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
-    chain_id = 8996  # TODO: real chain id
+    chain_id = web3.eth.chain_id
     datatoken.approve(
         FixedPrice(chain_id).address, to_wei(amount), {"from": from_account}
     )

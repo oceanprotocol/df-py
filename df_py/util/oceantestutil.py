@@ -139,7 +139,7 @@ def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
 def buy_DT_FRE(
     exchangeId, DT_buy_amt: float, max_TOKEN: float, from_account, base_token
 ):
-    chain_id = 8966  # TODO! real chainid
+    chain_id = networkutil.DEV_CHAINID
     base_token.approve(
         oceanutil.FixedPrice(chain_id).address,
         to_wei(max_TOKEN),
