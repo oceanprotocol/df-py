@@ -2,7 +2,7 @@ import pytest
 from enforce_typing import enforce_types
 from web3.exceptions import ContractLogicError
 
-from df_py.util import networkutil, oceanutil, oceantestutil
+from df_py.util import networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import to_wei
 from df_py.util.contract_base import ContractBase
 

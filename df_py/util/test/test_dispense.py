@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.util import dispense, oceantestutil, oceanutil, networkutil
+from df_py.util import dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
 
@@ -71,7 +71,6 @@ def test_batching(w3):
 
 @enforce_types
 def test_batch_number(w3):
-    # TODO: to_wei??
     token = ContractBase(
         w3, "Simpletoken", constructor_args=["TOK", "TOK", 18, to_wei(100e18)]
     )

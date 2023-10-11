@@ -21,7 +21,9 @@ def test_record_deployed_contracts():
     address_file = networkutil.chain_id_to_address_file(chain_id)
     record_deployed_contracts(address_file, chain_id)
     assert oceanutil.OCEAN_token(chain_id)
-    assert oceanutil.OCEAN_address(chain_id) == oceanutil.OCEAN_address(chain_id).lower()
+    assert (
+        oceanutil.OCEAN_address(chain_id) == oceanutil.OCEAN_address(chain_id).lower()
+    )
     assert oceanutil.ERC721Template(chain_id)
     assert oceanutil.ERC20Template(chain_id)
     assert oceanutil.FactoryRouter(chain_id)

@@ -19,10 +19,7 @@ GANACHE_URL = "http://127.0.0.1:8545"
 @enforce_types
 def get_contract_definition(path: str) -> Dict[str, Any]:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(
-        Path(__file__),
-        f"../../../build/contracts/{path}.json"
-    )
+    path = os.path.join(Path(__file__), f"../../../build/contracts/{path}.json")
     path = Path(path).expanduser().resolve()
 
     if not path.exists():

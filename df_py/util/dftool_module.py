@@ -1026,7 +1026,9 @@ def do_calculate_passive():
     vebals, _, _ = csvs.load_vebals_csv(csv_dir, False)
     addresses = list(vebals.keys())
 
-    balances, rewards = queries.queryPassiveRewards(arguments.CHAINID, timestamp, addresses)
+    balances, rewards = queries.queryPassiveRewards(
+        arguments.CHAINID, timestamp, addresses
+    )
 
     # save to csv
     csvs.save_passive_csv(rewards, balances, csv_dir)
@@ -1063,10 +1065,24 @@ def do_checkpoint_feedist():
 
         # submit transactions to multisig
         retry_function(
-            send_multisig_tx, 3, 60, multisig_addr, web3, to, value, total_supply_encoded
+            send_multisig_tx,
+            3,
+            60,
+            multisig_addr,
+            web3,
+            to,
+            value,
+            total_supply_encoded,
         )
         retry_function(
-            send_multisig_tx, 3, 60, multisig_addr, web3, to, value, checkpoint_token_encoded
+            send_multisig_tx,
+            3,
+            60,
+            multisig_addr,
+            web3,
+            to,
+            value,
+            checkpoint_token_encoded,
         )
 
     print("Checkpointed FeeDistributor")

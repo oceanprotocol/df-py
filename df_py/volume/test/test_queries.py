@@ -73,7 +73,9 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     print("Delegate...")
     ve_delegate(CHAINID, accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
     print(f"  {accounts[0].address} -> {accounts[1].address} 50%")
-    ve_delegate(CHAINID, accounts[0], zerobal_delegation_acct, 0.1, 1)  # 0 -> zerobal 5%
+    ve_delegate(
+        CHAINID, accounts[0], zerobal_delegation_acct, 0.1, 1
+    )  # 0 -> zerobal 5%
     print(f"  {accounts[0].address} -> {zerobal_delegation_acct.address} 10%")
     ve_delegate(CHAINID, accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
     print(f"  {accounts[3].address} -> {accounts[4].address} 100%")
@@ -169,7 +171,6 @@ def _deploy_CO2(w3):
     print("Deploy CO2 token...")
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    # TODO: should have to_wei?
     CO2 = ContractBase(
         w3, "Simpletoken", constructor_args=[CO2_sym, CO2_sym, 18, to_wei(1e26)]
     )
@@ -242,7 +243,9 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
         for nftAddr in allocations[chain_id]:
             for userAddr in allocations[chain_id][nftAddr]:
                 allocation_contract = (
-                    oceanutil.veAllocate(CHAINID).getveAllocation(userAddr, nftAddr, chain_id)
+                    oceanutil.veAllocate(CHAINID).getveAllocation(
+                        userAddr, nftAddr, chain_id
+                    )
                     / MAX_ALLOCATE
                 )
                 allocation_query = allocations[chain_id][nftAddr][userAddr]
@@ -504,14 +507,16 @@ def _test_queryPassiveRewards(addresses, god_acct):
     alice_last_reward = 0
     bob_last_reward = 0
     target_ts = w3.eth.get_block("latest").timestamp // WEEK * WEEK + WEEK - 100
-    provider.make_request("evm_increaseTime", [
-        target_ts - w3.eth.get_block("latest").timestamp
-    ])
+    provider.make_request(
+        "evm_increaseTime", [target_ts - w3.eth.get_block("latest").timestamp]
+    )
     provider.make_request("evm_mine", [])
 
     for _ in range(3):
         timestamp = w3.eth.get_block("latest").timestamp // WEEK * WEEK
-        balances, rewards = queries.queryPassiveRewards(w3.eth.chain_id, timestamp, addresses)
+        balances, rewards = queries.queryPassiveRewards(
+            w3.eth.chain_id, timestamp, addresses
+        )
         alice = addresses[0]
         bob = addresses[1]
         assert balances[alice] == balances[bob]

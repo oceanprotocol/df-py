@@ -12,7 +12,6 @@ from df_py.util.base18 import to_wei
 from df_py.util.networkutil import chain_id_to_web3, send_ether
 from df_py.util.test.test_dftool_ganache import sysargs_context
 
-
 CHAINID = networkutil.DEV_CHAINID
 ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
 
@@ -55,7 +54,11 @@ def _test(tmp_path, DEADLINE: Optional[str]):
     # main call
 
     # targets
-    (target_from_addrs, target_nft_addrs, target_nmses,) = (
+    (
+        target_from_addrs,
+        target_nft_addrs,
+        target_nmses,
+    ) = (
         ["0xfrom1", "0xfrom2"],
         ["0xnft1", "0xnft2"],
         [0.2, 1.0],

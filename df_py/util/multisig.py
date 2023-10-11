@@ -1,10 +1,10 @@
 import json
 import os
-from df_py.util.contract_base import ContractBase
 
 import requests
 
 from df_py.util import networkutil
+from df_py.util.contract_base import ContractBase
 
 
 def get_safe_nonce(multisig_address, chain_id):

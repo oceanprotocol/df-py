@@ -8,10 +8,9 @@ from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
 def pytest_sessionstart():
     record_dev_deployed_contracts()
     accs = oceantestutil.get_all_accounts()
-
-    # TODO: check
-    # OCEAN_token().mint(accs[0], 1e24, {"from": accs[0]})
-    OCEAN_token(networkutil.DEV_CHAINID).mint(accs[0], to_wei(10000), {"from": accs[0]})
+    OCEAN_token(networkutil.DEV_CHAINID).mint(
+        accs[0], to_wei(10_000), {"from": accs[0]}
+    )
 
 
 @pytest.fixture

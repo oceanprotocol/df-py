@@ -236,7 +236,9 @@ def create_FRE_from_datatoken(
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
     chain_id = 8996  # TODO: real chain id
-    datatoken.approve(FixedPrice(chain_id).address, to_wei(amount), {"from": from_account})
+    datatoken.approve(
+        FixedPrice(chain_id).address, to_wei(amount), {"from": from_account}
+    )
 
     addresses = [
         base_token.address,  # baseToken
@@ -277,12 +279,19 @@ def create_FRE_from_datatoken(
 
 @enforce_types
 def set_allocation(amount: int, nft_addr: str, chain_id: int, from_account):
-    veAllocate(chain_id).setAllocation(amount, nft_addr, chain_id, {"from": from_account})
+    veAllocate(chain_id).setAllocation(
+        amount, nft_addr, chain_id, {"from": from_account}
+    )
 
 
 @enforce_types
 def ve_delegate(
-    chain_id: int, from_account, to_account, percentage: float, token_id: int, expiry: int = 0
+    chain_id: int,
+    from_account,
+    to_account,
+    percentage: float,
+    token_id: int,
+    expiry: int = 0,
 ):
     if expiry == 0:
         expiry = veOCEAN(chain_id).locked__end(from_account)
@@ -455,7 +464,9 @@ def get_rpc_url(network_name: str) -> str:
         base_url = os.getenv(f"{network_name.upper()}_RPC_URL")
 
     if os.getenv("WEB3_INFURA_PROJECT_ID") and base_url:
-        infura_networks = [nt.lower() for nt in os.getenv("INFURA_NETWORKS", "").split(",")]
+        infura_networks = [
+            nt.lower() for nt in os.getenv("INFURA_NETWORKS", "").split(",")
+        ]
 
         if network_name.lower() in infura_networks or "all" in infura_networks:
             base_url = f"{base_url}{os.getenv('WEB3_INFURA_PROJECT_ID')}"

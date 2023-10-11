@@ -1,11 +1,11 @@
-import random
 import os
+import random
 
-from eth_account import Account
 from enforce_typing import enforce_types
+from eth_account import Account
 from web3.main import Web3
 
-from df_py.util import constants, oceanutil, networkutil
+from df_py.util import constants, networkutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 
 # pool constants
@@ -141,7 +141,9 @@ def buy_DT_FRE(
 ):
     chain_id = 8966  # TODO! real chainid
     base_token.approve(
-        oceanutil.FixedPrice(chain_id).address, to_wei(max_TOKEN), {"from": from_account}
+        oceanutil.FixedPrice(chain_id).address,
+        to_wei(max_TOKEN),
+        {"from": from_account},
     )
 
     feesInfo = oceanutil.FixedPrice(chain_id).getFeesInfo(exchangeId)
@@ -204,7 +206,7 @@ def random_lock_and_allocate(web3, tups: list):
     provider.make_request("evm_increaseTime", [t1 - t0])
 
     # Lock randomly
-    for (i, tup) in enumerate(tups):
+    for i, tup in enumerate(tups):
         data_nft = tup[1]
 
         # choose lock account

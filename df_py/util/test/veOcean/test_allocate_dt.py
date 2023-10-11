@@ -2,10 +2,10 @@ import pytest
 from enforce_typing import enforce_types
 from web3.exceptions import ContractLogicError
 from web3.logs import DISCARD
-from df_py.util.oceantestutil import get_account0
 
 from df_py.util import networkutil
 from df_py.util.contract_base import ContractBase
+from df_py.util.oceantestutil import get_account0
 
 veAllocate = None
 
