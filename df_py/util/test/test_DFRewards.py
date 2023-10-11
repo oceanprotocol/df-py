@@ -232,6 +232,7 @@ def test_strategies(w3):
 
 @enforce_types
 def _test_claim_and_restake():
+    # TODO: this test is not called anywhere, should it be re-enabled or removed?
     oceanutil.record_dev_deployed_contracts()
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     deployer = accounts[0]

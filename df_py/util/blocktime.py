@@ -42,7 +42,7 @@ def timestr_to_block(web3, timestr: str, test_eth: bool = False) -> int:
               2022-03-29 --> 4928 (earliest block of the day)
 
     @arguments
-      chain -- brownie.networks.chain
+      web3 -- web3 instance
       timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM | YYYY-MM-DD_HH:MM:SS
     @return
       block -- int

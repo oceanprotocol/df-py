@@ -330,8 +330,8 @@ def get_zero_consume_mkt_fee_tuple() -> Tuple:
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ProviderFees
 @enforce_types
-def get_zero_provider_fee_tuple(pub_account) -> Tuple:
-    d = get_zero_provider_fee_dict(pub_account)
+def get_zero_provider_fee_tuple(web3: Web3, pub_account) -> Tuple:
+    d = get_zero_provider_fee_dict(web3, pub_account)
 
     provider_fee = (
         d["providerFeeAddress"],
@@ -349,8 +349,7 @@ def get_zero_provider_fee_tuple(pub_account) -> Tuple:
 
 # from ocean.py/tests/resources/helper_functions.py
 @enforce_types
-def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
-    web3 = brownie.web3
+def get_zero_provider_fee_dict(web3: Web3, provider_account) -> Dict[str, Any]:
     provider_fee_amount = 0
     compute_env = None
     provider_data = json.dumps({"environment": compute_env}, separators=(",", ":"))
@@ -358,10 +357,10 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
     provider_fee_token = ZERO_ADDRESS
     valid_until = 0
 
-    message = web3.solidityKeccak(
+    message = Web3.solidity_keccak(
         ["bytes", "address", "address", "uint256", "uint256"],
         [
-            web3.toHex(web3.toBytes(text=provider_data)),
+            Web3.to_hex(Web3.to_bytes(text=provider_data)),
             provider_fee_address,
             provider_fee_token,
             provider_fee_amount,
@@ -375,7 +374,7 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
         "providerFeeAddress": provider_fee_address,
         "providerFeeToken": provider_fee_token,
         "providerFeeAmount": provider_fee_amount,
-        "providerData": web3.toHex(web3.toBytes(text=provider_data)),
+        "providerData": Web3.to_hex(Web3.to_bytes(text=provider_data)),
         # make it compatible with last openzepellin
         # https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
         "v": signature.v,
@@ -397,11 +396,10 @@ def split_signature(signature: Any) -> Signature:
     """
     :param signature: signed message hash, hex str
     """
-    web3 = brownie.web3
     assert len(signature) == 65, (
-        f"invalid signature, " f"expecting bytes of length 65, got {len(signature)}"
+        "invalid signature, " f"expecting bytes of length 65, got {len(signature)}"
     )
-    v = web3.toInt(signature[-1])
+    v = Web3.to_int(signature[-1])
     r = to_32byte_hex(int.from_bytes(signature[:32], "big"))
     s = to_32byte_hex(int.from_bytes(signature[32:64], "big"))
     if v != 27 and v != 28:
@@ -418,8 +416,7 @@ def to_32byte_hex(val: int) -> str:
     :param val:
     :return:
     """
-    web3 = brownie.web3
-    return web3.toHex(web3.toBytes(val).rjust(32, b"\0"))
+    return Web3.to_hex(Web3.to_bytes(val).rjust(32, b"\0"))
 
 
 @enforce_types

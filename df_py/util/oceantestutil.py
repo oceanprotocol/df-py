@@ -57,7 +57,12 @@ def fill_accounts_with_OCEAN(accounts):
 @enforce_types
 def consume_DT(DT, pub_account, consume_account):
     service_index = 0
-    provider_fee = oceanutil.get_zero_provider_fee_tuple(pub_account)
+    w3 = networkutil.chain_id_to_web3(8996)
+    account = get_account0()
+    w3.eth.default_account = account.address
+
+    provider_fee = oceanutil.get_zero_provider_fee_tuple(w3, pub_account)
+
     consume_mkt_fee = oceanutil.get_zero_consume_mkt_fee_tuple()
     DT.startOrder(
         consume_account,
@@ -74,6 +79,7 @@ def random_add_stake(pool, pub_account_i: int, token):
     account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
     for account_i in account_I:
         TOKEN_stake = AVG_TOKEN_STAKE * (1 + 0.1 * random.random())
+        # TODO: remove ocurrence of network
         add_stake(pool, TOKEN_stake, network.accounts[account_i], token)
 
 
@@ -159,6 +165,7 @@ def buy_DT_FRE(
 
 @enforce_types
 def random_consume_FREs(FRE_tup: list, base_token):
+    # TODO: remove ocurrence of network
     accounts = network.accounts
 
     # consume data assets from FREs randomly
