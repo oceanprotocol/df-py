@@ -27,7 +27,7 @@ Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID --RETRIES
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID --RETRIES
   dftool challenge_data CSV_DIR [DEADLINE] --RETRIES
-  dftool predictoor_data CSV_DIR START_DATE END_DATE CHAINID --RETRIES
+  dftool predictoor_data START_DATE END_DATE CSV_DIR CHAINID --RETRIES
   dftool calc volume|predictoor|challenge CSV_DIR TOT_OCEAN START_DATE - from stakes/etc csvs (or predictoor/challenge data csvs), output rewards
   dftool dispense_active CSV_DIR CHAINID --DFREWARDS_ADDR --TOKEN_ADDR --BATCH_NBR - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT

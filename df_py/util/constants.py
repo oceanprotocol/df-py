@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import Dict, List
 
 import brownie
 
@@ -39,7 +39,10 @@ CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 # predictoor
 MIN_PREDICTIONS = 1818
-DEPLOYER_ADDRS: List[str] = []
+DEPLOYER_ADDRS: Dict[int, List[str]] = {
+    23294: ["0x4ac2e51f9b1b0ca9e000dfe6032b24639b172703"],
+    23295: ["0xe02a421dfc549336d47efee85699bd0a3da7d6ff"],
+}
 PREDICTOOR_RELEASE_WEEK = 150  # change me when Predictoor is released
 PREDICTOOR_MULTIPLIER = 0.2
 PREDICTOOR_OCEAN_BUDGET = 35_000
