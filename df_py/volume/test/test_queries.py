@@ -584,7 +584,8 @@ def test_allocation_sampling(w3, account0):
 
     def forward(blocks):
         provider.make_request("evm_increaseTime", [1])
-        provider.make_request("evm_mine", [])
+        for _ in range(blocks):
+            provider.make_request("evm_mine", [])
 
     start_block = w3.eth.get_block("latest").number
 
