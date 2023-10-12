@@ -297,8 +297,8 @@ def ve_delegate(
         expiry = veOCEAN(chain_id).locked__end(from_account)
 
     veDelegation(chain_id).create_boost(
-        from_account,
-        to_account,
+        from_account.address,
+        to_account.address,
         int(percentage * 10000),
         0,
         expiry,
