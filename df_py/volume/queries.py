@@ -5,6 +5,8 @@ import requests
 from enforce_typing import enforce_types
 from web3.main import Web3
 
+from df_py.predictoor.queries import query_predictoor_contracts
+
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei
 from df_py.util.blockrange import BlockRange
@@ -343,7 +345,16 @@ def queryNftinfo(chainID, endBlock="latest") -> List[SimpleDataNft]:
 
     nftinfo = _queryNftinfo(chainID, endBlock)
 
-    if chainID != networkutil.DEV_CHAINID:
+    if chainID == networkutil.network_to_chain_id(
+        "sapphire-mainnet"
+    ) or chainID == networkutil.network_to_chain_id("sapphire-testnet"):
+        opf_contracts = query_predictoor_contracts(chainID)
+        nftinfo = _markPurgatoryNfts(nftinfo)
+        nftinfo = [i for i in nftinfo if i.nft_addr in opf_contracts]
+        for nft in nftinfo:
+            nft.set_name("Predictoor Asset: " + opf_contracts[nft.nft_addr].name)
+
+    elif chainID != networkutil.DEV_CHAINID:
         # filter if not on dev chain
         nftinfo = _filterNftinfos(nftinfo)
         nftinfo = _markPurgatoryNfts(nftinfo)
@@ -738,6 +749,26 @@ def _filterNftvols(nftvols: dict, chainID: int) -> dict:
             if basetoken != "0xdevelopment"
         }
         return nftvols2
+
+    if chainID == networkutil.network_to_chain_id(
+        "sapphire-mainnet"
+    ) or chainID == networkutil.network_to_chain_id("sapphire-testnet"):
+        # aquarius is not deployed on Sapphire
+        # get all assets deployed by OPF
+        opf_contracts = query_predictoor_contracts(chainID)
+
+        filtered_nftvols_predictoor: Dict[str, Dict[str, float]] = {}
+
+        for basetoken_addr in nftvols:
+            for nft_addr in nftvols[basetoken_addr]:
+                if nft_addr not in opf_contracts:
+                    continue
+                if basetoken_addr not in filtered_nftvols_predictoor:
+                    filtered_nftvols_predictoor[basetoken_addr] = {}
+                filtered_nftvols_predictoor[basetoken_addr][nft_addr] = nftvols[
+                    basetoken_addr
+                ][nft_addr]
+        return filtered_nftvols_predictoor
 
     filtered_nftvols: Dict[str, Dict[str, float]] = {}
     nft_dids = []

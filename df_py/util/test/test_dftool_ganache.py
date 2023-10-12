@@ -155,8 +155,8 @@ def test_predictoor_data(tmp_path):
         sys_argv = [
             "dftool",
             "predictoor_data",
-            "0",
-            "latest",
+            "2023-10-01",
+            "2023-10-07",
             csv_dir,
             str(CHAINID),
             "--RETRIES=1",

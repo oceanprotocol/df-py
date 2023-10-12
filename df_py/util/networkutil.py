@@ -18,7 +18,7 @@ _RAW_CHAIN_DATA = [
     (5, "goerli", "ETH"),
     (137, "polygon", "MATIC"),
     (80001, "mumbai", "MATIC"),
-    (23294, "sapphire", "ROSE"),
+    (23294, "sapphire-mainnet", "ROSE"),
     (23295, "sapphire-testnet", "ROSE"),
 ]
 

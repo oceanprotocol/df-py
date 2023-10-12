@@ -378,8 +378,8 @@ def do_predictoor_data():
     # check files, prep dir
     _exitIfFileExists(predictoor_data_csv_filename(csv_dir))
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
-    st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN)
+    st_ts = int(timestr_to_timestamp(arguments.ST))
+    end_ts = int(timestr_to_timestamp(arguments.FIN))
 
     # main work
     predictoor_contracts = retry_function(
@@ -390,8 +390,8 @@ def do_predictoor_data():
         query_predictoors,
         arguments.RETRIES,
         10,
-        st_block,
-        fin_block,
+        st_ts,
+        end_ts,
         chain_id,
     )
 
