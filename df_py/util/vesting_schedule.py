@@ -108,8 +108,7 @@ def _halflife(value, t, h) -> int:
     """
     t = int(t)
     h = int(h)
-    # TODO: clarify this part with to_wei, corresponding to the same part in halflife solidity
-    value = int(to_wei(value))
+    value = int(value)
     p = value >> int(t // h)
     t %= h
     return int(value - p + (p * t) // h // 2)
@@ -121,8 +120,6 @@ def _halflife_solidity(value, t, h, chain_id: Optional[int] = None) -> int:
     Halflife function in Solidity, requires network connection and
     deployed VestingWallet contract
     """
-    chain_id = (
-        chain_id if chain_id else 5
-    )  # TODO: vesting wallet is deployed on Goerli only, check if I got this right
+    chain_id = chain_id if chain_id else 5
 
     return oceanutil.VestingWalletV0(chain_id).getAmount(int(value), t, h)
