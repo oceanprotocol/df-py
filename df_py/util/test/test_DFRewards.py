@@ -170,7 +170,7 @@ def test_strategies(w3):
 
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
     df_strategy = ContractBase(
-        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+        w3, "test/DummyStrategy", constructor_args=[df_rewards.address]
     )
 
     # allocate rewards
@@ -183,14 +183,14 @@ def test_strategies(w3):
     assert token.balanceOf(df_strategy) == 0
     with pytest.raises(ContractLogicError, match="Caller doesn't match"):
         # tx origin must be a1
-        df_strategy.claim([token.address, a1.address], {"from": accounts[2]})
+        df_strategy.claim(token.address, a1.address, {"from": accounts[2]})
 
     with pytest.raises(ContractLogicError, match="Caller must be a strategy"):
         # non strategy addresses cannot claim
         df_strategy.claim(token.address, a1, {"from": accounts[1]})
 
     # add strategy
-    df_rewards.addStrategy(df_strategy.address)
+    df_rewards.addStrategy(df_strategy.address, {"from": accounts[0]})
     assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
 
@@ -207,7 +207,7 @@ def test_strategies(w3):
     assert token.balanceOf(df_strategy) == 30
 
     # retire strategy
-    df_rewards.retireStrategy(df_strategy.address)
+    df_rewards.retireStrategy(df_strategy.address, {"from": accounts[0]})
     assert not df_rewards.isStrategy(df_strategy.address)
 
     with pytest.raises(ContractLogicError, match="Caller must be a strategy"):
@@ -219,7 +219,7 @@ def test_strategies(w3):
         df_rewards.addStrategy(df_strategy.address, {"from": accounts[3]})
 
     # add strategy
-    df_rewards.addStrategy(df_strategy.address)
+    df_rewards.addStrategy(df_strategy.address, {"from": accounts[0]})
     assert df_rewards.isStrategy(df_strategy.address)
     assert df_rewards.live_strategies(0) == df_strategy.address
 
