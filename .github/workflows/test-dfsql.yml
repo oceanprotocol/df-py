@@ -9,6 +9,7 @@ on:
 
 env:
   GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
 
 jobs:
   build:
@@ -51,21 +52,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt --quiet
 
-      - name: Create Brownie paths
-        run: |
-          mkdir -p /home/runner/.solcx
-          mkdir -p /home/runner/.vvm
-          mkdir -p /home/runner/.brownie/packages
-
-      - name: Restore Brownie compilers
-        id: restore-brownie-compilers
-        uses: actions/cache/restore@v3
-        with:
-            path: |
-              /home/runner/.solcx
-              /home/runner/.vvm
-              /home/runner/.brownie/packages
-            key: ${{ runner.os }}-brownie-deps
+      - name: Set up Openzeppelin
+        run: npm install @openzeppelin/contracts
 
       - name: Set env variables
         run: |
@@ -77,10 +65,9 @@ jobs:
           echo "TEST_END_DATE=2023-01-27" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
-
-      - name: Add polygon network
-        run: |
-          brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
+          echo "POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "MAINNET_RPC_URL=https://mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "INFURA_NETWORKS=polygon,mainnet" >> $GITHUB_ENV
 
       - name: Run dftool get_rate
         run: |
