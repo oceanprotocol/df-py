@@ -83,7 +83,7 @@ class ContractBase:
         """Initialises Contract Base object."""
         if constructor_args is not None:
             self.contract = deploy_contract(web3, path, constructor_args)
-        else:
+        elif address is not None:
             self.contract = load_contract(web3, path, web3.to_checksum_address(address))
         assert not address or (self.contract.address.lower() == address.lower())
 

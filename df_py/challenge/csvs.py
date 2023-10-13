@@ -138,7 +138,7 @@ def load_challenge_rewards_csv(csv_dir: str) -> Dict[str, float]:
     with open(csv_file, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            rewards[Web3.to_checksum_address(row["winner_addr"])] = float(
+            rewards[str(Web3.to_checksum_address(row["winner_addr"]))] = float(
                 row["OCEAN_amt"]
             )
 

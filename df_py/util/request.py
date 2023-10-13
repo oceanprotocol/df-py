@@ -13,7 +13,8 @@ from requests.adapters import HTTPAdapter
 from web3._utils.caching import generate_cache_key
 
 
-def _remove_session(key, session):  # type: ignore[unused-argument]
+# pylint: disable=unused-argument
+def _remove_session(key, session):
     session.close()
 
 
