@@ -44,6 +44,7 @@ docker system prune -a --volumes
 #run barge
 #-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
 #-only runs the components it needs
+export GANACHE_HARDFORK="london"
 ./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph
 ```
 
