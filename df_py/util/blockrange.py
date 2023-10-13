@@ -67,5 +67,6 @@ def create_range(web3, st, fin, samples, rndseed) -> BlockRange:
     st_block, fin_block = get_st_fin_blocks(web3, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed)
     rng.filter_by_max_block(web3.eth.get_block("latest").number - 4)
+    rng.web3 = web3
 
     return rng

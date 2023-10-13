@@ -52,7 +52,7 @@ def queryVolsOwnersSymbols(
     # get all basetokens from Vi
     basetokens = TokSet()
     for basetoken in Vi:
-        _symbol = symbol(basetoken)
+        _symbol = symbol(rng.web3, basetoken)
         basetokens.add(chainID, basetoken, _symbol)
     SYMi = getSymbols(basetokens, chainID)
     return (Vi, Ci, SYMi)
