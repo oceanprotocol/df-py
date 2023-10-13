@@ -59,20 +59,8 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt --quiet
 
-      - name: Restore Brownie compilers
-        id: restore-brownie-compilers
-        uses: actions/cache/restore@v3
-        with:
-          path: |
-            /home/runner/.solcx
-            /home/runner/.vvm
-            /home/runner/.brownie/packages
-          key: ${{ runner.os }}-brownie-deps
-
       - name: Set up Openzeppelin
-        run: |
-          [ -d "$HOME/.brownie/packages/OpenZeppelin/openzeppelin-contracts@4.2.0" ] && echo "Using OpenZeppelin/openzeppelin-contracts@4.2.0 from cache" || brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
-          [ -d "$HOME/.brownie/packages/GNSPS/solidity-bytes-utils@0.8.0" ] && echo "Using GNSPS/solidity-bytes-utils@0.8.0/ from cache" || brownie pm install GNSPS/solidity-bytes-utils@0.8.0
+        run: npm install @openzeppelin/contracts
 
       - name: Set env variables
         run: |
@@ -84,12 +72,11 @@ jobs:
           echo "now=$(date '+%Y-%m-%d')" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
-
-      - name: Add networks to brownie
-        run: |
-          brownie networks add mumbai mumbai host=https://polygon-mumbai.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=80001 explorer=https://api.etherscan.io/api provider=infura
-          brownie networks add polygon polygon host=https://polygon-mainnet.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=137 explorer=https://api.etherscan.io/api provider=infura
-          brownie networks add sapphire-mainnet sapphire-mainnet host=https://sapphire.oasis.io chainid=23294
+          echo "POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "MUMBAI_RPC_URL=https://polygon-mumbai.infura.io/v3/" >> $GITHUB_ENV
+          echo "MAINNET_RPC_URL=https://mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "SAPPHIRE_RPC_URL=https://sapphire.oasis.io/" >> $GITHUB_ENV
+          echo "INFURA_NETWORKS=polygon,mumbai,mainnet" >> $GITHUB_ENV
 
       - name: Make dftool executable
         run: chmod +x dftool
@@ -182,13 +169,3 @@ jobs:
         with:
           path: "/tmp/csv/${{ env.DFWEEK }}"
           destination: "${{ env.DESTINATION }}"
-
-      - name: Save Brownie compilers
-        id: cache-brownie-compilers
-        uses: actions/cache/save@v3
-        with:
-          path: |
-            /home/runner/.solcx
-            /home/runner/.vvm
-            /home/runner/.brownie/packages
-          key: ${{ runner.os }}-brownie-deps
