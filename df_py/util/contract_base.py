@@ -5,10 +5,9 @@
 
 """All contracts inherit from `ContractBase` class."""
 import logging
-from typing import Optional, Union
+from typing import Optional
 
 from enforce_typing import enforce_types
-from web3.contract import Contract as Web3Contract
 from web3.main import Web3
 
 from df_py.util.contract_utils import deploy_contract, load_contract
@@ -52,26 +51,25 @@ def function_wrapper(contract, web3, contract_functions, func_name):
         # if it's a view/pure function, just call it
         if result.abi["stateMutability"] in ["view", "pure"]:
             return result.call()
-        else:
-            # if it's a transaction, build and send it
-            wallet = tx_dict["from"]
-            tx_dict2 = tx_dict.copy()
-            tx_dict2["nonce"] = web3.eth.get_transaction_count(wallet.address)
-            tx_dict2["from"] = tx_dict["from"].address
 
-            result = result.build_transaction(tx_dict2)
+        # if it's a transaction, build and send it
+        wallet = tx_dict["from"]
+        tx_dict2 = tx_dict.copy()
+        tx_dict2["nonce"] = web3.eth.get_transaction_count(wallet.address)
+        tx_dict2["from"] = tx_dict["from"].address
 
-            # sign with wallet private key and send transaction
-            signed_tx = web3.eth.account.sign_transaction(result, wallet._private_key)
-            receipt = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        result = result.build_transaction(tx_dict2)
 
-            return web3.eth.wait_for_transaction_receipt(receipt)
+        # sign with wallet private key and send transaction
+        signed_tx = web3.eth.account.sign_transaction(result, wallet._private_key)
+        receipt = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+        return web3.eth.wait_for_transaction_receipt(receipt)
 
     return wrap
 
 
-class ContractBase(object):
-
+class ContractBase:
     """Base class for all contract objects."""
 
     @enforce_types

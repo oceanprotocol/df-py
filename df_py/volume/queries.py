@@ -6,7 +6,6 @@ from enforce_typing import enforce_types
 from web3.main import Web3
 
 from df_py.predictoor.queries import query_predictoor_contracts
-
 from df_py.util import networkutil, oceanutil
 from df_py.util.base18 import from_wei
 from df_py.util.blockrange import BlockRange

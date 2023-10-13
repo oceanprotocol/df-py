@@ -6,7 +6,9 @@ from df_py.util.blocktime import get_st_fin_blocks
 
 @enforce_types
 class BlockRange:
-    def __init__(self, st: int, fin: int, num_samples: int, random_seed=None):
+    def __init__(
+        self, st: int, fin: int, num_samples: int, random_seed=None, web3=None
+    ):
         """
         @arguments
           st -- start block
@@ -37,6 +39,9 @@ class BlockRange:
             numpy.random.choice(cand_blocks, num_samples, replace=False)
         )
 
+        if web3:
+            self.web3 = web3
+
     def get_blocks(self) -> list:
         return self._blocks
 
@@ -65,8 +70,7 @@ class BlockRange:
 
 def create_range(web3, st, fin, samples, rndseed) -> BlockRange:
     st_block, fin_block = get_st_fin_blocks(web3, st, fin)
-    rng = BlockRange(st_block, fin_block, samples, rndseed)
+    rng = BlockRange(st_block, fin_block, samples, rndseed, web3=web3)
     rng.filter_by_max_block(web3.eth.get_block("latest").number - 4)
-    rng.web3 = web3
 
     return rng

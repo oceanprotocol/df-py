@@ -15,11 +15,11 @@ def pytest_sessionstart():
 
 @pytest.fixture
 def w3():
-    w3 = networkutil.chain_id_to_web3(8996)
+    web3 = networkutil.chain_id_to_web3(8996)
     account = oceantestutil.get_account0()
-    w3.eth.default_account = account.address
+    web3.eth.default_account = account.address
 
-    return w3
+    return web3
 
 
 @pytest.fixture

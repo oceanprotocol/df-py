@@ -8,6 +8,7 @@ from enforce_typing import enforce_types
 from web3.exceptions import ExtraDataLengthError
 from web3.logs import DISCARD
 from web3.main import Web3
+from web3.middleware import geth_poa_middleware
 
 from df_py.util import networkutil
 from df_py.util.base18 import to_wei
@@ -83,7 +84,6 @@ def record_deployed_contracts(address_file: str, chainID: int):
         C["VestingWalletV0"] = ContractBase(
             web3, "test/VestingWallet", constructor_args=[]
         )
-        pass
 
     CONTRACTS[chainID] = C
 
@@ -446,8 +446,6 @@ def get_web3(network_url: str) -> Web3:
     try:
         web3.eth.get_block("latest")
     except ExtraDataLengthError:
-        from web3.middleware import geth_poa_middleware
-
         web3.middleware_onion.inject(geth_poa_middleware, layer=0)
 
     web3.strict_bytes_type_checking = False

@@ -43,7 +43,7 @@ def fill_accounts_with_token(accounts, token):
             token.transfer(account, to_wei(1000.0), {"from": accounts[0]})
 
     print(f"fill_accounts_with_token({token.symbol()}), balances after:")
-    for account in accounts:
+    for i, account in enumerate(accounts):
         amt = from_wei(token.balanceOf(account))
         print(f"  Account #{i} has {amt} {token.symbol()}")
 
@@ -195,7 +195,7 @@ def random_lock_and_allocate(web3, tups: list):
 
     acc1 = web3.eth.accounts[0]
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
-    veOCEAN = oceanutil.veOCEAN()
+    veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
 
     accounts = web3.eth.accounts[: len(tups)]
 
@@ -230,9 +230,9 @@ def random_lock_and_allocate(web3, tups: list):
             veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
 
         assert veOCEAN.balanceOf(lock_account) != 0
-        allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate().getTotalAllocation(
-            lock_account
-        )
+        allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate(
+            networkutil.DEV_CHAINID
+        ).getTotalAllocation(lock_account)
         oceanutil.set_allocation(
             int(allc_amt),
             data_nft.address,

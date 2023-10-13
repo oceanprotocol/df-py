@@ -3,7 +3,7 @@ from typing import Union
 
 from enforce_typing import enforce_types
 
-from df_py.util.constants import CONTRACTS, MULTISIG_ADDRS
+from df_py.util.constants import MULTISIG_ADDRS
 from df_py.util.oceanutil import get_rpc_url, get_web3
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"

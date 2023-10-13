@@ -34,7 +34,7 @@ class CustomHTTPProvider(HTTPProvider):
         )
         response = self.decode_rpc_response(raw_response)
         self.logger.debug(
-            "Getting response HTTP. URI: %s, " "Method: %s, Response: %s",
+            "Getting response HTTP. URI: %s, Method: %s, Response: %s",
             self.endpoint_uri,
             method,
             response,
@@ -45,7 +45,8 @@ class CustomHTTPProvider(HTTPProvider):
 def get_web3_connection_provider(network_url):
     if network_url.startswith("http"):
         return CustomHTTPProvider(network_url)
-    elif network_url.startswith("ws"):
+
+    if network_url.startswith("ws"):
         return WebsocketProvider(network_url)
 
     raise Exception(f"Unsupported network url: {network_url}")
