@@ -187,7 +187,7 @@ def eth_find_closest_block(
         Finds the closest block number to given timestamp
     """
 
-    block_ts = web3.eth.get_block(block_number).timestamp
+    block_ts = web3.eth.get_block(block_number).timestamp  # type: ignore[attr-defined]
     found = block_number
 
     last = None
@@ -196,7 +196,7 @@ def eth_find_closest_block(
         while True:
             last = found
             found -= 1
-            if web3.eth.get_block(found).timestamp < timestamp:
+            if web3.eth.get_block(found).timestamp < timestamp:  # type: ignore[attr-defined]
                 break
 
     else:
@@ -204,11 +204,11 @@ def eth_find_closest_block(
         while True:
             last = found
             found += 1
-            if web3.eth.get_block(found).timestamp > timestamp:
+            if web3.eth.get_block(found).timestamp > timestamp:  # type: ignore[attr-defined]
                 break
 
-    if abs(web3.eth.get_block(last).timestamp - timestamp) < abs(
-        web3.eth.get_block(found).timestamp - timestamp
+    if abs(web3.eth.get_block(last).timestamp - timestamp) < abs(  # type: ignore[attr-defined]
+        web3.eth.get_block(found).timestamp - timestamp  # type: ignore[attr-defined]
     ):
         found = last
 

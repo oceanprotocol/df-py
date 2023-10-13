@@ -54,7 +54,11 @@ def _test(tmp_path, DEADLINE: Optional[str]):
     # main call
 
     # targets
-    (target_from_addrs, target_nft_addrs, target_nmses,) = (
+    (
+        target_from_addrs,
+        target_nft_addrs,
+        target_nmses,
+    ) = (
         ["0xfrom1", "0xfrom2"],
         ["0xnft1", "0xnft2"],
         [0.2, 1.0],

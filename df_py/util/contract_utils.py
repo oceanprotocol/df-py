@@ -19,8 +19,8 @@ GANACHE_URL = "http://127.0.0.1:8545"
 @enforce_types
 def get_contract_definition(path: str) -> Dict[str, Any]:
     """Returns the abi JSON for a contract name."""
-    path_obj = os.path.join(Path(__file__), f"../../../build/contracts/{path}.json")
-    path_obj = Path(path_obj).expanduser().resolve()
+    path = os.path.join(Path(__file__), f"../../../build/contracts/{path}.json")
+    path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
         raise TypeError("Contract name does not exist in artifacts.")
@@ -32,8 +32,8 @@ def get_contract_definition(path: str) -> Dict[str, Any]:
 @enforce_types
 def get_contract_source(path: str) -> str:
     """Returns the abi JSON for a contract name."""
-    path_obj = os.path.join(Path(__file__), f"../../../contracts/{path}.sol")
-    path_obj = Path(path_obj).expanduser().resolve()
+    path = os.path.join(Path(__file__), f"../../../contracts/{path}.sol")
+    path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
         raise TypeError("Contract name does not exist in artifacts.")
@@ -48,7 +48,9 @@ def load_contract(web3: Web3, path: str, address: str) -> Contract:
     abi = contract_definition["abi"]
     bytecode = contract_definition["bytecode"]
 
-    return web3.eth.contract(address=address, abi=abi, bytecode=bytecode)
+    return web3.eth.contract(
+        address=web3.to_checksum_address(address), abi=abi, bytecode=bytecode
+    )
 
 
 @enforce_types
@@ -86,7 +88,9 @@ def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
 
     tx_receipt = web3.eth.wait_for_transaction_receipt(tx_hash)
 
-    return web3.eth.contract(address=tx_receipt.contractAddress, abi=abi)
+    return web3.eth.contract(
+        address=tx_receipt.contractAddress, abi=abi  # type: ignore[attr-defined]
+    )  # type: ignore[return-value]
 
 
 @enforce_types
@@ -123,8 +127,8 @@ def get_contracts_addresses(config: dict) -> Optional[Dict[str, str]]:
 
 
 @enforce_types
-# Check singnet/snet-cli#142 (comment). You need to provide a lowercase address then call web3.to_checksum_address()
-# for software safety.
+# Check singnet/snet-cli#142 (comment). You need to provide a lowercase address
+# then call web3.to_checksum_address() for software safety.
 def _checksum_contract_addresses(
     network_addresses: Dict[str, Any]
 ) -> Optional[Dict[str, Any]]:
