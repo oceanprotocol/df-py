@@ -42,7 +42,7 @@ test_params = [
 ]
 
 
-def test_get_active_reward_amount_for_week_eth_by_stream(monkeypatch):
+def test_get_active_reward_amount_for_week_eth_by_stream():
     challenge_substream = "challenge"
     predictoor_substream = "predictoor"
     volume_substream = "volume"

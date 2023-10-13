@@ -3,7 +3,7 @@ import datetime
 import os
 import sys
 from pathlib import Path
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types

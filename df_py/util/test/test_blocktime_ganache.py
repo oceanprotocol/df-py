@@ -4,7 +4,6 @@ from math import ceil
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import networkutil, oceanutil
 from df_py.util.blockrange import create_range
 from df_py.util.blocktime import (
     get_block_number_thursday,

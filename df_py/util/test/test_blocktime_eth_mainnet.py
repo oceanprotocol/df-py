@@ -1,11 +1,8 @@
-import os
-import types
 from datetime import datetime
 
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import networkutil
 from df_py.util.blocktime import (
     eth_find_closest_block,
     eth_timestamp_to_block,
