@@ -19,30 +19,30 @@ GANACHE_URL = "http://127.0.0.1:8545"
 @enforce_types
 def get_contract_definition(path: str) -> Dict[str, Any]:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(Path(__file__), f"../../../build/contracts/{path}.json")
-    path = Path(path).expanduser().resolve()
+    path_obj = os.path.join(Path(__file__), f"../../../build/contracts/{path}.json")
+    path_obj = Path(path_obj).expanduser().resolve()
 
-    if not path.exists():
+    if not path_obj.exists():
         raise TypeError("Contract name does not exist in artifacts.")
 
-    with open(path) as f:
+    with open(path_obj) as f:
         return json.load(f)
 
 
 @enforce_types
-def get_contract_source(path: str) -> Dict[str, Any]:
+def get_contract_source(path: str) -> str:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(Path(__file__), f"../../../contracts/{path}.sol")
-    path = Path(path).expanduser().resolve()
+    path_obj = os.path.join(Path(__file__), f"../../../contracts/{path}.sol")
+    path_obj = Path(path_obj).expanduser().resolve()
 
-    if not path.exists():
+    if not path_obj.exists():
         raise TypeError("Contract name does not exist in artifacts.")
 
-    return open(path, "r").read()
+    return open(path_obj, "r").read()
 
 
 @enforce_types
-def load_contract(web3: Web3, path: str, address: Optional[str]) -> Contract:
+def load_contract(web3: Web3, path: str, address: str) -> Contract:
     """Loads a contract using its name and address."""
     contract_definition = get_contract_definition(path)
     abi = contract_definition["abi"]

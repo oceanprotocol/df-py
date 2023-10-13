@@ -48,7 +48,7 @@ def dispense(
     usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
     if usemultisig:
         logger.info("multisig enabled")
-        multisigaddr = chain_id_to_multisig_addr(web3.eth.chain.id)
+        multisigaddr = chain_id_to_multisig_addr(web3.eth.chain_id)
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "Simpletoken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
