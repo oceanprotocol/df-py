@@ -455,9 +455,10 @@ def get_web3(network_url: str) -> Web3:
 def get_rpc_url(network_name: str) -> str:
     """Return the RPC URL for a given network."""
     base_url = None
+    converted_network_name = network_name.upper().replace("-", "_")
 
-    if os.getenv(f"{network_name.upper()}_RPC_URL"):
-        base_url = os.getenv(f"{network_name.upper()}_RPC_URL")
+    if os.getenv(f"{converted_network_name}_RPC_URL"):
+        base_url = os.getenv(f"{converted_network_name}_RPC_URL")
 
     if os.getenv("WEB3_INFURA_PROJECT_ID") and base_url:
         infura_networks = [
@@ -470,4 +471,4 @@ def get_rpc_url(network_name: str) -> str:
     if base_url:
         return base_url
 
-    raise ValueError(f"Need to set {network_name.upper()}_RPC_URL env variable.")
+    raise ValueError(f"Need to set {converted_network_name}_RPC_URL env variable.")
