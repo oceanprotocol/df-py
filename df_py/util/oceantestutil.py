@@ -124,7 +124,7 @@ def buy_DT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_tok
 @enforce_types
 def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
     # create random num_FRE.
-    accounts = web3.eth.accounts
+    accounts = get_all_accounts()
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
         if FRE_i < len(accounts):
@@ -165,8 +165,7 @@ def buy_DT_FRE(
 
 @enforce_types
 def random_consume_FREs(FRE_tup: list, base_token):
-    # TODO: remove ocurrence of network
-    accounts = network.accounts
+    accounts = get_all_accounts()[1]
 
     # consume data assets from FREs randomly
     for consume_i in range(NUM_CONSUMES):
@@ -193,20 +192,20 @@ def random_consume_FREs(FRE_tup: list, base_token):
 def random_lock_and_allocate(web3, tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
-    acc1 = web3.eth.accounts[0]
+    acc0 = get_account0()
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
 
-    accounts = web3.eth.accounts[: len(tups)]
+    accounts = get_all_accounts()[: len(tups)]
 
     for account in accounts:
-        OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
+        OCEAN.mint(account, LOCK_AMOUNT, {"from": acc0})
 
     provider = web3.provider
     provider.make_request("evm_mine", [])
     provider.make_request("evm_increaseTime", [WEEK * 20])
 
-    t0 = web3.get_block("latest").timestamp
+    t0 = web3.eth.get_block("latest").timestamp
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + WEEK
     provider.make_request("evm_mine", [])

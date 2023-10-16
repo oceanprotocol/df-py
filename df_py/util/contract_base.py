@@ -48,15 +48,18 @@ def function_wrapper(contract, web3, contract_functions, func_name):
         if not tx_dict and result.abi["stateMutability"] not in ["view", "pure"]:
             raise Exception("Needs tx_dict with 'from' key.")
 
+        if tx_dict and "from" in tx_dict:
+            # if it's a transaction, build and send it
+            wallet = tx_dict["from"]
+            tx_dict2 = tx_dict.copy()
+            tx_dict2["nonce"] = web3.eth.get_transaction_count(wallet.address)
+            tx_dict2["from"] = tx_dict["from"].address
+        else:
+            tx_dict2 = tx_dict or {}
+
         # if it's a view/pure function, just call it
         if result.abi["stateMutability"] in ["view", "pure"]:
-            return result.call()
-
-        # if it's a transaction, build and send it
-        wallet = tx_dict["from"]
-        tx_dict2 = tx_dict.copy()
-        tx_dict2["nonce"] = web3.eth.get_transaction_count(wallet.address)
-        tx_dict2["from"] = tx_dict["from"].address
+            return result.call(tx_dict2)
 
         result = result.build_transaction(tx_dict2)
 

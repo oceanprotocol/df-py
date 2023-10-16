@@ -24,7 +24,7 @@ from df_py.predictoor.csvs import (
     save_predictoor_data_csv,
 )
 from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
-from df_py.util import blockrange, dispense, get_rate, networkutil
+from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.blocktime import get_fin_block, timestr_to_timestamp
 from df_py.util.contract_base import ContractBase
@@ -737,14 +737,13 @@ def do_many_random():
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     web3 = networkutil.chain_id_to_web3(chain_id)
-    from_account = _getPrivateAccount()
-    web3.eth.default_account = from_account
+    web3.eth.default_account = oceantestutil.get_account0()
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token(chain_id)
 
-    num_nfts = 10  # magic number
+    num_nfts = 9  # magic number
     tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
     random_lock_and_allocate(web3, tups)
     random_consume_FREs(tups, OCEAN)

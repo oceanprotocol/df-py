@@ -250,7 +250,7 @@ def create_FRE_from_datatoken(
 
     uints = [
         base_token.decimals(),  # baseTokenDecimals
-        datatoken.decimals(),  # datatokenDecimals
+        datatoken.decimals({"from": from_account}),  # datatokenDecimals
         to_wei(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
