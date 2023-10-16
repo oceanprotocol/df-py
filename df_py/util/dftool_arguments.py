@@ -81,7 +81,7 @@ def chain_type(s: str):
         chain_id_to_rpc_url(int(s))
 
         return int(s)
-    except ValueError as e:
+    except (KeyError, ValueError) as e:
         raise argparse.ArgumentTypeError(str(e)) from e
 
 

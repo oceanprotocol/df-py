@@ -703,11 +703,12 @@ def do_init_dev_wallets():
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
     web3 = networkutil.chain_id_to_web3(chain_id)
+    web3.eth.default_account = oceantestutil.get_account0()
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     # TODO: test this
-    oceantestutil.fill_accounts_with_OCEAN(web3.eth.accounts)
+    oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())
 
     print("dftool init_dev_wallets: Done.")
 
