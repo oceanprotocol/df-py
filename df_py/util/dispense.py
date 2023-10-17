@@ -60,7 +60,9 @@ def dispense(
 
     def approveAmt(amt):
         if usemultisig:
-            data = TOK.contract.encodeABI(fn_name="approve", args=[df_rewards, amt])
+            data = TOK.contract.encodeABI(
+                fn_name="approve", args=[df_rewards.address, amt]
+            )
             value = 0
             to = TOK.address
             # data = bytes.fromhex(data[2:])
