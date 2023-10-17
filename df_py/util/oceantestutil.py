@@ -124,7 +124,10 @@ def buy_DT(pool, DT, DT_buy_amt: float, max_TOKEN: float, from_account, base_tok
 @enforce_types
 def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
     # create random num_FRE.
-    accounts = get_all_accounts()
+    accounts = [web3.eth.account.create() for _ in range(num_FRE)]
+    for account in accounts:
+        networkutil.send_ether(web3, get_account0(), account.address, to_wei(1))
+    fill_accounts_with_OCEAN([get_account0()] + accounts)
     tups = []  # (pub_account_i, data_NFT, DT, FRE)
     for FRE_i in range(num_FRE):
         if FRE_i < len(accounts):
