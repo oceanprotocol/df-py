@@ -1055,8 +1055,12 @@ def do_checkpoint_feedist():
 
     except Exception as e:  # pylint: disable=broad-exception-caught
         print(f"Checkpoint failed: {e}, submitting tx to multisig")
-        total_supply_encoded = feedist.checkpoint_total_supply.encode_input()
-        checkpoint_token_encoded = feedist.checkpoint_token.encode_input()
+        total_supply_encoded = feedist.contract.encodeABI(
+            fn_name="checkpoint_total_supply", args=[]
+        )
+        checkpoint_token_encoded = feedist.contract.encodeABI(
+            fn_name="checkpoint_token", args=[]
+        )
 
         to = feedist.address
         value = 0
