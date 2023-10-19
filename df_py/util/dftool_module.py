@@ -98,6 +98,7 @@ def do_volsym():
     rng = blockrange.create_range(
         web3, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
     )
+
     (Vi, Ci, SYMi) = retry_function(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, chain_id
     )

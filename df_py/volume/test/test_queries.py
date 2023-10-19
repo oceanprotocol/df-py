@@ -27,6 +27,8 @@ DAY = 86400
 WEEK = 7 * DAY
 YEAR = 365 * DAY
 
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
+
 
 class SimpleAsset:
     def __init__(self, tup):
@@ -45,6 +47,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     re-loop or sleep until the info we want is there."""
     monkeypatch.setenv("SUBGRAPH_URI", networkutil.chain_id_to_subgraph_uri(CHAINID))
     monkeypatch.setenv("SECRET_SEED", "1234")
+    monkeypatch.setenv("ADDRESS_FILE", ADDRESS_FILE)
 
     _deploy_CO2(w3)
 
@@ -104,7 +107,7 @@ def test_all(tmp_path, w3, account0, monkeypatch):
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
-        fin_block = len(chain)
+        fin_block = w3.eth.get_block("latest").number + 1
         print(f"  loop {loop_i} start")
         assert loop_i < 45, "timeout"
         # this test assumes that all actions before consume will
@@ -122,17 +125,18 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     provider.make_request("evm_mine", [])
     time.sleep(2)
 
-    rng = BlockRange(start_block, fin_block, 100, 42)
-    sampling_accounts_addrs = [a.address.lower() for a in sampling_accounts]
-    delegation_accounts = [a.address.lower() for a in accounts[:2]]
-    delegation_accounts.append(zerobal_delegation_acct.address.lower())
+    rng = BlockRange(start_block, fin_block, 100, 42, web3=w3)
+    sampling_accounts_addrs = [w3.to_checksum_address(a.address) for a in sampling_accounts]
+    delegation_accounts = [w3.to_checksum_address(a.address) for a in accounts[:2]]
+    delegation_accounts.append(w3.to_checksum_address(zerobal_delegation_acct.address))
 
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(start_block, fin_block)
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
+
     _test_queryAllocations(rng, sampling_accounts_addrs)
-    _test_queryVolsOwnersSymbols(start_block, fin_block)
+    _test_queryVolsOwnersSymbols(w3, start_block, fin_block)
 
     # test dftool
     _test_dftool_query(tmp_path, start_block, fin_block)
@@ -286,10 +290,10 @@ def _test_queryVolsOwners(st, fin):
 
 
 @enforce_types
-def _test_queryVolsOwnersSymbols(st, fin):
+def _test_queryVolsOwnersSymbols(w3, st, fin):
     print("_test_queryVolsOwnersSymbols()...")
     n = 500
-    rng = BlockRange(st, fin, n)
+    rng = BlockRange(st, fin, n, web3=w3)
     (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
@@ -478,7 +482,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
 
     # 6. simulate "dftool dispense_active"
     rewardsperlp = csvs.load_volume_rewards_csv(csv_dir)
-    dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
+    dfrewards_addr = ContractBase(w3, "DFRewards", constructor_args=[]).address
     OCEAN_addr = oceanutil.OCEAN_address(CHAINID)
     dispense.dispense(w3, rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
@@ -546,15 +550,15 @@ def _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr):
 
 
 @enforce_types
-def test_queryAllocations_empty():
-    rng = BlockRange(st=0, fin=10, num_samples=1)
+def test_queryAllocations_empty(w3):
+    rng = BlockRange(st=0, fin=10, num_samples=1, web3=w3)
     allocs = queries.queryAllocations(rng, CHAINID)
     assert allocs == {}
 
 
 @enforce_types
 def test_queryVebalances_empty(w3):
-    rng = BlockRange(st=0, fin=10, num_samples=1)
+    rng = BlockRange(st=0, fin=10, num_samples=1, web3=w3)
     tup = queries.queryVebalances(rng, w3.eth.chain_id)
     assert tup == ({}, {}, {})
 
@@ -943,7 +947,7 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def test_process_single_delegation():
+def test_process_single_delegation(w3):
     # Prepare test data
     delegation = {
         "id": "x",
@@ -965,11 +969,11 @@ def test_process_single_delegation():
 
     assert balance_veocean == balance_veocean_start - delegation_amt
     assert delegation_amt == approx(2.4931526)
-    assert delegated_to == "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"
+    assert delegated_to == w3.to_checksum_address("0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d")
 
 
 @enforce_types
-def test_process_delegations():
+def test_process_delegations(w3):
     delegations = [
         {
             "id": "x",
@@ -1025,8 +1029,8 @@ def test_process_delegations():
     assert balance_veocean == balance_veocean_start - sum(delegation_amts)
     assert delegation_amts == approx([2.4931526, 0.2493151])
     assert delegated_tos == [
-        "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d",
-        "0xcc34ca233293bdd9e50aca149d019a62fc881b90",
+        w3.to_checksum_address("0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"),
+        w3.to_checksum_address("0xcc34ca233293bdd9e50aca149d019a62fc881b90"),
     ]
 
 
@@ -1048,7 +1052,25 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
         print(f"    chain_time <= lock_time? {chain_time <= lock_time}")
         veOCEAN.checkpoint({"from": acct})
         OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
-        veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+        time.sleep(1)
+        tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+        receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
+
+        """
+        # TODO: refine this... idk why it fails with regular waits
+        initial_time = time.time()
+        while receipt.status == 0:
+            time.sleep(1)
+            receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
+            if time.time() > initial_time + 60:
+                tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+                if tx.status == 1:
+                    break
+                import pdb; pdb.set_trace()
+
+        lock_end_time = veOCEAN.locked__end(acct)
+        print(f"    {lock_end_time}")
+        """
 
 
 @enforce_types
