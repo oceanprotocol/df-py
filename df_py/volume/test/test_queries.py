@@ -126,7 +126,9 @@ def test_all(tmp_path, w3, account0, monkeypatch):
     time.sleep(2)
 
     rng = BlockRange(start_block, fin_block, 100, 42, web3=w3)
-    sampling_accounts_addrs = [w3.to_checksum_address(a.address) for a in sampling_accounts]
+    sampling_accounts_addrs = [
+        w3.to_checksum_address(a.address) for a in sampling_accounts
+    ]
     delegation_accounts = [w3.to_checksum_address(a.address) for a in accounts[:2]]
     delegation_accounts.append(w3.to_checksum_address(zerobal_delegation_acct.address))
 
@@ -710,27 +712,29 @@ def test_allocation_sampling(w3, account0):
     for addr in allocate_addrs:
         assert addr in allocations, addr
         # Bob
-        assert allocations[addr][bob.address.lower()] == approx((1 / 7), 0.1)
+        assert allocations[addr][w3.to_checksum_address(bob.address)] == approx(
+            (1 / 7), 0.1
+        )
 
     # Alice
-    _a = alice.address.lower()
+    _a = w3.to_checksum_address(alice.address)
     assert allocations[allocate_addrs[0]][_a] == approx(0.5, 0.03)
     assert allocations[allocate_addrs[3]][_a] == approx(0.5, 0.03)
 
     # Karen
-    _k = karen.address.lower()
+    _k = w3.to_checksum_address(karen.address)
     assert allocations[allocate_addrs[0]][_k] == approx((0.1 * 6 / 7), 0.03)
     assert allocations[allocate_addrs[1]][_k] == approx((0.1 * 5 / 7), 0.03)
     assert allocations[allocate_addrs[2]][_k] == approx((0.2 * 4 / 7), 0.03)
     assert allocations[allocate_addrs[6]][_k] == approx((1 / 7), 0.03)
 
     # Carol
-    _c = carol.address.lower()
+    _c = w3.to_checksum_address(carol.address)
     assert allocations[allocate_addrs[2]][_c] == approx((4 / 7), 0.03)
     assert allocations[allocate_addrs[6]][_c] == approx((1 / 7), 0.03)
 
     # James
-    _j = james.address.lower()
+    _j = w3.to_checksum_address(james.address)
     _j_expected = (
         0.1 * 1 / 7 + 0.2 * 1 / 7 + 0.3 * 1 / 7 + 0.05 * 1 / 7 + 0.5 * 1 / 7 + 1 / 7
     )
@@ -969,7 +973,9 @@ def test_process_single_delegation(w3):
 
     assert balance_veocean == balance_veocean_start - delegation_amt
     assert delegation_amt == approx(2.4931526)
-    assert delegated_to == w3.to_checksum_address("0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d")
+    assert delegated_to == w3.to_checksum_address(
+        "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"
+    )
 
 
 @enforce_types
@@ -1054,7 +1060,7 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
         OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
         time.sleep(1)
         tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
-        receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
+        w3.eth.wait_for_transaction_receipt(tx.transactionHash)
 
         """
         # TODO: refine this... idk why it fails with regular waits

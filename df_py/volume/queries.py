@@ -84,7 +84,7 @@ def _process_delegation(
     delegation_amt = time_left_unlock * delegated_amt_past / time_left_to_unlock_past
 
     # receiver address
-    delegated_to = Web3.to_checksum_address(delegation["receiver"]["id"])
+    delegated_to = str(Web3.to_checksum_address(delegation["receiver"]["id"]))
 
     balance = balance - delegation_amt
 
@@ -200,7 +200,7 @@ def queryVebalances(
                 if balance < 0:
                     raise ValueError("balance < 0, something is wrong")
                 # set user balance
-                LP_addr = Web3.to_checksum_address(user["id"])
+                LP_addr = str(Web3.to_checksum_address(user["id"]))
                 vebals.setdefault(LP_addr, 0)
                 vebals[LP_addr] += balance
 
@@ -281,9 +281,11 @@ def queryAllocations(
                 break
 
             for allocation in _allocs:
-                LP_addr = Web3.to_checksum_address(allocation["id"])
+                LP_addr = str(Web3.to_checksum_address(allocation["id"]))
                 for ve_allocation in allocation["veAllocation"]:
-                    nft_addr = Web3.to_checksum_address(ve_allocation["nftAddress"])
+                    nft_addr = str(
+                        Web3.to_checksum_address(ve_allocation["nftAddress"])
+                    )
                     chain_id = int(ve_allocation["chainId"])
                     allocated = float(ve_allocation["allocated"])
 
