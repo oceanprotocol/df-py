@@ -692,8 +692,6 @@ def do_init_dev_wallets():
     )
     chain_id = parser.print_args_and_get_chain()
 
-    from df_py.util import oceantestutil  # pylint: disable=import-outside-toplevel
-
     if chain_id != DEV_CHAINID:
         # To support other testnets, they need to init_dev_wallets()
         # Consider this a TODO:)
