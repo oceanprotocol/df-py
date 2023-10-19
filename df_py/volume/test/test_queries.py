@@ -1060,23 +1060,19 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
         OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
         time.sleep(1)
         tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
-        w3.eth.wait_for_transaction_receipt(tx.transactionHash)
+        receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
 
-        """
-        # TODO: refine this... idk why it fails with regular waits
         initial_time = time.time()
         while receipt.status == 0:
             time.sleep(1)
             receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
             if time.time() > initial_time + 60:
                 tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
-                if tx.status == 1:
-                    break
-                import pdb; pdb.set_trace()
+                assert tx.status == 1
+                break
 
         lock_end_time = veOCEAN.locked__end(acct)
-        print(f"    {lock_end_time}")
-        """
+        print(f"    lock end time: {lock_end_time}")
 
 
 @enforce_types
