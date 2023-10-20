@@ -495,6 +495,7 @@ def _test_queryPassiveRewards(addresses, god_acct):
     fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
     w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
     provider = w3.provider
+    OCEAN.mint(god_acct.address, to_wei(1000.0), {"from": god_acct})
 
     def sim_epoch():
         OCEAN.transfer(
