@@ -742,7 +742,7 @@ def do_many_random():
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token(chain_id)
 
-    num_nfts = 10  # magic number
+    num_nfts = 9  # magic number
     tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
     random_lock_and_allocate(web3, tups)
     random_consume_FREs(tups, OCEAN)

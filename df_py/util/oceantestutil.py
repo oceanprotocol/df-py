@@ -1,5 +1,6 @@
 import os
 import random
+import time
 
 from enforce_typing import enforce_types
 from eth_account import Account
@@ -15,7 +16,9 @@ NUM_CONSUMES = 3  # 100
 # ve constants
 NUM_LOCKS = 3
 LOCK_AMOUNT = to_wei(1000.0)
-WEEK = 7 * 86400
+DAY = 86400
+WEEK = 7 * DAY
+YEAR = 365 * DAY
 MAXTIME = 4 * 365 * 86400  # 4 years
 NUM_ALLOCATES = 3
 
@@ -71,27 +74,6 @@ def consume_DT(DT, pub_account, consume_account):
         consume_mkt_fee,
         {"from": consume_account},
     )
-
-
-@enforce_types
-def random_add_stake(pool, pub_account_i: int, token):
-    cand_account_I = [i for i in range(10) if i != pub_account_i]
-    account_I = random.sample(cand_account_I, NUM_STAKERS_PER_POOL)
-    for account_i in account_I:
-        TOKEN_stake = AVG_TOKEN_STAKE * (1 + 0.1 * random.random())
-        # TODO: remove ocurrence of network
-        add_stake(pool, TOKEN_stake, network.accounts[account_i], token)
-
-
-@enforce_types
-def add_stake(pool, TOKEN_stake: float, from_account, token):
-    token.approve(pool.address, to_wei(TOKEN_stake), {"from": from_account})
-
-    token_amt_in = to_wei(TOKEN_stake)
-    min_pool_amt_out = to_wei(MIN_POOL_BPTS_OUT_FROM_STAKE)  # magic number
-
-    # assert tokenAmountIn <= poolBalanceOfToken * MAX_IN_RATIO, "ERR_MAX_IN_RATIO
-    pool.joinswapExternAmountIn(token_amt_in, min_pool_amt_out, {"from": from_account})
 
 
 @enforce_types
@@ -168,7 +150,7 @@ def buy_DT_FRE(
 
 @enforce_types
 def random_consume_FREs(FRE_tup: list, base_token):
-    accounts = get_all_accounts()[1]
+    accounts = get_all_accounts()
 
     # consume data assets from FREs randomly
     for consume_i in range(NUM_CONSUMES):
@@ -176,7 +158,7 @@ def random_consume_FREs(FRE_tup: list, base_token):
         (pub_account_i, _, DT, exchangeId) = tup
 
         # choose consume account
-        cand_I = [i for i in range(10) if i != pub_account_i]
+        cand_I = [i for i in range(9) if i != pub_account_i]
         consume_i = random.choice(cand_I)
         consume_account = accounts[consume_i]
 
@@ -210,9 +192,11 @@ def random_lock_and_allocate(web3, tups: list):
 
     t0 = web3.eth.get_block("latest").timestamp
     t1 = t0 // WEEK * WEEK + WEEK
-    t2 = t1 + WEEK
-    provider.make_request("evm_mine", [])
+    # TODO: solution copied from test_queries, is this fine?
+    # t2 = t1 + WEEK
+    t2 = t1 + 4 * YEAR
     provider.make_request("evm_increaseTime", [t1 - t0])
+    provider.make_request("evm_mine", [])
 
     # Lock randomly
     for i, tup in enumerate(tups):
@@ -229,7 +213,17 @@ def random_lock_and_allocate(web3, tups: list):
         if veOCEAN.balanceOf(lock_account) == 0:
             # Create lock
             veOCEAN.withdraw({"from": lock_account})
-            veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+            tx = veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+            receipt = web3.eth.wait_for_transaction_receipt(tx.transactionHash)
+
+            initial_time = time.time()
+            while receipt.status == 0:
+                time.sleep(1)
+                receipt = web3.eth.wait_for_transaction_receipt(tx.transactionHash)
+                if time.time() > initial_time + 60:
+                    tx = veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+                    assert tx.status == 1
+                    break
 
         assert veOCEAN.balanceOf(lock_account) != 0
         allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate(
