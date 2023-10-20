@@ -177,14 +177,14 @@ def random_consume_FREs(FRE_tup: list, base_token):
 def random_lock_and_allocate(web3, tups: list):
     # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
 
-    acc1 = get_all_accounts()[1]
+    acc0 = get_account0()
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
 
     accounts = get_all_accounts()[: len(tups)]
 
     for account in accounts:
-        OCEAN.mint(account, LOCK_AMOUNT, {"from": acc1})
+        OCEAN.mint(account, LOCK_AMOUNT, {"from": acc0})
 
     provider = web3.provider
     provider.make_request("evm_mine", [])
