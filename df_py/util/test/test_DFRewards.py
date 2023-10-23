@@ -179,7 +179,6 @@ def test_strategies(w3):
     token.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
 
-    # TODO: fix these
     assert token.balanceOf(df_strategy) == 0
     with pytest.raises(ContractLogicError, match="Caller doesn't match"):
         # tx origin must be a1
