@@ -231,55 +231,6 @@ def test_strategies(w3):
 
 
 @enforce_types
-def _test_claim_and_restake():
-    # TODO: this test is not called anywhere, should it be re-enabled or removed?
-    oceanutil.record_dev_deployed_contracts()
-    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
-    deployer = accounts[0]
-    bob = accounts[1]
-
-    OCEAN.transfer(bob, 100, {"from": deployer})
-
-    df_rewards = B.DFRewards.deploy({"from": deployer})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": deployer})
-    df_rewards.addStrategy(df_strategy.address)
-
-    veOCEAN = B.veOcean.deploy(
-        OCEAN.address, "veOCEAN", "veOCEAN", "0.1.0", {"from": deployer}
-    )
-
-    OCEAN.approve(veOCEAN.address, 100, {"from": bob})
-    unlock_time = brownie.network.chain.time() + 14 * 86400
-    veOCEAN.create_lock(100, unlock_time, {"from": bob})
-
-    tos = [a1]
-    values = [50]
-    OCEAN.approve(df_rewards, sum(values), {"from": deployer})
-    df_rewards.allocate(tos, values, OCEAN.address, {"from": deployer})
-
-    assert df_rewards.claimable(a1, OCEAN.address) == 50
-
-    with pytest.raises(ContractLogicError, match="Not enough rewards"):
-        # Cannot claim what you don't have
-        df_strategy.claimAndStake(
-            OCEAN,
-            100,
-            veOCEAN,
-            {"from": bob},
-        )
-
-    # veBalBefore = veOCEAN.balanceOf(deployer)
-    df_strategy.claimAndStake(
-        OCEAN,
-        50,
-        veOCEAN,
-        {"from": bob},
-    )
-
-    assert df_rewards.claimable(a1, OCEAN.address) == 0
-
-
-@enforce_types
 def _deploy_token(w3, account=None):
     if account:
         w3.eth.default_account = account.address

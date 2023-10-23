@@ -706,7 +706,6 @@ def do_init_dev_wallets():
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
-    # TODO: test this
     oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())
 
     print("dftool init_dev_wallets: Done.")

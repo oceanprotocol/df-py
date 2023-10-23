@@ -175,8 +175,6 @@ def random_consume_FREs(FRE_tup: list, base_token):
 
 @enforce_types
 def random_lock_and_allocate(web3, tups: list):
-    # tups = [(pub_account_i, data_NFT, DT, exchangeId)]
-
     acc0 = get_account0()
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
@@ -192,8 +190,8 @@ def random_lock_and_allocate(web3, tups: list):
 
     t0 = web3.eth.get_block("latest").timestamp
     t1 = t0 // WEEK * WEEK + WEEK
-    # TODO: solution copied from test_queries, is this fine?
-    # t2 = t1 + WEEK
+    # solution copied from test_queries, sometimes on ganache the lock
+    # doesn't work, so we try again
     t2 = t1 + 4 * YEAR
     provider.make_request("evm_increaseTime", [t1 - t0])
     provider.make_request("evm_mine", [])
