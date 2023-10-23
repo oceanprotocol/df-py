@@ -29,7 +29,7 @@ def send_multisig_tx(multisig_address, web3, to, value, data):
     nonce = get_safe_nonce(multisig_address, chain_id)
     BASE_URL = networkutil.chain_id_to_multisig_uri(chain_id)
     API_URL = f"{BASE_URL}/api/v1/safes/{multisig_address}/multisig-transactions/"
-    contract = ContractBase(web3, "interfaces/IGnosisSafe", multisig_address)
+    contract = ContractBase(web3, "IGnosisSafe", multisig_address)
     gas = 0
     gasPrice = 0
     safe_hash = contract.getTransactionHash(
