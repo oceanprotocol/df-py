@@ -29,7 +29,7 @@ def test_allocate_gas(w3, account0):
     assert per_iteration1 * 1250 < 30_000_000
 
 
-# TODO: fix this test
+# TODO: fix this test pylint: disable=fixme
 @pytest.mark.skip("Skip after fixing and removing brownie")
 @enforce_types
 def test_1250_addresses(w3, account0):
@@ -39,7 +39,7 @@ def test_1250_addresses(w3, account0):
     assert big_batch.gas_used < 30_000_000
 
 
-# TODO: fix this test
+# TODO: fix this test pylint: disable=fixme
 @pytest.mark.skip("Skip after fixing and removing brownie")
 @enforce_types
 def test_insufficient_gas_reverts(w3, account0):
