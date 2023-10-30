@@ -32,6 +32,7 @@ install_requirements = [
     "types-requests",
     "bumpversion",
     "black",
+    "ocean-contracts",
 ]
 
 # Required to run setup.py:
