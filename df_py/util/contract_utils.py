@@ -21,7 +21,7 @@ GANACHE_URL = "http://127.0.0.1:8545"
 @enforce_types
 def get_contract_definition(path: str) -> Dict[str, Any]:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(artifacts.__file__, "..", f"{contract_name}.json")
+    path = os.path.join(artifacts.__file__, "..", f"{path}.json")
     path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
@@ -34,7 +34,7 @@ def get_contract_definition(path: str) -> Dict[str, Any]:
 @enforce_types
 def get_contract_source(path: str) -> str:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(artifacts.__file__, "..", f"{contract_name}.json")
+    path = os.path.join(artifacts.__file__, "..", f"{path}.json")
     path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
