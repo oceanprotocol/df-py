@@ -27,7 +27,6 @@ def test_record_deployed_contracts():
     assert oceanutil.ERC721Template(chain_id)
     assert oceanutil.ERC20Template(chain_id)
     assert oceanutil.FactoryRouter(chain_id)
-    assert oceanutil.Staking(chain_id)
     assert oceanutil.ERC721Factory(chain_id)
 
 
