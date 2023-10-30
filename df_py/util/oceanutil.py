@@ -66,7 +66,7 @@ def record_deployed_contracts(address_file: str, chainID: int):
 
     if "veFeeDistributor" in a:
         C["veFeeDistributor"] = ContractBase(
-            web3, "FeeDistributor", a["veFeeDistributor"]
+            web3, "veFeeDistributor", a["veFeeDistributor"]
         )
 
     if "veDelegation" in a:
