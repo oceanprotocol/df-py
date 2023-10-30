@@ -13,13 +13,15 @@ from solcx import compile_source
 from web3.contract import Contract
 from web3.main import Web3
 
+import artifacts
+
 GANACHE_URL = "http://127.0.0.1:8545"
 
 
 @enforce_types
 def get_contract_definition(path: str) -> Dict[str, Any]:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(Path(__file__), f"../../../build/contracts/{path}.json")
+    path = os.path.join(artifacts.__file__, "..", f"{contract_name}.json")
     path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
@@ -32,7 +34,7 @@ def get_contract_definition(path: str) -> Dict[str, Any]:
 @enforce_types
 def get_contract_source(path: str) -> str:
     """Returns the abi JSON for a contract name."""
-    path = os.path.join(Path(__file__), f"../../../contracts/{path}.sol")
+    path = os.path.join(artifacts.__file__, "..", f"{contract_name}.json")
     path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
