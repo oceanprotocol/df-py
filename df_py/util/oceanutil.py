@@ -59,7 +59,7 @@ def record_deployed_contracts(address_file: str, chainID: int):
     C["FixedPrice"] = ContractBase(web3, "FixedRateExchange", a["FixedPrice"])
 
     if "veOCEAN" in a:
-        C["veOCEAN"] = ContractBase(web3, "veOcean", a["veOCEAN"])
+        C["veOCEAN"] = ContractBase(web3, "veOCEAN", a["veOCEAN"])
 
     if "veAllocate" in a:
         C["veAllocate"] = ContractBase(web3, "veAllocate", a["veAllocate"])
