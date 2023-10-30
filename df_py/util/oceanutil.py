@@ -54,7 +54,7 @@ def record_deployed_contracts(address_file: str, chainID: int):
     C["ERC20Template"] = ContractBase(web3, "ERC20Template", a["ERC20Template"]["1"])
     C["Router"] = ContractBase(web3, "FactoryRouter", a["Router"])
     if "Staking" in a:
-        C["Staking"] = ContractBase(web3, "Staking", a["Staking"])
+        C["Staking"] = ContractBase(web3, "SideStaking", a["Staking"])
     C["ERC721Factory"] = ContractBase(web3, "ERC721Factory", a["ERC721Factory"])
     C["FixedPrice"] = ContractBase(web3, "FixedRateExchange", a["FixedPrice"])
 
