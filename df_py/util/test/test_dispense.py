@@ -72,7 +72,7 @@ def test_batching(w3):
 @enforce_types
 def test_batch_number(w3):
     token = ContractBase(
-        w3, "Simpletoken", constructor_args=["TOK", "TOK", 18, to_wei(100e18)]
+        w3, "OceanToken", constructor_args=["TOK", "TOK", 18, to_wei(100e18)]
     )
 
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])

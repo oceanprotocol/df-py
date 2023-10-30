@@ -45,5 +45,5 @@ def test_transferFrom(w3, all_accounts):
 @enforce_types
 def _deploy_token(w3):
     return ContractBase(
-        w3, "Simpletoken", constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
+        w3, "OceanToken", constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
     )

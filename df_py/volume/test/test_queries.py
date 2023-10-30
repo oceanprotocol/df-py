@@ -178,7 +178,7 @@ def _deploy_CO2(w3):
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
     CO2 = ContractBase(
-        w3, "Simpletoken", constructor_args=[CO2_sym, CO2_sym, 18, to_wei(1e26)]
+        w3, "OceanToken", constructor_args=[CO2_sym, CO2_sym, 18, to_wei(1e26)]
     )
     CO2_addr = CO2.address.lower()
 
@@ -743,17 +743,17 @@ def test_allocation_sampling(w3, account0):
 
 def test_symbol(w3):
     testToken = ContractBase(
-        w3, "Simpletoken", constructor_args=["CO2", "", 18, to_wei(1e26)]
+        w3, "OceanToken", constructor_args=["CO2", "", 18, to_wei(1e26)]
     )
     assert queries.symbol(w3, testToken.address) == "CO2"
 
     testToken = ContractBase(
-        w3, "Simpletoken", constructor_args=["ASDASDASD", "", 18, to_wei(1e26)]
+        w3, "OceanToken", constructor_args=["ASDASDASD", "", 18, to_wei(1e26)]
     )
     assert queries.symbol(w3, testToken.address) == "ASDASDASD"
 
     testToken = ContractBase(
-        w3, "Simpletoken", constructor_args=["!@#$@!%$#^%$&~!@", "", 18, to_wei(1e26)]
+        w3, "OceanToken", constructor_args=["!@#$@!%$#^%$&~!@", "", 18, to_wei(1e26)]
     )
     assert queries.symbol(w3, testToken.address) == "!@#$@!%$#^%$&~!@"
 

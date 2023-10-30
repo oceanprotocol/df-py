@@ -557,7 +557,7 @@ def do_dispense_active():
     web3.eth.default_account = from_account.address
     token_symbol = (
         ContractBase(
-            web3, "Simpletoken", web3.to_checksum_address(arguments.TOKEN_ADDR)
+            web3, "OceanToken", web3.to_checksum_address(arguments.TOKEN_ADDR)
         )
         .symbol()
         .upper()
@@ -821,7 +821,7 @@ def do_new_token():
     web3.eth.default_account = from_account.address
     token = ContractBase(
         web3,
-        "Simpletoken",
+        "OceanToken",
         constructor_args=["TST", "Test Token", 18, to_wei(1e21)],
     )
     print(f"Token '{token.symbol()}' deployed at address: {token.address}")
@@ -923,7 +923,7 @@ def do_acct_info():
     print(f"  Address = {account_addr}")
 
     if token_addr is not None:
-        token = ContractBase(web3, "Simpletoken", web3.to_checksum_address(token_addr))
+        token = ContractBase(web3, "OceanToken", web3.to_checksum_address(token_addr))
         balance = token.balanceOf(account_addr)
         print(f"  {from_wei(balance)} {token.symbol()}")
 

@@ -235,5 +235,5 @@ def _deploy_token(w3, account=None):
         w3.eth.default_account = account.address
 
     return ContractBase(
-        w3, "Simpletoken", constructor_args=["TOK", "TOK", 18, to_wei(100.0)]
+        w3, "OceanToken", constructor_args=["TOK", "TOK", 18, to_wei(100.0)]
     )

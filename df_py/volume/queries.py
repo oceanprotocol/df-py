@@ -858,7 +858,7 @@ def symbol(web3, addr: str):
     """Returns token symbol, given its address."""
     global _ADDR_TO_SYMBOL
     if addr not in _ADDR_TO_SYMBOL:
-        _symbol = ContractBase(web3, "Simpletoken", addr).symbol()
+        _symbol = ContractBase(web3, "OceanToken", addr).symbol()
         _symbol = _symbol.upper()  # follow lower-upper rules
         _ADDR_TO_SYMBOL[addr] = _symbol
     return _ADDR_TO_SYMBOL[addr]

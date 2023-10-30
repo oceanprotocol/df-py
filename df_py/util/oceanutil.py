@@ -49,7 +49,7 @@ def record_deployed_contracts(address_file: str, chainID: int):
 
     web3 = get_web3(get_rpc_url(network_name))
 
-    C["Ocean"] = ContractBase(web3, "Simpletoken", a["Ocean"])
+    C["Ocean"] = ContractBase(web3, "OceanToken", a["Ocean"])
     C["ERC721Template"] = ContractBase(web3, "ERC721Template", a["ERC721Template"]["1"])
     C["ERC20Template"] = ContractBase(web3, "ERC20Template", a["ERC20Template"]["1"])
     C["Router"] = ContractBase(web3, "FactoryRouter", a["Router"])
