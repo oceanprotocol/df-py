@@ -74,12 +74,17 @@ def record_deployed_contracts(address_file: str, chainID: int):
 
     if "VestingWalletV0" in a:
         C["VestingWalletV0"] = ContractBase(
-            web3, "VestingWalletV0", a["VestingWalletV0"]
+            web3, "VestingWalletHalving", a["VestingWalletV0"]
         )
     elif chainID == networkutil.DEV_CHAINID:
         web3.eth.default_account = web3.eth.accounts[0]
         C["VestingWalletV0"] = ContractBase(
-            web3, "test/VestingWallet", constructor_args=[]
+            web3, "VestingWalletHalving", constructor_args=[
+                "0x0000000000000000000000000000000000000000",
+                1957773838,
+                100,
+                10
+            ]
         )
 
     CONTRACTS[chainID] = C
@@ -134,7 +139,7 @@ def FeeDistributor(chain_id):
 
 
 def VestingWalletV0(chain_id):
-    return _contracts("VestingWalletV0", chain_id)
+    return _contracts("VestingWalletHalving", chain_id)
 
 
 # ===========================================================================
