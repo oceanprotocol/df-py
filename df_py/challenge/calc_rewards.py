@@ -19,7 +19,7 @@ def get_challenge_reward_amounts_in_ocean(
     if today < CHALLENGE_FIRST_DATE:
         return [0, 0, 0]
 
-    return [2500, 1500, 1000]
+    return [500, 300, 200]
 
 
 @enforce_types
