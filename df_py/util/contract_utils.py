@@ -25,7 +25,10 @@ def get_contract_definition(path: str) -> Dict[str, Any]:
     path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
-        raise TypeError(f"Contract name {path} does not exist in artifacts.")
+        path = os.path.join(Path(__file__), f"../../../data/abi/{path}.json")
+        path_obj = Path(path).expanduser().resolve()
+        if not path_obj.exists():
+            raise TypeError(f"Contract name {path} does not exist in artifacts.")
 
     with open(path_obj) as f:
         return json.load(f)
