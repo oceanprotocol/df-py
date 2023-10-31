@@ -31,7 +31,7 @@ def calc_predictoor_rewards(
     predictoors: Dict[str, Predictoor], tokens_avail: Union[int, float], chain_id: int
 ) -> Dict[str, Dict[str, float]]:
     """
-    Calculate rewards for predictoors based on their accuracy and available tokens.
+    Calculate rewards for predictoors based on their weekly payout.
 
     @arguments
     predictoors -- dict of [pdr_address] : Predictoor objects
@@ -59,25 +59,25 @@ def calc_predictoor_rewards(
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
     for contract in predictoor_contracts:
-        total_accuracy_for_contract = sum(
+        total_payout_for_contract = sum(
             [
-                p.get_prediction_summary(contract).correct_prediction_count
+                p.get_prediction_summary(contract).total_payout
                 for p in predictoors.values()
             ]
         )
 
         # If total accuracy for this contract is 0, no rewards are distributed
-        if total_accuracy_for_contract == 0:
+        if total_payout_for_contract == 0:
             continue
 
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
-            accuracy_for_contract = predictoor.get_prediction_summary(
+            payout_contract = predictoor.get_prediction_summary(
                 contract
-            ).correct_prediction_count
+            ).total_payout
             rewards[contract][pdr_address] = (
-                accuracy_for_contract
-                / total_accuracy_for_contract
+                payout_contract
+                / total_payout_for_contract
                 * tokens_per_contract
             )
 
