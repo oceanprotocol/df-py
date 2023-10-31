@@ -74,10 +74,11 @@ class PredictoorBase:
 
 class PredictionSummary:
     @enforce_types
-    def __init__(self, prediction_count, correct_prediction_count, contract_addr):
+    def __init__(self, prediction_count, correct_prediction_count, contract_addr, total_payout):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
+        self.total_payout = total_payout
 
     @property
     def accuracy(self) -> float:
@@ -103,15 +104,17 @@ class Predictoor(PredictoorBase):
         """
         prediction_count = 0
         correct_prediction_count = 0
+        total_payout = 0
         for prediction in self._predictions:
             if prediction.contract_addr != contract_addr:
                 continue
             prediction_count += 1
             if prediction.is_correct:
                 correct_prediction_count += 1
+                total_payout += prediction.payout
 
         return PredictionSummary(
-            prediction_count, correct_prediction_count, contract_addr
+            prediction_count, correct_prediction_count, contract_addr, total_payout
         )
 
     @property
