@@ -59,25 +59,27 @@ def calc_predictoor_rewards(
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
     for contract in predictoor_contracts:
-        total_payout_for_contract = sum(
-            [
-                p.get_prediction_summary(contract).total_payout
-                for p in predictoors.values()
-            ]
-        )
 
-        # If total accuracy for this contract is 0, no rewards are distributed
-        if total_payout_for_contract == 0:
+        total_revenue_for_contract = 0
+        for p in predictoors.values():
+            summary = p.get_prediction_summary(contract)
+            total_revenue_for_contract += max(summary.total_revenue, 0) # ignore negative values
+
+        # If total revenue for this contract is 0, no rewards are distributed
+        if total_revenue_for_contract == 0:
             continue
 
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
-            payout_contract = predictoor.get_prediction_summary(
+            revenue_contract = predictoor.get_prediction_summary(
                 contract
-            ).total_payout
+            ).total_revenue
+            if revenue_contract < 0:
+                # ignore negative revenues
+                continue
             rewards[contract][pdr_address] = (
-                payout_contract
-                / total_payout_for_contract
+                revenue_contract
+                / total_revenue_for_contract
                 * tokens_per_contract
             )
 
