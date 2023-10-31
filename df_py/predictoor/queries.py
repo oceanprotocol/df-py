@@ -110,7 +110,7 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
         # pylint: disable=line-too-long
         query = """
         {
-            predictPredictions(    where: {slot_: {slot_gt: %s, slot_lte: %s}}, skip:%s, first:%s) {
+            predictPredictions(where: {slot_: {slot_gt: %s, slot_lte: %s, status: Paying}, payout_not: null}, skip:%s, first:%s) {
                 id,
                 slot{
                     status,
