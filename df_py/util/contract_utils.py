@@ -38,7 +38,7 @@ def get_contract_source(path: str) -> str:
     path_obj = Path(path).expanduser().resolve()
 
     if not path_obj.exists():
-        raise TypeError(f"Contract name {path} does not exist in artifacts.")
+        raise TypeError(f"Contract name {path} does not exist in contracts.")
 
     return open(path_obj, "r").read()
 
