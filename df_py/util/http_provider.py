@@ -6,18 +6,6 @@ from web3 import HTTPProvider, WebsocketProvider
 
 from df_py.util.request import make_post_request
 
-GANACHE_URL = "http://127.0.0.1:8545"
-POLYGON_URL = "https://rpc.polygon.oceanprotocol.com"
-
-SUPPORTED_NETWORK_NAMES = {
-    "rinkeby",
-    "kovan",
-    "ganache",
-    "mainnet",
-    "ropsten",
-    "polygon",
-}
-
 
 class CustomHTTPProvider(HTTPProvider):
     """
