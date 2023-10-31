@@ -112,6 +112,7 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
         {
             predictPredictions(where: {slot_: {slot_gt: %s, slot_lte: %s, status: Paying}, payout_not: null}, skip:%s, first:%s) {
                 id,
+                stake,
                 slot{
                     status,
                     predictContract {
