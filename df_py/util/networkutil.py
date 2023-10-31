@@ -2,6 +2,7 @@ import os
 from typing import Union
 
 from enforce_typing import enforce_types
+from web3.main import Web3
 
 from df_py.util.constants import MULTISIG_ADDRS
 from df_py.util.web3 import get_rpc_url, get_web3
@@ -85,7 +86,7 @@ def chain_id_to_network(chainID: int) -> str:
 
 
 @enforce_types
-def chain_id_to_web3(chainID: int) -> str:
+def chain_id_to_web3(chainID: int) -> Web3:
     """Returns the web3 instance for a given chainID"""
     network_name = _CHAINID_TO_NETWORK[chainID]
     return get_web3(get_rpc_url(network_name))
