@@ -54,15 +54,8 @@ def load_contract(web3: Web3, path: str, address: str) -> Contract:
         address=web3.to_checksum_address(address), abi=abi, bytecode=bytecode
     )
 
-
 @enforce_types
-def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
-    contract_source = get_contract_source(path)
-    contract_base_name = path if "/" not in path else path.split("/")[-1]
-
-    if contract_base_name == "VestingWallet":
-        contract_base_name = "VestingWalletHalving"
-
+def compile_contract(contract_source: str, contract_base_name: str) -> tuple:
     solcx.install_solc(version="0.8.12")
     solcx.set_solc_version("0.8.12")
 
@@ -81,6 +74,18 @@ def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
     while contract_name.lower() != contract_base_name.lower():
         contract_id, contract_interface = compiled_sol.popitem()
         contract_name = contract_id.split(":")[1]
+
+    return contract_name, contract_interface, contract_id
+
+@enforce_types
+def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:
+    contract_source = get_contract_source(path)
+    contract_base_name = path if "/" not in path else path.split("/")[-1]
+
+    if contract_base_name == "VestingWallet":
+        contract_base_name = "VestingWalletHalving"
+
+    _, contract_interface, _ = compile_contract(contract_source, contract_base_name)
 
     bytecode = contract_interface["bin"]
     abi = contract_interface["abi"]
