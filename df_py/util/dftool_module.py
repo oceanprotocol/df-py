@@ -558,9 +558,7 @@ def do_dispense_active():
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
     token_symbol = (
-        ContractBase(
-            web3, "OceanToken", web3.to_checksum_address(arguments.TOKEN_ADDR)
-        )
+        ContractBase(web3, "OceanToken", web3.to_checksum_address(arguments.TOKEN_ADDR))
         .symbol()
         .upper()
     )

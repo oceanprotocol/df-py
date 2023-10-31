@@ -57,6 +57,7 @@ def load_contract(web3: Web3, path: str, address: str) -> Contract:
         address=web3.to_checksum_address(address), abi=abi, bytecode=bytecode
     )
 
+
 @enforce_types
 def compile_contract(contract_source: str, contract_base_name: str) -> tuple:
     solcx.install_solc(version="0.8.12")
@@ -79,6 +80,7 @@ def compile_contract(contract_source: str, contract_base_name: str) -> tuple:
         contract_name = contract_id.split(":")[1]
 
     return contract_name, contract_interface, contract_id
+
 
 @enforce_types
 def deploy_contract(web3: Web3, path: str, constructor_args: list) -> Contract:

@@ -77,12 +77,14 @@ def record_deployed_contracts(address_file: str, chainID: int):
     elif chainID == networkutil.DEV_CHAINID:
         web3.eth.default_account = web3.eth.accounts[0]
         C["VestingWalletHalving"] = ContractBase(
-            web3, "VestingWalletHalving", constructor_args=[
+            web3,
+            "VestingWalletHalving",
+            constructor_args=[
                 "0x0000000000000000000000000000000000000001",
                 1957773838,
                 100,
-                10
-            ]
+                10,
+            ],
         )
 
     CONTRACTS[chainID] = C
