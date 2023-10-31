@@ -148,7 +148,7 @@ def predictoor_summary_csv_filename(csv_dir):
 
 # ------------------------------- REWARDS -------------------------------
 def sample_predictoor_rewards_csv():
-    return """predictoor_addr,contract_addr,OCEAN_amt
+    return """predictoor_addr,contract_addr,ROSE_amt
 0x0000000000000000000000000000000000000000,0xContract1,10.0
 0x1000000000000000000000000000000000000000,0xContract2,20.0
 0x2000000000000000000000000000000000000000,0xContract1,30.0
@@ -166,7 +166,7 @@ def save_predictoor_rewards_csv(
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["predictoor_addr", "contract_addr", "OCEAN_amt"]
+        row = ["predictoor_addr", "contract_addr", "ROSE_amt"]
         writer.writerow(row)
 
         for predictoor_addr, contracts in predictoor_rewards.items():
@@ -180,6 +180,19 @@ def save_predictoor_rewards_csv(
 
 @enforce_types
 def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
+    """
+    Load rewards data from a given CSV file.
+    
+    @arguments
+      csv_dir (str) -- Directory path where the CSV file is located.
+
+    @return:
+      Dict[str, Dict[str, float]] -- A nested dictionary containing rewards data. 
+                                    [predictoor_addr]:[contract_addr]:[reward_amount]
+
+    Raises:
+    - AssertionError: If the CSV file structure doesn't match the expected structure.
+    """
     csv_file = predictoor_rewards_csv_filename(csv_dir)
     predictoor_rewards: Dict[str, Dict[str, float]] = {}
 
@@ -188,7 +201,7 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
 
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["predictoor_addr", "contract_addr", "OCEAN_amt"]
+                assert row == ["predictoor_addr", "contract_addr", "ROSE_amt"]
                 continue
             predictoor_addr, contract_addr, reward_s = row
             predictoor_addr = predictoor_addr.lower()
