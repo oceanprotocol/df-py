@@ -22,6 +22,7 @@ from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     save_predictoor_data_csv,
     save_predictoor_contracts_csv,
+    save_predictoor_summary_csv,
 )
 from df_py.predictoor.queries import query_predictoors, query_predictoor_contracts
 from df_py.util import blockrange, dispense, get_rate, networkutil
@@ -409,6 +410,7 @@ def do_predictoor_data():
 
     save_predictoor_contracts_csv(predictoor_contracts, csv_dir)
     save_predictoor_data_csv(predictoor_data, csv_dir)
+    save_predictoor_summary_csv(predictoor_data, csv_dir)
     print("dftool predictoor_data: Done")
 
 
