@@ -137,9 +137,9 @@ jobs:
         run: |
           ./dftool calc volume $CSV_DIR 0 --START_DATE $date
 
-      - name: Run dftool calc rewards for predictoor
+      - name: Run dftool calc rewards for predictoor_rose
         run: |
-          ./dftool calc predictoor $CSV_DIR 0 --START_DATE $date
+          ./dftool calc predictoor_rose $CSV_DIR 0 --START_DATE $date
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
