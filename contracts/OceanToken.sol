@@ -3,7 +3,7 @@ pragma solidity 0.8.12;
 
 import "OpenZeppelin/openzeppelin-contracts@4.2.0/contracts/utils/math/SafeMath.sol";
 
-contract Simpletoken {
+contract OceanToken {
 
     using SafeMath for uint256;
 

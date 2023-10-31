@@ -72,7 +72,6 @@ def compile_contract(contract_source: str, contract_base_name: str) -> tuple:
     # returns the interfaces of imported contracts e.g. OpenZeppelin
     contract_name = ""
     while contract_name.lower() != contract_base_name.lower():
-        print(f"Searching for: {contract_base_name}, current name: {contract_name}")
         contract_id, contract_interface = compiled_sol.popitem()
         contract_name = contract_id.split(":")[1]
 
