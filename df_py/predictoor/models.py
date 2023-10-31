@@ -4,9 +4,10 @@ from enforce_typing import enforce_types
 
 class Prediction:
     @enforce_types
-    def __init__(self, slot: int, payout: float, contract_addr: str):
+    def __init__(self, slot: int, payout: float, stake:float, contract_addr: str):
         self.slot = slot
         self.payout = payout
+        self.stake = stake
         self.contract_addr = contract_addr
 
     @property
@@ -37,9 +38,10 @@ class Prediction:
             ]
             slot = int(prediction_dict["slot"]["slot"])
             payout = float(prediction_dict["payout"]["payout"])
+            stake = float(prediction_dict["stake"])
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("Invalid prediction dictionary") from exc
-        return cls(slot, payout, contract_addr)
+        return cls(slot, payout, stake, contract_addr)
 
 
 class PredictoorBase:
@@ -74,11 +76,12 @@ class PredictoorBase:
 
 class PredictionSummary:
     @enforce_types
-    def __init__(self, prediction_count, correct_prediction_count, contract_addr, total_payout):
+    def __init__(self, prediction_count, correct_prediction_count, contract_addr, total_payout, total_revenue):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
         self.total_payout = total_payout
+        self.total_revenue = total_revenue
 
     @property
     def accuracy(self) -> float:
@@ -105,6 +108,8 @@ class Predictoor(PredictoorBase):
         prediction_count = 0
         correct_prediction_count = 0
         total_payout = 0
+        total_revenue = 0
+
         for prediction in self._predictions:
             if prediction.contract_addr != contract_addr:
                 continue
@@ -112,6 +117,9 @@ class Predictoor(PredictoorBase):
             if prediction.is_correct:
                 correct_prediction_count += 1
                 total_payout += prediction.payout
+                total_revenue += prediction.payout # payout includes initial stake + earnings
+            else:
+                total_revenue -= prediction.stake
 
         return PredictionSummary(
             prediction_count, correct_prediction_count, contract_addr, total_payout
