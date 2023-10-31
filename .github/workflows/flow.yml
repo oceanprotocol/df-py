@@ -137,6 +137,10 @@ jobs:
         run: |
           ./dftool calc volume $CSV_DIR 0 --START_DATE $date
 
+      - name: Run dftool calc rewards for predictoor
+        run: |
+          ./dftool calc predictoor $CSV_DIR 0 --START_DATE $date
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -157,6 +161,13 @@ jobs:
         if: github.event_name == 'schedule'
         run: |
           ./dftool dispense_active $CSV_DIR 1 --DFREWARDS_ADDR=0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 --TOKEN_ADDR=0x967da4048cD07aB37855c090aAF366e4ce1b9F48
+
+      - name: Distribute active rewards
+        env:
+          USE_MULTISIG: false
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool dispense_rose $CSV_DIR 1 --DFREWARDS_ADDR=TODO --TOKEN_ADDR=TODO
 
       - name: Rename folder to round number
         run: |
