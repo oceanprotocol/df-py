@@ -91,6 +91,7 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
             start_dt, invalid_substream
         )
 
+
 def test_launch_dates():
     # a week before predictoor's launch
     start_dt = datetime(2023, 11, 9)
@@ -130,7 +131,6 @@ def test_launch_dates():
         start_dt, volume_substream
     )
     assert volume_rewards == 37000
-
 
     challenge_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(

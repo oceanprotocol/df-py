@@ -36,6 +36,7 @@ def test_calc_challenge_rewards_with_dates():
     assert rewards[1]["OCEAN_amt"] == 0
     assert rewards[2]["OCEAN_amt"] == 0
 
+
 @patch("df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime(2023, 11, 15))
 def test_calc_challenge_rewards_one_day_before_predictoor():
     from_addrs = [
