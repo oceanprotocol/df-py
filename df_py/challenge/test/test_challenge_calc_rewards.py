@@ -36,8 +36,6 @@ def test_calc_challenge_rewards_with_dates():
     assert rewards[1]["OCEAN_amt"] == 0
     assert rewards[2]["OCEAN_amt"] == 0
 
-
-@patch("df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime(2023, 11, 15))
 def test_calc_challenge_rewards_one_day_before_predictoor():
     from_addrs = [
         "0xfrom1",
@@ -45,16 +43,14 @@ def test_calc_challenge_rewards_one_day_before_predictoor():
         "0xfrom3",
     ]
 
-    before_challenge = datetime(2020, 12, 31)
-    rewards = calc_challenge_rewards(from_addrs, at_date=before_challenge)
+    pre_predictoor = datetime(2023, 11, 15)
+    rewards = calc_challenge_rewards(from_addrs, at_date=pre_predictoor)
 
     assert len(rewards) == 3
     assert rewards[0]["OCEAN_amt"] == 2500
     assert rewards[1]["OCEAN_amt"] == 1500
     assert rewards[2]["OCEAN_amt"] == 1000
 
-
-@patch("df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime(2023, 11, 15))
 def test_calc_challenge_rewards_predictoor_launch():
     from_addrs = [
         "0xfrom1",
@@ -62,8 +58,8 @@ def test_calc_challenge_rewards_predictoor_launch():
         "0xfrom3",
     ]
 
-    before_challenge = datetime(2020, 12, 31)
-    rewards = calc_challenge_rewards(from_addrs, at_date=before_challenge)
+    post_predictoor = datetime(2023, 11, 15)
+    rewards = calc_challenge_rewards(from_addrs, at_date=post_predictoor)
 
     assert len(rewards) == 3
     assert rewards[0]["OCEAN_amt"] == 500
