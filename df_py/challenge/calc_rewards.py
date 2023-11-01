@@ -1,50 +1,69 @@
 from datetime import datetime
-from typing import Any, Dict, List, Optional
+from unittest.mock import patch
 
-from enforce_typing import enforce_types
-
-from df_py.util.constants import CHALLENGE_FIRST_DATE, PREDICTOOR_DF_FIRST_DATE
+from df_py.challenge.calc_rewards import calc_challenge_rewards
 
 
-@enforce_types
-def get_challenge_reward_amounts_in_ocean(
-    at_date: Optional[datetime] = None,
-) -> List[int]:
-    """
-    @return
-      rewards - list of OCEAN amounts, in order of 1st, 2nd, 3rd place
-    """
-    today = at_date if at_date else datetime.now()
+@patch("df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
+def test_calc_challenge_rewards():
+    from_addrs = [
+        "0xfrom1",
+        "0xfrom2",
+        "0xfrom3",
+    ]
 
-    if today < CHALLENGE_FIRST_DATE:
-        return [0, 0, 0]
+    rewards = calc_challenge_rewards(from_addrs)
 
-    if today < PREDICTOOR_DF_FIRST_DATE:
-        return [2500, 1500, 1000]
-
-    return [500, 300, 200]
+    assert len(rewards) == 3
+    assert rewards[0]["OCEAN_amt"] == 2500
+    assert rewards[1]["OCEAN_amt"] == 1500
+    assert rewards[2]["OCEAN_amt"] == 1000
 
 
-@enforce_types
-def calc_challenge_rewards(
-    from_addrs: list, at_date: Optional[datetime] = None
-) -> List[Dict[str, Any]]:
-    """Returns a dict of rewards for the challenge.
-    @arguments
-      - from_addrs: A list of addresses participating in the challenge.
-    @return
-    rewards -- dict of [winner_address] : float
-        The calculated rewards for each winner.
-    """
-    rewards = []
-    rewards_amts = get_challenge_reward_amounts_in_ocean(at_date)
+@patch("df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime(2021, 1, 1))
+def test_calc_challenge_rewards_with_dates():
+    from_addrs = [
+        "0xfrom1",
+        "0xfrom2",
+        "0xfrom3",
+    ]
 
-    for i, reward_amt in enumerate(rewards_amts):
-        rewards.append(
-            {
-                "winner_addr": from_addrs[i],
-                "OCEAN_amt": reward_amt,
-            }
-        )
+    before_challenge = datetime(2020, 12, 31)
+    rewards = calc_challenge_rewards(from_addrs, at_date=before_challenge)
 
-    return rewards
+    assert len(rewards) == 3
+    assert rewards[0]["OCEAN_amt"] == 0
+    assert rewards[1]["OCEAN_amt"] == 0
+    assert rewards[2]["OCEAN_amt"] == 0
+
+
+def test_calc_challenge_rewards_one_day_before_predictoor():
+    from_addrs = [
+        "0xfrom1",
+        "0xfrom2",
+        "0xfrom3",
+    ]
+
+    pre_predictoor = datetime(2023, 11, 15)
+    rewards = calc_challenge_rewards(from_addrs, at_date=pre_predictoor)
+
+    assert len(rewards) == 3
+    assert rewards[0]["OCEAN_amt"] == 2500
+    assert rewards[1]["OCEAN_amt"] == 1500
+    assert rewards[2]["OCEAN_amt"] == 1000
+
+
+def test_calc_challenge_rewards_predictoor_launch():
+    from_addrs = [
+        "0xfrom1",
+        "0xfrom2",
+        "0xfrom3",
+    ]
+
+    post_predictoor = datetime(2023, 11, 16)
+    rewards = calc_challenge_rewards(from_addrs, at_date=post_predictoor)
+
+    assert len(rewards) == 3
+    assert rewards[0]["OCEAN_amt"] == 500
+    assert rewards[1]["OCEAN_amt"] == 300
+    assert rewards[2]["OCEAN_amt"] == 200
