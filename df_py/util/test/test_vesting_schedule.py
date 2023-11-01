@@ -85,10 +85,10 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         challenge_rewards + predictoor_rewards + volume_rewards, 0.1
     )
 
-    predictoor_substream = "invalid_substream"
+    invalid_substream = "invalid_substream"
     with pytest.raises(ValueError):
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream
+            start_dt, invalid_substream
         )
 
 def test_launch_dates():
@@ -117,7 +117,7 @@ def test_launch_dates():
     assert total_rewards == predictoor_rewards + volume_rewards + challenge_rewards
 
     # predictoor's launched - reward distribution day
-    start_dt = datetime(2023, 11, 16) 
+    start_dt = datetime(2023, 11, 16)
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream
