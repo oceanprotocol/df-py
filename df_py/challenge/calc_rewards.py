@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Optional
 
 from enforce_typing import enforce_types
 
-from df_py.util.constants import CHALLENGE_FIRST_DATE
+from df_py.util.constants import CHALLENGE_FIRST_DATE, PREDICTOOR_DF_FIRST_DATE
 
 
 @enforce_types
@@ -18,6 +18,9 @@ def get_challenge_reward_amounts_in_ocean(
 
     if today < CHALLENGE_FIRST_DATE:
         return [0, 0, 0]
+
+    if today < PREDICTOOR_DF_FIRST_DATE:
+        return [2500, 1500, 1000]
 
     return [500, 300, 200]
 
