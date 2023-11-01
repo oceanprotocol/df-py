@@ -36,6 +36,7 @@ def test_calc_challenge_rewards_with_dates():
     assert rewards[1]["OCEAN_amt"] == 0
     assert rewards[2]["OCEAN_amt"] == 0
 
+
 def test_calc_challenge_rewards_one_day_before_predictoor():
     from_addrs = [
         "0xfrom1",
@@ -50,6 +51,7 @@ def test_calc_challenge_rewards_one_day_before_predictoor():
     assert rewards[0]["OCEAN_amt"] == 2500
     assert rewards[1]["OCEAN_amt"] == 1500
     assert rewards[2]["OCEAN_amt"] == 1000
+
 
 def test_calc_challenge_rewards_predictoor_launch():
     from_addrs = [
