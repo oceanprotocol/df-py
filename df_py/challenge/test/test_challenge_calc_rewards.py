@@ -58,7 +58,7 @@ def test_calc_challenge_rewards_predictoor_launch():
         "0xfrom3",
     ]
 
-    post_predictoor = datetime(2023, 11, 15)
+    post_predictoor = datetime(2023, 11, 16)
     rewards = calc_challenge_rewards(from_addrs, at_date=post_predictoor)
 
     assert len(rewards) == 3
