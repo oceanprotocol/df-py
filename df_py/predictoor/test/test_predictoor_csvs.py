@@ -16,7 +16,7 @@ def test_predictoordata(tmp_path):
         for j in range(5):
             predictoor.add_prediction(
                 Prediction(
-                    i, j % 2 * 1.0, f"0x000000000000000000000000000000000000000{j}"
+                    i, j % 2 * 1.0, 1.0, f"0x000000000000000000000000000000000000000{j}"
                 )
             )
         predictoors[address] = predictoor
@@ -70,7 +70,7 @@ def test_save_predictoor_summary(tmp_path):
         for j in range(5):
             predictoor.add_prediction(
                 Prediction(
-                    i, j % 2 * 1.0, f"0x000000000000000000000000000000000000000{j}"
+                    i, j % 2 * 1.0, 1.0, f"0x000000000000000000000000000000000000000{j}"
                 )
             )
         predictoors[address] = predictoor
