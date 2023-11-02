@@ -47,12 +47,12 @@ def test_noarg_commands():
     subargs = [""] + ["badarg"] + subargs
 
     # these commands are intended to have no parameters
-    fail_gracefully = ["help", "compile", "new_acct"]
+    fail_gracefully = ["help", "new_acct"]
 
     for subarg in subargs:
         sys_argv = ["dftool", subarg]
 
-        if subarg in ["compile", "new_acct"]:
+        if subarg in ["new_acct"]:
             with sysargs_context(sys_argv):
                 dftool_module._do_main()
             continue
@@ -71,7 +71,7 @@ def test_noarg_commands():
 
 @enforce_types
 def _get_HELP_subargs_in_dftool() -> List[str]:
-    """Return e.g. ["help", "compile", "get_rate", "volsym", ...]"""
+    """Return e.g. ["help", "get_rate", "volsym", ...]"""
     help_content = getattr(dftool_arguments, "HELP_LONG")
     s_lines = help_content.split("\n")
 
@@ -81,10 +81,10 @@ def _get_HELP_subargs_in_dftool() -> List[str]:
             continue
         if "dftool " not in s_line:
             continue
-        subarg = s_line.lstrip().split(" ")[1]  # e.g. "compile"
+        subarg = s_line.lstrip().split(" ")[1]  # e.g. "volsym"
         subargs.append(subarg)
 
-    assert "compile" in subargs  # postcondition
+    assert "get_rate" in subargs  # postcondition
     return subargs
 
 

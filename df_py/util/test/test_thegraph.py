@@ -1,17 +1,14 @@
 from pprint import pprint
 from unittest.mock import Mock, patch
 
-import brownie
 import pytest
 from enforce_typing import enforce_types
 from requests import Response
 
-from df_py.util import networkutil, oceantestutil, oceanutil
+from df_py.util import networkutil, oceantestutil
 from df_py.util.graphutil import submit_query
 
 CHAINID = networkutil.DEV_CHAINID
-
-accounts = None
 
 
 @enforce_types
@@ -35,13 +32,4 @@ def test_connection_failure():
 
 @enforce_types
 def setup_function():
-    networkutil.connect(CHAINID)
-    global accounts
-    accounts = brownie.network.accounts
-    oceanutil.record_dev_deployed_contracts()
-    oceantestutil.fill_accounts_with_OCEAN()
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+    oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())

@@ -7,15 +7,14 @@ WORKDIR /app/df-py
 RUN python3.8 -m pip install --upgrade pip
 RUN python3.8 -m pip install .
 
-RUN brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
-RUN brownie pm install GNSPS/solidity-bytes-utils@0.8.0
-RUN brownie networks add mumbai mumbai host=https://polygon-mumbai.infura.io/v3/${WEB3_INFURA_PROJECT_ID} chainid=80001 explorer=https://api.etherscan.io/api provider=infura >/dev/null
-RUN brownie networks add sapphire-mainnet sapphire-mainnet host=https://sapphire.oasis.io chainid=23294
-RUN brownie networks add sapphire-testnet sapphire-testnet host=https://testnet.sapphire.oasis.dev chainid=23295
+RUN npm install @openzeppelin/contracts
+ENV MUMBAI_RPC_URL="https://polygon-mumbai.infura.io/v3/"
+ENV OASIS_SAPPHIRE_RPC_URL="https://sapphire.oasis.io"
+ENV OASIS_SAPPHIRE_TESTNET_RPC_URL="https://testnet.sapphire.oasis.dev"
+ENV INFURA_NETWORKS="mumbai"
 
 COPY . .
 RUN rm -rf build
-RUN brownie compile
 
 ENV PATH="/app/df-py:${PATH}"
 

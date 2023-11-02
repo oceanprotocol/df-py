@@ -3,7 +3,6 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-
 from enforce_typing import enforce_types
 
 from df_py.challenge import judge
@@ -67,24 +66,26 @@ def test_get_txs_invalid_data():
 
 
 @enforce_types
-def test_nft_addr_to_pred_vals():
-    mumbai_chainid = 80001
+def test_nft_addr_to_pred_vals(monkeypatch):
+    monkeypatch.setenv(
+        "MUMBAI_RPC_URL", "https://polygon-mumbai.blockpi.network/v1/rpc/public"
+    )
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "")
     known_nft_addr = "0x471817de04faa9b616ed7644117d957439717bf9"
 
-    networkutil.connect(mumbai_chainid)
+    w3 = networkutil.chain_id_to_web3(80001)
+
     judge_acct = judge.get_judge_acct()
-    pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
+    pred_vals = judge._nft_addr_to_pred_vals(w3, known_nft_addr, judge_acct)
 
     assert len(pred_vals) == 12
     assert pred_vals[0] == 1633.1790360265798
 
     with patch("df_py.challenge.judge.crypto.asym_decrypt") as mock:
         mock.side_effect = Exception("mocked exception")
-        pred_vals = judge._nft_addr_to_pred_vals(known_nft_addr, judge_acct)
+        pred_vals = judge._nft_addr_to_pred_vals(w3, known_nft_addr, judge_acct)
 
     assert pred_vals == []
-
-    networkutil.disconnect()
 
 
 @enforce_types
@@ -138,7 +139,7 @@ def test_get_judge_acct():
 
 
 @enforce_types
-def test_get_challenge_data():
+def test_get_challenge_data(w3):
     dt = datetime(2021, 9, 1, 12, 59, tzinfo=timezone.utc)
     judge_acct = judge.get_judge_acct()
 
@@ -172,7 +173,7 @@ def test_get_challenge_data():
                 assert len(predvals_0x123) == len(cex_vals)
                 assert len(predvals_0x456) != len(cex_vals)
                 mock3.side_effect = [predvals_0x123, predvals_0x456, predvals_0x123]
-                challenge_data = judge.get_challenge_data(dt, judge_acct)
+                challenge_data = judge.get_challenge_data(w3, dt, judge_acct)
 
     (from_addrs, nft_addrs, nmses) = challenge_data
 

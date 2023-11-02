@@ -3,11 +3,11 @@ import os
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional, Union
 
-import brownie
 from enforce_typing import enforce_types
+from web3.main import Web3
 
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
+from df_py.util.contract_base import ContractBase
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
 from df_py.util.networkutil import chain_id_to_multisig_addr
@@ -18,6 +18,7 @@ TRY_AGAIN = 3
 
 @enforce_types
 def dispense(
+    web3: Web3,
     rewards: Dict[str, float],
     dfrewards_addr: str,
     token_addr: str,
@@ -47,9 +48,9 @@ def dispense(
     usemultisig = os.getenv("USE_MULTISIG", "false") == "true"
     if usemultisig:
         logger.info("multisig enabled")
-        multisigaddr = chain_id_to_multisig_addr(brownie.network.chain.id)
-    df_rewards = B.DFRewards.at(dfrewards_addr)
-    TOK = B.Simpletoken.at(token_addr)
+        multisigaddr = chain_id_to_multisig_addr(web3.eth.chain_id)
+    df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
+    TOK = ContractBase(web3, "OceanToken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
     to_addrs = list(rewards.keys())
     values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]
@@ -59,11 +60,13 @@ def dispense(
 
     def approveAmt(amt):
         if usemultisig:
-            data = TOK.approve.encode_input(df_rewards, amt)
+            data = TOK.contract.encodeABI(
+                fn_name="approve", args=[df_rewards.address, amt]
+            )
             value = 0
             to = TOK.address
             # data = bytes.fromhex(data[2:])
-            send_multisig_tx(multisigaddr, to, value, data)
+            send_multisig_tx(multisigaddr, web3, to, value, data)
             return
         TOK.approve(df_rewards, amt, {"from": from_account})
 
@@ -88,8 +91,9 @@ def dispense(
             # if env use multisig
             if usemultisig:
                 # get data of tx
-                data = df_rewards.allocate.encode_input(
-                    to_addrs[st:fin], values[st:fin], TOK.address
+                data = df_rewards.contract.encodeABI(
+                    fn_name="allocate",
+                    args=[to_addrs[st:fin], values[st:fin], TOK.address],
                 )
                 # value is 0
                 value = 0
@@ -97,7 +101,7 @@ def dispense(
                 # convert data to bytes
                 # data = bytes.fromhex(data[2:])
 
-                send_multisig_tx(multisigaddr, to, value, data)
+                send_multisig_tx(multisigaddr, web3, to, value, data)
             else:
                 df_rewards.allocate(
                     to_addrs[st:fin],
@@ -114,15 +118,21 @@ def dispense(
 
 
 @enforce_types
-def dispense_passive(ocean, feedistributor, amount: Union[float, int]):
+def dispense_passive(web3, ocean, feedistributor, amount: Union[float, int]):
     amount_wei = to_wei(amount)
-    transfer_data = ocean.transfer.encode_input(feedistributor.address, amount_wei)
+    transfer_data = ocean.contract.encodeABI(
+        fn_name="transfer", args=[feedistributor.address, amount_wei]
+    )
 
-    checkpoint_total_supply_data = feedistributor.checkpoint_total_supply.encode_input()
-    checkpoint_token_data = feedistributor.checkpoint_token.encode_input()
+    checkpoint_total_supply_data = feedistributor.contract.encodeABI(
+        fn_name="checkpoint_total_supply"
+    )
+    checkpoint_token_data = feedistributor.contract.encodeABI(
+        fn_name="checkpoint_token"
+    )
 
-    multisig_addr = chain_id_to_multisig_addr(brownie.network.chain.id)
-    send_multisig_tx(multisig_addr, ocean.address, 0, transfer_data)
+    multisig_addr = chain_id_to_multisig_addr(web3.eth.chain_id)
+    send_multisig_tx(multisig_addr, web3, ocean.address, 0, transfer_data)
 
     for data in [checkpoint_total_supply_data, checkpoint_token_data]:
-        send_multisig_tx(multisig_addr, feedistributor.address, 0, data)
+        send_multisig_tx(multisig_addr, web3, feedistributor.address, 0, data)

@@ -1,14 +1,14 @@
 import datetime
 from datetime import timezone
 
-from enforce_typing import enforce_types
 import pytest
+from enforce_typing import enforce_types
 
 from df_py.challenge.timeutil import (
     dt_to_ut,
-    ut_to_dt,
     pretty_time,
     print_datetime_info,
+    ut_to_dt,
 )
 
 

@@ -1,14 +1,13 @@
-import brownie
 from enforce_typing import enforce_types
 
 from df_py.util import crypto
 
 
 @enforce_types
-def test_asym_encrypt_decrypt():
-    alice = brownie.accounts.add()
+def test_asym_encrypt_decrypt(w3):
+    alice = w3.eth.account.create()
 
-    privkey = alice.private_key  # str
+    privkey = alice._private_key.hex()  # str
     pubkey = crypto.calc_pubkey(privkey)  # str
 
     value = "hello there"

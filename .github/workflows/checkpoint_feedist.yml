@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
     strategy:
       matrix:
         python-version: [3.8]
@@ -41,15 +42,15 @@ jobs:
           pip install -r requirements.txt --quiet
 
       - name: Set up Openzeppelin
-        run: |
-          brownie pm install OpenZeppelin/openzeppelin-contracts@4.2.0
-          brownie pm install GNSPS/solidity-bytes-utils@0.8.0
+        run: npm install @openzeppelin/contracts
 
       - name: Set env variables
         run: |
           echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "MAINNET_RPC_URL=https://mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "INFURA_NETWORKS=mainnet" >> $GITHUB_ENV
 
       - name: Make dftool executable
         run: chmod +x dftool

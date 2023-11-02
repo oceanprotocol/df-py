@@ -1,5 +1,5 @@
-from enforce_typing import enforce_types
 import pytest
+from enforce_typing import enforce_types
 from pytest import approx
 
 from df_py.challenge.nmse import calc_nmse, plot_prices

@@ -1,56 +1,49 @@
-import brownie
 from enforce_typing import enforce_types
 
-from df_py.util import networkutil
-from df_py.util.constants import BROWNIE_PROJECT as B
-
-accounts = None
+from df_py.util.base18 import to_wei
+from df_py.util.contract_base import ContractBase
 
 
 @enforce_types
-def test_transfer():
-    token = _deploy_token()
-    assert token.totalSupply() == 1e21
-    token.transfer(accounts[1], 1e20, {"from": accounts[0]})
-    assert token.balanceOf(accounts[1]) == 1e20
-    assert token.balanceOf(accounts[0]) == 9e20
+def test_transfer(w3, all_accounts):
+    accounts = all_accounts
+    token = _deploy_token(w3)
+    initial_balance = token.balanceOf(accounts[0])
+    assert token.totalSupply() == to_wei(1e21)
+    token.transfer(accounts[1], to_wei(1e20), {"from": accounts[0]})
+    assert token.balanceOf(accounts[1]) == to_wei(1e20)
+    assert token.balanceOf(accounts[0]) == initial_balance - to_wei(1e20)
 
 
 @enforce_types
-def test_approve():
-    token = _deploy_token()
-    token.approve(accounts[1], 1e19, {"from": accounts[0]})
-    assert token.allowance(accounts[0], accounts[1]) == 1e19
+def test_approve(w3, all_accounts):
+    accounts = all_accounts
+    token = _deploy_token(w3)
+    token.approve(accounts[1], to_wei(1e19), {"from": accounts[0]})
+    assert token.allowance(accounts[0], accounts[1]) == to_wei(1e19)
     assert token.allowance(accounts[0], accounts[2]) == 0
 
-    token.approve(accounts[1], 6e18, {"from": accounts[0]})
-    assert token.allowance(accounts[0], accounts[1]) == 6e18
+    token.approve(accounts[1], to_wei(6e18), {"from": accounts[0]})
+    assert token.allowance(accounts[0], accounts[1]) == to_wei(6e18)
 
 
 @enforce_types
-def test_transferFrom():
-    token = _deploy_token()
-    token.approve(accounts[1], 6e18, {"from": accounts[0]})
-    token.transferFrom(accounts[0], accounts[2], 5e18, {"from": accounts[1]})
+def test_transferFrom(w3, all_accounts):
+    accounts = all_accounts
+    token = _deploy_token(w3)
+    initial_balance = token.balanceOf(accounts[0])
 
-    assert token.balanceOf(accounts[2]) == 5e18
+    token.approve(accounts[1], to_wei(6e18), {"from": accounts[0]})
+    token.transferFrom(accounts[0], accounts[2], to_wei(5e18), {"from": accounts[1]})
+
+    assert token.balanceOf(accounts[2]) == to_wei(5e18)
     assert token.balanceOf(accounts[1]) == 0
-    assert token.balanceOf(accounts[0]) == 9.95e20
-    assert token.allowance(accounts[0], accounts[1]) == 1e18
+
+    assert token.balanceOf(accounts[0]) == initial_balance - to_wei(5e18)
 
 
 @enforce_types
-def _deploy_token():
-    return B.Simpletoken.deploy("TST", "Test Token", 18, 1e21, {"from": accounts[0]})
-
-
-@enforce_types
-def setup_function():
-    networkutil.connect_dev()
-    global accounts
-    accounts = brownie.network.accounts
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()
+def _deploy_token(w3):
+    return ContractBase(
+        w3, "OceanToken", constructor_args=["TST", "Test Token", 18, to_wei(1e21)]
+    )

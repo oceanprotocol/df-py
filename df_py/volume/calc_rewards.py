@@ -6,20 +6,20 @@ import numpy as np
 import scipy
 from enforce_typing import enforce_types
 
-from df_py.util.constants import (
-    DO_PUBREWARDS,
-    DO_RANK,
-    MAX_N_RANK_ASSETS,
-    RANK_SCALE_OP,
-    PREDICTOOR_MULTIPLIER,
-)
-from df_py.volume import allocations
-from df_py.volume import cleancase as cc
-from df_py.volume import csvs, to_usd
 from df_py.predictoor.csvs import (
     load_predictoor_contracts_csv,
     predictoor_contracts_csv_filename,
 )
+from df_py.util.constants import (
+    DO_PUBREWARDS,
+    DO_RANK,
+    MAX_N_RANK_ASSETS,
+    PREDICTOOR_MULTIPLIER,
+    RANK_SCALE_OP,
+)
+from df_py.volume import allocations
+from df_py.volume import cleancase as cc
+from df_py.volume import csvs, to_usd
 
 # Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
 TARGET_WPY = 0.015717

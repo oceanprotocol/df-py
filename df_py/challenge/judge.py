@@ -6,11 +6,12 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Optional, Tuple
 
 import numpy as np
-from brownie.network import accounts
 from enforce_typing import enforce_types
+from eth_account import Account
+from web3.main import Web3
 
-from df_py.challenge.timeutil import dt_to_ut, ut_to_dt, print_datetime_info
 from df_py.challenge.nmse import calc_nmse
+from df_py.challenge.timeutil import dt_to_ut, print_datetime_info, ut_to_dt
 from df_py.util import crypto, graphutil, networkutil, oceanutil
 from df_py.util.get_rate import get_binance_rate_all
 
@@ -85,11 +86,13 @@ def _from_addr(tx):
 
 
 @enforce_types
-def _nft_addr_to_pred_vals(nft_addr: str, judge_acct) -> List[float]:
-    nft = oceanutil.get_data_nft(nft_addr)
+def _nft_addr_to_pred_vals(web3: Web3, nft_addr: str, judge_acct) -> List[float]:
+    nft = oceanutil.get_data_nft(web3, nft_addr)
     pred_vals_str_enc = oceanutil.get_data_field(nft, "predictions")
     try:
-        pred_vals_str = crypto.asym_decrypt(pred_vals_str_enc, judge_acct.private_key)
+        pred_vals_str = crypto.asym_decrypt(
+            pred_vals_str_enc, judge_acct._private_key.hex()
+        )
         pred_vals = [float(s) for s in pred_vals_str[1:-1].split(",")]
     except:  # pylint: disable=W0702
         return []
@@ -143,7 +146,7 @@ def parse_deadline_str(deadline_str: Optional[str] = None) -> datetime:
       deadline_str - submission deadline
         Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
         Example for Round 5: 2023-05-03_23:59
-      judge_acct -- brownie account
+      judge_acct -- web3 account
 
     @return
       deadline_dt -- datetime object, in UTC
@@ -230,7 +233,7 @@ def get_judge_acct():
     judge_private_key = os.getenv("JUDGE_PRIVATE_KEY")
     assert judge_private_key, "need to set envvar JUDGE_PRIVATE_KEY"
 
-    judge_acct = accounts.add(judge_private_key)
+    judge_acct = Account.from_key(private_key=judge_private_key)
     assert judge_acct.address.lower() == JUDGE_ADDRESS.lower(), (
         f"JUDGE_PRIVATE_KEY is wrong, it must give address={JUDGE_ADDRESS}"
         "\nGet it at private repo https://github.com/oceanprotocol/private-keys"
@@ -252,12 +255,12 @@ def _filter_marked_indices(nmses: list, from_addrs: list, nft_addrs: list) -> tu
 
 @enforce_types
 def get_challenge_data(
-    deadline_dt: datetime, judge_acct
+    web3: Web3, deadline_dt: datetime, judge_acct
 ) -> Tuple[List[str], List[str], list]:
     """
     @arguments
       deadline_dt -- submission deadline, in UTC
-      judge_acct -- brownie account, must have JUDGE_ADDR
+      judge_acct -- web3 account, must have JUDGE_ADDR
 
     @return -- three lists, all ordered with lowest nmse first
       from_addrs -- list of [tx_i] : from_addr_str
@@ -287,7 +290,7 @@ def get_challenge_data(
         print(f"nft_addr = {nft_addr}")
 
         # get predicted ETH values
-        pred_vals = _nft_addr_to_pred_vals(nft_addr, judge_acct)  # main call
+        pred_vals = _nft_addr_to_pred_vals(web3, nft_addr, judge_acct)  # main call
         print(f"pred_vals: {pred_vals}")
 
         if len(pred_vals) != len(cex_vals):
