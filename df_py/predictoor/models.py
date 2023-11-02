@@ -21,6 +21,12 @@ class Prediction:
         # are being counted, so this is a safe assumption.
         return self.payout > 0
 
+    @property
+    def profit(self) -> float:
+        if self.payout > 0:
+            return self.payout
+        return -self.stake
+
     @classmethod
     def from_query_result(cls, prediction_dict: Dict) -> "Prediction":
         """
