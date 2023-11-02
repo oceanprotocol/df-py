@@ -19,10 +19,10 @@ def test_prediction_is_correct():
 
 def test_prediction_profit():
     prediction = Prediction(123, 10, 1.0, "0x1")
-    assert prediction.profit == 10
+    assert prediction.revenue == 10
 
     prediction = Prediction(123, 0, 1.0, "0x1")
-    assert prediction.profit == -1
+    assert prediction.revenue == -1
 
 
 def test_prediction_from_query_result():
@@ -38,7 +38,7 @@ def test_prediction_from_query_result():
     assert prediction.slot == 123
     assert prediction.payout == 1.23
     assert prediction.stake == 0.22352
-    assert prediction.profit == prediction.payout
+    assert prediction.revenue == prediction.payout
     assert prediction.contract_addr == "0x2"
     with pytest.raises(ValueError):
         prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}

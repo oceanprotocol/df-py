@@ -22,7 +22,7 @@ class Prediction:
         return self.payout > 0
 
     @property
-    def profit(self) -> float:
+    def revenue(self) -> float:
         if self.payout > 0:
             return self.payout
         return -self.stake
@@ -128,14 +128,10 @@ class Predictoor(PredictoorBase):
             if prediction.contract_addr != contract_addr:
                 continue
             prediction_count += 1
+            total_revenue += prediction.revenue
             if prediction.is_correct:
                 correct_prediction_count += 1
                 total_payout += prediction.payout
-                total_revenue += (
-                    prediction.payout
-                )  # payout includes initial stake + earnings
-            else:
-                total_revenue -= prediction.stake
 
         return PredictionSummary(
             prediction_count,
