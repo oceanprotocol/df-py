@@ -4,23 +4,31 @@ from df_py.predictoor.models import PredictContract, Prediction, Predictoor
 
 
 def test_prediction_init():
-    prediction = Prediction(123, 1.23, "0x1")
+    prediction = Prediction(123, 1.23, 1, "0x1")
     assert prediction.slot == 123
     assert prediction.payout == 1.23
     assert prediction.contract_addr == "0x1"
 
 
 def test_prediction_is_correct():
-    prediction = Prediction(123, 1.23, "0x1")
+    prediction = Prediction(123, 1.23, 1, "0x1")
     assert prediction.is_correct
-    prediction = Prediction(123, 0.0, "0x1")
+    prediction = Prediction(123, 0.0, 1, "0x1")
     assert not prediction.is_correct
+
+def test_prediction_profit():
+    prediction = Prediction(123, 10, 1, "0x1")
+    assert prediction.profit == 10
+
+    prediction = Prediction(123, 0, 1, "0x1")
+    assert prediction.profit == -1
 
 
 def test_prediction_from_query_result():
     prediction_dict = {
         "slot": {
             "predictContract": {"id": "0x1", "token": {"nft": {"id": "0x2"}}},
+            "stake": "0.22352",
             "slot": "123",
         },
         "payout": {"payout": "1.23"},
@@ -28,6 +36,8 @@ def test_prediction_from_query_result():
     prediction = Prediction.from_query_result(prediction_dict)
     assert prediction.slot == 123
     assert prediction.payout == 1.23
+    assert prediction.stake == 0.22352
+    assert prediction.profit == prediction.payout
     assert prediction.contract_addr == "0x2"
     with pytest.raises(ValueError):
         prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
