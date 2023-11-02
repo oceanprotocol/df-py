@@ -48,19 +48,19 @@ def test_prediction_from_query_result():
     "predictions, expected_accuracy",
     [
         ([], 0),
-        ([Prediction(5, 0.5, "0x123")], 1),
+        ([Prediction(5, 0.5, 1, "0x123")], 1),
         (
             [
-                Prediction(5, 0.0, "0x123"),
-                Prediction(5, 0.5, "0x123"),
-                Prediction(5, 0.5, "0x123"),
+                Prediction(5, 0.0, 1, "0x123"),
+                Prediction(5, 0.5, 1, "0x123"),
+                Prediction(5, 0.5, 1, "0x123"),
             ],
             2 / 3,
         ),
-        ([Prediction(2, 1.0, "0x123") for _ in range(100)], 1),
-        ([Prediction(2, 0.0, "0x123") for _ in range(100)], 0),
+        ([Prediction(2, 1.0, 1, "0x123") for _ in range(100)], 1),
+        ([Prediction(2, 0.0, 1, "0x123") for _ in range(100)], 0),
         (
-            [Prediction(2, 1.0 if i % 2 == 0 else 0.0, "0x123") for i in range(100)],
+            [Prediction(2, 1.0 if i % 2 == 0 else 0.0, 1, "0x123") for i in range(100)],
             0.5,
         ),
     ],
