@@ -29,6 +29,7 @@ def sample_predictoor_data_csv(num_rows=50000):
         predictor_address = random_predictor_address()
         slot = random_slot()
         payout = random_payout()
+        stake = 1 if payout == 0 else 0.5
         contract_address = random_contract_address()
         result += f"{predictor_address},{slot},{payout},{contract_address}\n"
 
@@ -44,7 +45,7 @@ def save_predictoor_data_csv(
     csv_file = predictoor_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
-    fieldnames = ["predictoor_addr", "slot", "payout", "contract_addr"]
+    fieldnames = ["predictoor_addr", "slot", "payout", "stake", "contract_addr"]
     with open(csv_file, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
@@ -57,6 +58,7 @@ def save_predictoor_data_csv(
                         "contract_addr": prediction.contract_addr,
                         "slot": prediction.slot,
                         "payout": prediction.payout,
+                        "stake": prediction.stake
                     }
                 )
 
@@ -75,7 +77,8 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
             contract_addr = row["contract_addr"]
             slot = int(row["slot"])
             payout = float(row["payout"])
-            prediction = Prediction(slot, payout, contract_addr)
+            stake = float(row["stake"])
+            prediction = Prediction(slot, payout, stake, contract_addr)
 
             if address not in predictoors:
                 predictoors[address] = Predictoor(address)
