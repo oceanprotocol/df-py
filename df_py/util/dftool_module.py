@@ -519,7 +519,9 @@ def do_calc():
         tot_tokens = 4000 / rate_rose
 
         predictoor_data = load_predictoor_data_csv(csv_dir)
-        predictoor_rewards = calc_predictoor_rewards(predictoor_data, tot_tokens, SAPPHIRE_MAINNET_ID)
+        predictoor_rewards = calc_predictoor_rewards(
+            predictoor_data, tot_tokens, SAPPHIRE_MAINNET_ID
+        )
 
         save_predictoor_reward_csv(predictoor_rewards, csv_dir)
 
@@ -596,7 +598,7 @@ def do_dispense_active():
         else:
             print("Distributing for VOLUME DF and CHALLENGE DF rewards")
         rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
-    elif arguments.command -- "dispense_rose":
+    elif arguments.command - -"dispense_rose":
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         aggregated: Dict[str, float] = {}
         for predictoor_addr, rewards in predictoor_rewards.items():

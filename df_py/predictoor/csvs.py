@@ -58,7 +58,7 @@ def save_predictoor_data_csv(
                         "contract_addr": prediction.contract_addr,
                         "slot": prediction.slot,
                         "payout": prediction.payout,
-                        "stake": prediction.stake
+                        "stake": prediction.stake,
                     }
                 )
 
@@ -185,12 +185,12 @@ def save_predictoor_rewards_csv(
 def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
     """
     Load rewards data from a given CSV file.
-    
+
     @arguments
       csv_dir (str) -- Directory path where the CSV file is located.
 
     @return:
-      Dict[str, Dict[str, float]] -- A nested dictionary containing rewards data. 
+      Dict[str, Dict[str, float]] -- A nested dictionary containing rewards data.
                                     [predictoor_addr]:[contract_addr]:[reward_amount]
 
     Raises:

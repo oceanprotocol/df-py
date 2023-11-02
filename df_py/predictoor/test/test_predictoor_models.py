@@ -16,6 +16,7 @@ def test_prediction_is_correct():
     prediction = Prediction(123, 0.0, 1.0, "0x1")
     assert not prediction.is_correct
 
+
 def test_prediction_profit():
     prediction = Prediction(123, 10, 1.0, "0x1")
     assert prediction.profit == 10
@@ -60,7 +61,10 @@ def test_prediction_from_query_result():
         ([Prediction(2, 1.0, 1.0, "0x123") for _ in range(100)], 1),
         ([Prediction(2, 0.0, 1.0, "0x123") for _ in range(100)], 0),
         (
-            [Prediction(2, 1.0 if i % 2 == 0 else 0.0, 1.0, "0x123") for i in range(100)],
+            [
+                Prediction(2, 1.0 if i % 2 == 0 else 0.0, 1.0, "0x123")
+                for i in range(100)
+            ],
             0.5,
         ),
     ],

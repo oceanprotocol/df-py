@@ -5,7 +5,7 @@ from enforce_typing import enforce_types
 
 class Prediction:
     @enforce_types
-    def __init__(self, slot: int, payout: float, stake:float, contract_addr: str):
+    def __init__(self, slot: int, payout: float, stake: float, contract_addr: str):
         self.slot = slot
         self.payout = payout
         self.stake = stake
@@ -83,7 +83,14 @@ class PredictoorBase:
 
 class PredictionSummary:
     @enforce_types
-    def __init__(self, prediction_count, correct_prediction_count, contract_addr, total_payout, total_revenue):
+    def __init__(
+        self,
+        prediction_count,
+        correct_prediction_count,
+        contract_addr,
+        total_payout,
+        total_revenue,
+    ):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
@@ -124,7 +131,9 @@ class Predictoor(PredictoorBase):
             if prediction.is_correct:
                 correct_prediction_count += 1
                 total_payout += prediction.payout
-                total_revenue += prediction.payout # payout includes initial stake + earnings
+                total_revenue += (
+                    prediction.payout
+                )  # payout includes initial stake + earnings
             else:
                 total_revenue -= prediction.stake
 
