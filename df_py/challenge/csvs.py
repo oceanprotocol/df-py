@@ -4,6 +4,7 @@ from copy import copy
 from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
+from web3.main import Web3
 
 from df_py.util.csv_helpers import assert_is_eth_addr
 
@@ -137,7 +138,9 @@ def load_challenge_rewards_csv(csv_dir: str) -> Dict[str, float]:
     with open(csv_file, "r") as f:
         reader = csv.DictReader(f)
         for row in reader:
-            rewards[row["winner_addr"]] = float(row["OCEAN_amt"])
+            rewards[str(Web3.to_checksum_address(row["winner_addr"]))] = float(
+                row["OCEAN_amt"]
+            )
 
     print(f"Loaded {csv_file}")
     return rewards

@@ -1,7 +1,8 @@
 from typing import Dict
+
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Prediction, Predictoor, PredictContract
+from df_py.predictoor.models import PredictContract, Prediction, Predictoor
 from df_py.util.constants import DEPLOYER_ADDRS
 from df_py.util.graphutil import submit_query
 from df_py.util.networkutil import DEV_CHAINID

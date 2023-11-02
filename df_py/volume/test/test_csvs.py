@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import pytest
 from enforce_typing import enforce_types
 
@@ -40,7 +42,11 @@ def test_allocations_onechain_lowercase(tmp_path):
         }
     }
     csvs.save_allocation_csv(allocs, csv_dir)
-    allocs_loaded = csvs.load_allocation_csvs(csv_dir)
+
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        allocs_loaded = csvs.load_allocation_csvs(csv_dir)
+
     assert allocs_loaded == allocs
 
 
@@ -62,7 +68,11 @@ def test_allocations_onechain_mixedcase(tmp_path):
         }
     }
     csvs.save_allocation_csv(allocs_mixedcase, csv_dir)
-    allocs_loaded = csvs.load_allocation_csvs(csv_dir)
+
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        allocs_loaded = csvs.load_allocation_csvs(csv_dir)
+
     assert allocs_loaded == allocs_lowercase
 
 
@@ -79,7 +89,11 @@ def test_allocations_twochains(tmp_path):
     }
 
     csvs.save_allocation_csv(allocs, csv_dir)
-    allocs_loaded = csvs.load_allocation_csvs(csv_dir)
+
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        allocs_loaded = csvs.load_allocation_csvs(csv_dir)
+
     assert allocs_loaded == allocs
 
 
@@ -98,7 +112,10 @@ def test_vebals(tmp_path):
     csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     # load & compare
-    loaded_vebals, locked_amts, unlock_times = csvs.load_vebals_csv(csv_dir)
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        loaded_vebals, locked_amts, unlock_times = csvs.load_vebals_csv(csv_dir)
+
     assert loaded_vebals == vebals
     assert locked_amts == locked_amt
     assert unlock_times == unlock_time
@@ -286,7 +303,9 @@ def test_rewards_per_lp_main(tmp_path):
     csv_dir = str(tmp_path)
     csvs.save_volume_rewards_csv(rewards, csv_dir)
 
-    loaded_rewards = csvs.load_volume_rewards_csv(csv_dir)
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        loaded_rewards = csvs.load_volume_rewards_csv(csv_dir)
     assert loaded_rewards == target_rewards
 
     for innerdict in rewards.values():  # ensures we don't deal in weis
@@ -299,9 +318,7 @@ def test_rewards_per_lp_main(tmp_path):
 
 
 @enforce_types
-def test_rewards_info(
-    tmp_path, network_setup_and_teardown
-):  # pylint: disable=unused-argument
+def test_rewards_info(tmp_path):  # pylint: disable=unused-argument
     rewards = {
         1: {
             PA: {LP1: 3.2, LP2: 5.4},

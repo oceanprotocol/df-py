@@ -1,29 +1,30 @@
-import brownie
+import pytest
 from enforce_typing import enforce_types
+from web3.exceptions import ContractLogicError
 
-from df_py.util import networkutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
-
-accounts = None
+from df_py.util.contract_base import ContractBase
+from df_py.util.networkutil import send_ether
 
 
 @enforce_types
-def test_transfer_eth_reverts():
+def test_transfer_eth_reverts(w3, account0):
     """sending native tokens to dfrewards contract should revert"""
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    with brownie.reverts("Cannot send ether to nonpayable function"):
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+
+    with pytest.raises(ContractLogicError):
         # transfer native eth to dfrewards contract
-        accounts[0].transfer(df_rewards, "1 ether")
+        send_ether(w3, account0, df_rewards.address, to_wei(1))
 
 
 @enforce_types
-def test_erc20_withdraw_random():
+def test_erc20_withdraw_random(w3, all_accounts):
     """owner can withdraw other erc20 tokens from the dfrewards contract"""
+    accounts = all_accounts
+    random_token = _deploy_token(w3, accounts[1])
 
-    random_token = _deploy_token(accounts[1])
-
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
+    w3.eth.default_account = accounts[0].address
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
     random_token.transfer(df_rewards, to_wei(100.0), {"from": accounts[1]})
 
@@ -38,12 +39,16 @@ def test_erc20_withdraw_random():
 
 
 @enforce_types
-def test_erc20_withdraw_main():
+def test_erc20_withdraw_main(w3, all_accounts):
     """withdrawing the main token should revert"""
-    token = _deploy_token(accounts[0])
+    accounts = all_accounts
+    token = _deploy_token(w3, accounts[0])
 
-    df_rewards = B.DFRewards.deploy({"from": accounts[0]})
-    df_strategy = B.DFStrategyV1.deploy(df_rewards.address, {"from": accounts[0]})
+    w3.eth.default_account = accounts[0].address
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
 
     token.transfer(df_rewards, to_wei(40.0), {"from": accounts[0]})
 
@@ -52,14 +57,14 @@ def test_erc20_withdraw_main():
     token.approve(df_rewards, sum(values), {"from": accounts[0]})
     df_rewards.allocate(tos, values, token.address, {"from": accounts[0]})
 
-    with brownie.reverts("Cannot withdraw allocated token"):
+    with pytest.raises(ContractLogicError, match="Cannot withdraw allocated token"):
         df_rewards.withdrawERCToken(to_wei(50.0), token.address, {"from": accounts[0]})
 
-    with brownie.reverts("Ownable: caller is not the owner"):
+    with pytest.raises(ContractLogicError, match="Ownable: caller is not the owner"):
         df_rewards.withdrawERCToken(to_wei(20.0), token.address, {"from": accounts[1]})
 
     df_rewards.withdrawERCToken(to_wei(40.0), token.address, {"from": accounts[0]})
-    with brownie.reverts("Cannot withdraw allocated token"):
+    with pytest.raises(ContractLogicError, match="Cannot withdraw allocated token"):
         df_rewards.withdrawERCToken(to_wei(1.0), token.address, {"from": accounts[0]})
     df_strategy.claim([token.address], {"from": accounts[1]})
 
@@ -68,17 +73,10 @@ def test_erc20_withdraw_main():
 
 
 @enforce_types
-def _deploy_token(account):
-    return B.Simpletoken.deploy("TOK", "TOK", 18, to_wei(100.0), {"from": account})
+def _deploy_token(w3, account):
+    if account:
+        w3.eth.default_account = account.address
 
-
-@enforce_types
-def setup_function():
-    networkutil.connect_dev()
-    global accounts
-    accounts = brownie.network.accounts
-
-
-@enforce_types
-def teardown_function():
-    brownie.network.disconnect()
+    return ContractBase(
+        w3, "OceanToken", constructor_args=["TOK", "TOK", 18, to_wei(100.0)]
+    )

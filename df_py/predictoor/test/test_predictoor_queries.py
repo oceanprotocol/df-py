@@ -1,15 +1,12 @@
 from unittest.mock import patch
 
-import brownie
 import pytest
-from enforce_typing import enforce_types
 
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.predictoor.queries import query_predictoors
 from df_py.util import networkutil
 
 CHAINID = networkutil.DEV_CHAINID
-chain = None
 
 
 @patch("df_py.predictoor.queries.submit_query")
@@ -39,15 +36,3 @@ def test_query_predictoors_request():
     predictoors = query_predictoors(ST, FIN, CHAINID)
     assert predictoors is not None
     assert isinstance(predictoors, dict)
-
-
-@enforce_types
-def setup_function():
-    global chain
-    networkutil.connect(CHAINID)
-    chain = brownie.network.chain
-
-
-@enforce_types
-def teardown_function():
-    networkutil.disconnect()

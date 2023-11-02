@@ -1,0 +1,25 @@
+{
+  "name": "df-py",
+  "version": "1.0.0",
+  "description": "<div align=\"center\"> <img src=\"https://github.com/oceanprotocol/df-py/actions/workflows/black.yml/badge.svg\"/> <img src=\"https://github.com/oceanprotocol/df-py/actions/workflows/mypy.yml/badge.svg\"/> <img src=\"https://github.com/oceanprotocol/df-py/actions/workflows/pylint.yml/badge.svg\"/> <img src=\"https://github.com/oceanprotocol/df-py/actions/workflows/test.yml/badge.svg\"/> </div> <br/>",
+  "main": "index.js",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oceanprotocol/df-py.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/oceanprotocol/df-py/issues"
+  },
+  "homepage": "https://github.com/oceanprotocol/df-py#readme",
+  "dependencies": {
+    "@openzeppelin/contracts": "^4.9.3"
+  }
+}

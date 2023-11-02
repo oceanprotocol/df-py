@@ -4,7 +4,6 @@ import os
 import random
 import time
 
-import brownie
 import pytest
 from enforce_typing import enforce_types
 from pytest import approx
@@ -12,31 +11,29 @@ from pytest import approx
 from df_py.util import dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, str_with_wei, to_wei
 from df_py.util.blockrange import BlockRange
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import MAX_ALLOCATE
+from df_py.util.contract_base import ContractBase
+from df_py.util.networkutil import send_ether
 from df_py.util.oceanutil import ve_delegate
 from df_py.volume import calc_rewards, csvs, queries
 from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
 
-PREV = {}
-god_acct = None
-chain = None
 OCEAN, veOCEAN = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
-
-CHAINID = networkutil.DEV_CHAINID
-ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
+CHAINID = 8996
 
 DAY = 86400
 WEEK = 7 * DAY
 YEAR = 365 * DAY
 
+ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
+
 
 class SimpleAsset:
     def __init__(self, tup):
         self.nft, self.dt, self.exchangeId = tup
-        assert oceanutil.FixedPrice().isActive(self.exchangeId)
+        assert oceanutil.FixedPrice(networkutil.DEV_CHAINID).isActive(self.exchangeId)
 
 
 # =========================================================================
@@ -45,27 +42,31 @@ class SimpleAsset:
 
 # pylint: disable=too-many-statements
 @pytest.mark.timeout(300)
-def test_all(tmp_path):
+def test_all(tmp_path, w3, account0, monkeypatch):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
+    monkeypatch.setenv("SUBGRAPH_URI", networkutil.chain_id_to_subgraph_uri(CHAINID))
+    monkeypatch.setenv("SECRET_SEED", "1234")
+    monkeypatch.setenv("ADDRESS_FILE", ADDRESS_FILE)
 
-    _deploy_CO2()
+    _deploy_CO2(w3)
 
     print("Create accts...")
-    accounts = [brownie.accounts.add() for i in range(5)]
-    sampling_accounts = [brownie.accounts.add() for i in range(2)]
-    zerobal_delegation_acct = brownie.accounts.add()
+    accounts = [w3.eth.account.create() for i in range(5)]
+    sampling_accounts = [w3.eth.account.create() for i in range(2)]
+    zerobal_delegation_acct = w3.eth.account.create()
 
-    _fund_accts(accounts + sampling_accounts, amt_to_fund=1000.0)
+    _fund_accts(w3, accounts + sampling_accounts, amt_to_fund=1000.0, god_acct=account0)
 
-    assets = _create_assets(n_assets=5)
+    assets = _create_assets(w3, n_assets=5, god_acct=account0)
 
     print("Sleep & mine")
-    t0 = chain.time()
+    provider = w3.provider
+    t0 = w3.eth.get_block("latest").timestamp
     t1 = t0 // WEEK * WEEK + WEEK
     t2 = t1 + 4 * YEAR
-    chain.sleep(t1 - t0)
-    chain.mine()
+    provider.make_request("evm_increaseTime", [t1 - t0])
+    provider.make_request("evm_mine", [])
 
     lock_amt = 5.0
     _lock(accounts, lock_amt, t2)
@@ -73,16 +74,18 @@ def test_all(tmp_path):
     _allocate(accounts, assets)
 
     print("Delegate...")
-    ve_delegate(accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
+    ve_delegate(CHAINID, accounts[0], accounts[1], 0.5, 0)  # 0 -> 1 50%
     print(f"  {accounts[0].address} -> {accounts[1].address} 50%")
-    ve_delegate(accounts[0], zerobal_delegation_acct, 0.1, 1)  # 0 -> zerobal 5%
+    ve_delegate(
+        CHAINID, accounts[0], zerobal_delegation_acct, 0.1, 1
+    )  # 0 -> zerobal 5%
     print(f"  {accounts[0].address} -> {zerobal_delegation_acct.address} 10%")
-    ve_delegate(accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
+    ve_delegate(CHAINID, accounts[3], accounts[4], 1.0, 0)  # 3 -> 4 100%
     print(f"  {accounts[3].address} -> {accounts[4].address} 100%")
-    ve_delegate(accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
+    ve_delegate(CHAINID, accounts[4], accounts[3], 1.0, 0)  # 4 -> 3 100%
     print(f"  {accounts[4].address} -> {accounts[3].address} 100%")
 
-    start_block = len(chain)
+    start_block = w3.eth.get_block("latest").number
     print(f"ST = start block for querying = {start_block}")
 
     # these accounts are used to test if sampling the range works
@@ -93,43 +96,49 @@ def test_all(tmp_path):
     print("Consume...")
     for i, acct in enumerate(accounts):
         oceantestutil.buy_DT_FRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
-        oceantestutil.consume_DT(assets[i].dt, god_acct, acct)
+        oceantestutil.consume_DT(assets[i].dt, account0, acct)
 
     print("Ghost consume...")
     ghost_consume_asset = assets[0]
     ghost_consume_nft_addr = ghost_consume_asset.nft.address.lower()
-    ghost_consume_asset.dt.mint(god_acct, to_wei(1000.0), {"from": god_acct})
+    ghost_consume_asset.dt.mint(account0, to_wei(1000.0), {"from": account0})
     for _ in range(20):
-        oceantestutil.consume_DT(ghost_consume_asset.dt, god_acct, god_acct)
+        oceantestutil.consume_DT(ghost_consume_asset.dt, account0, account0)
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
-        fin_block = len(chain)
+        fin_block = w3.eth.get_block("latest").number + 1
         print(f"  loop {loop_i} start")
         assert loop_i < 45, "timeout"
         # this test assumes that all actions before consume will
         # be on the graph too. Eg veOCEAN allocation or delegation
         if _found_consume(start_block, fin_block):
             break
-        chain.sleep(10)
-        chain.mine(10)
+
+        for _ in range(10):
+            provider.make_request("evm_increaseTime", [])
+            provider.make_request("evm_mine", [])
+
         time.sleep(2)
 
-    chain.sleep(10)
-    chain.mine(20)
+    provider.make_request("evm_increaseTime", [])
+    provider.make_request("evm_mine", [])
     time.sleep(2)
 
-    rng = BlockRange(start_block, fin_block, 100, 42)
-    sampling_accounts_addrs = [a.address.lower() for a in sampling_accounts]
-    delegation_accounts = [a.address.lower() for a in accounts[:2]]
-    delegation_accounts.append(zerobal_delegation_acct.address.lower())
+    rng = BlockRange(start_block, fin_block, 100, 42, web3=w3)
+    sampling_accounts_addrs = [
+        w3.to_checksum_address(a.address) for a in sampling_accounts
+    ]
+    delegation_accounts = [w3.to_checksum_address(a.address) for a in accounts[:2]]
+    delegation_accounts.append(w3.to_checksum_address(zerobal_delegation_acct.address))
 
     # test single queries
     _test_getSymbols()
     _test_queryVolsOwners(start_block, fin_block)
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
+
     _test_queryAllocations(rng, sampling_accounts_addrs)
-    _test_queryVolsOwnersSymbols(start_block, fin_block)
+    _test_queryVolsOwnersSymbols(w3, start_block, fin_block)
 
     # test dftool
     _test_dftool_query(tmp_path, start_block, fin_block)
@@ -139,23 +148,24 @@ def test_all(tmp_path):
 
     # end-to-end tests
     _test_end_to_end_without_csvs(rng)
-    _test_end_to_end_with_csvs(rng, tmp_path)
+    _test_end_to_end_with_csvs(w3, rng, tmp_path, account0)
 
     # test ghost consume
     _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr)
 
     # modifies chain time, test last
-    _test_queryPassiveRewards(sampling_accounts_addrs)
+    _test_queryPassiveRewards(sampling_accounts_addrs, account0)
 
     # sleep 20 weeks
-    chain.sleep(60 * 60 * 24 * 7 * 20)
-    chain.mine(10)
+    provider.make_request("evm_increaseTime", [60 * 60 * 24 * 7 * 20])
+    for _ in range(10):
+        provider.make_request("evm_mine", [])
 
     # check balances again
     _test_queryVebalances(rng, sampling_accounts_addrs, delegation_accounts)
 
     # Running this test before other tests causes the following error:
-    #   brownie.exceptions.ContractNotFound: This contract no longer exists.
+    # This contract no longer exists.
     _test_queryNftinfo()
 
 
@@ -163,11 +173,13 @@ def test_all(tmp_path):
 # heavy on-chain tests: support functions
 
 
-def _deploy_CO2():
+def _deploy_CO2(w3):
     print("Deploy CO2 token...")
     global CO2, CO2_addr, CO2_sym
     CO2_sym = f"CO2_{random.randint(0,99999):05d}"
-    CO2 = B.Simpletoken.deploy(CO2_sym, CO2_sym, 18, 1e26, {"from": god_acct})
+    CO2 = ContractBase(
+        w3, "OceanToken", constructor_args=[CO2_sym, CO2_sym, 18, to_wei(1e26)]
+    )
     CO2_addr = CO2.address.lower()
 
 
@@ -215,7 +227,7 @@ def _test_queryVebalances(
     )
 
     for account in veBalances:
-        bal = from_wei(oceanutil.veDelegation().adjusted_balance_of(account))
+        bal = from_wei(oceanutil.veDelegation(CHAINID).adjusted_balance_of(account))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
@@ -237,7 +249,9 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
         for nftAddr in allocations[chain_id]:
             for userAddr in allocations[chain_id][nftAddr]:
                 allocation_contract = (
-                    oceanutil.veAllocate().getveAllocation(userAddr, nftAddr, chain_id)
+                    oceanutil.veAllocate(CHAINID).getveAllocation(
+                        userAddr, nftAddr, chain_id
+                    )
                     / MAX_ALLOCATE
                 )
                 allocation_query = allocations[chain_id][nftAddr][userAddr]
@@ -250,7 +264,7 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 @enforce_types
 def _test_getSymbols():
     print("_test_getSymbols()...")
-    OCEAN_token = oceanutil.OCEAN_token()
+    OCEAN_token = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     token_set = TokSet()
     token_set.add(CHAINID, OCEAN_token.address.lower(), "OCEAN")
     symbols_at_chain = queries.getSymbols(
@@ -278,10 +292,10 @@ def _test_queryVolsOwners(st, fin):
 
 
 @enforce_types
-def _test_queryVolsOwnersSymbols(st, fin):
+def _test_queryVolsOwnersSymbols(w3, st, fin):
     print("_test_queryVolsOwnersSymbols()...")
     n = 500
-    rng = BlockRange(st, fin, n)
+    rng = BlockRange(st, fin, n, web3=w3)
     (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
@@ -420,7 +434,7 @@ def _test_end_to_end_without_csvs(rng):
 
 
 @enforce_types
-def _test_end_to_end_with_csvs(rng, tmp_path):
+def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     print("_test_end_to_end_with_csvs()...")
     csv_dir = str(tmp_path)
     _clear_dir(csv_dir)
@@ -470,15 +484,17 @@ def _test_end_to_end_with_csvs(rng, tmp_path):
 
     # 6. simulate "dftool dispense_active"
     rewardsperlp = csvs.load_volume_rewards_csv(csv_dir)
-    dfrewards_addr = B.DFRewards.deploy({"from": god_acct}).address
-    OCEAN_addr = oceanutil.OCEAN_address()
-    dispense.dispense(rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
+    dfrewards_addr = ContractBase(w3, "DFRewards", constructor_args=[]).address
+    OCEAN_addr = oceanutil.OCEAN_address(CHAINID)
+    dispense.dispense(w3, rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
 
 @enforce_types
-def _test_queryPassiveRewards(addresses):
+def _test_queryPassiveRewards(addresses, god_acct):
     print("_test_queryPassiveRewards()...")
-    fee_distributor = oceanutil.FeeDistributor()
+    fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
+    w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
+    provider = w3.provider
 
     def sim_epoch():
         OCEAN.transfer(
@@ -486,8 +502,8 @@ def _test_queryPassiveRewards(addresses):
             to_wei(1000.0),
             {"from": god_acct},
         )
-        chain.sleep(WEEK)
-        chain.mine()
+        provider.make_request("evm_increaseTime", [WEEK])
+        provider.make_request("evm_mine", [])
         fee_distributor.checkpoint_token({"from": god_acct})
         fee_distributor.checkpoint_total_supply({"from": god_acct})
 
@@ -496,13 +512,17 @@ def _test_queryPassiveRewards(addresses):
 
     alice_last_reward = 0
     bob_last_reward = 0
-    target_ts = chain.time() // WEEK * WEEK + WEEK - 100
-    chain.sleep(target_ts - chain.time())
-    chain.mine()
+    target_ts = w3.eth.get_block("latest").timestamp // WEEK * WEEK + WEEK - 100
+    provider.make_request(
+        "evm_increaseTime", [target_ts - w3.eth.get_block("latest").timestamp]
+    )
+    provider.make_request("evm_mine", [])
 
     for _ in range(3):
-        timestamp = chain.time() // WEEK * WEEK
-        balances, rewards = queries.queryPassiveRewards(timestamp, addresses)
+        timestamp = w3.eth.get_block("latest").timestamp // WEEK * WEEK
+        balances, rewards = queries.queryPassiveRewards(
+            w3.eth.chain_id, timestamp, addresses
+        )
         alice = addresses[0]
         bob = addresses[1]
         assert balances[alice] == balances[bob]
@@ -532,28 +552,29 @@ def _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr):
 
 
 @enforce_types
-def test_queryAllocations_empty():
-    rng = BlockRange(st=0, fin=10, num_samples=1)
+def test_queryAllocations_empty(w3):
+    rng = BlockRange(st=0, fin=10, num_samples=1, web3=w3)
     allocs = queries.queryAllocations(rng, CHAINID)
     assert allocs == {}
 
 
 @enforce_types
-def test_queryVebalances_empty():
-    rng = BlockRange(st=0, fin=10, num_samples=1)
-    tup = queries.queryVebalances(rng, CHAINID)
+def test_queryVebalances_empty(w3):
+    rng = BlockRange(st=0, fin=10, num_samples=1, web3=w3)
+    tup = queries.queryVebalances(rng, w3.eth.chain_id)
     assert tup == ({}, {}, {})
 
 
 # pylint: disable=too-many-statements
 @enforce_types
-def test_allocation_sampling():
-    alice, bob, carol, karen, james = [brownie.accounts.add() for _ in range(5)]
-    god_acct.transfer(alice, "1 ether")
-    god_acct.transfer(bob, "1 ether")
-    god_acct.transfer(carol, "1 ether")
-    god_acct.transfer(karen, "1 ether")
-    god_acct.transfer(james, "1 ether")
+def test_allocation_sampling(w3, account0):
+    god_acct = account0
+    alice, bob, carol, karen, james = [w3.eth.account.create() for _ in range(5)]
+    send_ether(w3, god_acct, alice.address, to_wei(1))
+    send_ether(w3, god_acct, bob.address, to_wei(1))
+    send_ether(w3, god_acct, carol.address, to_wei(1))
+    send_ether(w3, god_acct, karen.address, to_wei(1))
+    send_ether(w3, god_acct, james.address, to_wei(1))
 
     allocate_addrs = [
         f"0x000000000000000000000000000000000000000{i}" for i in range(1, 8)
@@ -565,11 +586,14 @@ def test_allocation_sampling():
     # Karen allocates at 10% 0-0, 20% 2-2 and 100% 6-6
     # James allocates 10% 0-0, 20% 1-0, 30% 2-0, 5% 3-0, 50% 4-0, 0% 5-0, 100% 6-0
 
-    def forward(blocks):
-        chain.sleep(1)
-        chain.mine(blocks)
+    provider = w3.provider
 
-    start_block = len(chain)
+    def forward(blocks):
+        provider.make_request("evm_increaseTime", [1])
+        for _ in range(blocks):
+            provider.make_request("evm_mine", [])
+
+    start_block = w3.eth.get_block("latest").number
 
     # DAY 0
     oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
@@ -666,7 +690,7 @@ def test_allocation_sampling():
 
     # FIN
     forward(100)
-    end_block = len(chain)
+    end_block = w3.eth.get_block("latest").number
 
     # query
     rng = BlockRange(start_block, end_block, end_block - start_block, 42)
@@ -688,44 +712,50 @@ def test_allocation_sampling():
     for addr in allocate_addrs:
         assert addr in allocations, addr
         # Bob
-        assert allocations[addr][bob.address.lower()] == approx((1 / 7), 0.1)
+        assert allocations[addr][w3.to_checksum_address(bob.address)] == approx(
+            (1 / 7), 0.1
+        )
 
     # Alice
-    _a = alice.address.lower()
+    _a = w3.to_checksum_address(alice.address)
     assert allocations[allocate_addrs[0]][_a] == approx(0.5, 0.03)
     assert allocations[allocate_addrs[3]][_a] == approx(0.5, 0.03)
 
     # Karen
-    _k = karen.address.lower()
+    _k = w3.to_checksum_address(karen.address)
     assert allocations[allocate_addrs[0]][_k] == approx((0.1 * 6 / 7), 0.03)
     assert allocations[allocate_addrs[1]][_k] == approx((0.1 * 5 / 7), 0.03)
     assert allocations[allocate_addrs[2]][_k] == approx((0.2 * 4 / 7), 0.03)
     assert allocations[allocate_addrs[6]][_k] == approx((1 / 7), 0.03)
 
     # Carol
-    _c = carol.address.lower()
+    _c = w3.to_checksum_address(carol.address)
     assert allocations[allocate_addrs[2]][_c] == approx((4 / 7), 0.03)
     assert allocations[allocate_addrs[6]][_c] == approx((1 / 7), 0.03)
 
     # James
-    _j = james.address.lower()
+    _j = w3.to_checksum_address(james.address)
     _j_expected = (
         0.1 * 1 / 7 + 0.2 * 1 / 7 + 0.3 * 1 / 7 + 0.05 * 1 / 7 + 0.5 * 1 / 7 + 1 / 7
     )
     assert allocations[allocate_addrs[0]][_j] == approx(_j_expected, 0.03)
 
 
-def test_symbol():
-    testToken = B.Simpletoken.deploy("CO2", "", 18, 1e26, {"from": god_acct})
-    assert queries.symbol(testToken.address) == "CO2"
-
-    testToken = B.Simpletoken.deploy("ASDASDASD", "", 18, 1e26, {"from": god_acct})
-    assert queries.symbol(testToken.address) == "ASDASDASD"
-
-    testToken = B.Simpletoken.deploy(
-        "!@#$@!%$#^%$&~!@", "", 18, 1e26, {"from": god_acct}
+def test_symbol(w3):
+    testToken = ContractBase(
+        w3, "OceanToken", constructor_args=["CO2", "", 18, to_wei(1e26)]
     )
-    assert queries.symbol(testToken.address) == "!@#$@!%$#^%$&~!@"
+    assert queries.symbol(w3, testToken.address) == "CO2"
+
+    testToken = ContractBase(
+        w3, "OceanToken", constructor_args=["ASDASDASD", "", 18, to_wei(1e26)]
+    )
+    assert queries.symbol(w3, testToken.address) == "ASDASDASD"
+
+    testToken = ContractBase(
+        w3, "OceanToken", constructor_args=["!@#$@!%$#^%$&~!@", "", 18, to_wei(1e26)]
+    )
+    assert queries.symbol(w3, testToken.address) == "!@#$@!%$#^%$&~!@"
 
 
 @enforce_types
@@ -791,7 +821,7 @@ def test_filter_dids():
 
 @enforce_types
 def test_filter_nft_vols_to_aquarius_assets():
-    OCEAN_addr = oceanutil.OCEAN_address()
+    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
     nftaddrs = [
         "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
         "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
@@ -838,7 +868,7 @@ def test_filter_nftinfos():
     addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(),  # invalid
+        oceanutil.OCEAN_address(networkutil.DEV_CHAINID),  # invalid
     ]
     # addresses are from polygon
     nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
@@ -856,7 +886,7 @@ def test_mark_purgatory_nftinfos():
     addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(),  # invalid
+        oceanutil.OCEAN_address(networkutil.DEV_CHAINID),  # invalid
     ]
     # addresses are from polygon
     nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
@@ -921,7 +951,7 @@ def test_filter_by_max_volume():
 
 
 @enforce_types
-def test_process_single_delegation():
+def test_process_single_delegation(w3):
     # Prepare test data
     delegation = {
         "id": "x",
@@ -943,11 +973,13 @@ def test_process_single_delegation():
 
     assert balance_veocean == balance_veocean_start - delegation_amt
     assert delegation_amt == approx(2.4931526)
-    assert delegated_to == "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"
+    assert delegated_to == w3.to_checksum_address(
+        "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"
+    )
 
 
 @enforce_types
-def test_process_delegations():
+def test_process_delegations(w3):
     delegations = [
         {
             "id": "x",
@@ -1003,8 +1035,8 @@ def test_process_delegations():
     assert balance_veocean == balance_veocean_start - sum(delegation_amts)
     assert delegation_amts == approx([2.4931526, 0.2493151])
     assert delegated_tos == [
-        "0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d",
-        "0xcc34ca233293bdd9e50aca149d019a62fc881b90",
+        w3.to_checksum_address("0x37ba1e33f24bcd8cad3c083e1dc37c9f3d63d21d"),
+        w3.to_checksum_address("0xcc34ca233293bdd9e50aca149d019a62fc881b90"),
     ]
 
 
@@ -1015,46 +1047,63 @@ def test_process_delegations():
 @enforce_types
 def _lock(accts: list, lock_amt: float, lock_time: int):
     print("Lock...")
+    w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
     lock_amt_wei = to_wei(lock_amt)
     for i, acct in enumerate(accts):
         s = str_with_wei(lock_amt_wei)
+        chain_time = w3.eth.get_block("latest").timestamp
         print(f"  Lock {s} OCEAN on acct #{i+1}/{len(accts)}...")
-        print(f"    chain.time() = {chain.time()}")
+        print(f"    chain_time = {chain_time}")
         print(f"    lock_time =    {lock_time}")
-        print(f"    chain.time() <= lock_time? {chain.time() <= lock_time}")
+        print(f"    chain_time <= lock_time? {chain_time <= lock_time}")
         veOCEAN.checkpoint({"from": acct})
         OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
-        veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+        time.sleep(1)
+        tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+        receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
+
+        initial_time = time.time()
+        while receipt.status == 0:
+            time.sleep(1)
+            receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
+            if time.time() > initial_time + 60:
+                tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+                assert tx.status == 1
+                break
+
+        lock_end_time = veOCEAN.locked__end(acct)
+        print(f"    lock end time: {lock_end_time}")
 
 
 @enforce_types
 def _allocate(accts: list, assets: list):
     print("Allocate...")
-    veAllocate = oceanutil.veAllocate()
+    veAllocate = oceanutil.veAllocate(CHAINID)
     for i, (acct, asset) in enumerate(zip(accts, assets)):
         print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
         veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acct})
 
 
 @enforce_types
-def _fund_accts(accts_to_fund: list, amt_to_fund: float):
+def _fund_accts(w3, accts_to_fund: list, amt_to_fund: float, god_acct):
     print("Fund accts...")
     amt_to_fund_wei = to_wei(amt_to_fund)
     for i, acct in enumerate(accts_to_fund):
         print(f"  Create & fund account #{i+1}/{len(accts_to_fund)}...")
-        god_acct.transfer(acct, "0.1 ether")
+        w3.eth.default_account = god_acct.address
+        send_ether(w3, god_acct, acct.address, to_wei(1))
         OCEAN.transfer(acct, amt_to_fund_wei, {"from": god_acct})
         if CO2 is not None:
             CO2.transfer(acct, amt_to_fund_wei, {"from": god_acct})
 
 
 @enforce_types
-def _create_assets(n_assets: int) -> list:
+def _create_assets(w3, n_assets: int, god_acct) -> list:
     print("Create assets...")
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
-        tup = oceanutil.create_data_nft_with_fre(god_acct, CO2)
+        tup = oceanutil.create_data_nft_with_fre(w3, god_acct, CO2)
         asset = SimpleAsset(tup)
         assets.append(asset)
     return assets
@@ -1071,33 +1120,8 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global god_acct, PREV, OCEAN, veOCEAN, chain
-    networkutil.connect(CHAINID)
-    chain = brownie.network.chain
-    god_acct = brownie.network.accounts[0]
+    global OCEAN, veOCEAN
     oceanutil.record_dev_deployed_contracts()
 
-    OCEAN = oceanutil.OCEAN_token()
-    veOCEAN = oceanutil.veOCEAN()
-
-    for envvar in ["ADDRESS_FILE", "SUBGRAPH_URI", "SECRET_SEED"]:
-        PREV[envvar] = os.environ.get(envvar)
-
-    os.environ["ADDRESS_FILE"] = ADDRESS_FILE
-    os.environ["SUBGRAPH_URI"] = networkutil.chain_id_to_subgraph_uri(CHAINID)
-    os.environ["SECRET_SEED"] = "1234"
-
-
-@enforce_types
-def teardown_function():
-    global PREV
-
-    networkutil.disconnect()
-
-    for envvar, envval in PREV.items():
-        if envval is None:
-            del os.environ[envvar]
-        else:
-            os.environ[envvar] = envval
-
-    PREV = {}
+    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
+    veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)

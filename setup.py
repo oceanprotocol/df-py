@@ -18,17 +18,21 @@ install_requirements = [
     "coverage",
     "ccxt==3.0.84",
     "eciespy",
-    "eth-brownie",
+    "web3",
+    "py-solc-x",
     "enforce_typing",
     "mypy",
     "numpy",
     "pandas",
     "pylint",
     "pytest",
+    "pytest-env",
     "requests",
     "scipy",
     "types-requests",
     "bumpversion",
+    "black",
+    "ocean-contracts==2.0.0a15",
 ]
 
 # Required to run setup.py:

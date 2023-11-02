@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 from enforce_typing import enforce_types
 
 from df_py.volume import csvs
@@ -57,5 +59,7 @@ def test_load_stakes(tmp_path):
     csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     target_stakes = allocs_to_stakes(allocs, vebals)
-    loaded_stakes = load_stakes(csv_dir)
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        loaded_stakes = load_stakes(csv_dir)
     assert loaded_stakes == target_stakes

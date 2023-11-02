@@ -1,14 +1,15 @@
 import os
-import warnings
+from typing import Union
 
-import brownie
 from enforce_typing import enforce_types
+from web3.main import Web3
 
-from df_py.util.constants import CONTRACTS, MULTISIG_ADDRS
+from df_py.util.constants import MULTISIG_ADDRS
+from df_py.util.web3 import get_rpc_url, get_web3
 
 _BARGE_ADDRESS_FILE = "~/.ocean/ocean-contracts/artifacts/address.json"
 
-# Development chainid is from brownie, rest are from chainlist.org
+# Development chainid is implicit, rest are from chainlist.org
 # Chain values to fit Ocean subgraph urls as given in
 # https://v3.docs.oceanprotocol.com/concepts/networks/
 
@@ -85,67 +86,45 @@ def chain_id_to_network(chainID: int) -> str:
 
 
 @enforce_types
+def chain_id_to_web3(chainID: int) -> Web3:
+    """Returns the web3 instance for a given chainID"""
+    network_name = _CHAINID_TO_NETWORK[chainID]
+    return get_web3(get_rpc_url(network_name))
+
+
+@enforce_types
+def chain_id_to_rpc_url(chainID: int) -> str:
+    """Returns the web3 instance for a given chainID"""
+    network_name = _CHAINID_TO_NETWORK[chainID]
+    return get_rpc_url(network_name)
+
+
+@enforce_types
 def network_to_chain_id(network: str) -> int:
     """Returns the chainID for a given network name"""
     return _NETWORK_TO_CHAINID[network]
 
 
 @enforce_types
-def get_latest_block(chainID) -> int:
-    network = brownie.network
-    prev = None
-    if not network.is_connected():
-        connect(chainID)
-    else:
-        prev = network.chain.id
-        if prev != chainID:
-            disconnect()
-            connect(chainID)
-    lastBlock = network.chain.height
-    if prev is not None:
-        disconnect()
-        connect(prev)
-    return lastBlock
+def send_ether(web3, from_wallet, to_address: str, amount: Union[int, float]):
+    chain_id = web3.eth.chain_id
+    tx = {
+        "from": from_wallet.address,
+        "to": to_address,
+        "value": amount,
+        "chainId": chain_id,
+        "nonce": web3.eth.get_transaction_count(from_wallet.address),
+        "type": 2,
+    }
+    tx["gas"] = web3.eth.estimate_gas(tx)
 
+    priority_fee = web3.eth.max_priority_fee
+    base_fee = web3.eth.get_block("latest")["baseFeePerGas"]
 
-@enforce_types
-def connect_dev():
-    connect(DEV_CHAINID)
+    tx["maxPriorityFeePerGas"] = priority_fee
+    tx["maxFeePerGas"] = base_fee * 2 + priority_fee
 
+    signed_tx = web3.eth.account.sign_transaction(tx, from_wallet._private_key)
+    tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
 
-@enforce_types
-def connect(chainID: int):
-    network = brownie.network
-    if network.is_connected():
-        disconnect()  # call networkutil.disconnect(), *NOT* brownie directly
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=".*Development network has a block height of*",
-        )
-        network_name = chain_id_to_network(chainID)
-        try:
-            network.connect(network_name)
-        except KeyError as e:
-            if network_name != "mumbai":
-                raise e
-
-            network.connect("polygon-test")
-
-
-@enforce_types
-def disconnect():
-    network = brownie.network
-    if not network.is_connected():
-        return
-
-    chainID = network.chain.id
-    if chainID in CONTRACTS:
-        del CONTRACTS[chainID]
-
-    try:
-        network.disconnect()
-    except:  # pylint: disable=bare-except
-        # overcome brownie issue
-        # https://github.com/eth-brownie/brownie/issues/1144
-        pass
+    return web3.eth.wait_for_transaction_receipt(tx_hash)

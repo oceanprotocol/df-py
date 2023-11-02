@@ -4,12 +4,13 @@ from typing import Union
 
 from enforce_typing import enforce_types
 from scipy import optimize
+from web3.main import Web3
 
 
 @enforce_types
-def get_block_number_thursday(chain) -> int:
-    timestamp = get_next_thursday_timestamp(chain)
-    block_number = timestamp_to_future_block(chain, timestamp)
+def get_block_number_thursday(web3) -> int:
+    timestamp = get_next_thursday_timestamp(web3)
+    block_number = timestamp_to_future_block(web3, timestamp)
 
     # round to upper 100th
     block_number = ceil(block_number / 100) * 100
@@ -17,8 +18,8 @@ def get_block_number_thursday(chain) -> int:
 
 
 @enforce_types
-def get_next_thursday_timestamp(chain) -> int:
-    chain_timestamp = chain[-1].timestamp
+def get_next_thursday_timestamp(web3) -> int:
+    chain_timestamp = web3.eth.get_block("latest").timestamp
     chain_time = datetime.fromtimestamp(chain_timestamp)
 
     chain_time = chain_time.replace(
@@ -35,25 +36,25 @@ def get_next_thursday_timestamp(chain) -> int:
 
 
 @enforce_types
-def timestr_to_block(chain, timestr: str, test_eth: bool = False) -> int:
+def timestr_to_block(web3, timestr: str, test_eth: bool = False) -> int:
     """
     Examples: 2022-03-29_17:55 --> 4928
               2022-03-29 --> 4928 (earliest block of the day)
 
     @arguments
-      chain -- brownie.networks.chain
+      web3 -- web3 instance
       timestr -- str - YYYY-MM-DD | YYYY-MM-DD_HH:MM | YYYY-MM-DD_HH:MM:SS
     @return
       block -- int
     """
     timestamp = timestr_to_timestamp(timestr)
-    if chain.id == 1 or test_eth:
+    if web3.eth.chain_id == 1 or test_eth:
         # more accurate for mainnet
-        block = eth_timestamp_to_block(chain, timestamp)
-        block = eth_find_closest_block(chain, block, timestamp)
+        block = eth_timestamp_to_block(web3, timestamp)
+        block = eth_find_closest_block(web3, block, timestamp)
         return block
 
-    return timestamp_to_block(chain, timestamp)
+    return timestamp_to_block(web3, timestamp)
 
 
 @enforce_types
@@ -77,11 +78,11 @@ def timestr_to_timestamp(timestr: str) -> float:
 
 
 @enforce_types
-def timestamp_to_future_block(chain, timestamp: Union[float, int]) -> int:
+def timestamp_to_future_block(web3, timestamp: Union[float, int]) -> int:
     def timeSinceTimestamp(block_i):
-        return chain[int(block_i)].timestamp
+        return web3.eth.get_block(int(block_i)).timestamp
 
-    block_last_number = len(chain) - 1
+    block_last_number = web3.eth.get_block("latest").number
 
     # 40,000 is the average number of blocks per week
     block_old_number = max(0, block_last_number - 40_000)  # go back 40,000 blocks
@@ -107,7 +108,7 @@ def timestamp_to_future_block(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
+def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
 
     class C:
@@ -115,18 +116,18 @@ def timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
             self.target_timestamp = target_timestamp
 
         def timeSinceTimestamp(self, block_i):
-            block_timestamp = chain[int(block_i)].timestamp
+            block_timestamp = web3.eth.get_block(int(block_i)).timestamp
             return block_timestamp - self.target_timestamp
 
     f = C(timestamp).timeSinceTimestamp
     a = 0
-    b = len(chain) - 1
+    b = web3.eth.get_block("latest").number
 
     if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
         return 0
 
     if f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
-        return len(chain)
+        return web3.eth.get_block("latest").number
 
     # pylint: disable=unused-variable
     (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
@@ -148,35 +149,36 @@ def timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
 
 
 @enforce_types
-def eth_timestamp_to_block(chain, timestamp: Union[float, int]) -> int:
+def eth_timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
-    current_block = chain[-1].number
-    current_time = chain[-1].timestamp
+    block = web3.eth.get_block("latest")
+    current_block = block.number
+    current_time = block.timestamp
     return eth_calc_block_number(
-        int(current_time), int(current_block), int(timestamp), chain
+        int(current_time), int(current_block), int(timestamp), web3
     )
 
 
 @enforce_types
-def eth_calc_block_number(ts: int, block: int, target_ts: int, chain):
+def eth_calc_block_number(ts: int, block: int, target_ts: int, web3):
     AVG_BLOCK_TIME = 12.06  # seconds
     diff = target_ts - ts
     diff_blocks = int(diff // AVG_BLOCK_TIME)
     block += diff_blocks
-    ts_found = chain[block].timestamp
+    ts_found = web3.eth.get_block(block).timestamp
     if abs(ts_found - target_ts) > 12 * 5:
-        return eth_calc_block_number(ts_found, block, target_ts, chain)
+        return eth_calc_block_number(ts_found, block, target_ts, web3)
 
     return block
 
 
 @enforce_types
 def eth_find_closest_block(
-    chain, block_number: int, timestamp: Union[float, int]
+    web3: Web3, block_number: int, timestamp: Union[float, int]
 ) -> int:
     """
     @arguments
-        chain -- brownie.networks.chain
+        web3 -- Web3 instance
         block_number -- int
         timestamp -- int
     @return
@@ -185,7 +187,7 @@ def eth_find_closest_block(
         Finds the closest block number to given timestamp
     """
 
-    block_ts = chain[block_number].timestamp
+    block_ts = web3.eth.get_block(block_number).timestamp  # type: ignore[attr-defined]
     found = block_number
 
     last = None
@@ -194,7 +196,7 @@ def eth_find_closest_block(
         while True:
             last = found
             found -= 1
-            if chain[found].timestamp < timestamp:
+            if web3.eth.get_block(found).timestamp < timestamp:  # type: ignore[attr-defined]
                 break
 
     else:
@@ -202,39 +204,43 @@ def eth_find_closest_block(
         while True:
             last = found
             found += 1
-            if chain[found].timestamp > timestamp:
+            if web3.eth.get_block(found).timestamp > timestamp:  # type: ignore[attr-defined]
                 break
-    if abs(chain[last].timestamp - timestamp) < abs(chain[found].timestamp - timestamp):
+
+    if abs(web3.eth.get_block(last).timestamp - timestamp) < abs(  # type: ignore[attr-defined]
+        web3.eth.get_block(found).timestamp - timestamp  # type: ignore[attr-defined]
+    ):
         found = last
+
     return found
 
 
 @enforce_types
-def get_fin_block(chain, FIN):
+def get_fin_block(web3, FIN):
     fin_block = 0
     if FIN == "latest":
-        fin_block = len(chain) - 5
+        fin_block = web3.eth.get_block("latest").number - 4
     elif FIN == "thu":
-        fin_block = get_block_number_thursday(chain)
+        fin_block = get_block_number_thursday(web3)
     elif "-" in str(FIN):
-        fin_block = timestr_to_block(chain, FIN)
+        fin_block = timestr_to_block(web3, FIN)
     else:
         fin_block = int(FIN)
     return fin_block
 
 
 @enforce_types
-def get_st_block(chain, ST):
+def get_st_block(web3, ST):
     st_block = 0
     if "-" in str(ST):
-        st_block = timestr_to_block(chain, ST)
+        st_block = timestr_to_block(web3, ST)
     else:
         st_block = int(ST)
     return st_block
 
 
 @enforce_types
-def get_st_fin_blocks(chain, ST, FIN):
-    st_block = get_st_block(chain, ST)
-    fin_block = get_fin_block(chain, FIN)
+def get_st_fin_blocks(web3, ST, FIN):
+    st_block = get_st_block(web3, ST)
+    fin_block = get_fin_block(web3, FIN)
     return (st_block, fin_block)

@@ -1,44 +1,38 @@
 import hashlib
 import json
-import warnings
 from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
-import brownie
 from enforce_typing import enforce_types
+from web3.logs import DISCARD
 from web3.main import Web3
 
 from df_py.util import networkutil
 from df_py.util.base18 import to_wei
-from df_py.util.constants import BROWNIE_PROJECT as B
 from df_py.util.constants import CONTRACTS, ZERO_ADDRESS
+from df_py.util.contract_base import ContractBase
+from df_py.util.web3 import get_rpc_url, get_web3
 
 
 @enforce_types
-def _contracts(key: str):
+def _contracts(key: str, chainID):
     """Returns the contract object at the currently connected network"""
-    chainID = brownie.network.chain.id
     if chainID not in CONTRACTS:
         address_file = networkutil.chain_id_to_address_file(chainID)
-        record_deployed_contracts(address_file)
+        record_deployed_contracts(address_file, chainID)
 
     return CONTRACTS[chainID][key]
 
 
 @enforce_types
 def record_dev_deployed_contracts():
-    assert brownie.network.is_connected()
-    assert brownie.network.chain.id == networkutil.DEV_CHAINID
     address_file = networkutil.chain_id_to_address_file(networkutil.DEV_CHAINID)
-    record_deployed_contracts(address_file)
+    record_deployed_contracts(address_file, networkutil.DEV_CHAINID)
 
 
 @enforce_types
-def record_deployed_contracts(address_file: str):
+def record_deployed_contracts(address_file: str, chainID: int):
     """Records deployed Ocean contracts at currently connected network"""
-    assert brownie.network.is_connected()
-    chainID = brownie.network.chain.id
-
     if chainID in CONTRACTS:  # already filled
         return
 
@@ -52,85 +46,96 @@ def record_deployed_contracts(address_file: str):
         a = json_dict[network_name]  # dict of contract_name: address
 
     C = {}
-    C["Ocean"] = B.Simpletoken.at(a["Ocean"])
-    C["ERC721Template"] = B.ERC721Template.at(a["ERC721Template"]["1"])
-    C["ERC20Template"] = B.ERC20Template.at(a["ERC20Template"]["1"])
-    C["Router"] = B.FactoryRouter.at(a["Router"])
-    if "Staking" in a:
-        C["Staking"] = B.SideStaking.at(a["Staking"])
-    C["ERC721Factory"] = B.ERC721Factory.at(a["ERC721Factory"])
-    C["FixedPrice"] = B.FixedRateExchange.at(a["FixedPrice"])
+
+    web3 = get_web3(get_rpc_url(network_name))
+
+    C["Ocean"] = ContractBase(web3, "OceanToken", a["Ocean"])
+    C["ERC721Template"] = ContractBase(web3, "ERC721Template", a["ERC721Template"]["1"])
+    C["ERC20Template"] = ContractBase(web3, "ERC20Template", a["ERC20Template"]["1"])
+    C["Router"] = ContractBase(web3, "FactoryRouter", a["Router"])
+    C["ERC721Factory"] = ContractBase(web3, "ERC721Factory", a["ERC721Factory"])
+    C["FixedPrice"] = ContractBase(web3, "FixedRateExchange", a["FixedPrice"])
 
     if "veOCEAN" in a:
-        C["veOCEAN"] = B.veOcean.at(a["veOCEAN"])
+        C["veOCEAN"] = ContractBase(web3, "veOCEAN", a["veOCEAN"])
 
     if "veAllocate" in a:
-        C["veAllocate"] = B.veAllocate.at(a["veAllocate"])
+        C["veAllocate"] = ContractBase(web3, "veAllocate", a["veAllocate"])
 
     if "veFeeDistributor" in a:
-        C["veFeeDistributor"] = B.FeeDistributor.at(a["veFeeDistributor"])
+        C["veFeeDistributor"] = ContractBase(
+            web3, "veFeeDistributor", a["veFeeDistributor"]
+        )
 
     if "veDelegation" in a:
-        C["veDelegation"] = B.veDelegation.at(a["veDelegation"])
+        C["veDelegation"] = ContractBase(web3, "veDelegation", a["veDelegation"])
 
     if "VestingWalletV0" in a:
-        C["VestingWalletV0"] = B.VestingWalletV0.at(a["VestingWalletV0"])
+        C["VestingWalletHalving"] = ContractBase(
+            web3, "VestingWalletHalving", a["VestingWalletV0"]
+        )
     elif chainID == networkutil.DEV_CHAINID:
-        C["VestingWalletV0"] = B.VestingWalletV0.deploy({"from": brownie.accounts[0]})
+        web3.eth.default_account = web3.eth.accounts[0]
+        C["VestingWalletHalving"] = ContractBase(
+            web3,
+            "VestingWalletHalving",
+            constructor_args=[
+                "0x0000000000000000000000000000000000000001",
+                1957773838,
+                100,
+                10,
+            ],
+        )
 
     CONTRACTS[chainID] = C
 
 
-def OCEAN_token():
-    return _contracts("Ocean")
+def OCEAN_token(chain_id):
+    return _contracts("Ocean", chain_id)
 
 
-def OCEAN_address() -> str:
-    return OCEAN_token().address.lower()
+def OCEAN_address(chain_id) -> str:
+    return OCEAN_token(chain_id).address.lower()
 
 
-def ERC721Template():
-    return _contracts("ERC721Template")
+def ERC721Template(chain_id):
+    return _contracts("ERC721Template", chain_id)
 
 
-def ERC20Template():
-    return _contracts("ERC20Template")
+def ERC20Template(chain_id):
+    return _contracts("ERC20Template", chain_id)
 
 
-def FactoryRouter():
-    return _contracts("Router")
+def FactoryRouter(chain_id):
+    return _contracts("Router", chain_id)
 
 
-def Staking():
-    return _contracts("Staking")
+def ERC721Factory(chain_id):
+    return _contracts("ERC721Factory", chain_id)
 
 
-def ERC721Factory():
-    return _contracts("ERC721Factory")
+def veOCEAN(chain_id):
+    return _contracts("veOCEAN", chain_id)
 
 
-def veOCEAN():
-    return _contracts("veOCEAN")
+def veAllocate(chain_id):
+    return _contracts("veAllocate", chain_id)
 
 
-def veAllocate():
-    return _contracts("veAllocate")
+def veDelegation(chain_id):
+    return _contracts("veDelegation", chain_id)
 
 
-def veDelegation():
-    return _contracts("veDelegation")
+def FixedPrice(chain_id):
+    return _contracts("FixedPrice", chain_id)
 
 
-def FixedPrice():
-    return _contracts("FixedPrice")
+def FeeDistributor(chain_id):
+    return _contracts("veFeeDistributor", chain_id)
 
 
-def FeeDistributor():
-    return _contracts("veFeeDistributor")
-
-
-def VestingWalletV0():
-    return _contracts("VestingWalletV0")
+def VestingWalletV0(chain_id):
+    return _contracts("VestingWalletHalving", chain_id)
 
 
 # ===========================================================================
@@ -138,31 +143,21 @@ def VestingWalletV0():
 
 
 @enforce_types
-def create_data_nft_with_fre(from_account, token):
-    data_NFT = create_data_nft("1", "1", from_account)
-    DT = create_datatoken_from_data_nft("1", "1", data_NFT, from_account)
+def create_data_nft_with_fre(web3, from_account, token):
+    data_NFT = create_data_nft(web3, "1", "1", from_account)
+    DT = create_datatoken_from_data_nft(web3, "1", "1", data_NFT, from_account)
 
-    exchangeId = create_FRE_from_datatoken(DT, token, 10.0, from_account)
+    exchangeId = create_FRE_from_datatoken(web3, DT, token, 10.0, from_account)
     return (data_NFT, DT, exchangeId)
 
 
-def _get_events(tx):
-    with warnings.catch_warnings():
-        warnings.filterwarnings(
-            "ignore",
-            message=".*Event log does not contain enough topics for the given ABI.*",
-        )
-        events = tx.events
-
-    return events
-
-
 @enforce_types
-def create_data_nft(name: str, symbol: str, from_account):
-    erc721_factory = ERC721Factory()
+def create_data_nft(web3: Web3, name: str, symbol: str, from_account):
+    chain_id = web3.eth.chain_id
+    erc721_factory = ERC721Factory(chain_id)
     template_index = 1
     additional_metadata_updater = ZERO_ADDRESS
-    additional_erc20_deployer = FactoryRouter().address
+    additional_erc20_deployer = FactoryRouter(chain_id).address
     transferable = True
     owner = from_account.address
     token_uri = "https://mystorage.com/mytoken.png"
@@ -179,14 +174,17 @@ def create_data_nft(name: str, symbol: str, from_account):
         {"from": from_account},
     )
 
-    events = _get_events(tx)
-    data_NFT_address = events["NFTCreated"]["newTokenAddress"]
-    data_NFT = B.ERC721Template.at(data_NFT_address)
+    event = erc721_factory.contract.events.NFTCreated().process_receipt(
+        tx, errors=DISCARD
+    )[0]
+    data_NFT_address = event.args.newTokenAddress
+    data_NFT = ContractBase(web3, "ERC721Template", data_NFT_address)
+
     return data_NFT
 
 
-def get_data_nft(data_nft_address):
-    return B.ERC721Template.at(data_nft_address)
+def get_data_nft(web3: Web3, data_nft_address):
+    return ContractBase(web3, "ERC721Template", data_nft_address)
 
 
 def get_data_field(data_nft, field_label: str) -> str:
@@ -199,7 +197,7 @@ def get_data_field(data_nft, field_label: str) -> str:
 
 @enforce_types
 def create_datatoken_from_data_nft(
-    dt_name: str, dt_symbol: str, data_nft, from_account
+    web3: Web3, dt_name: str, dt_symbol: str, data_nft, from_account
 ):
     erc20_template_index = 1
     strings = [
@@ -222,19 +220,24 @@ def create_datatoken_from_data_nft(
         erc20_template_index, strings, addresses, uints, _bytes, {"from": from_account}
     )
 
-    events = _get_events(tx)
-    DT_address = events["TokenCreated"]["newTokenAddress"]
-    DT = B.ERC20Template.at(DT_address)
+    event = data_nft.contract.events.TokenCreated().process_receipt(tx, errors=DISCARD)[
+        0
+    ]
+    DT_address = event.args.newTokenAddress
+    DT = ContractBase(web3, "ERC20Template", DT_address)
 
     return DT
 
 
 @enforce_types
 def create_FRE_from_datatoken(
-    datatoken, base_token, amount: float, from_account, rate=1.0
+    web3, datatoken, base_token, amount: float, from_account, rate=1.0
 ) -> str:
     """Create new fixed-rate exchange. Returns its exchange_id (str)"""
-    datatoken.approve(FixedPrice().address, to_wei(amount), {"from": from_account})
+    chain_id = web3.eth.chain_id
+    datatoken.approve(
+        FixedPrice(chain_id).address, to_wei(amount), {"from": from_account}
+    )
 
     addresses = [
         base_token.address,  # baseToken
@@ -245,7 +248,7 @@ def create_FRE_from_datatoken(
 
     uints = [
         base_token.decimals(),  # baseTokenDecimals
-        datatoken.decimals(),  # datatokenDecimals
+        datatoken.decimals({"from": from_account}),  # datatokenDecimals
         to_wei(rate),  # fixedRate : exchange rate of base_TOKEN to datatoken
         0,  # marketFee
         1,  # withMint
@@ -258,10 +261,13 @@ def create_FRE_from_datatoken(
     #      datatoken: address, addresses: list, uints: list)
     # Creates an Exchange struct (defined at FixedRateExchange.sol)
     tx = datatoken.createFixedRate(
-        FixedPrice().address, addresses, uints, {"from": from_account}
+        FixedPrice(chain_id).address, addresses, uints, {"from": from_account}
     )
 
-    exchange_id: str = tx.events["NewFixedRate"]["exchangeId"]
+    event = datatoken.contract.events.NewFixedRate().process_receipt(
+        tx, errors=DISCARD
+    )[0]
+    exchange_id: str = event.args.exchangeId
 
     return exchange_id
 
@@ -272,18 +278,26 @@ def create_FRE_from_datatoken(
 
 @enforce_types
 def set_allocation(amount: int, nft_addr: str, chain_id: int, from_account):
-    veAllocate().setAllocation(amount, nft_addr, chain_id, {"from": from_account})
+    veAllocate(chain_id).setAllocation(
+        amount, nft_addr, chain_id, {"from": from_account}
+    )
 
 
 @enforce_types
 def ve_delegate(
-    from_account, to_account, percentage: float, token_id: int, expiry: int = 0
+    chain_id: int,
+    from_account,
+    to_account,
+    percentage: float,
+    token_id: int,
+    expiry: int = 0,
 ):
     if expiry == 0:
-        expiry = veOCEAN().locked__end(from_account)
-    veDelegation().create_boost(
-        from_account,
-        to_account,
+        expiry = veOCEAN(chain_id).locked__end(from_account.address)
+
+    veDelegation(chain_id).create_boost(
+        from_account.address,
+        to_account.address,
         int(percentage * 10000),
         0,
         expiry,
@@ -315,8 +329,8 @@ def get_zero_consume_mkt_fee_tuple() -> Tuple:
 
 # follow order in ocean.py/ocean_lib/structures/abi_tuples.py::ProviderFees
 @enforce_types
-def get_zero_provider_fee_tuple(pub_account) -> Tuple:
-    d = get_zero_provider_fee_dict(pub_account)
+def get_zero_provider_fee_tuple(web3: Web3, pub_account) -> Tuple:
+    d = get_zero_provider_fee_dict(web3, pub_account)
 
     provider_fee = (
         d["providerFeeAddress"],
@@ -334,8 +348,7 @@ def get_zero_provider_fee_tuple(pub_account) -> Tuple:
 
 # from ocean.py/tests/resources/helper_functions.py
 @enforce_types
-def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
-    web3 = brownie.web3
+def get_zero_provider_fee_dict(web3: Web3, provider_account) -> Dict[str, Any]:
     provider_fee_amount = 0
     compute_env = None
     provider_data = json.dumps({"environment": compute_env}, separators=(",", ":"))
@@ -343,10 +356,10 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
     provider_fee_token = ZERO_ADDRESS
     valid_until = 0
 
-    message = web3.solidityKeccak(
+    message = Web3.solidity_keccak(
         ["bytes", "address", "address", "uint256", "uint256"],
         [
-            web3.toHex(web3.toBytes(text=provider_data)),
+            Web3.to_hex(Web3.to_bytes(text=provider_data)),
             provider_fee_address,
             provider_fee_token,
             provider_fee_amount,
@@ -360,7 +373,7 @@ def get_zero_provider_fee_dict(provider_account) -> Dict[str, Any]:
         "providerFeeAddress": provider_fee_address,
         "providerFeeToken": provider_fee_token,
         "providerFeeAmount": provider_fee_amount,
-        "providerData": web3.toHex(web3.toBytes(text=provider_data)),
+        "providerData": Web3.to_hex(Web3.to_bytes(text=provider_data)),
         # make it compatible with last openzepellin
         # https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
         "v": signature.v,
@@ -382,11 +395,10 @@ def split_signature(signature: Any) -> Signature:
     """
     :param signature: signed message hash, hex str
     """
-    web3 = brownie.web3
     assert len(signature) == 65, (
-        f"invalid signature, " f"expecting bytes of length 65, got {len(signature)}"
+        "invalid signature, " f"expecting bytes of length 65, got {len(signature)}"
     )
-    v = web3.toInt(signature[-1])
+    v = Web3.to_int(signature[-1])
     r = to_32byte_hex(int.from_bytes(signature[:32], "big"))
     s = to_32byte_hex(int.from_bytes(signature[32:64], "big"))
     if v != 27 and v != 28:
@@ -403,13 +415,12 @@ def to_32byte_hex(val: int) -> str:
     :param val:
     :return:
     """
-    web3 = brownie.web3
-    return web3.toHex(web3.toBytes(val).rjust(32, b"\0"))
+    return Web3.to_hex(Web3.to_bytes(val).rjust(32, b"\0"))
 
 
 @enforce_types
 def calc_did(nft_addr: str, chainID: int) -> str:
-    nft_addr2 = brownie.web3.toChecksumAddress(nft_addr)
+    nft_addr2 = Web3.to_checksum_address(nft_addr)
 
     # adapted from ocean.py/ocean_lib/ocean/ocean_assets.py
     did = f"did:op:{create_checksum(nft_addr2 + str(chainID))}"

@@ -8,7 +8,7 @@ from typing import Optional
 from enforce_typing import enforce_types
 
 from df_py.challenge import judge
-from df_py.util.networkutil import DEV_CHAINID
+from df_py.util.networkutil import DEV_CHAINID, chain_id_to_rpc_url
 
 CHAINID_EXAMPLES = (
     f"{DEV_CHAINID} for development, 1 for (eth) mainnet, 137 for polygon"
@@ -17,11 +17,10 @@ CHAINID_EXAMPLES = (
 # ========================================================================
 HELP_LONG = """Data Farming tool, for use by OPF.
 
-Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
+Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
 
   dftool help - full command list
 
-  dftool compile - compile contracts
   dftool get_rate TOKEN_SYMBOL ST FIN CSV_DIR --RETRIES
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID --RETRIES - query chain, output volumes, symbols, owners
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID --RETRIES
@@ -39,9 +38,8 @@ Usage: dftool compile|get_rate|volsym|.. ARG1 ARG2 ..
   dftool acct_info CHAINID ACCOUNT_ADDR [TOKEN_ADDR] - info about an account
   dftool chain_info CHAINID - info about a network
 
-  dftool mine BLOCKS --TIMEDELTA - force chain to pass time (ganache only)
+  dftool mine TIMEDELTA - force chain to pass time (ganache only)
 
-  dftool new_veocean CHAINID TOKEN_ADDR - deploy veOcean using TOKEN_ADDR (for testing)
   dftool new_veallocate CHAINID - deploy veAllocate (for testing)
   dftool ve_set_allocation CHAINID amount TOKEN_ADDR - Allocate weight to veAllocate contract. Set to 0 to reset. (for testing)
 
@@ -72,6 +70,19 @@ def valid_date_and_convert(s: str):
 
     msg = "not a valid date: {s}"
     raise argparse.ArgumentTypeError(msg)
+
+
+@enforce_types
+def chain_type(s: str):
+    if not s.isnumeric():
+        raise argparse.ArgumentTypeError("CHAINID must be an integer")
+
+    try:
+        chain_id_to_rpc_url(int(s))
+
+        return int(s)
+    except (KeyError, ValueError) as e:
+        raise argparse.ArgumentTypeError(str(e)) from e
 
 
 @enforce_types
@@ -186,7 +197,7 @@ class StartFinArgumentParser(argparse.ArgumentParser):
             type=existing_path,
             help=f"output dir for {csv_names}",
         )
-        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
         self.add_argument(
             "--RETRIES",
             default=1,
@@ -208,7 +219,7 @@ class SimpleChainIdArgumentParser(argparse.ArgumentParser):
             epilog=epilog,
         )
         self.add_argument("command", choices=[command_name])
-        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
 
     @enforce_types
     def print_args_and_get_chain(self) -> int:
@@ -224,7 +235,7 @@ class DfStrategyArgumentParser(argparse.ArgumentParser):
     def __init__(self, description: str, command_name: str):
         super().__init__(description=description)
         self.add_argument("command", choices=[command_name])
-        self.add_argument("CHAINID", type=int, help=CHAINID_EXAMPLES)
+        self.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
         self.add_argument("DFREWARDS_ADDR", type=str, help="DFRewards contract address")
         self.add_argument(
             "DFSTRATEGY_ADDR", type=str, help="DFStrategy contract address"

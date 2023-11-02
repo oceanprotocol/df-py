@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timedelta
-from typing import Union, List
+from typing import List, Union
 
 import requests
 from enforce_typing import enforce_types
