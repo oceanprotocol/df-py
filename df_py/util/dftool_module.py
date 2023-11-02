@@ -3,6 +3,7 @@ import argparse
 import os
 import sys
 
+from typing import Dict
 from enforce_typing import enforce_types
 from eth_account import Account
 from web3.main import Web3
@@ -20,10 +21,14 @@ from df_py.challenge.csvs import (
 )
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     save_predictoor_contracts_csv,
     save_predictoor_data_csv,
     save_predictoor_summary_csv,
+    save_predictoor_rewards_csv,
 )
+from df_py.predictoor.calc_rewards import calc_predictoor_rewards
 from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
@@ -506,24 +511,15 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
     if arguments.SUBSTREAM == "predictoor_rose":
-        ROSE_TOKENS_AVAILABLE = 4000
+        ROSE_TOKENS_AVAILABLE = 100000
         SAPPHIRE_MAINNET_ID = 23294
-
-        rates = load_rate_csvs(csv_dir)
-        rate_rose = rates["ROSE"]
-        if not rate_rose:
-            print("Rose rate does not exist.")
-            sys.exit(1)
-
-        # TODO Not sure about the numbers, re-check them later
-        tot_tokens = 4000 / rate_rose
 
         predictoor_data = load_predictoor_data_csv(csv_dir)
         predictoor_rewards = calc_predictoor_rewards(
-            predictoor_data, tot_tokens, SAPPHIRE_MAINNET_ID
+            predictoor_data, ROSE_TOKENS_AVAILABLE, SAPPHIRE_MAINNET_ID
         )
 
-        save_predictoor_reward_csv(predictoor_rewards, csv_dir)
+        save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
     print("dftool calc: Done")
 
@@ -598,7 +594,7 @@ def do_dispense_active():
         else:
             print("Distributing for VOLUME DF and CHALLENGE DF rewards")
         rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
-    elif arguments.command - -"dispense_rose":
+    elif arguments.command == "dispense_rose":
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         aggregated: Dict[str, float] = {}
         for predictoor_addr, rewards in predictoor_rewards.items():

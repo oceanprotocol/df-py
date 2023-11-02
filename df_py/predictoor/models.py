@@ -138,7 +138,11 @@ class Predictoor(PredictoorBase):
                 total_revenue -= prediction.stake
 
         return PredictionSummary(
-            prediction_count, correct_prediction_count, contract_addr, total_payout
+            prediction_count,
+            correct_prediction_count,
+            contract_addr,
+            total_payout,
+            total_revenue,
         )
 
     @property
