@@ -121,8 +121,8 @@ class Predictoor(PredictoorBase):
         """
         prediction_count = 0
         correct_prediction_count = 0
-        total_payout = 0
-        total_revenue = 0
+        total_payout = 0.0
+        total_revenue = 0.0
 
         for prediction in self._predictions:
             if prediction.contract_addr != contract_addr:
