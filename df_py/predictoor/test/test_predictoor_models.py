@@ -18,11 +18,11 @@ def test_prediction_is_correct():
 
 
 def test_prediction_profit():
-    prediction = Prediction(123, 10, 1.0, "0x1")
-    assert prediction.revenue == 10
+    prediction = Prediction(123, 10.0, 1.0, "0x1")
+    assert prediction.revenue == 10.0
 
-    prediction = Prediction(123, 0, 1.0, "0x1")
-    assert prediction.revenue == -1
+    prediction = Prediction(123, 0.0, 1.0, "0x1")
+    assert prediction.revenue == -1.0
 
 
 def test_prediction_from_query_result():
