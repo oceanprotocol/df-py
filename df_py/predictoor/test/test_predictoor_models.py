@@ -29,9 +29,9 @@ def test_prediction_from_query_result():
     prediction_dict = {
         "slot": {
             "predictContract": {"id": "0x1", "token": {"nft": {"id": "0x2"}}},
-            "stake": "0.22352",
             "slot": "123",
         },
+        "stake": "0.22352",
         "payout": {"payout": "1.23"},
     }
     prediction = Prediction.from_query_result(prediction_dict)
