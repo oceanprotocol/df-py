@@ -2,7 +2,7 @@ from typing import Dict, Union
 
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Predictoor, PredictoorBase
+from df_py.predictoor.models import Predictoor
 from df_py.predictoor.queries import query_predictoor_contracts
 
 
@@ -27,9 +27,6 @@ def calc_predictoor_rewards(
 
     predictoor_contracts = query_predictoor_contracts(chain_id).keys()
     tokens_per_contract = tokens_avail / len(predictoor_contracts)
-
-    # filter predictoors by min prediction count
-    # predictoors = filter_predictoors(predictoors)
 
     # dict to store rewards per contract
     rewards: Dict[str, Dict[str, float]] = {
