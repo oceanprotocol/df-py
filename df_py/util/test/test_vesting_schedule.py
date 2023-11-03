@@ -76,9 +76,7 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         start_dt, networkutil.DEV_CHAINID
     )
 
-    assert total_rewards == approx(
-        predictoor_rewards + volume_rewards, 0.1
-    )
+    assert total_rewards == approx(predictoor_rewards + volume_rewards, 0.1)
 
     invalid_substream = "invalid_substream"
     with pytest.raises(ValueError):
