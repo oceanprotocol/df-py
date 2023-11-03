@@ -96,7 +96,7 @@ def test_calc_predictoor_rewards_fuzz():
     # the rewards of each Predictoor should be proportionate to their revenue
     total_revenue_1 = 0
     total_revenue_2 = 0
-    for p in predictoors:
+    for p in predictoors.values():
         summary1 = p.get_prediction_summary("0xContract1")
         summary2 = p.get_prediction_summary("0xContract2")
 
