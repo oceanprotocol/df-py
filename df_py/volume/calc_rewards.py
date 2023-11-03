@@ -247,7 +247,7 @@ def _calc_rewards_usd(
     for j in range(N_j):
         stake_j = sum(S[:, j])
         multiplier = M[j] if M[j] != 0 else DCV_multiplier
-        DCV_j = V_USD[j] * (1 + multiplier) # TODO to be discussed
+        DCV_j = V_USD[j] * (1 + multiplier)  # TODO to be discussed
         if stake_j == 0.0 or DCV_j == 0.0:
             continue
 
