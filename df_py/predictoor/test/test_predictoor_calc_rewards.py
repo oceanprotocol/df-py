@@ -29,7 +29,7 @@ def test_calc_predictoor_rewards_no_predictions():
 def test_calc_predictoor_rewards_one_predictoor():
     p1 = Predictoor("0x1")
 
-    for i in range(MIN_PREDICTIONS + 1):
+    for i in range(10):
         p1.add_prediction(Prediction(1, 1.0, 0.1, "0xContract1"))
 
     predictoors = {"0x1": p1}
@@ -75,9 +75,7 @@ def test_calc_predictoor_rewards_fuzz():
     for i in range(100):  # generate 100 predictoors
         address = f"0x{i}"
         p = Predictoor(address)
-        prediction_count = random.randint(
-            round(MIN_PREDICTIONS * 0.9), round(MIN_PREDICTIONS * 1.2)
-        )
+        prediction_count = random.randint(round(1000), round(2000))
         correct_prediction_count = random.randint(0, prediction_count)
         total_profit = 0
         for i in range(correct_prediction_count):
