@@ -61,7 +61,7 @@ def test_calc_predictoor_rewards_one_prediction_eligible():
     p1 = Predictoor("0x1")
 
     for i in range(MIN_PREDICTIONS + 1):
-        p1.add_prediction(Prediction(1, 1.0, "0xContract1"))
+        p1.add_prediction(Prediction(1, 1.0, 0.1, "0xContract1"))
 
     predictoors = {"0x1": p1}
 
@@ -111,6 +111,7 @@ def test_calc_predictoor_rewards_fuzz():
             round(MIN_PREDICTIONS * 0.9), round(MIN_PREDICTIONS * 1.2)
         )
         correct_prediction_count = random.randint(0, prediction_count)
+        total_profit = 0
         for i in range(correct_prediction_count):
             p.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
             p.add_prediction(
@@ -128,15 +129,15 @@ def test_calc_predictoor_rewards_fuzz():
     rewards = calc_predictoor_rewards(predictoors, tokens_avail, DEV_CHAINID)
 
     # the rewards of each Predictoor should be proportionate to its accuracy
-    total_accuracy_1 = sum(
+    total_revenue_1 = sum(
         [
-            p.get_prediction_summary("0xContract1").correct_prediction_count
+            p.get_prediction_summary("0xContract1").total_revenue
             for p in predictoors.values()
         ]
     )
-    total_accuracy_2 = sum(
+    total_revenue_2 = sum(
         [
-            p.get_prediction_summary("0xContract2").correct_prediction_count
+            p.get_prediction_summary("0xContract2").total_revenue
             for p in predictoors.values()
         ]
     )
@@ -144,10 +145,10 @@ def test_calc_predictoor_rewards_fuzz():
         if p.prediction_count < MIN_PREDICTIONS:
             assert rewards.get(address, 0) == 0
             continue
-        acc1 = p.get_prediction_summary("0xContract1").correct_prediction_count
-        acc2 = p.get_prediction_summary("0xContract2").correct_prediction_count
-        expected_reward_1 = acc1 / total_accuracy_1 * tokens_avail / 2
-        expected_reward_2 = acc2 / total_accuracy_2 * tokens_avail / 2
+        rev1 = p.get_prediction_summary("0xContract1").total_revenue
+        rev2 = p.get_prediction_summary("0xContract2").total_revenue
+        expected_reward_1 = rev1 / total_revenue_1 * tokens_avail / 2
+        expected_reward_2 = rev2 / total_revenue_2 * tokens_avail / 2
         assert (
             abs(rewards["0xContract1"].get(address, 0) - expected_reward_1) < 1e-6
         )  # allow for small floating point differences
