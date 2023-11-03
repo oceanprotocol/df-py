@@ -49,7 +49,7 @@ def calc_predictoor_rewards(
     tokens_per_contract = tokens_avail / len(predictoor_contracts)
 
     # filter predictoors by min prediction count
-    predictoors = filter_predictoors(predictoors)
+    # predictoors = filter_predictoors(predictoors)
 
     # dict to store rewards per contract
     rewards: Dict[str, Dict[str, float]] = {
