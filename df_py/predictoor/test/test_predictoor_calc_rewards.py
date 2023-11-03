@@ -77,7 +77,7 @@ def test_calc_predictoor_rewards_fuzz():
     for i in range(100):  # generate 100 predictoors
         address = f"0x{i}"
         p = Predictoor(address)
-        prediction_count = random.randint(round(1000), round(2000))
+        prediction_count = random.randint(1000, 2000)
         correct_prediction_count = random.randint(0, prediction_count)
         for i in range(correct_prediction_count):
             p.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
@@ -109,7 +109,7 @@ def test_calc_predictoor_rewards_fuzz():
         expected_reward_1 = rev1 / total_revenue_1 * tokens_avail / 2
         expected_reward_2 = rev2 / total_revenue_2 * tokens_avail / 2
         expected_reward_1 = 0 if rev1 < 0 else expected_reward_1
-        expected_reward_2 = 0 if rev1 < 0 else expected_reward_2
+        expected_reward_2 = 0 if rev2 < 0 else expected_reward_2
         assert (
             abs(rewards["0xContract1"].get(address, 0) - expected_reward_1) < 1e-6
         )  # allow for small floating point differences
