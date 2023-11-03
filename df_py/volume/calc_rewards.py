@@ -246,7 +246,8 @@ def _calc_rewards_usd(
     R = np.zeros((N_i, N_j), dtype=float)
     for j in range(N_j):
         stake_j = sum(S[:, j])
-        DCV_j = V_USD[j]
+        multiplier = M[j] if M[j] != 0 else DCV_multiplier
+        DCV_j = V_USD[j] * (1 + multiplier) # TODO to be discussed
         if stake_j == 0.0 or DCV_j == 0.0:
             continue
 
@@ -257,7 +258,6 @@ def _calc_rewards_usd(
             perc_at_ij = stake_ij / stake_j
 
             # main formula!
-            multiplier = M[j] if M[j] != 0 else DCV_multiplier
             R[i, j] = min(
                 perc_at_j * perc_at_ij * OCEAN_avail,
                 stake_ij * TARGET_WPY,  # bound rewards by max APY
