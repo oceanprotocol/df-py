@@ -530,7 +530,9 @@ def do_dispense_active():
     parser = argparse.ArgumentParser(
         description="From rewards csv, dispense funds to chain."
     )
-    parser.add_argument("command", choices=["dispense_active", "dispense_predictoor_rose"])
+    parser.add_argument(
+        "command", choices=["dispense_active", "dispense_predictoor_rose"]
+    )
     parser.add_argument(
         "CSV_DIR", type=existing_path, help="input directory for csv rewards file"
     )
