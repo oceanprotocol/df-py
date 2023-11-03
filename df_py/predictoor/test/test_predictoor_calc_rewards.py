@@ -39,6 +39,8 @@ def test_calc_predictoor_rewards_one_predictoor():
     total_rewards_for_p1 = sum(
         contract_rewards.get(p1.address, 0) for contract_rewards in rewards.values()
     )
+
+    # 100 because there are 2 predictoor contracts in the network
     assert total_rewards_for_p1 == 100
 
 
