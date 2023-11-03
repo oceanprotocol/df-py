@@ -47,7 +47,7 @@ def test_calc_predictoor_rewards_no_predictions():
 def test_calc_predictoor_rewards_one_prediction_not_eligible():
     p1 = Predictoor("0x1")
     for i in range(MIN_PREDICTIONS - 1):
-        p1.add_prediction(Prediction(1, 1.0, "0xContract1"))
+        p1.add_prediction(Prediction(1, 1.0, 0.1, "0xContract1"))
 
     predictoors = {"0x1": p1}
 
@@ -76,21 +76,21 @@ def test_calc_predictoor_rewards_one_prediction_eligible():
 def test_calc_predictoor_rewards_with_predictions():
     p1 = Predictoor("0x1")
     for i in range(5):
-        p1.add_prediction(Prediction(1, 1.0, "0xContract1"))
+        p1.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
     for i in range(MIN_PREDICTIONS):
-        p1.add_prediction(Prediction(1, 0.0, "0xContract1"))
+        p1.add_prediction(Prediction(1, 0.0, 0.5, "0xContract1"))
 
     p2 = Predictoor("0x2")
     for i in range(20):
-        p2.add_prediction(Prediction(1, 1.0, "0xContract2"))
+        p2.add_prediction(Prediction(1, 1.0, 0.5, "0xContract2"))
     for i in range(MIN_PREDICTIONS):
-        p2.add_prediction(Prediction(1, 0.0, "0xContract2"))
+        p2.add_prediction(Prediction(1, 0.0, 0.5, "0xContract2"))
 
     p3 = Predictoor("0x3")
     for i in range(5):
-        p3.add_prediction(Prediction(1, 1.0, "0xContract2"))
+        p3.add_prediction(Prediction(1, 1.0, 0.5, "0xContract2"))
     for i in range(MIN_PREDICTIONS):
-        p3.add_prediction(Prediction(1, 0.0, "0xContract2"))
+        p3.add_prediction(Prediction(1, 0.0, 0.5, "0xContract2"))
     predictoors = {"0x1": p1, "0x2": p2, "0x3": p3}
 
     rewards = calc_predictoor_rewards(predictoors, 100, DEV_CHAINID)
@@ -112,11 +112,13 @@ def test_calc_predictoor_rewards_fuzz():
         )
         correct_prediction_count = random.randint(0, prediction_count)
         for i in range(correct_prediction_count):
-            p.add_prediction(Prediction(1, 1.0, "0xContract1"))
-            p.add_prediction(Prediction(1, float(random.randint(0, 1)), "0xContract2"))
+            p.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
+            p.add_prediction(
+                Prediction(1, float(random.randint(0, 1)), 0.5, "0xContract2")
+            )
         for i in range(prediction_count - correct_prediction_count):
-            p.add_prediction(Prediction(1, 0.0, "0xContract1"))
-            p.add_prediction(Prediction(1, 0.0, "0xContract2"))
+            p.add_prediction(Prediction(1, 0.0, 0.5, "0xContract1"))
+            p.add_prediction(Prediction(1, 0.0, 0.5, "0xContract2"))
         if p.prediction_count >= MIN_PREDICTIONS:
             total_accuracy += p.accuracy  # used to validate results in the end
         predictoors[address] = p
