@@ -58,6 +58,7 @@ def create_mock_response(statuses: List[str], payouts: List[float], users: List[
                         },
                         "slot": "5520",
                     },
+                    "stake": "0.1",
                     "user": {"id": user},
                     "payout": {"payout": str(payout)},
                     "block": 5459,
