@@ -155,7 +155,7 @@ jobs:
           USE_MULTISIG: false
         if: github.event_name == 'schedule'
         run: |
-          ./dftool dispense_rose $CSV_DIR 1 --DFREWARDS_ADDR=TODO --TOKEN_ADDR=TODO
+          ./dftool dispense_predictoor_rose $CSV_DIR 1 --DFREWARDS_ADDR=TODO --TOKEN_ADDR=TODO
 
       - name: Rename folder to round number
         run: |

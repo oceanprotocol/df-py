@@ -530,7 +530,7 @@ def do_dispense_active():
     parser = argparse.ArgumentParser(
         description="From rewards csv, dispense funds to chain."
     )
-    parser.add_argument("command", choices=["dispense_active", "dispense_rose"])
+    parser.add_argument("command", choices=["dispense_active", "dispense_predictoor_rose"])
     parser.add_argument(
         "CSV_DIR", type=existing_path, help="input directory for csv rewards file"
     )
@@ -594,7 +594,7 @@ def do_dispense_active():
         else:
             print("Distributing for VOLUME DF and CHALLENGE DF rewards")
         rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
-    elif arguments.command == "dispense_rose":
+    elif arguments.command == "dispense_predictoor_rose":
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         aggregated: Dict[str, float] = {}
         for predictoor_addr, rewards in predictoor_rewards.items():
