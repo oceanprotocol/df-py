@@ -4,26 +4,6 @@ from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Predictoor, PredictoorBase
 from df_py.predictoor.queries import query_predictoor_contracts
-from df_py.util.constants import MIN_PREDICTIONS
-
-
-@enforce_types
-def filter_predictoors(
-    predictoors: Dict[str, Union[PredictoorBase, Predictoor]]
-) -> Dict[str, Union[PredictoorBase, Predictoor]]:
-    """
-    @description
-    Filter away predictoors that have insufficient # predictions
-
-    @arguments
-    unfiltered predictoors -- dict of [pdr_address] : Predictoor
-
-    @return
-    filtered predictors -- dict of dict of [pdr_address] : Predictoor
-    """
-    return {
-        k: v for k, v in predictoors.items() if v.prediction_count >= MIN_PREDICTIONS
-    }
 
 
 @enforce_types
