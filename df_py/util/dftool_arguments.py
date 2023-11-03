@@ -7,7 +7,6 @@ from typing import Optional
 
 from enforce_typing import enforce_types
 
-from df_py.challenge import judge
 from df_py.util.networkutil import DEV_CHAINID, chain_id_to_rpc_url
 
 CHAINID_EXAMPLES = (
@@ -25,9 +24,8 @@ Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
   dftool volsym ST FIN NSAMP CSV_DIR CHAINID --RETRIES - query chain, output volumes, symbols, owners
   dftool allocations ST FIN NSAMP CSV_DIR CHAINID --RETRIES
   dftool vebals ST FIN NSAMP CSV_DIR CHAINID --RETRIES
-  dftool challenge_data CSV_DIR [DEADLINE] --RETRIES
   dftool predictoor_data START_DATE END_DATE CSV_DIR CHAINID --RETRIES
-  dftool calc volume|predictoor|challenge CSV_DIR TOT_OCEAN START_DATE - from stakes/etc csvs (or predictoor/challenge data csvs), output rewards
+  dftool calc volume|predictoor CSV_DIR TOT_OCEAN START_DATE - from stakes/etc csvs (or predictoor/volume data csvs), output rewards
   dftool dispense_active CSV_DIR CHAINID --DFREWARDS_ADDR --TOKEN_ADDR --BATCH_NBR - from rewards, dispense funds
   dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
@@ -49,7 +47,6 @@ Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
   dftool add_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Add a strategy to DFRewards contract
   dftool retire_strategy CHAINID DFREWARDS_ADDR DFSTRATEGY_ADDR - Retire a strategy from DFRewards contract
   dftool checkpoint_feedist CHAINID - checkpoint FeeDistributor contract
-  dftool dummy_csvs SUBSTREAM CSV_DIR
 
 Transactions are signed with envvar 'DFTOOL_KEY`.
 """
@@ -139,18 +136,6 @@ def autocreate_path(s: str):
         os.mkdir(s)
 
     return s
-
-
-@enforce_types
-def challenge_date(s: str):
-    if s == "None":
-        return None
-
-    try:
-        judge.parse_deadline_str(s)
-        return s
-    except Exception as e:  # pylint: disable=bare-except
-        raise argparse.ArgumentTypeError(str(e)) from e
 
 
 @enforce_types

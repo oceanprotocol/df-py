@@ -3,7 +3,6 @@ from typing import Optional
 
 from enforce_typing import enforce_types
 
-from df_py.challenge.calc_rewards import get_challenge_reward_amounts_in_ocean
 from df_py.util import oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import (
@@ -30,17 +29,11 @@ def get_active_reward_amount_for_week_eth_by_stream(
     if substream == "predictoor":
         return PREDICTOOR_OCEAN_BUDGET if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
 
-    if substream == "challenge":
-        return sum(get_challenge_reward_amounts_in_ocean(start_dt))
-
     if substream == "volume":
         return (
             total_reward_amount
             - get_active_reward_amount_for_week_eth_by_stream(
                 start_dt, "predictoor", chain_id
-            )
-            - get_active_reward_amount_for_week_eth_by_stream(
-                start_dt, "challenge", chain_id
             )
         )
 
