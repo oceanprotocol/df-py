@@ -416,7 +416,7 @@ def do_calc():
         description="From substream data files, output rewards csvs."
     )
     parser.add_argument("command", choices=["calc"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor_rose"])
     parser.add_argument(
         "CSV_DIR",
         type=existing_path,
