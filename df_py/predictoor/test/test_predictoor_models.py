@@ -25,6 +25,20 @@ def test_prediction_profit():
     assert prediction.revenue == -1.0
 
 
+def test_predictoor_summary():
+    predictoor = Predictoor("0x1")
+    predictoor.add_prediction(Prediction(123, 10.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 5.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 0.0, 10.0, "0x1"))
+
+    summary = predictoor.get_prediction_summary("0x1")
+    assert summary.prediction_count == 3
+    assert summary.correct_prediction_count == 2
+    assert summary.contract_addr == "0x1"
+    assert summary.total_payout == 15.0
+    assert summary.total_revenue == 5.0 # 10 + 5 - 10
+
+
 def test_prediction_from_query_result():
     prediction_dict = {
         "slot": {
