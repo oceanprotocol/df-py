@@ -23,7 +23,7 @@ def sample_predictoor_data_csv(num_rows=50000):
     def random_contract_address():
         return f"0xContract{random.randint(1, 3)}"
 
-    result = "predictoor_addr,slot,payout,contract_addr\n"
+    result = "predictoor_addr,slot,payout,stake,contract_addr\n"
 
     for _ in range(num_rows):
         predictor_address = random_predictor_address()
