@@ -268,7 +268,7 @@ def test_calc_predictoor_rose_substream(tmp_path):
         dftool_module.do_calc()
 
     rewards = load_predictoor_rewards_csv(csv_dir)
-    assert len(rewards) > 0
+    assert len(rewards) > 10000
 
 
 @enforce_types
