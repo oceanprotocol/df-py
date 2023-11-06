@@ -58,27 +58,33 @@ class PredictoorBase:
         prediction_count: int,
         correct_prediction_count: int,
         accuracy: float,
+        revenue: float,
     ):
         self._address = address
         self._prediction_count = prediction_count
         self._correct_prediction_count = correct_prediction_count
         self._accuracy = accuracy
+        self._revenue = revenue
 
     @property
-    def address(self):
+    def address(self) -> str:
         return self._address
 
     @property
-    def prediction_count(self):
+    def prediction_count(self) -> int:
         return self._prediction_count
 
     @property
-    def correct_prediction_count(self):
+    def correct_prediction_count(self) -> int:
         return self._correct_prediction_count
 
     @property
-    def accuracy(self):
+    def accuracy(self) -> float:
         return self._accuracy
+
+    @property
+    def revenue(self) -> float:
+        return self._revenue
 
 
 class PredictionSummary:
@@ -107,7 +113,7 @@ class PredictionSummary:
 class Predictoor(PredictoorBase):
     @enforce_types
     def __init__(self, address: str):
-        super().__init__(address, 0, 0, 0)
+        super().__init__(address, 0, 0, 0, 0)
         self._predictions: List[Prediction] = []
 
     def get_prediction_summary(self, contract_addr: str) -> PredictionSummary:
@@ -178,6 +184,7 @@ class Predictoor(PredictoorBase):
         self._prediction_count += 1
         if prediction.is_correct:
             self._correct_prediction_count += 1
+        self._revenue += prediction.revenue
 
 
 class PredictContract:
