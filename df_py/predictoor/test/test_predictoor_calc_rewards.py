@@ -72,6 +72,16 @@ def test_calc_predictoor_rewards_with_predictions():
     assert rewards["0xContract2"]["0x3"] == 10.0
 
 
+def test_negative_revenue():
+    p1 = Predictoor("0x1")
+    for _ in range(5):
+        p1.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
+    for _ in range(5):
+        p1.add_prediction(Prediction(1, 0.0, 2.0, "0xContract1"))
+
+    summary = p1.get_prediction_summary("0xContract1")
+    assert summary.total_revenue == -5
+
 def test_calc_predictoor_rewards_fuzz():
     predictoors = {}
     for i in range(100):  # generate 100 predictoors
