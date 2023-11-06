@@ -268,6 +268,8 @@ def test_calc_predictoor_rose_substream(tmp_path):
         dftool_module.do_calc()
 
     rewards = load_predictoor_rewards_csv(csv_dir)
+    print(sample_data)
+    print(rewards)
     assert len(rewards) > 10000
 
 
