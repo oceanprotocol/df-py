@@ -511,12 +511,11 @@ def do_calc():
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
     if arguments.SUBSTREAM == "predictoor_rose":
-        ROSE_TOKENS_AVAILABLE = 100000
         SAPPHIRE_MAINNET_ID = 23294
 
         predictoor_data = load_predictoor_data_csv(csv_dir)
         predictoor_rewards = calc_predictoor_rewards(
-            predictoor_data, ROSE_TOKENS_AVAILABLE, SAPPHIRE_MAINNET_ID
+            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_ID
         )
 
         save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
