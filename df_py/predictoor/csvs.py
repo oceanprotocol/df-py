@@ -172,9 +172,10 @@ def save_predictoor_rewards_csv(
         row = ["predictoor_addr", "contract_addr", "ROSE_amt"]
         writer.writerow(row)
 
-        for predictoor_addr, contracts in predictoor_rewards.items():
-            assert_is_eth_addr(predictoor_addr)
-            for contract_addr, reward in contracts.items():
+        for contract_addr, contracts in predictoor_rewards.items():
+            assert_is_eth_addr(contract_addr)
+            for predictoor_addr, reward in contracts.items():
+                assert_is_eth_addr(predictoor_addr)
                 row = [predictoor_addr.lower(), contract_addr.lower(), str(reward)]
                 writer.writerow(row)
 
