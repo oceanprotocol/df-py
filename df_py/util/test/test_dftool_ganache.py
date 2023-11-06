@@ -180,8 +180,10 @@ def test_predictoor_data(tmp_path):
                 continue
             user_total = stats[user]["total"]
             user_correct = stats[user]["correct"]
+            user_revenue = stats[user]["revenue"]
             assert predictoors[user].prediction_count == user_total
             assert predictoors[user].correct_prediction_count == user_correct
+            assert predictoors[user].revenue == user_revenue
             assert predictoors[user].accuracy == user_correct / user_total
 
 
