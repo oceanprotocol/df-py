@@ -50,7 +50,7 @@ def calc_predictoor_rewards(
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
             revenue_contract = predictoor.get_prediction_summary(contract).total_revenue
-            if revenue_contract < 0:
+            if revenue_contract <= 0:
                 # ignore negative revenues
                 continue
             rewards[contract][pdr_address] = (
