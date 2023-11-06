@@ -264,7 +264,7 @@ def test_calc_predictoor_rose_substream(tmp_path):
 
     csv_dir = str(tmp_path)
 
-    with sysargs_context(["dftool", "calc", "predictoor_rose", csv_dir]):
+    with sysargs_context(["dftool", "calc", "predictoor_rose", csv_dir, "0"]):
         dftool_module.do_calc()
 
     rewards = load_predictoor_rewards_csv(csv_dir)
