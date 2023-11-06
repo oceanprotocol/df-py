@@ -44,7 +44,13 @@ class Prediction:
                 "id"
             ]
             slot = int(prediction_dict["slot"]["slot"])
-            payout = float(prediction_dict["payout"]["payout"])
+            if (
+                prediction_dict["payout"] is not None
+                and "payout" in prediction_dict["payout"]
+            ):
+                payout = float(prediction_dict["payout"]["payout"])
+            else:
+                payout = 0
             stake = float(prediction_dict["stake"])
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("Invalid prediction dictionary") from exc
