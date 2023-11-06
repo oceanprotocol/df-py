@@ -256,3 +256,7 @@ How to fix:
 - Tactic: in barge console: `./cleanup.sh`
 - Tactic: in any console: `rm -rf ~/.ocean`
 - More tactics at [barge README](https://github.com/oceanprotocol/barge)
+
+
+## Release process (developers)
+In order to release a new version of df-py, simply create a new GitHub release. As opposed to other Ocean Protocol python repos, there is no need to use bumpversion.
