@@ -15,8 +15,10 @@ from df_py.challenge.csvs import (
 )
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
+    sample_predictoor_data_csv,
 )
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
@@ -249,6 +251,24 @@ def test_calc_challenge_substream(tmp_path):
     with sysargs_context(["dftool", "calc", "challenge", csv_dir, str(safe_limit)]):
         with pytest.raises(SystemExit):
             dftool_module.do_calc()
+
+
+@enforce_types
+def test_calc_predictoor_rose_substream(tmp_path):
+    csv_dir = str(tmp_path)
+
+    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
+    sample_data = sample_predictoor_data_csv(50000)
+    with open(predictoor_data_csv, "w") as f:
+        f.write(sample_data)
+
+    csv_dir = str(tmp_path)
+
+    with sysargs_context(["dftool", "calc", "predictoor_rose", csv_dir]):
+        dftool_module.do_calc()
+
+    rewards = load_predictoor_rewards_csv(csv_dir)
+    assert len(rewards) > 0
 
 
 @enforce_types
