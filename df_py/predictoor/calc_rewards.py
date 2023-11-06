@@ -26,7 +26,9 @@ def calc_predictoor_rewards(
     tokens_avail = float(tokens_avail)
 
     predictoor_contracts = query_predictoor_contracts(chain_id).keys()
+    print("# of available contracts: ", len(predictoor_contracts))
     tokens_per_contract = tokens_avail / len(predictoor_contracts)
+    print("Tokens per contract:", tokens_per_contract)
 
     # dict to store rewards per contract
     rewards: Dict[str, Dict[str, float]] = {
@@ -45,6 +47,7 @@ def calc_predictoor_rewards(
 
         # If total revenue for this contract is 0, no rewards are distributed
         if total_revenue_for_contract == 0:
+            print("Total revenue for contract: ", contract, " was zero")
             continue
 
         # Calculate rewards for each predictoor for this contract
