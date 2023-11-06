@@ -25,6 +25,15 @@ def test_prediction_profit():
     assert prediction.revenue == -1.0
 
 
+def test_predictoor_revenue():
+    predictoor = Predictoor("0x1")
+    predictoor.add_prediction(Prediction(123, 10.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 5.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 0.0, 10.0, "0x1"))
+
+    assert predictoor.revenue == 5.0
+
+
 def test_predictoor_summary():
     predictoor = Predictoor("0x1")
     predictoor.add_prediction(Prediction(123, 10.0, 1.0, "0x1"))
