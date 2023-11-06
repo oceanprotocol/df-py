@@ -82,6 +82,19 @@ def test_negative_revenue():
     summary = p1.get_prediction_summary("0xContract1")
     assert summary.total_revenue == -5
 
+
+def test_reward_calculation_with_negative():
+    p1 = Predictoor("0x1")
+    for _ in range(5):
+        p1.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
+    for _ in range(5):
+        p1.add_prediction(Prediction(1, 0.0, 2.0, "0xContract1"))
+
+    rewards = calc_predictoor_rewards({"0x1": p1}, 1000, DEV_CHAINID)
+    assert len(rewards["0xContract1"]) == 0
+    assert len(rewards["0xContract2"]) == 0
+
+
 def test_calc_predictoor_rewards_fuzz():
     predictoors = {}
     for i in range(100):  # generate 100 predictoors
