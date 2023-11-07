@@ -260,9 +260,8 @@ def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_pat
 
     predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
     sample_data = sample_predictoor_data_csv(50000)
-    mock_query_predictoor_contracts.return_value = {
-        f"0xContract{i}": 0 for i in range(1, 4)
-    }
+    contract_addresses = {f"0xContract{i}": 0 for i in range(1, 4)}
+    mock_query_predictoor_contracts.return_value = contract_addresses
     with open(predictoor_data_csv, "w") as f:
         f.write(sample_data)
 
@@ -273,7 +272,9 @@ def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_pat
 
     rewards = load_predictoor_rewards_csv(csv_dir)
     print(rewards)
-    assert len(rewards) > 10000
+    assert len(rewards) == 3
+    for address in contract_addresses:
+        assert len(rewards[address]) > 1000
 
 
 @enforce_types
