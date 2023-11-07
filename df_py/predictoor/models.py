@@ -50,7 +50,7 @@ class Prediction:
             ):
                 payout = float(prediction_dict["payout"]["payout"])
             else:
-                payout = 0
+                payout = 0.0
             stake = float(prediction_dict["stake"])
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("Invalid prediction dictionary") from exc
