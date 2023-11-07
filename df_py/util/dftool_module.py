@@ -516,9 +516,11 @@ def do_calc():
         SAPPHIRE_MAINNET_ID = 23294
 
         predictoor_data = load_predictoor_data_csv(csv_dir)
+        print("Loaded predictoor data:", predictoor_data)
         predictoor_rewards = calc_predictoor_rewards(
             predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_ID
         )
+        print("Calculated rewards:", predictoor_rewards)
 
         save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
