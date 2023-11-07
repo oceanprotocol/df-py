@@ -597,11 +597,14 @@ def do_dispense_active():
         rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
     elif arguments.command == "dispense_predictoor_rose":
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
-        aggregated: Dict[str, float] = {}
-        for predictoor_addr, rewards in predictoor_rewards.items():
-            total_reward = sum(rewards.values())
-            aggregated[predictoor_addr] = total_reward
-        rewards = aggregated
+        aggregated_rewards: Dict[str, float] = {}
+        for _, rewards in predictoor_rewards.items():
+            for predictor_addr, reward_amount in rewards.items():
+                if predictor_addr in aggregated_rewards:
+                    aggregated_rewards[predictor_addr] += reward_amount
+                else:
+                    aggregated_rewards[predictor_addr] = reward_amount
+        rewards = aggregated_rewards
 
     # dispense
     dispense.dispense(
