@@ -3,7 +3,6 @@ import argparse
 import os
 import sys
 
-from typing import Dict
 from enforce_typing import enforce_types
 from eth_account import Account
 from web3.main import Web3
