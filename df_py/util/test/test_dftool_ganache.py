@@ -254,11 +254,13 @@ def test_calc_challenge_substream(tmp_path):
 
 
 @enforce_types
-def test_calc_predictoor_rose_substream(tmp_path):
+@patch("df_py.predictoor.calc_rewards.query_predictoor_contracts")
+def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_path):
     csv_dir = str(tmp_path)
 
     predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
     sample_data = sample_predictoor_data_csv(50000)
+    mock_query_predictoor_contracts.return_value = {f"0x{i}": 0 for i in range(1, 17)}
     with open(predictoor_data_csv, "w") as f:
         f.write(sample_data)
 
