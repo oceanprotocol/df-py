@@ -28,7 +28,10 @@ from df_py.predictoor.csvs import (
     save_predictoor_summary_csv,
     save_predictoor_rewards_csv,
 )
-from df_py.predictoor.calc_rewards import calc_predictoor_rewards
+from df_py.predictoor.calc_rewards import (
+    aggregate_predictoor_rewards,
+    calc_predictoor_rewards,
+)
 from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
@@ -597,14 +600,7 @@ def do_dispense_active():
         rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
     elif arguments.command == "dispense_predictoor_rose":
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
-        aggregated_rewards: Dict[str, float] = {}
-        for _, rewards in predictoor_rewards.items():
-            for predictor_addr, reward_amount in rewards.items():
-                if predictor_addr in aggregated_rewards:
-                    aggregated_rewards[predictor_addr] += reward_amount
-                else:
-                    aggregated_rewards[predictor_addr] = reward_amount
-        rewards = aggregated_rewards
+        rewards = aggregate_predictoor_rewards(predictoor_rewards)
 
     # dispense
     dispense.dispense(
