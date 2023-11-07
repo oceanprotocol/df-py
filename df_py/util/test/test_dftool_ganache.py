@@ -274,7 +274,7 @@ def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_pat
     print(rewards)
     assert len(rewards) == 3
     for address in contract_addresses:
-        assert len(rewards[address]) > 1000
+        assert len(rewards[address.lower()]) > 1000
 
 
 @enforce_types
