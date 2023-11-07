@@ -152,17 +152,17 @@ def test_calc_predictoor_rewards_fuzz():
 
 def test_aggregate_rewards():
     predictoor_rewards = {
-        "contract1": {"predictor1": 10.0, "predictor2": 5.0, "predictor3": 7.0},
-        "contract2": {"predictor1": 3.0, "predictor2": 2.0, "predictor4": 4.0},
+        "contract1": {"predictoor1": 10.0, "predictoor2": 5.0, "predictoor3": 7.0},
+        "contract2": {"predictoor1": 3.0, "predictoor2": 2.0, "predictoor4": 4.0},
     }
 
     result = aggregate_predictoor_rewards(predictoor_rewards)
 
     expected_output = {
-        "predictor1": 15.0,
-        "predictor2": 7.0,
-        "predictor3": 7.0,
-        "predictor4": 4.0,
+        "predictoor1": 13.0,
+        "predictoor2": 7.0,
+        "predictoor3": 7.0,
+        "predictoor4": 4.0,
     }
 
     assert result == expected_output
