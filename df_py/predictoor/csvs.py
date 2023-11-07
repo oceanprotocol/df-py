@@ -192,7 +192,7 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
 
     @return:
       Dict[str, Dict[str, float]] -- A nested dictionary containing rewards data.
-                                    [predictoor_addr]:[contract_addr]:[reward_amount]
+                                    [contract_addr]:[predictoor_addr]:[reward_amount]
 
     Raises:
     - AssertionError: If the CSV file structure doesn't match the expected structure.
@@ -214,9 +214,9 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
             assert_is_eth_addr(predictoor_addr)
             assert_is_eth_addr(contract_addr)
 
-            if not predictoor_addr in predictoor_rewards:
-                predictoor_rewards[predictoor_addr] = {}
-            predictoor_rewards[predictoor_addr][contract_addr] = reward
+            if not contract_addr in predictoor_rewards:
+                predictoor_rewards[contract_addr] = {}
+            predictoor_rewards[contract_addr][predictoor_addr] = reward
 
     print(f"Loaded {csv_file}")
     return predictoor_rewards
