@@ -4,7 +4,10 @@ from unittest.mock import patch
 
 import pytest
 
-from df_py.predictoor.calc_rewards import calc_predictoor_rewards
+from df_py.predictoor.calc_rewards import (
+    aggregate_predictoor_rewards,
+    calc_predictoor_rewards,
+)
 from df_py.predictoor.models import Prediction, Predictoor, PredictoorBase
 from df_py.util.networkutil import DEV_CHAINID
 from df_py.volume.calc_rewards import flatten_rewards
@@ -145,3 +148,21 @@ def test_calc_predictoor_rewards_fuzz():
     assert (
         abs(sum(flatten_rewards(rewards).values()) - tokens_avail) < 1e-6
     )  # allow for small floating point differences
+
+
+def test_aggregate_rewards():
+    predictoor_rewards = {
+        "contract1": {"predictor1": 10.0, "predictor2": 5.0, "predictor3": 7.0},
+        "contract2": {"predictor1": 3.0, "predictor2": 2.0, "predictor4": 4.0},
+    }
+
+    result = aggregate_predictoor_rewards(predictoor_rewards)
+
+    expected_output = {
+        "predictor1": 15.0,
+        "predictor2": 7.0,
+        "predictor3": 7.0,
+        "predictor4": 4.0,
+    }
+
+    assert result == expected_output
