@@ -19,6 +19,7 @@ from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
     sample_predictoor_data_csv,
+    sample_predictoor_rewards_csv,
 )
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
@@ -380,6 +381,31 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
     # test result
     assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 2700.0
     assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 1100.0
+
+
+def test_dispense_predictoor_rose(tmp_path):
+    rewards = sample_predictoor_rewards_csv()
+    with open(predictoor_rewards_csv_filename(tmp_path), "w") as f:
+        f.write(rewards)
+
+    sys_argv = [
+        "dftool",
+        "dispense_predictoor_rose",
+        tmp_path,
+        str(CHAINID),
+        f"--DFREWARDS_ADDR={0x1}",
+        f"--TOKEN_ADDR={0x2}",
+    ]
+
+    with patch("df_py.util.dispense.dispense") as mock:
+        with sysargs_context(sys_argv):
+            dftool_module.do_dispense_active()
+        mock.assert_called()
+        actual_rewards_arg = mock.call_args[0][1]
+
+        assert {
+            "0x0000000000000000000000000000000000000000": 10.0
+        } == actual_rewards_arg
 
 
 # TODO: re-enable. pylint: disable=fixme
