@@ -97,7 +97,7 @@ jobs:
           retention-days: 5
           path: /tmp/csv
 
-      - name: Distribute active rewards
+      - name: Distribute Predictoor rewards
         env:
           USE_MULTISIG: false
         if: github.event_name == 'schedule'
