@@ -30,7 +30,6 @@ install_requirements = [
     "requests",
     "scipy",
     "types-requests",
-    "bumpversion",
     "black",
     "ocean-contracts==2.0.0a15",
 ]
