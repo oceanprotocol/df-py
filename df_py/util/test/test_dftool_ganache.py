@@ -393,8 +393,8 @@ def test_dispense_predictoor_rose(tmp_path):
         "dispense_predictoor_rose",
         str(tmp_path),
         str(CHAINID),
-        f"--DFREWARDS_ADDR=0x1",
-        f"--TOKEN_ADDR=0x2",
+        "--DFREWARDS_ADDR=0x1",
+        "--TOKEN_ADDR=0x2",
     ]
 
     with patch("df_py.util.dispense.dispense") as mock:
