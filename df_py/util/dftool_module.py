@@ -578,12 +578,6 @@ def do_dispense_active():
     # main work
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
-    token_symbol = (
-        ContractBase(web3, "OceanToken", web3.to_checksum_address(arguments.TOKEN_ADDR))
-        .symbol()
-        .upper()
-    )
-    token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
     if arguments.command == "dispense_active":
         volume_rewards = {}
