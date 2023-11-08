@@ -397,7 +397,7 @@ def test_dispense_predictoor_rose(tmp_path):
         "--TOKEN_ADDR=0x0000000000000000000000000000000000000001",
     ]
 
-    with patch("df_py.util.dftool_module.dispense") as mock:
+    with patch("df_py.util.dftool_module.dispense.dispense") as mock:
         with sysargs_context(sys_argv):
             dftool_module.do_dispense_active()
         mock.assert_called()
