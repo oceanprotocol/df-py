@@ -125,7 +125,7 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
             timeframe = info["timeframe"]
             source = info["source"]
 
-            asset_name = f"{pair}-{timeframe}-{source}"
+            asset_name = f"{pair}-{source}-{timeframe}"
 
             contract_obj = PredictContract(
                 chain_id,
