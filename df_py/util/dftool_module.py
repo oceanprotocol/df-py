@@ -743,9 +743,7 @@ def do_many_random():
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token(chain_id)
-    OCEAN.mint(
-        account0, to_wei(10_000), {"from": account0}
-    )
+    OCEAN.mint(account0, to_wei(10_000), {"from": account0})
 
     oceantestutil.print_dev_accounts()
 
@@ -810,7 +808,6 @@ def do_fake_rewards():
     assert df_rewards.claimable(accounts[1], OCEAN.address) == 10
     assert df_rewards.claimable(accounts[2], OCEAN.address) == 20
     assert df_rewards.claimable(accounts[3], OCEAN.address) == 30
-
 
 
 # ========================================================================

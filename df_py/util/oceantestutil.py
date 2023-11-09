@@ -82,7 +82,9 @@ def consume_DT(DT, pub_account, consume_account):
         {"from": consume_account},
     )
 
-    print(f"started order for consume_DT by {consume_account.address} on DT {DT.address}")
+    print(
+        f"started order for consume_DT by {consume_account.address} on DT {DT.address}"
+    )
 
 
 @enforce_types
