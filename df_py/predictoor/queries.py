@@ -16,6 +16,12 @@ def key_to_725(key: str):
 
 
 @enforce_types
+def value_to_725(value: str):
+    value725 = Web3.to_hex(text=value)
+    return value725
+
+
+@enforce_types
 def value_from_725(value725) -> str:
     value = Web3.to_text(hexstr=value725)
     return value
