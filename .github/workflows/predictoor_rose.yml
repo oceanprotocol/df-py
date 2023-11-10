@@ -1,0 +1,105 @@
+name: Dispense Predictoor ROSE Rewards
+
+on:
+  schedule:
+    - cron: "0 0 * * 1"
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      amt_of_tokens:
+        description: "Amount of tokens to distribute"
+        required: true
+        default: "10000"
+
+jobs:
+  # we already have a test flow in test.yml
+  # re-use that flow
+  #run-tests:
+  #  uses: ./.github/workflows/test.yml
+
+  dispense-predictoor-rose:
+    env:
+      BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+    permissions:
+      contents: "read"
+      id-token: "write"
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    #needs: run-tests
+    steps:
+      - id: df-py
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: oceanprotocol
+          repo: df-py
+          excludes: prerelease, draft
+
+      - name: Set branch to checkout
+        id: set_branch
+        run: echo "BRANCH=${{ github.event_name == 'schedule' && steps.df-py.outputs.release || github.ref }}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH }}
+
+      - name: Set up Python {{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --quiet
+
+      - name: Set up Openzeppelin
+        run: npm install @openzeppelin/contracts
+
+      - name: Set env variables
+        run: |
+          echo "DFTOOL_KEY=${{ secrets.DF_SAPPHIRE_ROSE_REWARDS_PK }}" >> $GITHUB_ENV
+          echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
+          echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
+          echo "date=$(date -d "last-thursday - 1 week" '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "now=$(date -d "last-thursday" '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
+          echo "RETRY_TIMES=5" >> $GITHUB_ENV
+          echo "POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "MUMBAI_RPC_URL=https://polygon-mumbai.infura.io/v3/" >> $GITHUB_ENV
+          echo "MAINNET_RPC_URL=https://mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "SAPPHIRE_MAINNET_RPC_URL=https://sapphire.oasis.io/" >> $GITHUB_ENV
+          echo "GOERLI_RPC_URL=https://rpc.ankr.com/eth_goerli" >> $GITHUB_ENV
+          echo "INFURA_NETWORKS=polygon,mumbai,mainnet" >> $GITHUB_ENV
+
+      - name: Make dftool executable
+        run: chmod +x dftool
+
+      - name: Run dftool predictoor_data
+        run: |
+          ./dftool predictoor_data $date $now $CSV_DIR 23294 --RETRIES $RETRY_TIMES
+
+      - name: Run dftool calc rewards for predictoor_rose
+        run: |
+          ./dftool calc predictoor_rose $CSV_DIR 25
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: CSV Files
+          retention-days: 5
+          path: /tmp/csv
+
+      - name: Distribute Predictoor rewards
+        env:
+          USE_MULTISIG: false
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool dispense_predictoor_rose $CSV_DIR 23294 --DFREWARDS_ADDR="0xc37F8341Ac6e4a94538302bCd4d49Cf0852D30C0" --TOKEN_ADDR="0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3"

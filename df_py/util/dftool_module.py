@@ -20,9 +20,16 @@ from df_py.challenge.csvs import (
 )
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     save_predictoor_contracts_csv,
     save_predictoor_data_csv,
     save_predictoor_summary_csv,
+    save_predictoor_rewards_csv,
+)
+from df_py.predictoor.calc_rewards import (
+    aggregate_predictoor_rewards,
+    calc_predictoor_rewards,
 )
 from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
@@ -411,7 +418,7 @@ def do_calc():
         description="From substream data files, output rewards csvs."
     )
     parser.add_argument("command", choices=["calc"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor_rose"])
     parser.add_argument(
         "CSV_DIR",
         type=existing_path,
@@ -505,6 +512,18 @@ def do_calc():
 
         save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
+    if arguments.SUBSTREAM == "predictoor_rose":
+        SAPPHIRE_MAINNET_ID = 23294
+
+        predictoor_data = load_predictoor_data_csv(csv_dir)
+        print("Loaded predictoor data:", predictoor_data)
+        predictoor_rewards = calc_predictoor_rewards(
+            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_ID
+        )
+        print("Calculated rewards:", predictoor_rewards)
+
+        save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
+
     print("dftool calc: Done")
 
 
@@ -514,7 +533,9 @@ def do_dispense_active():
     parser = argparse.ArgumentParser(
         description="From rewards csv, dispense funds to chain."
     )
-    parser.add_argument("command", choices=["dispense_active"])
+    parser.add_argument(
+        "command", choices=["dispense_active", "dispense_predictoor_rose"]
+    )
     parser.add_argument(
         "CSV_DIR", type=existing_path, help="input directory for csv rewards file"
     )
@@ -557,26 +578,24 @@ def do_dispense_active():
     # main work
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
-    token_symbol = (
-        ContractBase(web3, "OceanToken", web3.to_checksum_address(arguments.TOKEN_ADDR))
-        .symbol()
-        .upper()
-    )
-    token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
-    volume_rewards = {}
-    if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
-        volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
-        volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
+    if arguments.command == "dispense_active":
+        volume_rewards = {}
+        if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
+            volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
+            volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
 
-    challenge_rewards = {}
-    if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
-        challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
-    if len(challenge_rewards) == 0:
-        print("Distributing only VOLUME DF rewards")
-    else:
-        print("Distributing for VOLUME DF and CHALLENGE DF rewards")
-    rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
+        challenge_rewards = {}
+        if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
+            challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
+        if len(challenge_rewards) == 0:
+            print("Distributing only VOLUME DF rewards")
+        else:
+            print("Distributing for VOLUME DF and CHALLENGE DF rewards")
+        rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
+    elif arguments.command == "dispense_predictoor_rose":
+        predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
+        rewards = aggregate_predictoor_rewards(predictoor_rewards)
 
     # dispense
     dispense.dispense(

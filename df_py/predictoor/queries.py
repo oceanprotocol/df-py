@@ -168,8 +168,9 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
         # pylint: disable=line-too-long
         query = """
         {
-            predictPredictions(    where: {slot_: {slot_gt: %s, slot_lte: %s}}, skip:%s, first:%s) {
+            predictPredictions(where: {slot_: {slot_gt: %s, slot_lte: %s, status: Paying}, payout_not: null}, skip:%s, first:%s) {
                 id,
+                stake,
                 slot{
                     status,
                     predictContract {
@@ -228,7 +229,7 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
             # 1 - Paying
             # 2 - Canceled
             status = prediction_dict["slot"]["status"]
-            if status != "Paying" or prediction_dict["payout"] is None:
+            if status != "Paying":
                 continue
 
             prediction = Prediction.from_query_result(prediction_dict)

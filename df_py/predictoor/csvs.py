@@ -23,14 +23,15 @@ def sample_predictoor_data_csv(num_rows=50000):
     def random_contract_address():
         return f"0xContract{random.randint(1, 3)}"
 
-    result = "predictoor_addr,slot,payout,contract_addr\n"
+    result = "predictoor_addr,slot,payout,stake,contract_addr\n"
 
     for _ in range(num_rows):
         predictor_address = random_predictor_address()
         slot = random_slot()
         payout = random_payout()
+        stake = 1 if payout == 0 else 0.5
         contract_address = random_contract_address()
-        result += f"{predictor_address},{slot},{payout},{contract_address}\n"
+        result += f"{predictor_address},{slot},{payout},{stake},{contract_address}\n"
 
     return result
 
@@ -44,7 +45,7 @@ def save_predictoor_data_csv(
     csv_file = predictoor_data_csv_filename(csv_dir)
     assert not os.path.exists(csv_file), csv_file
 
-    fieldnames = ["predictoor_addr", "slot", "payout", "contract_addr"]
+    fieldnames = ["predictoor_addr", "slot", "payout", "stake", "contract_addr"]
     with open(csv_file, mode="w", newline="") as file:
         writer = csv.DictWriter(file, fieldnames=fieldnames)
         writer.writeheader()
@@ -57,6 +58,7 @@ def save_predictoor_data_csv(
                         "contract_addr": prediction.contract_addr,
                         "slot": prediction.slot,
                         "payout": prediction.payout,
+                        "stake": prediction.stake,
                     }
                 )
 
@@ -75,7 +77,8 @@ def load_predictoor_data_csv(csv_dir: str) -> Dict[str, Predictoor]:
             contract_addr = row["contract_addr"]
             slot = int(row["slot"])
             payout = float(row["payout"])
-            prediction = Prediction(slot, payout, contract_addr)
+            stake = float(row["stake"])
+            prediction = Prediction(slot, payout, stake, contract_addr)
 
             if address not in predictoors:
                 predictoors[address] = Predictoor(address)
@@ -148,12 +151,12 @@ def predictoor_summary_csv_filename(csv_dir):
 
 # ------------------------------- REWARDS -------------------------------
 def sample_predictoor_rewards_csv():
-    return """predictoor_addr,contract_addr,OCEAN_amt
-0x0000000000000000000000000000000000000000,0xContract1,10.0
-0x1000000000000000000000000000000000000000,0xContract2,20.0
-0x2000000000000000000000000000000000000000,0xContract1,30.0
-0x3000000000000000000000000000000000000000,0xContract2,40.0
-0x4000000000000000000000000000000000000000,0xContract3,50.0"""
+    return """predictoor_addr,contract_addr,ROSE_amt
+0x0000000000000000000000000000000000000000,0x1100000000000000000000000000000000000000,10.0
+0x1000000000000000000000000000000000000000,0x2200000000000000000000000000000000000000,20.0
+0x2000000000000000000000000000000000000000,0x3300000000000000000000000000000000000000,30.0
+0x3000000000000000000000000000000000000000,0x4400000000000000000000000000000000000000,40.0
+0x4000000000000000000000000000000000000000,0x5500000000000000000000000000000000000000,50.0"""
 
 
 @enforce_types
@@ -166,12 +169,13 @@ def save_predictoor_rewards_csv(
 
     with open(csv_file, "w") as f:
         writer = csv.writer(f)
-        row = ["predictoor_addr", "contract_addr", "OCEAN_amt"]
+        row = ["predictoor_addr", "contract_addr", "ROSE_amt"]
         writer.writerow(row)
 
-        for predictoor_addr, contracts in predictoor_rewards.items():
-            assert_is_eth_addr(predictoor_addr)
-            for contract_addr, reward in contracts.items():
+        for contract_addr, contracts in predictoor_rewards.items():
+            assert_is_eth_addr(contract_addr)
+            for predictoor_addr, reward in contracts.items():
+                assert_is_eth_addr(predictoor_addr)
                 row = [predictoor_addr.lower(), contract_addr.lower(), str(reward)]
                 writer.writerow(row)
 
@@ -180,6 +184,19 @@ def save_predictoor_rewards_csv(
 
 @enforce_types
 def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
+    """
+    Load rewards data from a given CSV file.
+
+    @arguments
+      csv_dir (str) -- Directory path where the CSV file is located.
+
+    @return:
+      Dict[str, Dict[str, float]] -- A nested dictionary containing rewards data.
+                                    [contract_addr]:[predictoor_addr]:[reward_amount]
+
+    Raises:
+    - AssertionError: If the CSV file structure doesn't match the expected structure.
+    """
     csv_file = predictoor_rewards_csv_filename(csv_dir)
     predictoor_rewards: Dict[str, Dict[str, float]] = {}
 
@@ -188,7 +205,7 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
 
         for row_i, row in enumerate(reader):
             if row_i == 0:
-                assert row == ["predictoor_addr", "contract_addr", "OCEAN_amt"]
+                assert row == ["predictoor_addr", "contract_addr", "ROSE_amt"]
                 continue
             predictoor_addr, contract_addr, reward_s = row
             predictoor_addr = predictoor_addr.lower()
@@ -197,9 +214,9 @@ def load_predictoor_rewards_csv(csv_dir: str) -> Dict[str, Dict[str, float]]:
             assert_is_eth_addr(predictoor_addr)
             assert_is_eth_addr(contract_addr)
 
-            if not predictoor_addr in predictoor_rewards:
-                predictoor_rewards[predictoor_addr] = {}
-            predictoor_rewards[predictoor_addr][contract_addr] = reward
+            if not contract_addr in predictoor_rewards:
+                predictoor_rewards[contract_addr] = {}
+            predictoor_rewards[contract_addr][predictoor_addr] = reward
 
     print(f"Loaded {csv_file}")
     return predictoor_rewards
