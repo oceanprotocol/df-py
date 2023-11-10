@@ -31,6 +31,13 @@ MAX_TOKEN_IN_BUY = 10000.0  # e.g. max OCEAN
 MIN_POOL_BPTS_OUT_FROM_STAKE = 0.1
 
 
+def print_dev_accounts():
+    accounts = get_all_accounts()
+    print("dev accounts:")
+    for i, account in enumerate(accounts):
+        print(f"  Account #{i}: {account.address} private key: {account.key.hex()}")
+
+
 @enforce_types
 def fill_accounts_with_token(accounts, token):
     for i, account in enumerate(accounts):
@@ -73,6 +80,10 @@ def consume_DT(DT, pub_account, consume_account):
         provider_fee,
         consume_mkt_fee,
         {"from": consume_account},
+    )
+
+    print(
+        f"started order for consume_DT by {consume_account.address} on DT {DT.address}"
     )
 
 
@@ -223,6 +234,7 @@ def random_lock_and_allocate(web3, tups: list):
                     assert tx.status == 1
                     break
 
+        print(f"locked {LOCK_AMOUNT} for: Account #{i} of {len(tups)}")
         assert veOCEAN.balanceOf(lock_account) != 0
         allc_amt = constants.MAX_ALLOCATE - oceanutil.veAllocate(
             networkutil.DEV_CHAINID
