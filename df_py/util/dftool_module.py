@@ -982,7 +982,8 @@ def do_dispense_passive():
 
     feedist = FeeDistributor(arguments.CHAINID)
     OCEAN = OCEAN_token(arguments.CHAINID)
-    retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, amount)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    retry_function(dispense.dispense_passive, 3, 60, web3, OCEAN, feedist, amount)
 
     print("Dispensed passive rewards")
 
