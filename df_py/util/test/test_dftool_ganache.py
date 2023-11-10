@@ -15,8 +15,11 @@ from df_py.challenge.csvs import (
 )
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     predictoor_data_csv_filename,
     predictoor_rewards_csv_filename,
+    sample_predictoor_data_csv,
+    sample_predictoor_rewards_csv,
 )
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
@@ -180,8 +183,10 @@ def test_predictoor_data(tmp_path):
                 continue
             user_total = stats[user]["total"]
             user_correct = stats[user]["correct"]
+            user_revenue = stats[user]["revenue"]
             assert predictoors[user].prediction_count == user_total
             assert predictoors[user].correct_prediction_count == user_correct
+            assert predictoors[user].revenue == user_revenue
             assert predictoors[user].accuracy == user_correct / user_total
 
 
@@ -247,6 +252,30 @@ def test_calc_challenge_substream(tmp_path):
     with sysargs_context(["dftool", "calc", "challenge", csv_dir, str(safe_limit)]):
         with pytest.raises(SystemExit):
             dftool_module.do_calc()
+
+
+@enforce_types
+@patch("df_py.predictoor.calc_rewards.query_predictoor_contracts")
+def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_path):
+    csv_dir = str(tmp_path)
+
+    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
+    sample_data = sample_predictoor_data_csv(50000)
+    contract_addresses = {f"0xContract{i}": 0 for i in range(1, 4)}
+    mock_query_predictoor_contracts.return_value = contract_addresses
+    with open(predictoor_data_csv, "w") as f:
+        f.write(sample_data)
+
+    csv_dir = str(tmp_path)
+
+    with sysargs_context(["dftool", "calc", "predictoor_rose", csv_dir, "100000"]):
+        dftool_module.do_calc()
+
+    rewards = load_predictoor_rewards_csv(csv_dir)
+    print(rewards)
+    assert len(rewards) == 3
+    for address in contract_addresses:
+        assert sum(rewards[address.lower()].values()) > 1000
 
 
 @enforce_types
@@ -352,6 +381,35 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
     # test result
     assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 2700.0
     assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 1100.0
+
+
+def test_dispense_predictoor_rose(tmp_path):
+    rewards = sample_predictoor_rewards_csv()
+    with open(predictoor_rewards_csv_filename(tmp_path), "w") as f:
+        f.write(rewards)
+
+    sys_argv = [
+        "dftool",
+        "dispense_predictoor_rose",
+        str(tmp_path),
+        str(CHAINID),
+        "--DFREWARDS_ADDR=0x0000000000000000000000000000000000000002",
+        "--TOKEN_ADDR=0x0000000000000000000000000000000000000001",
+    ]
+
+    with patch("df_py.util.dftool_module.dispense.dispense") as mock:
+        with sysargs_context(sys_argv):
+            dftool_module.do_dispense_active()
+        mock.assert_called()
+        actual_rewards_arg = mock.call_args[0][1]
+
+        assert {
+            "0x0000000000000000000000000000000000000000": 10.0,
+            "0x1000000000000000000000000000000000000000": 20.0,
+            "0x2000000000000000000000000000000000000000": 30.0,
+            "0x3000000000000000000000000000000000000000": 40.0,
+            "0x4000000000000000000000000000000000000000": 50.0,
+        } == actual_rewards_arg
 
 
 # TODO: re-enable. pylint: disable=fixme

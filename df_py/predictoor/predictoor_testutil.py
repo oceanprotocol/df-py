@@ -11,7 +11,7 @@ def create_mock_responses(n: int):
     _count = 100
 
     users = [f"0x{i}" for i in range(_count)]
-    stats = {user: {"total": 0, "correct": 0} for user in users}
+    stats = {user: {"total": 0, "correct": 0, "revenue": 0.0} for user in users}
 
     def generate_responses(n: int):
         responses = []
@@ -27,6 +27,9 @@ def create_mock_responses(n: int):
                     stats[user]["total"] += 1
                     if payout > 0:
                         stats[user]["correct"] += 1
+                        stats[user]["revenue"] += payout
+                    else:
+                        stats[user]["revenue"] -= 0.1
 
         responses.append(
             create_mock_response([], [], [])
@@ -58,6 +61,7 @@ def create_mock_response(statuses: List[str], payouts: List[float], users: List[
                         },
                         "slot": "5520",
                     },
+                    "stake": "0.1",
                     "user": {"id": user},
                     "payout": {"payout": str(payout)},
                     "block": 5459,

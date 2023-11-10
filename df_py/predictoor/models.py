@@ -5,9 +5,10 @@ from enforce_typing import enforce_types
 
 class Prediction:
     @enforce_types
-    def __init__(self, slot: int, payout: float, contract_addr: str):
+    def __init__(self, slot: int, payout: float, stake: float, contract_addr: str):
         self.slot = slot
         self.payout = payout
+        self.stake = stake
         self.contract_addr = contract_addr
 
     @property
@@ -19,6 +20,12 @@ class Prediction:
         # Only predictions where the true value for their slot is submitted
         # are being counted, so this is a safe assumption.
         return self.payout > 0
+
+    @property
+    def revenue(self) -> float:
+        if self.payout > 0:
+            return self.payout
+        return -self.stake
 
     @classmethod
     def from_query_result(cls, prediction_dict: Dict) -> "Prediction":
@@ -37,10 +44,17 @@ class Prediction:
                 "id"
             ]
             slot = int(prediction_dict["slot"]["slot"])
-            payout = float(prediction_dict["payout"]["payout"])
+            if (
+                prediction_dict["payout"] is not None
+                and "payout" in prediction_dict["payout"]
+            ):
+                payout = float(prediction_dict["payout"]["payout"])
+            else:
+                payout = 0.0
+            stake = float(prediction_dict["stake"])
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("Invalid prediction dictionary") from exc
-        return cls(slot, payout, contract_addr)
+        return cls(slot, payout, stake, contract_addr)
 
 
 class PredictoorBase:
@@ -50,35 +64,50 @@ class PredictoorBase:
         prediction_count: int,
         correct_prediction_count: int,
         accuracy: float,
+        revenue: float,
     ):
         self._address = address
         self._prediction_count = prediction_count
         self._correct_prediction_count = correct_prediction_count
         self._accuracy = accuracy
+        self._revenue = revenue
 
     @property
-    def address(self):
+    def address(self) -> str:
         return self._address
 
     @property
-    def prediction_count(self):
+    def prediction_count(self) -> int:
         return self._prediction_count
 
     @property
-    def correct_prediction_count(self):
+    def correct_prediction_count(self) -> int:
         return self._correct_prediction_count
 
     @property
-    def accuracy(self):
+    def accuracy(self) -> float:
         return self._accuracy
+
+    @property
+    def revenue(self) -> float:
+        return self._revenue
 
 
 class PredictionSummary:
     @enforce_types
-    def __init__(self, prediction_count, correct_prediction_count, contract_addr):
+    def __init__(
+        self,
+        prediction_count,
+        correct_prediction_count,
+        contract_addr,
+        total_payout,
+        total_revenue,
+    ):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
+        self.total_payout = total_payout
+        self.total_revenue = total_revenue
 
     @property
     def accuracy(self) -> float:
@@ -90,7 +119,7 @@ class PredictionSummary:
 class Predictoor(PredictoorBase):
     @enforce_types
     def __init__(self, address: str):
-        super().__init__(address, 0, 0, 0)
+        super().__init__(address, 0, 0, 0, 0)
         self._predictions: List[Prediction] = []
 
     def get_prediction_summary(self, contract_addr: str) -> PredictionSummary:
@@ -104,15 +133,24 @@ class Predictoor(PredictoorBase):
         """
         prediction_count = 0
         correct_prediction_count = 0
+        total_payout = 0.0
+        total_revenue = 0.0
+
         for prediction in self._predictions:
             if prediction.contract_addr != contract_addr:
                 continue
             prediction_count += 1
+            total_revenue += prediction.revenue
             if prediction.is_correct:
                 correct_prediction_count += 1
+                total_payout += prediction.payout
 
         return PredictionSummary(
-            prediction_count, correct_prediction_count, contract_addr
+            prediction_count,
+            correct_prediction_count,
+            contract_addr,
+            total_payout,
+            total_revenue,
         )
 
     @property
@@ -152,6 +190,7 @@ class Predictoor(PredictoorBase):
         self._prediction_count += 1
         if prediction.is_correct:
             self._correct_prediction_count += 1
+        self._revenue += prediction.revenue
 
 
 class PredictContract:
