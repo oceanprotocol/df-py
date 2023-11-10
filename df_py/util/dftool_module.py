@@ -725,6 +725,7 @@ def do_init_dev_wallets():
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
+    oceantestutil.print_dev_accounts()
     oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())
 
     print("dftool init_dev_wallets: Done.")
@@ -753,18 +754,79 @@ def do_many_random():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
+    account0 = oceantestutil.get_account0()
+
     web3 = networkutil.chain_id_to_web3(chain_id)
-    web3.eth.default_account = oceantestutil.get_account0()
+    web3.eth.default_account = account0
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token(chain_id)
+    OCEAN.mint(account0, to_wei(10_000), {"from": account0})
+
+    oceantestutil.print_dev_accounts()
 
     num_nfts = 9  # magic number
     tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
     random_lock_and_allocate(web3, tups)
     random_consume_FREs(tups, OCEAN)
+
     print(f"dftool many_random: Done. {num_nfts} new nfts created.")
+
+
+# ========================================================================
+@enforce_types
+def do_fake_rewards():
+    parser = SimpleChainIdArgumentParser(
+        "create some rewards (for testing)",
+        "fake_rewards",
+        epilog=f"""Uses these envvars:
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+        """,
+    )
+
+    chain_id = parser.print_args_and_get_chain()
+
+    if chain_id != DEV_CHAINID:
+        # To support other testnets, they need to fill_accounts_with_OCEAN()
+        # Consider this a TODO:)
+        print("Only ganache is currently supported. Exiting.")
+        sys.exit(1)
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    accounts = oceantestutil.get_all_accounts()
+
+    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3.eth.default_account = accounts[0].address
+
+    df_rewards = ContractBase(web3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(
+        web3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
+    print(f"DFStrategyV1 deployed at: {df_strategy.address}")
+
+    # main work
+    record_deployed_contracts(ADDRESS_FILE, chain_id)
+    OCEAN = OCEAN_token(chain_id)
+
+    oceantestutil.print_dev_accounts()
+    OCEAN.transfer(df_rewards, to_wei(100.0), {"from": accounts[0]})
+    tos = [accounts[1].address, accounts[2].address, accounts[3].address]
+    values = [10, 20, 30]
+    OCEAN.approve(df_rewards, sum(values), {"from": accounts[0]})
+
+    df_rewards.allocate(tos, values, OCEAN.address, {"from": accounts[0]})
+
+    print("Claimable rewards:")
+    print(f"Account #1: {df_rewards.claimable(accounts[1], OCEAN.address)}")
+    print(f"Account #2: {df_rewards.claimable(accounts[2], OCEAN.address)}")
+    print(f"Account #3: {df_rewards.claimable(accounts[3], OCEAN.address)}")
+
+    assert df_rewards.claimable(accounts[1], OCEAN.address) == 10
+    assert df_rewards.claimable(accounts[2], OCEAN.address) == 20
+    assert df_rewards.claimable(accounts[3], OCEAN.address) == 30
 
 
 # ========================================================================
