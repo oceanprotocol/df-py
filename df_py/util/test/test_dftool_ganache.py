@@ -806,7 +806,7 @@ def test_chain_info():
         dftool_module.do_chain_info()
 
 
-def test_dispense_passive(w3):
+def test_dispense_passive():
     sys_argv = [
         "dftool",
         "dispense_passive",
@@ -819,6 +819,7 @@ def test_dispense_passive(w3):
         with sysargs_context(sys_argv):
             dftool_module.do_dispense_passive()
 
+    # pylint: disable=comparison-with-callable
     assert mock.call_args[0][0] == dispense.dispense_passive
     assert isinstance(mock.call_args[0][3], Web3)
     assert mock.call_args[0][4].name() == "Ocean Token"
