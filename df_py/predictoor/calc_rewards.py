@@ -23,6 +23,7 @@ def calc_predictoor_rewards(
     rewards -- dict of [contract addr][predictoor addr]: float
         The calculated rewards for each predictoor per contract address.
     """
+    MIN_REWARD = 1e-15
     tokens_avail = float(tokens_avail)
 
     predictoor_contracts = query_predictoor_contracts(chain_id).keys()
@@ -56,9 +57,12 @@ def calc_predictoor_rewards(
             if revenue_contract <= 0:
                 # ignore negative revenues
                 continue
-            rewards[contract][pdr_address] = (
+            reward_amt = (
                 revenue_contract / total_revenue_for_contract * tokens_per_contract
             )
+            if reward_amt < MIN_REWARD:
+                continue
+            rewards[contract][pdr_address] = reward_amt
 
     return rewards
 

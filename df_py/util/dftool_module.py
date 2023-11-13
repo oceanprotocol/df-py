@@ -533,9 +533,7 @@ def do_dispense_active():
     parser = argparse.ArgumentParser(
         description="From rewards csv, dispense funds to chain."
     )
-    parser.add_argument(
-        "command", choices=["dispense_active", "dispense_predictoor_rose"]
-    )
+    parser.add_argument("command", choices=["dispense_active"])
     parser.add_argument(
         "CSV_DIR", type=existing_path, help="input directory for csv rewards file"
     )
@@ -559,6 +557,13 @@ def do_dispense_active():
         required=False,
     )
     parser.add_argument(
+        "--PREDICTOOR_ROSE",
+        default=False,
+        type=bool,
+        help="whether to distribute Predictoor ROSE rewards",
+        required=False,
+    )
+    parser.add_argument(
         "--BATCH_NBR",
         default=None,
         type=str,
@@ -579,7 +584,7 @@ def do_dispense_active():
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
 
-    if arguments.command == "dispense_active":
+    if arguments.PREDICTOOR_ROSE is False:
         volume_rewards = {}
         if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
             volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
@@ -593,7 +598,7 @@ def do_dispense_active():
         else:
             print("Distributing for VOLUME DF and CHALLENGE DF rewards")
         rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
-    elif arguments.command == "dispense_predictoor_rose":
+    elif arguments.PREDICTOOR_ROSE is True:
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         rewards = aggregate_predictoor_rewards(predictoor_rewards)
 
