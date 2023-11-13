@@ -16,6 +16,7 @@ MAX_BATCH_SIZE = 500
 TRY_AGAIN = 3
 
 
+# pylint: disable=too-many-statements
 @enforce_types
 def dispense(
     web3: Web3,
