@@ -88,7 +88,7 @@ jobs:
 
       - name: Run dftool calc rewards for predictoor_rose
         run: |
-          ./dftool calc predictoor_rose $CSV_DIR 0.1
+          ./dftool calc predictoor_rose $CSV_DIR 0.9
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
