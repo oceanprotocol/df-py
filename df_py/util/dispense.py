@@ -61,6 +61,10 @@ def dispense(
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
 
+    LEGACY_TX = False
+    if web3.eth.chain_id == 23294:
+        LEGACY_TX = True
+
     def approveAmt(amt):
         if usemultisig:
             data = TOK.contract.encodeABI(
@@ -71,14 +75,13 @@ def dispense(
             # data = bytes.fromhex(data[2:])
             send_multisig_tx(multisigaddr, web3, to, value, data)
             return
-        TOK.approve(
-            df_rewards,
-            amt,
-            {
-                "from": from_account,
-                "gasPrice": web3.eth.gas_price,
-            },  # gas price: legacy tx for Sapphire
-        )
+        tx_dict = {
+            "from": from_account,
+        }
+        if LEGACY_TX:
+            # gas price: legacy tx for Sapphire
+            tx_dict["gasPrice"] = web3.eth.gas_price
+        TOK.approve(df_rewards, amt, tx_dict)
 
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
@@ -113,14 +116,17 @@ def dispense(
 
                 send_multisig_tx(multisigaddr, web3, to, value, data)
             else:
+                tx_dict = {
+                    "from": from_account,
+                }
+                if LEGACY_TX:
+                    # gas price: legacy tx for Sapphire
+                    tx_dict["gasPrice"] = web3.eth.gas_price
                 df_rewards.allocate(
                     to_addrs[st:fin],
                     values[st:fin],
                     TOK.address,
-                    {
-                        "from": from_account,
-                        "gasPrice": web3.eth.gas_price,
-                    },  # gas price: legacy tx for Sapphire
+                    tx_dict,  # gas price: legacy tx for Sapphire
                 )
             done = True
             break
