@@ -52,7 +52,8 @@ def dispense(
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "OceanToken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
-    to_addrs = list(rewards.keys())
+    to_addrs_nonchecksum = list(rewards.keys())
+    to_addrs = [web3.to_checksum_address(i) for i in to_addrs_nonchecksum]
     values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]
 
     N = len(rewards)
