@@ -70,7 +70,12 @@ def dispense(
             send_multisig_tx(multisigaddr, web3, to, value, data)
             return
         TOK.approve(
-            df_rewards, amt, {"from": from_account, "gasPrice": web3.eth.gas_price}
+            df_rewards,
+            amt,
+            {
+                "from": from_account,
+                "gasPrice": web3.eth.gas_price,
+            },  # gas price: legacy tx for Sapphire
         )
 
     if batch_number is not None:
@@ -110,7 +115,10 @@ def dispense(
                     to_addrs[st:fin],
                     values[st:fin],
                     TOK.address,
-                    {"from": from_account, "gasPrice": web3.eth.gas_price},
+                    {
+                        "from": from_account,
+                        "gasPrice": web3.eth.gas_price,
+                    },  # gas price: legacy tx for Sapphire
                 )
             done = True
             break
