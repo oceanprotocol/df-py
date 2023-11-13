@@ -16,6 +16,7 @@ MAX_BATCH_SIZE = 500
 TRY_AGAIN = 3
 
 
+# pylint: disable=too-many-statements
 @enforce_types
 def dispense(
     web3: Web3,
@@ -52,11 +53,18 @@ def dispense(
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "OceanToken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
+
+    # checksum addresses
+    rewards = {web3.to_checksum_address(k): v for k, v in rewards.items()}
     to_addrs = list(rewards.keys())
     values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]
 
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
+
+    LEGACY_TX = False
+    if web3.eth.chain_id == 23294:
+        LEGACY_TX = True
 
     def approveAmt(amt):
         if usemultisig:
@@ -68,7 +76,13 @@ def dispense(
             # data = bytes.fromhex(data[2:])
             send_multisig_tx(multisigaddr, web3, to, value, data)
             return
-        TOK.approve(df_rewards, amt, {"from": from_account})
+        tx_dict = {
+            "from": from_account,
+        }
+        if LEGACY_TX:
+            # gas price: legacy tx for Sapphire
+            tx_dict["gasPrice"] = web3.eth.gas_price
+        TOK.approve(df_rewards, amt, tx_dict)
 
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
@@ -103,11 +117,17 @@ def dispense(
 
                 send_multisig_tx(multisigaddr, web3, to, value, data)
             else:
+                tx_dict = {
+                    "from": from_account,
+                }
+                if LEGACY_TX:
+                    # gas price: legacy tx for Sapphire
+                    tx_dict["gasPrice"] = web3.eth.gas_price
                 df_rewards.allocate(
                     to_addrs[st:fin],
                     values[st:fin],
                     TOK.address,
-                    {"from": from_account},
+                    tx_dict,  # gas price: legacy tx for Sapphire
                 )
             done = True
             break
