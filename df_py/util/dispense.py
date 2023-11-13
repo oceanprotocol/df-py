@@ -52,9 +52,11 @@ def dispense(
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "OceanToken", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
-    to_addrs_nonchecksum = list(rewards.keys())
-    to_addrs = [web3.to_checksum_address(i) for i in to_addrs_nonchecksum]
-    values = [to_wei(rewards[to_addr.lower()]) for to_addr in to_addrs]
+
+    # checksum addresses
+    rewards = {web3.to_checksum_address(k): v for k, v in rewards.items()}
+    to_addrs = list(rewards.keys())
+    values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]
 
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
