@@ -68,7 +68,9 @@ def dispense(
             # data = bytes.fromhex(data[2:])
             send_multisig_tx(multisigaddr, web3, to, value, data)
             return
-        TOK.approve(df_rewards, amt, {"from": from_account})
+        TOK.approve(
+            df_rewards, amt, {"from": from_account, "gasPrice": web3.eth.gas_price}
+        )
 
     if batch_number is not None:
         b_st = (batch_number - 1) * batch_size
@@ -107,7 +109,7 @@ def dispense(
                     to_addrs[st:fin],
                     values[st:fin],
                     TOK.address,
-                    {"from": from_account},
+                    {"from": from_account, "gasPrice": web3.eth.gas_price},
                 )
             done = True
             break
