@@ -88,7 +88,7 @@ jobs:
 
       - name: Run dftool calc rewards for predictoor_rose
         run: |
-          ./dftool calc predictoor_rose $CSV_DIR 24
+          ./dftool calc predictoor_rose $CSV_DIR 100000
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
@@ -100,6 +100,6 @@ jobs:
       - name: Distribute Predictoor rewards
         env:
           USE_MULTISIG: false
-        if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'schedule'
         run: |
           ./dftool dispense_active $CSV_DIR 23294 --DFREWARDS_ADDR="0xc37F8341Ac6e4a94538302bCd4d49Cf0852D30C0" --TOKEN_ADDR="0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3" --PREDICTOOR_ROSE True
