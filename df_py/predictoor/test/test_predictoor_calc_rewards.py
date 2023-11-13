@@ -47,6 +47,33 @@ def test_calc_predictoor_rewards_one_predictoor():
     assert total_rewards_for_p1 == 100
 
 
+def test_calc_predictoor_rewards_small_amount_two_predictoors():
+    p1 = Predictoor("0x1")
+
+    for _ in range(1):
+        p1.add_prediction(Prediction(1, 1e-15, 1e-15, "0xContract1"))
+
+    p2 = Predictoor("0x2")
+
+    for _ in range(10000):
+        p2.add_prediction(Prediction(1, 100.0, 100.0, "0xContract1"))
+
+    predictoors = {"0x1": p1, "0x2": p2}
+
+    rewards = calc_predictoor_rewards(predictoors, 200, DEV_CHAINID)
+
+    total_rewards_for_p1 = sum(
+        contract_rewards.get(p1.address, 0) for contract_rewards in rewards.values()
+    )
+    total_rewards_for_p2 = sum(
+        contract_rewards.get(p2.address, 0) for contract_rewards in rewards.values()
+    )
+
+    # 100 because there are 2 predictoor contracts in the network
+    assert total_rewards_for_p1 == 0
+    assert total_rewards_for_p2 == 100
+
+
 def test_calc_predictoor_rewards_with_predictions():
     p1 = Predictoor("0x1")
     for i in range(5):
