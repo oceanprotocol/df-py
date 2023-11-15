@@ -265,7 +265,7 @@ def _calc_rewards_usd(
             )
 
     # filter negligible values
-    R[R < 1e-7] = 0.0
+    R[R < 0.000001] = 0.0
 
     if np.sum(R) == 0.0:
         return np.zeros((N_i, N_j), dtype=float)
