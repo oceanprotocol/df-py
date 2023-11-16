@@ -523,14 +523,13 @@ def _queryVolsOwners(
             native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
-            if gasCost > 0:
-                if order["tx"] not in txgascost:
-                    if native_token_addr not in gasvols:
-                        gasvols[native_token_addr] = {}
-                    if nft_addr not in gasvols[native_token_addr]:
-                        gasvols[native_token_addr][nft_addr] = 0
-                    txgascost[order["tx"]] = gasCost
-                    gasvols[native_token_addr][nft_addr] += gasCost
+            if gasCost > 0 and order["tx"] not in txgascost:
+                if native_token_addr not in gasvols:
+                    gasvols[native_token_addr] = {}
+                if nft_addr not in gasvols[native_token_addr]:
+                    gasvols[native_token_addr][nft_addr] = 0
+                txgascost[order["tx"]] = gasCost
+                gasvols[native_token_addr][nft_addr] += gasCost
 
             if lastPriceValue == 0:
                 continue
