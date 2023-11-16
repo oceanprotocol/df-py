@@ -96,7 +96,7 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
 
 def test_launch_dates():
     # a week before predictoor's launch
-    start_dt = datetime(2023, 11, 9)
+    start_dt = datetime(2023, 11, 2)
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream, networkutil.DEV_CHAINID
@@ -119,8 +119,8 @@ def test_launch_dates():
     total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
     assert total_rewards == predictoor_rewards + volume_rewards + challenge_rewards
 
-    # predictoor's launched - reward distribution day
-    start_dt = datetime(2023, 11, 16)
+    # predictoor's launch
+    start_dt = datetime(2023, 11, 9)
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream, networkutil.DEV_CHAINID
