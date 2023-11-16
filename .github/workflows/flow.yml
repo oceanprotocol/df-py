@@ -105,7 +105,7 @@ jobs:
 
       - name: Run dftool predictoor_data
         run: |
-          ./dftool predictoor_data $date $now $CSV_DIR 23294 --RETRIES $RETRY_TIMES
+          ./dftool predictoor_data $date $now $CSV_DIR 23294 --RETRIES $RETRY_TIMES --ONLY_CONTRACTS
 
       - name: Run sed
         run: |
@@ -164,9 +164,6 @@ jobs:
           else
             echo "DESTINATION=df-historical-data-test" >> $GITHUB_ENV
           fi
-
-      - name: Remove Predictoor Data
-        run: rm /tmp/csv/${{ env.DFWEEK }}/predictoor_* 
 
       - id: "upload-folder"
         uses: "google-github-actions/upload-cloud-storage@v1"
