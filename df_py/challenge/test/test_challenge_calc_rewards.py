@@ -12,7 +12,7 @@ def test_calc_challenge_rewards():
         "0xfrom3",
     ]
 
-    rewards = calc_challenge_rewards(from_addrs)
+    rewards = calc_challenge_rewards(from_addrs, datetime(2023, 10, 15))
 
     assert len(rewards) == 3
     assert rewards[0]["OCEAN_amt"] == 2500
