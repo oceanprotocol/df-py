@@ -277,6 +277,7 @@ def _calc_rewards_usd(
     sum1 = np.sum(R)
     tol = 1e-13
     assert sum1 <= OCEAN_avail * (1 + tol), (sum1, OCEAN_avail, R)
+
     if sum1 > OCEAN_avail:
         R /= 1 + tol
     sum2 = np.sum(R)
