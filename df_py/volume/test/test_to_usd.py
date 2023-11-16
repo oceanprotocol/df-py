@@ -97,6 +97,18 @@ def test_nft_vols_to_usd_two_basetokens():
 
 
 @enforce_types
+def test_nft_vols_to_usd_two_basetokens_same():
+    poolvols = {C1: {OCN_ADDR: {PA: 9.0, PB: 11.0}, H2O_ADDR: {PA: 1.0, PB: 2.0}}}
+    poolvols_USD = nft_vols_to_usd(poolvols, SYMBOLS, RATES)
+    assert poolvols_USD == {
+        C1: {
+            PA: 9.0 * 0.5 + 1.0 * 1.6,
+            PB: 11.0 * 0.5 + 2.0 * 1.6,
+        }
+    }
+
+
+@enforce_types
 def test_native_token_rates():
     base_token = _CHAINID_TO_ADDRS[1].lower()
     rates = {"ETH": 100.0}

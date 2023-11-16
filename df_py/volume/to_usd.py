@@ -80,5 +80,7 @@ def nft_vols_to_usd(
             if basetoken_addr not in nftvols[chain_id]:
                 continue
             for nft_addr, vol in nftvols[chain_id][basetoken_addr].items():
-                nftvols_USD[chain_id][nft_addr] = vol * rate
+                if nft_addr not in nftvols_USD[chain_id]:
+                    nftvols_USD[chain_id][nft_addr] = 0
+                nftvols_USD[chain_id][nft_addr] += vol * rate
     return nftvols_USD
