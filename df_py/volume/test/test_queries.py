@@ -430,6 +430,10 @@ def _test_end_to_end_without_csvs(rng):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
+
+    # the margin is 0.1 because the reward amount is low,
+    # meaning that the negligible values filtered out by calc_rewards
+    # are much more meaningful => higher impact wrt. OCEAN_avail
     assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.1
 
 
@@ -478,7 +482,12 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     )
 
     sum_ = sum(rewardsperlp[CHAINID].values())
+
+    # the margin is 0.1 because the reward amount is low,
+    # meaning that the negligible values filtered out by calc_rewards
+    # are much more meaningful => higher impact wrt. OCEAN_avail
     assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.1
+
     csvs.save_volume_rewards_csv(rewardsperlp, csv_dir)
     rewardsperlp = None  # ensure not used later
 
