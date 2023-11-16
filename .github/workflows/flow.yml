@@ -103,6 +103,10 @@ jobs:
         run: |
           ./dftool allocations $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
 
+      - name: Run dftool predictoor_data
+        run: |
+          ./dftool predictoor_data $date $now $CSV_DIR 23294 --RETRIES $RETRY_TIMES
+
       - name: Run sed
         run: |
           cp $CSV_DIR/rate-OCEAN.csv $CSV_DIR/rate-MOCEAN.csv
