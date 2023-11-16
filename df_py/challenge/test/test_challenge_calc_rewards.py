@@ -12,7 +12,7 @@ def test_calc_challenge_rewards():
         "0xfrom3",
     ]
 
-    rewards = calc_challenge_rewards(from_addrs)
+    rewards = calc_challenge_rewards(from_addrs, datetime(2023, 10, 15))
 
     assert len(rewards) == 3
     assert rewards[0]["OCEAN_amt"] == 2500
@@ -44,7 +44,7 @@ def test_calc_challenge_rewards_one_day_before_predictoor():
         "0xfrom3",
     ]
 
-    pre_predictoor = datetime(2023, 11, 15)
+    pre_predictoor = datetime(2023, 11, 8)
     rewards = calc_challenge_rewards(from_addrs, at_date=pre_predictoor)
 
     assert len(rewards) == 3
@@ -60,7 +60,7 @@ def test_calc_challenge_rewards_predictoor_launch():
         "0xfrom3",
     ]
 
-    post_predictoor = datetime(2023, 11, 16)
+    post_predictoor = datetime(2023, 11, 9)
     rewards = calc_challenge_rewards(from_addrs, at_date=post_predictoor)
 
     assert len(rewards) == 3
