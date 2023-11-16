@@ -165,6 +165,9 @@ jobs:
             echo "DESTINATION=df-historical-data-test" >> $GITHUB_ENV
           fi
 
+      - name: Remove Predictoor Data
+        run: rm /tmp/csv/${{ env.DFWEEK }}/predictoor_* 
+
       - id: "upload-folder"
         uses: "google-github-actions/upload-cloud-storage@v1"
         with:
