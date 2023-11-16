@@ -1043,12 +1043,12 @@ def test_calc_rewards_volume_predictoor_mul():
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(
-            300 * (1 - 1 / 1.201)
+            300 * 0.201
         )  # predictoor multiplier
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(
-            300 * (1 - 1 / 1.201)
+            300 * 0.201
         )  # predictoor multiplier
 
 

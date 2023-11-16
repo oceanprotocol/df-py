@@ -378,10 +378,18 @@ def do_predictoor_data():
         help="# times to retry failed queries",
         required=False,
     )
+    parser.add_argument(
+        "--ONLY_CONTRACTS",
+        default=False,
+        type=bool,
+        help="Output only contract data",
+        required=False,
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
     csv_dir, chain_id = arguments.CSV_DIR, arguments.CHAINID
+    only_contracts = arguments.ONLY_CONTRACTS
 
     # check files, prep dir
     _exitIfFileExists(predictoor_data_csv_filename(csv_dir))
@@ -394,18 +402,20 @@ def do_predictoor_data():
         query_predictoor_contracts, arguments.RETRIES, 10, chain_id
     )
 
-    predictoor_data = retry_function(
-        query_predictoors,
-        arguments.RETRIES,
-        10,
-        st_ts,
-        end_ts,
-        chain_id,
-    )
+    if not only_contracts:
+        predictoor_data = retry_function(
+            query_predictoors,
+            arguments.RETRIES,
+            10,
+            st_ts,
+            end_ts,
+            chain_id,
+        )
 
     save_predictoor_contracts_csv(predictoor_contracts, csv_dir)
-    save_predictoor_data_csv(predictoor_data, csv_dir)
-    save_predictoor_summary_csv(predictoor_data, csv_dir)
+    if not only_contracts:
+        save_predictoor_data_csv(predictoor_data, csv_dir)
+        save_predictoor_summary_csv(predictoor_data, csv_dir)
     print("dftool predictoor_data: Done")
 
 
