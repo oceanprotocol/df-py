@@ -60,6 +60,8 @@ def chain_id_to_subgraph_uri(chainID: int) -> str:
         return "http://127.0.0.1:9000" + sg
 
     network_str = chain_id_to_network(chainID)
+    if chainID == 80001:
+        return f"https://v4.subgraph.{network_str}.oceanprotocol.io" + sg
     return f"https://v4.subgraph.{network_str}.oceanprotocol.com" + sg
 
 
