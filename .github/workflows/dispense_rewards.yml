@@ -73,3 +73,17 @@ jobs:
         if: github.event_name == 'schedule'
         run: |
           ./dftool dispense_passive 1 0 $date
+
+
+      - name: Distribute test predictoor rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          ./dftool dispense_predictoor 5 0x086E7F0588755af5AF5f8194542Fd8328238F3C1 $date
+      - name: Distribute predictoor rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool dispense_predictoor 1 0x086E7F0588755af5AF5f8194542Fd8328238F3C1 $date
