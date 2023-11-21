@@ -112,7 +112,7 @@ def test_multisig_transfer_tokens(w3):
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
         with patch("df_py.util.dispense.send_multisig_tx") as mock:
-            dispense.dispense_passive(w3, OCEAN, OCEAN.address, 1)
+            dispense.multisig_transfer_tokens(w3, OCEAN, OCEAN.address, 1)
     assert mock.call_count == 1
 
 
