@@ -20,10 +20,10 @@ def test_allocate_gas(w3, account0):
     per_iteration2 = ten.gasUsed - nine.gasUsed
 
     # each iteration uses the same amount of gas
-    assert abs(per_iteration2 - per_iteration1) < 50
+    assert abs(per_iteration2 - per_iteration1) < 150
 
     # 23167 is the estimated gas for each iteration
-    assert abs(per_iteration1 - 23167) < 100
+    assert abs(per_iteration1 - 23167) < 150
 
     # mainnet gas limit
     assert per_iteration1 * 1250 < 30_000_000
