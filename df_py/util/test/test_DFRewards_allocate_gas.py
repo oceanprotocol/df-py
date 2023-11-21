@@ -8,7 +8,6 @@ from df_py.util.contract_base import ContractBase
 from df_py.util.random_addresses import get_random_addresses
 
 
-@pytest.mark.skip("Fails sometimes. See #702. When fixed, un-skip this test")
 @enforce_types
 def test_allocate_gas(w3, account0):
     one = _batch_allocate(w3, account0, 1)
