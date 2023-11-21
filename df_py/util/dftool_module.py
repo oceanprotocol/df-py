@@ -1089,8 +1089,8 @@ def do_dispense_passive():
 
 @enforce_types
 def do_dispense_predictoor():
-    parser = argparse.ArgumentParser(description="Dispense passive rewards")
-    parser.add_argument("command", choices=["dispense_passive"])
+    parser = argparse.ArgumentParser(description="Dispense predictoor rewards")
+    parser.add_argument("command", choices=["dispense_predictoor"])
     parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument(
         "AMOUNT",
