@@ -1088,9 +1088,9 @@ def do_dispense_passive():
 
 
 @enforce_types
-def do_dispense_predictoor_ocean():
+def do_fund_predictoor_ocean_dispenser():
     parser = argparse.ArgumentParser(description="Dispense predictoor rewards")
-    parser.add_argument("command", choices=["dispense_predictoor_ocean"])
+    parser.add_argument("command", choices=["fund_predictoor_ocean_dispenser"])
     parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument("RECEIVER", type=str, help="Receiver address")
     parser.add_argument(

@@ -834,7 +834,7 @@ def test_dispense_passive():
 def test_dispense_predictoor():
     sys_argv = [
         "dftool",
-        "dispense_predictoor_ocean",
+        "fund_predictoor_ocean_dispenser",
         str(networkutil.DEV_CHAINID),
         "0x0000000000000000000000000000000000000001",
         "2023-11-20",
@@ -842,7 +842,7 @@ def test_dispense_predictoor():
 
     with patch.object(dftool_module, "retry_function") as mock:
         with sysargs_context(sys_argv):
-            dftool_module.do_dispense_predictoor_ocean()
+            dftool_module.do_fund_predictoor_ocean_dispenser()
 
     # pylint: disable=comparison-with-callable
     assert mock.call_args[0][0] == dispense.multisig_transfer_tokens

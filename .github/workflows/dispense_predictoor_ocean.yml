@@ -66,10 +66,10 @@ jobs:
           USE_MULTISIG: true
         if: github.event_name == 'workflow_dispatch'
         run: |
-          ./dftool dispense_predictoor_ocean 5 0x086E7F0588755af5AF5f8194542Fd8328238F3C1 $date
+          ./dftool fund_predictoor_ocean_dispenser 5 0x086E7F0588755af5AF5f8194542Fd8328238F3C1 $date
       - name: Distribute predictoor rewards
         env:
           USE_MULTISIG: true
         if: github.event_name == 'schedule'
         run: |
-          ./dftool dispense_predictoor_ocean 1 0x086E7F0588755af5AF5f8194542Fd8328238F3C1 $date
+          ./dftool fund_predictoor_ocean_dispenser 1 0x086E7F0588755af5AF5f8194542Fd8328238F3C1 $date
