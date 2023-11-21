@@ -90,6 +90,11 @@ jobs:
         run: |
           ./dftool calc predictoor_rose $CSV_DIR 100000
 
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GC_SECRET }}"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
         with:
