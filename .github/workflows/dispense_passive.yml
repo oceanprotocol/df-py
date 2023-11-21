@@ -1,0 +1,75 @@
+name: Dispense Passive Rewards
+
+on:
+  schedule:
+    - cron: "0 0 * * 5"
+  workflow_dispatch:
+    inputs:
+      amt_of_tokens:
+        description: "Amount of tokens to distribute"
+        required: true
+        default: "10000"
+
+jobs:
+  dispense-passive:
+    env:
+      GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+      BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.8]
+    steps:
+      - id: df-py
+        uses: pozetroninc/github-action-get-latest-release@master
+        with:
+          owner: oceanprotocol
+          repo: df-py
+          excludes: prerelease, draft
+
+      - name: Set branch to checkout
+        id: set_branch
+        run: echo "BRANCH=${{ github.event_name == 'schedule' && steps.df-py.outputs.release || github.ref }}" >> $GITHUB_ENV
+
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ env.BRANCH }}
+
+      - name: Set up Python {{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        working-directory: ${{ github.workspace }}
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt --quiet
+
+      - name: Set up Openzeppelin
+        run: npm install @openzeppelin/contracts
+
+      - name: Set env variables
+        run: |
+          echo "DFTOOL_KEY=${{ secrets.DFTOOL_KEY_MULTISIG }}" >> $GITHUB_ENV
+          echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
+          echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
+          echo "date=$(date -dlast-thursday '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "MAINNET_RPC_URL=https://mainnet.infura.io/v3/" >> $GITHUB_ENV
+          echo "INFURA_NETWORKS=mainnet" >> $GITHUB_ENV
+
+      - name: Make dftool executable
+        run: chmod +x dftool
+
+      - name: Distribute test passive rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} $date
+      - name: Distribute passive rewards
+        env:
+          USE_MULTISIG: true
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool dispense_passive 1 0 $date

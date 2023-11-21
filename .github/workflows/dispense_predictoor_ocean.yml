@@ -61,20 +61,6 @@ jobs:
       - name: Make dftool executable
         run: chmod +x dftool
 
-      - name: Distribute test passive rewards
-        env:
-          USE_MULTISIG: true
-        if: github.event_name == 'workflow_dispatch'
-        run: |
-          ./dftool dispense_passive 5 ${{ github.event.inputs.amt_of_tokens || secrets.TOKEN_AMOUNT }} $date
-      - name: Distribute passive rewards
-        env:
-          USE_MULTISIG: true
-        if: github.event_name == 'schedule'
-        run: |
-          ./dftool dispense_passive 1 0 $date
-
-
       - name: Distribute test predictoor rewards
         env:
           USE_MULTISIG: true
