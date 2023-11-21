@@ -831,6 +831,29 @@ def test_dispense_passive():
     assert mock.call_args[0][6] == 0
 
 
+def test_dispense_predictoor():
+    sys_argv = [
+        "dftool",
+        "dispense_predictoor",
+        str(networkutil.DEV_CHAINID),
+        "0x0000000000000000000000000000000000000001",
+        "2023-11-20",
+    ]
+
+    with patch.object(dftool_module, "retry_function") as mock:
+        with sysargs_context(sys_argv):
+            dftool_module.do_dispense_predictoor()
+
+    assert mock.call_args[0][0] == dispense.multisig_transfer_tokens
+    assert isinstance(mock.call_args[0][3], Web3)
+    assert mock.call_args[0][4].name() == "Ocean Token"
+    assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
+    assert (
+        mock.call_args[0][5].address == FeeDistributor(networkutil.DEV_CHAINID).address
+    )
+    assert mock.call_args[0][6] == 37000
+
+
 @enforce_types
 def setup_function():
     global DFTOOL_ACCT
