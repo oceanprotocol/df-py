@@ -124,5 +124,5 @@ jobs:
       - id: "upload-folder"
         uses: "google-github-actions/upload-cloud-storage@v1"
         with:
-          path: "/tmp/csv/${{ env.DFWEEK }}"
+          path: "/tmp/csv/${{ env.DFWEEK }}/"
           destination: "${{ env.DESTINATION }}"
