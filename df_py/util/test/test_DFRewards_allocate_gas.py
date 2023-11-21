@@ -10,10 +10,10 @@ from df_py.util.random_addresses import get_random_addresses
 
 @enforce_types
 def test_allocate_gas(w3, account0):
-    one = _batch_allocate(w3, account0, 1)
-    two = _batch_allocate(w3, account0, 2)
-    nine = _batch_allocate(w3, account0, 3)
-    ten = _batch_allocate(w3, account0, 4)
+    one = _batch_allocate(w3, account0, 8)
+    two = _batch_allocate(w3, account0, 9)
+    nine = _batch_allocate(w3, account0, 9)
+    ten = _batch_allocate(w3, account0, 10)
 
     per_iteration1 = two.gasUsed - one.gasUsed
     per_iteration2 = ten.gasUsed - nine.gasUsed
