@@ -156,3 +156,14 @@ def dispense_passive(web3, ocean, feedistributor, amount: Union[float, int]):
 
     for data in [checkpoint_total_supply_data, checkpoint_token_data]:
         send_multisig_tx(multisig_addr, web3, feedistributor.address, 0, data)
+
+
+@enforce_types
+def multisig_transfer_tokens(web3, ocean, receiver_address, amount):
+    amount_wei = to_wei(amount)
+    transfer_data = ocean.contract.encodeABI(
+        fn_name="transfer", args=[receiver_address, amount_wei]
+    )
+
+    multisig_addr = chain_id_to_multisig_addr(web3.eth.chain_id)
+    send_multisig_tx(multisig_addr, web3, ocean.address, 0, transfer_data)
