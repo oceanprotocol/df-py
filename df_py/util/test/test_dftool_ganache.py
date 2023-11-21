@@ -850,7 +850,7 @@ def test_dispense_predictoor():
     assert mock.call_args[0][4].name() == "Ocean Token"
     assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
     assert (
-        mock.call_args[0][5].address == FeeDistributor(networkutil.DEV_CHAINID).address
+        mock.call_args[0][5].address == "0x0000000000000000000000000000000000000001"
     )
     assert mock.call_args[0][6] == 37000
 
