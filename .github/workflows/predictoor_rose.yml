@@ -108,6 +108,11 @@ jobs:
         run: |
           bash ./scripts/workflow_rename_folder.sh $now
 
+      - id: "auth"
+        uses: "google-github-actions/auth@v1"
+        with:
+          credentials_json: "${{ secrets.GC_SECRET }}"
+
       - name: Set upload destination
         run: |
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
