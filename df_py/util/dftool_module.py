@@ -1092,11 +1092,6 @@ def do_dispense_predictoor():
     parser = argparse.ArgumentParser(description="Dispense predictoor rewards")
     parser.add_argument("command", choices=["dispense_predictoor"])
     parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
-    parser.add_argument(
-        "AMOUNT",
-        type=float,
-        help="total amount of TOKEN to distribute (decimal, not wei)",
-    )
     parser.add_argument("RECEIVER", type=str, help="Receiver address")
     parser.add_argument(
         "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
