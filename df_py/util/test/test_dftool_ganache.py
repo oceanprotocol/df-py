@@ -844,6 +844,7 @@ def test_dispense_predictoor():
         with sysargs_context(sys_argv):
             dftool_module.do_dispense_predictoor()
 
+    # pylint: disable=comparison-with-callable
     assert mock.call_args[0][0] == dispense.multisig_transfer_tokens
     assert isinstance(mock.call_args[0][3], Web3)
     assert mock.call_args[0][4].name() == "Ocean Token"
