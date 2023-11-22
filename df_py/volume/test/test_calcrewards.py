@@ -14,7 +14,7 @@ from df_py.volume import to_usd
 from df_py.volume.reward_calculator import (
     TARGET_WPY,
     RewardCalculator,
-    VolumeRewardCalculator,
+    calc_volume_rewards,
     RewardUtils,
     RewardShaper,
 )
@@ -1003,8 +1003,9 @@ def test_volume_reward_calculator():
     ), patch(
         "df_py.volume.reward_calculator.RewardUtils.get_df_week_number", return_value=30
     ):
-        vol_rc = VolumeRewardCalculator("somedir", None, 1000.0, True, False)
-        rewards_per_lp, rewards_info = vol_rc.calculate()
+        rewards_per_lp, rewards_info = calc_volume_rewards(
+            "somedir", None, 1000.0, True, False
+        )
 
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(
             444.44444444
@@ -1062,8 +1063,9 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.reward_calculator.RewardUtils.get_df_week_number", return_value=30
     ):
-        vol_rc = VolumeRewardCalculator("somedir", None, 1000.0, True, False)
-        rewards_per_lp, rewards_info = vol_rc.calculate()
+        rewards_per_lp, rewards_info = calc_volume_rewards(
+            "somedir", None, 1000.0, True, False
+        )
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(

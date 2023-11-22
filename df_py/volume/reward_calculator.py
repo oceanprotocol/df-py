@@ -339,41 +339,41 @@ class RewardCalculator:
         return sorted(LP_addrs)
 
 
-class VolumeRewardCalculator(RewardCalculator):
-    def __init__(
-        self,
-        CSV_DIR,
-        START_DATE,
-        TOT_OCEAN,
-        do_pubrewards=DO_PUBREWARDS,
-        do_rank=DO_RANK,
-    ):
-        S = allocations.load_stakes(CSV_DIR)
-        V = csvs.load_nftvols_csvs(CSV_DIR)
-        C = csvs.load_owners_csvs(CSV_DIR)
-        SYM = csvs.load_symbols_csvs(CSV_DIR)
-        R = csvs.load_rate_csvs(CSV_DIR)
+def calc_volume_rewards(
+    CSV_DIR,
+    START_DATE,
+    TOT_OCEAN,
+    do_pubrewards=DO_PUBREWARDS,
+    do_rank=DO_RANK,
+):
+    S = allocations.load_stakes(CSV_DIR)
+    V = csvs.load_nftvols_csvs(CSV_DIR)
+    C = csvs.load_owners_csvs(CSV_DIR)
+    SYM = csvs.load_symbols_csvs(CSV_DIR)
+    R = csvs.load_rate_csvs(CSV_DIR)
 
-        contract_multipliers: Dict[str, float] = {}  # type: ignore
+    contract_multipliers: Dict[str, float] = {}  # type: ignore
 
-        if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
-            print("Found predictoor contracts")
-            predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
-            contract_multipliers = {
-                i: PREDICTOOR_MULTIPLIER for i in predict_contracts.keys()
-            }
-        prev_week = 0
-        if START_DATE is None:
-            cur_week = RewardUtils.get_df_week_number(datetime.now())
-            prev_week = cur_week - 1
-        else:
-            prev_week = RewardUtils.get_df_week_number(START_DATE)
-        m = RewardUtils.calc_dcv_multiplier(prev_week)
-        print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
+    if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
+        print("Found predictoor contracts")
+        predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
+        contract_multipliers = {
+            i: PREDICTOOR_MULTIPLIER for i in predict_contracts.keys()
+        }
+    prev_week = 0
+    if START_DATE is None:
+        cur_week = RewardUtils.get_df_week_number(datetime.now())
+        prev_week = cur_week - 1
+    else:
+        prev_week = RewardUtils.get_df_week_number(START_DATE)
+    m = RewardUtils.calc_dcv_multiplier(prev_week)
+    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
 
-        return super(self.__class__, self).__init__(
-            S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank, contract_multipliers
-        )
+    vol_calculator = RewardCalculator(
+        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank, contract_multipliers
+    )
+
+    return vol_calculator.calculate()
 
 
 class RewardShaper:

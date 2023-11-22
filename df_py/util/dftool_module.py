@@ -70,7 +70,7 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth_by_stream,
 )
 from df_py.volume import csvs, queries
-from df_py.volume.reward_calculator import RewardShaper, VolumeRewardCalculator
+from df_py.volume.reward_calculator import RewardShaper, calc_volume_rewards
 
 
 @enforce_types
@@ -496,8 +496,7 @@ def do_calc():
         _exitIfFileExists(csvs.volume_rewards_csv_filename(csv_dir))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
-        vol_rc = VolumeRewardCalculator(csv_dir, start_date, tot_ocean)
-        rewperlp, rewinfo = vol_rc.calculate()
+        rewperlp, rewinfo = calc_volume_rewards(csv_dir, start_date, tot_ocean)
 
         csvs.save_volume_rewards_csv(rewperlp, csv_dir)
         csvs.save_volume_rewardsinfo_csv(rewinfo, csv_dir)
