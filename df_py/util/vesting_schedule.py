@@ -12,7 +12,7 @@ from df_py.util.constants import (
     PREDICTOOR_OCEAN_BUDGET,
     PREDICTOOR_RELEASE_WEEK,
 )
-from df_py.volume.reward_calculator import RewardUtils
+from df_py.volume.reward_calculator import get_df_week_number
 
 
 @enforce_types
@@ -25,7 +25,7 @@ def get_active_reward_amount_for_week_eth_by_stream(
     """
     total_reward_amount = get_active_reward_amount_for_week_eth(start_dt, chain_id)
 
-    dfweek = RewardUtils.get_df_week_number(start_dt) - 1
+    dfweek = get_df_week_number(start_dt) - 1
 
     if substream == "predictoor":
         return PREDICTOOR_OCEAN_BUDGET if dfweek >= PREDICTOOR_RELEASE_WEEK else 0
@@ -73,7 +73,7 @@ def get_reward_amount_for_week_wei(
     """
 
     # hardcoded values for linear vesting schedule
-    dfweek = RewardUtils.get_df_week_number(start_dt) - 1
+    dfweek = get_df_week_number(start_dt) - 1
 
     for start_week, value in DFMAIN_CONSTANTS.items():
         if dfweek < start_week:

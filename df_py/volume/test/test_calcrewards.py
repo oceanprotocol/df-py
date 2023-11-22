@@ -9,13 +9,12 @@ from pytest import approx
 
 from df_py.util import constants
 from df_py.util.constants import ZERO_ADDRESS
-from df_py.volume import cleancase as cc
-from df_py.volume import to_usd
 from df_py.volume.reward_calculator import (
     TARGET_WPY,
     RewardCalculator,
     calc_volume_rewards,
-    RewardUtils,
+    calc_dcv_multiplier,
+    get_df_week_number,
     RewardShaper,
 )
 
@@ -469,7 +468,7 @@ def test_divide_by_zero():
 
 @enforce_types
 def test_get_df_week_number():
-    wk_nbr = RewardUtils.get_df_week_number
+    wk_nbr = get_df_week_number
 
     # test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
     assert wk_nbr(datetime(2022, 9, 28)) == -1  # Wed
@@ -511,7 +510,7 @@ def test_get_df_week_number():
 
 @enforce_types
 def test_calc_dcv_multiplier():
-    mult = RewardUtils.calc_dcv_multiplier
+    mult = calc_dcv_multiplier
 
     assert mult(-10) == np.inf
     assert mult(-1) == np.inf
@@ -998,10 +997,10 @@ def test_volume_reward_calculator():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.reward_calculator.RewardUtils.calc_dcv_multiplier",
+        "df_py.volume.reward_calculator.calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
-        "df_py.volume.reward_calculator.RewardUtils.get_df_week_number", return_value=30
+        "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ):
         rewards_per_lp, rewards_info = calc_volume_rewards(
             "somedir", None, 1000.0, True, False
@@ -1052,7 +1051,7 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.reward_calculator.RewardUtils.calc_dcv_multiplier",
+        "df_py.volume.reward_calculator.calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
         "os.path.exists",
@@ -1061,7 +1060,7 @@ def test_volume_reward_calculator_predictoor_mul():
         "df_py.volume.reward_calculator.load_predictoor_contracts_csv",
         return_value=mock_data["predictoor_contracts"],
     ), patch(
-        "df_py.volume.reward_calculator.RewardUtils.get_df_week_number", return_value=30
+        "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ):
         rewards_per_lp, rewards_info = calc_volume_rewards(
             "somedir", None, 1000.0, True, False
