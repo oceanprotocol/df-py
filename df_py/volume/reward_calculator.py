@@ -102,9 +102,7 @@ class RewardCalculator:
         """
         self._freeze_attributes = False
 
-        self.S, self.V_USD, self.M = self._stake_vol_dicts_to_arrays()
-        self.C = self._owner_dict_to_array()
-
+        self.S, self.V_USD, self.M, self.C = self._stake_vol_owner_dicts_to_arrays()
         self.R = self._calc_usd()
 
         self._freeze_attributes = True
@@ -115,7 +113,9 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _stake_vol_dicts_to_arrays(self) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def _stake_vol_owner_dicts_to_arrays(
+        self,
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         """
         @return
           S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
@@ -127,6 +127,8 @@ class RewardCalculator:
         M = np.zeros(N_j, dtype=float)
         S = np.zeros((N_i, N_j), dtype=float)
         V_USD = np.zeros(N_j, dtype=float)
+        C = np.zeros(N_j, dtype=int)
+
         for j, (chainID, nft_addr) in enumerate(self.chain_nft_tups):
             for i, LP_addr in enumerate(self.LP_addrs):
                 assert nft_addr in self.stakes[chainID], "each tup should be in stakes"
@@ -135,23 +137,6 @@ class RewardCalculator:
             if nft_addr in self.contract_multipliers:
                 M[j] = self.contract_multipliers[nft_addr]
 
-        return S, V_USD, M
-
-    @freeze_attributes
-    @enforce_types
-    def _owner_dict_to_array(self) -> np.ndarray:
-        """
-        @return
-          C -- 1d array of [chain_nft j] -- the LP i that created j
-
-        @notes
-          If a owner of an nft didn't LP anywhere, then it won't have an LP i.
-          In this case, P[chain_nft j] will be set to -1
-        """
-        N_j = len(self.chain_nft_tups)
-
-        C = np.zeros(N_j, dtype=int)
-        for j, (chainID, nft_addr) in enumerate(self.chain_nft_tups):
             owner_addr = self.owners[chainID][nft_addr]
             C[j] = (
                 -1
@@ -159,7 +144,7 @@ class RewardCalculator:
                 else self.LP_addrs.index(owner_addr)
             )
 
-        return C
+        return S, V_USD, M, C
 
     @freeze_attributes
     @enforce_types

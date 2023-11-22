@@ -874,7 +874,7 @@ def test_flatten_rewards():
     }
 
 
-def test_stake_vol_dicts_to_arrays():
+def test_stake_vol_owner_dicts_to_arrays():
     # define the inputs for the function
     stakes = {
         1: {
@@ -922,7 +922,7 @@ def test_stake_vol_dicts_to_arrays():
     mock_calculator.LP_addrs = lp_addrs
     mock_calculator.chain_nft_tups = chain_nft_tups
 
-    S, V_USD, _ = mock_calculator._stake_vol_dicts_to_arrays()
+    S, V_USD, _, _ = mock_calculator._stake_vol_owner_dicts_to_arrays()
 
     expected_S = np.array(
         [
