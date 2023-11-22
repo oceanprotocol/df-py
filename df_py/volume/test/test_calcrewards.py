@@ -37,6 +37,14 @@ class MockRewardCalculator(RewardCalculator):
     def __init__(self):
         return super().__init__({}, {}, {}, {}, {}, np.inf, False, False, False)
 
+    def set_mock_attribute(self, attr_name, attr_value):
+        self._freeze_attributes = False
+        setattr(self, attr_name, attr_value)
+        self._freeze_attributes = True
+
+    def set_V_USD(self, V_USD):
+        self.set_mock_attribute("V_USD", V_USD)
+
 
 @enforce_types
 def test_simple():
@@ -629,7 +637,7 @@ def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
 def test_rank_based_allocate_zerovols():
     V_USD = np.array([32.0, 0.0, 15.0], dtype=float)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
     with pytest.raises(ValueError):
         mock_calculator._rank_based_allocate()
 
@@ -638,7 +646,7 @@ def test_rank_based_allocate_zerovols():
 def test_rank_based_allocate_0():
     V_USD = np.array([], dtype=float)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
     p = mock_calculator._rank_based_allocate()
     target_p = np.array([], dtype=float)
     np.testing.assert_allclose(p, target_p)
@@ -648,7 +656,7 @@ def test_rank_based_allocate_0():
 def test_rank_based_allocate_1():
     V_USD = np.array([32.0], dtype=float)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
     p = mock_calculator._rank_based_allocate()
     target_p = np.array([1.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
@@ -658,7 +666,7 @@ def test_rank_based_allocate_1():
 def test_rank_based_allocate_3_simple():
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
     p = mock_calculator._rank_based_allocate(rank_scale_op="LIN")
     target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
@@ -669,7 +677,7 @@ def test_rank_based_allocate_3_simple():
 def test_rank_based_allocate_3_exact(op):
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
 
     (p, ranks, max_N, allocs, I) = mock_calculator._rank_based_allocate(
         max_n_rank_assets=100, rank_scale_op=op, return_info=True
@@ -705,7 +713,7 @@ def test_rank_based_allocate_3_exact(op):
 def test_rank_based_allocate_20():
     V_USD = 1000.0 * np.random.rand(20)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
     p = mock_calculator._rank_based_allocate()
     assert len(p) == 20
     assert sum(p) == pytest.approx(1.0)
@@ -715,7 +723,7 @@ def test_rank_based_allocate_20():
 def test_rank_based_allocate_1000():
     V_USD = 1000.0 * np.random.rand(1000)
     mock_calculator = MockRewardCalculator()
-    mock_calculator.V_USD = V_USD
+    mock_calculator.set_V_USD(V_USD)
     p = mock_calculator._rank_based_allocate()
     assert len(p) == 1000
     assert sum(p) == pytest.approx(1.0)
@@ -823,7 +831,7 @@ def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
 def test_get_nft_addrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
     mock_calculator = MockRewardCalculator()
-    mock_calculator.nftvols_USD = nftvols_USD
+    mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
     nft_addrs = mock_calculator._get_nft_addrs()
     assert isinstance(nft_addrs, list)
     assert sorted(nft_addrs) == sorted([NA, NB, NC])
@@ -842,7 +850,7 @@ def test_get_lp_addrs():
         },
     }
     mock_calculator = MockRewardCalculator()
-    mock_calculator.stakes = stakes
+    mock_calculator.set_mock_attribute("stakes", stakes)
     LP_addrs = mock_calculator._get_lp_addrs()
     assert isinstance(LP_addrs, list)
     assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
@@ -916,10 +924,13 @@ def test_stake_vol_owner_dicts_to_arrays():
     ]
 
     mock_calculator = MockRewardCalculator()
-    mock_calculator.stakes = stakes
-    mock_calculator.nftvols_USD = nftvols_USD
-    mock_calculator.LP_addrs = lp_addrs
-    mock_calculator.chain_nft_tups = chain_nft_tups
+    mock_calculator.set_mock_attribute("stakes", stakes)
+    mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
+    mock_calculator.set_mock_attribute("LP_addrs", lp_addrs)
+    mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
+
+    owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
+    mock_calculator.set_mock_attribute("owners", owners)
 
     S, V_USD, _, _ = mock_calculator._stake_vol_owner_dicts_to_arrays()
 
@@ -1156,8 +1167,10 @@ def _null_owners(
         stakes, nftvols, {}, symbols, rates, np.inf, False, False, False
     )
 
-    chain_nft_tups = partially_initialised._get_chain_nft_tups()
+    return _null_owners_from_chain_nft_tups(partially_initialised._get_chain_nft_tups())
 
+
+def _null_owners_from_chain_nft_tups(chain_nft_tups):
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
     for chainID, nft_addr in chain_nft_tups:
         if chainID not in owners:
