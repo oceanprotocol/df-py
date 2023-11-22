@@ -69,8 +69,8 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
 )
-from df_py.volume import calc_rewards, csvs, queries
-from df_py.volume.calc_rewards import calc_rewards_volume
+from df_py.volume import csvs, queries
+from df_py.volume.reward_calculator import RewardShaper, VolumeRewardCalculator
 
 
 @enforce_types
@@ -496,7 +496,8 @@ def do_calc():
         _exitIfFileExists(csvs.volume_rewards_csv_filename(csv_dir))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
-        rewperlp, rewinfo = calc_rewards_volume(csv_dir, start_date, tot_ocean)
+        vol_rc = VolumeRewardCalculator(csv_dir, start_date, tot_ocean)
+        rewperlp, rewinfo = vol_rc.calculate()
 
         csvs.save_volume_rewards_csv(rewperlp, csv_dir)
         csvs.save_volume_rewardsinfo_csv(rewinfo, csv_dir)
@@ -598,7 +599,7 @@ def do_dispense_active():
         volume_rewards = {}
         if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
             volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
-            volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
+            volume_rewards = RewardShaper.flatten(volume_rewards_3d)
 
         challenge_rewards = {}
         if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
@@ -607,7 +608,7 @@ def do_dispense_active():
             print("Distributing only VOLUME DF rewards")
         else:
             print("Distributing for VOLUME DF and CHALLENGE DF rewards")
-        rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
+        rewards = RewardShaper.merge(volume_rewards, challenge_rewards)
     elif arguments.PREDICTOOR_ROSE is True:
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         rewards = aggregate_predictoor_rewards(predictoor_rewards)

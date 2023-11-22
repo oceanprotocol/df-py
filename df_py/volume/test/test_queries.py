@@ -15,7 +15,8 @@ from df_py.util.constants import MAX_ALLOCATE
 from df_py.util.contract_base import ContractBase
 from df_py.util.networkutil import send_ether
 from df_py.util.oceanutil import ve_delegate
-from df_py.volume import calc_rewards, csvs, queries
+from df_py.volume import csvs, queries
+from df_py.volume.reward_calculator import RewardCalculator
 from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
 
@@ -425,9 +426,10 @@ def _test_end_to_end_without_csvs(rng):
     do_pubrewards = False
     do_rank = True
 
-    rewardsperlp, _ = calc_rewards.calc_rewards(
+    vol_calculator = RewardCalculator(
         S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
     )
+    rewardsperlp, _ = vol_calculator.calculate()
 
     sum_ = sum(rewardsperlp[CHAINID].values())
 
@@ -477,9 +479,10 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     do_pubrewards = False
     do_rank = True
 
-    rewardsperlp, _ = calc_rewards.calc_rewards(
+    vol_calculator = RewardCalculator(
         S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
     )
+    rewardsperlp, _ = vol_calculator.calculate()
 
     sum_ = sum(rewardsperlp[CHAINID].values())
 

@@ -11,19 +11,12 @@ from df_py.util import constants
 from df_py.util.constants import ZERO_ADDRESS
 from df_py.volume import cleancase as cc
 from df_py.volume import to_usd
-from df_py.volume.calc_rewards import (
+from df_py.volume.reward_calculator import (
     TARGET_WPY,
-    _get_chain_nft_tups,
-    _get_lp_addrs,
-    _get_nft_addrs,
-    _rank_based_allocate,
-    _stake_vol_dicts_to_arrays,
-    calc_dcv_multiplier,
-    calc_rewards,
-    calc_rewards_volume,
-    flatten_rewards,
-    get_df_week_number,
-    merge_rewards,
+    RewardCalculator,
+    VolumeRewardCalculator,
+    RewardUtils,
+    RewardShaper,
 )
 
 # for shorter lines
@@ -39,6 +32,11 @@ SYMBOLS = {
     C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
 }
 APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR], C2: [OCN_ADDR2, H2O_ADDR2]}
+
+
+class MockRewardCalculator(RewardCalculator):
+    def __init__(self):
+        return super().__init__({}, {}, {}, {}, {}, np.inf, False, False, False)
 
 
 @enforce_types
@@ -471,7 +469,7 @@ def test_divide_by_zero():
 
 @enforce_types
 def test_get_df_week_number():
-    wk_nbr = get_df_week_number
+    wk_nbr = RewardUtils.get_df_week_number
 
     # test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
     assert wk_nbr(datetime(2022, 9, 28)) == -1  # Wed
@@ -513,7 +511,7 @@ def test_get_df_week_number():
 
 @enforce_types
 def test_calc_dcv_multiplier():
-    mult = calc_dcv_multiplier
+    mult = RewardUtils.calc_dcv_multiplier
 
     assert mult(-10) == np.inf
     assert mult(-1) == np.inf
@@ -631,14 +629,18 @@ def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
 @enforce_types
 def test_rank_based_allocate_zerovols():
     V_USD = np.array([32.0, 0.0, 15.0], dtype=float)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
     with pytest.raises(ValueError):
-        _rank_based_allocate(V_USD)
+        mock_calculator._rank_based_allocate()
 
 
 @enforce_types
 def test_rank_based_allocate_0():
     V_USD = np.array([], dtype=float)
-    p = _rank_based_allocate(V_USD)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
+    p = mock_calculator._rank_based_allocate()
     target_p = np.array([], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
@@ -646,7 +648,9 @@ def test_rank_based_allocate_0():
 @enforce_types
 def test_rank_based_allocate_1():
     V_USD = np.array([32.0], dtype=float)
-    p = _rank_based_allocate(V_USD)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
+    p = mock_calculator._rank_based_allocate()
     target_p = np.array([1.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
@@ -654,7 +658,9 @@ def test_rank_based_allocate_1():
 @enforce_types
 def test_rank_based_allocate_3_simple():
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
-    p = _rank_based_allocate(V_USD, rank_scale_op="LIN")
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
+    p = mock_calculator._rank_based_allocate(rank_scale_op="LIN")
     target_p = np.array([2.0 / 6.0, 3.0 / 6.0, 1.0 / 6.0], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
@@ -663,9 +669,11 @@ def test_rank_based_allocate_3_simple():
 @pytest.mark.parametrize("op", ["LIN", "POW2", "POW4", "LOG", "SQRT"])
 def test_rank_based_allocate_3_exact(op):
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
 
-    (p, ranks, max_N, allocs, I) = _rank_based_allocate(
-        V_USD, max_n_rank_assets=100, rank_scale_op=op, return_info=True
+    (p, ranks, max_N, allocs, I) = mock_calculator._rank_based_allocate(
+        max_n_rank_assets=100, rank_scale_op=op, return_info=True
     )
 
     target_max_N = 3
@@ -697,7 +705,9 @@ def test_rank_based_allocate_3_exact(op):
 @enforce_types
 def test_rank_based_allocate_20():
     V_USD = 1000.0 * np.random.rand(20)
-    p = _rank_based_allocate(V_USD)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
+    p = mock_calculator._rank_based_allocate()
     assert len(p) == 20
     assert sum(p) == pytest.approx(1.0)
 
@@ -705,7 +715,9 @@ def test_rank_based_allocate_20():
 @enforce_types
 def test_rank_based_allocate_1000():
     V_USD = 1000.0 * np.random.rand(1000)
-    p = _rank_based_allocate(V_USD)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.V_USD = V_USD
+    p = mock_calculator._rank_based_allocate()
     assert len(p) == 1000
     assert sum(p) == pytest.approx(1.0)
 
@@ -811,7 +823,9 @@ def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
 @enforce_types
 def test_get_nft_addrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
-    nft_addrs = _get_nft_addrs(nftvols_USD)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.nftvols_USD = nftvols_USD
+    nft_addrs = mock_calculator._get_nft_addrs()
     assert isinstance(nft_addrs, list)
     assert sorted(nft_addrs) == sorted([NA, NB, NC])
 
@@ -828,7 +842,9 @@ def test_get_lp_addrs():
             NC: {LP4: 1.0},
         },
     }
-    LP_addrs = _get_lp_addrs(stakes)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.stakes = stakes
+    LP_addrs = mock_calculator._get_lp_addrs()
     assert isinstance(LP_addrs, list)
     assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
 
@@ -850,7 +866,7 @@ def test_flatten_rewards():
         },
     }
 
-    flat_rewards = flatten_rewards(rewards)
+    flat_rewards = RewardShaper.flatten(rewards)
     assert flat_rewards == {
         LP1: 100.0 + 300.0 + 500.0,
         LP2: 200.0 + 600.0,
@@ -892,12 +908,21 @@ def test_stake_vol_dicts_to_arrays():
             "nft_addr4": 45.0,
         },
     }
-    keys_tup = (
-        ["LP_addr1", "LP_addr2", "LP_addr3", "LP_addr4"],
-        [(1, "nft_addr1"), (1, "nft_addr2"), (2, "nft_addr3"), (2, "nft_addr4")],
-    )
+    lp_addrs = ["LP_addr1", "LP_addr2", "LP_addr3", "LP_addr4"]
+    chain_nft_tups = [
+        (1, "nft_addr1"),
+        (1, "nft_addr2"),
+        (2, "nft_addr3"),
+        (2, "nft_addr4"),
+    ]
 
-    S, V_USD, _ = _stake_vol_dicts_to_arrays(stakes, nftvols_USD, keys_tup)
+    mock_calculator = MockRewardCalculator()
+    mock_calculator.stakes = stakes
+    mock_calculator.nftvols_USD = nftvols_USD
+    mock_calculator.LP_addrs = lp_addrs
+    mock_calculator.chain_nft_tups = chain_nft_tups
+
+    S, V_USD, _ = mock_calculator._stake_vol_dicts_to_arrays()
 
     expected_S = np.array(
         [
@@ -919,29 +944,29 @@ def test_merge_rewards():
     dict1 = {"A": 10, "B": 20}
     dict2 = {"C": 30, "D": 40}
     expected_output = {"A": 10, "B": 20, "C": 30, "D": 40}
-    assert merge_rewards(dict1, dict2) == expected_output
+    assert RewardShaper.merge(dict1, dict2) == expected_output
     # Test case 2: Merge two reward dictionaries with common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"B": 30, "C": 40}
     expected_output = {"A": 10, "B": 50, "C": 40}
-    assert merge_rewards(dict1, dict2) == expected_output
+    assert RewardShaper.merge(dict1, dict2) == expected_output
     # Test case 3: Merge three reward dictionaries with common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"B": 30, "C": 40}
     dict3 = {"A": 50, "C": 60}
     expected_output = {"A": 60, "B": 50, "C": 100}
-    assert merge_rewards(dict1, dict2, dict3) == expected_output
+    assert RewardShaper.merge(dict1, dict2, dict3) == expected_output
     # Test case 4: Merge empty reward dictionary
     dict1 = {"A": 10, "B": 20}
     dict2 = {}
     expected_output = {"A": 10, "B": 20}
-    assert merge_rewards(dict1, dict2) == expected_output
+    assert RewardShaper.merge(dict1, dict2) == expected_output
     # Test case 5: Merge no reward dictionaries
     expected_output = {}
-    assert merge_rewards() == expected_output
+    assert RewardShaper.merge() == expected_output
 
 
-def test_calc_rewards_volume():
+def test_volume_reward_calculator():
     mock_data = {
         "stakes": {
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
@@ -973,14 +998,14 @@ def test_calc_rewards_volume():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.calc_rewards.calc_dcv_multiplier",
+        "df_py.volume.reward_calculator.RewardUtils.calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
-        "df_py.volume.calc_rewards.get_df_week_number", return_value=30
+        "df_py.volume.reward_calculator.RewardUtils.get_df_week_number", return_value=30
     ):
-        rewards_per_lp, rewards_info = calc_rewards_volume(
-            "somedir", None, 1000.0, True, False
-        )
+        vol_rc = VolumeRewardCalculator("somedir", None, 1000.0, True, False)
+        rewards_per_lp, rewards_info = vol_rc.calculate()
+
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(
             444.44444444
         )  # pub rewards extra
@@ -993,7 +1018,7 @@ def test_calc_rewards_volume():
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
 
 
-def test_calc_rewards_volume_predictoor_mul():
+def test_volume_reward_calculator_predictoor_mul():
     mock_data = {
         "stakes": {
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
@@ -1026,20 +1051,19 @@ def test_calc_rewards_volume_predictoor_mul():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.calc_rewards.calc_dcv_multiplier",
+        "df_py.volume.reward_calculator.RewardUtils.calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
         "os.path.exists",
         return_value=True,
     ), patch(
-        "df_py.volume.calc_rewards.load_predictoor_contracts_csv",
+        "df_py.volume.reward_calculator.load_predictoor_contracts_csv",
         return_value=mock_data["predictoor_contracts"],
     ), patch(
-        "df_py.volume.calc_rewards.get_df_week_number", return_value=30
+        "df_py.volume.reward_calculator.RewardUtils.get_df_week_number", return_value=30
     ):
-        rewards_per_lp, rewards_info = calc_rewards_volume(
-            "somedir", None, 1000.0, True, False
-        )
+        vol_rc = VolumeRewardCalculator("somedir", None, 1000.0, True, False)
+        rewards_per_lp, rewards_info = vol_rc.calculate()
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(
@@ -1103,7 +1127,7 @@ def _calc_rewards(
     if owners is None:
         owners = _null_owners(stakes, nftvols, symbols, rates)
 
-    return calc_rewards(
+    calculator = RewardCalculator(
         stakes,
         nftvols,
         owners,
@@ -1116,6 +1140,8 @@ def _calc_rewards(
         contract_multipliers,
     )
 
+    return calculator.calculate()
+
 
 @enforce_types
 def _null_owners(
@@ -1125,18 +1151,16 @@ def _null_owners(
     rates,
 ) -> Dict[int, Dict[str, Union[str, None]]]:
     """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
-    stakes, nftvols, symbols, rates = (
-        cc.mod_stakes(stakes),
-        cc.mod_nft_vols(nftvols),
-        cc.mod_symbols(symbols),
-        cc.mod_rates(rates),
+    partially_initialised = RewardCalculator(
+        stakes, nftvols, {}, symbols, rates, np.inf, False, False, False
     )
-    nftvols_USD = to_usd.nft_vols_to_usd(nftvols, symbols, rates)
-    chain_nft_tups = _get_chain_nft_tups(stakes, nftvols_USD)
+
+    chain_nft_tups = partially_initialised._get_chain_nft_tups()
 
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
     for chainID, nft_addr in chain_nft_tups:
         if chainID not in owners:
             owners[chainID] = {}
         owners[chainID][nft_addr] = ZERO_ADDRESS
+
     return owners
