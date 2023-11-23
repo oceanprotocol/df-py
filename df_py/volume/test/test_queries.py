@@ -421,13 +421,13 @@ def _test_end_to_end_without_csvs(rng):
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
-    m = float("inf")
+    week = 7
     OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
+        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
@@ -474,13 +474,13 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     C = csvs.load_owners_csvs(csv_dir)
     SYM = csvs.load_symbols_csvs(csv_dir)
 
-    m = float("inf")
+    week = 7
     OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
+        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 

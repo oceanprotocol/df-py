@@ -51,7 +51,7 @@ class RewardCalculator:
         owners: Dict[int, Dict[str, str]],
         symbols: Dict[int, Dict[str, str]],
         rates: Dict[str, float],
-        DCV_multiplier: float,
+        df_week: int,
         OCEAN_avail: float,
         do_pubrewards: bool,
         do_rank: bool,
@@ -85,7 +85,8 @@ class RewardCalculator:
         self.chain_nft_tups = self._get_chain_nft_tups()
         self.LP_addrs = self._get_lp_addrs()
 
-        self.DCV_multiplier = DCV_multiplier
+        self.DCV_multiplier = calc_dcv_multiplier(df_week)
+        print(f"Given df_week=DF{df_week}, then DCV_multiplier={self.DCV_multiplier}")
         self.OCEAN_avail = OCEAN_avail
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
@@ -418,10 +419,7 @@ def calc_dcv_multiplier(DF_week: int) -> float:
     if 9 <= DF_week <= 28:
         return -0.0485 * (DF_week - 9) + 1.0
 
-    if DF_week >= 29:
-        return 0.001
-
-    return 0.03
+    return 0.001
 
 
 def calc_volume_rewards(
@@ -451,11 +449,18 @@ def calc_volume_rewards(
         prev_week = cur_week - 1
     else:
         prev_week = get_df_week_number(START_DATE)
-    m = calc_dcv_multiplier(prev_week)
-    print(f"Given prev_week=DF{prev_week}, then DCV_multiplier={m}")
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, m, TOT_OCEAN, do_pubrewards, do_rank, contract_multipliers
+        S,
+        V,
+        C,
+        SYM,
+        R,
+        prev_week,
+        TOT_OCEAN,
+        do_pubrewards,
+        do_rank,
+        contract_multipliers,
     )
 
     return vol_calculator.calculate()

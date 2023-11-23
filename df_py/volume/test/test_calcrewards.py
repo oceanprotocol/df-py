@@ -32,10 +32,13 @@ SYMBOLS = {
 }
 APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR], C2: [OCN_ADDR2, H2O_ADDR2]}
 
+# week 7 will make the DCV multiplier np.inf
+DF_WEEK = 7
+
 
 class MockRewardCalculator(RewardCalculator):
     def __init__(self):
-        return super().__init__({}, {}, {}, {}, {}, np.inf, False, False, False)
+        return super().__init__({}, {}, {}, {}, {}, DF_WEEK, False, False, False)
 
     def set_mock_attribute(self, attr_name, attr_value):
         self._freeze_attributes = False
@@ -414,15 +417,16 @@ def test_bound_by_DCV_one_nft():
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
     OCEAN_avail = 10000.0
 
+    # df week = 9 -> DCV multiplier = 1.0
     rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes, nftvols, OCEAN_avail, DCV_multiplier=1.0
+        stakes, nftvols, OCEAN_avail, df_week=9
     )
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes, nftvols, OCEAN_avail, DCV_multiplier=0.5
-    )
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
+        mock_dcv.return_value = 0.5
+        rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
 
@@ -437,23 +441,25 @@ def test_custom_multipliers():
     OCEAN_avail = 10000.0
     contract_multipliers = {NA: 1.0}
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes,
-        nftvols,
-        OCEAN_avail,
-        DCV_multiplier=0.1,
-        contract_multipliers=contract_multipliers,
-    )
-    assert rewards_per_lp == {LP1: 100.0}
-    assert rewards_info == {NA: {LP1: 100.0}}
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
+        mock_dcv.return_value = 0.1
+        rewards_per_lp, rewards_info = _calc_rewards_C1(
+            stakes,
+            nftvols,
+            OCEAN_avail,
+            contract_multipliers=contract_multipliers,
+        )
+        assert rewards_per_lp == {LP1: 100.0}
+        assert rewards_info == {NA: {LP1: 100.0}}
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes,
-        nftvols,
-        OCEAN_avail,
-        DCV_multiplier=0.5,
-        contract_multipliers=contract_multipliers,
-    )
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
+        mock_dcv.return_value = 0.5
+        rewards_per_lp, rewards_info = _calc_rewards_C1(
+            stakes,
+            nftvols,
+            OCEAN_avail,
+            contract_multipliers=contract_multipliers,
+        )
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
@@ -1100,7 +1106,7 @@ def _calc_rewards_C1(
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
     rates: Dict[str, float] = RATES,
     owners=None,
-    DCV_multiplier: float = np.inf,
+    df_week: int = DF_WEEK,
     do_pubrewards: bool = False,
     do_rank: bool = False,
     contract_multipliers: Dict[str, float] = {},
@@ -1112,7 +1118,7 @@ def _calc_rewards_C1(
         symbols,
         rates,
         owners,
-        DCV_multiplier,
+        df_week,
         do_pubrewards,
         do_rank,
         contract_multipliers,
@@ -1130,7 +1136,7 @@ def _calc_rewards(
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
     rates: Dict[str, float] = RATES,
     owners=None,
-    DCV_multiplier: float = np.inf,
+    df_week: int = DF_WEEK,
     do_pubrewards: bool = False,
     do_rank: bool = False,
     contract_multipliers: Dict[str, float] = {},
@@ -1145,7 +1151,7 @@ def _calc_rewards(
         owners,
         symbols,
         rates,
-        DCV_multiplier,
+        df_week,
         OCEAN_avail,
         do_pubrewards,
         do_rank,
@@ -1164,7 +1170,7 @@ def _null_owners(
 ) -> Dict[int, Dict[str, Union[str, None]]]:
     """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
     partially_initialised = RewardCalculator(
-        stakes, nftvols, {}, symbols, rates, np.inf, False, False, False
+        stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
     )
 
     return _null_owners_from_chain_nft_tups(partially_initialised._get_chain_nft_tups())
