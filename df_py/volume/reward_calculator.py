@@ -55,7 +55,7 @@ class RewardCalculator:
         OCEAN_avail: float,
         do_pubrewards: bool,
         do_rank: bool,
-        contract_multipliers: Dict[str, float] = {},
+        predictoors: List[str] = [],
     ):
         """
         @arguments
@@ -64,11 +64,11 @@ class RewardCalculator:
           owners -- dict of [chainID][nft_addr] : owner_addr
           symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
           rates -- dict of [basetoken_symbol] : USD_price_float
-          DCV_multiplier -- via calc_dcv_multiplier(DF_week). Is an arg to help test.
+          df_week -- int DF_week
           OCEAN_avail -- amount of rewards avail, in units of OCEAN
           do_pubrewards -- 2x effective stake to publishers?
           do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
-          [contract_multipliers] - custom multiplier per contract address, optional
+          [predictoors] - list of predictoors nft addresses, optional
         """
         self._freeze_attributes = False
 
@@ -85,12 +85,11 @@ class RewardCalculator:
         self.chain_nft_tups = self._get_chain_nft_tups()
         self.LP_addrs = self._get_lp_addrs()
 
-        self.DCV_multiplier = calc_dcv_multiplier(df_week)
-        print(f"Given df_week=DF{df_week}, then DCV_multiplier={self.DCV_multiplier}")
+        self.df_week = df_week
         self.OCEAN_avail = OCEAN_avail
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
-        self.contract_multipliers = contract_multipliers
+        self.predictoors = predictoors
 
         self._freeze_attributes = True
 
@@ -135,8 +134,8 @@ class RewardCalculator:
                 assert nft_addr in self.stakes[chainID], "each tup should be in stakes"
                 S[i, j] = self.stakes[chainID][nft_addr].get(LP_addr, 0.0)
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
-            if nft_addr in self.contract_multipliers:
-                M[j] = self.contract_multipliers[nft_addr]
+
+            M[j] = calc_dcv_multiplier(self.df_week, nft_addr in self.predictoors)
 
             owner_addr = self.owners[chainID][nft_addr]
             C[j] = (
@@ -176,7 +175,7 @@ class RewardCalculator:
         R = np.zeros((N_i, N_j), dtype=float)
         for j in range(N_j):
             stake_j = sum(S[:, j])
-            multiplier = self.M[j] if self.M[j] != 0 else self.DCV_multiplier
+            multiplier = self.M[j]
             DCV_j = self.V_USD[j]
             if stake_j == 0.0 or DCV_j == 0.0:
                 continue
@@ -403,7 +402,7 @@ def get_df_week_number(dt: datetime) -> int:
     return DF_week
 
 
-def calc_dcv_multiplier(DF_week: int) -> float:
+def calc_dcv_multiplier(DF_week: int, is_predictoor: bool) -> float:
     """
     Calculate DCV multiplier, for use in bounding rewards_avail by DCV
 
@@ -413,6 +412,13 @@ def calc_dcv_multiplier(DF_week: int) -> float:
     @return
       DCV_multiplier --
     """
+    if is_predictoor:
+        return PREDICTOOR_MULTIPLIER
+
+    return _calc_dcv_multiplier(DF_week)
+
+
+def _calc_dcv_multiplier(DF_week: int) -> float:
     if DF_week < 9:
         return np.inf
 
@@ -435,14 +441,13 @@ def calc_volume_rewards(
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
 
-    contract_multipliers: Dict[str, float] = {}  # type: ignore
-
     if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
         print("Found predictoor contracts")
         predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
-        contract_multipliers = {
-            i: PREDICTOOR_MULTIPLIER for i in predict_contracts.keys()
-        }
+        predictoors = predict_contracts.keys()
+    else:
+        predictoors = []
+
     prev_week = 0
     if START_DATE is None:
         cur_week = get_df_week_number(datetime.now())
@@ -460,7 +465,7 @@ def calc_volume_rewards(
         TOT_OCEAN,
         do_pubrewards,
         do_rank,
-        contract_multipliers,
+        predictoors,
     )
 
     return vol_calculator.calculate()

@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from typing import Dict, Tuple, Union
+from typing import Dict, List, Tuple, Union
 from unittest.mock import patch
 
 import numpy as np
@@ -424,7 +424,7 @@ def test_bound_by_DCV_one_nft():
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
-    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
+    with patch("df_py.volume.reward_calculator._calc_dcv_multiplier") as mock_dcv:
         mock_dcv.return_value = 0.5
         rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
@@ -439,29 +439,16 @@ def test_custom_multipliers():
     stakes = {C1: {NA: {LP1: 1e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
     OCEAN_avail = 10000.0
-    contract_multipliers = {NA: 1.0}
+    predictoors = [NA]
 
-    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
-        mock_dcv.return_value = 0.1
-        rewards_per_lp, rewards_info = _calc_rewards_C1(
-            stakes,
-            nftvols,
-            OCEAN_avail,
-            contract_multipliers=contract_multipliers,
-        )
-        assert rewards_per_lp == {LP1: 100.0}
-        assert rewards_info == {NA: {LP1: 100.0}}
-
-    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
-        mock_dcv.return_value = 0.5
-        rewards_per_lp, rewards_info = _calc_rewards_C1(
-            stakes,
-            nftvols,
-            OCEAN_avail,
-            contract_multipliers=contract_multipliers,
-        )
-    assert rewards_per_lp == {LP1: 100.0}
-    assert rewards_info == {NA: {LP1: 100.0}}
+    rewards_per_lp, rewards_info = _calc_rewards_C1(
+        stakes,
+        nftvols,
+        OCEAN_avail,
+        predictoors=predictoors,
+    )
+    assert rewards_per_lp == {LP1: 100.0 * 0.201}
+    assert rewards_info == {NA: {LP1: 100.0 * 0.201}}
 
 
 @enforce_types
@@ -526,23 +513,28 @@ def test_get_df_week_number():
 def test_calc_dcv_multiplier():
     mult = calc_dcv_multiplier
 
-    assert mult(-10) == np.inf
-    assert mult(-1) == np.inf
-    assert mult(0) == np.inf
-    assert mult(1) == np.inf
-    assert mult(8) == np.inf
-    assert mult(9) == 1.0
-    assert mult(10) == pytest.approx(0.951, 0.001)
-    assert mult(11) == pytest.approx(0.903, 0.001)
-    assert mult(12) == pytest.approx(0.854, 0.001)
-    assert mult(20) == pytest.approx(0.4665, 0.001)
-    assert mult(27) == pytest.approx(0.127, 0.001)
-    assert mult(28) == pytest.approx(0.0785, 0.001)
-    assert mult(29) == 0.001
-    assert mult(30) == 0.001
-    assert mult(31) == 0.001
-    assert mult(100) == 0.001
-    assert mult(10000) == 0.001
+    assert mult(-10, False) == np.inf
+    assert mult(-1, False) == np.inf
+    assert mult(0, False) == np.inf
+    assert mult(1, False) == np.inf
+    assert mult(8, False) == np.inf
+    assert mult(9, False) == 1.0
+    assert mult(10, False) == pytest.approx(0.951, 0.001)
+    assert mult(11, False) == pytest.approx(0.903, 0.001)
+    assert mult(12, False) == pytest.approx(0.854, 0.001)
+    assert mult(20, False) == pytest.approx(0.4665, 0.001)
+    assert mult(27, False) == pytest.approx(0.127, 0.001)
+    assert mult(28, False) == pytest.approx(0.0785, 0.001)
+    assert mult(29, False) == 0.001
+    assert mult(30, False) == 0.001
+    assert mult(31, False) == 0.001
+    assert mult(100, False) == 0.001
+    assert mult(10000, False) == 0.001
+
+    assert mult(-10, True) == 0.201
+    assert mult(9, True) == 0.201
+    assert mult(12, True) == 0.201
+    assert mult(10000, True) == 0.201
 
 
 # ========================================================================
@@ -1014,7 +1006,7 @@ def test_volume_reward_calculator():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.reward_calculator.calc_dcv_multiplier",
+        "df_py.volume.reward_calculator._calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
@@ -1068,7 +1060,7 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.reward_calculator.calc_dcv_multiplier",
+        "df_py.volume.reward_calculator._calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
         "os.path.exists",
@@ -1109,7 +1101,7 @@ def _calc_rewards_C1(
     df_week: int = DF_WEEK,
     do_pubrewards: bool = False,
     do_rank: bool = False,
-    contract_multipliers: Dict[str, float] = {},
+    predictoors: List[str] = [],
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
@@ -1121,7 +1113,7 @@ def _calc_rewards_C1(
         df_week,
         do_pubrewards,
         do_rank,
-        contract_multipliers,
+        predictoors,
     )
     rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
     rewards_info = {} if not rewards_info else rewards_info[C1]
@@ -1139,7 +1131,7 @@ def _calc_rewards(
     df_week: int = DF_WEEK,
     do_pubrewards: bool = False,
     do_rank: bool = False,
-    contract_multipliers: Dict[str, float] = {},
+    predictoors: List[str] = [],
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if owners is None:
@@ -1155,7 +1147,7 @@ def _calc_rewards(
         OCEAN_avail,
         do_pubrewards,
         do_rank,
-        contract_multipliers,
+        predictoors,
     )
 
     return calculator.calculate()
