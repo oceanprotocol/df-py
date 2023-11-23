@@ -115,7 +115,7 @@ class RewardCalculator:
     @enforce_types
     def _stake_vol_owner_dicts_to_arrays(
         self,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         @return
           S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
@@ -366,9 +366,9 @@ class RewardShaper:
           rewards -- dict of [chainID][LP_addr] : reward_float
 
         @return
-          flat_rewards -- dict of [LP_addr] : reward_float
+          flats -- dict of [LP_addr] : reward_float
         """
-        flats = {}
+        flats: Dict[str, float] = {}
         for chainID in rewards:
             for LP_addr in rewards[chainID]:
                 flats[LP_addr] = flats.get(LP_addr, 0.0) + rewards[chainID][LP_addr]
