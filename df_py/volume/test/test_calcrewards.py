@@ -516,7 +516,12 @@ def test_custom_multipliers():
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
     OCEAN_avail = 10000.0
 
-    with patch("df_py.volume.reward_calculator.query_predictoor_contracts") as mock:
+    with patch(
+        "df_py.volume.reward_calculator.query_predictoor_contracts"
+    ) as mock, patch(
+        "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
+        {C1: ""},
+    ):
         mock.return_value = {NA: ""}
         rewards_per_lp, rewards_info = _calc_rewards_C1(
             stakes,
@@ -1173,6 +1178,9 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value=mock_data["predictoor_contracts"],
+    ), patch(
+        "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
+        {1: ""},
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ):

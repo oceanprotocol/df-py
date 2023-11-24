@@ -10,6 +10,7 @@ from df_py.predictoor.csvs import (
 )
 from df_py.predictoor.queries import query_predictoor_contracts
 from df_py.util.constants import (
+    DEPLOYER_ADDRS,
     DO_PUBREWARDS,
     DO_RANK,
     MAX_N_RANK_ASSETS,
@@ -364,8 +365,9 @@ class RewardCalculator:
           chain_nft_tups -- list of (chainID, nft_addr), indexed by j
         """
         chainIDs = list(self.stakes.keys())
-        predictoors = {}
-        for chain_id in chainIDs:
+        predictoors = {chain_id: [] for chain_id in chainIDs}
+
+        for chain_id in DEPLOYER_ADDRS.keys():
             predictoors[chain_id] = query_predictoor_contracts(chain_id).keys()
 
         return predictoors
