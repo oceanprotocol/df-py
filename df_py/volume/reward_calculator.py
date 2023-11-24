@@ -1,4 +1,3 @@
-import os
 from datetime import datetime
 from typing import Dict, List, Tuple, Union
 
@@ -7,9 +6,9 @@ import scipy
 from enforce_typing import enforce_types
 
 from df_py.predictoor.csvs import (
-    load_predictoor_contracts_csv,
     predictoor_contracts_csv_filename,
 )
+from df_py.predictoor.queries import query_predictoor_contracts
 from df_py.util.constants import (
     DO_PUBREWARDS,
     DO_RANK,
@@ -55,7 +54,6 @@ class RewardCalculator:
         OCEAN_avail: float,
         do_pubrewards: bool,
         do_rank: bool,
-        predictoors: List[str] = [],
     ):
         """
         @arguments
@@ -68,7 +66,6 @@ class RewardCalculator:
           OCEAN_avail -- amount of rewards avail, in units of OCEAN
           do_pubrewards -- 2x effective stake to publishers?
           do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
-          [predictoors] - list of predictoors nft addresses, optional
         """
         self._freeze_attributes = False
 
@@ -89,7 +86,8 @@ class RewardCalculator:
         self.OCEAN_avail = OCEAN_avail
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
-        self.predictoors = predictoors
+
+        self.predictoors = self._get_predictoors()
 
         self._freeze_attributes = True
 
@@ -135,7 +133,9 @@ class RewardCalculator:
                 S[i, j] = self.stakes[chainID][nft_addr].get(LP_addr, 0.0)
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
 
-            M[j] = calc_dcv_multiplier(self.df_week, nft_addr in self.predictoors)
+            M[j] = calc_dcv_multiplier(
+                self.df_week, nft_addr in self.predictoors[chainID]
+            )
 
             owner_addr = self.owners[chainID][nft_addr]
             C[j] = (
@@ -356,6 +356,20 @@ class RewardCalculator:
 
         return sorted(LP_addrs)
 
+    @freeze_attributes
+    @enforce_types
+    def _get_predictoors(self) -> Dict[int, List[str]]:
+        """
+        @return
+          chain_nft_tups -- list of (chainID, nft_addr), indexed by j
+        """
+        chainIDs = list(self.stakes.keys())
+        predictoors = {}
+        for chain_id in chainIDs:
+            predictoors[chain_id] = query_predictoor_contracts(chain_id).keys()
+
+        return predictoors
+
 
 class RewardShaper:
     @staticmethod
@@ -441,13 +455,6 @@ def calc_volume_rewards(
     SYM = csvs.load_symbols_csvs(CSV_DIR)
     R = csvs.load_rate_csvs(CSV_DIR)
 
-    if os.path.exists(predictoor_contracts_csv_filename(CSV_DIR)):
-        print("Found predictoor contracts")
-        predict_contracts = load_predictoor_contracts_csv(CSV_DIR)
-        predictoors = predict_contracts.keys()
-    else:
-        predictoors = []
-
     prev_week = 0
     if START_DATE is None:
         cur_week = get_df_week_number(datetime.now())
@@ -465,7 +472,6 @@ def calc_volume_rewards(
         TOT_OCEAN,
         do_pubrewards,
         do_rank,
-        predictoors,
     )
 
     return vol_calculator.calculate()

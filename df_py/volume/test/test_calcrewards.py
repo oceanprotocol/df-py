@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Dict, List, Tuple, Union
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pytest
@@ -49,6 +49,10 @@ class MockRewardCalculator(RewardCalculator):
         self.set_mock_attribute("V_USD", V_USD)
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_simple():
     stakes = {C1: {NA: {LP1: 1000.0}}}
@@ -65,6 +69,10 @@ def test_simple():
     assert rewards_info == {NA: {LP1: 10}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_basetokens_OCEAN_and_H2O():
     stakes = {
@@ -87,6 +95,10 @@ def test_two_basetokens_OCEAN_and_H2O():
     assert rewards_info == {NA: {LP1: NA_amt}, NB: {LP1: NB_amt}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_chains():
     # first cut: symbols are the same
@@ -136,6 +148,10 @@ def test_two_chains():
     assert rewards_info == target_rewards_info
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_lps_simple():
     stakes = {C1: {NA: {LP1: 100e3, LP2: 100e3}}}
@@ -150,6 +166,10 @@ def test_two_lps_simple():
     assert rewards_info == {NA: {LP1: 5.0, LP2: 5.0}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_lps_one_with_negligible_stake():
     stakes = {C1: {NA: {LP1: 10e3, LP2: 1e-14 * 10e3}}}
@@ -165,6 +185,10 @@ def test_two_lps_one_with_negligible_stake():
     assert LP2 not in rewards_info[NA]
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_nfts_one_with_volume():
     stakes = {
@@ -187,6 +211,10 @@ def test_two_nfts_one_with_volume():
     assert rewards_info == {NA: {LP1: 5.0, LP2: 5.0}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_nfts_both_with_volume():
     stakes = {
@@ -213,6 +241,10 @@ def test_two_nfts_both_with_volume():
     assert rewards_info[NB][LP3] == approx(10 / 3)
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_LPs__one_NFT__one_LP_created():
     # LP1 created NA, so it gets 2x equivalent stake on that
@@ -231,6 +263,10 @@ def test_two_LPs__one_NFT__one_LP_created():
     assert rewards_info == {NA: {LP1: 5.0, LP2: 5.0}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     # LP1 created NA, so it gets 2x equivalent stake on NA (but not NB)
@@ -249,6 +285,10 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     assert rewards_info == {NA: {LP1: 2.5, LP2: 2.5}, NB: {LP1: 2.5, LP2: 2.5}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_two_LPs__two_NFTs__two_LPs_created():
     # LP1 created NA, LP2 created NB, they each get 2x equivalent stake
@@ -267,6 +307,10 @@ def test_two_LPs__two_NFTs__two_LPs_created():
     assert rewards_info == {NA: {LP1: 2.5, LP2: 2.5}, NB: {LP1: 2.5, LP2: 2.5}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_mix_upper_and_lower_case():
     # setup
@@ -311,6 +355,10 @@ def test_mix_upper_and_lower_case():
     assert target_rewards_info == rewards_info
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 def test_calc_rewards_math():
     ## update this test when the reward function is changed
     stakes = {C1: {NA: {LP1: 1.0e6, LP2: 9.0e6}, NB: {LP3: 10.0e6, LP4: 90.0e6}}}
@@ -327,6 +375,10 @@ def test_calc_rewards_math():
     assert rewards_per_lp[LP4] == pytest.approx(2250.0, 0.01)
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_APY_one_nft():
     stakes = {C1: {NA: {LP1: 1.0}}}
@@ -339,6 +391,10 @@ def test_bound_APY_one_nft():
     assert rewards_info == {NA: {LP1: 1.0 * TARGET_WPY}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_APY_one_LP__high_stake__two_nfts():
     stakes = {C1: {NA: {LP1: 1e6}, NB: {LP1: 1e6}}}
@@ -352,6 +408,10 @@ def test_bound_APY_one_LP__high_stake__two_nfts():
     assert rewards_info == {NA: {LP1: 500.0}, NB: {LP1: 500.0}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_APY_two_nfts__equal_low_stake__equal_low_DCV():
     stakes = {C1: {NA: {LP1: 5.0}, NB: {LP2: 5.0}}}
@@ -364,6 +424,10 @@ def test_bound_APY_two_nfts__equal_low_stake__equal_low_DCV():
     assert rewards_info == {NA: {LP1: 5.0 * TARGET_WPY}, NB: {LP2: 5.0 * TARGET_WPY}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
     stakes = {C1: {NA: {LP1: 5.0}, NB: {LP2: 20000.0}}}
@@ -381,6 +445,10 @@ def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
     }
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
     stakes = {C1: {NA: {LP1: 5.0}, NB: {LP2: 5.0}}}
@@ -395,6 +463,10 @@ def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
     assert rewards_info == {NA: {LP1: 5.0 * TARGET_WPY}, NB: {LP2: 5.0 * TARGET_WPY}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     stakes = {C1: {NA: {LP1: 1e6}, NB: {LP2: 1e6}}}
@@ -408,6 +480,10 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     assert rewards_info == {NA: {LP1: 1.0}, NB: {LP2: 9999.0}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_bound_by_DCV_one_nft():
     DCV_OCEAN = 100.0
@@ -439,18 +515,23 @@ def test_custom_multipliers():
     stakes = {C1: {NA: {LP1: 1e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
     OCEAN_avail = 10000.0
-    predictoors = [NA]
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
-        stakes,
-        nftvols,
-        OCEAN_avail,
-        predictoors=predictoors,
-    )
+    with patch("df_py.volume.reward_calculator.query_predictoor_contracts") as mock:
+        mock.return_value = {NA: ""}
+        rewards_per_lp, rewards_info = _calc_rewards_C1(
+            stakes,
+            nftvols,
+            OCEAN_avail,
+        )
+
     assert rewards_per_lp == {LP1: 100.0 * 0.201}
     assert rewards_info == {NA: {LP1: 100.0 * 0.201}}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_divide_by_zero():
     stakes = {C1: {NA: {LP1: 10000.0}, NB: {LP2: 10000.0}}}
@@ -539,6 +620,10 @@ def test_calc_dcv_multiplier():
 
 # ========================================================================
 # Test rank-based allocate -- end-to-end with calc_rewards()
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_rank_1_nft():
     stakes = {C1: {NA: {LP1: 1000.0}}}
@@ -549,6 +634,10 @@ def test_rank_1_nft():
     assert rew == {LP1: 10.0}
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_rank_3_nfts():
     stakes = {C1: {NA: {LP1: 1000.0}, NB: {LP2: 1000.0}, NC: {LP3: 1000.0}}}
@@ -573,16 +662,28 @@ def test_rank_3_nfts():
     assert rew[LP3] > 1.0, rew  # ""
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_rank_10_NFTs():
     _test_rank_N_NFTs(10)
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def test_rank_200_NFTs():
     _test_rank_N_NFTs(200)
 
 
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
 @enforce_types
 def _test_rank_N_NFTs(N: int):
     OCEAN_avail = 10.0
@@ -926,6 +1027,7 @@ def test_stake_vol_owner_dicts_to_arrays():
     mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
     mock_calculator.set_mock_attribute("LP_addrs", lp_addrs)
     mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
+    mock_calculator.set_mock_attribute("predictoors", {1: "", 2: ""})
 
     owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
     mock_calculator.set_mock_attribute("owners", owners)
@@ -1010,6 +1112,9 @@ def test_volume_reward_calculator():
         return_value=mock_data["multiplier"],
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
+    ), patch(
+        "df_py.volume.reward_calculator.query_predictoor_contracts",
+        return_value={1: "", 2: ""},
     ):
         rewards_per_lp, rewards_info = calc_volume_rewards(
             "somedir", None, 1000.0, True, False
@@ -1066,7 +1171,7 @@ def test_volume_reward_calculator_predictoor_mul():
         "os.path.exists",
         return_value=True,
     ), patch(
-        "df_py.volume.reward_calculator.load_predictoor_contracts_csv",
+        "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value=mock_data["predictoor_contracts"],
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
@@ -1101,7 +1206,6 @@ def _calc_rewards_C1(
     df_week: int = DF_WEEK,
     do_pubrewards: bool = False,
     do_rank: bool = False,
-    predictoors: List[str] = [],
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
@@ -1113,7 +1217,6 @@ def _calc_rewards_C1(
         df_week,
         do_pubrewards,
         do_rank,
-        predictoors,
     )
     rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
     rewards_info = {} if not rewards_info else rewards_info[C1]
@@ -1131,7 +1234,6 @@ def _calc_rewards(
     df_week: int = DF_WEEK,
     do_pubrewards: bool = False,
     do_rank: bool = False,
-    predictoors: List[str] = [],
 ):
     """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
     if owners is None:
@@ -1147,7 +1249,6 @@ def _calc_rewards(
         OCEAN_avail,
         do_pubrewards,
         do_rank,
-        predictoors,
     )
 
     return calculator.calculate()
