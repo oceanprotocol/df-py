@@ -362,10 +362,10 @@ class RewardCalculator:
     def _get_predictoors(self) -> Dict[int, List[str]]:
         """
         @return
-          chain_nft_tups -- list of (chainID, nft_addr), indexed by j
+          predictoors -- dict of (chainID, list of nft_addrs)
         """
         chainIDs = list(self.stakes.keys())
-        predictoors = {chain_id: [] for chain_id in chainIDs}
+        predictoors: Dict[int, List[str]] = {chain_id: [] for chain_id in chainIDs}
 
         for chain_id in DEPLOYER_ADDRS.keys():
             predictoors[chain_id] = query_predictoor_contracts(chain_id).keys()
