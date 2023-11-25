@@ -5,24 +5,16 @@ import numpy as np
 import scipy
 from enforce_typing import enforce_types
 
-from df_py.predictoor.csvs import (
-    predictoor_contracts_csv_filename,
-)
 from df_py.predictoor.queries import query_predictoor_contracts
 from df_py.util.constants import (
     DEPLOYER_ADDRS,
-    DO_PUBREWARDS,
-    DO_RANK,
     MAX_N_RANK_ASSETS,
     PREDICTOOR_MULTIPLIER,
     RANK_SCALE_OP,
+    TARGET_WPY,
 )
-from df_py.volume import allocations
 from df_py.volume import cleancase as cc
-from df_py.volume import csvs, to_usd
-
-# Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
-TARGET_WPY = 0.015717
+from df_py.volume import to_usd
 
 
 def freeze_attributes(func):
@@ -90,6 +82,12 @@ class RewardCalculator:
 
         self.predictoors = self._get_predictoors()
 
+        # will be filled in by calculate()
+        self.S: np.ndarray
+        self.V_USD: np.ndarray
+        self.M: np.ndarray
+        self.R: np.ndarray
+
         self._freeze_attributes = True
 
     @enforce_types
@@ -102,7 +100,7 @@ class RewardCalculator:
         self._freeze_attributes = False
 
         self.S, self.V_USD, self.M, self.C = self._stake_vol_owner_dicts_to_arrays()
-        self.R = self._calc_usd()
+        self.R = self._calc_rewards_usd()
 
         self._freeze_attributes = True
 
@@ -149,7 +147,7 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _calc_usd(self) -> np.ndarray:
+    def _calc_rewards_usd(self) -> np.ndarray:
         """
         @return
           R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -431,10 +429,6 @@ def calc_dcv_multiplier(DF_week: int, is_predictoor: bool) -> float:
     if is_predictoor:
         return PREDICTOOR_MULTIPLIER
 
-    return _calc_dcv_multiplier(DF_week)
-
-
-def _calc_dcv_multiplier(DF_week: int) -> float:
     if DF_week < 9:
         return np.inf
 
@@ -442,38 +436,3 @@ def _calc_dcv_multiplier(DF_week: int) -> float:
         return -0.0485 * (DF_week - 9) + 1.0
 
     return 0.001
-
-
-def calc_volume_rewards(
-    CSV_DIR,
-    START_DATE,
-    TOT_OCEAN,
-    do_pubrewards=DO_PUBREWARDS,
-    do_rank=DO_RANK,
-):
-    S = allocations.load_stakes(CSV_DIR)
-    V = csvs.load_nftvols_csvs(CSV_DIR)
-    C = csvs.load_owners_csvs(CSV_DIR)
-    SYM = csvs.load_symbols_csvs(CSV_DIR)
-    R = csvs.load_rate_csvs(CSV_DIR)
-
-    prev_week = 0
-    if START_DATE is None:
-        cur_week = get_df_week_number(datetime.now())
-        prev_week = cur_week - 1
-    else:
-        prev_week = get_df_week_number(START_DATE)
-
-    vol_calculator = RewardCalculator(
-        S,
-        V,
-        C,
-        SYM,
-        R,
-        prev_week,
-        TOT_OCEAN,
-        do_pubrewards,
-        do_rank,
-    )
-
-    return vol_calculator.calculate()

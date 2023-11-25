@@ -12,11 +12,11 @@ from df_py.util.constants import ZERO_ADDRESS
 from df_py.volume.reward_calculator import (
     TARGET_WPY,
     RewardCalculator,
-    calc_volume_rewards,
     calc_dcv_multiplier,
     get_df_week_number,
     RewardShaper,
 )
+from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
@@ -500,7 +500,7 @@ def test_bound_by_DCV_one_nft():
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
-    with patch("df_py.volume.reward_calculator._calc_dcv_multiplier") as mock_dcv:
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
         mock_dcv.return_value = 0.5
         rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
@@ -1113,7 +1113,7 @@ def test_volume_reward_calculator():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.reward_calculator._calc_dcv_multiplier",
+        "df_py.volume.reward_calculator.calc_dcv_multiplier",
         return_value=mock_data["multiplier"],
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
@@ -1121,7 +1121,7 @@ def test_volume_reward_calculator():
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value={1: "", 2: ""},
     ):
-        rewards_per_lp, rewards_info = calc_volume_rewards(
+        rewards_per_lp, rewards_info = calc_volume_rewards_from_csvs(
             "somedir", None, 1000.0, True, False
         )
 
@@ -1155,9 +1155,14 @@ def test_volume_reward_calculator_predictoor_mul():
         "rates": {
             "basetoken_symbol1": 1.0,
         },
-        "multiplier": 1.0,
         "predictoor_contracts": {"0xnft_addr1": {}},
     }
+
+    def mock_multipliers(DF_week, is_predictoor):
+        if not is_predictoor:
+            return MagicMock(return_value=1)
+
+        return 0.201
 
     with patch(
         "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
@@ -1170,8 +1175,7 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
     ), patch(
-        "df_py.volume.reward_calculator._calc_dcv_multiplier",
-        return_value=mock_data["multiplier"],
+        "df_py.volume.reward_calculator.calc_dcv_multiplier", mock_multipliers
     ), patch(
         "os.path.exists",
         return_value=True,
@@ -1184,7 +1188,7 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ):
-        rewards_per_lp, rewards_info = calc_volume_rewards(
+        rewards_per_lp, rewards_info = calc_volume_rewards_from_csvs(
             "somedir", None, 1000.0, True, False
         )
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
