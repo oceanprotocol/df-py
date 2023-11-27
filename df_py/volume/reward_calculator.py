@@ -80,7 +80,7 @@ class RewardCalculator:
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
 
-        self.predictoors = self._get_predictoor_contracts()
+        self.predictoor_contracts_addrs = self._get_predictoor_contracts_addrs()
 
         # will be filled in by calculate()
         self.S: np.ndarray
@@ -133,7 +133,7 @@ class RewardCalculator:
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
 
             M[j] = calc_dcv_multiplier(
-                self.df_week, nft_addr in self.predictoors[chainID]
+                self.df_week, nft_addr in self.predictoor_contracts_addrs[chainID]
             )
 
             owner_addr = self.owners[chainID][nft_addr]
@@ -357,10 +357,10 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _get_predictoor_contracts(self) -> Dict[int, List[str]]:
+    def _get_predictoor_contracts_addrs(self) -> Dict[int, List[str]]:
         """
         @return
-          predictoors -- dict of (chainID, list of nft_addrs)
+          predictoor_contracts_addrs -- dict of (chainID, list of nft_addrs)
 
         @notes
           The keys in DEPLOYER_ADDRS are the chain ids
@@ -368,12 +368,16 @@ class RewardCalculator:
           There is no point in query-ing on other chains
         """
         chainIDs = list(self.stakes.keys())
-        predictoors: Dict[int, List[str]] = {chain_id: [] for chain_id in chainIDs}
+        predictoor_contracts_addrs: Dict[int, List[str]] = {
+            chain_id: [] for chain_id in chainIDs
+        }
 
         for chain_id in DEPLOYER_ADDRS.keys():
-            predictoors[chain_id] = query_predictoor_contracts(chain_id).keys()
+            predictoor_contracts_addrs[chain_id] = query_predictoor_contracts(
+                chain_id
+            ).keys()
 
-        return predictoors
+        return predictoor_contracts_addrs
 
 
 class RewardShaper:

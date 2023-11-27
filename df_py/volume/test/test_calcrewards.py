@@ -1045,7 +1045,7 @@ def test_stake_vol_owner_dicts_to_arrays():
     mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
     mock_calculator.set_mock_attribute("LP_addrs", lp_addrs)
     mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
-    mock_calculator.set_mock_attribute("predictoors", {1: "", 2: ""})
+    mock_calculator.set_mock_attribute("predictoor_contracts_addrs", {1: "", 2: ""})
 
     owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
     mock_calculator.set_mock_attribute("owners", owners)
