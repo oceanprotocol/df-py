@@ -49,6 +49,18 @@ class MockRewardCalculator(RewardCalculator):
         self.set_mock_attribute("V_USD", V_USD)
 
 
+@enforce_types
+def test_freeze_attributes():
+    rc = MockRewardCalculator()
+    rc._freeze_attributes = True
+
+    with pytest.raises(AttributeError):
+        rc.new_attr = 1
+
+    rc._freeze_attributes = False
+    rc.new_attr = 1
+
+
 @patch(
     "df_py.volume.reward_calculator.query_predictoor_contracts",
     MagicMock(return_value={}),
@@ -1120,6 +1132,10 @@ def test_volume_reward_calculator():
     ), patch(
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value={1: "", 2: ""},
+    ), patch(
+        "df_py.volume.calc_rewards.csvs.save_volume_rewardsinfo_csv",
+    ), patch(
+        "df_py.volume.calc_rewards.csvs.save_volume_rewards_csv",
     ):
         rewards_per_lp, rewards_info = calc_volume_rewards_from_csvs(
             "somedir", None, 1000.0, True, False
@@ -1187,6 +1203,10 @@ def test_volume_reward_calculator_predictoor_mul():
         {1: ""},
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
+    ), patch(
+        "df_py.volume.calc_rewards.csvs.save_volume_rewardsinfo_csv",
+    ), patch(
+        "df_py.volume.calc_rewards.csvs.save_volume_rewards_csv",
     ):
         rewards_per_lp, rewards_info = calc_volume_rewards_from_csvs(
             "somedir", None, 1000.0, True, False

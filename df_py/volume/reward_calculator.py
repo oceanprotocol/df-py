@@ -80,7 +80,7 @@ class RewardCalculator:
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
 
-        self.predictoors = self._get_predictoors()
+        self.predictoors = self._get_predictoor_contracts()
 
         # will be filled in by calculate()
         self.S: np.ndarray
@@ -357,10 +357,15 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _get_predictoors(self) -> Dict[int, List[str]]:
+    def _get_predictoor_contracts(self) -> Dict[int, List[str]]:
         """
         @return
           predictoors -- dict of (chainID, list of nft_addrs)
+
+        @notes
+          The keys in DEPLOYER_ADDRS are the chain ids
+          where predictoor contracts are deployed.
+          There is no point in query-ing on other chains
         """
         chainIDs = list(self.stakes.keys())
         predictoors: Dict[int, List[str]] = {chain_id: [] for chain_id in chainIDs}

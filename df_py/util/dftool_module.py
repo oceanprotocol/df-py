@@ -497,12 +497,7 @@ def do_calc():
         _exitIfFileExists(csvs.volume_rewards_csv_filename(csv_dir))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
-        rewperlp, rewinfo = calc_volume_rewards_from_csvs(
-            csv_dir, start_date, tot_ocean
-        )
-
-        csvs.save_volume_rewards_csv(rewperlp, csv_dir)
-        csvs.save_volume_rewardsinfo_csv(rewinfo, csv_dir)
+        calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
 
     if arguments.SUBSTREAM == "challenge":
         try:
