@@ -824,3 +824,39 @@ def save_volume_rewardsinfo_csv(
 @enforce_types
 def volume_rewardsinfo_csv_filename(csv_dir: str) -> str:
     return os.path.join(csv_dir, "rewardsinfo.csv")
+
+
+@enforce_types
+def load_volume_rewardsinfo_csv(csv_dir: str) -> Dict[int, Dict[str, Dict[str, Any]]]:
+    """Loads rewards -- dict of [chainID][LP_addr] : value, from csv"""
+    csv_file = volume_rewardsinfo_csv_filename(csv_dir)
+    rewardsinfo: Dict[int, Dict[str, Dict[str, Any]]] = {}
+
+    with open(csv_file, "r") as f:
+        reader = csv.reader(f)
+        for row_i, row in enumerate(reader):
+            if row_i == 0:  # header
+                assert row == ["chainID", "nft_addr", "LP_addr", "amt", "token"]
+            else:
+                chainID = int(row[0])
+                nft_addr = Web3.to_checksum_address(row[1].lower())
+                LP_addr = Web3.to_checksum_address(row[2].lower())
+                amt = float(row[3])
+
+                assert_is_eth_addr(nft_addr)
+                assert_is_eth_addr(LP_addr)
+
+                if chainID not in rewardsinfo:
+                    rewardsinfo[chainID] = {}
+
+                if nft_addr not in rewardsinfo[chainID]:
+                    rewardsinfo[chainID][nft_addr] = {}
+
+                if LP_addr not in rewardsinfo[chainID][nft_addr]:
+                    rewardsinfo[chainID][nft_addr][LP_addr] = {}
+
+                rewardsinfo[chainID][nft_addr][LP_addr] = amt
+
+    print(f"Loaded {csv_file}")
+
+    return rewardsinfo

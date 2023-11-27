@@ -9,6 +9,7 @@ from pytest import approx
 
 from df_py.util import constants
 from df_py.util.constants import ZERO_ADDRESS
+from df_py.volume import csvs
 from df_py.volume.reward_calculator import (
     TARGET_WPY,
     RewardCalculator,
@@ -1093,7 +1094,7 @@ def test_merge_rewards():
     assert RewardShaper.merge() == expected_output
 
 
-def test_volume_reward_calculator():
+def test_volume_reward_calculator(tmp_path):
     mock_data = {
         "stakes": {
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
@@ -1133,13 +1134,13 @@ def test_volume_reward_calculator():
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value={1: "", 2: ""},
     ), patch(
-        "df_py.volume.calc_rewards.csvs.save_volume_rewardsinfo_csv",
-    ), patch(
-        "df_py.volume.calc_rewards.csvs.save_volume_rewards_csv",
-    ):
-        rewards_per_lp, rewards_info = calc_volume_rewards_from_csvs(
-            "somedir", None, 1000.0, True, False
-        )
+        "web3.main.Web3.to_checksum_address"
+    ) as mock:
+        mock.side_effect = lambda value: value
+
+        calc_volume_rewards_from_csvs(tmp_path, None, 1000.0, True, False)
+
+        rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
 
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(
             444.44444444
@@ -1148,12 +1149,14 @@ def test_volume_reward_calculator():
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(
             300
         )  # pub rewards extra - bounded to 300 due to DCV
+
+        rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
 
 
-def test_volume_reward_calculator_predictoor_mul():
+def test_volume_reward_calculator_predictoor_mul(tmp_path):
     mock_data = {
         "stakes": {
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
@@ -1193,9 +1196,6 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.reward_calculator.calc_dcv_multiplier", mock_multipliers
     ), patch(
-        "os.path.exists",
-        return_value=True,
-    ), patch(
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value=mock_data["predictoor_contracts"],
     ), patch(
@@ -1204,18 +1204,20 @@ def test_volume_reward_calculator_predictoor_mul():
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ), patch(
-        "df_py.volume.calc_rewards.csvs.save_volume_rewardsinfo_csv",
-    ), patch(
-        "df_py.volume.calc_rewards.csvs.save_volume_rewards_csv",
-    ):
-        rewards_per_lp, rewards_info = calc_volume_rewards_from_csvs(
-            "somedir", None, 1000.0, True, False
-        )
+        "web3.main.Web3.to_checksum_address"
+    ) as mock:
+        mock.side_effect = lambda value: value
+
+        calc_volume_rewards_from_csvs(tmp_path, None, 1000.0, True, False)
+
+        rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
         assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_per_lp[1]["0xlp_addr1"] == approx(
             300 * 0.201
         )  # predictoor multiplier
+
+        rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
         assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
         assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(

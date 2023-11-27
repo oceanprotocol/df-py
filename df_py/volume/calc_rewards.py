@@ -23,29 +23,13 @@ def calc_volume_rewards_from_csvs(
     SYM = csvs.load_symbols_csvs(csv_dir)
     R = csvs.load_rate_csvs(csv_dir)
 
-    prev_week = 0
-    if start_date is None:
-        cur_week = get_df_week_number(datetime.now())
-        prev_week = cur_week - 1
-    else:
-        prev_week = get_df_week_number(start_date)
-
-    if tot_ocean is None:
-        tot_ocean = 0.0
-
-    if do_pubrewards is None:
-        do_pubrewards = DO_PUBREWARDS
-
-    if do_rank is None:
-        do_rank = DO_RANK
-
     rewperlp, rewinfo = calc_volume_rewards(
         S,
         V,
         C,
         SYM,
         R,
-        prev_week,
+        start_date,
         tot_ocean,
         do_pubrewards,
         do_rank,
@@ -54,8 +38,6 @@ def calc_volume_rewards_from_csvs(
     csvs.save_volume_rewards_csv(rewperlp, str(csv_dir))
     csvs.save_volume_rewardsinfo_csv(rewinfo, str(csv_dir))
 
-    return rewperlp, rewinfo
-
 
 def calc_volume_rewards(
     S: Dict[int, Dict[str, Dict[str, float]]],
@@ -63,11 +45,18 @@ def calc_volume_rewards(
     C: Dict[int, Dict[str, str]],
     SYM: Dict[int, Dict[str, str]],
     R: Dict[str, float],
-    prev_week: int,
+    start_date: Optional[datetime] = None,
     tot_ocean: Optional[float] = 0.0,
     do_pubrewards: Optional[bool] = DO_PUBREWARDS,
     do_rank: Optional[bool] = DO_RANK,
 ):
+    prev_week = 0
+    if start_date is None:
+        cur_week = get_df_week_number(datetime.now())
+        prev_week = cur_week - 1
+    else:
+        prev_week = get_df_week_number(start_date)
+
     if tot_ocean is None:
         tot_ocean = 0.0
 
