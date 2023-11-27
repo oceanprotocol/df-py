@@ -80,7 +80,7 @@ class RewardCalculator:
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
 
-        self.predictoor_contracts_addrs = self._get_predictoor_contracts_addrs()
+        self.predictoor_feed_addrs = self._get_predictoor_feed_addrs()
 
         # will be filled in by calculate()
         self.S: np.ndarray
@@ -133,7 +133,7 @@ class RewardCalculator:
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
 
             M[j] = calc_dcv_multiplier(
-                self.df_week, nft_addr in self.predictoor_contracts_addrs[chainID]
+                self.df_week, nft_addr in self.predictoor_feed_addrs[chainID]
             )
 
             owner_addr = self.owners[chainID][nft_addr]
@@ -357,25 +357,25 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _get_predictoor_contracts_addrs(self) -> Dict[int, List[str]]:
+    def _get_predictoor_feed_addrs(self) -> Dict[int, List[str]]:
         """
         @return
-          predictoor_contracts_addrs -- dict of (chainID, list of nft_addrs)
+          predictoor_feed_addrs -- dict of (chainID, list of nft_addrs)
 
         @notes
           This will only return the prediction feeds that are owned by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
         """
         chainIDs = list(self.stakes.keys())
-        predictoor_contracts_addrs: Dict[int, List[str]] = {
+        predictoor_feed_addrs: Dict[int, List[str]] = {
             chain_id: [] for chain_id in chainIDs
         }
 
         for chain_id in DEPLOYER_ADDRS.keys():
-            predictoor_contracts_addrs[chain_id] = query_predictoor_contracts(
+            predictoor_feed_addrs[chain_id] = query_predictoor_contracts(
                 chain_id
             ).keys()
 
-        return predictoor_contracts_addrs
+        return predictoor_feed_addrs
 
 
 class RewardShaper:
