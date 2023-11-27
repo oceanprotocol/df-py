@@ -66,9 +66,11 @@ def query_predictoor_contracts(chain_id: int) -> Dict[str, PredictContract]:
     @return
         contracts_dict -- A dictionary mapping contract address to
                           PredictContract objects
-
     @raises
         AssertionError: If the result of the query contains an error.
+
+    @notes
+        This will only return the prediction feeds that are owned by DEPLOYER_ADDRS
     """
 
     chunk_size = 1000

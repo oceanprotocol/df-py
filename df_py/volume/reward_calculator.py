@@ -363,9 +363,7 @@ class RewardCalculator:
           predictoor_contracts_addrs -- dict of (chainID, list of nft_addrs)
 
         @notes
-          The keys in DEPLOYER_ADDRS are the chain ids
-          where predictoor contracts are deployed.
-          There is no point in query-ing on other chains
+          This will only return the prediction feeds that are owned by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
         """
         chainIDs = list(self.stakes.keys())
         predictoor_contracts_addrs: Dict[int, List[str]] = {
