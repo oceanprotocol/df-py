@@ -1,5 +1,5 @@
-import requests
 import time
+import requests
 
 from df_py.util import networkutil
 
