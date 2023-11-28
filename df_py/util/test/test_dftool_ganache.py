@@ -271,7 +271,8 @@ def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_pat
     csv_dir = str(tmp_path)
 
     with sysargs_context(["dftool", "calc", "predictoor_rose", csv_dir, "100000"]):
-        dftool_module.do_calc()
+        with patch("df_py.predictoor.calc_rewards.wait_to_latest_block"):
+            dftool_module.do_calc()
 
     rewards = load_predictoor_rewards_csv(csv_dir)
     print(rewards)

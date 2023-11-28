@@ -5,6 +5,7 @@ from typing import Dict, Optional, Union
 from enforce_typing import enforce_types
 
 from df_py.util.constants import DO_PUBREWARDS, DO_RANK
+from df_py.util.graphutil import wait_to_latest_block
 from df_py.volume import allocations, csvs
 from df_py.volume.reward_calculator import RewardCalculator, get_df_week_number
 
@@ -22,6 +23,10 @@ def calc_volume_rewards_from_csvs(
     C = csvs.load_owners_csvs(csv_dir)
     SYM = csvs.load_symbols_csvs(csv_dir)
     R = csvs.load_rate_csvs(csv_dir)
+
+    chains = list(S.keys())
+    for chain in chains:
+        wait_to_latest_block(chain)
 
     rewperlp, rewinfo = calc_volume_rewards(
         S,
