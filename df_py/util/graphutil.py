@@ -21,19 +21,30 @@ def get_last_block(chain_id: int) -> int:
     query = "{_meta { block { number } } }"
     result = submit_query(query, chain_id)
 
-    print("Last block result:")
-    print(result)
     return result["data"]["_meta"]["block"]["number"]
 
 
 def wait_to_block(chain_id: int, block_number: int):
-    last_block = get_last_block(chain_id)
+    last_block = -1
+
+    max_wait = 60 * 5
+    start_time = time.time()
 
     while last_block < block_number:
         print(f"Waiting for sync with subgraph, currently at last block {last_block}.")
 
-        last_block = get_last_block(chain_id)
+        try:
+            last_block = get_last_block(chain_id)
+        except KeyError:
+            pass
+
         time.sleep(2)
+
+        if time.time() - start_time > max_wait:
+            raise Exception(
+                f"Waited for {max_wait} seconds for block {block_number} "
+                "to be synced, but it never was."
+            )
 
 
 def wait_to_latest_block(chain_id: int):
