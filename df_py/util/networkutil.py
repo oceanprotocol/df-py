@@ -18,6 +18,7 @@ _RAW_CHAIN_DATA = [
     (1, "mainnet", "ETH"),
     (5, "goerli", "ETH"),
     (137, "polygon", "MATIC"),
+    (246, "energyweb", "EWT"),
     (80001, "mumbai", "MATIC"),
     (23294, "sapphire-mainnet", "ROSE"),
     (23295, "sapphire-testnet", "ROSE"),
