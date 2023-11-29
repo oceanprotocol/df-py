@@ -21,6 +21,8 @@ def get_last_block(chain_id: int) -> int:
     query = "{_meta { block { number } } }"
     result = submit_query(query, chain_id)
 
+    print("Last block result:")
+    print(result)
     return result["data"]["_meta"]["block"]["number"]
 
 
