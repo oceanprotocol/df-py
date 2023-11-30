@@ -3,6 +3,8 @@ import requests
 
 from df_py.util import networkutil
 
+MAX_WAIT = 60 * 5
+
 
 def submit_query(query: str, chainID: int) -> dict:
     subgraph_url = networkutil.chain_id_to_subgraph_uri(chainID)
@@ -24,10 +26,12 @@ def get_last_block(chain_id: int) -> int:
     return result["data"]["_meta"]["block"]["number"]
 
 
-def wait_to_block(chain_id: int, block_number: int):
+def wait_to_latest_block(chain_id: int, max_wait: int = MAX_WAIT):
+    web3 = networkutil.chain_id_to_web3(chain_id)
+    block_number = web3.eth.get_block("latest")["number"]
+
     last_block = -1
 
-    max_wait = 60 * 5
     start_time = time.time()
 
     while last_block < block_number:
@@ -42,12 +46,6 @@ def wait_to_block(chain_id: int, block_number: int):
 
         if time.time() - start_time > max_wait:
             raise Exception(
-                f"Waited for {max_wait} seconds for block {block_number} "
+                f"Waited for {MAX_WAIT} seconds for block {block_number} "
                 "to be synced, but it never was."
             )
-
-
-def wait_to_latest_block(chain_id: int):
-    web3 = networkutil.chain_id_to_web3(chain_id)
-    block_number = web3.eth.get_block("latest")["number"]
-    wait_to_block(chain_id, block_number)
