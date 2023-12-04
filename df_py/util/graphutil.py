@@ -1,4 +1,5 @@
 import time
+
 import requests
 
 from df_py.util import networkutil
@@ -27,6 +28,9 @@ def get_last_block(chain_id: int) -> int:
 
 
 def wait_to_latest_block(chain_id: int, max_wait: int = MAX_WAIT):
+    if chain_id in networkutil.OBSOLETED_CHAIN_IDS:
+        return
+
     web3 = networkutil.chain_id_to_web3(chain_id)
     block_number = web3.eth.get_block("latest")["number"]
 

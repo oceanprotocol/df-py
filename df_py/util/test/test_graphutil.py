@@ -1,5 +1,7 @@
-import pytest
 from unittest.mock import patch
+
+import pytest
+
 from df_py.util import graphutil
 
 
@@ -34,3 +36,10 @@ def test_wait_to_latest_block(w3):
 
         graphutil.wait_to_latest_block(8996, 4)
         assert get_last_block_mock.call_count == 1
+
+
+def test_obsolete_chain_id():
+    with patch.object(graphutil, "get_last_block") as mock:
+        # obsolete chain id so nothing gets called
+        graphutil.wait_to_latest_block(246, 4)
+        assert mock.call_count == 0
