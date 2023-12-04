@@ -77,7 +77,6 @@ jobs:
           echo "MAINNET_RPC_URL=https://mainnet.infura.io/v3/" >> $GITHUB_ENV
           echo "SAPPHIRE_MAINNET_RPC_URL=https://sapphire.oasis.io/" >> $GITHUB_ENV
           echo "GOERLI_RPC_URL=https://rpc.ankr.com/eth_goerli" >> $GITHUB_ENV
-          echo "ENERGYWEB_RPC_URL=https://rpc.energyweb.org" >> $GITHUB_ENV
           echo "INFURA_NETWORKS=polygon,mumbai,mainnet" >> $GITHUB_ENV
 
       - name: Make dftool executable
@@ -125,6 +124,26 @@ jobs:
       - name: Run dftool calc rewards for volume
         run: |
           ./dftool calc volume $CSV_DIR 0 --START_DATE $date
+
+      - name: Temp show files
+        if: always()
+        run: |
+          cat /tmp/csv/allocations.csv
+          cat /tmp/csv/vebals.csv
+          cat /tmp/csv/nftvols-1.csv
+          cat  /tmp/csv/nftvols-23294.csv
+          cat /tmp/csv/nftvols-137.csv
+          cat /tmp/csv/owners-137.csv
+          cat /tmp/csv/owners-1.csv
+          cat /tmp/csv/owners-23294.csv
+          cat /tmp/csv/symbols-1.csv
+          cat /tmp/csv/symbols-137.csv
+          cat /tmp/csv/symbols-23294.csv
+          cat /tmp/csv/rate-MATIC.csv
+          cat /tmp/csv/rate-ROSE.csv
+          cat /tmp/csv/rate-ETH.csv
+          cat /tmp/csv/rate-MOCEAN.csv
+          cat /tmp/csv/rate-OCEAN.csv
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
