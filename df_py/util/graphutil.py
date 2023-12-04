@@ -4,7 +4,7 @@ import requests
 
 from df_py.util import networkutil
 
-MAX_WAIT = 60 * 5
+MAX_WAIT = 60 * 10
 
 
 def submit_query(query: str, chainID: int) -> dict:
