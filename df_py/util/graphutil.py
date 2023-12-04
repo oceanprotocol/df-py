@@ -21,6 +21,7 @@ def submit_query(query: str, chainID: int) -> dict:
 
 
 def get_last_block(chain_id: int) -> int:
+    """Get the last block that was synced to the subgraph."""
     query = "{_meta { block { number } } }"
     result = submit_query(query, chain_id)
 
@@ -28,6 +29,7 @@ def get_last_block(chain_id: int) -> int:
 
 
 def wait_to_latest_block(chain_id: int, max_wait: int = MAX_WAIT):
+    """Wait until the subgraph is synced to the latest block on the chain."""
     if chain_id in networkutil.OBSOLETED_CHAIN_IDS:
         return
 
