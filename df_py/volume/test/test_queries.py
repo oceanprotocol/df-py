@@ -15,7 +15,8 @@ from df_py.util.constants import MAX_ALLOCATE
 from df_py.util.contract_base import ContractBase
 from df_py.util.networkutil import send_ether
 from df_py.util.oceanutil import ve_delegate
-from df_py.volume import calc_rewards, csvs, queries
+from df_py.volume import csvs, queries
+from df_py.volume.reward_calculator import RewardCalculator
 from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
 
@@ -420,17 +421,22 @@ def _test_end_to_end_without_csvs(rng):
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
-    m = float("inf")
+    week = 7
     OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
-    rewardsperlp, _ = calc_rewards.calc_rewards(
-        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
+    vol_calculator = RewardCalculator(
+        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
+    rewardsperlp, _ = vol_calculator.calculate()
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
+
+    # the margin is 0.1 because the reward amount is low,
+    # meaning that the negligible values filtered out by calc_rewards
+    # are much more meaningful => higher impact wrt. OCEAN_avail
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.1
 
 
 @enforce_types
@@ -468,17 +474,23 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     C = csvs.load_owners_csvs(csv_dir)
     SYM = csvs.load_symbols_csvs(csv_dir)
 
-    m = float("inf")
+    week = 7
     OCEAN_avail = 1e-5
     do_pubrewards = False
     do_rank = True
 
-    rewardsperlp, _ = calc_rewards.calc_rewards(
-        S, V, C, SYM, R, m, OCEAN_avail, do_pubrewards, do_rank
+    vol_calculator = RewardCalculator(
+        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
+    rewardsperlp, _ = vol_calculator.calculate()
 
     sum_ = sum(rewardsperlp[CHAINID].values())
-    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.02
+
+    # the margin is 0.1 because the reward amount is low,
+    # meaning that the negligible values filtered out by calc_rewards
+    # are much more meaningful => higher impact wrt. OCEAN_avail
+    assert (abs(sum_ - OCEAN_avail) / OCEAN_avail) < 0.1
+
     csvs.save_volume_rewards_csv(rewardsperlp, csv_dir)
     rewardsperlp = None  # ensure not used later
 

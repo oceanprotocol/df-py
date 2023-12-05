@@ -4,17 +4,48 @@ from df_py.predictoor.models import PredictContract, Prediction, Predictoor
 
 
 def test_prediction_init():
-    prediction = Prediction(123, 1.23, "0x1")
+    prediction = Prediction(123, 1.23, 1.0, "0x1")
     assert prediction.slot == 123
     assert prediction.payout == 1.23
     assert prediction.contract_addr == "0x1"
 
 
 def test_prediction_is_correct():
-    prediction = Prediction(123, 1.23, "0x1")
+    prediction = Prediction(123, 1.23, 1.0, "0x1")
     assert prediction.is_correct
-    prediction = Prediction(123, 0.0, "0x1")
+    prediction = Prediction(123, 0.0, 1.0, "0x1")
     assert not prediction.is_correct
+
+
+def test_prediction_profit():
+    prediction = Prediction(123, 10.0, 1.0, "0x1")
+    assert prediction.revenue == 10.0
+
+    prediction = Prediction(123, 0.0, 1.0, "0x1")
+    assert prediction.revenue == -1.0
+
+
+def test_predictoor_revenue():
+    predictoor = Predictoor("0x1")
+    predictoor.add_prediction(Prediction(123, 10.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 5.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 0.0, 10.0, "0x1"))
+
+    assert predictoor.revenue == 5.0
+
+
+def test_predictoor_summary():
+    predictoor = Predictoor("0x1")
+    predictoor.add_prediction(Prediction(123, 10.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 5.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 0.0, 10.0, "0x1"))
+
+    summary = predictoor.get_prediction_summary("0x1")
+    assert summary.prediction_count == 3
+    assert summary.correct_prediction_count == 2
+    assert summary.contract_addr == "0x1"
+    assert summary.total_payout == 15.0
+    assert summary.total_revenue == 5.0  # 10 + 5 - 10
 
 
 def test_prediction_from_query_result():
@@ -23,11 +54,34 @@ def test_prediction_from_query_result():
             "predictContract": {"id": "0x1", "token": {"nft": {"id": "0x2"}}},
             "slot": "123",
         },
+        "stake": "0.22352",
         "payout": {"payout": "1.23"},
     }
     prediction = Prediction.from_query_result(prediction_dict)
     assert prediction.slot == 123
     assert prediction.payout == 1.23
+    assert prediction.stake == 0.22352
+    assert prediction.revenue == prediction.payout
+    assert prediction.contract_addr == "0x2"
+    with pytest.raises(ValueError):
+        prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
+        Prediction.from_query_result(prediction_dict)
+
+
+def test_prediction_from_query_result_no_payout():
+    prediction_dict = {
+        "slot": {
+            "predictContract": {"id": "0x1", "token": {"nft": {"id": "0x2"}}},
+            "slot": "123",
+        },
+        "stake": "0.22352",
+        "payout": {},
+    }
+    prediction = Prediction.from_query_result(prediction_dict)
+    assert prediction.slot == 123
+    assert prediction.payout == 0.0
+    assert prediction.stake == 0.22352
+    assert prediction.revenue == -0.22352
     assert prediction.contract_addr == "0x2"
     with pytest.raises(ValueError):
         prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
@@ -38,19 +92,22 @@ def test_prediction_from_query_result():
     "predictions, expected_accuracy",
     [
         ([], 0),
-        ([Prediction(5, 0.5, "0x123")], 1),
+        ([Prediction(5, 0.5, 1.0, "0x123")], 1),
         (
             [
-                Prediction(5, 0.0, "0x123"),
-                Prediction(5, 0.5, "0x123"),
-                Prediction(5, 0.5, "0x123"),
+                Prediction(5, 0.0, 1.0, "0x123"),
+                Prediction(5, 0.5, 1.0, "0x123"),
+                Prediction(5, 0.5, 1.0, "0x123"),
             ],
             2 / 3,
         ),
-        ([Prediction(2, 1.0, "0x123") for _ in range(100)], 1),
-        ([Prediction(2, 0.0, "0x123") for _ in range(100)], 0),
+        ([Prediction(2, 1.0, 1.0, "0x123") for _ in range(100)], 1),
+        ([Prediction(2, 0.0, 1.0, "0x123") for _ in range(100)], 0),
         (
-            [Prediction(2, 1.0 if i % 2 == 0 else 0.0, "0x123") for i in range(100)],
+            [
+                Prediction(2, 1.0 if i % 2 == 0 else 0.0, 1.0, "0x123")
+                for i in range(100)
+            ],
             0.5,
         ),
     ],

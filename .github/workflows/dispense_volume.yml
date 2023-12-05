@@ -105,7 +105,7 @@ jobs:
 
       - name: Run dftool predictoor_data
         run: |
-          ./dftool predictoor_data $date $now $CSV_DIR 23294 --RETRIES $RETRY_TIMES
+          ./dftool predictoor_data $date $now $CSV_DIR 23294 --RETRIES $RETRY_TIMES --ONLY_CONTRACTS True
 
       - name: Run sed
         run: |

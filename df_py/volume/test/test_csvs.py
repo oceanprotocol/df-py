@@ -355,6 +355,12 @@ def test_rewards_info(tmp_path):  # pylint: disable=unused-argument
     csv = loaded_rewards.read()
     assert csv == target_rewards
 
+    with patch("web3.main.Web3.to_checksum_address") as mock:
+        mock.side_effect = lambda value: value
+        loaded_rewards = csvs.load_volume_rewardsinfo_csv(csv_dir)
+
+    assert loaded_rewards == rewards
+
 
 # =================================================================
 # helper funcs

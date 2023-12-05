@@ -141,7 +141,7 @@ def autocreate_path(s: str):
 @enforce_types
 def print_arguments(arguments: argparse.Namespace):
     arguments_dict = arguments.__dict__
-    command = arguments_dict.pop("command", None)
+    command = arguments.command
 
     print(f"dftool {command}: Begin")
     print("Arguments:")

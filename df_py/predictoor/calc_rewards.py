@@ -2,28 +2,8 @@ from typing import Dict, Union
 
 from enforce_typing import enforce_types
 
-from df_py.predictoor.models import Predictoor, PredictoorBase
+from df_py.predictoor.models import Predictoor
 from df_py.predictoor.queries import query_predictoor_contracts
-from df_py.util.constants import MIN_PREDICTIONS
-
-
-@enforce_types
-def filter_predictoors(
-    predictoors: Dict[str, Union[PredictoorBase, Predictoor]]
-) -> Dict[str, Union[PredictoorBase, Predictoor]]:
-    """
-    @description
-    Filter away predictoors that have insufficient # predictions
-
-    @arguments
-    unfiltered predictoors -- dict of [pdr_address] : Predictoor
-
-    @return
-    filtered predictors -- dict of dict of [pdr_address] : Predictoor
-    """
-    return {
-        k: v for k, v in predictoors.items() if v.prediction_count >= MIN_PREDICTIONS
-    }
 
 
 @enforce_types
@@ -31,7 +11,7 @@ def calc_predictoor_rewards(
     predictoors: Dict[str, Predictoor], tokens_avail: Union[int, float], chain_id: int
 ) -> Dict[str, Dict[str, float]]:
     """
-    Calculate rewards for predictoors based on their accuracy and available tokens.
+    Calculate rewards for predictoors based on their weekly payout.
 
     @arguments
     predictoors -- dict of [pdr_address] : Predictoor objects
@@ -43,13 +23,13 @@ def calc_predictoor_rewards(
     rewards -- dict of [contract addr][predictoor addr]: float
         The calculated rewards for each predictoor per contract address.
     """
+    MIN_REWARD = 1e-15
     tokens_avail = float(tokens_avail)
 
     predictoor_contracts = query_predictoor_contracts(chain_id).keys()
+    print("# of available contracts: ", len(predictoor_contracts))
     tokens_per_contract = tokens_avail / len(predictoor_contracts)
-
-    # filter predictoors by min prediction count
-    predictoors = filter_predictoors(predictoors)
+    print("Tokens per contract:", tokens_per_contract)
 
     # dict to store rewards per contract
     rewards: Dict[str, Dict[str, float]] = {
@@ -59,26 +39,43 @@ def calc_predictoor_rewards(
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
     for contract in predictoor_contracts:
-        total_accuracy_for_contract = sum(
-            [
-                p.get_prediction_summary(contract).correct_prediction_count
-                for p in predictoors.values()
-            ]
-        )
+        total_revenue_for_contract = 0
+        for p in predictoors.values():
+            summary = p.get_prediction_summary(contract)
+            total_revenue_for_contract += max(
+                summary.total_revenue, 0
+            )  # ignore negative values
 
-        # If total accuracy for this contract is 0, no rewards are distributed
-        if total_accuracy_for_contract == 0:
+        # If total revenue for this contract is 0, no rewards are distributed
+        if total_revenue_for_contract == 0:
+            print("Total revenue for contract: ", contract, " was zero")
             continue
 
         # Calculate rewards for each predictoor for this contract
         for pdr_address, predictoor in predictoors.items():
-            accuracy_for_contract = predictoor.get_prediction_summary(
-                contract
-            ).correct_prediction_count
-            rewards[contract][pdr_address] = (
-                accuracy_for_contract
-                / total_accuracy_for_contract
-                * tokens_per_contract
+            revenue_contract = predictoor.get_prediction_summary(contract).total_revenue
+            if revenue_contract <= 0:
+                # ignore negative revenues
+                continue
+            reward_amt = (
+                revenue_contract / total_revenue_for_contract * tokens_per_contract
             )
+            if reward_amt < MIN_REWARD:
+                continue
+            rewards[contract][pdr_address] = reward_amt
 
     return rewards
+
+
+def aggregate_predictoor_rewards(
+    predictoor_rewards: Dict[str, Dict[str, float]]
+) -> Dict[str, float]:
+    # Aggregate total reward per predictor address
+    aggregated_rewards: Dict[str, float] = {}
+    for _, rewards in predictoor_rewards.items():
+        for predictor_addr, reward_amount in rewards.items():
+            if predictor_addr in aggregated_rewards:
+                aggregated_rewards[predictor_addr] += reward_amount
+            else:
+                aggregated_rewards[predictor_addr] = reward_amount
+    return aggregated_rewards

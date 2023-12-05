@@ -44,7 +44,7 @@ docker system prune -a --volumes
 #run barge
 #-deploys ocean contracts with addresses at ~/.ocean/ocean-contracts/artifacts/address.json
 #-only runs the components it needs
-export GANACHE_HARDFORK="london"
+export GANACHE_FORK="london"
 ./start_ocean.sh --no-aquarius --no-elasticsearch --no-provider --no-dashboard --with-thegraph
 ```
 
@@ -256,3 +256,7 @@ How to fix:
 - Tactic: in barge console: `./cleanup.sh`
 - Tactic: in any console: `rm -rf ~/.ocean`
 - More tactics at [barge README](https://github.com/oceanprotocol/barge)
+
+
+## Release process (developers)
+In order to release a new version of df-py, simply create a new GitHub release. As opposed to other Ocean Protocol python repos, there is no need to use bumpversion.

@@ -35,12 +35,16 @@ MULTISIG_ADDRS = {
 CONTRACTS: dict = {}  # [chainID][contract_label] : contract_object
 
 # predictoor
-MIN_PREDICTIONS = 1818
 DEPLOYER_ADDRS: Dict[int, List[str]] = {
     23294: ["0x4ac2e51f9b1b0ca9e000dfe6032b24639b172703"],
     23295: ["0xe02a421dfc549336d47efee85699bd0a3da7d6ff"],
 }
-PREDICTOOR_RELEASE_WEEK = 63
-PREDICTOOR_MULTIPLIER = 0.2
+
+PREDICTOOR_MULTIPLIER = 0.201
+PREDICTOOR_RELEASE_WEEK = 62
 PREDICTOOR_OCEAN_BUDGET = 37_000
-PREDICTOOR_DF_FIRST_DATE = datetime(2023, 11, 16)
+PREDICTOOR_DF_FIRST_DATE = datetime(2023, 11, 9)
+
+# volume
+# Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
+TARGET_WPY = 0.015717

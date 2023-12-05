@@ -9,9 +9,16 @@ from web3.main import Web3
 
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
     save_predictoor_contracts_csv,
     save_predictoor_data_csv,
     save_predictoor_summary_csv,
+    save_predictoor_rewards_csv,
+)
+from df_py.predictoor.calc_rewards import (
+    aggregate_predictoor_rewards,
+    calc_predictoor_rewards,
 )
 from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
@@ -50,8 +57,9 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
 )
-from df_py.volume import calc_rewards, csvs, queries
-from df_py.volume.calc_rewards import calc_rewards_volume
+from df_py.volume import csvs, queries
+from df_py.volume.reward_calculator import RewardShaper
+from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 
 
 @enforce_types
@@ -306,10 +314,18 @@ def do_predictoor_data():
         help="# times to retry failed queries",
         required=False,
     )
+    parser.add_argument(
+        "--ONLY_CONTRACTS",
+        default=False,
+        type=bool,
+        help="Output only contract data",
+        required=False,
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
     csv_dir, chain_id = arguments.CSV_DIR, arguments.CHAINID
+    only_contracts = arguments.ONLY_CONTRACTS
 
     # check files, prep dir
     _exitIfFileExists(predictoor_data_csv_filename(csv_dir))
@@ -322,18 +338,20 @@ def do_predictoor_data():
         query_predictoor_contracts, arguments.RETRIES, 10, chain_id
     )
 
-    predictoor_data = retry_function(
-        query_predictoors,
-        arguments.RETRIES,
-        10,
-        st_ts,
-        end_ts,
-        chain_id,
-    )
+    if not only_contracts:
+        predictoor_data = retry_function(
+            query_predictoors,
+            arguments.RETRIES,
+            10,
+            st_ts,
+            end_ts,
+            chain_id,
+        )
 
     save_predictoor_contracts_csv(predictoor_contracts, csv_dir)
-    save_predictoor_data_csv(predictoor_data, csv_dir)
-    save_predictoor_summary_csv(predictoor_data, csv_dir)
+    if not only_contracts:
+        save_predictoor_data_csv(predictoor_data, csv_dir)
+        save_predictoor_summary_csv(predictoor_data, csv_dir)
     print("dftool predictoor_data: Done")
 
 
@@ -346,7 +364,8 @@ def do_calc():
         description="From substream data files, output rewards csvs."
     )
     parser.add_argument("command", choices=["calc"])
-    parser.add_argument("SUBSTREAM", choices=["volume"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "predictoor_rose"])
+
     parser.add_argument(
         "CSV_DIR",
         type=existing_path,
@@ -414,10 +433,19 @@ def do_calc():
         _exitIfFileExists(csvs.volume_rewards_csv_filename(csv_dir))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
-        rewperlp, rewinfo = calc_rewards_volume(csv_dir, start_date, tot_ocean)
+        calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
 
-        csvs.save_volume_rewards_csv(rewperlp, csv_dir)
-        csvs.save_volume_rewardsinfo_csv(rewinfo, csv_dir)
+    if arguments.SUBSTREAM == "predictoor_rose":
+        SAPPHIRE_MAINNET_ID = 23294
+
+        predictoor_data = load_predictoor_data_csv(csv_dir)
+        print("Loaded predictoor data:", predictoor_data)
+        predictoor_rewards = calc_predictoor_rewards(
+            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_ID
+        )
+        print("Calculated rewards:", predictoor_rewards)
+
+        save_predictoor_rewards_csv(predictoor_rewards, csv_dir)
 
     print("dftool calc: Done")
 
@@ -452,6 +480,13 @@ def do_dispense_active():
         required=False,
     )
     parser.add_argument(
+        "--PREDICTOOR_ROSE",
+        default=False,
+        type=bool,
+        help="whether to distribute Predictoor ROSE rewards",
+        required=False,
+    )
+    parser.add_argument(
         "--BATCH_NBR",
         default=None,
         type=str,
@@ -471,19 +506,18 @@ def do_dispense_active():
     # main work
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
-    token_symbol = (
-        ContractBase(web3, "OceanToken", web3.to_checksum_address(arguments.TOKEN_ADDR))
-        .symbol()
-        .upper()
-    )
-    token_symbol = token_symbol.replace("MOCEAN", "OCEAN")
 
-    volume_rewards = {}
-    if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
-        volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
-        volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
+    if arguments.PREDICTOOR_ROSE is False:
+        volume_rewards = {}
+        if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
+            volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
+            volume_rewards = RewardShaper.flatten(volume_rewards_3d)
 
-    rewards = volume_rewards
+        print("Distributing VOLUME DF rewards")
+        rewards = volume_rewards
+    elif arguments.PREDICTOOR_ROSE is True:
+        predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
+        rewards = aggregate_predictoor_rewards(predictoor_rewards)
 
     # dispense
     dispense.dispense(
@@ -613,6 +647,7 @@ def do_init_dev_wallets():
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
+    oceantestutil.print_dev_accounts()
     oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())
 
     print("dftool init_dev_wallets: Done.")
@@ -641,18 +676,79 @@ def do_many_random():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
+    account0 = oceantestutil.get_account0()
+
     web3 = networkutil.chain_id_to_web3(chain_id)
-    web3.eth.default_account = oceantestutil.get_account0()
+    web3.eth.default_account = account0
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token(chain_id)
+    OCEAN.mint(account0, to_wei(10_000), {"from": account0})
+
+    oceantestutil.print_dev_accounts()
 
     num_nfts = 9  # magic number
     tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
     random_lock_and_allocate(web3, tups)
     random_consume_FREs(tups, OCEAN)
+
     print(f"dftool many_random: Done. {num_nfts} new nfts created.")
+
+
+# ========================================================================
+@enforce_types
+def do_fake_rewards():
+    parser = SimpleChainIdArgumentParser(
+        "create some rewards (for testing)",
+        "fake_rewards",
+        epilog=f"""Uses these envvars:
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+        """,
+    )
+
+    chain_id = parser.print_args_and_get_chain()
+
+    if chain_id != DEV_CHAINID:
+        # To support other testnets, they need to fill_accounts_with_OCEAN()
+        # Consider this a TODO:)
+        print("Only ganache is currently supported. Exiting.")
+        sys.exit(1)
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    accounts = oceantestutil.get_all_accounts()
+
+    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3.eth.default_account = accounts[0].address
+
+    df_rewards = ContractBase(web3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(
+        web3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
+    print(f"DFStrategyV1 deployed at: {df_strategy.address}")
+
+    # main work
+    record_deployed_contracts(ADDRESS_FILE, chain_id)
+    OCEAN = OCEAN_token(chain_id)
+
+    oceantestutil.print_dev_accounts()
+    OCEAN.transfer(df_rewards, to_wei(100.0), {"from": accounts[0]})
+    tos = [accounts[1].address, accounts[2].address, accounts[3].address]
+    values = [10, 20, 30]
+    OCEAN.approve(df_rewards, sum(values), {"from": accounts[0]})
+
+    df_rewards.allocate(tos, values, OCEAN.address, {"from": accounts[0]})
+
+    print("Claimable rewards:")
+    print(f"Account #1: {df_rewards.claimable(accounts[1], OCEAN.address)}")
+    print(f"Account #2: {df_rewards.claimable(accounts[2], OCEAN.address)}")
+    print(f"Account #3: {df_rewards.claimable(accounts[3], OCEAN.address)}")
+
+    assert df_rewards.claimable(accounts[1], OCEAN.address) == 10
+    assert df_rewards.claimable(accounts[2], OCEAN.address) == 20
+    assert df_rewards.claimable(accounts[3], OCEAN.address) == 30
 
 
 # ========================================================================
@@ -869,9 +965,45 @@ def do_dispense_passive():
 
     feedist = FeeDistributor(arguments.CHAINID)
     OCEAN = OCEAN_token(arguments.CHAINID)
-    retry_function(dispense.dispense_passive, 3, 60, OCEAN, feedist, amount)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    retry_function(dispense.dispense_passive, 3, 60, web3, OCEAN, feedist, amount)
 
     print("Dispensed passive rewards")
+
+
+# ========================================================================
+
+
+@enforce_types
+def do_fund_predictoor_ocean_dispenser():
+    parser = argparse.ArgumentParser(description="Dispense predictoor rewards")
+    parser.add_argument("command", choices=["fund_predictoor_ocean_dispenser"])
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
+    parser.add_argument("RECEIVER", type=str, help="Receiver address")
+    parser.add_argument(
+        "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
+    )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
+
+    OCEAN = OCEAN_token(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+
+    predictoor_budget_week = get_active_reward_amount_for_week_eth_by_stream(
+        arguments.ST, "predictoor", arguments.CHAINID
+    )
+
+    retry_function(
+        dispense.multisig_transfer_tokens,
+        3,
+        60,
+        web3,
+        OCEAN,
+        arguments.RECEIVER,
+        predictoor_budget_week,
+    )
 
 
 # ========================================================================
