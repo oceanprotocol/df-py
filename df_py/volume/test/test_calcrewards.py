@@ -1134,6 +1134,8 @@ def test_volume_reward_calculator(tmp_path):
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value={1: "", 2: ""},
     ), patch(
+        "df_py.volume.calc_rewards.wait_to_latest_block"
+    ), patch(
         "web3.main.Web3.to_checksum_address"
     ) as mock:
         mock.side_effect = lambda value: value
@@ -1203,6 +1205,8 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         {1: ""},
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
+    ), patch(
+        "df_py.volume.calc_rewards.wait_to_latest_block"
     ), patch(
         "web3.main.Web3.to_checksum_address"
     ) as mock:
