@@ -9,6 +9,7 @@ from df_py.util.base18 import from_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER, PREDICTOOR_OCEAN_BUDGET
 
 
+challenge_substream = "challenge"
 predictoor_substream = "predictoor"
 volume_substream = "volume"
 test_params = [
@@ -62,6 +63,12 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         > 0
     )
 
+    challenge_rewards = (
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, challenge_substream, networkutil.DEV_CHAINID
+        )
+    )
+
     predictoor_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, predictoor_substream, networkutil.DEV_CHAINID
@@ -76,7 +83,9 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         start_dt, networkutil.DEV_CHAINID
     )
 
-    assert total_rewards == approx(predictoor_rewards + volume_rewards, 0.1)
+    assert total_rewards == approx(
+        challenge_rewards + predictoor_rewards + volume_rewards, 0.1
+    )
 
     invalid_substream = "invalid_substream"
     with pytest.raises(ValueError):
@@ -98,10 +107,17 @@ def test_launch_dates():
     volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
         start_dt, "volume"
     )
-    assert volume_rewards == 75000
+    assert volume_rewards == 70000
+
+    challenge_rewards = (
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, challenge_substream, networkutil.DEV_CHAINID
+        )
+    )
+    assert challenge_rewards == 5000
 
     total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
-    assert total_rewards == predictoor_rewards + volume_rewards
+    assert total_rewards == predictoor_rewards + volume_rewards + challenge_rewards
 
     # predictoor's launch
     start_dt = datetime(2023, 11, 9)
@@ -116,10 +132,17 @@ def test_launch_dates():
     volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
         start_dt, volume_substream, networkutil.DEV_CHAINID
     )
-    assert volume_rewards == 38000
+    assert volume_rewards == 37000
+
+    challenge_rewards = (
+        vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
+            start_dt, challenge_substream, networkutil.DEV_CHAINID
+        )
+    )
+    assert challenge_rewards == 1000
 
     total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
-    assert total_rewards == volume_rewards + predictoor_rewards
+    assert total_rewards == volume_rewards + predictoor_rewards + challenge_rewards
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
