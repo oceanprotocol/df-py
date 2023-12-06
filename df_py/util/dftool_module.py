@@ -7,6 +7,17 @@ from enforce_typing import enforce_types
 from eth_account import Account
 from web3.main import Web3
 
+from df_py.challenge import judge
+from df_py.challenge.calc_rewards import calc_challenge_rewards
+from df_py.challenge.csvs import (
+    challenge_rewards_csv_filename,
+    get_sample_challenge_data,
+    get_sample_challenge_rewards,
+    load_challenge_data_csv,
+    load_challenge_rewards_csv,
+    save_challenge_data_csv,
+    save_challenge_rewards_csv,
+)
 from df_py.predictoor.csvs import (
     predictoor_data_csv_filename,
     load_predictoor_data_csv,
@@ -33,6 +44,7 @@ from df_py.util.dftool_arguments import (
     autocreate_path,
     block_or_valid_date,
     chain_type,
+    challenge_date,
     do_help_long,
     existing_path,
     print_arguments,
@@ -288,6 +300,59 @@ def do_get_rate():
 
 # ========================================================================
 @enforce_types
+def do_challenge_data():
+    # hardcoded values
+    MUMBAI_CHAINID = 80001  # only on mumbai
+    parser = argparse.ArgumentParser(description="Get data for Challenge DF")
+    parser.add_argument("command", choices=["challenge_data"])
+    parser.add_argument(
+        "CSV_DIR", type=existing_path, help="output directory for challenge.csv"
+    )
+    parser.add_argument(
+        "--DEADLINE",
+        type=challenge_date,
+        default=None,
+        required=False,
+        help="""submission deadline.
+            Format: YYYY-MM-DD_HOUR:MIN in UTC, or None (use most recent Wed 23:59)
+            Example for Round 5: 2023-05-03_23:59
+        """,
+    )
+    parser.add_argument(
+        "--RETRIES",
+        default=1,
+        type=int,
+        help="# times to retry failed queries",
+        required=False,
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    print(f"Hardcoded values:" f"\n CHAINID={MUMBAI_CHAINID}" "\n")
+
+    csv_dir = arguments.CSV_DIR
+
+    # extract envvars
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+
+    web3 = networkutil.chain_id_to_web3(MUMBAI_CHAINID)
+    record_deployed_contracts(ADDRESS_FILE, MUMBAI_CHAINID)
+    judge_acct = judge.get_judge_acct()
+
+    # main work
+    deadline_dt = judge.parse_deadline_str(arguments.DEADLINE)
+    challenge_data = retry_function(
+        judge.get_challenge_data, arguments.RETRIES, 10, web3, deadline_dt, judge_acct
+    )
+
+    save_challenge_data_csv(challenge_data, csv_dir)
+
+    print("dftool challenge_data: Done")
+
+
+# ========================================================================
+@enforce_types
 def do_predictoor_data():
     parser = argparse.ArgumentParser(description="Get data for Predictoor DF")
     parser.add_argument("command", choices=["predictoor_data"])
@@ -364,8 +429,7 @@ def do_calc():
         description="From substream data files, output rewards csvs."
     )
     parser.add_argument("command", choices=["calc"])
-    parser.add_argument("SUBSTREAM", choices=["volume", "predictoor_rose"])
-
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge", "predictoor_rose"])
     parser.add_argument(
         "CSV_DIR",
         type=existing_path,
@@ -434,6 +498,27 @@ def do_calc():
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
         calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
+
+    if arguments.SUBSTREAM == "challenge":
+        try:
+            from_addrs, _, _ = load_challenge_data_csv(csv_dir)
+        except FileNotFoundError:
+            print("Challenge data file not found")
+            sys.exit(1)
+
+        if not from_addrs:
+            print("No challenge winners found")
+            sys.exit(0)
+        _exitIfFileExists(challenge_rewards_csv_filename(csv_dir))
+
+        # calculate rewards
+        try:
+            challenge_rewards = calc_challenge_rewards(from_addrs, start_date)
+        except ValueError as e:
+            print(e)
+            sys.exit(1)
+
+        save_challenge_rewards_csv(challenge_rewards, csv_dir)
 
     if arguments.SUBSTREAM == "predictoor_rose":
         SAPPHIRE_MAINNET_ID = 23294
@@ -513,8 +598,14 @@ def do_dispense_active():
             volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
             volume_rewards = RewardShaper.flatten(volume_rewards_3d)
 
-        print("Distributing VOLUME DF rewards")
-        rewards = volume_rewards
+        challenge_rewards = {}
+        if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
+            challenge_rewards = load_challenge_rewards_csv(arguments.CSV_DIR)
+        if len(challenge_rewards) == 0:
+            print("Distributing only VOLUME DF rewards")
+        else:
+            print("Distributing for VOLUME DF and CHALLENGE DF rewards")
+        rewards = RewardShaper.merge(volume_rewards, challenge_rewards)
     elif arguments.PREDICTOOR_ROSE is True:
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         rewards = aggregate_predictoor_rewards(predictoor_rewards)
@@ -786,6 +877,26 @@ def do_new_acct():
     print(f" private_key = {account._private_key.hex()}")
     print(f" address = {account.address}")
     print(f" For other dftools: export DFTOOL_KEY={account._private_key.hex()}")
+
+
+# ========================================================================
+def do_dummy_csvs():
+    parser = argparse.ArgumentParser(description="Generate dummy CSVs")
+    parser.add_argument("command", choices=["dummy_csvs"])
+    parser.add_argument("SUBSTREAM", choices=["volume", "challenge"])
+    parser.add_argument(
+        "CSV_DIR", type=autocreate_path, help="output dir for csv files"
+    )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+
+    csv_dir = arguments.CSV_DIR
+
+    if arguments.SUBSTREAM == "challenge":
+        save_challenge_data_csv(get_sample_challenge_data(), csv_dir)
+        save_challenge_rewards_csv(get_sample_challenge_rewards(), csv_dir)
+    else:
+        raise NotImplementedError("This substream is not implemented yet.")
 
 
 # ========================================================================
