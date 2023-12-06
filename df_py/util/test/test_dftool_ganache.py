@@ -9,11 +9,6 @@ import pytest
 from enforce_typing import enforce_types
 from web3.main import Web3
 
-from df_py.challenge.csvs import (
-    challenge_data_csv_filename,
-    load_challenge_rewards_csv,
-    save_challenge_rewards_csv,
-)
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
     load_predictoor_rewards_csv,
@@ -28,7 +23,6 @@ from df_py.util import dftool_module, dispense, networkutil, oceantestutil, ocea
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_module import do_predictoor_data
-from df_py.util.get_rate import get_rate
 from df_py.util.oceanutil import FeeDistributor, OCEAN_token
 from df_py.volume import csvs
 
@@ -131,21 +125,6 @@ def test_calc_failures(tmp_path):
         ):
             dftool_module.do_calc()
 
-    # no required input files -- challenge
-    with pytest.raises(SystemExit):
-        with sysargs_context(
-            [
-                "dftool",
-                "calc",
-                "challenge",
-                csv_dir,
-                str(tot_ocean),
-                f"--START_DATE={start_date}",
-                f"--CHAINID={networkutil.DEV_CHAINID}",
-            ]
-        ):
-            dftool_module.do_calc()
-
 
 @enforce_types
 def test_predictoor_data(tmp_path):
@@ -190,70 +169,6 @@ def test_predictoor_data(tmp_path):
             assert predictoors[user].correct_prediction_count == user_correct
             assert predictoors[user].revenue == user_revenue
             assert predictoors[user].accuracy == user_correct / user_total
-
-
-def test_dummy_csvs(tmp_path):
-    csv_dir = str(tmp_path)
-    with sysargs_context(
-        [
-            "dftool",
-            "dummy_csvs",
-            "challenge",
-            csv_dir,
-        ]
-    ):
-        dftool_module.do_dummy_csvs()
-
-    challenge_data_csv = challenge_data_csv_filename(csv_dir)
-    challenge_rewards_csv = predictoor_rewards_csv_filename(csv_dir)
-    assert challenge_data_csv
-    assert challenge_rewards_csv
-
-
-@patch(
-    "df_py.challenge.calc_rewards.CHALLENGE_FIRST_DATE", datetime.datetime(2021, 1, 1)
-)
-@enforce_types
-def test_calc_challenge_substream(tmp_path):
-    csv_dir = str(tmp_path)
-
-    csv_template = """from_addr,nft_addr,nmse
-0x0000000000000000000000000000000000000001,0x01,0.1
-0x1000000000000000000000000000000000000001,0x02,0.122
-0x2000000000000000000000000000000000000001,0x03,0.3
-0x3000000000000000000000000000000000000001,0x04,0.8
-0x4000000000000000000000000000000000000001,0x05,0.88
-"""
-    today = datetime.datetime.now().strftime("%Y-%m-%d")
-    safe_limit = 1300 * (1 / get_rate("OCEAN", today, today))
-
-    challenge_data_csv = challenge_data_csv_filename(csv_dir)
-    with open(challenge_data_csv, "w") as f:
-        f.write(csv_template)
-
-    csv_dir = str(tmp_path)
-
-    with sysargs_context(["dftool", "calc", "challenge", csv_dir, str(safe_limit)]):
-        dftool_module.do_calc()
-
-    rewards = load_challenge_rewards_csv(csv_dir)
-    assert len(rewards) == 3
-    assert rewards["0x0000000000000000000000000000000000000001"] > 0
-
-    # not enough available tokens
-    with sysargs_context(["dftool", "calc", "challenge", csv_dir, "750"]):
-        with pytest.raises(SystemExit):
-            dftool_module.do_calc()
-
-    # no rewards case:
-    csv_template = "from_addr,nft_addr,nmse"
-
-    with open(challenge_data_csv, "w") as f:
-        f.write(csv_template)
-
-    with sysargs_context(["dftool", "calc", "challenge", csv_dir, str(safe_limit)]):
-        with pytest.raises(SystemExit):
-            dftool_module.do_calc()
 
 
 @enforce_types
@@ -314,12 +229,9 @@ def test_calc_without_amount(tmp_path, monkeypatch):
     with patch("web3.main.Web3.to_checksum_address") as mock_checksum:
         mock_checksum.side_effect = lambda value: value
         with patch("df_py.util.dftool_module.record_deployed_contracts") as mock:
-            with patch(
-                "df_py.util.vesting_schedule.get_challenge_reward_amounts_in_ocean"
-            ) as mock:
-                with sysargs_context(sys_args):
-                    mock.return_value = [30, 20]
-                    dftool_module.do_calc()
+            with sysargs_context(sys_args):
+                mock.return_value = [30, 20]
+                dftool_module.do_calc()
 
     # test result
     rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)
@@ -334,7 +246,7 @@ def test_calc_without_amount(tmp_path, monkeypatch):
     for _, addrs in rewards.items():
         for _, reward in addrs.items():
             total_reward += reward
-    assert total_reward == 74950.0
+    assert total_reward == 75000.0
 
 
 @enforce_types
@@ -343,7 +255,7 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
     address1 = all_accounts[1].address
     address2 = all_accounts[2].address
     csv_dir = str(tmp_path)
-    tot_ocean = 4000.0
+    tot_ocean = 1000.0
 
     # accounts[0] has OCEAN. Ensure that ispensing account has some
     global DFTOOL_ACCT
@@ -357,11 +269,6 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
         "5": {address1: 300, address2: 100},
     }
     csvs.save_volume_rewards_csv(rewards, csv_dir)
-    challenge_rewards = [
-        {"winner_addr": address1, "OCEAN_amt": 2000},
-        {"winner_addr": address2, "OCEAN_amt": 1000},
-    ]
-    save_challenge_rewards_csv(challenge_rewards, csv_dir)
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
     # main command
@@ -382,8 +289,8 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
         dftool_module.do_dispense_active()
 
     # test result
-    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 2700.0
-    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 1100.0
+    assert from_wei(df_rewards.claimable(address1, OCEAN_addr)) == 700.0
+    assert from_wei(df_rewards.claimable(address2, OCEAN_addr)) == 100.0
 
 
 def test_dispense_predictoor_rose(tmp_path):
