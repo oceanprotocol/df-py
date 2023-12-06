@@ -74,8 +74,6 @@ def test_token(w3):
 def test_OCEAN(w3):
     oceanutil.record_dev_deployed_contracts()
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
-    OCEAN.mint(accounts[0], to_wei(10), {"from": accounts[0]})
-
     assert OCEAN.balanceOf(accounts[0]) >= 10
 
     w3.eth.default_account = accounts[0].address
