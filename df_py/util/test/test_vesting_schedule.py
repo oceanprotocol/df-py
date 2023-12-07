@@ -132,14 +132,14 @@ def test_launch_dates():
     volume_rewards = vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
         start_dt, volume_substream, networkutil.DEV_CHAINID
     )
-    assert volume_rewards == 37000
+    assert volume_rewards == 37500
 
     challenge_rewards = (
         vesting_schedule.get_active_reward_amount_for_week_eth_by_stream(
             start_dt, challenge_substream, networkutil.DEV_CHAINID
         )
     )
-    assert challenge_rewards == 1000
+    assert challenge_rewards == 0
 
     total_rewards = vesting_schedule.get_active_reward_amount_for_week_eth(start_dt)
     assert total_rewards == volume_rewards + predictoor_rewards + challenge_rewards
