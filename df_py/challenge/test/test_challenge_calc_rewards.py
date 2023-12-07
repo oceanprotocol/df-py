@@ -64,6 +64,6 @@ def test_calc_challenge_rewards_predictoor_launch():
     rewards = calc_challenge_rewards(from_addrs, at_date=post_predictoor)
 
     assert len(rewards) == 3
-    assert rewards[0]["OCEAN_amt"] == 500
-    assert rewards[1]["OCEAN_amt"] == 300
-    assert rewards[2]["OCEAN_amt"] == 200
+    assert rewards[0]["OCEAN_amt"] == 0
+    assert rewards[1]["OCEAN_amt"] == 0
+    assert rewards[2]["OCEAN_amt"] == 0
