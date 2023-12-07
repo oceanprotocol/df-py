@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
-from util.constants import PREDICTOOR_OCEAN_BUDGET
+
 import pytest
 from enforce_typing import enforce_types
 from web3.main import Web3
@@ -26,6 +26,7 @@ from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
+from df_py.util.constants import PREDICTOOR_OCEAN_BUDGET
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.util.get_rate import get_rate
