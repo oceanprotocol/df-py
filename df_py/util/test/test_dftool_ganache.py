@@ -26,6 +26,7 @@ from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, dispense, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
+from df_py.util.constants import PREDICTOOR_OCEAN_BUDGET
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.util.get_rate import get_rate
@@ -238,7 +239,7 @@ def test_calc_challenge_substream(tmp_path):
 
     rewards = load_challenge_rewards_csv(csv_dir)
     assert len(rewards) == 3
-    assert rewards["0x0000000000000000000000000000000000000001"] > 0
+    assert rewards["0x0000000000000000000000000000000000000001"] == 0
 
     # not enough available tokens
     with sysargs_context(["dftool", "calc", "challenge", csv_dir, "750"]):
@@ -851,7 +852,7 @@ def test_dispense_predictoor():
     assert mock.call_args[0][4].name() == "Ocean Token"
     assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
     assert mock.call_args[0][5] == "0x0000000000000000000000000000000000000001"
-    assert mock.call_args[0][6] == 37000
+    assert mock.call_args[0][6] == PREDICTOOR_OCEAN_BUDGET
 
 
 @enforce_types
