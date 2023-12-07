@@ -4,7 +4,7 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
-
+from util.constants import PREDICTOOR_OCEAN_BUDGET
 import pytest
 from enforce_typing import enforce_types
 from web3.main import Web3
@@ -851,7 +851,7 @@ def test_dispense_predictoor():
     assert mock.call_args[0][4].name() == "Ocean Token"
     assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
     assert mock.call_args[0][5] == "0x0000000000000000000000000000000000000001"
-    assert mock.call_args[0][6] == 37000
+    assert mock.call_args[0][6] == PREDICTOOR_OCEAN_BUDGET
 
 
 @enforce_types
