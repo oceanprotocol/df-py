@@ -69,8 +69,9 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
 )
-from df_py.volume import calc_rewards, csvs, queries
-from df_py.volume.calc_rewards import calc_rewards_volume
+from df_py.volume import csvs, queries
+from df_py.volume.reward_calculator import RewardShaper
+from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 
 
 @enforce_types
@@ -496,10 +497,7 @@ def do_calc():
         _exitIfFileExists(csvs.volume_rewards_csv_filename(csv_dir))
         _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
-        rewperlp, rewinfo = calc_rewards_volume(csv_dir, start_date, tot_ocean)
-
-        csvs.save_volume_rewards_csv(rewperlp, csv_dir)
-        csvs.save_volume_rewardsinfo_csv(rewinfo, csv_dir)
+        calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
 
     if arguments.SUBSTREAM == "challenge":
         try:
@@ -598,7 +596,7 @@ def do_dispense_active():
         volume_rewards = {}
         if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
             volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
-            volume_rewards = calc_rewards.flatten_rewards(volume_rewards_3d)
+            volume_rewards = RewardShaper.flatten(volume_rewards_3d)
 
         challenge_rewards = {}
         if os.path.exists(challenge_rewards_csv_filename(arguments.CSV_DIR)):
@@ -607,7 +605,7 @@ def do_dispense_active():
             print("Distributing only VOLUME DF rewards")
         else:
             print("Distributing for VOLUME DF and CHALLENGE DF rewards")
-        rewards = calc_rewards.merge_rewards(volume_rewards, challenge_rewards)
+        rewards = RewardShaper.merge(volume_rewards, challenge_rewards)
     elif arguments.PREDICTOOR_ROSE is True:
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         rewards = aggregate_predictoor_rewards(predictoor_rewards)
@@ -1082,6 +1080,41 @@ def do_dispense_passive():
     retry_function(dispense.dispense_passive, 3, 60, web3, OCEAN, feedist, amount)
 
     print("Dispensed passive rewards")
+
+
+# ========================================================================
+
+
+@enforce_types
+def do_fund_predictoor_ocean_dispenser():
+    parser = argparse.ArgumentParser(description="Dispense predictoor rewards")
+    parser.add_argument("command", choices=["fund_predictoor_ocean_dispenser"])
+    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
+    parser.add_argument("RECEIVER", type=str, help="Receiver address")
+    parser.add_argument(
+        "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
+    )
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    ADDRESS_FILE = _getAddressEnvvarOrExit()
+    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
+
+    OCEAN = OCEAN_token(arguments.CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+
+    predictoor_budget_week = get_active_reward_amount_for_week_eth_by_stream(
+        arguments.ST, "predictoor", arguments.CHAINID
+    )
+
+    retry_function(
+        dispense.multisig_transfer_tokens,
+        3,
+        60,
+        web3,
+        OCEAN,
+        arguments.RECEIVER,
+        predictoor_budget_week,
+    )
 
 
 # ========================================================================

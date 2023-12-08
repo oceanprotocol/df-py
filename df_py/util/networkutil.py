@@ -23,6 +23,8 @@ _RAW_CHAIN_DATA = [
     (23295, "sapphire-testnet", "ROSE"),
 ]
 
+OBSOLETED_CHAIN_IDS = [246]
+
 # chainids and names must be unique. Token symbols don't need to be
 __chainids_list = [x[0] for x in _RAW_CHAIN_DATA]
 assert len(__chainids_list) == len(set(__chainids_list)), "need unique chainids"

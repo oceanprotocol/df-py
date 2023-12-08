@@ -10,7 +10,7 @@ from df_py.predictoor.calc_rewards import (
 )
 from df_py.predictoor.models import Prediction, Predictoor, PredictoorBase
 from df_py.util.networkutil import DEV_CHAINID
-from df_py.volume.calc_rewards import flatten_rewards
+from df_py.volume.reward_calculator import RewardShaper
 
 
 @pytest.fixture(autouse=True)
@@ -171,9 +171,9 @@ def test_calc_predictoor_rewards_fuzz():
 
     # Sum of all rewards should be equal to tokens available
     print(rewards)
-    print(flatten_rewards(rewards))
+    print(RewardShaper.flatten(rewards))
     assert (
-        abs(sum(flatten_rewards(rewards).values()) - tokens_avail) < 1e-6
+        abs(sum(RewardShaper.flatten(rewards).values()) - tokens_avail) < 1e-6
     )  # allow for small floating point differences
 
 

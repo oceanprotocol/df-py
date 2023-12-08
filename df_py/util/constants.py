@@ -42,8 +42,12 @@ DEPLOYER_ADDRS: Dict[int, List[str]] = {
 
 PREDICTOOR_MULTIPLIER = 0.201
 PREDICTOOR_RELEASE_WEEK = 62
-PREDICTOOR_OCEAN_BUDGET = 37_000
+PREDICTOOR_OCEAN_BUDGET = 37_500
 PREDICTOOR_DF_FIRST_DATE = datetime(2023, 11, 9)
 
 # challenge
 CHALLENGE_FIRST_DATE = datetime(2023, 7, 27)  # First round start date of Challenge DF
+
+# volume
+# Weekly Percent Yield needs to be 1.5717%., for max APY of 125%
+TARGET_WPY = 0.015717

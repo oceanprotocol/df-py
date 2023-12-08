@@ -4,6 +4,7 @@ from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Predictoor
 from df_py.predictoor.queries import query_predictoor_contracts
+from df_py.util.graphutil import wait_to_latest_block
 
 
 @enforce_types
@@ -25,6 +26,8 @@ def calc_predictoor_rewards(
     """
     MIN_REWARD = 1e-15
     tokens_avail = float(tokens_avail)
+
+    wait_to_latest_block(chain_id)
 
     predictoor_contracts = query_predictoor_contracts(chain_id).keys()
     print("# of available contracts: ", len(predictoor_contracts))
