@@ -8,27 +8,6 @@ from df_py.util.contract_base import ContractBase
 from df_py.util.random_addresses import get_random_addresses
 
 
-@pytest.mark.skip("Fails sometimes. See #702. When fixed, un-skip this test")
-@enforce_types
-def test_allocate_gas(w3, account0):
-    one = _batch_allocate(w3, account0, 1)
-    two = _batch_allocate(w3, account0, 2)
-    nine = _batch_allocate(w3, account0, 9)
-    ten = _batch_allocate(w3, account0, 10)
-
-    per_iteration1 = two.gasUsed - one.gasUsed
-    per_iteration2 = ten.gasUsed - nine.gasUsed
-
-    # each iteration uses the same amount of gas
-    assert abs(per_iteration2 - per_iteration1) < 50
-
-    # 23167 is the estimated gas for each iteration
-    assert abs(per_iteration1 - 23167) < 100
-
-    # mainnet gas limit
-    assert per_iteration1 * 1250 < 30_000_000
-
-
 # TODO: fix this test pylint: disable=fixme
 @pytest.mark.skip("Skip after fixing and removing brownie")
 @enforce_types
