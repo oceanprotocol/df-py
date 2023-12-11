@@ -97,6 +97,7 @@ def predictoor_data_csv_filename(csv_dir):
 
 # ------------------------------- PREDICTOOR SUMMARY -------------------------------
 def sample_predictoor_summary_csv():
+    # pylint: disable=line-too-long
     return """predictoor_addr,contract_addr,prediction_count,correct_prediction_count,accuracy,total_stake,total_payout
 0x0000000000000000000000000000000000000000,0xContract1,14360,10123,0.70494428969,4535.4,3152.5
 0x1000000000000000000000000000000000000000,0xContract2,24210,12523,0.51726559273,4324.4,5633.5
