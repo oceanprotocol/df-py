@@ -46,6 +46,7 @@ def test_predictoor_summary():
     assert summary.contract_addr == "0x1"
     assert summary.total_payout == 15.0
     assert summary.total_revenue == 5.0  # 10 + 5 - 10
+    assert summary.total_stake == 12.0  # 1 + 1 + 10
 
 
 def test_prediction_from_query_result():
