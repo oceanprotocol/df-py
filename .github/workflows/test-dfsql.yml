@@ -99,10 +99,6 @@ jobs:
         run: |
           ./dftool calc volume $CSV_DIR 100000000 --START_DATE $TEST_START_DATE
 
-      - name: Run dftool challenge calc
-        run: |
-          ./dftool dummy_csvs challenge $CSV_DIR
-
       - name: Move csvs to df-sql dir
         run: |
           mv /tmp/csv/* ~/.dfcsv
@@ -122,5 +118,3 @@ jobs:
           curl -X POST http://localhost:6234/allocations | grep -q "\"ocean_amt\":"
           curl -X POST http://localhost:6234/rewards | grep -q "\"LP_addr\":\"0x"
           curl -X POST http://localhost:6234/rewardsSummary | grep -q "\"curating_amt\":"
-          curl -X POST http://localhost:6234/challenge/data | grep -q "\"nmse\":0.4199999869"
-          curl -X POST http://localhost:6234/challenge/rewards | grep -q "\"winner_addr\":\"0xfrom2\""
