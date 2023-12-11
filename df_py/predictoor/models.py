@@ -102,12 +102,14 @@ class PredictionSummary:
         contract_addr,
         total_payout,
         total_revenue,
+        total_stake,
     ):
         self.prediction_count = prediction_count
         self.correct_prediction_count = correct_prediction_count
         self.contract_addr = contract_addr
         self.total_payout = total_payout
         self.total_revenue = total_revenue
+        self.total_stake = total_stake
 
     @property
     def accuracy(self) -> float:
@@ -133,6 +135,7 @@ class Predictoor(PredictoorBase):
         """
         prediction_count = 0
         correct_prediction_count = 0
+        total_stake = 0
         total_payout = 0.0
         total_revenue = 0.0
 
@@ -141,6 +144,7 @@ class Predictoor(PredictoorBase):
                 continue
             prediction_count += 1
             total_revenue += prediction.revenue
+            total_stake += prediction.stake
             if prediction.is_correct:
                 correct_prediction_count += 1
                 total_payout += prediction.payout
@@ -151,6 +155,7 @@ class Predictoor(PredictoorBase):
             contract_addr,
             total_payout,
             total_revenue,
+            total_stake,
         )
 
     @property
