@@ -97,12 +97,12 @@ def predictoor_data_csv_filename(csv_dir):
 
 # ------------------------------- PREDICTOOR SUMMARY -------------------------------
 def sample_predictoor_summary_csv():
-    return """predictoor_addr,contract_addr,prediction_count,correct_prediction_count,accuracy
-0x0000000000000000000000000000000000000000,0xContract1,14360,10123,0.70494428969
-0x1000000000000000000000000000000000000000,0xContract2,24210,12523,0.51726559273
-0x2000000000000000000000000000000000000000,0xContract1,36233,23351,0.64446775039
-0x3000000000000000000000000000000000000000,0xContract2,41640,35251,0.84656580211
-0x4000000000000000000000000000000000000000,0xContract3,54320,44246,0.81454344624"""
+    return """predictoor_addr,contract_addr,prediction_count,correct_prediction_count,accuracy,total_stake,total_payout
+0x0000000000000000000000000000000000000000,0xContract1,14360,10123,0.70494428969,4535.4,3152.5
+0x1000000000000000000000000000000000000000,0xContract2,24210,12523,0.51726559273,4324.4,5633.5
+0x2000000000000000000000000000000000000000,0xContract1,36233,23351,0.64446775039,3536.4,6346.5
+0x3000000000000000000000000000000000000000,0xContract2,41640,35251,0.84656580211,6346.4,7547.5
+0x4000000000000000000000000000000000000000,0xContract3,54320,44246,0.81454344624,6563.4,1337.5"""
 
 
 @enforce_types
@@ -122,6 +122,8 @@ def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir:
         "prediction_count",
         "correct_prediction_count",
         "accuracy",
+        "total_stake",
+        "total_payout",
     ]
 
     with open(csv_file, "w", newline="") as csvfile:
@@ -139,6 +141,8 @@ def save_predictoor_summary_csv(predictoor_data: Dict[str, Predictoor], csv_dir:
                         "prediction_count": summary.prediction_count,
                         "correct_prediction_count": summary.correct_prediction_count,
                         "accuracy": summary.accuracy,
+                        "total_stake": summary.total_stake,
+                        "total_payout": summary.total_payout,
                     }
                 )
 
