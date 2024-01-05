@@ -40,6 +40,14 @@ jobs:
           repo: df-py
           excludes: prerelease, draft
 
+      - name: Check if the Year is 2024 (ROSE reward distribution ends at the end of 2024)
+        run: |
+          current_year=$(date -d "last-thursday  - 1 week" '+%Y')
+          if [ "$current_year" != "2024" ]; then
+            echo "Current year is not 2024, exiting workflow."
+            exit 1
+          fi
+
       - name: Set branch to checkout
         id: set_branch
         run: echo "BRANCH=${{ github.event_name == 'schedule' && steps.df-py.outputs.release || github.ref }}" >> $GITHUB_ENV
@@ -88,7 +96,7 @@ jobs:
 
       - name: Run dftool calc rewards for predictoor_rose
         run: |
-          ./dftool calc predictoor_rose $CSV_DIR 100000
+          ./dftool calc predictoor_rose $CSV_DIR 20000
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v3
