@@ -37,10 +37,10 @@ def test_eth_timestamp_to_block_error_handling(monkeypatch):
     web3 = get_web3(get_rpc_url("mainnet"))
     _get_block = web3.eth.get_block
 
-    def random_error_get_block(*args, **kwargs):
-        if random.randint(1, 6) == 1:
+    def random_error_get_block(number):
+        if random.randint(1, 6) == 1 and number != "latest":
             raise Exception("Random error occurred!")
-        return _get_block(*args, **kwargs)
+        return _get_block(number)
 
     current_block = web3.eth.get_block("latest").number
     blocks_ago = web3.eth.get_block(current_block - 5000)
