@@ -253,17 +253,22 @@ def queryAllocations(
         chunk_size = 1000
         while True:
             query = """
-          {
-            veAllocateUsers(first: %d, skip: %d, block:{number:%d}) {
-              id
-              veAllocation {
-                id
-                allocated
-                chainId
-                nftAddress
+            {
+              veAllocations(
+                first: %d, skip: %d, block:{number:%d}, 
+                    where:{
+                      allocated_not:"0"
+                    }
+                  ) {
+                    id
+                    allocated
+                    chainId
+                    nftAddress
+                    allocationUser {
+                      id
+                    }
+                  }
               }
-            }
-          }
           """ % (
                 chunk_size,
                 offset,
@@ -271,8 +276,8 @@ def queryAllocations(
             )
             result = submit_query(query, CHAINID)
             if "data" in result:
-                assert "veAllocateUsers" in result["data"]
-                _allocs = result["data"]["veAllocateUsers"]
+                assert "veAllocations" in result["data"]
+                _allocs = result["data"]["veAllocations"]
             else:
                 return {}
 
@@ -281,24 +286,29 @@ def queryAllocations(
                 break
 
             for allocation in _allocs:
-                LP_addr = str(Web3.to_checksum_address(allocation["id"]))
-                for ve_allocation in allocation["veAllocation"]:
-                    nft_addr = str(
-                        Web3.to_checksum_address(ve_allocation["nftAddress"])
-                    )
-                    chain_id = int(ve_allocation["chainId"])
-                    allocated = float(ve_allocation["allocated"])
+                LP_addr = str(
+                    Web3.to_checksum_address(allocation["allocationUser"]["id"])
+                )
 
-                    if chain_id not in allocs:
-                        allocs[chain_id] = {}
-                    if nft_addr not in allocs[chain_id]:
-                        allocs[chain_id][nft_addr] = {}
+                nft_addr = str(Web3.to_checksum_address(allocation["nftAddress"]))
+                chain_id = int(allocation["chainId"])
+                allocated = float(allocation["allocated"])
+                if allocated == 0:
+                    continue
 
-                    if LP_addr not in allocs[chain_id][nft_addr]:
-                        allocs[chain_id][nft_addr][LP_addr] = allocated
-                    else:
-                        allocs[chain_id][nft_addr][LP_addr] += allocated
+                if chain_id not in allocs:
+                    allocs[chain_id] = {}
+                if nft_addr not in allocs[chain_id]:
+                    allocs[chain_id][nft_addr] = {}
 
+                if LP_addr not in allocs[chain_id][nft_addr]:
+                    allocs[chain_id][nft_addr][LP_addr] = allocated
+                else:
+                    allocs[chain_id][nft_addr][LP_addr] += allocated
+
+            if len(_allocs) < chunk_size:
+                # means there are no records left
+                break
             offset += chunk_size
         n_blocks_sampled += 1
 
