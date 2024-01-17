@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 
 from enforce_typing import enforce_types
@@ -17,6 +18,32 @@ def test_eth_timestamp_to_block(monkeypatch):
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
     monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
+    current_block = web3.eth.get_block("latest").number
+    blocks_ago = web3.eth.get_block(current_block - 5000)
+
+    ts = blocks_ago.timestamp
+    block = blocks_ago.number
+
+    guess = eth_timestamp_to_block(web3, ts)
+
+    assert guess == approx(block, 10)
+
+
+@enforce_types
+def test_eth_timestamp_to_block_error_handling(monkeypatch):
+    monkeypatch.setenv("WEB3_INFURA_PROJECT_ID", "9aa3d95b3bc440fa88ea12eaa4456161")
+    monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
+    monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
+    web3 = get_web3(get_rpc_url("mainnet"))
+    n = web3.eth.get_block
+
+    def random_error(*args, **kwargs):
+        if random.randint(1, 6) == 1:
+            raise Exception("Random error occurred!")
+        return n(*args, **kwargs)
+
+    web3.eth.get_block = random_error
+
     current_block = web3.eth.get_block("latest").number
     blocks_ago = web3.eth.get_block(current_block - 5000)
 
