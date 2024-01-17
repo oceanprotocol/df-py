@@ -257,7 +257,7 @@ def queryAllocations(
               veAllocations(
                 first: %d, skip: %d, block:{number:%d}, 
                     where:{
-                    allocated_not:"0"
+                      allocated_not:"0"
                     }
                   ) {
                     id
