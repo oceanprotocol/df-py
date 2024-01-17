@@ -286,11 +286,11 @@ def queryAllocations(
                 break
 
             for allocation in _allocs:
-                LP_addr = str(Web3.to_checksum_address(allocation["allocationUser"]["id"]))
-           
-                nft_addr = str(
-                    Web3.to_checksum_address(allocation["nftAddress"])
+                LP_addr = str(
+                    Web3.to_checksum_address(allocation["allocationUser"]["id"])
                 )
+
+                nft_addr = str(Web3.to_checksum_address(allocation["nftAddress"]))
                 chain_id = int(allocation["chainId"])
                 allocated = float(allocation["allocated"])
                 if allocated == 0:
