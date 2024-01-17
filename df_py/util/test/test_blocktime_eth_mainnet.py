@@ -42,14 +42,13 @@ def test_eth_timestamp_to_block_error_handling(monkeypatch):
             raise Exception("Random error occurred!")
         return _get_block(*args, **kwargs)
 
-    web3.eth.get_block = random_error_get_block
-
     current_block = web3.eth.get_block("latest").number
     blocks_ago = web3.eth.get_block(current_block - 5000)
 
     ts = blocks_ago.timestamp
     block = blocks_ago.number
 
+    web3.eth.get_block = random_error_get_block
     guess = eth_timestamp_to_block(web3, ts)
 
     assert guess == approx(block, 10)
