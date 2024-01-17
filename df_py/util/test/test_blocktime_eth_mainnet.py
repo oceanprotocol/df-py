@@ -35,14 +35,14 @@ def test_eth_timestamp_to_block_error_handling(monkeypatch):
     monkeypatch.setenv("MAINNET_RPC_URL", "https://mainnet.infura.io/v3/")
     monkeypatch.setenv("INFURA_NETWORKS", "mainnet")
     web3 = get_web3(get_rpc_url("mainnet"))
-    n = web3.eth.get_block
+    _get_block = web3.eth.get_block
 
-    def random_error(*args, **kwargs):
+    def random_error_get_block(*args, **kwargs):
         if random.randint(1, 6) == 1:
             raise Exception("Random error occurred!")
-        return n(*args, **kwargs)
+        return _get_block(*args, **kwargs)
 
-    web3.eth.get_block = random_error
+    web3.eth.get_block = random_error_get_block
 
     current_block = web3.eth.get_block("latest").number
     blocks_ago = web3.eth.get_block(current_block - 5000)
