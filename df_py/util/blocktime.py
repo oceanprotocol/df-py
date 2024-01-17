@@ -120,7 +120,7 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
                 block_timestamp = web3.eth.get_block(int(block_i)).timestamp
             except Exception as e:
                 print(f"An exception occurred while getting block {block_i}, {e}")
-                block_timestamp = 0
+                return 0
             return block_timestamp - self.target_timestamp
 
     f = C(timestamp).timeSinceTimestamp
