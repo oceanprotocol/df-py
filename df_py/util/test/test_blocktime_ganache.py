@@ -1,3 +1,5 @@
+import pytest
+
 from datetime import datetime
 from math import ceil
 from unittest.mock import Mock
@@ -111,7 +113,7 @@ def test_timestamp_to_block_validation():
     web3.eth.get_block.return_value = 0
 
     with pytest.raises(Exception) as err:
-        timestamp_to_block(web3.target_ts)
+        timestamp_to_block(web3, target_ts)
 
     assert (
         str(err.value)
