@@ -1,4 +1,4 @@
-name: Dispense Passive Rewards
+name: Checkpoint Passive Rewards
 
 on:
   schedule:
@@ -11,7 +11,7 @@ on:
         default: "10000"
 
 jobs:
-  dispense-passive:
+  checkpoint-passive:
     env:
       GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
       BINANCE_API_URL: ${{secrets.BINANCE_API_URL}}
