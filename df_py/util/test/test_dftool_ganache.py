@@ -24,7 +24,7 @@ from df_py.util.base18 import from_wei, to_wei
 from df_py.util.constants import PREDICTOOR_OCEAN_BUDGET
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_module import do_predictoor_data
-from df_py.util.oceanutil import FeeDistributor, OCEAN_token
+from df_py.util.oceanutil import OCEAN_token
 from df_py.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
