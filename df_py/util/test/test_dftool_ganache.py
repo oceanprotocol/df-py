@@ -716,30 +716,6 @@ def test_chain_info():
         dftool_module.do_chain_info()
 
 
-def test_dispense_passive():
-    sys_argv = [
-        "dftool",
-        "dispense_passive",
-        str(networkutil.DEV_CHAINID),
-        "0",
-        "2023-02-02",
-    ]
-
-    with patch.object(dftool_module, "retry_function") as mock:
-        with sysargs_context(sys_argv):
-            dftool_module.do_dispense_passive()
-
-    # pylint: disable=comparison-with-callable
-    assert mock.call_args[0][0] == dispense.dispense_passive
-    assert isinstance(mock.call_args[0][3], Web3)
-    assert mock.call_args[0][4].name() == "Ocean Token"
-    assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
-    assert (
-        mock.call_args[0][5].address == FeeDistributor(networkutil.DEV_CHAINID).address
-    )
-    assert mock.call_args[0][6] == 0
-
-
 @enforce_types
 def setup_function():
     global DFTOOL_ACCT

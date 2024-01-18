@@ -938,42 +938,6 @@ def do_chain_info():
 
 # ========================================================================
 @enforce_types
-def do_dispense_passive():
-    parser = argparse.ArgumentParser(description="Dispense passive rewards")
-    parser.add_argument("command", choices=["dispense_passive"])
-    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
-    parser.add_argument(
-        "AMOUNT",
-        type=float,
-        help="total amount of TOKEN to distribute (decimal, not wei)",
-    )
-    parser.add_argument(
-        "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
-    )
-
-    arguments = parser.parse_args()
-    print_arguments(arguments)
-
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
-
-    amount = arguments.AMOUNT
-
-    if amount == 0:
-        start_date = arguments.ST
-        amount = get_active_reward_amount_for_week_eth(start_date)
-
-    feedist = FeeDistributor(arguments.CHAINID)
-    OCEAN = OCEAN_token(arguments.CHAINID)
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
-    retry_function(dispense.dispense_passive, 3, 60, web3, OCEAN, feedist, amount)
-
-    print("Dispensed passive rewards")
-
-
-
-# ========================================================================
-@enforce_types
 def do_calculate_passive():
     parser = argparse.ArgumentParser(description="Calculate passive rewards")
     parser.add_argument("command", choices=["calculate_passive"])
