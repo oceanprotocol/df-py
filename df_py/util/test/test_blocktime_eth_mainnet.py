@@ -39,7 +39,7 @@ def test_eth_timestamp_to_block_error_handling(monkeypatch):
 
     current_block = web3.eth.get_block("latest")
     current_block_number = current_block.number
-    blocks_ago = web3.eth.get_block(current_block - 5000)
+    blocks_ago = web3.eth.get_block(current_block_number - 5000)
 
     ts = blocks_ago.timestamp
     block = blocks_ago.number
