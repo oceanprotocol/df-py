@@ -140,7 +140,6 @@ Now, you can use those networks simply by specifying a different chainid in `dft
 
 Happens via regularly-scheduled Github Actions:
 
-- Passive: [dispense_passive.yml](.github/workflows/dispense_passive.yml)
 - Active: [flow.yml](.github/workflows/flow.yml)
 
 More info: [README-crons-ops.md](README-crons-ops.md)
