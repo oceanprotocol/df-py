@@ -1,6 +1,6 @@
 from datetime import datetime
 from math import ceil
-from unittest.mock import Mock
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -107,15 +107,16 @@ def test_timestamp_to_block(w3):
 
 
 @enforce_types
-def test_timestamp_to_block_validation():
-    target_ts = 10000
+@patch("df_py.util.blocktime.optimize.bisect")
+def test_timestamp_to_block_validation(mock_time_since):
+    mock_time_since.return_value = (1, None)
+    target_ts = 100 + 16 * 60
     web3 = Mock()
-    block_mock = Mock()
-    block_mock.number = 20
-    block_mock.timestamp = 0
-    web3.eth.get_block.return_value = block_mock
+    block_mock_1 = Mock(number=20, timestamp=100)
+    block_mock_2 = Mock(number=20, timestamp=100000)
+    web3.eth.get_block.side_effect = [block_mock_1, block_mock_2] * 4
 
-    with pytest.raises(Exception) as err:
+    with pytest.raises(ValueError) as err:
         timestamp_to_block(web3, target_ts)
 
     assert (
