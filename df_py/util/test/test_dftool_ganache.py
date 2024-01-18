@@ -7,7 +7,6 @@ from unittest.mock import patch
 
 import pytest
 from enforce_typing import enforce_types
-from web3.main import Web3
 
 from df_py.predictoor.csvs import (
     load_predictoor_data_csv,
@@ -19,12 +18,10 @@ from df_py.predictoor.csvs import (
 )
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
-from df_py.util import dftool_module, dispense, networkutil, oceantestutil, oceanutil
+from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
-from df_py.util.constants import PREDICTOOR_OCEAN_BUDGET
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_module import do_predictoor_data
-from df_py.util.oceanutil import FeeDistributor, OCEAN_token
 from df_py.volume import csvs
 
 PREV, DFTOOL_ACCT = {}, None
@@ -714,52 +711,6 @@ def test_chain_info():
 
     with sysargs_context(sys_argv):
         dftool_module.do_chain_info()
-
-
-def test_dispense_passive():
-    sys_argv = [
-        "dftool",
-        "dispense_passive",
-        str(networkutil.DEV_CHAINID),
-        "0",
-        "2023-02-02",
-    ]
-
-    with patch.object(dftool_module, "retry_function") as mock:
-        with sysargs_context(sys_argv):
-            dftool_module.do_dispense_passive()
-
-    # pylint: disable=comparison-with-callable
-    assert mock.call_args[0][0] == dispense.dispense_passive
-    assert isinstance(mock.call_args[0][3], Web3)
-    assert mock.call_args[0][4].name() == "Ocean Token"
-    assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
-    assert (
-        mock.call_args[0][5].address == FeeDistributor(networkutil.DEV_CHAINID).address
-    )
-    assert mock.call_args[0][6] == 0
-
-
-def test_dispense_predictoor():
-    sys_argv = [
-        "dftool",
-        "fund_predictoor_ocean_dispenser",
-        str(networkutil.DEV_CHAINID),
-        "0x0000000000000000000000000000000000000001",
-        "2023-11-20",
-    ]
-
-    with patch.object(dftool_module, "retry_function") as mock:
-        with sysargs_context(sys_argv):
-            dftool_module.do_fund_predictoor_ocean_dispenser()
-
-    # pylint: disable=comparison-with-callable
-    assert mock.call_args[0][0] == dispense.multisig_transfer_tokens
-    assert isinstance(mock.call_args[0][3], Web3)
-    assert mock.call_args[0][4].name() == "Ocean Token"
-    assert mock.call_args[0][4].address == OCEAN_token(networkutil.DEV_CHAINID).address
-    assert mock.call_args[0][5] == "0x0000000000000000000000000000000000000001"
-    assert mock.call_args[0][6] == PREDICTOOR_OCEAN_BUDGET
 
 
 @enforce_types

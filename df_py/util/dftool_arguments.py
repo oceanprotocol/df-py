@@ -27,7 +27,6 @@ Usage: dftool get_rate|volsym|allocations.. ARG1 ARG2 ..
   dftool predictoor_data START_DATE END_DATE CSV_DIR CHAINID --RETRIES
   dftool calc volume|predictoor CSV_DIR TOT_OCEAN START_DATE - from stakes/etc csvs (or predictoor/volume data csvs), output rewards
   dftool dispense_active CSV_DIR CHAINID --DFREWARDS_ADDR --TOKEN_ADDR --BATCH_NBR - from rewards, dispense funds
-  dftool dispense_passive CHAINID AMOUNT
   dftool nftinfo CSV_DIR CHAINID -- Query chain, output nft info csv
 
   dftool new_acct - generate new account

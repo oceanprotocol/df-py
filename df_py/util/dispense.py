@@ -1,7 +1,7 @@
 import os
 
 # pylint: disable=logging-fstring-interpolation
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 from enforce_typing import enforce_types
 from web3.main import Web3
@@ -135,27 +135,6 @@ def dispense(
         if done is False:
             logger.critical(f"Could not allocate funds for batch {i+1}")
     logger.info("dispense: done")
-
-
-@enforce_types
-def dispense_passive(web3, ocean, feedistributor, amount: Union[float, int]):
-    amount_wei = to_wei(amount)
-    transfer_data = ocean.contract.encodeABI(
-        fn_name="transfer", args=[feedistributor.address, amount_wei]
-    )
-
-    checkpoint_total_supply_data = feedistributor.contract.encodeABI(
-        fn_name="checkpoint_total_supply"
-    )
-    checkpoint_token_data = feedistributor.contract.encodeABI(
-        fn_name="checkpoint_token"
-    )
-
-    multisig_addr = chain_id_to_multisig_addr(web3.eth.chain_id)
-    send_multisig_tx(multisig_addr, web3, ocean.address, 0, transfer_data)
-
-    for data in [checkpoint_total_supply_data, checkpoint_token_data]:
-        send_multisig_tx(multisig_addr, web3, feedistributor.address, 0, data)
 
 
 @enforce_types

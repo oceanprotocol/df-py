@@ -54,7 +54,6 @@ from df_py.util.oceanutil import (
 )
 from df_py.util.retry import retry_function
 from df_py.util.vesting_schedule import (
-    get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
 )
 from df_py.volume import csvs, queries
@@ -934,76 +933,6 @@ def do_chain_info():
     block_number = web3.eth.get_block("latest").number
     print("\nChain info:")
     print(f"  # blocks: {block_number}")
-
-
-# ========================================================================
-@enforce_types
-def do_dispense_passive():
-    parser = argparse.ArgumentParser(description="Dispense passive rewards")
-    parser.add_argument("command", choices=["dispense_passive"])
-    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
-    parser.add_argument(
-        "AMOUNT",
-        type=float,
-        help="total amount of TOKEN to distribute (decimal, not wei)",
-    )
-    parser.add_argument(
-        "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
-    )
-
-    arguments = parser.parse_args()
-    print_arguments(arguments)
-
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
-
-    amount = arguments.AMOUNT
-
-    if amount == 0:
-        start_date = arguments.ST
-        amount = get_active_reward_amount_for_week_eth(start_date)
-
-    feedist = FeeDistributor(arguments.CHAINID)
-    OCEAN = OCEAN_token(arguments.CHAINID)
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
-    retry_function(dispense.dispense_passive, 3, 60, web3, OCEAN, feedist, amount)
-
-    print("Dispensed passive rewards")
-
-
-# ========================================================================
-
-
-@enforce_types
-def do_fund_predictoor_ocean_dispenser():
-    parser = argparse.ArgumentParser(description="Dispense predictoor rewards")
-    parser.add_argument("command", choices=["fund_predictoor_ocean_dispenser"])
-    parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
-    parser.add_argument("RECEIVER", type=str, help="Receiver address")
-    parser.add_argument(
-        "ST", type=valid_date_and_convert, help="week start date -- YYYY-MM-DD"
-    )
-    arguments = parser.parse_args()
-    print_arguments(arguments)
-    ADDRESS_FILE = _getAddressEnvvarOrExit()
-    record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
-
-    OCEAN = OCEAN_token(arguments.CHAINID)
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
-
-    predictoor_budget_week = get_active_reward_amount_for_week_eth_by_stream(
-        arguments.ST, "predictoor", arguments.CHAINID
-    )
-
-    retry_function(
-        dispense.multisig_transfer_tokens,
-        3,
-        60,
-        web3,
-        OCEAN,
-        arguments.RECEIVER,
-        predictoor_budget_week,
-    )
 
 
 # ========================================================================

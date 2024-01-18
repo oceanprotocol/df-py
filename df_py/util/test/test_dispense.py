@@ -98,16 +98,6 @@ def test_batch_number(w3):
     assert df_rewards.claimable(accounts[batch_size + 2], token.address) == 0
 
 
-def test_dispense_passive(w3):
-    fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
-    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
-    with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
-        with patch("df_py.util.dispense.send_multisig_tx") as mock:
-            dispense.dispense_passive(w3, OCEAN, fee_distributor, 1)
-
-    assert mock.call_count == 3
-
-
 def test_multisig_transfer_tokens(w3):
     OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
     with patch("df_py.util.dispense.chain_id_to_multisig_addr"):
