@@ -152,6 +152,7 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
     block_timestamp = block_found.timestamp
 
     if abs(block_timestamp - timestamp) > 60 * 15:
+        # pylint: disable=line-too-long
         print(
             "WARNING: timestamp_to_block() is returning a block that is more than 15 minutes away from the target timestamp"
         )
