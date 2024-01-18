@@ -1,8 +1,8 @@
-import pytest
-
 from datetime import datetime
 from math import ceil
 from unittest.mock import Mock
+
+import pytest
 
 from enforce_typing import enforce_types
 from pytest import approx
