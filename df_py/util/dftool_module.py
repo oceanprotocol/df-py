@@ -54,7 +54,6 @@ from df_py.util.oceanutil import (
 )
 from df_py.util.retry import retry_function
 from df_py.util.vesting_schedule import (
-    get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
 )
 from df_py.volume import csvs, queries

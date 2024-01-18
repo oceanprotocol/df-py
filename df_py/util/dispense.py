@@ -1,7 +1,7 @@
 import os
 
 # pylint: disable=logging-fstring-interpolation
-from typing import Dict, Optional, Union
+from typing import Dict, Optional
 
 from enforce_typing import enforce_types
 from web3.main import Web3
