@@ -42,7 +42,7 @@ jobs:
 
       - name: Set branch to checkout
         id: set_branch
-        run: echo "BRANCH=${{ github.event_name == 'schedule' && steps.df-py.outputs.release || github.ref }}" >> $GITHUB_ENV
+        run: echo "BRANCH=${{ github.ref }}" >> $GITHUB_ENV
 
       - uses: actions/checkout@v3
         with:
@@ -123,17 +123,9 @@ jobs:
           retention-days: 5
           path: /tmp/csv
 
-      - name: Distribute test active rewards
-        env:
-          USE_MULTISIG: true
-        if: github.event_name != 'schedule'
-        run: |
-          ./dftool dispense_active $CSV_DIR 5 --DFREWARDS_ADDR=0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 --TOKEN_ADDR=0xCfDdA22C9837aE76E0faA845354f33C62E03653a
-
       - name: Distribute active rewards
         env:
           USE_MULTISIG: true
-        if: github.event_name == 'schedule'
         run: |
           ./dftool dispense_active $CSV_DIR 1 --DFREWARDS_ADDR=0xFe27534EA0c016634b2DaA97Ae3eF43fEe71EEB0 --TOKEN_ADDR=0x967da4048cD07aB37855c090aAF366e4ce1b9F48
 
@@ -150,11 +142,7 @@ jobs:
 
       - name: Set upload destination
         run: |
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
-            echo "DESTINATION=df-historical-data" >> $GITHUB_ENV
-          else
-            echo "DESTINATION=df-historical-data-test" >> $GITHUB_ENV
-          fi
+          echo "DESTINATION=df-historical-data" >> $GITHUB_ENV
 
       - id: "upload-folder"
         uses: "google-github-actions/upload-cloud-storage@v1"
