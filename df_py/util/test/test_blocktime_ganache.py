@@ -102,6 +102,17 @@ def test_timestamp_to_block(w3):
 
     assert timestamp_to_block(w3, timestamp29 - 10.0) == approx(block29 - 1, 1)
 
+@enforce_types
+@mock("df_py.util.blocktime.")
+def test_timestamp_to_block_validation():
+    target_ts = 10000
+    web3 = Mock()
+    web3.eth.get_block.return_value = 0
+
+    with pytest.raises(Exception) as err:
+        timestamp_to_block(web3. target_ts)
+
+    assert str(err.value) == "timestamp_to_block() is returning a block that is too far away"
 
 @enforce_types
 def test_get_next_thursday(w3):
