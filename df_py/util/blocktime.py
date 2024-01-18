@@ -160,7 +160,7 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
         print("block timestamp =", block_timestamp)
         print("block number =", block_i)
         print("delta =", abs(block_timestamp - timestamp))
-        raise Exception(
+        raise ValueError(
             "timestamp_to_block() is returning a block that is too far away"
         )
     print(
