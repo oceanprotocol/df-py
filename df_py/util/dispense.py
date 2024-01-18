@@ -137,7 +137,6 @@ def dispense(
     logger.info("dispense: done")
 
 
-
 @enforce_types
 def multisig_transfer_tokens(web3, ocean, receiver_address, amount):
     amount_wei = to_wei(amount)
