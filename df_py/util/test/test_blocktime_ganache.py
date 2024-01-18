@@ -1,5 +1,8 @@
 from datetime import datetime
 from math import ceil
+from unittest.mock import Mock, patch
+
+import pytest
 
 from enforce_typing import enforce_types
 from pytest import approx
@@ -101,6 +104,25 @@ def test_timestamp_to_block(w3):
     assert timestamp_to_block(w3, timestamp9 + 10.0) == approx(block9 + 1, 1)
 
     assert timestamp_to_block(w3, timestamp29 - 10.0) == approx(block29 - 1, 1)
+
+
+@enforce_types
+@patch("df_py.util.blocktime.optimize.bisect")
+def test_timestamp_to_block_validation(mock_time_since):
+    mock_time_since.return_value = (1, None)
+    target_ts = 100 + 16 * 60
+    web3 = Mock()
+    block_mock_1 = Mock(number=20, timestamp=100)
+    block_mock_2 = Mock(number=20, timestamp=100000)
+    web3.eth.get_block.side_effect = [block_mock_1, block_mock_2] * 4
+
+    with pytest.raises(ValueError) as err:
+        timestamp_to_block(web3, target_ts)
+
+    assert (
+        str(err.value)
+        == "timestamp_to_block() is returning a block that is too far away"
+    )
 
 
 @enforce_types

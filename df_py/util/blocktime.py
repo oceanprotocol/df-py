@@ -120,7 +120,7 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
                 block_timestamp = web3.eth.get_block(int(block_i)).timestamp
             except Exception as e:
                 print(f"An exception occurred while getting block {block_i}, {e}")
-                return 0
+                block_timestamp = 0
             return block_timestamp - self.target_timestamp
 
     f = C(timestamp).timeSinceTimestamp
@@ -148,7 +148,29 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
     # print(f"distToTargetTimestamp(b={b}) = {f(b)}")
     # print(f"distToTargetTimestamp(result=block_i={block_i}) = {f(block_i)}")
     # ---
+    block_found = web3.eth.get_block(int(block_i))
+    block_timestamp = block_found.timestamp
 
+    if abs(block_timestamp - timestamp) > 60 * 15:
+        # pylint: disable=line-too-long
+        print(
+            "WARNING: timestamp_to_block() is returning a block that is more than 15 minutes away from the target timestamp"
+        )
+        print("target timestamp =", timestamp)
+        print("block timestamp =", block_timestamp)
+        print("block number =", block_i)
+        print("delta =", abs(block_timestamp - timestamp))
+        raise ValueError(
+            "timestamp_to_block() is returning a block that is too far away"
+        )
+    print(
+        "Returning block number",
+        block_i,
+        "for timestamp",
+        timestamp,
+        "diff",
+        abs(block_timestamp - timestamp),
+    )
     return int(block_i)
 
 
