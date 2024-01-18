@@ -110,7 +110,7 @@ def test_timestamp_to_block(w3):
 def test_timestamp_to_block_validation():
     target_ts = 10000
     web3 = Mock()
-    web3.eth.get_block.return_value = 0
+    web3.eth.get_block.return_value = {"number": 0}
 
     with pytest.raises(Exception) as err:
         timestamp_to_block(web3, target_ts)
