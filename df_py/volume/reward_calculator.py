@@ -186,6 +186,7 @@ class RewardCalculator:
                 perc_at_ij = stake_ij / stake_j
 
                 # main formula!
+                # reward amount in OCEAN
                 R[i, j] = min(
                     perc_at_j * perc_at_ij * self.OCEAN_avail,
                     stake_ij * TARGET_WPY,  # bound rewards by max APY
