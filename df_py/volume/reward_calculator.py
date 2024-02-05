@@ -175,7 +175,7 @@ class RewardCalculator:
         for j in range(N_j):
             stake_j = sum(S[:, j])
             multiplier = self.M[j]
-            DCV_j = self.V_USD[j]
+            DCV_OCEAN_j = self.V_USD[j] / self.rates["OCEAN"]
             if stake_j == 0.0 or DCV_j == 0.0:
                 continue
 
@@ -189,7 +189,7 @@ class RewardCalculator:
                 R[i, j] = min(
                     perc_at_j * perc_at_ij * self.OCEAN_avail,
                     stake_ij * TARGET_WPY,  # bound rewards by max APY
-                    DCV_j * multiplier,  # bound rewards by DCV
+                    DCV_OCEAN_j * multiplier,  # bound rewards by DCV
                 )
 
         # filter negligible values
