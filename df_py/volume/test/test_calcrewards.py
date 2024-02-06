@@ -1109,6 +1109,7 @@ def test_volume_reward_calculator(tmp_path):
         },
         "rates": {
             "basetoken_symbol1": 1.0,
+            "OCEAN": 1.0,
         },
         "multiplier": 1.0,
     }
@@ -1173,6 +1174,7 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         },
         "rates": {
             "basetoken_symbol1": 1.0,
+            "OCEAN": 1.0,
         },
         "predictoor_contracts": {"0xnft_addr1": {}},
     }
