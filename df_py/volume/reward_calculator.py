@@ -176,7 +176,7 @@ class RewardCalculator:
             stake_j = sum(S[:, j])
             multiplier = self.M[j]
             DCV_OCEAN_j = self.V_USD[j] / self.rates["OCEAN"]
-            if stake_j == 0.0 or DCV_j == 0.0:
+            if stake_j == 0.0 or DCV_OCEAN_j == 0.0:
                 continue
 
             for i in range(N_i):
