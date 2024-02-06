@@ -500,10 +500,9 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 @enforce_types
 def test_bound_by_DCV_one_nft():
     DCV_OCEAN = 100.0
-    DCV_USD = DCV_OCEAN / RATES["OCEAN"]
 
     stakes = {C1: {NA: {LP1: 1e6}}}
-    nftvols = {C1: {OCN_ADDR: {NA: DCV_USD}}}
+    nftvols = {C1: {OCN_ADDR: {NA: DCV_OCEAN}}}
     OCEAN_avail = 10000.0
 
     # df week = 9 -> DCV multiplier = 1.0
