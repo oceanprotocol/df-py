@@ -427,7 +427,7 @@ def _test_end_to_end_without_csvs(rng):
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
+        S, S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
@@ -480,7 +480,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
+        S, S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
