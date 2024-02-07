@@ -65,4 +65,4 @@ def test_load_stakes(tmp_path):
         mock.side_effect = lambda value: value
         loaded_stakes, loaded_locked_amts = load_stakes(csv_dir)
     assert loaded_stakes == target_stakes
-    assert loaded_locked_amts = target_locked_amts
+    assert loaded_locked_amts == target_locked_amts
