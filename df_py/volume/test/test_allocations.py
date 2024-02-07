@@ -61,5 +61,5 @@ def test_load_stakes(tmp_path):
     target_stakes = allocs_to_stakes(allocs, vebals)
     with patch("web3.main.Web3.to_checksum_address") as mock:
         mock.side_effect = lambda value: value
-        loaded_stakes = load_stakes(csv_dir)
+        loaded_stakes, _ = load_stakes(csv_dir)
     assert loaded_stakes == target_stakes
