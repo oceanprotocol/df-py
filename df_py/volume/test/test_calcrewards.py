@@ -39,7 +39,7 @@ DF_WEEK = 7
 
 class MockRewardCalculator(RewardCalculator):
     def __init__(self):
-        return super().__init__({}, {}, {}, {}, {}, DF_WEEK, False, False, False)
+        return super().__init__({}, {}, {}, {}, {}, {}, DF_WEEK, False, False, False)
 
     def set_mock_attribute(self, attr_name, attr_value):
         self._freeze_attributes = False
