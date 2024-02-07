@@ -69,10 +69,11 @@ def test_freeze_attributes():
 @enforce_types
 def test_simple():
     stakes = {C1: {NA: {LP1: 1000.0}}}
+    locked_amts = {C1: {NA: {LP1: 1000.0}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = _calc_rewards(stakes, locked_amts, nftvols, OCEAN_avail)
     assert rewards_per_lp == {C1: {LP1: 10.0}}
     assert rewards_info == {C1: {NA: {LP1: 10}}}
 
@@ -119,6 +120,10 @@ def test_two_chains():
         C1: {NA: {LP1: 50000.0}},
         C2: {NB: {LP1: 50000.0}},
     }
+    locked_amts = {
+        C1: {NA: {LP1: 50000.0}},
+        C2: {NB: {LP1: 50000.0}},
+    }
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}, C2: {OCN_ADDR2: {NB: 1.0}}}
     symbols = {
         C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
@@ -131,7 +136,7 @@ def test_two_chains():
     OCEAN_avail = 20.0
 
     rewards_per_lp, rewards_info = _calc_rewards(
-        stakes, nftvols, OCEAN_avail, symbols=symbols
+        stakes, locked_amts, nftvols, OCEAN_avail, symbols=symbols
     )
 
     assert rewards_per_lp == target_rewards_per_lp
@@ -140,7 +145,7 @@ def test_two_chains():
     # now, make it so that Ocean token in C2 is MOCEAN
     symbols[C2][OCN_ADDR2] = "MOCEAN"
     rewards_per_lp, rewards_info = _calc_rewards(
-        stakes, nftvols, OCEAN_avail, symbols=symbols
+        stakes, locked_amts, nftvols, OCEAN_avail, symbols=symbols
     )
 
     assert rewards_per_lp == {C1: {LP1: 20.0}}  # it completely ignores C2's MOCEAN ...
@@ -153,7 +158,7 @@ def test_two_chains():
     rates["MOCEAN"] = rates["OCEAN"]
 
     rewards_per_lp, rewards_info = _calc_rewards(
-        stakes, nftvols, OCEAN_avail, rates=rates, symbols=symbols
+        stakes, locked_amts, nftvols, OCEAN_avail, rates=rates, symbols=symbols
     )
 
     # now the rewards should line up as expected
@@ -343,27 +348,27 @@ def test_mix_upper_and_lower_case():
     OCEAN_avail = 10.0
 
     # tests
-    rewards_per_lp, rewards_info = _calc_rewards(stakes2a, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = _calc_rewards(stakes2a, stakes2a, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes2b, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes2b, stakes2b, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes2c, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes2c, stakes2c, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, nftvols2a, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols2a, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, nftvols2b, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols2b, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, nftvols, OCEAN_avail, rates=rates2)
+    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols, OCEAN_avail, rates=rates2)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
