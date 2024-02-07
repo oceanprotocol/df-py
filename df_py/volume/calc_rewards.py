@@ -18,7 +18,7 @@ def calc_volume_rewards_from_csvs(
     do_pubrewards: Optional[bool] = DO_PUBREWARDS,
     do_rank: Optional[bool] = DO_RANK,
 ):
-    S = allocations.load_stakes(csv_dir)
+    S, L = allocations.load_stakes(csv_dir)
     V = csvs.load_nftvols_csvs(csv_dir)
     C = csvs.load_owners_csvs(csv_dir)
     SYM = csvs.load_symbols_csvs(csv_dir)
@@ -30,6 +30,7 @@ def calc_volume_rewards_from_csvs(
 
     rewperlp, rewinfo = calc_volume_rewards(
         S,
+        L,
         V,
         C,
         SYM,
@@ -46,6 +47,7 @@ def calc_volume_rewards_from_csvs(
 
 def calc_volume_rewards(
     S: Dict[int, Dict[str, Dict[str, float]]],
+    L: Dict[int, Dict[str, Dict[str, float]]],
     V: Dict[int, Dict[str, Dict[str, float]]],
     C: Dict[int, Dict[str, str]],
     SYM: Dict[int, Dict[str, str]],
@@ -73,6 +75,7 @@ def calc_volume_rewards(
 
     vol_calculator = RewardCalculator(
         S,
+        L,
         V,
         C,
         SYM,
