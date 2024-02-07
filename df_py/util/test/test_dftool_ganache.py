@@ -211,7 +211,7 @@ def test_calc_without_amount(tmp_path, monkeypatch):
     csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
 
     vebals = {"0xlp_addr1": 1e8}
-    locked_amt = {"0xlp_addr1": 10.0}
+    locked_amt = {"0xlp_addr1": 1e8}
     unlock_time = {"0xlp_addr1": 1}
     csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
