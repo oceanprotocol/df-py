@@ -415,9 +415,10 @@ def _test_end_to_end_without_csvs(rng):
     C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
 
-    vebals, _, _ = queries.queryVebalances(rng, CHAINID)
+    vebals, locked_amts, _ = queries.queryVebalances(rng, CHAINID)
     allocs = queries.queryAllocations(rng, CHAINID)
     S = allocs_to_stakes(allocs, vebals)
+    L = allocs_to_stakes(allocs, locked_amts)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
@@ -427,7 +428,7 @@ def _test_end_to_end_without_csvs(rng):
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
+        S, L, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
