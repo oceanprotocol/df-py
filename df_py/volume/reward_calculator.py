@@ -74,7 +74,6 @@ class RewardCalculator:
         self.nftvols_USD = to_usd.nft_vols_to_usd(
             self.nftvols, self.symbols, self.rates
         )
-        self.locked_ocean_amts_OCEAN = 
 
         self.chain_nft_tups = self._get_chain_nft_tups()
         self.LP_addrs = self._get_lp_addrs()
@@ -104,7 +103,9 @@ class RewardCalculator:
         """
         self._freeze_attributes = False
 
-        self.S, self.V_USD, self.M, self.C, self.L = self._stake_vol_owner_dicts_to_arrays()
+        self.S, self.V_USD, self.M, self.C, self.L = (
+            self._stake_vol_owner_dicts_to_arrays()
+        )
         self.R = self._calc_rewards_usd()
 
         self._freeze_attributes = True
@@ -136,7 +137,7 @@ class RewardCalculator:
             for i, LP_addr in enumerate(self.LP_addrs):
                 assert nft_addr in self.stakes[chainID], "each tup should be in stakes"
                 S[i, j] = self.stakes[chainID][nft_addr].get(LP_addr, 0.0)
-                L[i, j] = self.locked_amts_to_ocean[chainID][nft_addr].get(LP_addr, 0.0)
+                L[i, j] = self.locked_ocean_amts[chainID][nft_addr].get(LP_addr, 0.0)
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
 
             M[j] = calc_dcv_multiplier(
