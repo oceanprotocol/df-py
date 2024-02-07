@@ -1279,6 +1279,7 @@ def _calc_rewards(
 
     calculator = RewardCalculator(
         stakes,
+        stakes,
         nftvols,
         owners,
         symbols,
