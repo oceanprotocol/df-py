@@ -1136,6 +1136,10 @@ def test_volume_reward_calculator(tmp_path):
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
             2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
         },
+        "locked_amts": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
         "volumes": {
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
@@ -1153,7 +1157,7 @@ def test_volume_reward_calculator(tmp_path):
     }
 
     with patch(
-        "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
+        "df_py.volume.allocations.load_stakes", return_value=(mock_data["stakes"], mock_data["locked_amts"])
     ), patch(
         "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
     ), patch(
@@ -1201,6 +1205,10 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
             2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
         },
+        "locked_amts": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
         "volumes": {
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
@@ -1224,7 +1232,7 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         return 0.201
 
     with patch(
-        "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
+        "df_py.volume.allocations.load_stakes", return_value=(mock_data["stakes"], mock_data["locked_amts"])
     ), patch(
         "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
     ), patch(
