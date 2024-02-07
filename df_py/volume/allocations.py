@@ -1,6 +1,7 @@
 from enforce_typing import enforce_types
 
 from df_py.volume import cleancase, csvs
+from typing import Tuple
 
 
 @enforce_types
@@ -33,7 +34,7 @@ def allocs_to_stakes(allocs: dict, vebals: dict) -> dict:
 
 
 @enforce_types
-def load_stakes(csv_dir: str) -> dict:
+def load_stakes(csv_dir: str) -> Tuple[dict, dict]:
     """
     Loads allocs and vebals, computes stakes from it, and returns stakes.
 

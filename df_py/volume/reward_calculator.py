@@ -118,7 +118,7 @@ class RewardCalculator:
     @enforce_types
     def _stake_vol_owner_dicts_to_arrays(
         self,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         @return
           S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
