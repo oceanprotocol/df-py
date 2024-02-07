@@ -73,7 +73,9 @@ def test_simple():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards(stakes, locked_amts, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = _calc_rewards(
+        stakes, locked_amts, nftvols, OCEAN_avail
+    )
     assert rewards_per_lp == {C1: {LP1: 10.0}}
     assert rewards_info == {C1: {NA: {LP1: 10}}}
 
@@ -348,7 +350,9 @@ def test_mix_upper_and_lower_case():
     OCEAN_avail = 10.0
 
     # tests
-    rewards_per_lp, rewards_info = _calc_rewards(stakes2a, stakes2a, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = _calc_rewards(
+        stakes2a, stakes2a, nftvols, OCEAN_avail
+    )
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
@@ -368,7 +372,9 @@ def test_mix_upper_and_lower_case():
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols, OCEAN_avail, rates=rates2)
+    rewards_per_lp, _ = _calc_rewards(
+        stakes, stakes, nftvols, OCEAN_avail, rates=rates2
+    )
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
@@ -1157,7 +1163,8 @@ def test_volume_reward_calculator(tmp_path):
     }
 
     with patch(
-        "df_py.volume.allocations.load_stakes", return_value=(mock_data["stakes"], mock_data["locked_amts"])
+        "df_py.volume.allocations.load_stakes",
+        return_value=(mock_data["stakes"], mock_data["locked_amts"]),
     ), patch(
         "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
     ), patch(
@@ -1232,7 +1239,8 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         return 0.201
 
     with patch(
-        "df_py.volume.allocations.load_stakes", return_value=(mock_data["stakes"], mock_data["locked_amts"])
+        "df_py.volume.allocations.load_stakes",
+        return_value=(mock_data["stakes"], mock_data["locked_amts"]),
     ), patch(
         "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
     ), patch(
@@ -1293,7 +1301,7 @@ def _calc_rewards_C1(
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
-        stakes, # pass veOCEAN stakes as locked_amts for simplicity
+        stakes,  # pass veOCEAN stakes as locked_amts for simplicity
         nftvols,
         OCEAN_avail,
         symbols,
