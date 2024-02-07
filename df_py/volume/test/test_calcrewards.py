@@ -1247,6 +1247,7 @@ def _calc_rewards_C1(
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
+        stakes, # pass veOCEAN stakes as locked_amts for simplicity
         nftvols,
         OCEAN_avail,
         symbols,
@@ -1264,6 +1265,7 @@ def _calc_rewards_C1(
 @enforce_types
 def _calc_rewards(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
+    locked_amts: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     OCEAN_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
@@ -1279,7 +1281,7 @@ def _calc_rewards(
 
     calculator = RewardCalculator(
         stakes,
-        stakes,
+        locked_amts,
         nftvols,
         owners,
         symbols,
@@ -1302,7 +1304,7 @@ def _null_owners(
 ) -> Dict[int, Dict[str, Union[str, None]]]:
     """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
     partially_initialised = RewardCalculator(
-        stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
+        stakes, stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
     )
 
     return _null_owners_from_chain_nft_tups(partially_initialised._get_chain_nft_tups())
