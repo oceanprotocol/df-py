@@ -1025,6 +1025,28 @@ def test_stake_vol_owner_dicts_to_arrays():
             },
         },
     }
+    locked_ocean_amts = {
+        1: {
+            "nft_addr1": {
+                "LP_addr1": 10.0,
+                "LP_addr2": 20.0,
+            },
+            "nft_addr2": {
+                "LP_addr1": 30.0,
+                "LP_addr2": 40.0,
+            },
+        },
+        2: {
+            "nft_addr3": {
+                "LP_addr3": 50.0,
+                "LP_addr4": 60.0,
+            },
+            "nft_addr4": {
+                "LP_addr3": 70.0,
+                "LP_addr4": 80.0,
+            },
+        },
+    }
     nftvols_USD = {
         1: {
             "nft_addr1": 15.0,
@@ -1045,6 +1067,7 @@ def test_stake_vol_owner_dicts_to_arrays():
 
     mock_calculator = MockRewardCalculator()
     mock_calculator.set_mock_attribute("stakes", stakes)
+    mock_calculator.set_mock_attribute("locked_ocean_amts", locked_ocean_amts)
     mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
     mock_calculator.set_mock_attribute("LP_addrs", lp_addrs)
     mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
@@ -1053,9 +1076,18 @@ def test_stake_vol_owner_dicts_to_arrays():
     owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
     mock_calculator.set_mock_attribute("owners", owners)
 
-    S, V_USD, _, _ = mock_calculator._stake_vol_owner_dicts_to_arrays()
+    S, V_USD, _, _, L = mock_calculator._stake_vol_owner_dicts_to_arrays()
 
     expected_S = np.array(
+        [
+            [10.0, 30.0, 0.0, 0.0],
+            [20.0, 40.0, 0.0, 0.0],
+            [0.0, 0.0, 50.0, 70.0],
+            [0.0, 0.0, 60.0, 80.0],
+        ],
+        dtype=float,
+    )
+    expected_L = np.array(
         [
             [10.0, 30.0, 0.0, 0.0],
             [20.0, 40.0, 0.0, 0.0],
@@ -1067,6 +1099,7 @@ def test_stake_vol_owner_dicts_to_arrays():
     expected_V_USD = np.array([15.0, 25.0, 35.0, 45.0], dtype=float)
 
     assert np.array_equal(S, expected_S)
+    assert np.array_equal(L, expected_L)
     assert np.array_equal(V_USD, expected_V_USD)
 
 
