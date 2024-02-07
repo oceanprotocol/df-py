@@ -468,7 +468,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     vebals = locked_amt = unlock_time = None  # ensure not used later
 
     # 5. simulate "dftool calc"
-    S = load_stakes(csv_dir)  # loads allocs & vebals, then *
+    S, L = load_stakes(csv_dir)  # loads allocs & vebals, then *
     R = csvs.load_rate_csvs(csv_dir)
     V = csvs.load_nftvols_csvs(csv_dir)
     C = csvs.load_owners_csvs(csv_dir)
@@ -480,7 +480,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
+        S, L, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
