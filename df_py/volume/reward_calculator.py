@@ -131,7 +131,7 @@ class RewardCalculator:
         S = np.zeros((N_i, N_j), dtype=float)
         V_USD = np.zeros(N_j, dtype=float)
         C = np.zeros(N_j, dtype=int)
-        L = np.zeros(N_i, dtype=int)
+        L = np.zeros((N_i, N_j), dtype=float)
 
         for j, (chainID, nft_addr) in enumerate(self.chain_nft_tups):
             for i, LP_addr in enumerate(self.LP_addrs):
