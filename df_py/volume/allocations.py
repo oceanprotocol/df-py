@@ -39,9 +39,10 @@ def load_stakes(csv_dir: str) -> dict:
 
     @return
       stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float - abs alloc
+      locked_amts_per_nft - dict of [chainID][nft_addr][LP_addr] : OCEAN_float - abs alloc
     """
     allocs = csvs.load_allocation_csvs(csv_dir)
     vebals, locked_amts, _ = csvs.load_vebals_csv(csv_dir)
     stakes = allocs_to_stakes(allocs, vebals)
-    locked_amts = allocs_to_stakes(allocs, locked_amts)
-    return stakes, locked_amts
+    locked_amts_per_nft = allocs_to_stakes(allocs, locked_amts)
+    return stakes, locked_amts_per_nft
