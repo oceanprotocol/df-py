@@ -167,6 +167,7 @@ class RewardCalculator:
             return np.zeros((N_i, N_j), dtype=float)
 
         S = np.copy(self.S)
+        L = np.copy(self.L)
         # modify S's: owners get rewarded as if 2x stake on their asset
         if self.do_pubrewards:
             for j in range(N_j):
