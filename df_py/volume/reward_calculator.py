@@ -39,6 +39,7 @@ class RewardCalculator:
     def __init__(
         self,
         stakes: Dict[int, Dict[str, Dict[str, float]]],
+        locked_ocean_amts: Dict[int, Dict[str, Dict[str, float]]],
         nftvols: Dict[int, Dict[str, Dict[str, float]]],
         owners: Dict[int, Dict[str, str]],
         symbols: Dict[int, Dict[str, str]],
@@ -51,6 +52,7 @@ class RewardCalculator:
         """
         @arguments
           stakes - dict of [chainID][nft_addr][LP_addr] : veOCEAN_float
+          locked_ocean_amts: dict of [chainID][nft_addr][LP_addr] : OCEAN amount
           nftvols -- dict of [chainID][basetoken_addr][nft_addr] : consume_vol_float
           owners -- dict of [chainID][nft_addr] : owner_addr
           symbols -- dict of [chainID][basetoken_addr] : basetoken_symbol_str
@@ -63,6 +65,7 @@ class RewardCalculator:
         self._freeze_attributes = False
 
         self.stakes = cc.mod_stakes(stakes)
+        self.locked_ocean_amts = cc.mod_stakes(locked_ocean_amts)
         self.nftvols = cc.mod_nft_vols(nftvols)
         self.owners = cc.mod_owners(owners)
         self.symbols = cc.mod_symbols(symbols)
@@ -87,6 +90,7 @@ class RewardCalculator:
         self.V_USD: np.ndarray
         self.M: np.ndarray
         self.R: np.ndarray
+        self.L: np.ndarray
 
         self._freeze_attributes = True
 
@@ -99,7 +103,9 @@ class RewardCalculator:
         """
         self._freeze_attributes = False
 
-        self.S, self.V_USD, self.M, self.C = self._stake_vol_owner_dicts_to_arrays()
+        self.S, self.V_USD, self.M, self.C, self.L = (
+            self._stake_vol_owner_dicts_to_arrays()
+        )
         self.R = self._calc_rewards_usd()
 
         self._freeze_attributes = True
@@ -112,7 +118,7 @@ class RewardCalculator:
     @enforce_types
     def _stake_vol_owner_dicts_to_arrays(
         self,
-    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
         """
         @return
           S -- 2d array of [LP i, chain_nft j] -- stake for each {i,j}, in veOCEAN
@@ -125,11 +131,13 @@ class RewardCalculator:
         S = np.zeros((N_i, N_j), dtype=float)
         V_USD = np.zeros(N_j, dtype=float)
         C = np.zeros(N_j, dtype=int)
+        L = np.zeros((N_i, N_j), dtype=float)
 
         for j, (chainID, nft_addr) in enumerate(self.chain_nft_tups):
             for i, LP_addr in enumerate(self.LP_addrs):
                 assert nft_addr in self.stakes[chainID], "each tup should be in stakes"
                 S[i, j] = self.stakes[chainID][nft_addr].get(LP_addr, 0.0)
+                L[i, j] = self.locked_ocean_amts[chainID][nft_addr].get(LP_addr, 0.0)
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
 
             M[j] = calc_dcv_multiplier(
@@ -143,7 +151,7 @@ class RewardCalculator:
                 else self.LP_addrs.index(owner_addr)
             )
 
-        return S, V_USD, M, C
+        return S, V_USD, M, C, L
 
     @freeze_attributes
     @enforce_types
@@ -159,6 +167,7 @@ class RewardCalculator:
             return np.zeros((N_i, N_j), dtype=float)
 
         S = np.copy(self.S)
+        L = np.copy(self.L)
         # modify S's: owners get rewarded as if 2x stake on their asset
         if self.do_pubrewards:
             for j in range(N_j):
@@ -185,11 +194,13 @@ class RewardCalculator:
                 stake_ij = S[i, j]
                 perc_at_ij = stake_ij / stake_j
 
+                ocean_locked_ij = L[i, j]
+
                 # main formula!
                 # reward amount in OCEAN
                 R[i, j] = min(
                     perc_at_j * perc_at_ij * self.OCEAN_avail,
-                    stake_ij * TARGET_WPY,  # bound rewards by max APY
+                    ocean_locked_ij * TARGET_WPY,  # bound rewards by max APY
                     DCV_OCEAN_j * multiplier,  # bound rewards by DCV
                 )
 

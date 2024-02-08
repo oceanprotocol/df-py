@@ -54,12 +54,15 @@ def test_load_stakes(tmp_path):
     csvs.save_allocation_csv(allocs, csv_dir)
 
     vebals = {ST1: 100.0, ST2: 200.0}
-    locked_amt = {ST1: 10.0, ST2: 20.0}
+    locked_amt = {ST1: 200.0, ST2: 400.0}
     unlock_time = {ST1: 1, ST2: 1}
     csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     target_stakes = allocs_to_stakes(allocs, vebals)
+    target_locked_amts = allocs_to_stakes(allocs, locked_amt)
+
     with patch("web3.main.Web3.to_checksum_address") as mock:
         mock.side_effect = lambda value: value
-        loaded_stakes = load_stakes(csv_dir)
+        loaded_stakes, loaded_locked_amts = load_stakes(csv_dir)
     assert loaded_stakes == target_stakes
+    assert loaded_locked_amts == target_locked_amts

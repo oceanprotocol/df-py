@@ -39,7 +39,7 @@ DF_WEEK = 7
 
 class MockRewardCalculator(RewardCalculator):
     def __init__(self):
-        return super().__init__({}, {}, {}, {}, {}, DF_WEEK, False, False, False)
+        return super().__init__({}, {}, {}, {}, {}, {}, DF_WEEK, False, False, False)
 
     def set_mock_attribute(self, attr_name, attr_value):
         self._freeze_attributes = False
@@ -69,10 +69,13 @@ def test_freeze_attributes():
 @enforce_types
 def test_simple():
     stakes = {C1: {NA: {LP1: 1000.0}}}
+    locked_amts = {C1: {NA: {LP1: 1000.0}}}
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = _calc_rewards(
+        stakes, locked_amts, nftvols, OCEAN_avail
+    )
     assert rewards_per_lp == {C1: {LP1: 10.0}}
     assert rewards_info == {C1: {NA: {LP1: 10}}}
 
@@ -119,6 +122,10 @@ def test_two_chains():
         C1: {NA: {LP1: 50000.0}},
         C2: {NB: {LP1: 50000.0}},
     }
+    locked_amts = {
+        C1: {NA: {LP1: 50000.0}},
+        C2: {NB: {LP1: 50000.0}},
+    }
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}, C2: {OCN_ADDR2: {NB: 1.0}}}
     symbols = {
         C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
@@ -131,7 +138,7 @@ def test_two_chains():
     OCEAN_avail = 20.0
 
     rewards_per_lp, rewards_info = _calc_rewards(
-        stakes, nftvols, OCEAN_avail, symbols=symbols
+        stakes, locked_amts, nftvols, OCEAN_avail, symbols=symbols
     )
 
     assert rewards_per_lp == target_rewards_per_lp
@@ -140,7 +147,7 @@ def test_two_chains():
     # now, make it so that Ocean token in C2 is MOCEAN
     symbols[C2][OCN_ADDR2] = "MOCEAN"
     rewards_per_lp, rewards_info = _calc_rewards(
-        stakes, nftvols, OCEAN_avail, symbols=symbols
+        stakes, locked_amts, nftvols, OCEAN_avail, symbols=symbols
     )
 
     assert rewards_per_lp == {C1: {LP1: 20.0}}  # it completely ignores C2's MOCEAN ...
@@ -153,7 +160,7 @@ def test_two_chains():
     rates["MOCEAN"] = rates["OCEAN"]
 
     rewards_per_lp, rewards_info = _calc_rewards(
-        stakes, nftvols, OCEAN_avail, rates=rates, symbols=symbols
+        stakes, locked_amts, nftvols, OCEAN_avail, rates=rates, symbols=symbols
     )
 
     # now the rewards should line up as expected
@@ -343,27 +350,31 @@ def test_mix_upper_and_lower_case():
     OCEAN_avail = 10.0
 
     # tests
-    rewards_per_lp, rewards_info = _calc_rewards(stakes2a, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = _calc_rewards(
+        stakes2a, stakes2a, nftvols, OCEAN_avail
+    )
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes2b, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes2b, stakes2b, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes2c, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes2c, stakes2c, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, nftvols2a, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols2a, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, nftvols2b, OCEAN_avail)
+    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols2b, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, nftvols, OCEAN_avail, rates=rates2)
+    rewards_per_lp, _ = _calc_rewards(
+        stakes, stakes, nftvols, OCEAN_avail, rates=rates2
+    )
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
@@ -1020,6 +1031,28 @@ def test_stake_vol_owner_dicts_to_arrays():
             },
         },
     }
+    locked_ocean_amts = {
+        1: {
+            "nft_addr1": {
+                "LP_addr1": 10.0,
+                "LP_addr2": 20.0,
+            },
+            "nft_addr2": {
+                "LP_addr1": 30.0,
+                "LP_addr2": 40.0,
+            },
+        },
+        2: {
+            "nft_addr3": {
+                "LP_addr3": 50.0,
+                "LP_addr4": 60.0,
+            },
+            "nft_addr4": {
+                "LP_addr3": 70.0,
+                "LP_addr4": 80.0,
+            },
+        },
+    }
     nftvols_USD = {
         1: {
             "nft_addr1": 15.0,
@@ -1040,6 +1073,7 @@ def test_stake_vol_owner_dicts_to_arrays():
 
     mock_calculator = MockRewardCalculator()
     mock_calculator.set_mock_attribute("stakes", stakes)
+    mock_calculator.set_mock_attribute("locked_ocean_amts", locked_ocean_amts)
     mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
     mock_calculator.set_mock_attribute("LP_addrs", lp_addrs)
     mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
@@ -1048,9 +1082,18 @@ def test_stake_vol_owner_dicts_to_arrays():
     owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
     mock_calculator.set_mock_attribute("owners", owners)
 
-    S, V_USD, _, _ = mock_calculator._stake_vol_owner_dicts_to_arrays()
+    S, V_USD, _, _, L = mock_calculator._stake_vol_owner_dicts_to_arrays()
 
     expected_S = np.array(
+        [
+            [10.0, 30.0, 0.0, 0.0],
+            [20.0, 40.0, 0.0, 0.0],
+            [0.0, 0.0, 50.0, 70.0],
+            [0.0, 0.0, 60.0, 80.0],
+        ],
+        dtype=float,
+    )
+    expected_L = np.array(
         [
             [10.0, 30.0, 0.0, 0.0],
             [20.0, 40.0, 0.0, 0.0],
@@ -1062,6 +1105,7 @@ def test_stake_vol_owner_dicts_to_arrays():
     expected_V_USD = np.array([15.0, 25.0, 35.0, 45.0], dtype=float)
 
     assert np.array_equal(S, expected_S)
+    assert np.array_equal(L, expected_L)
     assert np.array_equal(V_USD, expected_V_USD)
 
 
@@ -1098,6 +1142,10 @@ def test_volume_reward_calculator(tmp_path):
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
             2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
         },
+        "locked_amts": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
         "volumes": {
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
@@ -1115,7 +1163,8 @@ def test_volume_reward_calculator(tmp_path):
     }
 
     with patch(
-        "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
+        "df_py.volume.allocations.load_stakes",
+        return_value=(mock_data["stakes"], mock_data["locked_amts"]),
     ), patch(
         "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
     ), patch(
@@ -1163,6 +1212,10 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
             1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
             2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
         },
+        "locked_amts": {
+            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
+            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
+        },
         "volumes": {
             1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
             2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
@@ -1186,7 +1239,8 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         return 0.201
 
     with patch(
-        "df_py.volume.allocations.load_stakes", return_value=mock_data["stakes"]
+        "df_py.volume.allocations.load_stakes",
+        return_value=(mock_data["stakes"], mock_data["locked_amts"]),
     ), patch(
         "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
     ), patch(
@@ -1247,6 +1301,7 @@ def _calc_rewards_C1(
 ):
     rewards_per_lp, rewards_info = _calc_rewards(
         stakes,
+        stakes,  # pass veOCEAN stakes as locked_amts for simplicity
         nftvols,
         OCEAN_avail,
         symbols,
@@ -1264,6 +1319,7 @@ def _calc_rewards_C1(
 @enforce_types
 def _calc_rewards(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
+    locked_amts: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     OCEAN_avail: float,
     symbols: Dict[int, Dict[str, str]] = SYMBOLS,
@@ -1279,6 +1335,7 @@ def _calc_rewards(
 
     calculator = RewardCalculator(
         stakes,
+        locked_amts,
         nftvols,
         owners,
         symbols,
@@ -1301,7 +1358,7 @@ def _null_owners(
 ) -> Dict[int, Dict[str, Union[str, None]]]:
     """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
     partially_initialised = RewardCalculator(
-        stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
+        stakes, stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
     )
 
     return _null_owners_from_chain_nft_tups(partially_initialised._get_chain_nft_tups())

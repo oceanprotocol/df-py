@@ -415,9 +415,10 @@ def _test_end_to_end_without_csvs(rng):
     C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
 
-    vebals, _, _ = queries.queryVebalances(rng, CHAINID)
+    vebals, locked_amts, _ = queries.queryVebalances(rng, CHAINID)
     allocs = queries.queryAllocations(rng, CHAINID)
     S = allocs_to_stakes(allocs, vebals)
+    L = allocs_to_stakes(allocs, locked_amts)
 
     R = {"OCEAN": 0.5, "H2O": 1.618, CO2_sym: 1.0}
 
@@ -427,7 +428,7 @@ def _test_end_to_end_without_csvs(rng):
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
+        S, L, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
@@ -468,7 +469,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     vebals = locked_amt = unlock_time = None  # ensure not used later
 
     # 5. simulate "dftool calc"
-    S = load_stakes(csv_dir)  # loads allocs & vebals, then *
+    S, L = load_stakes(csv_dir)  # loads allocs & vebals, then *
     R = csvs.load_rate_csvs(csv_dir)
     V = csvs.load_nftvols_csvs(csv_dir)
     C = csvs.load_owners_csvs(csv_dir)
@@ -480,7 +481,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     do_rank = True
 
     vol_calculator = RewardCalculator(
-        S, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
+        S, L, V, C, SYM, R, week, OCEAN_avail, do_pubrewards, do_rank
     )
     rewardsperlp, _ = vol_calculator.calculate()
 
