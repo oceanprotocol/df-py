@@ -49,6 +49,7 @@ def test_timestamp_to_block_far_right(w3):
 def test_error_handling(w3):
     def error_get_block(number):
         raise Exception("Random error occurred!")
+
     w3.eth.get_block = error_get_block
     comparer = BlockTimestampComparer(100, w3)
     value = comparer.time_since_timestamp(0)
