@@ -128,9 +128,7 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
     b = web3.eth.get_block("latest").number
 
     if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
-        raise ValueError(
-            "timestamp_to_block() everything is in the past"
-        )
+        raise ValueError("timestamp_to_block() everything is in the past")
 
     if f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
         return web3.eth.get_block("latest").number
