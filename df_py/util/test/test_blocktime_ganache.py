@@ -16,6 +16,7 @@ from df_py.util.blocktime import (
     timestamp_to_block,
     timestr_to_block,
     timestr_to_timestamp,
+    BlockTimestampComparer,
 )
 
 
@@ -46,15 +47,12 @@ def test_timestamp_to_block_far_right(w3):
 
 @enforce_types
 def test_error_handling(w3):
-    def random_error_get_block(number):
-        if number == current_block_number:
-            return current_block
-        if random.randint(1, 6) == 1 and number != "latest":
-            raise Exception("Random error occurred!")
-        return _get_block(number)
-
-    w3.eth.get_block = random_error_get_block
-    assert timestr_to_block(w3, "2023-01-01") >= 0
+    def error_get_block(number):
+        raise Exception("Random error occurred!")
+    w3.eth.get_block = error_get_block
+    comparer = BlockTimestampComparer(100, w3)
+    value = comparer.time_since_timestamp(0)
+    assert value == -100
 
 
 @enforce_types
