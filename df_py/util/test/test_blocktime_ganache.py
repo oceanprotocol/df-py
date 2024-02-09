@@ -1,3 +1,4 @@
+import random
 from datetime import datetime
 from math import ceil
 from unittest.mock import Mock, patch
@@ -42,6 +43,16 @@ def test_timestamp_to_block_far_right(w3):
     b = timestr_to_block(w3, "2150-01-01_0:00")
     assert b == w3.eth.get_block("latest").number and isinstance(b, int)
 
+@enforce_types
+def test_error_handling(w3):
+    def random_error_get_block(number):
+        if number == current_block_number:
+            return current_block
+        if random.randint(1, 6) == 1 and number != "latest":
+            raise Exception("Random error occurred!")
+        return _get_block(number)
+    w3.eth.get_block = random_error_get_block
+    assert timestr_to_block(w3, "2023-01-01") >= 0
 
 @enforce_types
 def test_timestr_to_timestamp():
