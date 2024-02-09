@@ -1,4 +1,3 @@
-import random
 from datetime import datetime
 from math import ceil
 from unittest.mock import Mock, patch
