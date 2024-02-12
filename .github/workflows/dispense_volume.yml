@@ -2,7 +2,7 @@ name: Dispense Active Rewards
 
 on:
   schedule:
-    - cron: "0 0 * * 4"
+    - cron: "10 0 * * 4"
   push:
     branches: [main]
   pull_request:
