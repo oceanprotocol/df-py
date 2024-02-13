@@ -79,7 +79,7 @@ def timestr_to_timestamp(timestr: str) -> float:
 
 @enforce_types
 def timestamp_to_future_block(web3, timestamp: Union[float, int]) -> int:
-    def timeSinceTimestamp(block_i):
+    def time_since_timestamp(block_i):
         return web3.eth.get_block(int(block_i)).timestamp
 
     block_last_number = web3.eth.get_block("latest").number
@@ -87,8 +87,8 @@ def timestamp_to_future_block(web3, timestamp: Union[float, int]) -> int:
     # 40,000 is the average number of blocks per week
     block_old_number = max(0, block_last_number - 40_000)  # go back 40,000 blocks
 
-    block_last_time = timeSinceTimestamp(block_last_number)  # time of last block
-    block_old_time = timeSinceTimestamp(block_old_number)  # time of old block
+    block_last_time = time_since_timestamp(block_last_number)  # time of last block
+    block_old_time = time_since_timestamp(block_old_number)  # time of old block
 
     assert block_last_time < timestamp
 
@@ -107,28 +107,34 @@ def timestamp_to_future_block(web3, timestamp: Union[float, int]) -> int:
     return int(estimated_block_number)
 
 
+class BlockTimestampComparer:
+    def __init__(self, target_timestamp, web3):
+        self.target_timestamp = target_timestamp
+        self.web3 = web3
+
+    def time_since_timestamp(self, block_i):
+        try:
+            block_timestamp = self.web3.eth.get_block(int(block_i)).timestamp
+        except Exception as e:
+            print(f"An exception occurred while getting block {block_i}, {e}")
+            block_timestamp = 0
+        return block_timestamp - self.target_timestamp
+
+
 @enforce_types
 def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
     """Example: 1648872899.0 --> 4928"""
 
-    class C:
-        def __init__(self, target_timestamp):
-            self.target_timestamp = target_timestamp
-
-        def timeSinceTimestamp(self, block_i):
-            try:
-                block_timestamp = web3.eth.get_block(int(block_i)).timestamp
-            except Exception as e:
-                print(f"An exception occurred while getting block {block_i}, {e}")
-                block_timestamp = 0
-            return block_timestamp - self.target_timestamp
-
-    f = C(timestamp).timeSinceTimestamp
+    f = BlockTimestampComparer(timestamp, web3).time_since_timestamp
     a = 0
     b = web3.eth.get_block("latest").number
 
     if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
-        return 0
+        if web3.eth.chain_id == 8996:
+            return 0  # this situation is feasible on testnet
+
+        # on other networks, the target will never be 0
+        raise ValueError("timestamp_to_block() everything is in the past")
 
     if f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
         return web3.eth.get_block("latest").number
