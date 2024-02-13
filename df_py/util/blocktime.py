@@ -131,9 +131,9 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
 
     if f(a) > 0 and f(b) > 0:  # corner case: everything's in the past
         if web3.eth.chain_id == 8996:
-            return 0 # this situation is feasible on testnet
-        
-        # on other networks, the target will never be 0 
+            return 0  # this situation is feasible on testnet
+
+        # on other networks, the target will never be 0
         raise ValueError("timestamp_to_block() everything is in the past")
 
     if f(a) < 0 and f(b) < 0:  # corner case: everything's in the future
