@@ -50,8 +50,9 @@ def test_error_handling(w3):
         raise Exception("Random error occurred!")
 
     w3.eth.get_block = error_get_block
-    comparer = BlockTimestampComparer(100, w3)
+    comparer = BlockTimestampComparer(100, w3)  # target ts is 100
     value = comparer.time_since_timestamp(0)
+    # returns -(target timestamp) on error
     assert value == -100
 
 
