@@ -78,6 +78,7 @@ jobs:
           echo "SAPPHIRE_MAINNET_RPC_URL=https://sapphire.oasis.io/" >> $GITHUB_ENV
           echo "GOERLI_RPC_URL=https://rpc.ankr.com/eth_goerli" >> $GITHUB_ENV
           echo "INFURA_NETWORKS=polygon,mumbai,mainnet" >> $GITHUB_ENV
+          echo "SEPOLIA_RPC_URL=https://rpc.sepolia.org/" >> $GITHUB_ENV
 
       - name: Make dftool executable
         run: chmod +x dftool
@@ -128,7 +129,7 @@ jobs:
           USE_MULTISIG: true
         if: github.event_name != 'schedule'
         run: |
-          ./dftool dispense_active $CSV_DIR 5 --DFREWARDS_ADDR=0x6fd867E5AEE6D62a24f97939db90C4e67A73A651 --TOKEN_ADDR=0xCfDdA22C9837aE76E0faA845354f33C62E03653a
+          ./dftool dispense_active $CSV_DIR 11155111 --DFREWARDS_ADDR=0x4C0341d4C3ACC60F2f982695494E0B9a58679b5C --TOKEN_ADDR=0x1B083D8584dd3e6Ff37d04a6e7e82b5F622f3985
 
       - name: Distribute active rewards
         env:

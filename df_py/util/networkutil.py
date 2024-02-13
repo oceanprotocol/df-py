@@ -21,6 +21,7 @@ _RAW_CHAIN_DATA = [
     (80001, "mumbai", "MATIC"),
     (23294, "sapphire-mainnet", "ROSE"),
     (23295, "sapphire-testnet", "ROSE"),
+    (11155111, "sepolia", "SepoliaETH"),
 ]
 
 OBSOLETED_CHAIN_IDS = [246]

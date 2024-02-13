@@ -27,8 +27,8 @@ MAX_N_RANK_ASSETS = 100  # only reward top N assets. Eg 20, 50, 100, 500
 
 # multisig
 MULTISIG_ADDRS = {
-    1: "0xad0A852F968e19cbCB350AB9426276685651ce41",
-    5: "0xd701c6F346a6D99c44cc07E9E9E681B67184BF34",
+    1: "0xad0A852F968e19cbCB350AB9426276685651ce41",  # mainnet
+    11155111: "0x1408f91B740605E7B467761d053Ae5e34fFA77C3",  # sepolia
 }
 
 # filled in by oceanutil.py
