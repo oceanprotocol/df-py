@@ -78,7 +78,7 @@ jobs:
           echo "SAPPHIRE_MAINNET_RPC_URL=https://sapphire.oasis.io/" >> $GITHUB_ENV
           echo "GOERLI_RPC_URL=https://rpc.ankr.com/eth_goerli" >> $GITHUB_ENV
           echo "INFURA_NETWORKS=polygon,mumbai,mainnet" >> $GITHUB_ENV
-          echo "SEPOLIA_RPC_URL=https://ethereum-sepolia.publicnode.com/" >> $GITHUB_ENV
+          echo "SEPOLIA_RPC_URL=https://rpc.sepolia.org/" >> $GITHUB_ENV
 
       - name: Make dftool executable
         run: chmod +x dftool
