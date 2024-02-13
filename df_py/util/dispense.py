@@ -52,6 +52,7 @@ def dispense(
         multisigaddr = chain_id_to_multisig_addr(web3.eth.chain_id)
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "OceanToken", token_addr)
+    print("address is", token_addr)
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 
     # checksum addresses
