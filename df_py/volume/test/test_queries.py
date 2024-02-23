@@ -1057,11 +1057,12 @@ def test_calculate_gas_vols_distributes_gas_evenly():
     txgascost = {
         "tx1": {"nft1": 100.0, "nft2": 100.0},
         "tx2": {"nft2": 100.0},
+        "tx3": {"nft3": 200.0},
     }
     native_token_addr = "token1"
 
     expected_gasvols = {
-        "token1": {"nft1": 50.0, "nft2": 150.0}
+        "token1": {"nft1": 50.0, "nft2": 150.0, "nft3": 200.0}
     }
 
     calculated_gasvols = queries._calculate_gas_vols(txgascost, native_token_addr)
