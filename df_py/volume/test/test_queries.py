@@ -1061,14 +1061,13 @@ def test_calculate_gas_vols_distributes_gas_evenly():
     }
     native_token_addr = "token1"
 
-    expected_gasvols = {
-        "token1": {"nft1": 50.0, "nft2": 150.0, "nft3": 200.0}
-    }
+    expected_gasvols = {"token1": {"nft1": 50.0, "nft2": 150.0, "nft3": 200.0}}
 
     calculated_gasvols = queries._calculate_gas_vols(txgascost, native_token_addr)
 
-    assert calculated_gasvols == expected_gasvols, "Gas volumes should be evenly distributed among NFTs."
-
+    assert (
+        calculated_gasvols == expected_gasvols
+    ), "Gas volumes should be evenly distributed among NFTs."
 
 
 # ===========================================================================
