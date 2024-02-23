@@ -555,7 +555,7 @@ def _queryVolsOwners(
     gasvols[native_token_addr] = {}
     for tx in txgascost:
         nfts = txgascost["tx"].keys()
-        gas_cost = txgascost["tx"].values()[0]
+        gas_cost = list(txgascost["tx"].values())[0]
         tot_nfts = len(nfts)
 
         gas_attributed = gas_cost / tot_nfts
