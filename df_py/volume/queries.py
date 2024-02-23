@@ -450,6 +450,21 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
 
     return nftinfo
 
+def _calculate_gas_vols(txgascost: Dict[str, Dict[str, float]], native_token_addr: str) -> Dict[str, Dict[str, float]]:
+    gasvols: Dict[str, Dict[str, float]] = {}
+    gasvols[native_token_addr] = {}
+    for tx in txgascost:
+        nfts = txgascost[tx].keys()
+        gas_cost = list(txgascost[tx].values())[0]
+        tot_nfts = len(nfts)
+
+        gas_attributed = gas_cost / tot_nfts
+
+        for nft in nfts:
+            if not nft in gasvols:
+                gasvols[native_token_addr][nft] = 0
+            gasvols[native_token_addr][nft] += gas_attributed
+    return gasvols
 
 @enforce_types
 def _queryVolsOwners(
@@ -552,18 +567,7 @@ def _queryVolsOwners(
             vols[basetoken_addr][nft_addr] += lastPriceValue
 
     # calculate gas vols
-    gasvols[native_token_addr] = {}
-    for tx in txgascost:
-        nfts = txgascost[tx].keys()
-        gas_cost = list(txgascost[tx].values())[0]
-        tot_nfts = len(nfts)
-
-        gas_attributed = gas_cost / tot_nfts
-
-        for nft in nfts:
-            if not nft in gasvols:
-                gasvols[native_token_addr][nft] = 0
-            gasvols[native_token_addr][nft] += gas_attributed
+    gasvols = _calculate_gas_vols(txgascost, native_token_addr)
 
     print("_queryVolsOwners(): done")
     return (vols, owners, gasvols)
