@@ -451,18 +451,29 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     return nftinfo
 
 def _calculate_gas_vols(txgascost: Dict[str, Dict[str, float]], native_token_addr: str) -> Dict[str, Dict[str, float]]:
+    """
+    @description
+      Calculate the gas volumes attributed to each NFT based on shared transaction gas costs.
+
+    @arguments
+      txgascost (Dict[str, Dict[str, float]]): A dictionary mapping transaction hashes to another dictionary,
+        where the inner dictionary maps NFT addresses to their tx associated gas costs.
+      native_token_addr (str): The address of the native token used to pay for gas.
+
+    @return
+      Dict[str, Dict[str, float]]: A dictionary mapping the native token address to another dictionary,
+        where the inner dictionary maps NFT addresses to the gas volumes attributed to them.
+    """
     gasvols: Dict[str, Dict[str, float]] = {}
     gasvols[native_token_addr] = {}
     for tx in txgascost:
         nfts = txgascost[tx].keys()
         gas_cost = list(txgascost[tx].values())[0]
         tot_nfts = len(nfts)
-
         gas_attributed = gas_cost / tot_nfts
 
         for nft in nfts:
-            if not nft in gasvols:
-                gasvols[native_token_addr][nft] = 0
+            gasvols[native_token_addr].setdefault(nft, 0)
             gasvols[native_token_addr][nft] += gas_attributed
     return gasvols
 
