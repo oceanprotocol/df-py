@@ -26,3 +26,7 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
 
     value_str = value.decode("utf-8")
     return value_str
+
+def set_blocknumber_data(w3, nft_addr: str, blocknumbers: Dict[int, int]) -> bool:
+    data = json.dumps(blocknumbers)
+    return _set_data(w3, nft_addr, "block_numbers", data)
