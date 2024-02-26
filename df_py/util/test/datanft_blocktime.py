@@ -34,3 +34,8 @@ def set_blocknumber_data(w3, nft_addr: str, blocknumbers: Dict[int, int]) -> boo
 def _read_blocknumber_data(w3, nft_addr: str) -> Dict[int, int]:
     data = _read_data(w3, nft_addr, "block_numbers")
     return json.loads(data)
+
+def read_blocknumber_data(w3) -> Dict[int, int]:
+    chainid = w3.eth.chain_id
+    data = _read_blocknumber_data(w3, os.getenv("DATANFT_ADDR"))
+    return data.get(chainid)
