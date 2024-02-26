@@ -1,0 +1,16 @@
+import os
+import json
+from typing import Dict
+
+from web3 import Web3
+from df_py.util.contract_base import ContractBase
+
+def _set_data(w3, nft_addr: str, field_label: str, data: str) -> bool:
+    field_label_hash = Web3.keccak(text=field_label)
+    field_value_bytes = field_value.encode() 
+    contract_instance = ContractBase(w3, "ERC721Template", constructor_args=[])
+    tx = contract_instance.functions.setNewData(
+        field_label_hash, field_value_bytes
+    ).transact()
+    receipt = self.config.w3.eth.wait_for_transaction_receipt(tx)
+    return receipt is not None and receipt["status"] == 1
