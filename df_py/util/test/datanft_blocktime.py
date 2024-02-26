@@ -30,3 +30,7 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
 def set_blocknumber_data(w3, nft_addr: str, blocknumbers: Dict[int, int]) -> bool:
     data = json.dumps(blocknumbers)
     return _set_data(w3, nft_addr, "block_numbers", data)
+
+def _read_blocknumber_data(w3, nft_addr: str) -> Dict[int, int]:
+    data = _read_data(w3, nft_addr, "block_numbers")
+    return json.loads(data)
