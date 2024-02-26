@@ -262,8 +262,19 @@ def get_fin_block(web3, FIN):
 
 
 @enforce_types
-def get_st_block(web3, ST):
+def get_st_block(web3, ST, use_data_nft: bool=False):
     st_block = 0
+    
+    if use_data_nft:
+        chainid = web3.eth.chain_id
+        block_number = get_block_number_from_datanft(chainid)
+        block_found = web3.eth.get_block(block_number)
+        block_timestamp = block_found.timestamp
+        timestamp = timestr_to_timestamp(ST) if "-" in str(ST) else int(ST)
+        if abs(block_timestamp - timestamp) > 60 * 15:
+            print("The recorded block number is too far from the target")
+            print("Canceling use_data_nft")
+
     if "-" in str(ST):
         st_block = timestr_to_block(web3, ST)
     else:
