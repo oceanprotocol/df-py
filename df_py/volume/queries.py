@@ -451,6 +451,36 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     return nftinfo
 
 
+def _calculate_gas_vols(
+    txgascost: Dict[str, Dict[str, float]], native_token_addr: str
+) -> Dict[str, Dict[str, float]]:
+    """
+    @description
+      Calculate the gas volumes attributed to each NFT based on shared transaction gas costs.
+
+    @arguments
+      txgascost (Dict[str, Dict[str, float]]): A dictionary mapping transaction hashes to another dictionary,
+        where the inner dictionary maps NFT addresses to their tx associated gas costs.
+      native_token_addr (str): The address of the native token used to pay for gas.
+
+    @return
+      Dict[str, Dict[str, float]]: A dictionary mapping the native token address to another dictionary,
+        where the inner dictionary maps NFT addresses to the gas volumes attributed to them.
+    """
+    gasvols: Dict[str, Dict[str, float]] = {}
+    gasvols[native_token_addr] = {}
+    for tx in txgascost:
+        nfts = txgascost[tx].keys()
+        gas_cost = list(txgascost[tx].values())[0]
+        tot_nfts = len(nfts)
+        gas_attributed = gas_cost / tot_nfts
+
+        for nft in nfts:
+            gasvols[native_token_addr].setdefault(nft, 0)
+            gasvols[native_token_addr][nft] += gas_attributed
+    return gasvols
+
+
 @enforce_types
 def _queryVolsOwners(
     st_block: int, end_block: int, chainID: int
@@ -468,7 +498,8 @@ def _queryVolsOwners(
     vols: Dict[str, Dict[str, float]] = {}
     gasvols: Dict[str, Dict[str, float]] = {}
     owners: Dict[str, float] = {}
-    txgascost: Dict[str, float] = {}  # tx hash : gas cost
+    txgascost: Dict[str, Dict[str, float]] = {}  # tx hash : gas cost
+    native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
     chunk_size = 1000  # max for subgraph = 1000
     offset = 0
@@ -530,16 +561,14 @@ def _queryVolsOwners(
 
             # deduct 1 wei so it's not profitable for free assets
             gasCost = from_wei(gasCostWei - 1)
-            native_token_addr = networkutil._CHAINID_TO_ADDRS[chainID].lower()
 
             # add gas cost value
-            if gasCost > 0 and order["tx"] not in txgascost:
-                if native_token_addr not in gasvols:
-                    gasvols[native_token_addr] = {}
-                if nft_addr not in gasvols[native_token_addr]:
-                    gasvols[native_token_addr][nft_addr] = 0
-                txgascost[order["tx"]] = gasCost
-                gasvols[native_token_addr][nft_addr] += gasCost
+            if gasCost > 0:
+                if order["tx"] not in txgascost:
+                    txgascost[order["tx"]] = {}
+                if nft_addr not in txgascost[order["tx"]]:
+                    txgascost[order["tx"]][nft_addr] = 0
+                txgascost[order["tx"]][nft_addr] = gasCost
 
             if lastPriceValue == 0:
                 continue
@@ -551,6 +580,9 @@ def _queryVolsOwners(
             if nft_addr not in vols[basetoken_addr]:
                 vols[basetoken_addr][nft_addr] = 0.0
             vols[basetoken_addr][nft_addr] += lastPriceValue
+
+    # calculate gas vols
+    gasvols = _calculate_gas_vols(txgascost, native_token_addr)
 
     print("_queryVolsOwners(): done")
     return (vols, owners, gasvols)
