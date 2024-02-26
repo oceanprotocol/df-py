@@ -27,14 +27,21 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
     value_str = value.decode("utf-8")
     return value_str
 
-def set_blocknumber_data(w3, nft_addr: str, blocknumbers: Dict[int, int]) -> bool:
+def get_w3_object():
+    rpc_url = os.getenv("POLYGON_RPC_URL")
+    return get_web3(rpc_url)
+
+def set_blocknumber_data(nft_addr: str, from_account, blocknumbers: Dict[int, int]) -> bool:
+    w3 = get_w3_object()
+    w3.eth.default_account = from_account
     data = json.dumps(blocknumbers)
     return _set_data(w3, nft_addr, "block_numbers", data)
 
-def _read_blocknumber_data(w3, nft_addr: str) -> Dict[int, int]:
+def _read_blocknumber_data(nft_addr: str) -> Dict[int, int]:
+    w3 = get_w3_object()
     data = _read_data(w3, nft_addr, "block_numbers")
     return json.loads(data)
 
-def get_block_number_from_datanft(w3, chainid: int) -> int:
+def get_block_number_from_datanft(chainid: int) -> int:
     data = _read_blocknumber_data(w3, os.getenv("DATANFT_ADDR"))
     return data.get(chainid)
