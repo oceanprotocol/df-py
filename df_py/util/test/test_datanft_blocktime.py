@@ -114,3 +114,16 @@ def test_read_blocknumber_data(w3, account0, monkeypatch, nft_addr):
     read_result = _read_blocknumber_data(nft_addr, w3)
     assert read_result == blocknumbers, "Read blocknumber data does not match expected"
 
+
+@patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
+def test_get_st_block(w3, account0):
+    last_block = w3.eth.block_number
+    last_block_timestamp = w3.eth.get_block(last_block).timestamp
+    assert set_blocknumber_to_datanft(
+        w3.eth.chain_id, account0.address, last_block, w3
+    ), "Failed to set block number data"
+    block = get_st_block(w3, last_block_timestamp, True)
+
+    assert block == last_block
+
+
