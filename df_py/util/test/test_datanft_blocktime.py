@@ -71,3 +71,9 @@ def test_read_nonexistent_chainid(w3):
     block_number = get_block_number_from_datanft(NON_EXISTENT_CHAIN_ID, w3)
     assert block_number == 0, "Block number for a non-existent chain ID must be 0"
 
+
+@patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
+def test_get_w3_object():
+    w3 = _get_w3_object()
+    assert w3.is_connected(), "Web3 object is not connected"
+
