@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import Union
+from df_py.util.datanft_blocktime import get_block_number_from_datanft
 
 from enforce_typing import enforce_types
 from scipy import optimize
@@ -262,9 +263,9 @@ def get_fin_block(web3, FIN):
 
 
 @enforce_types
-def get_st_block(web3, ST, use_data_nft: bool=False):
+def get_st_block(web3, ST, use_data_nft: bool = False):
     st_block = 0
-    
+
     if use_data_nft:
         chainid = web3.eth.chain_id
         block_number = get_block_number_from_datanft(chainid)
@@ -274,7 +275,8 @@ def get_st_block(web3, ST, use_data_nft: bool=False):
         if abs(block_timestamp - timestamp) > 60 * 15:
             print("The recorded block number is too far from the target")
             print("Canceling use_data_nft")
-
+        else:
+            return block_number
     if "-" in str(ST):
         st_block = timestr_to_block(web3, ST)
     else:
