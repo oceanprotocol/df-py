@@ -253,13 +253,31 @@ def eth_find_closest_block(
 
 
 @enforce_types
-def get_fin_block(web3, FIN):
+def get_block_number_from_datanft(web3, timestamp: int) -> int:
+    date = datetime.fromtimestamp(timestamp)
+    block_number = get_blocknumber_from_date(web3, date)
+    block_found = web3.eth.get_block(block_number)
+    block_timestamp = block_found.timestamp
+    if abs(block_timestamp - timestamp) > 60 * 15:
+        print("The recorded block number is too far from the target")
+        print("Canceling use_data_nft")
+        return 0
+    return block_number
+
+
+@enforce_types
+def get_fin_block(web3, FIN, use_data_nft: bool = False):
     fin_block = 0
     if FIN == "latest":
-        fin_block = web3.eth.get_block("latest").number - 4
+        return web3.eth.get_block("latest").number - 4
     elif FIN == "thu":
-        fin_block = get_block_number_thursday(web3)
-    elif "-" in str(FIN):
+        return get_block_number_thursday(web3)
+    elif use_data_nft:
+        timestamp = timestr_to_timestamp(FIN) if "-" in str(FIN) else int(FIN)
+        block_number = get_block_number_from_datanft(web3, timestamp)
+        if block_number != 0:
+            return block_number
+    if "-" in str(FIN):
         fin_block = timestr_to_block(web3, FIN)
     else:
         fin_block = int(FIN)
@@ -272,14 +290,8 @@ def get_st_block(web3, ST, use_data_nft: bool = False):
 
     if use_data_nft:
         timestamp = timestr_to_timestamp(ST) if "-" in str(ST) else int(ST)
-        date = datetime.fromtimestamp(timestamp)
-        block_number = get_blocknumber_from_date(web3, date)
-        block_found = web3.eth.get_block(block_number)
-        block_timestamp = block_found.timestamp
-        if abs(block_timestamp - timestamp) > 60 * 15:
-            print("The recorded block number is too far from the target")
-            print("Canceling use_data_nft")
-        else:
+        block_number = get_block_number_from_datanft(web3, timestamp)
+        if block_number != 0:
             return block_number
     if "-" in str(ST):
         st_block = timestr_to_block(web3, ST)
