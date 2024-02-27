@@ -104,7 +104,9 @@ def test_set_blocknumber_data(w3, account0, monkeypatch, nft_addr):
     from_account = account0.address
 
     # Set block number data
-    set_result = _set_blocknumber_data(nft_addr, from_account, blocknumbers, week_number, w3)
+    set_result = _set_blocknumber_data(
+        nft_addr, from_account, blocknumbers, week_number, w3
+    )
     assert set_result, "Failed to set blocknumber data"
 
 
