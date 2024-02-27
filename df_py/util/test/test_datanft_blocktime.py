@@ -91,3 +91,14 @@ def test_read_data(w3, nft_addr):
     read_data = _read_data(w3, nft_addr, field_label)
     assert read_data == data, "Read data does not match set data"
 
+
+def test_set_blocknumber_data(w3, account0, monkeypatch, nft_addr):
+    monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
+    blocknumbers = {"1": 12345, "2": 67890}
+    from_account = account0.address
+
+    # Set block number data
+    set_result = _set_blocknumber_data(nft_addr, from_account, blocknumbers, w3)
+    assert set_result, "Failed to set blocknumber data"
+
+
