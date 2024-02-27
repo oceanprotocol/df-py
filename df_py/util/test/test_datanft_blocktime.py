@@ -84,3 +84,10 @@ def test_set_data(w3, nft_addr):
     assert _set_data(w3, nft_addr, field_label, data), "Failed to set data"
 
 
+def test_read_data(w3, nft_addr):
+    field_label = "test_field"
+    data = "test_data"
+    _set_data(w3, nft_addr, field_label, data)
+    read_data = _read_data(w3, nft_addr, field_label)
+    assert read_data == data, "Read data does not match set data"
+
