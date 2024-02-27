@@ -74,6 +74,7 @@ def set_blocknumber_to_datanft(
     data[chainid] = blocknumber
     return _set_blocknumber_data(nft_addr, from_account, data, str(week_number), w3)
 
+
 def get_blocknumber_from_date(w3, date) -> int:
     df_week = get_df_week_number(date)
     chainid = w3.eth.chain_id
