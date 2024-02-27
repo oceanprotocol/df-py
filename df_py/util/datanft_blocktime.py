@@ -2,6 +2,7 @@ import os
 import json
 from typing import Dict, Optional, Union
 from df_py.util.http_provider import get_web3_connection_provider
+from df_py.volume.reward_calculator import get_df_week_number
 from enforce_typing import enforce_types
 
 from web3 import Web3
@@ -72,3 +73,8 @@ def set_blocknumber_to_datanft(
     data = _read_blocknumber_data(nft_addr, str(week_number), w3)
     data[chainid] = blocknumber
     return _set_blocknumber_data(nft_addr, from_account, data, str(week_number), w3)
+
+def get_blocknumber_from_date(w3, date) -> int:
+    df_week = get_df_week_number(date)
+    chainid = w3.eth.chain_id
+    return get_block_number_from_datanft(chainid, df_week)
