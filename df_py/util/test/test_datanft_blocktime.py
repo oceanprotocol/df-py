@@ -77,3 +77,10 @@ def test_get_w3_object():
     w3 = _get_w3_object()
     assert w3.is_connected(), "Web3 object is not connected"
 
+
+def test_set_data(w3, nft_addr):
+    field_label = "test_field"
+    data = "test_data"
+    assert _set_data(w3, nft_addr, field_label, data), "Failed to set data"
+
+
