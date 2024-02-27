@@ -1,6 +1,8 @@
 from df_py.util.blocktime import get_st_block
+from df_py.volume.reward_calculator import get_df_week_number
 import pytest
 import os
+from datetime import datetime
 from unittest.mock import patch
 from df_py.util.datanft_blocktime import (
     _get_w3_object,
@@ -122,6 +124,20 @@ def test_read_blocknumber_data(w3, account0, monkeypatch, nft_addr):
     # Now, read and verify the block number data
     read_result = _read_blocknumber_data(nft_addr, week_number, w3)
     assert read_result == blocknumbers, "Read blocknumber data does not match expected"
+
+
+@patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
+def test_get_st_block(w3, account0):
+    last_block = w3.eth.block_number
+    last_block_timestamp = w3.eth.get_block(last_block).timestamp
+    last_block_datetime = datetime.fromtimestamp(last_block_timestamp)
+    week_number = get_df_week_number(last_block_datetime)
+    assert set_blocknumber_to_datanft(
+        w3.eth.chain_id, account0.address, last_block, week_number, w3
+    ), "Failed to set block number data"
+    block = get_st_block(w3, last_block_timestamp, True)
+
+    assert block == last_block
 
 
 # --------------- Fixtures ---------------
