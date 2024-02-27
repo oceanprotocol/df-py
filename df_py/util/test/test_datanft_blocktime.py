@@ -47,3 +47,19 @@ def test_multiple_chainids_write_and_read(w3, account0):
             actual_block_number == expected_block_number
         ), f"Block number for chain ID {chain_id} must be {expected_block_number}"
 
+
+def test_overwrite_existing_data(w3, account0):
+    CHAIN_ID = 42
+    NEW_BLOCK_NUMBER = 200
+
+    # Set initial block number
+    set_blocknumber_to_datanft(CHAIN_ID, account0.address, 100, w3)
+    # Overwrite with a new block number
+    assert set_blocknumber_to_datanft(
+        CHAIN_ID, account0.address, NEW_BLOCK_NUMBER, w3
+    ), "Failed to overwrite block number data"
+
+    # Read back the overwritten block number
+    block_number = get_block_number_from_datanft(CHAIN_ID, w3)
+    assert block_number == NEW_BLOCK_NUMBER, "Overwritten block number must be 200"
+
