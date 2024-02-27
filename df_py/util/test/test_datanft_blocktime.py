@@ -63,3 +63,11 @@ def test_overwrite_existing_data(w3, account0):
     block_number = get_block_number_from_datanft(CHAIN_ID, w3)
     assert block_number == NEW_BLOCK_NUMBER, "Overwritten block number must be 200"
 
+
+def test_read_nonexistent_chainid(w3):
+    NON_EXISTENT_CHAIN_ID = 999
+
+    # Attempt to read a block number for a non-existent chain ID
+    block_number = get_block_number_from_datanft(NON_EXISTENT_CHAIN_ID, w3)
+    assert block_number == 0, "Block number for a non-existent chain ID must be 0"
+
