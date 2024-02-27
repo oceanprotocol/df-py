@@ -1,7 +1,10 @@
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import Union
-from df_py.util.datanft_blocktime import get_block_number_from_datanft
+from df_py.util.datanft_blocktime import (
+    get_block_number_from_datanft,
+    get_blocknumber_from_date,
+)
 from df_py.volume.reward_calculator import get_df_week_number
 
 from enforce_typing import enforce_types
@@ -270,9 +273,7 @@ def get_st_block(web3, ST, use_data_nft: bool = False):
     if use_data_nft:
         timestamp = timestr_to_timestamp(ST) if "-" in str(ST) else int(ST)
         date = datetime.fromtimestamp(timestamp)
-        df_week = get_df_week_number(date)
-        chainid = web3.eth.chain_id
-        block_number = get_block_number_from_datanft(chainid, df_week)
+        block_number = get_blocknumber_from_date(web3, date)
         block_found = web3.eth.get_block(block_number)
         block_timestamp = block_found.timestamp
         if abs(block_timestamp - timestamp) > 60 * 15:
