@@ -38,18 +38,18 @@ def _get_w3_object():
 
 @enforce_types
 def _set_blocknumber_data(
-    nft_addr: str, from_account, blocknumbers: Dict[str, int], w3=None
+    nft_addr: str, from_account, blocknumbers: Dict[str, int], week_number: str, w3=None
 ) -> bool:
     w3 = _get_w3_object() if w3 is None else w3
     w3.eth.default_account = from_account
     data = json.dumps(blocknumbers)
-    return _set_data(w3, nft_addr, "block_numbers", data)
+    return _set_data(w3, nft_addr, week_number, data)
 
 
 @enforce_types
-def _read_blocknumber_data(nft_addr: str, w3) -> Dict[str, int]:
+def _read_blocknumber_data(nft_addr: str, week_number: str, w3) -> Dict[str, int]:
     w3 = _get_w3_object() if w3 is None else w3
-    data = _read_data(w3, nft_addr, "block_numbers")
+    data = _read_data(w3, nft_addr, week_number)
     print("DATA READ:", data)
     if data == "":
         return {}
@@ -57,16 +57,18 @@ def _read_blocknumber_data(nft_addr: str, w3) -> Dict[str, int]:
 
 
 @enforce_types
-def get_block_number_from_datanft(chainid: Union[str, int], w3=None) -> int:
-    data = _read_blocknumber_data(os.getenv("DATANFT_ADDR"), w3)
+def get_block_number_from_datanft(
+    chainid: Union[str, int], week_number: Union[str, int], w3=None
+) -> int:
+    data = _read_blocknumber_data(os.getenv("DATANFT_ADDR"), str(week_number), w3)
     return data.get(str(chainid), 0)
 
 
 @enforce_types
 def set_blocknumber_to_datanft(
-    chainid: int, from_account, blocknumber: int, w3=None
+    chainid: int, from_account, blocknumber: int, week_number: Union[str, int], w3=None
 ) -> bool:
     nft_addr = os.getenv("DATANFT_ADDR")
-    data = _read_blocknumber_data(nft_addr, w3)
+    data = _read_blocknumber_data(nft_addr, str(week_number), w3)
     data[chainid] = blocknumber
-    return _set_blocknumber_data(nft_addr, from_account, data, w3)
+    return _set_blocknumber_data(nft_addr, from_account, data, str(week_number), w3)
