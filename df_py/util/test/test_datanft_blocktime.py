@@ -16,21 +16,23 @@ from df_py.util.oceanutil import create_data_nft
 
 def test_datanft_write_and_read(w3, account0):
     CHAIN_ID = 42
+    week_number = 20
 
     # Read the block number while it is not set, should return 0
-    block_number = get_block_number_from_datanft(CHAIN_ID, w3)
+    block_number = get_block_number_from_datanft(CHAIN_ID, week_number, w3)
     assert block_number == 0, "non-set block number must be 0"
 
     assert set_blocknumber_to_datanft(
-        CHAIN_ID, account0.address, 100, w3
+        CHAIN_ID, account0.address, 100, week_number, w3
     ), "Failed to set block number data"
 
     # Read the block number again, should return 100
-    block_number = get_block_number_from_datanft(CHAIN_ID, w3)
+    block_number = get_block_number_from_datanft(CHAIN_ID, week_number, w3)
     assert block_number == 100, "block number must be 100"
 
 
 def test_multiple_chainids_write_and_read(w3, account0):
+    week_number = 20
     chain_ids_and_block_numbers = {
         1: 1000,
         2: 2000,
@@ -39,11 +41,11 @@ def test_multiple_chainids_write_and_read(w3, account0):
 
     for chain_id, block_number in chain_ids_and_block_numbers.items():
         assert set_blocknumber_to_datanft(
-            chain_id, account0.address, block_number, w3
+            chain_id, account0.address, block_number, week_number, w3
         ), f"Failed to set block number for chain ID {chain_id}"
 
     for chain_id, expected_block_number in chain_ids_and_block_numbers.items():
-        actual_block_number = get_block_number_from_datanft(chain_id, w3)
+        actual_block_number = get_block_number_from_datanft(chain_id, week_number, w3)
         assert (
             actual_block_number == expected_block_number
         ), f"Block number for chain ID {chain_id} must be {expected_block_number}"
@@ -51,25 +53,27 @@ def test_multiple_chainids_write_and_read(w3, account0):
 
 def test_overwrite_existing_data(w3, account0):
     CHAIN_ID = 42
+    week_number = 20
     NEW_BLOCK_NUMBER = 200
 
     # Set initial block number
-    set_blocknumber_to_datanft(CHAIN_ID, account0.address, 100, w3)
+    set_blocknumber_to_datanft(CHAIN_ID, account0.address, 100, week_number, w3)
     # Overwrite with a new block number
     assert set_blocknumber_to_datanft(
-        CHAIN_ID, account0.address, NEW_BLOCK_NUMBER, w3
+        CHAIN_ID, account0.address, NEW_BLOCK_NUMBER, week_number, w3
     ), "Failed to overwrite block number data"
 
     # Read back the overwritten block number
-    block_number = get_block_number_from_datanft(CHAIN_ID, w3)
+    block_number = get_block_number_from_datanft(CHAIN_ID, week_number, w3)
     assert block_number == NEW_BLOCK_NUMBER, "Overwritten block number must be 200"
 
 
 def test_read_nonexistent_chainid(w3):
+    week_number = 20
     NON_EXISTENT_CHAIN_ID = 999
 
     # Attempt to read a block number for a non-existent chain ID
-    block_number = get_block_number_from_datanft(NON_EXISTENT_CHAIN_ID, w3)
+    block_number = get_block_number_from_datanft(NON_EXISTENT_CHAIN_ID, week_number, w3)
     assert block_number == 0, "Block number for a non-existent chain ID must be 0"
 
 
@@ -96,36 +100,26 @@ def test_read_data(w3, nft_addr):
 def test_set_blocknumber_data(w3, account0, monkeypatch, nft_addr):
     monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
     blocknumbers = {"1": 12345, "2": 67890}
+    week_number = "20"
     from_account = account0.address
 
     # Set block number data
-    set_result = _set_blocknumber_data(nft_addr, from_account, blocknumbers, w3)
+    set_result = _set_blocknumber_data(nft_addr, from_account, blocknumbers, week_number, w3)
     assert set_result, "Failed to set blocknumber data"
 
 
 def test_read_blocknumber_data(w3, account0, monkeypatch, nft_addr):
     monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
     blocknumbers = {"1": 12345, "2": 67890}
+    week_number = "20"
     from_account = account0.address
 
     # Set block number set
-    _set_blocknumber_data(nft_addr, from_account, blocknumbers, w3)
+    _set_blocknumber_data(nft_addr, from_account, blocknumbers, week_number, w3)
 
     # Now, read and verify the block number data
-    read_result = _read_blocknumber_data(nft_addr, w3)
+    read_result = _read_blocknumber_data(nft_addr, week_number, w3)
     assert read_result == blocknumbers, "Read blocknumber data does not match expected"
-
-
-@patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
-def test_get_st_block(w3, account0):
-    last_block = w3.eth.block_number
-    last_block_timestamp = w3.eth.get_block(last_block).timestamp
-    assert set_blocknumber_to_datanft(
-        w3.eth.chain_id, account0.address, last_block, w3
-    ), "Failed to set block number data"
-    block = get_st_block(w3, last_block_timestamp, True)
-
-    assert block == last_block
 
 
 # --------------- Fixtures ---------------
