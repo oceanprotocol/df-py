@@ -29,6 +29,7 @@ def test_datanft_write_and_read(w3, account0):
     block_number = get_block_number_from_datanft(CHAIN_ID, w3)
     assert block_number == 100, "block number must be 100"
 
+
 def test_multiple_chainids_write_and_read(w3, account0):
     chain_ids_and_block_numbers = {
         1: 1000,
