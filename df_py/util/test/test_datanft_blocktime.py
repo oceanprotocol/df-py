@@ -1,4 +1,4 @@
-from df_py.util.blocktime import get_st_block
+from df_py.util.blocktime import get_fin_block, get_st_block
 from df_py.volume.reward_calculator import get_df_week_number
 import pytest
 import os
@@ -136,6 +136,20 @@ def test_get_st_block(w3, account0):
         w3.eth.chain_id, account0.address, last_block, week_number, w3
     ), "Failed to set block number data"
     block = get_st_block(w3, last_block_timestamp, True)
+
+    assert block == last_block
+
+
+@patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
+def test_get_fin_block(w3, account0):
+    last_block = w3.eth.block_number
+    last_block_timestamp = w3.eth.get_block(last_block).timestamp
+    last_block_datetime = datetime.fromtimestamp(last_block_timestamp)
+    week_number = get_df_week_number(last_block_datetime)
+    assert set_blocknumber_to_datanft(
+        w3.eth.chain_id, account0.address, last_block, week_number, w3
+    ), "Failed to set block number data"
+    block = get_fin_block(w3, last_block_timestamp, True)
 
     assert block == last_block
 
