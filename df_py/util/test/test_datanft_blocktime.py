@@ -127,3 +127,11 @@ def test_get_st_block(w3, account0):
     assert block == last_block
 
 
+# --------------- Fixtures ---------------
+
+
+@pytest.fixture(autouse=True)
+def nft_addr(w3, account0, monkeypatch):
+    data_NFT = create_data_nft(w3, "1", "1", account0)
+    monkeypatch.setenv("DATANFT_ADDR", data_NFT.contract.address)
+    return data_NFT.contract.address
