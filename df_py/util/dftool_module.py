@@ -2,10 +2,6 @@
 import argparse
 import os
 import sys
-from df_py.util.datanft_blocktime import (
-    get_block_number_from_weeknumber,
-    set_blocknumber_to_datanft,
-)
 
 from enforce_typing import enforce_types
 from eth_account import Account
@@ -63,6 +59,10 @@ from df_py.util.vesting_schedule import (
 from df_py.volume import csvs, queries
 from df_py.volume.reward_calculator import RewardShaper, get_df_week_number
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
+from df_py.util.datanft_blocktime import (
+    get_block_number_from_weeknumber,
+    set_blocknumber_to_datanft,
+)
 
 
 @enforce_types
@@ -390,11 +390,13 @@ def do_predictoor_data():
 @enforce_types
 def do_set_datanft_block_numbers():
     parser = StartFinArgumentParser(
-        description="Set the block numbers in the DataNFT contract for given start and end dates if not already set",
+        description="Set the block numbers in the DataNFT \
+              contract for given start and end dates if not already set",
         epilog=f"""Uses these envvars:
           \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
         command_name="set_datanft_block_numbers",
+        csv_names="",
     )
     parser.add_argument("command", choices=["set_datanft_block_numbers"])
 
@@ -426,7 +428,8 @@ def do_set_datanft_block_numbers():
             print(f"Block number {st_block} set for week {start_week_number}")
         else:
             print(
-                f"Transaction failed for week {start_week_number} while setting block number {st_block}"
+                f"Transaction failed for week {start_week_number} \
+                      while setting block number {st_block}"
             )
 
     if block_number_end == 0:
@@ -439,7 +442,8 @@ def do_set_datanft_block_numbers():
             print(f"Block number {fin_block} set for week {end_week_number}")
         else:
             print(
-                f"Transaction failed for week {end_week_number} while setting block number {fin_block}"
+                f"Transaction failed for week {end_week_number} \
+                      while setting block number {fin_block}"
             )
 
     print("dftool set_datanft_block_numbers: Done")

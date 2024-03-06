@@ -1,11 +1,12 @@
 import os
 import json
-from typing import Dict, Optional, Union
+from typing import Dict, Union
+
+from enforce_typing import enforce_types
+from web3 import Web3
+
 from df_py.util.http_provider import get_web3_connection_provider
 from df_py.volume.reward_calculator import get_df_week_number
-from enforce_typing import enforce_types
-
-from web3 import Web3
 from df_py.util.contract_base import ContractBase
 
 

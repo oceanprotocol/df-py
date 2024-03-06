@@ -1,9 +1,12 @@
-from df_py.util.blocktime import get_fin_block, get_st_block
-from df_py.volume.reward_calculator import get_df_week_number
-import pytest
+# pylint: disable=redefined-outer-name
 import os
 from datetime import datetime
 from unittest.mock import patch
+
+import pytest
+
+from df_py.util.blocktime import get_fin_block, get_st_block
+from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.datanft_blocktime import (
     _get_w3_object,
     _read_blocknumber_data,

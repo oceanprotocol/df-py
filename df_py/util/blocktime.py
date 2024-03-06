@@ -1,13 +1,14 @@
 from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import Union
-from df_py.util.datanft_blocktime import (
-    get_blocknumber_from_date,
-)
 
 from enforce_typing import enforce_types
 from scipy import optimize
 from web3.main import Web3
+
+from df_py.util.datanft_blocktime import (
+    get_blocknumber_from_date,
+)
 
 
 @enforce_types
@@ -268,9 +269,9 @@ def get_fin_block(web3, FIN, use_data_nft: bool = False):
     fin_block = 0
     if FIN == "latest":
         return web3.eth.get_block("latest").number - 4
-    elif FIN == "thu":
+    if FIN == "thu":
         return get_block_number_thursday(web3)
-    elif use_data_nft:
+    if use_data_nft:
         timestamp = timestr_to_timestamp(FIN) if "-" in str(FIN) else int(FIN)
         block_number = get_block_number_from_datanft(web3, timestamp)
         if block_number != 0:
