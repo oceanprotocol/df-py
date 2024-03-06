@@ -2,7 +2,10 @@
 import argparse
 import os
 import sys
-from df_py.util.datanft_blocktime import get_block_number_from_datanft, set_blocknumber_to_datanft
+from df_py.util.datanft_blocktime import (
+    get_block_number_from_datanft,
+    set_blocknumber_to_datanft,
+)
 
 from enforce_typing import enforce_types
 from eth_account import Account
@@ -383,6 +386,7 @@ def do_predictoor_data():
 
 # ========================================================================
 
+
 @enforce_types
 def do_set_datanft_block_numbers():
     parser = StartFinArgumentParser(
@@ -393,7 +397,7 @@ def do_set_datanft_block_numbers():
         command_name="set_datanft_block_numbers",
     )
     parser.add_argument("command", choices=["set_datanft_block_numbers"])
-    
+
     arguments = parser.parse_args()
     print_arguments(arguments)
 
@@ -401,10 +405,11 @@ def do_set_datanft_block_numbers():
     start_week_number = get_df_week_number(arguments.ST)
     end_week_number = get_df_week_number(arguments.FIN)
 
-
     # get the block numbers
     web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
-    block_number_start = get_block_number_from_datanft(web3.eth.chain_id, start_week_number)
+    block_number_start = get_block_number_from_datanft(
+        web3.eth.chain_id, start_week_number
+    )
     block_number_end = get_block_number_from_datanft(web3.eth.chain_id, end_week_number)
     from_account = _getPrivateAccount()
     st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN, False)
@@ -412,22 +417,32 @@ def do_set_datanft_block_numbers():
     if block_number_start == 0:
         # not set, so set it
         print(f"Setting block number {st_block} for week {start_week_number}")
-        done = set_blocknumber_to_datanft(web3.eth.chain_id, from_account, st_block, start_week_number)
+        done = set_blocknumber_to_datanft(
+            web3.eth.chain_id, from_account, st_block, start_week_number
+        )
         if done:
             print(f"Block number {st_block} set for week {start_week_number}")
         else:
-            print(f"Transaction failed for week {start_week_number} while setting block number {st_block}")
+            print(
+                f"Transaction failed for week {start_week_number} while setting block number {st_block}"
+            )
 
     if block_number_end == 0:
         # not set, so set it
         print(f"Setting block number {fin_block} for week {end_week_number}")
-        done = set_blocknumber_to_datanft(web3.eth.chain_id, from_account, fin_block, end_week_number)
+        done = set_blocknumber_to_datanft(
+            web3.eth.chain_id, from_account, fin_block, end_week_number
+        )
         if done:
             print(f"Block number {fin_block} set for week {end_week_number}")
         else:
-            print(f"Transaction failed for week {end_week_number} while setting block number {fin_block}")
-    
+            print(
+                f"Transaction failed for week {end_week_number} while setting block number {fin_block}"
+            )
+
     print("dftool set_datanft_block_numbers: Done")
+
+
 # ========================================================================
 
 
