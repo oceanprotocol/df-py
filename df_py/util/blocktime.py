@@ -5,7 +5,6 @@ from df_py.util.datanft_blocktime import (
     get_block_number_from_datanft,
     get_blocknumber_from_date,
 )
-from df_py.volume.reward_calculator import get_df_week_number
 
 from enforce_typing import enforce_types
 from scipy import optimize
@@ -301,7 +300,7 @@ def get_st_block(web3, ST, use_data_nft: bool = False):
 
 
 @enforce_types
-def get_st_fin_blocks(web3, ST, FIN):
-    st_block = get_st_block(web3, ST)
-    fin_block = get_fin_block(web3, FIN)
+def get_st_fin_blocks(web3, ST, FIN, use_data_nft: bool = False):
+    st_block = get_st_block(web3, ST, use_data_nft)
+    fin_block = get_fin_block(web3, FIN, use_data_nft)
     return (st_block, fin_block)
