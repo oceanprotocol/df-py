@@ -3,7 +3,7 @@ import argparse
 import os
 import sys
 from df_py.util.datanft_blocktime import (
-    get_block_number_from_datanft,
+    get_block_number_from_weeknumber,
     set_blocknumber_to_datanft,
 )
 
@@ -407,10 +407,12 @@ def do_set_datanft_block_numbers():
 
     # get the block numbers
     web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
-    block_number_start = get_block_number_from_datanft(
+    block_number_start = get_block_number_from_weeknumber(
         web3.eth.chain_id, start_week_number
     )
-    block_number_end = get_block_number_from_datanft(web3.eth.chain_id, end_week_number)
+    block_number_end = get_block_number_from_weeknumber(
+        web3.eth.chain_id, end_week_number
+    )
     from_account = _getPrivateAccount()
     st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN, False)
 

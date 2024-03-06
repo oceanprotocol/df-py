@@ -2,7 +2,6 @@ from datetime import datetime, timedelta, timezone
 from math import ceil
 from typing import Union
 from df_py.util.datanft_blocktime import (
-    get_block_number_from_datanft,
     get_blocknumber_from_date,
 )
 
