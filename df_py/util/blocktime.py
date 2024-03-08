@@ -289,7 +289,7 @@ def get_st_block(web3, ST, use_data_nft: bool = False):
 
     if use_data_nft:
         timestamp = timestr_to_timestamp(ST) if "-" in str(ST) else int(ST)
-        block_number = get_block_number_from_datanft(web3, timestamp)
+        block_number = get_block_number_from_datanft(web3, int(timestamp))
         if block_number != 0:
             return block_number
     if "-" in str(ST):
