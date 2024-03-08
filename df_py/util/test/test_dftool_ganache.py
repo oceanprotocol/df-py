@@ -4,8 +4,6 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
-from df_py.util.datanft_blocktime import get_block_number_from_weeknumber
-from df_py.volume.reward_calculator import get_df_week_number
 
 import pytest
 from enforce_typing import enforce_types
@@ -23,8 +21,10 @@ from df_py.predictoor.predictoor_testutil import create_mock_responses
 from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.contract_base import ContractBase
+from df_py.util.datanft_blocktime import get_block_number_from_weeknumber
 from df_py.util.dftool_module import do_predictoor_data
 from df_py.volume import csvs
+from df_py.volume.reward_calculator import get_df_week_number
 
 PREV, DFTOOL_ACCT = {}, None
 

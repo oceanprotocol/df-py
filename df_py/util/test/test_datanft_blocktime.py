@@ -3,8 +3,6 @@ import os
 from datetime import datetime
 from unittest.mock import patch
 
-import pytest
-
 from df_py.util.blocktime import get_fin_block, get_st_block
 from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.datanft_blocktime import (
@@ -153,6 +151,7 @@ def test_get_st_block(w3, account0, nft_addr):
 
 @patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
 def test_get_fin_block(w3, account0, nft_addr):
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     last_block = w3.eth.block_number
     last_block_timestamp = w3.eth.get_block(last_block).timestamp
     last_block_datetime = datetime.fromtimestamp(last_block_timestamp)
