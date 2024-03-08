@@ -19,7 +19,7 @@ from df_py.util.datanft_blocktime import (
 
 
 def test_datanft_write_and_read(w3, account0, nft_addr):
-    _ = nft_addr # linter fix - use the fixture to have the nft deployed
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     CHAIN_ID = 42
     week_number = 20
 
@@ -37,7 +37,7 @@ def test_datanft_write_and_read(w3, account0, nft_addr):
 
 
 def test_multiple_chainids_write_and_read(w3, account0, nft_addr):
-    _ = nft_addr # linter fix - use the fixture to have the nft deployed
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     week_number = 20
     chain_ids_and_block_numbers = {
         1: 1000,
@@ -60,7 +60,7 @@ def test_multiple_chainids_write_and_read(w3, account0, nft_addr):
 
 
 def test_overwrite_existing_data(w3, account0, nft_addr):
-    _ = nft_addr # linter fix - use the fixture to have the nft deployed
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     CHAIN_ID = 42
     week_number = 20
     NEW_BLOCK_NUMBER = 200
@@ -78,7 +78,7 @@ def test_overwrite_existing_data(w3, account0, nft_addr):
 
 
 def test_read_nonexistent_chainid(w3, nft_addr):
-    _ = nft_addr # linter fix - use the fixture to have the nft deployed
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     week_number = 20
     NON_EXISTENT_CHAIN_ID = 999
 
@@ -138,7 +138,7 @@ def test_read_blocknumber_data(w3, account0, monkeypatch, nft_addr):
 
 @patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
 def test_get_st_block(w3, account0, nft_addr):
-    _ = nft_addr # linter fix - use the fixture to have the nft deployed
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     last_block = w3.eth.block_number
     last_block_timestamp = w3.eth.get_block(last_block).timestamp
     last_block_datetime = datetime.fromtimestamp(last_block_timestamp)
