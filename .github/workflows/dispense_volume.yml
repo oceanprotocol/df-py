@@ -99,17 +99,17 @@ jobs:
 
       - name: Run dftool volsym
         run: |
-          ./dftool volsym $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
-          ./dftool volsym $date $now 200 $CSV_DIR 137 --RETRIES $RETRY_TIMES
-          ./dftool volsym $date $now 200 $CSV_DIR 23294 --RETRIES $RETRY_TIMES
+          ./dftool volsym $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES --USE_DATANFT True
+          ./dftool volsym $date $now 200 $CSV_DIR 137 --RETRIES $RETRY_TIMES --USE_DATANFT True
+          ./dftool volsym $date $now 200 $CSV_DIR 23294 --RETRIES $RETRY_TIMES --USE_DATANFT True
 
       - name: Run dftool vebals
         run: |
-          ./dftool vebals $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
+          ./dftool vebals $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES --USE_DATANFT True
 
       - name: Run dftool allocations
         run: |
-          ./dftool allocations $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
+          ./dftool allocations $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES --USE_DATANFT True
 
       - name: Run dftool predictoor_data
         run: |
