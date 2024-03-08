@@ -98,6 +98,13 @@ jobs:
           ./dftool set_datanft_block_numbers $date $now 137
           ./dftool set_datanft_block_numbers $date $now 23294
 
+
+      - name: Set block start and end numbers for test network
+        if: github.event_name != 'schedule'
+        run: |
+          ./dftool set_datanft_block_numbers $date $now 8996
+
+
       - name: Run dftool volsym
         run: |
           ./dftool volsym $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES --USE_DATANFT True
