@@ -16,10 +16,10 @@ from df_py.util.datanft_blocktime import (
     get_block_number_from_weeknumber,
     set_blocknumber_to_datanft,
 )
-from df_py.util.oceanutil import create_data_nft
 
 
-def test_datanft_write_and_read(w3, account0):
+def test_datanft_write_and_read(w3, account0, nft_addr):
+    _ = nft_addr # linter fix - use the fixture to have the nft deployed
     CHAIN_ID = 42
     week_number = 20
 
@@ -36,7 +36,8 @@ def test_datanft_write_and_read(w3, account0):
     assert block_number == 100, "block number must be 100"
 
 
-def test_multiple_chainids_write_and_read(w3, account0):
+def test_multiple_chainids_write_and_read(w3, account0, nft_addr):
+    _ = nft_addr # linter fix - use the fixture to have the nft deployed
     week_number = 20
     chain_ids_and_block_numbers = {
         1: 1000,
@@ -58,7 +59,8 @@ def test_multiple_chainids_write_and_read(w3, account0):
         ), f"Block number for chain ID {chain_id} must be {expected_block_number}"
 
 
-def test_overwrite_existing_data(w3, account0):
+def test_overwrite_existing_data(w3, account0, nft_addr):
+    _ = nft_addr # linter fix - use the fixture to have the nft deployed
     CHAIN_ID = 42
     week_number = 20
     NEW_BLOCK_NUMBER = 200
@@ -75,7 +77,8 @@ def test_overwrite_existing_data(w3, account0):
     assert block_number == NEW_BLOCK_NUMBER, "Overwritten block number must be 200"
 
 
-def test_read_nonexistent_chainid(w3):
+def test_read_nonexistent_chainid(w3, nft_addr):
+    _ = nft_addr # linter fix - use the fixture to have the nft deployed
     week_number = 20
     NON_EXISTENT_CHAIN_ID = 999
 
@@ -134,7 +137,8 @@ def test_read_blocknumber_data(w3, account0, monkeypatch, nft_addr):
 
 
 @patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
-def test_get_st_block(w3, account0):
+def test_get_st_block(w3, account0, nft_addr):
+    _ = nft_addr # linter fix - use the fixture to have the nft deployed
     last_block = w3.eth.block_number
     last_block_timestamp = w3.eth.get_block(last_block).timestamp
     last_block_datetime = datetime.fromtimestamp(last_block_timestamp)
@@ -148,7 +152,7 @@ def test_get_st_block(w3, account0):
 
 
 @patch.dict(os.environ, {"POLYGON_RPC_URL": "http://localhost:8545"})
-def test_get_fin_block(w3, account0):
+def test_get_fin_block(w3, account0, nft_addr):
     last_block = w3.eth.block_number
     last_block_timestamp = w3.eth.get_block(last_block).timestamp
     last_block_datetime = datetime.fromtimestamp(last_block_timestamp)
@@ -159,13 +163,3 @@ def test_get_fin_block(w3, account0):
     block = get_fin_block(w3, last_block_timestamp, True)
 
     assert block == last_block
-
-
-# --------------- Fixtures ---------------
-
-
-@pytest.fixture(autouse=True)
-def nft_addr(w3, account0, monkeypatch):
-    data_NFT = create_data_nft(w3, "1", "1", account0)
-    monkeypatch.setenv("DATANFT_ADDR", data_NFT.contract.address)
-    return data_NFT.contract.address
