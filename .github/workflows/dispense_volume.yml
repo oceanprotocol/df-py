@@ -79,6 +79,7 @@ jobs:
           echo "GOERLI_RPC_URL=https://rpc.ankr.com/eth_goerli" >> $GITHUB_ENV
           echo "INFURA_NETWORKS=polygon,mumbai,mainnet" >> $GITHUB_ENV
           echo "SEPOLIA_RPC_URL=https://rpc.sepolia.org/" >> $GITHUB_ENV
+          echo "DATANFT_ADDR=0xc5eba5234B69dAeC98747c906658AEa31d74b3d2" >> $GITHUB_ENV
 
       - name: Make dftool executable
         run: chmod +x dftool
