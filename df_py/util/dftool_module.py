@@ -3,6 +3,8 @@ import argparse
 import os
 import sys
 
+from datetime import datetime
+
 from enforce_typing import enforce_types
 from eth_account import Account
 from web3.main import Web3
@@ -389,40 +391,49 @@ def do_predictoor_data():
 
 @enforce_types
 def do_set_datanft_block_numbers():
-    parser = StartFinArgumentParser(
+    parser = argparse.ArgumentParser(
         description="Set the block numbers in the DataNFT \
-              contract for given start and end dates if not already set",
-        epilog=f"""Uses these envvars:
-          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
-        """,
-        command_name="set_datanft_block_numbers",
-        csv_names="",
+              contract for given start and end dates if not already set"
     )
     parser.add_argument("command", choices=["set_datanft_block_numbers"])
+    parser.add_argument(
+        "ST",
+        type=valid_date,
+        help="start date -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "FIN",
+        type=valid_date,
+        help="end date -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "CHAINID",
+        type=chain_type,
+        help=f"DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).",
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
-
-    # find the week number of start_date
-    start_week_number = get_df_week_number(arguments.ST)
-    end_week_number = get_df_week_number(arguments.FIN)
+    st_date = datetime.strptime(arguments.ST, "%Y-%m-%d")
+    end_date = datetime.strptime(arguments.FIN, "%Y-%m-%d")
+    start_week_number = get_df_week_number(st_date)
+    end_week_number = get_df_week_number(end_date)
+    from_account = _getPrivateAccount()
+    web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
 
     # get the block numbers
-    web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
     block_number_start = get_block_number_from_weeknumber(
         web3.eth.chain_id, start_week_number
     )
     block_number_end = get_block_number_from_weeknumber(
         web3.eth.chain_id, end_week_number
     )
-    from_account = _getPrivateAccount()
     st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN, False)
-
     if block_number_start == 0:
         # not set, so set it
         print(f"Setting block number {st_block} for week {start_week_number}")
         done = set_blocknumber_to_datanft(
-            web3.eth.chain_id, from_account, st_block, start_week_number
+            web3.eth.chain_id, from_account.address, st_block, start_week_number
         )
         if done:
             print(f"Block number {st_block} set for week {start_week_number}")
@@ -436,7 +447,7 @@ def do_set_datanft_block_numbers():
         # not set, so set it
         print(f"Setting block number {fin_block} for week {end_week_number}")
         done = set_blocknumber_to_datanft(
-            web3.eth.chain_id, from_account, fin_block, end_week_number
+            web3.eth.chain_id, from_account.address, fin_block, end_week_number
         )
         if done:
             print(f"Block number {fin_block} set for week {end_week_number}")
