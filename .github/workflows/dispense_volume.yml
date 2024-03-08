@@ -90,6 +90,13 @@ jobs:
           ./dftool get_rate MATIC $date $now $CSV_DIR --RETRIES $RETRY_TIMES
           ./dftool get_rate ROSE $date $now $CSV_DIR --RETRIES $RETRY_TIMES
 
+      - name: Set block start and end numbers
+        if: github.event_name == 'schedule'
+        run: |
+          ./dftool set_datanft_block_numbers $date $now 1
+          ./dftool set_datanft_block_numbers $date $now 137
+          ./dftool set_datanft_block_numbers $date $now 23294
+
       - name: Run dftool volsym
         run: |
           ./dftool volsym $date $now 200 $CSV_DIR 1 --RETRIES $RETRY_TIMES
