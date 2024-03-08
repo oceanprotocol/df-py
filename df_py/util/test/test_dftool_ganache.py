@@ -4,6 +4,8 @@ import os
 import sys
 from pathlib import Path
 from unittest.mock import patch
+from df_py.util.datanft_blocktime import get_block_number_from_weeknumber
+from df_py.volume.reward_calculator import get_df_week_number
 
 import pytest
 from enforce_typing import enforce_types
@@ -711,6 +713,40 @@ def test_chain_info():
 
     with sysargs_context(sys_argv):
         dftool_module.do_chain_info()
+
+
+def test_set_datanft_block_numbers(nft_addr, monkeypatch, account0):
+    monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
+    monkeypatch.setenv("DATANFT_ADDR", nft_addr)
+    sys_argv = [
+        "dftool",
+        "set_datanft_block_numbers",
+        "2024-02-15",
+        "2024-02-22",
+        str(networkutil.DEV_CHAINID),
+    ]
+    with patch(
+        "df_py.util.dftool_module.get_st_fin_blocks", return_value=(100, 200)
+    ), patch("df_py.util.dftool_module._getPrivateAccount", return_value=account0):
+        with sysargs_context(sys_argv):
+            dftool_module.do_set_datanft_block_numbers()
+
+    ST = "2024-02-15"
+    ST = datetime.datetime.strptime(ST, "%Y-%m-%d")
+    FIN = "2024-02-22"
+    FIN = datetime.datetime.strptime(FIN, "%Y-%m-%d")
+    week_number_st = get_df_week_number(ST)
+    week_number_fin = get_df_week_number(FIN)
+
+    block_number_st = get_block_number_from_weeknumber(
+        networkutil.DEV_CHAINID, week_number_st
+    )
+    block_number_fin = get_block_number_from_weeknumber(
+        networkutil.DEV_CHAINID, week_number_fin
+    )
+
+    assert block_number_st == 100
+    assert block_number_fin == 200
 
 
 @enforce_types
