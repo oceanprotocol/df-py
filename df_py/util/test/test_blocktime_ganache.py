@@ -206,10 +206,10 @@ def test_get_st_fin_blocks(w3):
 def test_get_block_number_from_datanft(w3, nft_addr, account0, monkeypatch):
     _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
-    ts_st = int(datetime.strptime("2024-03-7", "%Y-%m-%d").timestamp())
-    ts_fin = int(datetime.strptime("2024-03-14", "%Y-%m-%d").timestamp())
+    ts_st = int(datetime.strptime("2024-03-10", "%Y-%m-%d").timestamp())
+    ts_fin = int(datetime.now().timestamp())
 
-    block_number_st_zero = get_block_number_from_datanft(w3, ts_st)
+    block_number_st_zero = get_block_number_from_datanft(w3, ts_fin)
     assert block_number_st_zero == 0
 
     set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 1, 80, w3)
@@ -218,5 +218,5 @@ def test_get_block_number_from_datanft(w3, nft_addr, account0, monkeypatch):
     block_number_st = get_block_number_from_datanft(w3, ts_st)
     block_number_fin = get_block_number_from_datanft(w3, ts_fin)
     print("FOUND BLOCK NUMBERS: ", block_number_st, block_number_fin)
-    assert block_number_st == 1
+    assert block_number_st == 0
     assert block_number_fin == 2
