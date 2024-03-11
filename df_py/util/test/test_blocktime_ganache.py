@@ -217,6 +217,5 @@ def test_get_block_number_from_datanft(w3, nft_addr, account0, monkeypatch):
 
     block_number_st = get_block_number_from_datanft(w3, ts_st)
     block_number_fin = get_block_number_from_datanft(w3, ts_fin)
-    print("FOUND BLOCK NUMBERS: ", block_number_st, block_number_fin)
     assert block_number_st == 0
     assert block_number_fin == 1
