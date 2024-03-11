@@ -164,17 +164,14 @@ def test_get_fin_block(w3, account0, nft_addr):
 
     assert block == last_block
 
+
 def test_get_blocknumber_from_date(w3, account0, nft_addr):
     _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     st = datetime.strptime("2024-03-7", "%Y-%m-%d")
     fin = datetime.strptime("2024-03-14", "%Y-%m-%d")
 
-    set_blocknumber_to_datanft(
-        w3.eth.chain_id, account0.address, 100, 80, w3
-    )
-    set_blocknumber_to_datanft(
-        w3.eth.chain_id, account0.address, 200, 81, w3
-    )
+    set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 100, 80, w3)
+    set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 200, 81, w3)
 
     st_block = get_blocknumber_from_date(w3, st)
     fin_block = get_blocknumber_from_date(w3, fin)

@@ -202,6 +202,7 @@ def test_get_st_fin_blocks(w3):
     rng = create_range(w3, 10, 5000, 100, 42)
     assert rng
 
+
 def test_get_block_number_from_datanft(w3, nft_addr, account0):
     date_st = datetime.strptime("2024-03-7", "%Y-%m-%d")
     date_fin = datetime.strptime("2024-03-14", "%Y-%m-%d")
@@ -209,12 +210,8 @@ def test_get_block_number_from_datanft(w3, nft_addr, account0):
     block_number_st_zero = get_block_number_from_datanft(w3, date_st.timestamp())
     assert block_number_st_zero == 0
 
-    set_blocknumber_to_datanft(
-        w3.eth.chain_id, account0.address, 1, 80, w3
-    )
-    set_blocknumber_to_datanft(
-        w3.eth.chain_id, account0.address, 2, 81, w3
-    )
+    set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 1, 80, w3)
+    set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 2, 81, w3)
 
     block_number_st = get_block_number_from_datanft(w3, date_st.timestamp())
     assert block_number_st == 1
