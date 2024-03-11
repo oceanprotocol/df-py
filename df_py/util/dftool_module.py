@@ -415,7 +415,6 @@ def do_set_datanft_block_numbers():
     arguments = parser.parse_args()
     print_arguments(arguments)
     st_date = datetime.strptime(arguments.ST, "%Y-%m-%d")
-    end_date = datetime.strptime(arguments.FIN, "%Y-%m-%d")
     start_week_number = get_df_week_number(st_date)
     end_week_number = start_week_number + 1
     from_account = _getPrivateAccount()
@@ -429,7 +428,13 @@ def do_set_datanft_block_numbers():
         web3.eth.chain_id, end_week_number
     )
     st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN, False)
-    print("Start and end block numbers:", block_number_start, block_number_end, st_block, fin_block)
+    print(
+        "Start and end block numbers:",
+        block_number_start,
+        block_number_end,
+        st_block,
+        fin_block,
+    )
     if block_number_start == 0:
         # not set, so set it
         print(f"Setting block number {st_block} for week {start_week_number}")
