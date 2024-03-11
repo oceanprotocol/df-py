@@ -204,6 +204,7 @@ def test_get_st_fin_blocks(w3):
 
 
 def test_get_block_number_from_datanft(w3, nft_addr, account0):
+    _ = nft_addr  # linter fix - use the fixture to have the nft deployed
     date_st = datetime.strptime("2024-03-7", "%Y-%m-%d")
     date_fin = datetime.strptime("2024-03-14", "%Y-%m-%d")
 
