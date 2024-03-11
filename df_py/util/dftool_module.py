@@ -511,6 +511,10 @@ def do_calc():
     if tot_ocean == 0:
         # Vesting wallet contract is used to calculate the reward amount for given week / start date
         # currently only deployed on Goerli
+
+        # NOTE Goerli is being shut down so disable this for now
+        # NOTE Enable this once the Exp Vesting contract is deployed on mainnet
+
         # current_dir = os.path.dirname(os.path.abspath(__file__))
         # address_path = os.path.join(
         #     current_dir, "..", "..", ".github", "workflows", "data", "address.json"
