@@ -419,7 +419,7 @@ def do_set_datanft_block_numbers():
     start_week_number = get_df_week_number(st_date)
     end_week_number = get_df_week_number(end_date)
     from_account = _getPrivateAccount()
-    web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
 
     # get the block numbers
     block_number_start = get_block_number_from_weeknumber(
