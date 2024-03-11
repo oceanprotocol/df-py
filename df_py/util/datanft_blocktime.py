@@ -4,9 +4,6 @@ from typing import Dict, Union
 
 from enforce_typing import enforce_types
 from web3 import Web3
-from web3.middleware import (
-    construct_sign_and_send_raw_middleware,
-)
 
 from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.contract_base import ContractBase
@@ -50,8 +47,8 @@ def _set_blocknumber_data(
     w3=None,
 ) -> bool:
     w3 = _get_w3_object() if w3 is None else w3
-    # w3.eth.default_account = from_account
-    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(from_account))
+    w3.eth.default_account = from_account
+    # w3.middleware_onion.add(construct_sign_and_send_raw_middleware(from_account))
     data = json.dumps(blocknumbers)
     return _set_data(w3, nft_addr, week_number, data)
 
