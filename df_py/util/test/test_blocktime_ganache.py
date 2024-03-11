@@ -203,19 +203,20 @@ def test_get_st_fin_blocks(w3):
     assert rng
 
 
-def test_get_block_number_from_datanft(w3, nft_addr, account0):
+def test_get_block_number_from_datanft(w3, nft_addr, account0, monkeypatch):
     _ = nft_addr  # linter fix - use the fixture to have the nft deployed
-    date_st = datetime.strptime("2024-03-7", "%Y-%m-%d")
-    date_fin = datetime.strptime("2024-03-14", "%Y-%m-%d")
+    monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
+    ts_st = int(datetime.strptime("2024-03-7", "%Y-%m-%d").timestamp())
+    ts_fin = int(datetime.strptime("2024-03-14", "%Y-%m-%d").timestamp())
 
-    block_number_st_zero = get_block_number_from_datanft(w3, date_st.timestamp())
+    block_number_st_zero = get_block_number_from_datanft(w3, ts_st)
     assert block_number_st_zero == 0
 
     set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 1, 80, w3)
     set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 2, 81, w3)
 
-    block_number_st = get_block_number_from_datanft(w3, date_st.timestamp())
+    block_number_st = get_block_number_from_datanft(w3, ts_st)
     assert block_number_st == 1
 
-    block_number_fin = get_block_number_from_datanft(w3, date_fin.timestamp())
+    block_number_fin = get_block_number_from_datanft(w3, ts_fin)
     assert block_number_fin == 2

@@ -165,8 +165,9 @@ def test_get_fin_block(w3, account0, nft_addr):
     assert block == last_block
 
 
-def test_get_blocknumber_from_date(w3, account0, nft_addr):
+def test_get_blocknumber_from_date(w3, account0, nft_addr, monkeypatch):
     _ = nft_addr  # linter fix - use the fixture to have the nft deployed
+    monkeypatch.setenv("POLYGON_RPC_URL", "http://localhost:8545")
     st = datetime.strptime("2024-03-7", "%Y-%m-%d")
     fin = datetime.strptime("2024-03-14", "%Y-%m-%d")
 
