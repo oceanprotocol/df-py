@@ -37,9 +37,7 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
 @enforce_types
 def _get_w3_object():
     # DataNFT that holds the block numbers is deployed on Polygon
-    private_key = os.getenv("DFTOOL_KEY")
     w3 = get_web3(get_rpc_url("polygon"))
-    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(private_key))
     return w3
 
 
@@ -52,7 +50,8 @@ def _set_blocknumber_data(
     w3=None,
 ) -> bool:
     w3 = _get_w3_object() if w3 is None else w3
-    w3.eth.default_account = from_account
+    # w3.eth.default_account = from_account
+    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(from_account))
     data = json.dumps(blocknumbers)
     return _set_data(w3, nft_addr, week_number, data)
 
