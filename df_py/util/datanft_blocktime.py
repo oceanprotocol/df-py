@@ -4,6 +4,9 @@ from typing import Dict, Union
 
 from enforce_typing import enforce_types
 from web3 import Web3
+from web3.middleware import (
+    construct_sign_and_send_raw_middleware,
+)
 
 from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.contract_base import ContractBase
@@ -35,12 +38,19 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
 def _get_w3_object():
     # DataNFT that holds the block numbers is deployed on Polygon
     rpc_url = os.getenv("POLYGON_RPC_URL")
-    return get_web3(rpc_url)
+    private_key = os.getenv("DFTOOL_KEY")
+    w3 = get_web3(rpc_url)
+    w3.middleware_onion.add(construct_sign_and_send_raw_middleware(private_key))
+    return w3
 
 
 @enforce_types
 def _set_blocknumber_data(
-    nft_addr: str, from_account, blocknumbers: Dict[str, int], week_number: str, w3=None
+    nft_addr: str,
+    from_account,
+    blocknumbers: Dict[str, Dict[str, int]],
+    week_number: str,
+    w3=None,
 ) -> bool:
     w3 = _get_w3_object() if w3 is None else w3
     w3.eth.default_account = from_account
@@ -49,10 +59,11 @@ def _set_blocknumber_data(
 
 
 @enforce_types
-def _read_blocknumber_data(nft_addr: str, week_number: str, w3) -> Dict[str, int]:
+def _read_blocknumber_data(
+    nft_addr: str, week_number: str, w3
+) -> Dict[str, Dict[str, int]]:
     w3 = _get_w3_object() if w3 is None else w3
     data = _read_data(w3, nft_addr, week_number)
-    print("DATA READ:", data)
     if data == "":
         return {}
     return json.loads(data)
@@ -63,7 +74,10 @@ def get_block_number_from_weeknumber(
     chainid: Union[str, int], week_number: Union[str, int], w3=None
 ) -> int:
     data = _read_blocknumber_data(os.getenv("DATANFT_ADDR"), str(week_number), w3)
-    return data.get(str(chainid), 0)
+    week_number = str(week_number)
+    if week_number not in data:
+        return 0
+    return data[week_number].get(str(chainid), 0)
 
 
 @enforce_types
@@ -72,7 +86,9 @@ def set_blocknumber_to_datanft(
 ) -> bool:
     nft_addr = os.getenv("DATANFT_ADDR")
     data = _read_blocknumber_data(nft_addr, str(week_number), w3)
-    data[chainid] = blocknumber
+    if week_number not in data:
+        data[week_number] = {}
+    data[week_number][chainid] = blocknumber
     return _set_blocknumber_data(nft_addr, from_account, data, str(week_number), w3)
 
 

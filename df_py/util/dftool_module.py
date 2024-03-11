@@ -429,6 +429,7 @@ def do_set_datanft_block_numbers():
         web3.eth.chain_id, end_week_number
     )
     st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN, False)
+    print("Start and end block numbers:", block_number_start, block_number_end)
     if block_number_start == 0:
         # not set, so set it
         print(f"Setting block number {st_block} for week {start_week_number}")
