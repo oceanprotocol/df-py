@@ -10,7 +10,7 @@ from web3.middleware import (
 
 from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.contract_base import ContractBase
-from df_py.util.web3 import get_web3
+from df_py.util.web3 import get_web3, get_rpc_url
 
 
 @enforce_types
@@ -37,9 +37,8 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
 @enforce_types
 def _get_w3_object():
     # DataNFT that holds the block numbers is deployed on Polygon
-    rpc_url = os.getenv("POLYGON_RPC_URL")
     private_key = os.getenv("DFTOOL_KEY")
-    w3 = get_web3(rpc_url)
+    w3 = get_web3(get_rpc_url("polygon"))
     w3.middleware_onion.add(construct_sign_and_send_raw_middleware(private_key))
     return w3
 
