@@ -1,5 +1,6 @@
 import os
 import json
+from datetime import datetime
 from typing import Dict, Union
 
 from enforce_typing import enforce_types
@@ -88,7 +89,8 @@ def set_blocknumber_to_datanft(
     return _set_blocknumber_data(nft_addr, from_account, data, str(week_number), w3)
 
 
-def get_blocknumber_from_date(w3, date) -> int:
+@enforce_types
+def get_blocknumber_from_date(w3, date: datetime) -> int:
     df_week = get_df_week_number(date)
     chainid = w3.eth.chain_id
     return get_block_number_from_weeknumber(chainid, df_week)
