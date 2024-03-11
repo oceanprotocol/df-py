@@ -5,10 +5,9 @@ from typing import Dict, Union
 from enforce_typing import enforce_types
 from web3 import Web3
 
-from df_py.util.http_provider import get_web3_connection_provider
 from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.contract_base import ContractBase
-
+from df_py.util.web3 import get_web3
 
 @enforce_types
 def _set_data(w3, nft_addr: str, field_label: str, data: str) -> bool:
@@ -35,7 +34,7 @@ def _read_data(w3, nft_addr: str, field_label: str) -> str:
 def _get_w3_object():
     # DataNFT that holds the block numbers is deployed on Polygon
     rpc_url = os.getenv("POLYGON_RPC_URL")
-    return Web3(get_web3_connection_provider(rpc_url))
+    return get_web3(rpc_url)
 
 
 @enforce_types
