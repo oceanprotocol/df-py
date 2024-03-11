@@ -80,7 +80,8 @@ def set_blocknumber_to_datanft(
     chainid: int, from_account, blocknumber: int, week_number: Union[str, int], w3=None
 ) -> bool:
     nft_addr = os.getenv("DATANFT_ADDR")
-    data = _read_blocknumber_data(nft_addr, str(week_number), w3)
+    week_number = str(week_number)
+    data = _read_blocknumber_data(nft_addr, week_number, w3)
     if week_number not in data:
         data[week_number] = {}
     data[week_number][chainid] = blocknumber
