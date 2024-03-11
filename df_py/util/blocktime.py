@@ -272,7 +272,7 @@ def get_fin_block(web3, FIN, use_data_nft: bool = False):
     if FIN == "thu":
         return get_block_number_thursday(web3)
     if use_data_nft:
-        timestamp = timestr_to_timestamp(FIN) if "-" in str(FIN) else int(FIN)
+        timestamp = int(timestr_to_timestamp(FIN) if "-" in str(FIN) else int(FIN))
         block_number = get_block_number_from_datanft(web3, timestamp)
         if block_number != 0:
             return block_number
