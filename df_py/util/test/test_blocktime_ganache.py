@@ -214,7 +214,7 @@ def test_get_block_number_from_datanft(w3, nft_addr, account0, monkeypatch):
 
     set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 1, 80, w3)
     set_blocknumber_to_datanft(w3.eth.chain_id, account0.address, 2, 81, w3)
-    
+
     block_number_st = get_block_number_from_datanft(w3, ts_st)
     block_number_fin = get_block_number_from_datanft(w3, ts_fin)
     print("FOUND BLOCK NUMBERS: ", block_number_st, block_number_fin)
