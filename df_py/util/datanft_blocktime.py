@@ -9,6 +9,7 @@ from df_py.volume.reward_calculator import get_df_week_number
 from df_py.util.contract_base import ContractBase
 from df_py.util.web3 import get_web3
 
+
 @enforce_types
 def _set_data(w3, nft_addr: str, field_label: str, data: str) -> bool:
     field_label_hash = Web3.keccak(text=field_label)
