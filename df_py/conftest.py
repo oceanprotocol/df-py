@@ -2,7 +2,11 @@ import pytest
 
 from df_py.util import networkutil, oceantestutil
 from df_py.util.base18 import to_wei
-from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
+from df_py.util.oceanutil import (
+    OCEAN_token,
+    create_data_nft,
+    record_dev_deployed_contracts,
+)
 
 
 def pytest_sessionstart():
@@ -30,3 +34,11 @@ def account0():
 @pytest.fixture
 def all_accounts():
     return oceantestutil.get_all_accounts()
+
+
+@pytest.fixture
+# pylint: disable=redefined-outer-name
+def nft_addr(w3, account0, monkeypatch):
+    data_NFT = create_data_nft(w3, "1", "1", account0)
+    monkeypatch.setenv("DATANFT_ADDR", data_NFT.contract.address)
+    return data_NFT.contract.address
