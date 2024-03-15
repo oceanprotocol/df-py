@@ -24,6 +24,7 @@ RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2, C3 = 7, 137, 1285  # chainIDs
 NA, NB, NC, ND = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr", "0xnftd_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
+LP5 = "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
 OCN_ADDR2, H2O_ADDR2 = "0xocean2", "0xh2o2"
@@ -1122,23 +1123,24 @@ def test_merge_rewards():
 
     
 @enforce_types
-def test_volume_reward_calculator(tmp_path):
+def test_volume_reward_calculator_no_pdrs(tmp_path):
     stakes = {
-        1: {NA: {LP1: 2e8}},
-        2: {NB: {LP2: 2e8, LP3: 2e8}},
+        C1: {NA: {LP1: 1e8}},
+        C2: {NB: {LP2: 1e8, LP3: 2e8}},
     }
     locked_amts = {
-        1: {NA: {LP1: 2e8}},
-        2: {NB: {LP2: 2e8, LP3: 2e8}},
+        C1: {NA: {LP1: 1e8}},
+        C2: {NB: {LP2: 1e8, LP3: 2e8}},
     }
     volumes = {
-        1: {OCN_ADDR: {NA: 300.0}},
-        2: {H2O_ADDR: {NB: 600.0}},
+        C1: {OCN_ADDR: {NA: 300.0}},
+        C2: {H2O_ADDR: {NB: 600.0}},
     }
-    owners = {1: {NA: LP1}, 2: {NB: LP2}}
-    symbols = {1: {OCN_ADDR: OCN_SYMB}, 2: {H2O_ADDR: H2O_SYMB}}
+    owners = {C1: {NA: LP1}, C2: {NB: LP2}}
+    symbols = {C1: {OCN_ADDR: OCN_SYMB}, C2: {H2O_ADDR: H2O_SYMB}}
     rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
     multiplier = 1.0
+    OCEAN_reward = 1000.0
     
     with patch(
         "df_py.volume.allocations.load_stakes",
@@ -1158,7 +1160,7 @@ def test_volume_reward_calculator(tmp_path):
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ), patch(
         "df_py.volume.reward_calculator.query_predictoor_contracts",
-        return_value={1: "", 2: ""},
+        return_value={C1: "", C2: ""},
     ), patch(
         "df_py.volume.calc_rewards.wait_to_latest_block"
     ), patch(
@@ -1166,48 +1168,53 @@ def test_volume_reward_calculator(tmp_path):
     ) as mock:
         mock.side_effect = lambda value: value
 
-        calc_volume_rewards_from_csvs(tmp_path, None, 1000.0, True, False)
+        calc_volume_rewards_from_csvs(tmp_path, None, OCEAN_reward, True, False)
 
         rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
 
-        assert rewards_per_lp[2][LP2] == approx(
-            444.44444444
-        )  # pub rewards extra
-        assert rewards_per_lp[2][LP3] == approx(222.22222222)
-        assert rewards_per_lp[1][LP1] == approx(
-            300
-        )  # pub rewards extra - bounded to 300 due to DCV
+        # OCEAN_reward was 1000
+        # volumes were 300 (NA) & 600 (NB), for 900 total
+        # Since fee multiplier is 1.0, DCV bound is 300 for NA, 600 for NB
+        # Therefore DCV bound is the constraint on rewards # Therefore 300 OCEAN goes to NA, 600 goes to NB
 
+        # NA's LPs are {LP1}, therefore LP1 gets all 300 OCEAN
+        assert rewards_per_lp[C1][LP1] == 300
+        
+        # NB's LPs are {LP2, LP3}, so they split the 600 OCEAN
+        #   LP2 has 1/2 the stake, but gets a 2x for publishing. Result=equal
+        assert rewards_per_lp[C2][LP2] == 300
+        assert rewards_per_lp[C2][LP3] == 300
+        
         rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
-        assert rewards_info[2][NB][LP2] == approx(444.44444444)
-        assert rewards_info[2][NB][LP3] == approx(222.22222222)
-        assert rewards_info[1][NA][LP1] == approx(300)
+        assert rewards_info[C1][NA][LP1] == 300
+        assert rewards_info[C2][NB][LP2] == 300
+        assert rewards_info[C2][NB][LP3] == 300
 
         
 @enforce_types
-def test_volume_reward_calculator_predictoor_mul(tmp_path):
+def test_volume_reward_calculator_pdr_mul(tmp_path):
     stakes = {
-        1: {NA: {LP1: 2e8}},
-        2: {NB: {LP2: 2e8, LP3: 2e8}},
+        C1: {NA: {LP1: 2e8}},
+        C2: {NB: {LP2: 1e8, LP3: 2e8}},
     }
     locked_amts = {
-        1: {NA: {LP1: 2e8}},
-        2: {NB: {LP2: 2e8, LP3: 2e8}},
+        C1: {NA: {LP1: 1e8}},
+        C2: {NB: {LP2: 1e8, LP3: 2e8}},
     }
     volumes = {
-        1: {OCN_ADDR: {NA: 300.0}},
-        2: {H2O_ADDR: {NB: 600.0}},
+        C1: {OCN_ADDR: {NA: 300.0}},
+        C2: {H2O_ADDR: {NB: 600.0}},
     }
-    owners = {1: {NA: "0xlp_addr5"}, 2: {NB: LP2}}
-    symbols = {1: {OCN_ADDR: OCN_SYMB}, 2: {H2O_ADDR: H2O_SYMB}}
+    owners = {C1: {NA: LP5}, C2: {NB: LP2}}
+    symbols = {C1: {OCN_ADDR: OCN_SYMB}, C2: {H2O_ADDR: H2O_SYMB}}
     rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
+    
     predictoor_contracts = {NA: {}}
-
     def mock_multipliers(DF_week, is_predictoor):
         if not is_predictoor:
             return MagicMock(return_value=1)
-
         return 0.201
+    OCEAN_reward = 1000.0
 
     with patch(
         "df_py.volume.allocations.load_stakes",
@@ -1227,7 +1234,7 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         return_value=predictoor_contracts,
     ), patch(
         "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
-        {1: ""},
+        {C1: ""},
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ), patch(
@@ -1237,21 +1244,33 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
     ) as mock:
         mock.side_effect = lambda value: value
 
-        calc_volume_rewards_from_csvs(tmp_path, None, 1000.0, True, False)
+        calc_volume_rewards_from_csvs(tmp_path, None, OCEAN_reward, True, False)
 
         rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
-        assert rewards_per_lp[2][LP2] == approx(444.44444444)
-        assert rewards_per_lp[2][LP3] == approx(222.22222222)
-        assert rewards_per_lp[1][LP1] == approx(
-            300 * 0.201
-        )  # predictoor multiplier
 
+        # OCEAN_reward was 1000
+        # volumes were 300 (NA) & 600 (NB), for 900 total
+        # NA is a predictoor asset
+        #   --> gets fee multiplier 0.201
+        #   --> DCV bound = 300 * 0.201 = 60.3
+        # NB isn't a predictoor asset
+        #   --> gets fee multiplier 1.0
+        #   --> DCV bound = 600 * 1.0 = 600.0
+        # DCV bound is the constraint on rewards
+        # Therefore 60.3 OCEAN goes to NA, 600 goes to NB
+
+        # NA's LPs are {LP1}, therefore LP1 gets all 300 OCEAN
+        assert rewards_per_lp[C1][LP1] == approx(60.3, abs=1e-5)
+        
+        # NB's LPs are {LP2, LP3}, so they split the 600 OCEAN
+        #   LP2 has 1/2 the stake, but gets a 2x for publishing. Result=equal
+        assert rewards_per_lp[C2][LP2] == 300
+        assert rewards_per_lp[C2][LP3] == 300
+        
         rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
-        assert rewards_info[2][NB][LP2] == approx(444.44444444)
-        assert rewards_info[2][NB][LP3] == approx(222.22222222)
-        assert rewards_info[1][NA][LP1] == approx(
-            300 * 0.201
-        )  # predictoor multiplier
+        assert rewards_info[C1][NA][LP1] == approx(60.3, abs=1e-5)
+        assert rewards_info[C2][NB][LP2] == 300
+        assert rewards_info[C2][NB][LP3] == 300
 
 
 # ========================================================================
