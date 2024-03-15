@@ -509,7 +509,7 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     MagicMock(return_value={}),
 )
 @enforce_types
-def test_bound_by_DCV_one_nft():
+def test_bound_by_DCV_1nft_1account():
     DCV_OCEAN = 100.0
 
     stakes = {C1: {NA: {LP1: 1e6}}}
@@ -528,6 +528,24 @@ def test_bound_by_DCV_one_nft():
         rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
+    
+
+@patch(
+    "df_py.volume.reward_calculator.query_predictoor_contracts",
+    MagicMock(return_value={}),
+)
+@enforce_types
+def test_bound_by_DCV_1nft_2accounts():
+    DCV_OCEAN = 100.0
+
+    stakes = {C1: {NA: {LP1: 0.5e6, LP2: 0.5e6}}}
+    nftvols = {C1: {OCN_ADDR: {NA: DCV_OCEAN}}}
+    OCEAN_avail = 10000.0
+
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
+        mock_dcv.return_value = 0.5
+        rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    assert rewards_per_lp == {LP1: 25.0, LP2:25.0}
 
 
 @enforce_types
