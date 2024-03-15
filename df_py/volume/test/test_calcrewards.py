@@ -528,7 +528,7 @@ def test_bound_by_DCV_1nft_1account():
         rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
-    
+
 
 @patch(
     "df_py.volume.reward_calculator.query_predictoor_contracts",
@@ -545,7 +545,7 @@ def test_bound_by_DCV_1nft_2accounts():
     with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
         mock_dcv.return_value = 0.5
         rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
-    assert rewards_per_lp == {LP1: 25.0, LP2:25.0}
+    assert rewards_per_lp == {LP1: 25.0, LP2: 25.0}
 
 
 @enforce_types
