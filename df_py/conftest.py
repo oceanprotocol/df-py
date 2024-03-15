@@ -6,6 +6,7 @@ from df_py.util.oceanutil import OCEAN_token, record_dev_deployed_contracts
 
 
 def pytest_sessionstart():
+    return #HACK
     record_dev_deployed_contracts()
     accs = oceantestutil.get_all_accounts()
     OCEAN_token(networkutil.DEV_CHAINID).mint(
