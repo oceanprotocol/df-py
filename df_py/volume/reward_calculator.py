@@ -201,7 +201,7 @@ class RewardCalculator:
                 R[i, j] = min(
                     perc_at_j * perc_at_ij * self.OCEAN_avail,
                     ocean_locked_ij * TARGET_WPY,  # bound rewards by max APY
-                    DCV_OCEAN_j * perc_at_ij * multiplier,  # bound rewards by DCV
+                    DCV_OCEAN_j * multiplier,  # bound rewards by DCV
                 )
 
         # filter negligible values
