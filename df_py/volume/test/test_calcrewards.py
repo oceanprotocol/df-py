@@ -22,7 +22,7 @@ from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 # for shorter lines
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 C1, C2, C3 = 7, 137, 1285  # chainIDs
-NA, NB, NC = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr"
+NA, NB, NC, ND = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr", "0xnftd_addr"
 LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
 OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
 OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
@@ -1024,70 +1024,32 @@ def test_flatten_rewards():
         LP3: 700.0,
     }
 
-
+    
+@enforce_types
 def test_stake_vol_owner_dicts_to_arrays():
     # define the inputs for the function
     stakes = {
-        1: {
-            "nft_addr1": {
-                "LP_addr1": 10.0,
-                "LP_addr2": 20.0,
+        1: { NA: {LP1: 10.0, LP2: 20.0},
+             NB: {LP1: 30.0, LP2: 40.0},
             },
-            "nft_addr2": {
-                "LP_addr1": 30.0,
-                "LP_addr2": 40.0,
+        2: { NC: {LP3: 50.0, LP4: 60.0},
+             ND: {LP3: 70.0, LP4: 80.0},
             },
-        },
-        2: {
-            "nft_addr3": {
-                "LP_addr3": 50.0,
-                "LP_addr4": 60.0,
-            },
-            "nft_addr4": {
-                "LP_addr3": 70.0,
-                "LP_addr4": 80.0,
-            },
-        },
     }
     locked_ocean_amts = {
-        1: {
-            "nft_addr1": {
-                "LP_addr1": 10.0,
-                "LP_addr2": 20.0,
+        1: { NA: {LP1: 10.0, LP2: 20.0},
+             NB: {LP1: 30.0, LP2: 40.0},
             },
-            "nft_addr2": {
-                "LP_addr1": 30.0,
-                "LP_addr2": 40.0,
+        2: { NC: {LP3: 50.0, LP4: 60.0},
+             ND: {LP3: 70.0, LP4: 80.0},
             },
-        },
-        2: {
-            "nft_addr3": {
-                "LP_addr3": 50.0,
-                "LP_addr4": 60.0,
-            },
-            "nft_addr4": {
-                "LP_addr3": 70.0,
-                "LP_addr4": 80.0,
-            },
-        },
     }
     nftvols_USD = {
-        1: {
-            "nft_addr1": 15.0,
-            "nft_addr2": 25.0,
-        },
-        2: {
-            "nft_addr3": 35.0,
-            "nft_addr4": 45.0,
-        },
+        1: { NA: 15.0, NB: 25.0},
+        2: { NC: 35.0, ND: 45.0},
     }
-    lp_addrs = ["LP_addr1", "LP_addr2", "LP_addr3", "LP_addr4"]
-    chain_nft_tups = [
-        (1, "nft_addr1"),
-        (1, "nft_addr2"),
-        (2, "nft_addr3"),
-        (2, "nft_addr4"),
-    ]
+    lp_addrs = [LP1, LP2, LP3, LP4]
+    chain_nft_tups = [(1, NA), (1, NB), (2, NC),(2, ND)]
 
     mock_calculator = MockRewardCalculator()
     mock_calculator.set_mock_attribute("stakes", stakes)
@@ -1126,74 +1088,72 @@ def test_stake_vol_owner_dicts_to_arrays():
     assert np.array_equal(L, expected_L)
     assert np.array_equal(V_USD, expected_V_USD)
 
-
+    
+@enforce_types
 def test_merge_rewards():
     # Test case 1: Merge two reward dictionaries with no common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"C": 30, "D": 40}
     expected_output = {"A": 10, "B": 20, "C": 30, "D": 40}
     assert RewardShaper.merge(dict1, dict2) == expected_output
+    
     # Test case 2: Merge two reward dictionaries with common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"B": 30, "C": 40}
     expected_output = {"A": 10, "B": 50, "C": 40}
     assert RewardShaper.merge(dict1, dict2) == expected_output
+    
     # Test case 3: Merge three reward dictionaries with common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"B": 30, "C": 40}
     dict3 = {"A": 50, "C": 60}
     expected_output = {"A": 60, "B": 50, "C": 100}
     assert RewardShaper.merge(dict1, dict2, dict3) == expected_output
+    
     # Test case 4: Merge empty reward dictionary
     dict1 = {"A": 10, "B": 20}
     dict2 = {}
     expected_output = {"A": 10, "B": 20}
     assert RewardShaper.merge(dict1, dict2) == expected_output
+    
     # Test case 5: Merge no reward dictionaries
     expected_output = {}
     assert RewardShaper.merge() == expected_output
 
-
+    
+@enforce_types
 def test_volume_reward_calculator(tmp_path):
-    mock_data = {
-        "stakes": {
-            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
-            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
-        },
-        "locked_amts": {
-            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
-            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
-        },
-        "volumes": {
-            1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
-            2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
-        },
-        "owners": {1: {"0xnft_addr1": "0xlp_addr1"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
-        "symbols": {
-            1: {"0xbasetoken_addr1": "basetoken_symbol1"},
-            2: {"0xbasetoken_addr2": "basetoken_symbol1"},
-        },
-        "rates": {
-            "basetoken_symbol1": 1.0,
-            "OCEAN": 1.0,
-        },
-        "multiplier": 1.0,
+    stakes = {
+        1: {NA: {LP1: 2e8}},
+        2: {NB: {LP2: 2e8, LP3: 2e8}},
     }
-
+    locked_amts = {
+        1: {NA: {LP1: 2e8}},
+        2: {NB: {LP2: 2e8, LP3: 2e8}},
+    }
+    volumes = {
+        1: {OCN_ADDR: {NA: 300.0}},
+        2: {H2O_ADDR: {NB: 600.0}},
+    }
+    owners = {1: {NA: LP1}, 2: {NB: LP2}}
+    symbols = {1: {OCN_ADDR: OCN_SYMB}, 2: {H2O_ADDR: H2O_SYMB}}
+    rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
+    multiplier = 1.0
+    
     with patch(
         "df_py.volume.allocations.load_stakes",
-        return_value=(mock_data["stakes"], mock_data["locked_amts"]),
+            return_value=(stakes, locked_amts),
     ), patch(
-        "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
+        "df_py.volume.csvs.load_nftvols_csvs", return_value=volumes
     ), patch(
-        "df_py.volume.csvs.load_owners_csvs", return_value=mock_data["owners"]
+        "df_py.volume.csvs.load_owners_csvs", return_value=owners
     ), patch(
-        "df_py.volume.csvs.load_symbols_csvs", return_value=mock_data["symbols"]
+        "df_py.volume.csvs.load_symbols_csvs", return_value=symbols
     ), patch(
-        "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
+        "df_py.volume.csvs.load_rate_csvs", return_value=rates
     ), patch(
         "df_py.volume.reward_calculator.calc_dcv_multiplier",
-        return_value=mock_data["multiplier"],
+        return_value=multiplier,
     ), patch(
         "df_py.volume.reward_calculator.get_df_week_number", return_value=30
     ), patch(
@@ -1210,45 +1170,38 @@ def test_volume_reward_calculator(tmp_path):
 
         rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
 
-        assert rewards_per_lp[2]["0xlp_addr2"] == approx(
+        assert rewards_per_lp[2][LP2] == approx(
             444.44444444
         )  # pub rewards extra
-        assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
-        assert rewards_per_lp[1]["0xlp_addr1"] == approx(
+        assert rewards_per_lp[2][LP3] == approx(222.22222222)
+        assert rewards_per_lp[1][LP1] == approx(
             300
         )  # pub rewards extra - bounded to 300 due to DCV
 
         rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
-        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
-        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
-        assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(300)
+        assert rewards_info[2][NB][LP2] == approx(444.44444444)
+        assert rewards_info[2][NB][LP3] == approx(222.22222222)
+        assert rewards_info[1][NA][LP1] == approx(300)
 
-
+        
+@enforce_types
 def test_volume_reward_calculator_predictoor_mul(tmp_path):
-    mock_data = {
-        "stakes": {
-            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
-            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
-        },
-        "locked_amts": {
-            1: {"0xnft_addr1": {"0xlp_addr1": 200000000.0}},
-            2: {"0xnft_addr2": {"0xlp_addr2": 200000000.0, "0xlp_addr3": 200000000.0}},
-        },
-        "volumes": {
-            1: {"0xbasetoken_addr1": {"0xnft_addr1": 300.0}},
-            2: {"0xbasetoken_addr2": {"0xnft_addr2": 600.0}},
-        },
-        "owners": {1: {"0xnft_addr1": "0xlp_addr5"}, 2: {"0xnft_addr2": "0xlp_addr2"}},
-        "symbols": {
-            1: {"0xbasetoken_addr1": "basetoken_symbol1"},
-            2: {"0xbasetoken_addr2": "basetoken_symbol1"},
-        },
-        "rates": {
-            "basetoken_symbol1": 1.0,
-            "OCEAN": 1.0,
-        },
-        "predictoor_contracts": {"0xnft_addr1": {}},
+    stakes = {
+        1: {NA: {LP1: 2e8}},
+        2: {NB: {LP2: 2e8, LP3: 2e8}},
     }
+    locked_amts = {
+        1: {NA: {LP1: 2e8}},
+        2: {NB: {LP2: 2e8, LP3: 2e8}},
+    }
+    volumes = {
+        1: {OCN_ADDR: {NA: 300.0}},
+        2: {H2O_ADDR: {NB: 600.0}},
+    }
+    owners = {1: {NA: "0xlp_addr5"}, 2: {NB: LP2}}
+    symbols = {1: {OCN_ADDR: OCN_SYMB}, 2: {H2O_ADDR: H2O_SYMB}}
+    rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
+    predictoor_contracts = {NA: {}}
 
     def mock_multipliers(DF_week, is_predictoor):
         if not is_predictoor:
@@ -1258,20 +1211,20 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
 
     with patch(
         "df_py.volume.allocations.load_stakes",
-        return_value=(mock_data["stakes"], mock_data["locked_amts"]),
+        return_value=(stakes, locked_amts),
     ), patch(
-        "df_py.volume.csvs.load_nftvols_csvs", return_value=mock_data["volumes"]
+        "df_py.volume.csvs.load_nftvols_csvs", return_value=volumes
     ), patch(
-        "df_py.volume.csvs.load_owners_csvs", return_value=mock_data["owners"]
+        "df_py.volume.csvs.load_owners_csvs", return_value=owners
     ), patch(
-        "df_py.volume.csvs.load_symbols_csvs", return_value=mock_data["symbols"]
+        "df_py.volume.csvs.load_symbols_csvs", return_value=symbols
     ), patch(
-        "df_py.volume.csvs.load_rate_csvs", return_value=mock_data["rates"]
+        "df_py.volume.csvs.load_rate_csvs", return_value=rates
     ), patch(
         "df_py.volume.reward_calculator.calc_dcv_multiplier", mock_multipliers
     ), patch(
         "df_py.volume.reward_calculator.query_predictoor_contracts",
-        return_value=mock_data["predictoor_contracts"],
+        return_value=predictoor_contracts,
     ), patch(
         "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
         {1: ""},
@@ -1287,16 +1240,16 @@ def test_volume_reward_calculator_predictoor_mul(tmp_path):
         calc_volume_rewards_from_csvs(tmp_path, None, 1000.0, True, False)
 
         rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
-        assert rewards_per_lp[2]["0xlp_addr2"] == approx(444.44444444)
-        assert rewards_per_lp[2]["0xlp_addr3"] == approx(222.22222222)
-        assert rewards_per_lp[1]["0xlp_addr1"] == approx(
+        assert rewards_per_lp[2][LP2] == approx(444.44444444)
+        assert rewards_per_lp[2][LP3] == approx(222.22222222)
+        assert rewards_per_lp[1][LP1] == approx(
             300 * 0.201
         )  # predictoor multiplier
 
         rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
-        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr2"] == approx(444.44444444)
-        assert rewards_info[2]["0xnft_addr2"]["0xlp_addr3"] == approx(222.22222222)
-        assert rewards_info[1]["0xnft_addr1"]["0xlp_addr1"] == approx(
+        assert rewards_info[2][NB][LP2] == approx(444.44444444)
+        assert rewards_info[2][NB][LP3] == approx(222.22222222)
+        assert rewards_info[1][NA][LP1] == approx(
             300 * 0.201
         )  # predictoor multiplier
 
