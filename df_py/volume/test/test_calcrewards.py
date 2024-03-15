@@ -1025,32 +1025,36 @@ def test_flatten_rewards():
         LP3: 700.0,
     }
 
-    
+
 @enforce_types
 def test_stake_vol_owner_dicts_to_arrays():
     # define the inputs for the function
     stakes = {
-        1: { NA: {LP1: 10.0, LP2: 20.0},
-             NB: {LP1: 30.0, LP2: 40.0},
-            },
-        2: { NC: {LP3: 50.0, LP4: 60.0},
-             ND: {LP3: 70.0, LP4: 80.0},
-            },
+        1: {
+            NA: {LP1: 10.0, LP2: 20.0},
+            NB: {LP1: 30.0, LP2: 40.0},
+        },
+        2: {
+            NC: {LP3: 50.0, LP4: 60.0},
+            ND: {LP3: 70.0, LP4: 80.0},
+        },
     }
     locked_ocean_amts = {
-        1: { NA: {LP1: 10.0, LP2: 20.0},
-             NB: {LP1: 30.0, LP2: 40.0},
-            },
-        2: { NC: {LP3: 50.0, LP4: 60.0},
-             ND: {LP3: 70.0, LP4: 80.0},
-            },
+        1: {
+            NA: {LP1: 10.0, LP2: 20.0},
+            NB: {LP1: 30.0, LP2: 40.0},
+        },
+        2: {
+            NC: {LP3: 50.0, LP4: 60.0},
+            ND: {LP3: 70.0, LP4: 80.0},
+        },
     }
     nftvols_USD = {
-        1: { NA: 15.0, NB: 25.0},
-        2: { NC: 35.0, ND: 45.0},
+        1: {NA: 15.0, NB: 25.0},
+        2: {NC: 35.0, ND: 45.0},
     }
     lp_addrs = [LP1, LP2, LP3, LP4]
-    chain_nft_tups = [(1, NA), (1, NB), (2, NC),(2, ND)]
+    chain_nft_tups = [(1, NA), (1, NB), (2, NC), (2, ND)]
 
     mock_calculator = MockRewardCalculator()
     mock_calculator.set_mock_attribute("stakes", stakes)
@@ -1089,7 +1093,7 @@ def test_stake_vol_owner_dicts_to_arrays():
     assert np.array_equal(L, expected_L)
     assert np.array_equal(V_USD, expected_V_USD)
 
-    
+
 @enforce_types
 def test_merge_rewards():
     # Test case 1: Merge two reward dictionaries with no common keys
@@ -1097,31 +1101,31 @@ def test_merge_rewards():
     dict2 = {"C": 30, "D": 40}
     expected_output = {"A": 10, "B": 20, "C": 30, "D": 40}
     assert RewardShaper.merge(dict1, dict2) == expected_output
-    
+
     # Test case 2: Merge two reward dictionaries with common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"B": 30, "C": 40}
     expected_output = {"A": 10, "B": 50, "C": 40}
     assert RewardShaper.merge(dict1, dict2) == expected_output
-    
+
     # Test case 3: Merge three reward dictionaries with common keys
     dict1 = {"A": 10, "B": 20}
     dict2 = {"B": 30, "C": 40}
     dict3 = {"A": 50, "C": 60}
     expected_output = {"A": 60, "B": 50, "C": 100}
     assert RewardShaper.merge(dict1, dict2, dict3) == expected_output
-    
+
     # Test case 4: Merge empty reward dictionary
     dict1 = {"A": 10, "B": 20}
     dict2 = {}
     expected_output = {"A": 10, "B": 20}
     assert RewardShaper.merge(dict1, dict2) == expected_output
-    
+
     # Test case 5: Merge no reward dictionaries
     expected_output = {}
     assert RewardShaper.merge() == expected_output
 
-    
+
 @enforce_types
 def test_volume_reward_calculator_no_pdrs(tmp_path):
     stakes = {
@@ -1141,13 +1145,11 @@ def test_volume_reward_calculator_no_pdrs(tmp_path):
     rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
     multiplier = 1.0
     OCEAN_reward = 1000.0
-    
+
     with patch(
         "df_py.volume.allocations.load_stakes",
-            return_value=(stakes, locked_amts),
-    ), patch(
-        "df_py.volume.csvs.load_nftvols_csvs", return_value=volumes
-    ), patch(
+        return_value=(stakes, locked_amts),
+    ), patch("df_py.volume.csvs.load_nftvols_csvs", return_value=volumes), patch(
         "df_py.volume.csvs.load_owners_csvs", return_value=owners
     ), patch(
         "df_py.volume.csvs.load_symbols_csvs", return_value=symbols
@@ -1179,18 +1181,18 @@ def test_volume_reward_calculator_no_pdrs(tmp_path):
 
         # NA's LPs are {LP1}, therefore LP1 gets all 300 OCEAN
         assert rewards_per_lp[C1][LP1] == 300
-        
+
         # NB's LPs are {LP2, LP3}, so they split the 600 OCEAN
         #   LP2 has 1/2 the stake, but gets a 2x for publishing. Result=equal
         assert rewards_per_lp[C2][LP2] == 300
         assert rewards_per_lp[C2][LP3] == 300
-        
+
         rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
         assert rewards_info[C1][NA][LP1] == 300
         assert rewards_info[C2][NB][LP2] == 300
         assert rewards_info[C2][NB][LP3] == 300
 
-        
+
 @enforce_types
 def test_volume_reward_calculator_pdr_mul(tmp_path):
     stakes = {
@@ -1208,20 +1210,20 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
     owners = {C1: {NA: LP5}, C2: {NB: LP2}}
     symbols = {C1: {OCN_ADDR: OCN_SYMB}, C2: {H2O_ADDR: H2O_SYMB}}
     rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
-    
+
     predictoor_contracts = {NA: {}}
+
     def mock_multipliers(DF_week, is_predictoor):
         if not is_predictoor:
             return MagicMock(return_value=1)
         return 0.201
+
     OCEAN_reward = 1000.0
 
     with patch(
         "df_py.volume.allocations.load_stakes",
         return_value=(stakes, locked_amts),
-    ), patch(
-        "df_py.volume.csvs.load_nftvols_csvs", return_value=volumes
-    ), patch(
+    ), patch("df_py.volume.csvs.load_nftvols_csvs", return_value=volumes), patch(
         "df_py.volume.csvs.load_owners_csvs", return_value=owners
     ), patch(
         "df_py.volume.csvs.load_symbols_csvs", return_value=symbols
@@ -1261,12 +1263,12 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 
         # NA's LPs are {LP1}, therefore LP1 gets all 300 OCEAN
         assert rewards_per_lp[C1][LP1] == approx(60.3, abs=1e-5)
-        
+
         # NB's LPs are {LP2, LP3}, so they split the 600 OCEAN
         #   LP2 has 1/2 the stake, but gets a 2x for publishing. Result=equal
         assert rewards_per_lp[C2][LP2] == 300
         assert rewards_per_lp[C2][LP3] == 300
-        
+
         rewards_info = csvs.load_volume_rewardsinfo_csv(str(tmp_path))
         assert rewards_info[C1][NA][LP1] == approx(60.3, abs=1e-5)
         assert rewards_info[C2][NB][LP2] == 300
