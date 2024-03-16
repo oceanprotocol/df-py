@@ -18,6 +18,7 @@ def _remove_session(key, session):
     session.close()
 
 
+# pylint: disable=c-extension-no-member
 _session_cache = lru.LRU(8, callback=_remove_session)
 
 

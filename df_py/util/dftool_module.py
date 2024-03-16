@@ -1072,7 +1072,10 @@ def _getSecretSeedOrExit() -> int:
 def _getPrivateAccount():
     private_key = os.getenv("DFTOOL_KEY")
     assert private_key is not None, "Need to set envvar DFTOOL_KEY"
+
+    # pylint: disable=no-value-for-parameter
     account = Account.from_key(private_key=private_key)
+
     print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
 

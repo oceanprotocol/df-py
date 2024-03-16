@@ -28,4 +28,4 @@ jobs:
           
       - name: Run Pylint
         run: |
-          pylint --rcfile .pylintrc *
+          pylint --recursive=true --rcfile .pylintrc *
