@@ -356,7 +356,7 @@ def get_zero_provider_fee_dict(web3: Web3, provider_account) -> Dict[str, Any]:
     provider_fee_token = ZERO_ADDRESS
     valid_until = 0
 
-    message = Web3.solidity_keccak(
+    message = Web3.solidity_keccak(  # pylint: disable=no-value-for-parameter
         ["bytes", "address", "address", "uint256", "uint256"],
         [
             Web3.to_hex(Web3.to_bytes(text=provider_data)),

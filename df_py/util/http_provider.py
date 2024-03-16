@@ -17,6 +17,8 @@ class CustomHTTPProvider(HTTPProvider):
             "Making request HTTP. URI: %s, Method: %s", self.endpoint_uri, method
         )
         request_data = self.encode_rpc_request(method, params)
+
+        # pylint: disable=not-a-mapping
         raw_response = make_post_request(
             self.endpoint_uri, request_data, **self.get_request_kwargs()
         )

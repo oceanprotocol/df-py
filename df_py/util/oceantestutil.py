@@ -248,11 +248,14 @@ def random_lock_and_allocate(web3, tups: list):
 
 
 def get_account0():
-    return Account.from_key(private_key=os.getenv("TEST_PRIVATE_KEY0"))
+    return _account(0)
 
 
 def get_all_accounts():
-    return [
-        Account.from_key(private_key=os.getenv(f"TEST_PRIVATE_KEY{index}"))
-        for index in range(0, 9)
-    ]
+    return [_account(index) for index in range(9)]
+
+
+# pylint: disable=no-value-for-parameter
+def _account(index: int):
+    private_key = os.getenv(f"TEST_PRIVATE_KEY{index}")
+    return Account.from_key(private_key=private_key)
