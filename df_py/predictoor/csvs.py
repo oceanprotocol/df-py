@@ -6,10 +6,11 @@ from typing import Dict
 from enforce_typing import enforce_types
 
 from df_py.predictoor.models import PredictContract, Prediction, Predictoor
-from df_py.util.csv_helpers import assert_is_eth_addr
+from df_py.web3util.eth_addr import assert_is_eth_addr
 
 
 # ------------------------------- PREDICTOOR DATA -------------------------------
+@enforce_types
 def sample_predictoor_data_csv(num_rows=50000):
     def random_predictor_address():
         return f"0x{random.randint(1, 16):x}"
@@ -96,6 +97,7 @@ def predictoor_data_csv_filename(csv_dir):
 
 
 # ------------------------------- PREDICTOOR SUMMARY -------------------------------
+@enforce_types
 def sample_predictoor_summary_csv():
     # pylint: disable=line-too-long
     return """predictoor_addr,contract_addr,prediction_count,correct_prediction_count,accuracy,total_stake,total_payout
@@ -155,6 +157,7 @@ def predictoor_summary_csv_filename(csv_dir):
 
 
 # ------------------------------- REWARDS -------------------------------
+@enforce_types
 def sample_predictoor_rewards_csv():
     return """predictoor_addr,contract_addr,ROSE_amt
 0x0000000000000000000000000000000000000000,0x1100000000000000000000000000000000000000,10.0
@@ -235,7 +238,7 @@ def predictoor_rewards_csv_filename(csv_dir):
 
 # --------------------------- PREDICTOOR CONTRACTS ---------------------------
 
-
+@enforce_types
 def sample_predictoor_contracts_csv():
     return """chainid,address,name,symbol,blocks_per_epoch,blocks_per_subscription
 1,0xContract1,Contract1,CTR1,100,10
@@ -243,6 +246,7 @@ def sample_predictoor_contracts_csv():
 1,0xContract3,Contract3,CTR3,300,30"""
 
 
+@enforce_types
 def save_predictoor_contracts_csv(
     predictoor_contracts: Dict[str, PredictContract], csv_dir: str
 ):
@@ -266,7 +270,8 @@ def save_predictoor_contracts_csv(
             writer.writerow(contract.to_dict())
     print(f"Created {csv_file}")
 
-
+    
+@enforce_types
 def load_predictoor_contracts_csv(csv_dir: str) -> Dict[str, PredictContract]:
     csv_file = os.path.join(csv_dir, "predictoor_contracts.csv")
     contracts: Dict[str, PredictContract] = {}
@@ -281,6 +286,7 @@ def load_predictoor_contracts_csv(csv_dir: str) -> Dict[str, PredictContract]:
     return contracts
 
 
+@enforce_types
 def predictoor_contracts_csv_filename(csv_dir):
     f = "predictoor_contracts.csv"
     return os.path.join(csv_dir, f)

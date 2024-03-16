@@ -9,8 +9,8 @@ from df_py.predictoor.calc_rewards import (
     calc_predictoor_rewards,
 )
 from df_py.predictoor.models import Prediction, Predictoor, PredictoorBase
-from df_py.util.networkutil import DEV_CHAINID
-from df_py.volume.reward_calculator import RewardShaper
+from df_py.volume.reward_shaper import RewardShaper
+from df_py.web3util.networkutil import DEV_CHAINID
 
 
 @pytest.fixture(autouse=True)

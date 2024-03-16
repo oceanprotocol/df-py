@@ -6,8 +6,9 @@ from typing import Any, Dict, List, Tuple
 from enforce_typing import enforce_types
 from web3.main import Web3
 
-from df_py.util.csv_helpers import _last_int, assert_is_eth_addr
+from df_py.csvutil.csv_helpers import _last_int, assert_is_eth_addr
 from df_py.volume.models import SimpleDataNft
+from df_py.web3util.eth_addr import assert_is_eth_addr
 
 # ========================================================================
 # allocation csvs
@@ -860,3 +861,10 @@ def load_volume_rewardsinfo_csv(csv_dir: str) -> Dict[int, Dict[str, Dict[str, A
     print(f"Loaded {csv_file}")
 
     return rewardsinfo
+
+
+@enforce_types
+def _last_int(s: str) -> int:
+    """Return the last integer in the given str"""
+    nbr_strs = re.findall("[0-9]+", s)
+    return int(nbr_strs[-1])

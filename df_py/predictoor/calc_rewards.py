@@ -3,8 +3,8 @@ from typing import Dict, Union
 from enforce_typing import enforce_types
 
 from df_py.predictoor.models import Predictoor
-from df_py.predictoor.queries import query_predictoor_contracts
-from df_py.util.graphutil import wait_to_latest_block
+from df_py.queries.predictoor_queries import query_predictoor_contracts
+from df_py.queries.latest_block import wait_to_latest_block
 
 
 @enforce_types

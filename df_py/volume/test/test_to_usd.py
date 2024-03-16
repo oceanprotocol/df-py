@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 
-from df_py.util.networkutil import _CHAINID_TO_ADDRS
+from df_py.web3util.networkutil import _CHAINID_TO_ADDRS
 from df_py.volume.to_usd import nft_vols_to_usd, rates_to_addr_rates
 
 # for shorter lines

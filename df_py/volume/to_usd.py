@@ -2,7 +2,7 @@ from typing import Dict
 
 from enforce_typing import enforce_types
 
-from df_py.util.networkutil import _CHAINID_TO_ADDRS, _CHAINID_TO_NATIVE_TOKEN
+from df_py.web3util.networkutil import _CHAINID_TO_ADDRS, _CHAINID_TO_NATIVE_TOKEN
 from df_py.volume import cleancase
 
 
