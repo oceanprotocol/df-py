@@ -1,5 +1,6 @@
+# pylint: disable=too-many-lines
 from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Union
+from typing import Dict, Tuple, Union
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -42,7 +43,7 @@ QUERY_PATH = "df_py.volume.reward_calculator.query_predictoor_contracts"
 
 class MockRewardCalculator(RewardCalculator):
     def __init__(self):
-        return super().__init__({}, {}, {}, {}, {}, {}, DF_WEEK, False, False, False)
+        super().__init__({}, {}, {}, {}, {}, {}, DF_WEEK, False, False, False)
 
     def set_mock_attribute(self, attr_name, attr_value):
         self._freeze_attributes = False
@@ -59,10 +60,10 @@ def test_freeze_attributes():
     rc._freeze_attributes = True
 
     with pytest.raises(AttributeError):
-        rc.new_attr = 1
+        rc.new_attr = 1  # pylint: disable=attribute-defined-outside-init
 
     rc._freeze_attributes = False
-    rc.new_attr = 1
+    rc.new_attr = 1  # pylint: disable=attribute-defined-outside-init
 
 
 @patch(QUERY_PATH, MagicMock(return_value={}))
@@ -835,6 +836,7 @@ def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
     N = 120
     V_USD = np.arange(N, 0, -1)  # N, N-1, ..., 2, 1. Makes ranking obvious!
 
+    # pylint: disable=undefined-variable
     p = _rank_based_allocate(
         V_USD, max_n_rank_assets=max_n_rank_assets, rank_scale_op=rank_scale_op
     )
@@ -1101,7 +1103,8 @@ def test_volume_reward_calculator_no_pdrs(tmp_path):
         # OCEAN_reward was 1000
         # volumes were 300 (NA) & 600 (NB), for 900 total
         # Since fee multiplier is 1.0, DCV bound is 300 for NA, 600 for NB
-        # Therefore DCV bound is the constraint on rewards # Therefore 300 OCEAN goes to NA, 600 goes to NB
+        # Therefore DCV bound is the constraint on rewards
+        # Therefore 300 OCEAN goes to NA, 600 goes to NB
 
         # NA's LPs are {LP1}, therefore LP1 gets all 300 OCEAN
         assert rewards_per_lp[C1][LP1] == 300
@@ -1137,7 +1140,7 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 
     predictoor_contracts = {NA: {}}
 
-    def mock_multipliers(DF_week, is_predictoor):
+    def mock_multipliers(DF_week, is_predictoor):  # pylint: disable=unused-argument
         if not is_predictoor:
             return MagicMock(return_value=1)
         return 0.201

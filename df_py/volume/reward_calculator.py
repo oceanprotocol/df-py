@@ -30,6 +30,7 @@ def freeze_attributes(func):
     return wrapper
 
 
+# pylint: disable=too-many-instance-attributes
 class RewardCalculator:
     def __setattr__(self, attr, value):
         if getattr(self, "_freeze_attributes", False) and attr != "_freeze_attributes":
@@ -91,6 +92,8 @@ class RewardCalculator:
         self.M: np.ndarray
         self.R: np.ndarray
         self.L: np.ndarray
+
+        self.C: np.ndarray
 
         self._freeze_attributes = True
 
@@ -375,14 +378,15 @@ class RewardCalculator:
           predictoor_feed_addrs -- dict of (chainID, list of nft_addrs)
 
         @notes
-          This will only return the prediction feeds that are owned by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
+          This will only return the prediction feeds that are owned by
+          DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
         """
         chainIDs = list(self.stakes.keys())
         predictoor_feed_addrs: Dict[int, List[str]] = {
             chain_id: [] for chain_id in chainIDs
         }
 
-        for chain_id in DEPLOYER_ADDRS.keys():
+        for chain_id in DEPLOYER_ADDRS:
             predictoor_feed_addrs[chain_id] = query_predictoor_contracts(
                 chain_id
             ).keys()
