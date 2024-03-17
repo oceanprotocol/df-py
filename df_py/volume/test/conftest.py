@@ -123,7 +123,7 @@ def null_owners_from_chain_nft_tups(
     @return
       owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS
     """
-    owners = {}
+    owners: Dict[int, Dict[str, Union[str, None]]] = {}
     for chainID, nft_addr in chain_nft_tups:
         if chainID not in owners:
             owners[chainID] = {}
