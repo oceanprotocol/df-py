@@ -11,6 +11,7 @@ from df_py.web3util.oceantestutil import fill_accounts_with_OCEAN, get_all_accou
 
 CHAINID = DEV_CHAINID
 
+
 @enforce_types
 def test_approved_tokens():
     query = "{ opcs{approvedTokens} }"

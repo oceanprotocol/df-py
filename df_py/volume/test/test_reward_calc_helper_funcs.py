@@ -2,6 +2,7 @@
 
 from enforce_typing import enforce_types
 
+
 @enforce_types
 def test_get_nft_addrs():
     nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
@@ -97,4 +98,3 @@ def test_stake_vol_owner_dicts_to_arrays():
     assert np.array_equal(S, expected_S)
     assert np.array_equal(L, expected_L)
     assert np.array_equal(V_USD, expected_V_USD)
-

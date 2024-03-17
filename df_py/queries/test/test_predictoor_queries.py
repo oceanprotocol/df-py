@@ -3,8 +3,8 @@ from unittest.mock import patch
 import pytest
 
 from df_py.predictoor.predictoor_testutil import create_mock_responses
-from df_py.util.predictoor_queries import query_predictoors
-from df_py.util import networkutil
+from df_py.queries.predictoor_queries import query_predictoors
+from df_py.web3util import networkutil
 
 CHAINID = networkutil.DEV_CHAINID
 
@@ -36,4 +36,3 @@ def test_query_predictoors_request():
     predictoors = query_predictoors(ST, FIN, CHAINID)
     assert predictoors is not None
     assert isinstance(predictoors, dict)
-

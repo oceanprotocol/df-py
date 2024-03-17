@@ -238,6 +238,7 @@ def predictoor_rewards_csv_filename(csv_dir):
 
 # --------------------------- PREDICTOOR CONTRACTS ---------------------------
 
+
 @enforce_types
 def sample_predictoor_contracts_csv():
     return """chainid,address,name,symbol,blocks_per_epoch,blocks_per_subscription
@@ -270,7 +271,7 @@ def save_predictoor_contracts_csv(
             writer.writerow(contract.to_dict())
     print(f"Created {csv_file}")
 
-    
+
 @enforce_types
 def load_predictoor_contracts_csv(csv_dir: str) -> Dict[str, PredictContract]:
     csv_file = os.path.join(csv_dir, "predictoor_contracts.csv")

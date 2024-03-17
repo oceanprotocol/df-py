@@ -5,14 +5,14 @@ import requests
 from enforce_typing import enforce_types
 from web3.main import Web3
 
-from df_py.queries.predictoor_queries import query_predictoor_contracts
-from df_py.util import networkutil, oceanutil
-from df_py.mathutil.base18 import from_wei
 from df_py.blockutil.blockrange import BlockRange
-from df_py.web3util.constants import AQUARIUS_BASE_URL, MAX_ALLOCATE
-from df_py.web3util.contract_base import ContractBase
+from df_py.mathutil.base18 import from_wei
+from df_py.queries.predictoor_queries import query_predictoor_contracts
 from df_py.queries.submit_query import submit_query
 from df_py.volume.models import SimpleDataNft, TokSet
+from df_py.web3util import networkutil, oceanutil
+from df_py.web3util.constants import AQUARIUS_BASE_URL, MAX_ALLOCATE
+from df_py.web3util.contract_base import ContractBase
 
 MAX_TIME = 4 * 365 * 86400  # max lock time
 

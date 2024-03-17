@@ -8,6 +8,7 @@ from df_py.vestingutil.week_multiplier import (
     get_df_week_number,
 )
 
+
 @enforce_types
 def test_get_df_week_number():
     wk_nbr = get_df_week_number
@@ -76,4 +77,3 @@ def test_calc_dcv_multiplier():
     assert mult(9, True) == 0.201
     assert mult(12, True) == 0.201
     assert mult(10000, True) == 0.201
-

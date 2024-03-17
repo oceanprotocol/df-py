@@ -1,8 +1,15 @@
+from typing import Tuple
+from unittest.mock import MagicMock, patch
+
+from enforce_typing import enforce_types
+
+from df_py.volume.test.conftest import *
+
 
 # ========================================================================
 # Test rank-based allocate -- end-to-end with calc_rewards()
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -11,12 +18,12 @@ def test_rank_1_nft():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
+    rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert rew == {LP1: 10.0}
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -26,7 +33,7 @@ def test_rank_3_nfts():
 
     # equal volumes
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0, NC: 1.0}}}
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
+    rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert sorted(rew.keys()) == [LP1, LP2, LP3]
     assert sum(rew.values()) == pytest.approx(10.0, 0.01)
     for LP in [LP1, LP2, LP3]:
@@ -34,7 +41,7 @@ def test_rank_3_nfts():
 
     # unequal volumes
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 0.002, NC: 0.001}}}
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
+    rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert sorted(rew.keys()) == [LP1, LP2, LP3]
     assert sum(rew.values()) == pytest.approx(10.0, 0.01)
     assert rew[LP1] > rew[LP2] > rew[LP3], rew
@@ -44,7 +51,7 @@ def test_rank_3_nfts():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -53,7 +60,7 @@ def test_rank_10_NFTs():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -62,7 +69,7 @@ def test_rank_200_NFTs():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -71,7 +78,7 @@ def _test_rank_N_NFTs(N: int):
 
     # equal volumes
     (_, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=True)
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
+    rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert len(rew) == N
     assert LP_addrs == sorted(rew.keys())
     assert sum(rew.values()) == pytest.approx(10.0, 0.01)
@@ -79,7 +86,7 @@ def _test_rank_N_NFTs(N: int):
 
     # unequal volumes
     (_, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=False)
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
+    rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     max_N = min(N, constants.MAX_N_RANK_ASSETS)
     assert len(rew) == max_N
     assert LP_addrs[:max_N] == sorted(rew.keys())
@@ -107,4 +114,3 @@ def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
             vol = max(N, 1000.0) - float(i)
         nftvols[C1][OCN_ADDR][NFT_addr] = vol
     return (NFT_addrs, LP_addrs, stakes, nftvols)
-

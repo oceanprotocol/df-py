@@ -3,6 +3,7 @@ from typing import Dict, Optional
 from enforce_typing import enforce_types
 from web3.main import Web3
 
+
 @enforce_types
 def key_to_725(key: str):
     key725 = Web3.keccak(key.encode("utf-8")).hex()
@@ -45,4 +46,3 @@ def info_from_725(info725_list: list) -> Dict[str, Optional[str]]:
                 break
 
     return info_dict
-

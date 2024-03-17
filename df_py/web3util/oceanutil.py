@@ -17,6 +17,7 @@ from df_py.web3util.networkutil import (
 )
 from df_py.web3util.web3 import get_rpc_url, get_web3
 
+
 @enforce_types
 def _contracts(key: str, chainID):
     """Returns the contract object at the currently connected network"""

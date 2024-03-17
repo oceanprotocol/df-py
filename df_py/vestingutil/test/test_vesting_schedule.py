@@ -11,7 +11,7 @@ from df_py.vestingutil.vesting_schedule import (
     get_active_reward_amount_for_week_eth,
     get_active_reward_amount_for_week_eth_by_stream,
     get_reward_amount_for_week_wei,
-    )
+)
 from df_py.web3util.constants import (
     ACTIVE_REWARDS_MULTIPLIER,
     PREDICTOOR_OCEAN_BUDGET,
@@ -73,19 +73,15 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
         > 0
     )
 
-    predictoor_rewards = (
-        get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream, DEV_CHAINID
-        )
+    predictoor_rewards = get_active_reward_amount_for_week_eth_by_stream(
+        start_dt, predictoor_substream, DEV_CHAINID
     )
 
     volume_rewards = get_active_reward_amount_for_week_eth_by_stream(
         start_dt, volume_substream, DEV_CHAINID
     )
 
-    total_rewards = get_active_reward_amount_for_week_eth(
-        start_dt, DEV_CHAINID
-    )
+    total_rewards = get_active_reward_amount_for_week_eth(start_dt, DEV_CHAINID)
 
     assert total_rewards == approx(predictoor_rewards + volume_rewards, 0.1)
 
@@ -95,21 +91,17 @@ def test_get_active_reward_amount_for_week_eth_by_stream():
             start_dt, invalid_substream, DEV_CHAINID
         )
 
-        
+
 @enforce_types
 def test_launch_dates():
     # a week before predictoor's launch
     start_dt = datetime(2023, 11, 2)
-    predictoor_rewards = (
-        get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream, DEV_CHAINID
-        )
+    predictoor_rewards = get_active_reward_amount_for_week_eth_by_stream(
+        start_dt, predictoor_substream, DEV_CHAINID
     )
     assert predictoor_rewards == 0, "Predictoor DF has not begun"
 
-    volume_rewards = get_active_reward_amount_for_week_eth_by_stream(
-        start_dt, "volume"
-    )
+    volume_rewards = get_active_reward_amount_for_week_eth_by_stream(start_dt, "volume")
     assert volume_rewards == 75000
 
     total_rewards = get_active_reward_amount_for_week_eth(start_dt)
@@ -117,10 +109,8 @@ def test_launch_dates():
 
     # predictoor's launch
     start_dt = datetime(2023, 11, 9)
-    predictoor_rewards = (
-        get_active_reward_amount_for_week_eth_by_stream(
-            start_dt, predictoor_substream, DEV_CHAINID
-        )
+    predictoor_rewards = get_active_reward_amount_for_week_eth_by_stream(
+        start_dt, predictoor_substream, DEV_CHAINID
     )
 
     assert predictoor_rewards == PREDICTOOR_OCEAN_BUDGET
@@ -137,18 +127,16 @@ def test_launch_dates():
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_get_reward_amount_for_week_wei(test_input, expected_output):
-    assert from_wei(
-        get_reward_amount_for_week_wei(
-            test_input, DEV_CHAINID
-        )
-    ) == approx(expected_output)
+    assert from_wei(get_reward_amount_for_week_wei(test_input, DEV_CHAINID)) == approx(
+        expected_output
+    )
 
 
 @pytest.mark.parametrize("test_input, expected_output", test_params)
 def test_get_active_reward_amount_for_week_eth(test_input, expected_output):
-    assert get_active_reward_amount_for_week_eth(
-        test_input, DEV_CHAINID
-    ) == approx(expected_output * ACTIVE_REWARDS_MULTIPLIER)
+    assert get_active_reward_amount_for_week_eth(test_input, DEV_CHAINID) == approx(
+        expected_output * ACTIVE_REWARDS_MULTIPLIER
+    )
 
 
 @enforce_types
@@ -160,8 +148,6 @@ def test_compare_halflife_functions():
 
     for i in range(0, int(halflife * 1.5), int(month * 4)):
         py_result = _halflife(value, i, halflife)
-        solidity_result = _halflife_solidity(
-            value, i, halflife, DEV_CHAINID
-        )
+        solidity_result = _halflife_solidity(value, i, halflife, DEV_CHAINID)
         diff = abs(py_result - solidity_result)
         assert diff < 1e10, f"diff {diff} at i {i/halflife*2}"

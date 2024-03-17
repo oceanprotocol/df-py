@@ -9,13 +9,14 @@ from df_py.web3util.erc725 import (
     value_to_725,
 )
 
+
 @enforce_types
 def test_key():
     key = "name"
     key725 = key_to_725(key)
     assert key725 == Web3.keccak(key.encode("utf-8")).hex()
 
-    
+
 @enforce_types
 def test_value():
     value = "ETH/USDT"
@@ -25,7 +26,7 @@ def test_value():
     assert value == value_again
     assert value == Web3.to_text(hexstr=value725)
 
-    
+
 @enforce_types
 def test_info_from_725():
     info725_list = [

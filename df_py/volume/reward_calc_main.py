@@ -6,6 +6,10 @@ import scipy
 from enforce_typing import enforce_types
 
 from df_py.queries.predictoor_queries import query_predictoor_feed_addrs
+from df_py.vestingutil.week_multiplier import (
+    calc_dcv_multiplier,
+    get_df_week_number,
+)
 from df_py.volume.cleancase import (
     mod_stakes,
     mod_nft_vols,
@@ -13,7 +17,6 @@ from df_py.volume.cleancase import (
     mod_symbols,
     mod_rates,
 )
-from df_py.volume.freeze_attributes import freeze_attributes
 from df_py.volume.rank import rank_based_allocate
 from df_py.volume.to_usd import nft_vols_to_usd
 from df_py.web3util.constants import (
@@ -25,12 +28,7 @@ from df_py.web3util.constants import (
 )
 
 
-
 class RewardCalculator:
-    def __setattr__(self, attr, value):
-        if getattr(self, "_freeze_attributes", False) and attr != "_freeze_attributes":
-            raise AttributeError("Trying to set attribute on a frozen instance")
-        return super().__setattr__(attr, value)
 
     @enforce_types
     def __init__(
@@ -59,8 +57,6 @@ class RewardCalculator:
           do_pubrewards -- 2x effective stake to publishers?
           do_rank -- allocate OCEAN to assets by DCV rank, vs pro-rata
         """
-        self._freeze_attributes = False
-
         self.stakes = mod_stakes(stakes)
         self.locked_ocean_amts = mod_stakes(locked_ocean_amts)
         self.nftvols = mod_nft_vols(nftvols)
@@ -68,19 +64,17 @@ class RewardCalculator:
         self.symbols = mod_symbols(symbols)
         self.rates = mod_rates(rates)
 
-        self.nftvols_USD = nft_vols_to_usd(
-            self.nftvols, self.symbols, self.rates
-        )
+        self.nftvols_USD = nft_vols_to_usd(self.nftvols, self.symbols, self.rates)
 
-        self.chain_nft_tups = self._get_chain_nft_tups()
-        self.LP_addrs = self._get_lp_addrs()
+        self.chain_nft_tups = RewardCalculator._get_chain_nft_tups()
+        self.LP_addrs = RewardCalculator._get_lp_addrs()
 
         self.df_week = df_week
         self.OCEAN_avail = OCEAN_avail
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
 
-        self.predictoor_feed_addrs = self._get_predictoor_feed_addrs()
+        self.predictoor_feed_addrs = RewardCalculator._get_predictoor_feed_addrs()
 
         # will be filled in by calculate()
         self.S: np.ndarray
@@ -89,8 +83,6 @@ class RewardCalculator:
         self.R: np.ndarray
         self.L: np.ndarray
 
-        self._freeze_attributes = True
-
     @enforce_types
     def calculate(self):
         """
@@ -98,21 +90,16 @@ class RewardCalculator:
           In the return dicts, chainID is the chain of the nft, not the
           chain where rewards go.
         """
-        self._freeze_attributes = False
-
         self.S, self.V_USD, self.M, self.C, self.L = (
-            self._stake_vol_owner_dicts_to_arrays()
+            RewardCalculator._stake_vol_owner_dicts_to_arrays()
         )
-        self.R = self._calc_rewards_usd()
+        self.R = RewardCalculator._calc_rewards_usd()
 
-        self._freeze_attributes = True
-
-        (rewardsperlp, rewardsinfo) = self._reward_array_to_dicts()
+        (rewardsperlp, rewardsinfo) = RewardCalculator._reward_array_to_dicts()
 
         return rewardsperlp, rewardsinfo
 
-    @freeze_attributes
-    @enforce_types
+    @staticmethod
     def _stake_vol_owner_dicts_to_arrays(
         self,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -137,9 +124,8 @@ class RewardCalculator:
                 L[i, j] = self.locked_ocean_amts[chainID][nft_addr].get(LP_addr, 0.0)
             V_USD[j] += self.nftvols_USD[chainID].get(nft_addr, 0.0)
 
-            M[j] = calc_dcv_multiplier(
-                self.df_week, nft_addr in self.predictoor_feed_addrs[chainID]
-            )
+            is_predictoor = nft_addr in self.predictoor_feed_addrs[chainID]
+            M[j] = calc_dcv_multiplier(self.df_week, is_predictoor)
 
             owner_addr = self.owners[chainID][nft_addr]
             C[j] = (
@@ -150,8 +136,8 @@ class RewardCalculator:
 
         return S, V_USD, M, C, L
 
-    @freeze_attributes
     @enforce_types
+    @staticmethod
     def _calc_rewards_usd(self) -> np.ndarray:
         """
         @return
@@ -165,14 +151,16 @@ class RewardCalculator:
 
         S = np.copy(self.S)
         L = np.copy(self.L)
+
         # modify S's: owners get rewarded as if 2x stake on their asset
         if self.do_pubrewards:
             for j in range(N_j):
                 if self.C[j] != -1:  # -1 = owner didn't stake
                     S[self.C[j], j] *= 2.0
+
         # perc_per_j
         if self.do_rank:
-            perc_per_j = self._rank_based_allocate()
+            perc_per_j = rank_based_allocate(self.V_USD)
         else:
             perc_per_j = self.V_USD / np.sum(self.V_USD)
 
@@ -222,24 +210,8 @@ class RewardCalculator:
 
         return R
 
-    @freeze_attributes
     @enforce_types
-    def _rank_based_allocate(
-        self,
-        max_n_rank_assets: int = MAX_N_RANK_ASSETS,
-        rank_scale_op: str = RANK_SCALE_OP,
-        return_info: bool = False,
-    ) -> Union[np.ndarray, tuple]:
-        
-        return rank_based_allocate(
-            self.V_USD,
-            max_n_rank_assets,
-            rank_scale_op,
-            return_info,
-        )
-
-    @freeze_attributes
-    @enforce_types
+    @staticmethod
     def _reward_array_to_dicts(self) -> Tuple[dict, dict]:
         """
         @return
@@ -273,15 +245,15 @@ class RewardCalculator:
 
         return rewardsperlp, rewardsinfo
 
-    @freeze_attributes
     @enforce_types
+    @staticmethod
     def _get_chain_nft_tups(self) -> List[Tuple[int, str]]:
         """
         @return
           chain_nft_tups -- list of (chainID, nft_addr), indexed by j
         """
         chainIDs = list(self.stakes.keys())
-        nft_addrs = self._get_nft_addrs()
+        nft_addrs = RewardCalculator._get_nft_addrs()
         chain_nft_tups = [
             (chainID, nft_addr)  # all (chain, nft) tups with stake
             for chainID in chainIDs
@@ -290,8 +262,8 @@ class RewardCalculator:
         ]
         return chain_nft_tups
 
-    @freeze_attributes
     @enforce_types
+    @staticmethod
     def _get_nft_addrs(self) -> List[str]:
         """
         @return
@@ -304,8 +276,8 @@ class RewardCalculator:
 
         return sorted(nft_addrs)
 
-    @freeze_attributes
     @enforce_types
+    @staticmethod
     def _get_lp_addrs(self) -> List[str]:
         """
         @return
@@ -319,13 +291,13 @@ class RewardCalculator:
 
         return sorted(LP_addrs)
 
-    @freeze_attributes
     @enforce_types
+    @staticmethod
     def _get_predictoor_feed_addrs(self) -> Dict[int, List[str]]:
-        """        
+        """
         @return
           addrs -- dict of [chainID] : list of addr_of_predictoor_feed_nft
         """
-        chainIDs = self.stakes.keys()
+        chainIDs = list(self.stakes.keys())
         addrs = query_predictoor_feed_addrs(chainIDs)
         return addrs

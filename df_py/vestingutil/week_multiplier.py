@@ -1,5 +1,8 @@
 from datetime import datetime
+
 from enforce_typing import enforce_types
+import numpy as np
+
 
 @enforce_types
 def get_df_week_number(dt: datetime) -> int:
@@ -15,6 +18,7 @@ def get_df_week_number(dt: datetime) -> int:
     weeks_offset = days_offset // 7
     DF_week = weeks_offset + 1 + 4
     return DF_week
+
 
 @enforce_types
 def calc_dcv_multiplier(DF_week: int, is_predictoor: bool) -> float:

@@ -3,16 +3,15 @@ from typing import Union
 from enforce_typing import enforce_types
 import numpy as np
 
-from df_py.volume.freeze_attributes import freeze_attributes
 from df_py.web3util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 
-@freeze_attributes
+
 @enforce_types
 def rank_based_allocate(
-        V_USD,
-        max_n_rank_assets: int = MAX_N_RANK_ASSETS,
-        rank_scale_op: str = RANK_SCALE_OP,
-        return_info: bool = False,
+    V_USD,
+    max_n_rank_assets: int = MAX_N_RANK_ASSETS,
+    rank_scale_op: str = RANK_SCALE_OP,
+    return_info: bool = False,
 ) -> Union[np.ndarray, tuple]:
     """
     @return
@@ -25,9 +24,7 @@ def rank_based_allocate(
     if len(V_USD) == 0:
         return np.array([], dtype=float)
     if min(V_USD) <= 0.0:
-        raise ValueError(
-            f"each nft needs volume > 0. min(V_USD)={min(V_USD)}"
-        )
+        raise ValueError(f"each nft needs volume > 0. min(V_USD)={min(V_USD)}")
 
     # compute ranks. highest-DCV is rank 1. Then, rank 2. Etc
     ranks = scipy.stats.rankdata(-1 * V_USD, method="min")
@@ -66,4 +63,3 @@ def rank_based_allocate(
         return perc_per_j, ranks, max_N, allocs, I
 
     return perc_per_j
-

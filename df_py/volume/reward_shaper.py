@@ -30,5 +30,3 @@ class RewardShaper:
                 merged_dict[key] = merged_dict.get(key, 0) + value
 
         return merged_dict
-
-

@@ -196,23 +196,19 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
 
     return predictoors
 
+
 @enforce_types
-def query_predictoor_feed_addrs(self, chainIDs:List[int]) \
-        -> Dict[int, List[str]]:
-    """        
+def query_predictoor_feed_addrs(chainIDs: List[int]) -> Dict[int, List[str]]:
+    """
     @return
       addrs -- dict of [chainID] : list of addr_of_predictoor_feed_nft
 
     @notes
       This will only return the prediction feeds that are owned by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
     """
-    addrs: Dict[int, List[str]] = {
-        chain_id: [] for chain_id in chainIDs
-    }
+    addrs: Dict[int, List[str]] = {chain_id: [] for chain_id in chainIDs}
 
     for chain_id in DEPLOYER_ADDRS.keys():
-        addrs[chain_id] = query_predictoor_contracts(
-            chain_id
-        ).keys()
+        addrs[chain_id] = query_predictoor_contracts(chain_id).keys()
 
     return addrs

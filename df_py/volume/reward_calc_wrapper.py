@@ -6,9 +6,10 @@ from enforce_typing import enforce_types
 
 from df_py.queries.latest_block import wait_to_latest_block
 from df_py.volume import allocations, csvs
-from df_py.web3util.week_multiplier get_df_week_number
+from df_py.vestingutil.week_multiplier import get_df_week_number
 from df_py.volume.reward_calc_main import RewardCalculator
 from df_py.web3util.constants import DO_PUBREWARDS, DO_RANK
+
 
 @enforce_types
 def calc_volume_rewards_from_csvs(

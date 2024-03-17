@@ -20,7 +20,10 @@ from df_py.predictoor.calc_rewards import (
     aggregate_predictoor_rewards,
     calc_predictoor_rewards,
 )
-from df_py.queries.predictoor_queries import query_predictoor_contracts, query_predictoors
+from df_py.queries.predictoor_queries import (
+    query_predictoor_contracts,
+    query_predictoors,
+)
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.mathutil.base18 import from_wei, to_wei
 from df_py.blockutil.blocktime import get_fin_block, timestr_to_timestamp
@@ -58,7 +61,7 @@ from df_py.web3util.vesting_schedule import (
 )
 from df_py.volume import csvs, queries
 from df_py.volume.reward_calc_main import RewardShaper
-from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
+from df_py.volume.reward_calc_wrapper import calc_volume_rewards_from_csvs
 
 
 @enforce_types

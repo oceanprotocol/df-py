@@ -7,18 +7,13 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import constants
+from df_py.volume.reward_calc_main import TARGET_WPY, RewardCalculator
+from df_py.volume.reward_calc_wrapper import calc_volume_rewards_from_csvs
 from df_py.web3util.constants import ZERO_ADDRESS
-from df_py.volume import csvs
-from df_py.volume.reward_calc_main import (
-    TARGET_WPY,
-    RewardCalculator,
-)
-from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -35,13 +30,13 @@ def test_simple():
     assert rewards_info == {C1: {NA: {LP1: 10}}}
 
     # test helper - just C1
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 10.0}
     assert rewards_info == {NA: {LP1: 10}}
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -55,7 +50,7 @@ def test_two_basetokens_OCEAN_and_H2O():
     nftvols = {C1: {OCN_ADDR: {NA: 40.0}, H2O_ADDR: {NB: 12.5}}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     NA_RF_USD = 0.5 * 40.0 * 0.5
     NB_RF_USD = 0.5 * 12.5 * 1.6
@@ -67,7 +62,7 @@ def test_two_basetokens_OCEAN_and_H2O():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -124,7 +119,7 @@ def test_two_chains():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -133,7 +128,7 @@ def test_two_lps_simple():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewards_info[NA].values()) == pytest.approx(10.0, 0.01)
@@ -142,7 +137,7 @@ def test_two_lps_simple():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -151,7 +146,7 @@ def test_two_lps_one_with_negligible_stake():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 1e-5)
     assert LP2 not in rewards_per_lp
@@ -161,7 +156,7 @@ def test_two_lps_one_with_negligible_stake():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -175,7 +170,7 @@ def test_two_nfts_one_with_volume():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}  # NA has volume, but not NB
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 0.01)
     assert min(rewards_per_lp.values()) > 0, "shouldn't have entries with 0 rewards"
@@ -187,7 +182,7 @@ def test_two_nfts_one_with_volume():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -201,7 +196,7 @@ def test_two_nfts_both_with_volume():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}  # NA & NB both have volume
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 0.01)
     assert rewards_per_lp[LP1] == rewards_per_lp[LP2]
@@ -217,7 +212,7 @@ def test_two_nfts_both_with_volume():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -228,7 +223,7 @@ def test_two_LPs__one_NFT__one_LP_created():
     owners = {C1: {NA: LP1}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
@@ -239,7 +234,7 @@ def test_two_LPs__one_NFT__one_LP_created():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -250,7 +245,7 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     owners = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
@@ -261,7 +256,7 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -272,7 +267,7 @@ def test_two_LPs__two_NFTs__two_LPs_created():
     owners = {C1: {NA: LP1, NB: LP2}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
@@ -283,7 +278,7 @@ def test_two_LPs__two_NFTs__two_LPs_created():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -335,7 +330,7 @@ def test_mix_upper_and_lower_case():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 def test_calc_rewards_math():
@@ -344,7 +339,7 @@ def test_calc_rewards_math():
     nftvols = {C1: {OCN_ADDR: {NA: 0.5e6, NB: 0.5e6}}}
     OCEAN_avail = 5000.0
 
-    rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(OCEAN_avail, 0.01)
 
@@ -355,7 +350,7 @@ def test_calc_rewards_math():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -364,14 +359,14 @@ def test_bound_APY_one_nft():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert rewards_per_lp == {LP1: 1.0 * TARGET_WPY}
     assert rewards_info == {NA: {LP1: 1.0 * TARGET_WPY}}
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -380,7 +375,7 @@ def test_bound_APY_one_LP__high_stake__two_nfts():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     OCEAN_avail = 1000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # ensure that total rewards given doesn't exceed OCEAN_avail
     assert rewards_per_lp == {LP1: 1000.0}
@@ -388,7 +383,7 @@ def test_bound_APY_one_LP__high_stake__two_nfts():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -397,14 +392,14 @@ def test_bound_APY_two_nfts__equal_low_stake__equal_low_DCV():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert rewards_per_lp == {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}
     assert rewards_info == {NA: {LP1: 5.0 * TARGET_WPY}, NB: {LP2: 5.0 * TARGET_WPY}}
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -413,7 +408,7 @@ def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it.
     # But, LP2 staked more, so it earns more
@@ -425,7 +420,7 @@ def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -434,7 +429,7 @@ def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 10000.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # LP1 and LP2 get same amount - they're both bounded because both have low stake
     # Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher
@@ -443,7 +438,7 @@ def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -452,7 +447,7 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 9999.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # LP2 reward swamps LP1 because LP2's stake * DCV is way higher
     assert rewards_per_lp == {LP1: 1.0, LP2: 9999.0}
@@ -460,7 +455,7 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -472,21 +467,21 @@ def test_bound_by_DCV_1nft_1account():
     OCEAN_avail = 10000.0
 
     # df week = 9 -> DCV multiplier = 1.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, df_week=9
     )
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
-    with patch("df_py.volume.reward_calc_main.calc_dcv_multiplier") as mock_dcv:
+    with patch("df_py.vestingutil.week_multiplier.calc_dcv_multiplier") as mock_dcv:
         mock_dcv.return_value = 0.5
-        rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+        rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -497,9 +492,9 @@ def test_bound_by_DCV_1nft_2accounts():
     nftvols = {C1: {OCN_ADDR: {NA: DCV_OCEAN}}}
     OCEAN_avail = 10000.0
 
-    with patch("df_py.volume.reward_calc_main.calc_dcv_multiplier") as mock_dcv:
+    with patch("df_py.vestingutil.week_multiplier.calc_dcv_multiplier") as mock_dcv:
         mock_dcv.return_value = 0.5
-        rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+        rewards_per_lp, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 25.0, LP2: 25.0}
 
 
@@ -512,13 +507,13 @@ def test_custom_multipliers():
     OCEAN_avail = 10000.0
 
     with patch(
-        "df_py.volume.reward_calc_main.query_predictoor_contracts"
+        "df_py.queries.predictoor_queries.query_predictoor_contracts"
     ) as mock, patch(
         "df_py.volume.reward_calc_main.DEPLOYER_ADDRS",
         {C1: ""},
     ):
         mock.return_value = {NA: ""}
-        rewards_per_lp, rewards_info = _calc_rewards_C1(
+        rewards_per_lp, rewards_info = calc_rewards_C1(
             stakes,
             nftvols,
             OCEAN_avail,
@@ -529,7 +524,7 @@ def test_custom_multipliers():
 
 
 @patch(
-    "df_py.volume.reward_calc_main.query_predictoor_contracts",
+    "df_py.queries.predictoor_queries.query_predictoor_contracts",
     MagicMock(return_value={}),
 )
 @enforce_types
@@ -538,100 +533,7 @@ def test_divide_by_zero():
     nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # Should return empty dict because LP1 and LP2 have zero volume
     assert rewards_per_lp == {}
-
-
-# ========================================================================
-# Helpers to keep function calls compact, and return vals compact.
-
-
-@enforce_types
-def _calc_rewards_C1(
-    stakes: Dict[int, Dict[str, Dict[str, float]]],
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    OCEAN_avail: float,
-    symbols: Dict[int, Dict[str, str]] = SYMBOLS,
-    rates: Dict[str, float] = RATES,
-    owners=None,
-    df_week: int = DF_WEEK,
-    do_pubrewards: bool = False,
-    do_rank: bool = False,
-):
-    rewards_per_lp, rewards_info = _calc_rewards(
-        stakes,
-        stakes,  # pass veOCEAN stakes as locked_amts for simplicity
-        nftvols,
-        OCEAN_avail,
-        symbols,
-        rates,
-        owners,
-        df_week,
-        do_pubrewards,
-        do_rank,
-    )
-    rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
-    rewards_info = {} if not rewards_info else rewards_info[C1]
-    return rewards_per_lp, rewards_info
-
-
-@enforce_types
-def _calc_rewards(
-    stakes: Dict[int, Dict[str, Dict[str, float]]],
-    locked_amts: Dict[int, Dict[str, Dict[str, float]]],
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    OCEAN_avail: float,
-    symbols: Dict[int, Dict[str, str]] = SYMBOLS,
-    rates: Dict[str, float] = RATES,
-    owners=None,
-    df_week: int = DF_WEEK,
-    do_pubrewards: bool = False,
-    do_rank: bool = False,
-):
-    """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
-    if owners is None:
-        owners = _null_owners(stakes, nftvols, symbols, rates)
-
-    calculator = RewardCalculator(
-        stakes,
-        locked_amts,
-        nftvols,
-        owners,
-        symbols,
-        rates,
-        df_week,
-        OCEAN_avail,
-        do_pubrewards,
-        do_rank,
-    )
-
-    return calculator.calculate()
-
-
-
-@enforce_types
-def _null_owners(
-    stakes,
-    nftvols,
-    symbols,
-    rates,
-) -> Dict[int, Dict[str, Union[str, None]]]:
-    """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
-    partially_initialised = RewardCalculator(
-        stakes, stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
-    )
-
-    return _null_owners_from_chain_nft_tups(partially_initialised._get_chain_nft_tups())
-
-
-@enforce_types
-def _null_owners_from_chain_nft_tups(chain_nft_tups):
-    owners: Dict[int, Dict[str, Union[str, None]]] = {}
-    for chainID, nft_addr in chain_nft_tups:
-        if chainID not in owners:
-            owners[chainID] = {}
-        owners[chainID][nft_addr] = ZERO_ADDRESS
-
-    return owners

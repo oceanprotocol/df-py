@@ -1,7 +1,8 @@
 from enforce_typing import enforce_types
 import numpy as np
+import pytest
 
-from df_py.volume.util_rank import rank_based_allocate
+from df_py.volume.rank import rank_based_allocate
 
 
 @enforce_types
@@ -195,4 +196,3 @@ def _plot_ranks(save_or_show, max_n_rank_assets, rank_scale_op):
         plt.show()
     else:
         raise ValueError(save_or_show)
-

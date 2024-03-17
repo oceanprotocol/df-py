@@ -251,9 +251,9 @@ def random_lock_and_allocate(web3, tups: list):
 
         print(f"locked {LOCK_AMOUNT} for: Account #{i} of {len(tups)}")
         assert veOCEAN.balanceOf(lock_account) != 0
-        allc_amt = MAX_ALLOCATE - veAllocate(
-            DEV_CHAINID
-        ).getTotalAllocation(lock_account)
+        allc_amt = MAX_ALLOCATE - veAllocate(DEV_CHAINID).getTotalAllocation(
+            lock_account
+        )
         set_allocation(
             int(allc_amt),
             data_nft.address,

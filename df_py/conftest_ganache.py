@@ -5,12 +5,11 @@ from df_py.web3util.networkutil import DEV_CHAINID, chain_id_to_web3
 from df_py.web3util.oceanutil import OCEAN_token, record_dev_deployed_contracts
 from df_py.web3util.oceantestutil import get_account0, get_all_accounts
 
+
 def pytest_sessionstart():
     record_dev_deployed_contracts()
     accs = oceantestutil.get_all_accounts()
-    OCEAN_token(DEV_CHAINID).mint(
-        accs[0], to_wei(10_000), {"from": accs[0]}
-    )
+    OCEAN_token(DEV_CHAINID).mint(accs[0], to_wei(10_000), {"from": accs[0]})
 
 
 @pytest.fixture

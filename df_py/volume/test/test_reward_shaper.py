@@ -1,8 +1,9 @@
 from enforce_typing import enforce_types
 
 from df_py.volume.reward_shaper import RewardShaper
+from df_py.volume.test.conftest import *
 
-    
+
 @enforce_types
 def test_flatten_rewards():
     rewards = {
@@ -27,7 +28,7 @@ def test_flatten_rewards():
         LP3: 700.0,
     }
 
-    
+
 @enforce_types
 def test_merge_rewards():
     # Test case 1: Merge two reward dictionaries with no common keys
@@ -58,5 +59,3 @@ def test_merge_rewards():
     # Test case 5: Merge no reward dictionaries
     expected_output = {}
     assert RewardShaper.merge() == expected_output
-
-

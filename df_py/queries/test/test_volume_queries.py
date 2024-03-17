@@ -8,17 +8,41 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import dispense, networkutil, oceantestutil, oceanutil
-from df_py.mathutil.base18 import from_wei, str_with_wei, to_wei
 from df_py.blockutil.blockrange import BlockRange
-from df_py.web3util.constants import MAX_ALLOCATE
-from df_py.web3util.contract_base import ContractBase
-from df_py.web3util.networkutil import send_ether
-from df_py.web3util.oceanutil import ve_delegate
-from df_py.volume import csvs, queries
+from df_py.mathutil.base18 import from_wei, str_with_wei, to_wei
+from df_py.volume import csvs
+from df_py.queries import volume_queries as queries
 from df_py.volume.reward_calc_main import RewardCalculator
 from df_py.volume.allocations import allocs_to_stakes, load_stakes
 from df_py.volume.models import SimpleDataNft, TokSet
+from df_py.web3util.constants import MAX_ALLOCATE
+from df_py.web3util.dispense import dispense
+from df_py.web3util.contract_base import ContractBase
+from df_py.web3util.networkutil import (
+    chain_id_to_address_file,
+    chain_id_to_subgraph_uri,
+    chain_id_to_web3,
+    DEV_CHAINID,
+    send_ether,
+)
+from df_py.web3util.oceantestutil import (
+    buy_DT_FRE,
+    consume_DT,
+)
+from df_py.web3util.oceanutil import (
+    create_data_nft_with_fre,
+    FeeDistributor,
+    FixedPrice,
+    OCEAN_address,
+    OCEAN_token,
+    record_dev_deployed_contracts,
+    set_allocation,
+    ve_delegate,
+    veAllocate,
+    veDelegation,
+    veOCEAN,
+)
+
 
 OCEAN, veOCEAN = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
@@ -28,13 +52,13 @@ DAY = 86400
 WEEK = 7 * DAY
 YEAR = 365 * DAY
 
-ADDRESS_FILE = networkutil.chain_id_to_address_file(CHAINID)
+ADDRESS_FILE = chain_id_to_address_file(CHAINID)
 
 
 class SimpleAsset:
     def __init__(self, tup):
         self.nft, self.dt, self.exchangeId = tup
-        assert oceanutil.FixedPrice(networkutil.DEV_CHAINID).isActive(self.exchangeId)
+        assert FixedPrice(DEV_CHAINID).isActive(self.exchangeId)
 
 
 # =========================================================================
@@ -46,7 +70,7 @@ class SimpleAsset:
 def test_all(tmp_path, w3, account0, monkeypatch):
     """Run this all as a single test, because we may have to
     re-loop or sleep until the info we want is there."""
-    monkeypatch.setenv("SUBGRAPH_URI", networkutil.chain_id_to_subgraph_uri(CHAINID))
+    monkeypatch.setenv("SUBGRAPH_URI", chain_id_to_subgraph_uri(CHAINID))
     monkeypatch.setenv("SECRET_SEED", "1234")
     monkeypatch.setenv("ADDRESS_FILE", ADDRESS_FILE)
 
@@ -96,15 +120,15 @@ def test_all(tmp_path, w3, account0, monkeypatch):
 
     print("Consume...")
     for i, acct in enumerate(accounts):
-        oceantestutil.buy_DT_FRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
-        oceantestutil.consume_DT(assets[i].dt, account0, acct)
+        buy_DT_FRE(assets[i].exchangeId, 1.0, 10000.0, acct, CO2)
+        consume_DT(assets[i].dt, account0, acct)
 
     print("Ghost consume...")
     ghost_consume_asset = assets[0]
     ghost_consume_nft_addr = ghost_consume_asset.nft.address.lower()
     ghost_consume_asset.dt.mint(account0, to_wei(1000.0), {"from": account0})
     for _ in range(20):
-        oceantestutil.consume_DT(ghost_consume_asset.dt, account0, account0)
+        consume_DT(ghost_consume_asset.dt, account0, account0)
 
     print("Keep sampling until enough volume (or timeout)")
     for loop_i in range(50):
@@ -228,7 +252,7 @@ def _test_queryVebalances(
     )
 
     for account in veBalances:
-        bal = from_wei(oceanutil.veDelegation(CHAINID).adjusted_balance_of(account))
+        bal = from_wei(veDelegation(CHAINID).adjusted_balance_of(account))
         if account in sampling_accounts:
             assert veBalances[account] < bal
             continue
@@ -250,9 +274,7 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
         for nftAddr in allocations[chain_id]:
             for userAddr in allocations[chain_id][nftAddr]:
                 allocation_contract = (
-                    oceanutil.veAllocate(CHAINID).getveAllocation(
-                        userAddr, nftAddr, chain_id
-                    )
+                    veAllocate(CHAINID).getveAllocation(userAddr, nftAddr, chain_id)
                     / MAX_ALLOCATE
                 )
                 allocation_query = allocations[chain_id][nftAddr][userAddr]
@@ -265,7 +287,7 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 @enforce_types
 def _test_getSymbols():
     print("_test_getSymbols()...")
-    OCEAN_token = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
+    OCEAN_token = OCEAN_token(DEV_CHAINID)
     token_set = TokSet()
     token_set.add(CHAINID, OCEAN_token.address.lower(), "OCEAN")
     symbols_at_chain = queries.getSymbols(
@@ -498,15 +520,15 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     # 6. simulate "dftool dispense_active"
     rewardsperlp = csvs.load_volume_rewards_csv(csv_dir)
     dfrewards_addr = ContractBase(w3, "DFRewards", constructor_args=[]).address
-    OCEAN_addr = oceanutil.OCEAN_address(CHAINID)
-    dispense.dispense(w3, rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
+    OCEAN_addr = OCEAN_address(CHAINID)
+    dispense(w3, rewardsperlp[CHAINID], dfrewards_addr, OCEAN_addr, god_acct)
 
 
 @enforce_types
 def _test_queryPassiveRewards(addresses, god_acct):
     print("_test_queryPassiveRewards()...")
-    fee_distributor = oceanutil.FeeDistributor(networkutil.DEV_CHAINID)
-    w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
+    fee_distributor = FeeDistributor(DEV_CHAINID)
+    w3 = chain_id_to_web3(DEV_CHAINID)
     provider = w3.provider
 
     def sim_epoch():
@@ -609,97 +631,97 @@ def test_allocation_sampling(w3, account0):
     start_block = w3.eth.get_block("latest").number
 
     # DAY 0
-    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
-    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, bob)  # 100% at 0
-    oceanutil.set_allocation(1000, allocate_addrs[0], CHAINID, karen)  # 10% at 0
-    oceanutil.set_allocation(1000, allocate_addrs[0], CHAINID, james)  # 10% at 0
+    set_allocation(10000, allocate_addrs[0], CHAINID, alice)  # 100% at 0
+    set_allocation(10000, allocate_addrs[0], CHAINID, bob)  # 100% at 0
+    set_allocation(1000, allocate_addrs[0], CHAINID, karen)  # 10% at 0
+    set_allocation(1000, allocate_addrs[0], CHAINID, james)  # 10% at 0
 
     forward(100)
 
     # DAY 1
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, bob)  # 0% at 1
-    oceanutil.set_allocation(10000, allocate_addrs[1], CHAINID, bob)  # 100% at 1
+    set_allocation(0, allocate_addrs[0], CHAINID, bob)  # 0% at 1
+    set_allocation(10000, allocate_addrs[1], CHAINID, bob)  # 100% at 1
 
     # Karen allocates 10%
-    oceanutil.set_allocation(1000, allocate_addrs[1], CHAINID, karen)  # 10% at 1
+    set_allocation(1000, allocate_addrs[1], CHAINID, karen)  # 10% at 1
 
     # James allocates 20%
-    oceanutil.set_allocation(2000, allocate_addrs[0], CHAINID, james)  # 20% at 1
+    set_allocation(2000, allocate_addrs[0], CHAINID, james)  # 20% at 1
 
     forward(100)
 
     # DAY 2
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[1], CHAINID, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[2], CHAINID, bob)
+    set_allocation(0, allocate_addrs[1], CHAINID, bob)
+    set_allocation(10000, allocate_addrs[2], CHAINID, bob)
 
     # Carol allocates 100%
-    oceanutil.set_allocation(10000, allocate_addrs[2], CHAINID, carol)
+    set_allocation(10000, allocate_addrs[2], CHAINID, carol)
 
     # Karen allocates 20%
-    oceanutil.set_allocation(2000, allocate_addrs[2], CHAINID, karen)
+    set_allocation(2000, allocate_addrs[2], CHAINID, karen)
 
     # James allocates 30%
-    oceanutil.set_allocation(3000, allocate_addrs[0], CHAINID, james)
+    set_allocation(3000, allocate_addrs[0], CHAINID, james)
     forward(100)
 
     # DAY 3
 
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[2], CHAINID, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[3], CHAINID, bob)
+    set_allocation(0, allocate_addrs[2], CHAINID, bob)
+    set_allocation(10000, allocate_addrs[3], CHAINID, bob)
 
     # James allocates 5%
-    oceanutil.set_allocation(500, allocate_addrs[0], CHAINID, james)
+    set_allocation(500, allocate_addrs[0], CHAINID, james)
 
     forward(50)
 
     # DAY 3.5
     # Alice allocates 100%
-    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, alice)
-    oceanutil.set_allocation(10000, allocate_addrs[3], CHAINID, alice)
+    set_allocation(0, allocate_addrs[0], CHAINID, alice)
+    set_allocation(10000, allocate_addrs[3], CHAINID, alice)
 
     forward(50)
 
     # DAY 4
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[3], CHAINID, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[4], CHAINID, bob)
+    set_allocation(0, allocate_addrs[3], CHAINID, bob)
+    set_allocation(10000, allocate_addrs[4], CHAINID, bob)
 
     # James allocates 50%
-    oceanutil.set_allocation(5000, allocate_addrs[0], CHAINID, james)
+    set_allocation(5000, allocate_addrs[0], CHAINID, james)
 
     forward(100)
 
     # DAY 5
 
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[4], CHAINID, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[5], CHAINID, bob)
+    set_allocation(0, allocate_addrs[4], CHAINID, bob)
+    set_allocation(10000, allocate_addrs[5], CHAINID, bob)
 
     # James allocates 0%
-    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, james)
+    set_allocation(0, allocate_addrs[0], CHAINID, james)
 
     forward(100)
 
     # DAY 6
     # Bob removes and re-adds 100%
-    oceanutil.set_allocation(0, allocate_addrs[5], CHAINID, bob)
-    oceanutil.set_allocation(10000, allocate_addrs[6], CHAINID, bob)
+    set_allocation(0, allocate_addrs[5], CHAINID, bob)
+    set_allocation(10000, allocate_addrs[6], CHAINID, bob)
 
     # Carol allocates 100%
-    oceanutil.set_allocation(0, allocate_addrs[2], CHAINID, carol)
-    oceanutil.set_allocation(10000, allocate_addrs[6], CHAINID, carol)
+    set_allocation(0, allocate_addrs[2], CHAINID, carol)
+    set_allocation(10000, allocate_addrs[6], CHAINID, carol)
 
     # Karen allocates 100%
-    oceanutil.set_allocation(0, allocate_addrs[0], CHAINID, karen)
-    oceanutil.set_allocation(0, allocate_addrs[1], CHAINID, karen)
-    oceanutil.set_allocation(0, allocate_addrs[2], CHAINID, karen)
-    oceanutil.set_allocation(10000, allocate_addrs[6], CHAINID, karen)
+    set_allocation(0, allocate_addrs[0], CHAINID, karen)
+    set_allocation(0, allocate_addrs[1], CHAINID, karen)
+    set_allocation(0, allocate_addrs[2], CHAINID, karen)
+    set_allocation(10000, allocate_addrs[6], CHAINID, karen)
 
     # James allocates 100%
-    oceanutil.set_allocation(10000, allocate_addrs[0], CHAINID, james)
+    set_allocation(10000, allocate_addrs[0], CHAINID, james)
 
     # FIN
     forward(100)
@@ -834,7 +856,7 @@ def test_filter_dids():
 
 @enforce_types
 def test_filter_nft_vols_to_aquarius_assets():
-    OCEAN_addr = oceanutil.OCEAN_address(networkutil.DEV_CHAINID)
+    OCEAN_addr = OCEAN_address(DEV_CHAINID)
     nftaddrs = [
         "0x84d8fec21b295baf3bf5998e6d01c067b43d061a",
         "0x4b23ee226f61eecc6521697b9e5d96e4bdfb1d0c",
@@ -881,7 +903,7 @@ def test_filter_nftinfos():
     addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(networkutil.DEV_CHAINID),  # invalid
+        OCEAN_address(DEV_CHAINID),  # invalid
     ]
     # addresses are from polygon
     nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
@@ -899,7 +921,7 @@ def test_mark_purgatory_nftinfos():
     addrs = [
         "0xbff8242de628cd45173b71022648617968bd0962",  # good
         "0x03894e05af1257714d1e06a01452d157e3a82202",  # purgatory
-        oceanutil.OCEAN_address(networkutil.DEV_CHAINID),  # invalid
+        OCEAN_address(DEV_CHAINID),  # invalid
     ]
     # addresses are from polygon
     nfts = [SimpleDataNft(137, addr, "TEST", "0x123") for addr in addrs]
@@ -1077,7 +1099,7 @@ def test_calculate_gas_vols_distributes_gas_evenly():
 @enforce_types
 def _lock(accts: list, lock_amt: float, lock_time: int):
     print("Lock...")
-    w3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
+    w3 = chain_id_to_web3(DEV_CHAINID)
     lock_amt_wei = to_wei(lock_amt)
     for i, acct in enumerate(accts):
         s = str_with_wei(lock_amt_wei)
@@ -1108,7 +1130,7 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
 @enforce_types
 def _allocate(accts: list, assets: list):
     print("Allocate...")
-    veAllocate = oceanutil.veAllocate(CHAINID)
+    veAllocate = veAllocate(CHAINID)
     for i, (acct, asset) in enumerate(zip(accts, assets)):
         print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
         veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acct})
@@ -1133,7 +1155,7 @@ def _create_assets(w3, n_assets: int, god_acct) -> list:
     assets = []
     for i in range(n_assets):
         print(f"  Create asset #{i+1}/{n_assets}...")
-        tup = oceanutil.create_data_nft_with_fre(w3, god_acct, CO2)
+        tup = create_data_nft_with_fre(w3, god_acct, CO2)
         asset = SimpleAsset(tup)
         assets.append(asset)
     return assets
@@ -1151,7 +1173,7 @@ def _clear_dir(csv_dir: str):
 @enforce_types
 def setup_function():
     global OCEAN, veOCEAN
-    oceanutil.record_dev_deployed_contracts()
+    record_dev_deployed_contracts()
 
-    OCEAN = oceanutil.OCEAN_token(networkutil.DEV_CHAINID)
-    veOCEAN = oceanutil.veOCEAN(networkutil.DEV_CHAINID)
+    OCEAN = OCEAN_token(DEV_CHAINID)
+    veOCEAN = veOCEAN(DEV_CHAINID)

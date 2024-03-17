@@ -7,11 +7,12 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import constants
-from df_py.web3util.constants import ZERO_ADDRESS
 from df_py.volume import csvs
 from df_py.volume.reward_calc_main import TARGET_WPY
-from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
+from df_py.volume.reward_calc_wrapper import calc_volume_rewards_from_csvs
+from df_py.volume.test.conftest import *
+from df_py.web3util.constants import ZERO_ADDRESS
+
 
 @enforce_types
 def test_volume_reward_calculator_no_pdrs(tmp_path):
@@ -48,13 +49,15 @@ def test_volume_reward_calculator_no_pdrs(tmp_path):
     ), patch(
         "df_py.volume.reward_calc_main.get_df_week_number", return_value=30
     ), patch(
-        "df_py.volume.reward_calc_main.query_predictoor_contracts",
+        "df_py.queries.predictoor_queries.query_predictoor_contracts",
         return_value={C1: "", C2: ""},
     ), patch(
-        "df_py.volume.calc_rewards.wait_to_latest_block"
+        "df_py.volume.reward_calc_wrapper.wait_to_latest_block"
     ), patch(
         "web3.main.Web3.to_checksum_address"
     ) as mock:
+        mock.side_effect = lambda value: value
+
         mock.side_effect = lambda value: value
 
         calc_volume_rewards_from_csvs(tmp_path, None, OCEAN_reward, True, False)
@@ -98,7 +101,7 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
     symbols = {C1: {OCN_ADDR: OCN_SYMB}, C2: {H2O_ADDR: H2O_SYMB}}
     rates = {OCN_SYMB: 1.0, H2O_SYMB: 1.0}
 
-    predictoor_contracts = {NA: {}}
+    predictoor_feed_addrs = {C1: [NA], C2: []}
 
     def mock_multipliers(DF_week, is_predictoor):
         if not is_predictoor:
@@ -119,15 +122,15 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
     ), patch(
         "df_py.volume.reward_calc_main.calc_dcv_multiplier", mock_multipliers
     ), patch(
-        "df_py.volume.reward_calc_main.query_predictoor_contracts",
-        return_value=predictoor_contracts,
+        "df_py.volume.reward_calc_main.query_predictoor_feed_addrs",
+        return_value=predictoor_feed_addrs,
     ), patch(
         "df_py.volume.reward_calc_main.DEPLOYER_ADDRS",
         {C1: ""},
     ), patch(
         "df_py.volume.reward_calc_main.get_df_week_number", return_value=30
     ), patch(
-        "df_py.volume.calc_rewards.wait_to_latest_block"
+        "df_py.volume.reward_calc_wrapper.wait_to_latest_block"
     ), patch(
         "web3.main.Web3.to_checksum_address"
     ) as mock:
@@ -160,4 +163,3 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
         assert rewards_info[C1][NA][LP1] == approx(60.3, abs=1e-5)
         assert rewards_info[C2][NB][LP2] == 300
         assert rewards_info[C2][NB][LP3] == 300
-

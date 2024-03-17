@@ -33,9 +33,7 @@ def test_record_deployed_contracts():
     address_file = chain_id_to_address_file(chain_id)
     record_deployed_contracts(address_file, chain_id)
     assert OCEAN_token(chain_id)
-    assert (
-        OCEAN_address(chain_id) == OCEAN_address(chain_id).lower()
-    )
+    assert OCEAN_address(chain_id) == OCEAN_address(chain_id).lower()
     assert ERC721Template(chain_id)
     assert ERC20Template(chain_id)
     assert FactoryRouter(chain_id)

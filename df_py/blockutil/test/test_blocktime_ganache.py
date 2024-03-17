@@ -19,6 +19,7 @@ from df_py.blockutil.blocktime import (
 )
 from df_py.conftest_ganache import *
 
+
 @enforce_types
 def test_timestr_to_block_1(w3):
     # tests here are light, the real tests are in test_*() below
