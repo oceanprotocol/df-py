@@ -39,6 +39,7 @@ DF_WEEK = 7
 
 QUERY_PATH = "df_py.volume.reward_calculator.query_predictoor_contracts"
 
+
 class MockRewardCalculator(RewardCalculator):
     def __init__(self):
         return super().__init__({}, {}, {}, {}, {}, {}, DF_WEEK, False, False, False)
@@ -62,6 +63,7 @@ def test_freeze_attributes():
 
     rc._freeze_attributes = False
     rc.new_attr = 1
+
 
 @patch(QUERY_PATH, MagicMock(return_value={}))
 @enforce_types
