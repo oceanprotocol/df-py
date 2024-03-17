@@ -1,18 +1,14 @@
-from datetime import datetime
 from typing import Dict, List, Tuple
 
 import numpy as np
 from enforce_typing import enforce_types
 
 from df_py.predictoor.queries import query_predictoor_contracts
-from df_py.util.constants import (
-    DEPLOYER_ADDRS,
-    PREDICTOOR_MULTIPLIER,
-    TARGET_WPY,
-)
+from df_py.util.constants import DEPLOYER_ADDRS, TARGET_WPY
+from df_py.util.dcv_multiplier import calc_dcv_multiplier
 from df_py.volume import cleancase as cc
-from df_py.volume import to_usd
 from df_py.volume.rank import rank_based_allocate
+from df_py.volume.to_usd import nft_vols_to_usd
 
 
 def freeze_attributes(func):
@@ -70,9 +66,7 @@ class RewardCalculator:
         self.symbols = cc.mod_symbols(symbols)
         self.rates = cc.mod_rates(rates)
 
-        self.nftvols_USD = to_usd.nft_vols_to_usd(
-            self.nftvols, self.symbols, self.rates
-        )
+        self.nftvols_USD = nft_vols_to_usd(self.nftvols, self.symbols, self.rates)
 
         self.chain_nft_tups = self._get_chain_nft_tups()
         self.LP_addrs = self._get_lp_addrs()
@@ -107,7 +101,7 @@ class RewardCalculator:
         self.S, self.V_USD, self.M, self.C, self.L = (
             self._stake_vol_owner_dicts_to_arrays()
         )
-        self.R = self._calc_rewards_usd()
+        self.R = self.calc_rewards__usd()
 
         self._freeze_attributes = True
 
@@ -156,7 +150,7 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _calc_rewards_usd(self) -> np.ndarray:
+    def calc_rewards__usd(self) -> np.ndarray:
         """
         @return
           R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -329,70 +323,3 @@ class RewardCalculator:
             ).keys()
 
         return predictoor_feed_addrs
-
-
-class RewardShaper:
-    @staticmethod
-    @enforce_types
-    def flatten(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
-        """
-        @arguments
-          rewards -- dict of [chainID][LP_addr] : reward_float
-
-        @return
-          flats -- dict of [LP_addr] : reward_float
-        """
-        flats: Dict[str, float] = {}
-        for chainID in rewards:
-            for LP_addr in rewards[chainID]:
-                flats[LP_addr] = flats.get(LP_addr, 0.0) + rewards[chainID][LP_addr]
-
-        return flats
-
-    @staticmethod
-    def merge(*reward_dicts):
-        merged_dict = {}
-
-        for reward_dict in reward_dicts:
-            for key, value in reward_dict.items():
-                merged_dict[key] = merged_dict.get(key, 0) + value
-
-        return merged_dict
-
-
-@enforce_types
-def get_df_week_number(dt: datetime) -> int:
-    """Return the DF week number. This is used by boundRewardsByDcv().
-    There was a gap from DF4 to DF5. Since we only care about future dates,
-    don't bother to properly support this gap, just focus on future.
-    """
-    DF5_start = datetime(2022, 9, 29)  # Thu Sep 29
-    if dt < DF5_start:
-        return -1
-
-    days_offset = (dt - DF5_start).days
-    weeks_offset = days_offset // 7
-    DF_week = weeks_offset + 1 + 4
-    return DF_week
-
-
-def calc_dcv_multiplier(DF_week: int, is_predictoor: bool) -> float:
-    """
-    Calculate DCV multiplier, for use in bounding rewards_avail by DCV
-
-    @arguments
-      DF_week -- e.g. 9 for DF9
-
-    @return
-      DCV_multiplier --
-    """
-    if is_predictoor:
-        return PREDICTOOR_MULTIPLIER
-
-    if DF_week < 9:
-        return np.inf
-
-    if 9 <= DF_week <= 28:
-        return -0.0485 * (DF_week - 9) + 1.0
-
-    return 0.001

@@ -1,6 +1,4 @@
 # pylint: disable=too-many-lines
-from datetime import datetime, timedelta
-from typing import Dict, Tuple, Union
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -8,37 +6,12 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util import constants
 from df_py.util.constants import ZERO_ADDRESS
 from df_py.volume import csvs
-from df_py.volume.reward_calculator import (
-    TARGET_WPY,
-    RewardCalculator,
-    calc_dcv_multiplier,
-    get_df_week_number,
-    RewardShaper,
-)
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
-
-# for shorter lines
-RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
-C1, C2, C3 = 7, 137, 1285  # chainIDs
-NA, NB, NC, ND = "0xnfta_addr", "0xnftb_addr", "0xnftc_addr", "0xnftd_addr"
-LP1, LP2, LP3, LP4 = "0xlp1_addr", "0xlp2_addr", "0xlp3_addr", "0xlp4_addr"
-LP5 = "0xlp4_addr"
-OCN_SYMB, H2O_SYMB = "OCEAN", "H2O"
-OCN_ADDR, H2O_ADDR = "0xocean", "0xh2o"
-OCN_ADDR2, H2O_ADDR2 = "0xocean2", "0xh2o2"
-SYMBOLS = {
-    C1: {OCN_ADDR: OCN_SYMB, H2O_ADDR: H2O_SYMB},
-    C2: {OCN_ADDR2: OCN_SYMB, H2O_ADDR2: H2O_SYMB},
-}
-APPROVED_TOKEN_ADDRS = {C1: [OCN_ADDR, H2O_ADDR], C2: [OCN_ADDR2, H2O_ADDR2]}
-
-# week 7 will make the DCV multiplier np.inf
-DF_WEEK = 7
-
-QUERY_PATH = "df_py.volume.reward_calculator.query_predictoor_contracts"
+from df_py.volume.reward_calculator import TARGET_WPY, RewardCalculator
+from df_py.volume.test.constants import *  # pylint: disable=wildcard-import
+from df_py.volume.test.helperfuncs import *  # pylint: disable=wildcard-import
 
 
 class MockRewardCalculator(RewardCalculator):
@@ -74,14 +47,14 @@ def test_simple():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards(
+    rewards_per_lp, rewards_info = calc_rewards_(
         stakes, locked_amts, nftvols, OCEAN_avail
     )
     assert rewards_per_lp == {C1: {LP1: 10.0}}
     assert rewards_info == {C1: {NA: {LP1: 10}}}
 
     # test helper - just C1
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 10.0}
     assert rewards_info == {NA: {LP1: 10}}
 
@@ -98,7 +71,7 @@ def test_two_basetokens_OCEAN_and_H2O():
     nftvols = {C1: {OCN_ADDR: {NA: 40.0}, H2O_ADDR: {NB: 12.5}}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     NA_RF_USD = 0.5 * 40.0 * 0.5
     NB_RF_USD = 0.5 * 12.5 * 1.6
@@ -132,7 +105,7 @@ def test_two_chains():
 
     OCEAN_avail = 20.0
 
-    rewards_per_lp, rewards_info = _calc_rewards(
+    rewards_per_lp, rewards_info = calc_rewards_(
         stakes, locked_amts, nftvols, OCEAN_avail, symbols=symbols
     )
 
@@ -141,7 +114,7 @@ def test_two_chains():
 
     # now, make it so that Ocean token in C2 is MOCEAN
     symbols[C2][OCN_ADDR2] = "MOCEAN"
-    rewards_per_lp, rewards_info = _calc_rewards(
+    rewards_per_lp, rewards_info = calc_rewards_(
         stakes, locked_amts, nftvols, OCEAN_avail, symbols=symbols
     )
 
@@ -154,7 +127,7 @@ def test_two_chains():
     rates = RATES.copy()
     rates["MOCEAN"] = rates["OCEAN"]
 
-    rewards_per_lp, rewards_info = _calc_rewards(
+    rewards_per_lp, rewards_info = calc_rewards_(
         stakes, locked_amts, nftvols, OCEAN_avail, rates=rates, symbols=symbols
     )
 
@@ -170,7 +143,7 @@ def test_two_lps_simple():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 0.01)
     assert sum(rewards_info[NA].values()) == pytest.approx(10.0, 0.01)
@@ -185,7 +158,7 @@ def test_two_lps_one_with_negligible_stake():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 1e-5)
     assert LP2 not in rewards_per_lp
@@ -206,7 +179,7 @@ def test_two_nfts_one_with_volume():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}  # NA has volume, but not NB
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 0.01)
     assert min(rewards_per_lp.values()) > 0, "shouldn't have entries with 0 rewards"
@@ -229,7 +202,7 @@ def test_two_nfts_both_with_volume():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}  # NA & NB both have volume
     OCEAN_avail = 10.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(10.0, 0.01)
     assert rewards_per_lp[LP1] == rewards_per_lp[LP2]
@@ -253,7 +226,7 @@ def test_two_LPs__one_NFT__one_LP_created():
     owners = {C1: {NA: LP1}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
@@ -272,7 +245,7 @@ def test_two_LPs__two_NFTs__one_LP_created_one_NFT():
     owners = {C1: {NA: LP1, NB: ZERO_ADDRESS}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
@@ -291,7 +264,7 @@ def test_two_LPs__two_NFTs__two_LPs_created():
     owners = {C1: {NA: LP1, NB: LP2}}
 
     OCEAN_avail = 10.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, owners=owners, do_pubrewards=True
     )
 
@@ -321,29 +294,29 @@ def test_mix_upper_and_lower_case():
     OCEAN_avail = 10.0
 
     # tests
-    rewards_per_lp, rewards_info = _calc_rewards(
+    rewards_per_lp, rewards_info = calc_rewards_(
         stakes2a, stakes2a, nftvols, OCEAN_avail
     )
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes2b, stakes2b, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_(stakes2b, stakes2b, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes2c, stakes2c, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_(stakes2c, stakes2c, nftvols, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols2a, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_(stakes, stakes, nftvols2a, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(stakes, stakes, nftvols2b, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_(stakes, stakes, nftvols2b, OCEAN_avail)
     assert target_rewards_per_lp == rewards_per_lp
     assert target_rewards_info == rewards_info
 
-    rewards_per_lp, _ = _calc_rewards(
+    rewards_per_lp, _ = calc_rewards_(
         stakes, stakes, nftvols, OCEAN_avail, rates=rates2
     )
     assert target_rewards_per_lp == rewards_per_lp
@@ -351,13 +324,13 @@ def test_mix_upper_and_lower_case():
 
 
 @patch(QUERY_PATH, MagicMock(return_value={}))
-def test_calc_rewards_math():
+def testcalc_rewards__math():
     ## update this test when the reward function is changed
     stakes = {C1: {NA: {LP1: 1.0e6, LP2: 9.0e6}, NB: {LP3: 10.0e6, LP4: 90.0e6}}}
     nftvols = {C1: {OCN_ADDR: {NA: 0.5e6, NB: 0.5e6}}}
     OCEAN_avail = 5000.0
 
-    rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert sum(rewards_per_lp.values()) == pytest.approx(OCEAN_avail, 0.01)
 
@@ -374,7 +347,7 @@ def test_bound_APY_one_nft():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert rewards_per_lp == {LP1: 1.0 * TARGET_WPY}
     assert rewards_info == {NA: {LP1: 1.0 * TARGET_WPY}}
@@ -387,7 +360,7 @@ def test_bound_APY_one_LP__high_stake__two_nfts():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     OCEAN_avail = 1000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # ensure that total rewards given doesn't exceed OCEAN_avail
     assert rewards_per_lp == {LP1: 1000.0}
@@ -401,7 +374,7 @@ def test_bound_APY_two_nfts__equal_low_stake__equal_low_DCV():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     assert rewards_per_lp == {LP1: 5.0 * TARGET_WPY, LP2: 5.0 * TARGET_WPY}
     assert rewards_info == {NA: {LP1: 5.0 * TARGET_WPY}, NB: {LP2: 5.0 * TARGET_WPY}}
@@ -414,7 +387,7 @@ def test_bound_APY_two_nfts__both_low_stake__one_nft_dominates_stake():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # LP1 and LP2 each have stake sufficiently low that TARGET_WPY bounds it.
     # But, LP2 staked more, so it earns more
@@ -432,7 +405,7 @@ def test_bound_APY_two_nfts__low_stake__one_nft_dominates_DCV():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 10000.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # LP1 and LP2 get same amount - they're both bounded because both have low stake
     # Critically, LP2 doesn't swamp LP1 just because LP2's stake * DCV is way higher
@@ -447,7 +420,7 @@ def test_bound_APY_two_nfts__high_stake__one_nft_dominates_DCV():
     nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 9999.0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # LP2 reward swamps LP1 because LP2's stake * DCV is way higher
     assert rewards_per_lp == {LP1: 1.0, LP2: 9999.0}
@@ -464,15 +437,15 @@ def test_bound_by_DCV_1nft_1account():
     OCEAN_avail = 10000.0
 
     # df week = 9 -> DCV multiplier = 1.0
-    rewards_per_lp, rewards_info = _calc_rewards_C1(
+    rewards_per_lp, rewards_info = calc_rewards_C1(
         stakes, nftvols, OCEAN_avail, df_week=9
     )
     assert rewards_per_lp == {LP1: 100.0}
     assert rewards_info == {NA: {LP1: 100.0}}
 
-    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
-        mock_dcv.return_value = 0.5
-        rewards_per_lp, rewards_info = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_mult:
+        mock_mult.return_value = 0.5
+        rewards_per_lp, rewards_info = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 50.0}
     assert rewards_info == {NA: {LP1: 50.0}}
 
@@ -486,9 +459,9 @@ def test_bound_by_DCV_1nft_2accounts():
     nftvols = {C1: {OCN_ADDR: {NA: DCV_OCEAN}}}
     OCEAN_avail = 10000.0
 
-    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_dcv:
-        mock_dcv.return_value = 0.5
-        rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    with patch("df_py.volume.reward_calculator.calc_dcv_multiplier") as mock_mult:
+        mock_mult.return_value = 0.5
+        rewards_per_lp, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
     assert rewards_per_lp == {LP1: 25.0, LP2: 25.0}
 
 
@@ -507,7 +480,7 @@ def test_custom_multipliers():
         {C1: ""},
     ):
         mock.return_value = {NA: ""}
-        rewards_per_lp, rewards_info = _calc_rewards_C1(
+        rewards_per_lp, rewards_info = calc_rewards_C1(
             stakes,
             nftvols,
             OCEAN_avail,
@@ -524,179 +497,10 @@ def test_divide_by_zero():
     nftvols = {C1: {OCN_ADDR: {LP1: 0, LP2: 0}}}
     OCEAN_avail = 10000.0
 
-    rewards_per_lp, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail)
+    rewards_per_lp, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail)
 
     # Should return empty dict because LP1 and LP2 have zero volume
     assert rewards_per_lp == {}
-
-
-# ========================================================================
-# Tests around bounding rewards by DCV
-
-
-@enforce_types
-def test_get_df_week_number():
-    wk_nbr = get_df_week_number
-
-    # test DF5. Counting starts Thu Sep 29, 2022. Last day is Wed Oct 5, 2022
-    assert wk_nbr(datetime(2022, 9, 28)) == -1  # Wed
-    assert wk_nbr(datetime(2022, 9, 29)) == 5  # Thu
-    assert wk_nbr(datetime(2022, 9, 30)) == 5  # Fri
-    assert wk_nbr(datetime(2022, 10, 5)) == 5  # Wed
-    assert wk_nbr(datetime(2022, 10, 6)) == 6  # Thu
-    assert wk_nbr(datetime(2022, 10, 12)) == 6  # Wed
-    assert wk_nbr(datetime(2022, 10, 13)) == 7  # Thu
-
-    # test DF9. Start Thu Oct 27. Last day is Wed Nov 2, 2022,
-    assert wk_nbr(datetime(2022, 10, 25)) == 8  # Wed
-    assert wk_nbr(datetime(2022, 10, 26)) == 8  # Wed
-    assert wk_nbr(datetime(2022, 10, 27)) == 9  # Thu
-    assert wk_nbr(datetime(2022, 10, 28)) == 9  # Fri
-    assert wk_nbr(datetime(2022, 11, 2)) == 9  # Wed
-    assert wk_nbr(datetime(2022, 11, 3)) == 10  # Thu
-    assert wk_nbr(datetime(2022, 11, 4)) == 10  # Fri
-
-    # test many weeks
-    start_dt = datetime(2022, 9, 29)
-    for wks_offset in range(50):
-        true_wk = wks_offset + 1 + 4
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset)) == true_wk
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset, days=1)) == true_wk
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset, days=2)) == true_wk
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset, days=3)) == true_wk
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset, days=4)) == true_wk
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset, days=5)) == true_wk
-        assert wk_nbr(start_dt + timedelta(weeks=wks_offset, days=6)) == true_wk
-
-    # test extremes
-    assert wk_nbr(datetime(2000, 1, 1)) == -1
-    assert wk_nbr(datetime(2022, 6, 14)) == -1
-    assert wk_nbr(datetime(2022, 6, 15)) == -1
-    assert 50 < wk_nbr(datetime(2030, 1, 1)) < 10000
-    assert 50 < wk_nbr(datetime(2040, 1, 1)) < 10000
-
-
-@enforce_types
-def test_calc_dcv_multiplier():
-    mult = calc_dcv_multiplier
-
-    assert mult(-10, False) == np.inf
-    assert mult(-1, False) == np.inf
-    assert mult(0, False) == np.inf
-    assert mult(1, False) == np.inf
-    assert mult(8, False) == np.inf
-    assert mult(9, False) == 1.0
-    assert mult(10, False) == pytest.approx(0.951, 0.001)
-    assert mult(11, False) == pytest.approx(0.903, 0.001)
-    assert mult(12, False) == pytest.approx(0.854, 0.001)
-    assert mult(20, False) == pytest.approx(0.4665, 0.001)
-    assert mult(27, False) == pytest.approx(0.127, 0.001)
-    assert mult(28, False) == pytest.approx(0.0785, 0.001)
-    assert mult(29, False) == 0.001
-    assert mult(30, False) == 0.001
-    assert mult(31, False) == 0.001
-    assert mult(100, False) == 0.001
-    assert mult(10000, False) == 0.001
-
-    assert mult(-10, True) == 0.201
-    assert mult(9, True) == 0.201
-    assert mult(12, True) == 0.201
-    assert mult(10000, True) == 0.201
-
-
-# ========================================================================
-# Test rank-based allocate -- end-to-end with calc_rewards()
-@patch(QUERY_PATH, MagicMock(return_value={}))
-@enforce_types
-def test_rank_1_nft():
-    stakes = {C1: {NA: {LP1: 1000.0}}}
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0}}}
-    OCEAN_avail = 10.0
-
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
-    assert rew == {LP1: 10.0}
-
-
-@patch(QUERY_PATH, MagicMock(return_value={}))
-@enforce_types
-def test_rank_3_nfts():
-    stakes = {C1: {NA: {LP1: 1000.0}, NB: {LP2: 1000.0}, NC: {LP3: 1000.0}}}
-    OCEAN_avail = 10.0
-
-    # equal volumes
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 1.0, NC: 1.0}}}
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
-    assert sorted(rew.keys()) == [LP1, LP2, LP3]
-    assert sum(rew.values()) == pytest.approx(10.0, 0.01)
-    for LP in [LP1, LP2, LP3]:
-        assert rew[LP] == pytest.approx(10.0 / 3.0)
-
-    # unequal volumes
-    nftvols = {C1: {OCN_ADDR: {NA: 1.0, NB: 0.002, NC: 0.001}}}
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
-    assert sorted(rew.keys()) == [LP1, LP2, LP3]
-    assert sum(rew.values()) == pytest.approx(10.0, 0.01)
-    assert rew[LP1] > rew[LP2] > rew[LP3], rew
-    assert rew[LP1] > 3.33, rew
-    assert rew[LP2] > 1.0, rew  # if it was pro-rata it would have been << 1.0
-    assert rew[LP3] > 1.0, rew  # ""
-
-
-@patch(QUERY_PATH, MagicMock(return_value={}))
-@enforce_types
-def test_rank_10_NFTs():
-    _test_rank_N_NFTs(10)
-
-
-@patch(QUERY_PATH, MagicMock(return_value={}))
-@enforce_types
-def test_rank_200_NFTs():
-    _test_rank_N_NFTs(200)
-
-
-@patch(QUERY_PATH, MagicMock(return_value={}))
-@enforce_types
-def _test_rank_N_NFTs(N: int):
-    OCEAN_avail = 10.0
-
-    # equal volumes
-    (_, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=True)
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
-    assert len(rew) == N
-    assert LP_addrs == sorted(rew.keys())
-    assert sum(rew.values()) == pytest.approx(10.0, 0.01)
-    assert min(rew.values()) == max(rew.values())
-
-    # unequal volumes
-    (_, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=False)
-    rew, _ = _calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
-    max_N = min(N, constants.MAX_N_RANK_ASSETS)
-    assert len(rew) == max_N
-    assert LP_addrs[:max_N] == sorted(rew.keys())
-    assert sum(rew.values()) == pytest.approx(10.0, 0.01)
-    assert min(rew.values()) > 0.0
-    for i in range(1, N):
-        if i >= max_N:
-            # if reward is zero, then it shouldn't even show up in rewards dict
-            assert LP_addrs[i] not in rew
-        else:
-            assert rew[LP_addrs[i]] < rew[LP_addrs[i - 1]]
-
-
-@enforce_types
-def _rank_testvals(N: int, equal_vol: bool) -> Tuple[list, list, dict, dict]:
-    NFT_addrs = [f"0xnft_{i:03}" for i in range(N)]
-    LP_addrs = [f"0xlp_{i:03}" for i in range(N)]
-    stakes: dict = {C1: {}}
-    nftvols: dict = {C1: {OCN_ADDR: {}}}
-    for i, (NFT_addr, LP_addr) in enumerate(zip(NFT_addrs, LP_addrs)):
-        stakes[C1][NFT_addr] = {LP_addr: 1000.0}
-        if equal_vol:
-            vol = 1.0
-        else:
-            vol = max(N, 1000.0) - float(i)
-        nftvols[C1][OCN_ADDR][NFT_addr] = vol
-    return (NFT_addrs, LP_addrs, stakes, nftvols)
 
 
 # ========================================================================
@@ -730,31 +534,6 @@ def test_get_lp_addrs():
     LP_addrs = mock_calculator._get_lp_addrs()
     assert isinstance(LP_addrs, list)
     assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
-
-
-@enforce_types
-def test_flatten_rewards():
-    rewards = {
-        C1: {
-            LP1: 100.0,
-            LP2: 200.0,
-        },
-        C2: {
-            LP1: 300.0,
-        },
-        C3: {
-            LP1: 500.0,
-            LP2: 600.0,
-            LP3: 700.0,
-        },
-    }
-
-    flat_rewards = RewardShaper.flatten(rewards)
-    assert flat_rewards == {
-        LP1: 100.0 + 300.0 + 500.0,
-        LP2: 200.0 + 600.0,
-        LP3: 700.0,
-    }
 
 
 @enforce_types
@@ -795,7 +574,7 @@ def test_stake_vol_owner_dicts_to_arrays():
     mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
     mock_calculator.set_mock_attribute("predictoor_feed_addrs", {1: "", 2: ""})
 
-    owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
+    owners = null_owners_from_chain_nft_tups(chain_nft_tups)
     mock_calculator.set_mock_attribute("owners", owners)
 
     S, V_USD, _, _, L = mock_calculator._stake_vol_owner_dicts_to_arrays()
@@ -823,38 +602,6 @@ def test_stake_vol_owner_dicts_to_arrays():
     assert np.array_equal(S, expected_S)
     assert np.array_equal(L, expected_L)
     assert np.array_equal(V_USD, expected_V_USD)
-
-
-@enforce_types
-def test_merge_rewards():
-    # Test case 1: Merge two reward dictionaries with no common keys
-    dict1 = {"A": 10, "B": 20}
-    dict2 = {"C": 30, "D": 40}
-    expected_output = {"A": 10, "B": 20, "C": 30, "D": 40}
-    assert RewardShaper.merge(dict1, dict2) == expected_output
-
-    # Test case 2: Merge two reward dictionaries with common keys
-    dict1 = {"A": 10, "B": 20}
-    dict2 = {"B": 30, "C": 40}
-    expected_output = {"A": 10, "B": 50, "C": 40}
-    assert RewardShaper.merge(dict1, dict2) == expected_output
-
-    # Test case 3: Merge three reward dictionaries with common keys
-    dict1 = {"A": 10, "B": 20}
-    dict2 = {"B": 30, "C": 40}
-    dict3 = {"A": 50, "C": 60}
-    expected_output = {"A": 60, "B": 50, "C": 100}
-    assert RewardShaper.merge(dict1, dict2, dict3) == expected_output
-
-    # Test case 4: Merge empty reward dictionary
-    dict1 = {"A": 10, "B": 20}
-    dict2 = {}
-    expected_output = {"A": 10, "B": 20}
-    assert RewardShaper.merge(dict1, dict2) == expected_output
-
-    # Test case 5: Merge no reward dictionaries
-    expected_output = {}
-    assert RewardShaper.merge() == expected_output
 
 
 @enforce_types
@@ -890,7 +637,7 @@ def test_volume_reward_calculator_no_pdrs(tmp_path):
         "df_py.volume.reward_calculator.calc_dcv_multiplier",
         return_value=multiplier,
     ), patch(
-        "df_py.volume.reward_calculator.get_df_week_number", return_value=30
+        "df_py.util.dcv_multiplier.get_df_week_number", return_value=30
     ), patch(
         "df_py.volume.reward_calculator.query_predictoor_contracts",
         return_value={C1: "", C2: ""},
@@ -970,7 +717,7 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
         "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
         {C1: ""},
     ), patch(
-        "df_py.volume.reward_calculator.get_df_week_number", return_value=30
+        "df_py.util.dcv_multiplier.get_df_week_number", return_value=30
     ), patch(
         "df_py.volume.calc_rewards.wait_to_latest_block"
     ), patch(
@@ -1005,107 +752,3 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
         assert rewards_info[C1][NA][LP1] == approx(60.3, abs=1e-5)
         assert rewards_info[C2][NB][LP2] == 300
         assert rewards_info[C2][NB][LP3] == 300
-
-
-# ========================================================================
-# Helpers to keep function calls compact, and return vals compact.
-
-
-@enforce_types
-def _calc_rewards_C1(
-    stakes: Dict[int, Dict[str, Dict[str, float]]],
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    OCEAN_avail: float,
-    symbols: Dict[int, Dict[str, str]] = SYMBOLS,
-    rates: Dict[str, float] = RATES,
-    owners=None,
-    df_week: int = DF_WEEK,
-    do_pubrewards: bool = False,
-    do_rank: bool = False,
-):
-    rewards_per_lp, rewards_info = _calc_rewards(
-        stakes,
-        stakes,  # pass veOCEAN stakes as locked_amts for simplicity
-        nftvols,
-        OCEAN_avail,
-        symbols,
-        rates,
-        owners,
-        df_week,
-        do_pubrewards,
-        do_rank,
-    )
-    rewards_per_lp = {} if not rewards_per_lp else rewards_per_lp[C1]
-    rewards_info = {} if not rewards_info else rewards_info[C1]
-    return rewards_per_lp, rewards_info
-
-
-@enforce_types
-def _calc_rewards(
-    stakes: Dict[int, Dict[str, Dict[str, float]]],
-    locked_amts: Dict[int, Dict[str, Dict[str, float]]],
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    OCEAN_avail: float,
-    symbols: Dict[int, Dict[str, str]] = SYMBOLS,
-    rates: Dict[str, float] = RATES,
-    owners=None,
-    df_week: int = DF_WEEK,
-    do_pubrewards: bool = False,
-    do_rank: bool = False,
-):
-    """Helper. Fills in SYMBOLS, RATES, and DCV_multiplier for compactness"""
-    if owners is None:
-        owners = _null_owners(stakes, nftvols, symbols, rates)
-
-    calculator = RewardCalculator(
-        stakes,
-        locked_amts,
-        nftvols,
-        owners,
-        symbols,
-        rates,
-        df_week,
-        OCEAN_avail,
-        do_pubrewards,
-        do_rank,
-    )
-
-    return calculator.calculate()
-
-
-@enforce_types
-def _null_owners(
-    stakes: Dict[int, Dict[str, Dict[str, float]]],
-    nftvols: Dict[int, Dict[str, Dict[str, float]]],
-    symbols: Dict[int, Dict[str, str]],
-    rates: Dict[str, float],
-) -> Dict[int, Dict[str, Union[str, None]]]:
-    """
-    @return
-      owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS
-    """
-    reward_calculator = RewardCalculator(
-        stakes, stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
-    )
-
-    chain_nft_tups = reward_calculator._get_chain_nft_tups()
-    return _null_owners_from_chain_nft_tups(chain_nft_tups)
-
-
-@enforce_types
-def _null_owners_from_chain_nft_tups(
-    chain_nft_tups,
-) -> Dict[int, Dict[str, Union[str, None]]]:
-    """
-    @arguments
-      chain_nft_tups -- list of (chainID, nft_addr), indexed by j
-    @return
-      owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS
-    """
-    owners: Dict[int, Dict[str, Union[str, None]]] = {}
-    for chainID, nft_addr in chain_nft_tups:
-        if chainID not in owners:
-            owners[chainID] = {}
-        owners[chainID][nft_addr] = ZERO_ADDRESS
-
-    return owners
