@@ -7,7 +7,7 @@ from enforce_typing import enforce_types
 from df_py.predictoor.queries import query_predictoor_contracts
 from df_py.util.constants import (
     DEPLOYER_ADDRS,
-    RANK_SCALE_OP,
+    PREDICTOOR_MULTIPLIER,
     TARGET_WPY,
 )
 from df_py.volume import cleancase as cc

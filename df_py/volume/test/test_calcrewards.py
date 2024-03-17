@@ -1075,20 +1075,33 @@ def _calc_rewards(
 
 @enforce_types
 def _null_owners(
-    stakes,
-    nftvols,
-    symbols,
-    rates,
+    stakes: Dict[int, Dict[str, Dict[str, float]]],
+    nftvols: Dict[int, Dict[str, Dict[str, float]]],
+    symbols: Dict[int, Dict[str, str]],
+    rates: Dict[str, float],
 ) -> Dict[int, Dict[str, Union[str, None]]]:
-    """@return - owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS"""
-    partially_initialised = RewardCalculator(
+    """
+    @return
+      owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS
+    """
+    reward_calculator = RewardCalculator(
         stakes, stakes, nftvols, {}, symbols, rates, DF_WEEK, False, False, False
     )
 
-    return _null_owners_from_chain_nft_tups(partially_initialised._get_chain_nft_tups())
+    chain_nft_tups = reward_calculator._get_chain_nft_tups()
+    return _null_owners_from_chain_nft_tups(chain_nft_tups)
 
 
-def _null_owners_from_chain_nft_tups(chain_nft_tups):
+@enforce_types
+def _null_owners_from_chain_nft_tups(
+    chain_nft_tups,
+) -> Dict[int, Dict[str, Union[str, None]]]:
+    """
+    @arguments
+      chain_nft_tups -- list of (chainID, nft_addr), indexed by j
+    @return
+      owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS
+    """
     owners: Dict[int, Dict[str, Union[str, None]]] = {}
     for chainID, nft_addr in chain_nft_tups:
         if chainID not in owners:
