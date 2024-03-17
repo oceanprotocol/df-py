@@ -8,7 +8,7 @@ import logging
 from typing import Optional
 
 from enforce_typing import enforce_types
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 from df_py.web3util.contract_utils import deploy_contract, load_contract
 

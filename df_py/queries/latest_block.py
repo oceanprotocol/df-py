@@ -1,8 +1,8 @@
 import time
 
 from enforce_typing import enforce_types
-import requests
 
+from df_py.queries.submit_query import submit_query
 from df_py.web3util.networkutil import (
     OBSOLETED_CHAIN_IDS,
     chain_id_to_web3,

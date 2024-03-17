@@ -1,11 +1,10 @@
 from enforce_typing import enforce_types
-from web3 import Web3
+from web3 import Web3  # pylint: disable=no-name-in-module
 
 from df_py.web3util.erc725 import (
     info_from_725,
     key_to_725,
     value_from_725,
-    info_from_725,
     value_to_725,
 )
 

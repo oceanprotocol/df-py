@@ -1,16 +1,7 @@
-#
-# Copyright 2023 Ocean Protocol Foundation
-# SPDX-License-Identifier: Apache-2.0
-#
-"""
-This is copied from Web3 python library to control the `requests`
-session parameters.
-"""
-
 import lru
 import requests
 from requests.adapters import HTTPAdapter
-from web3._utils.caching import generate_cache_key
+from web3._utils.caching import generate_cache_key  # pylint: disable=no-name-in-module
 
 
 # pylint: disable=unused-argument

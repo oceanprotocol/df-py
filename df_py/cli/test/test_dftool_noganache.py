@@ -8,7 +8,7 @@ from enforce_typing import enforce_types
 
 from df_py.cli import dftool_arguments, dftool_module
 from df_py.cli.test.test_dftool_ganache import sysargs_context
-from df_py.csvutil import csvs
+from df_py.volume.csvs import rate_csv_filenames
 
 
 @enforce_types
@@ -22,7 +22,7 @@ def test_get_rate(tmp_path):
     os.system(cmd)
 
     # test result
-    assert csvs.rate_csv_filenames(csv_dir)
+    assert rate_csv_filenames(csv_dir)
 
 
 @enforce_types

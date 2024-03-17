@@ -1,10 +1,11 @@
 import csv
 import glob
 import os
+import re
 from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 from df_py.volume.models import SimpleDataNft
 from df_py.web3util.eth_addr import assert_is_eth_addr

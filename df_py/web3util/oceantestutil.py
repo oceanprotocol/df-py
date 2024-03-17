@@ -4,7 +4,7 @@ import time
 
 from enforce_typing import enforce_types
 from eth_account import Account
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 from df_py.mathutil.base18 import from_wei, to_wei
 from df_py.web3util.constants import ZERO_ADDRESS, MAX_ALLOCATE
@@ -203,7 +203,7 @@ def random_consume_FREs(FRE_tup: list, base_token):
 def random_lock_and_allocate(web3, tups: list):
     acc0 = get_account0()
     OCEAN = OCEAN_token(DEV_CHAINID)
-    veOCEAN = veOCEAN(DEV_CHAINID)
+    veOCEAN_ = veOCEAN(DEV_CHAINID)
 
     accounts = get_all_accounts()[: len(tups)]
 
@@ -231,13 +231,13 @@ def random_lock_and_allocate(web3, tups: list):
 
         # Approve locking OCEAN
         assert OCEAN.balanceOf(lock_account) != 0
-        OCEAN.approve(veOCEAN.address, LOCK_AMOUNT, {"from": lock_account})
+        OCEAN.approve(veOCEAN_.address, LOCK_AMOUNT, {"from": lock_account})
 
         # Check if there is an active lock
-        if veOCEAN.balanceOf(lock_account) == 0:
+        if veOCEAN_.balanceOf(lock_account) == 0:
             # Create lock
-            veOCEAN.withdraw({"from": lock_account})
-            tx = veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+            veOCEAN_.withdraw({"from": lock_account})
+            tx = veOCEAN_.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
             receipt = web3.eth.wait_for_transaction_receipt(tx.transactionHash)
 
             initial_time = time.time()
@@ -245,12 +245,12 @@ def random_lock_and_allocate(web3, tups: list):
                 time.sleep(1)
                 receipt = web3.eth.wait_for_transaction_receipt(tx.transactionHash)
                 if time.time() > initial_time + 60:
-                    tx = veOCEAN.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
+                    tx = veOCEAN_.create_lock(LOCK_AMOUNT, t2, {"from": lock_account})
                     assert tx.status == 1
                     break
 
         print(f"locked {LOCK_AMOUNT} for: Account #{i} of {len(tups)}")
-        assert veOCEAN.balanceOf(lock_account) != 0
+        assert veOCEAN_.balanceOf(lock_account) != 0
         allc_amt = MAX_ALLOCATE - veAllocate(DEV_CHAINID).getTotalAllocation(
             lock_account
         )

@@ -17,7 +17,6 @@ from df_py.blockutil.blocktime import (
     timestr_to_timestamp,
     BlockTimestampComparer,
 )
-from df_py.conftest_ganache import *
 
 
 @enforce_types

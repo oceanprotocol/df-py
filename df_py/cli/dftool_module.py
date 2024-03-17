@@ -5,29 +5,11 @@ import sys
 
 from enforce_typing import enforce_types
 from eth_account import Account
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
-from df_py.predictoor.csvs import (
-    predictoor_data_csv_filename,
-    load_predictoor_data_csv,
-    load_predictoor_rewards_csv,
-    save_predictoor_contracts_csv,
-    save_predictoor_data_csv,
-    save_predictoor_summary_csv,
-    save_predictoor_rewards_csv,
-)
-from df_py.predictoor.calc_rewards import (
-    aggregate_predictoor_rewards,
-    calc_predictoor_rewards,
-)
-from df_py.queries.predictoor_queries import (
-    query_predictoor_contracts,
-    query_predictoors,
-)
-from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
-from df_py.mathutil.base18 import from_wei, to_wei
+from df_py.blockutil.blockrange import create_range
 from df_py.blockutil.blocktime import get_fin_block, timestr_to_timestamp
-from df_py.web3util.contract_base import ContractBase
+from df_py.mathutil.base18 import from_wei, to_wei
 from df_py.cli.dftool_arguments import (
     CHAINID_EXAMPLES,
     DfStrategyArgumentParser,
@@ -42,9 +24,46 @@ from df_py.cli.dftool_arguments import (
     valid_date,
     valid_date_and_convert,
 )
+from df_py.predictoor.csvs import (
+    predictoor_data_csv_filename,
+    load_predictoor_data_csv,
+    load_predictoor_rewards_csv,
+    save_predictoor_contracts_csv,
+    save_predictoor_data_csv,
+    save_predictoor_summary_csv,
+    save_predictoor_rewards_csv,
+)
+from df_py.predictoor.calc_rewards import (
+    aggregate_predictoor_rewards,
+    calc_predictoor_rewards,
+)
+from df_py.pyutil.retry import retry_function
+from df_py.queries.predictoor_queries import (
+    query_predictoor_contracts,
+    query_predictoors,
+)
+from df_py.queries import volume_queries
+from df_py.queries.get_rate import get_rate
+from df_py.vestingutil.vesting_schedule import (
+    get_active_reward_amount_for_week_eth_by_stream,
+)
+from df_py.volume import csvs as volume_csvs
+from df_py.volume.reward_shaper import RewardShaper
+from df_py.volume.reward_calc_wrapper import calc_volume_rewards_from_csvs
+from df_py.web3util.contract_base import ContractBase
+from df_py.web3util.dispense import dispense
 from df_py.web3util.multisig import send_multisig_tx
-from df_py.web3util.networkutil import DEV_CHAINID, chain_id_to_multisig_addr
+from df_py.web3util.networkutil import (
+    chain_id_to_address_file,
+    chain_id_to_multisig_addr,
+    chain_id_to_web3,
+    DEV_CHAINID,
+)
 from df_py.web3util.oceantestutil import (
+    get_account0,
+    get_all_accounts,
+    print_dev_accounts,
+    fill_accounts_with_OCEAN,
     random_consume_FREs,
     random_create_dataNFT_with_FREs,
     random_lock_and_allocate,
@@ -55,13 +74,6 @@ from df_py.web3util.oceanutil import (
     record_deployed_contracts,
     veAllocate,
 )
-from df_py.pyutil.retry import retry_function
-from df_py.web3util.vesting_schedule import (
-    get_active_reward_amount_for_week_eth_by_stream,
-)
-from df_py.volume import csvs, queries
-from df_py.volume.reward_calc_main import RewardShaper
-from df_py.volume.reward_calc_wrapper import calc_volume_rewards_from_csvs
 
 
 @enforce_types
@@ -69,7 +81,7 @@ def do_volsym():
     parser = StartFinArgumentParser(
         description="Query chain, output volumes, symbols, owners",
         epilog=f"""Uses these envvars:
-          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          \nADDRESS_FILE -- eg: export ADDRESS_FILE={chain_id_to_address_file(chainID=DEV_CHAINID)}
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="volsym",
@@ -86,25 +98,23 @@ def do_volsym():
     csv_dir, chain_id = arguments.CSV_DIR, arguments.CHAINID
 
     # check files, prep dir
-    if not csvs.rate_csv_filenames(csv_dir):
+    if not volume_csvs.rate_csv_filenames(csv_dir):
         print("\nRates don't exist. Call 'dftool get_rate' first. Exiting.")
         sys.exit(1)
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
     record_deployed_contracts(ADDRESS_FILE, chain_id)
 
     # main work
-    rng = blockrange.create_range(
-        web3, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
-    )
+    rng = create_range(web3, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED)
 
     (Vi, Ci, SYMi) = retry_function(
-        queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, chain_id
+        volume_queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, chain_id
     )
 
-    csvs.save_nftvols_csv(Vi, csv_dir, chain_id)
-    csvs.save_owners_csv(Ci, csv_dir, chain_id)
-    csvs.save_symbols_csv(SYMi, csv_dir, chain_id)
+    volume_csvs.save_nftvols_csv(Vi, csv_dir, chain_id)
+    volume_csvs.save_owners_csv(Ci, csv_dir, chain_id)
+    volume_csvs.save_symbols_csv(SYMi, csv_dir, chain_id)
 
     print("dftool volsym: Done")
 
@@ -135,13 +145,13 @@ def do_nftinfo():
     csv_dir, chain_id, end_block = arguments.CSV_DIR, arguments.CHAINID, arguments.FIN
 
     # hardcoded values
-    # -queries.queryNftinfo() can be problematic; it's only used for frontend data
+    # -volume_queries.queryNftinfo() can be problematic; it's only used for frontend data
     # -so retry 3 times with 10s delay by default
     RETRIES = 3
     DELAY_S = 10
     print(f"Hardcoded values:" f"\n RETRIES={RETRIES}" f"\n DELAY_S={DELAY_S}" "\n")
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
 
     # update ENDBLOCK
     end_block = get_fin_block(web3, end_block)
@@ -149,9 +159,9 @@ def do_nftinfo():
 
     # main work
     nftinfo = retry_function(
-        queries.queryNftinfo, RETRIES, DELAY_S, chain_id, end_block
+        volume_queries.queryNftinfo, RETRIES, DELAY_S, chain_id, end_block
     )
-    csvs.save_nftinfo_csv(nftinfo, csv_dir, chain_id)
+    volume_csvs.save_nftinfo_csv(nftinfo, csv_dir, chain_id)
 
     print("dftool nftinfo: Done")
 
@@ -178,18 +188,16 @@ def do_allocations():
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    _exitIfFileExists(csvs.allocation_csv_filename(csv_dir, n_samp > 1))
+    _exitIfFileExists(volume_csvs.allocation_csv_filename(csv_dir, n_samp > 1))
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
 
     # main work
-    rng = blockrange.create_range(
-        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
-    )
+    rng = create_range(web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED)
     allocs = retry_function(
-        queries.queryAllocations, arguments.RETRIES, 10, rng, chain_id
+        volume_queries.queryAllocations, arguments.RETRIES, 10, rng, chain_id
     )
-    csvs.save_allocation_csv(allocs, csv_dir, n_samp > 1)
+    volume_csvs.save_allocation_csv(allocs, csv_dir, n_samp > 1)
 
     print("dftool allocations: Done")
 
@@ -215,17 +223,15 @@ def do_vebals():
     # extract envvars
     SECRET_SEED = _getSecretSeedOrExit()
 
-    _exitIfFileExists(csvs.vebals_csv_filename(csv_dir, n_samp > 1))
+    _exitIfFileExists(volume_csvs.vebals_csv_filename(csv_dir, n_samp > 1))
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
-    rng = blockrange.create_range(
-        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
-    )
+    web3 = chain_id_to_web3(chain_id)
+    rng = create_range(web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED)
 
     balances, locked_amt, unlock_time = retry_function(
-        queries.queryVebalances, arguments.RETRIES, 10, rng, chain_id
+        volume_queries.queryVebalances, arguments.RETRIES, 10, rng, chain_id
     )
-    csvs.save_vebals_csv(balances, locked_amt, unlock_time, csv_dir, n_samp > 1)
+    volume_csvs.save_vebals_csv(balances, locked_amt, unlock_time, csv_dir, n_samp > 1)
 
     print("dftool vebals: Done")
 
@@ -271,11 +277,11 @@ def do_get_rate():
     token_symbol, csv_dir = arguments.TOKEN_SYMBOL, arguments.CSV_DIR
 
     # check files, prep dir
-    _exitIfFileExists(csvs.rate_csv_filename(token_symbol, csv_dir))
+    _exitIfFileExists(volume_csvs.rate_csv_filename(token_symbol, csv_dir))
 
     # main work
     rate = retry_function(
-        get_rate.get_rate,
+        get_rate,
         arguments.RETRIES,
         60,
         token_symbol,
@@ -283,7 +289,7 @@ def do_get_rate():
         arguments.FIN,
     )
     print(f"rate = ${rate:.4f} / {token_symbol}")
-    csvs.save_rate_csv(token_symbol, rate, csv_dir)
+    volume_csvs.save_rate_csv(token_symbol, rate, csv_dir)
 
     print("dftool get_rate: Done")
 
@@ -418,12 +424,12 @@ def do_calc():
     if arguments.SUBSTREAM == "volume":
         # do we have the input files?
         required_files = [
-            csvs.allocation_csv_filename(csv_dir),
-            csvs.vebals_csv_filename(csv_dir),
-            *csvs.nftvols_csv_filenames(csv_dir),
-            *csvs.owners_csv_filenames(csv_dir),
-            *csvs.symbols_csv_filenames(csv_dir),
-            *csvs.rate_csv_filenames(csv_dir),
+            volume_csvs.allocation_csv_filename(csv_dir),
+            volume_csvs.vebals_csv_filename(csv_dir),
+            *volume_csvs.nftvols_csv_filenames(csv_dir),
+            *volume_csvs.owners_csv_filenames(csv_dir),
+            *volume_csvs.symbols_csv_filenames(csv_dir),
+            *volume_csvs.rate_csv_filenames(csv_dir),
         ]
 
         for fname in required_files:
@@ -432,8 +438,8 @@ def do_calc():
                 sys.exit(1)
 
         # shouldn't already have the output file
-        _exitIfFileExists(csvs.volume_rewards_csv_filename(csv_dir))
-        _exitIfFileExists(csvs.volume_rewardsinfo_csv_filename(csv_dir))
+        _exitIfFileExists(volume_csvs.volume_rewards_csv_filename(csv_dir))
+        _exitIfFileExists(volume_csvs.volume_rewardsinfo_csv_filename(csv_dir))
 
         calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
 
@@ -503,7 +509,7 @@ def do_dispense_active():
     assert arguments.DFREWARDS_ADDR is not None
     assert arguments.TOKEN_ADDR is not None
 
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3 = chain_id_to_web3(arguments.CHAINID)
 
     # main work
     from_account = _getPrivateAccount()
@@ -511,8 +517,8 @@ def do_dispense_active():
 
     if arguments.PREDICTOOR_ROSE is False:
         volume_rewards = {}
-        if os.path.exists(csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
-            volume_rewards_3d = csvs.load_volume_rewards_csv(arguments.CSV_DIR)
+        if os.path.exists(volume_csvs.volume_rewards_csv_filename(arguments.CSV_DIR)):
+            volume_rewards_3d = volume_csvs.load_volume_rewards_csv(arguments.CSV_DIR)
             volume_rewards = RewardShaper.flatten(volume_rewards_3d)
 
         print("Distributing VOLUME DF rewards")
@@ -543,7 +549,7 @@ def do_new_df_rewards():
     chain_id = parser.print_args_and_get_chain()
 
     # main work
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
     df_rewards = ContractBase(web3, "DFRewards", constructor_args=[])
@@ -563,7 +569,7 @@ def do_new_df_strategy():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3 = chain_id_to_web3(arguments.CHAINID)
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
 
@@ -585,7 +591,7 @@ def do_add_strategy():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3 = chain_id_to_web3(arguments.CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
 
@@ -609,7 +615,7 @@ def do_retire_strategy():
     arguments = parser.parse_args()
     print_arguments(arguments)
 
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3 = chain_id_to_web3(arguments.CHAINID)
     from_account = _getPrivateAccount()
     df_rewards = ContractBase(web3, "DFRewards", arguments.DFREWARDS_ADDR)
 
@@ -630,7 +636,7 @@ def do_init_dev_wallets():
         "Init wallets with OCEAN. (GANACHE ONLY)",
         "init_dev_wallets",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
     chain_id = parser.print_args_and_get_chain()
@@ -644,13 +650,13 @@ def do_init_dev_wallets():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
-    web3.eth.default_account = oceantestutil.get_account0()
+    web3 = chain_id_to_web3(chain_id)
+    web3.eth.default_account = get_account0()
 
     # main work
     record_deployed_contracts(ADDRESS_FILE, chain_id)
-    oceantestutil.print_dev_accounts()
-    oceantestutil.fill_accounts_with_OCEAN(oceantestutil.get_all_accounts())
+    print_dev_accounts()
+    fill_accounts_with_OCEAN(get_all_accounts())
 
     print("dftool init_dev_wallets: Done.")
 
@@ -663,7 +669,7 @@ def do_many_random():
         "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
         "many_random",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
 
@@ -678,9 +684,9 @@ def do_many_random():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    account0 = oceantestutil.get_account0()
+    account0 = get_account0()
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
     web3.eth.default_account = account0
 
     # main work
@@ -688,7 +694,7 @@ def do_many_random():
     OCEAN = OCEAN_token(chain_id)
     OCEAN.mint(account0, to_wei(10_000), {"from": account0})
 
-    oceantestutil.print_dev_accounts()
+    print_dev_accounts()
 
     num_nfts = 9  # magic number
     tups = random_create_dataNFT_with_FREs(web3, num_nfts, OCEAN)
@@ -705,7 +711,7 @@ def do_fake_rewards():
         "create some rewards (for testing)",
         "fake_rewards",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE={chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
 
@@ -720,9 +726,9 @@ def do_fake_rewards():
     # extract envvars
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
-    accounts = oceantestutil.get_all_accounts()
+    accounts = get_all_accounts()
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
     web3.eth.default_account = accounts[0].address
 
     df_rewards = ContractBase(web3, "DFRewards", constructor_args=[])
@@ -735,7 +741,7 @@ def do_fake_rewards():
     record_deployed_contracts(ADDRESS_FILE, chain_id)
     OCEAN = OCEAN_token(chain_id)
 
-    oceantestutil.print_dev_accounts()
+    print_dev_accounts()
     OCEAN.transfer(df_rewards, to_wei(100.0), {"from": accounts[0]})
     tos = [accounts[1].address, accounts[2].address, accounts[3].address]
     values = [10, 20, 30]
@@ -766,7 +772,7 @@ def do_mine():
     print_arguments(arguments)
 
     # main work
-    web3 = networkutil.chain_id_to_web3(DEV_CHAINID)
+    web3 = chain_id_to_web3(DEV_CHAINID)
     provider = web3.provider
     provider.make_request("evm_increaseTime", [arguments.TIMEDELTA])
     provider.make_request("evm_mine", [])
@@ -781,7 +787,7 @@ def do_new_acct():
     parser.add_argument("command", choices=["new_acct"])
 
     # main work
-    web3 = networkutil.chain_id_to_web3(networkutil.DEV_CHAINID)
+    web3 = chain_id_to_web3(DEV_CHAINID)
     account = web3.eth.account.create()
 
     print("Generated new account:")
@@ -801,7 +807,7 @@ def do_new_token():
     print_arguments(arguments)
 
     # main work
-    web3 = networkutil.chain_id_to_web3(8996)
+    web3 = chain_id_to_web3(8996)
     from_account = _getPrivateAccount()
     web3.eth.default_account = from_account.address
     token = ContractBase(
@@ -826,7 +832,7 @@ def do_new_veallocate():
 
     # main work
     from_account = _getPrivateAccount()
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3 = chain_id_to_web3(arguments.CHAINID)
     web3.eth.default_account = from_account.address
     contract = ContractBase(web3, "ve/veAllocate", constructor_args=[])
     print(f"veAllocate contract deployed at: {contract.address}")
@@ -898,7 +904,7 @@ def do_acct_info():
         arguments.TOKEN_ADDR,
     )
 
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
 
     if len(account_addr) == 1:
         addr_i = int(account_addr)
@@ -932,7 +938,7 @@ def do_chain_info():
     print_arguments(arguments)
 
     # do work
-    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+    web3 = chain_id_to_web3(arguments.CHAINID)
     block_number = web3.eth.get_block("latest").number
     print("\nChain info:")
     print(f"  # blocks: {block_number}")
@@ -963,23 +969,23 @@ def do_calculate_passive():
     record_deployed_contracts(ADDRESS_FILE, arguments.CHAINID)
 
     # load vebals csv file
-    passive_fname = csvs.passive_csv_filename(csv_dir)
-    vebals_realtime_fname = csvs.vebals_csv_filename(csv_dir, False)
+    passive_fname = volume_csvs.passive_csv_filename(csv_dir)
+    vebals_realtime_fname = volume_csvs.vebals_csv_filename(csv_dir, False)
     if not os.path.exists(vebals_realtime_fname):
         print(f"\nNo file {vebals_realtime_fname} in '{csv_dir}'. Exiting.")
         sys.exit(1)
     _exitIfFileExists(passive_fname)
 
     # get addresses
-    vebals, _, _ = csvs.load_vebals_csv(csv_dir, False)
+    vebals, _, _ = volume_csvs.load_vebals_csv(csv_dir, False)
     addresses = list(vebals.keys())
 
-    balances, rewards = queries.queryPassiveRewards(
+    balances, rewards = volume_queries.queryPassiveRewards(
         arguments.CHAINID, timestamp, addresses
     )
 
     # save to csv
-    csvs.save_passive_csv(rewards, balances, csv_dir)
+    volume_csvs.save_passive_csv(rewards, balances, csv_dir)
 
 
 # ========================================================================
@@ -990,7 +996,7 @@ def do_checkpoint_feedist():
     )
 
     chain_id = parser.print_args_and_get_chain()
-    web3 = networkutil.chain_id_to_web3(chain_id)
+    web3 = chain_id_to_web3(chain_id)
 
     ADDRESS_FILE = _getAddressEnvvarOrExit()
 
@@ -1054,10 +1060,10 @@ def _getAddressEnvvarOrExit() -> str:
     ADDRESS_FILE = os.environ.get("ADDRESS_FILE")
     print(f"Envvar:\n ADDRESS_FILE={ADDRESS_FILE}")
     if ADDRESS_FILE is None:
-        print(
-            "\nNeed to set envvar ADDRESS_FILE. Exiting. "
-            f"\nEg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}"
-        )
+        s = "\nNeed to set envvar ADDRESS_FILE. Exiting. "
+        s += "\nEg: export ADDRESS_FILE="
+        s += chain_id_to_address_file(chainID=DEV_CHAINID)
+        print(s)
         sys.exit(1)
     return ADDRESS_FILE
 

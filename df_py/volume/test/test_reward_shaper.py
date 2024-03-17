@@ -1,7 +1,7 @@
 from enforce_typing import enforce_types
 
 from df_py.volume.reward_shaper import RewardShaper
-from df_py.volume.test.conftest import *
+from df_py.volume.test.conftest import *  # pylint: disable=wildcard-import
 
 
 @enforce_types

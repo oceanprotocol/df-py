@@ -4,8 +4,8 @@ from collections import namedtuple
 from typing import Any, Dict, List, Tuple
 
 from enforce_typing import enforce_types
-from web3.logs import DISCARD
-from web3.main import Web3
+from web3.logs import DISCARD  # pylint: disable=no-name-in-module
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 from df_py.mathutil.base18 import to_wei
 from df_py.web3util.constants import CONTRACTS, ZERO_ADDRESS

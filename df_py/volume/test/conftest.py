@@ -22,24 +22,12 @@ DF_WEEK = 7
 RATES = {"OCEAN": 0.5, "H2O": 1.6, "PSDN": 0.01}
 
 
-# mock
-class MockRewardCalculator(RewardCalculator):
-    def __init__(self):
-        return super().__init__({}, {}, {}, {}, {}, {}, DF_WEEK, False, False, False)
-
-    def set_mock_attribute(self, attr_name, attr_value):
-        setattr(self, attr_name, attr_value)
-
-    def set_V_USD(self, V_USD):
-        self.set_mock_attribute("V_USD", V_USD)
-
-
 # ========================================================================
 # Helpers to keep function calls compact, and return vals compact.
 
 
 @enforce_types
-def calc_rewards_C1(
+def calc_rewards_tst_C1(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
     OCEAN_avail: float,
@@ -50,7 +38,7 @@ def calc_rewards_C1(
     do_pubrewards: bool = False,
     do_rank: bool = False,
 ):
-    rewards_per_lp, rewards_info = _calc_rewards(
+    rewards_per_lp, rewards_info = calc_rewards_tst(
         stakes=stakes,
         locked_amts=stakes,  # pass veOCEAN stakes as locked_amts for simplicity
         nftvols=nftvols,
@@ -68,7 +56,7 @@ def calc_rewards_C1(
 
 
 @enforce_types
-def _calc_rewards(
+def calc_rewards_tst(
     stakes: Dict[int, Dict[str, Dict[str, float]]],
     locked_amts: Dict[int, Dict[str, Dict[str, float]]],
     nftvols: Dict[int, Dict[str, Dict[str, float]]],
@@ -111,26 +99,21 @@ def _null_owners(
     @return
       owners -- dict of [chainID][nft_addr] : ZERO_ADDRESS
     """
-    calculator = RewardCalculator(
+    calculator = reward_calculator_with_empty_defaults(
         stakes=stakes,
         locked_ocean_amts=stakes,
         nftvols=nftvols,
-        owners={},
         symbols=symbols,
         rates=rates,
-        df_week=DF_WEEK,
-        OCEAN_avail=0.0,
-        do_pubrewards=False,
-        do_rank=False,
     )
 
     chain_nft_tups = calculator._get_chain_nft_tups()
-    owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
+    owners = null_owners_from_chain_nft_tups(chain_nft_tups)
     return owners
 
 
 @enforce_types
-def _null_owners_from_chain_nft_tups(
+def null_owners_from_chain_nft_tups(
     chain_nft_tups,
 ) -> Dict[int, Dict[str, Union[str, None]]]:
     """
@@ -147,3 +130,31 @@ def _null_owners_from_chain_nft_tups(
         owners[chainID][nft_addr] = ZERO_ADDRESS
 
     return owners
+
+
+@enforce_types
+def reward_calculator_with_empty_defaults(
+    stakes={},
+    locked_ocean_amts={},
+    nftvols={},
+    owners={},
+    symbols={},
+    rates={},
+    df_week=DF_WEEK,
+    OCEAN_avail=0.0,
+    do_pubrewards=False,
+    do_rank=False,
+) -> RewardCalculator:
+
+    return RewardCalculator(
+        stakes=stakes,
+        locked_ocean_amts=locked_ocean_amts,
+        nftvols=nftvols,
+        owners=owners,
+        symbols=symbols,
+        rates=rates,
+        df_week=df_week,
+        OCEAN_avail=OCEAN_avail,
+        do_pubrewards=do_pubrewards,
+        do_rank=do_rank,
+    )

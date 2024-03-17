@@ -44,7 +44,7 @@ from df_py.web3util.oceanutil import (
 )
 
 
-OCEAN, veOCEAN = None, None
+OCEAN, veOCEAN_ = None, None
 CO2, CO2_addr, CO2_sym = None, None, None
 CHAINID = 8996
 
@@ -258,7 +258,7 @@ def _test_queryVebalances(
             continue
         assert veBalances[account] == approx(bal, rel=0.001, abs=1.0e-10)
 
-        lock = veOCEAN.locked(account)
+        lock = veOCEAN_.locked(account)
         assert from_wei(lock[0]) == locked_amts[account]
         assert lock[1] == unlock_times[account]
 
@@ -287,9 +287,9 @@ def _test_queryAllocations(rng: BlockRange, sampling_accounts: list):
 @enforce_types
 def _test_getSymbols():
     print("_test_getSymbols()...")
-    OCEAN_token = OCEAN_token(DEV_CHAINID)
+    OCEAN_token_ = OCEAN_token(DEV_CHAINID)
     token_set = TokSet()
-    token_set.add(CHAINID, OCEAN_token.address.lower(), "OCEAN")
+    token_set.add(CHAINID, OCEAN_token_.address.lower(), "OCEAN")
     symbols_at_chain = queries.getSymbols(
         token_set, CHAINID
     )  # dict of [basetoken_addr] : basetoken_symbol
@@ -1108,10 +1108,10 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
         print(f"    chain_time = {chain_time}")
         print(f"    lock_time =    {lock_time}")
         print(f"    chain_time <= lock_time? {chain_time <= lock_time}")
-        veOCEAN.checkpoint({"from": acct})
-        OCEAN.approve(veOCEAN.address, lock_amt_wei, {"from": acct})
+        veOCEAN_.checkpoint({"from": acct})
+        OCEAN.approve(veOCEAN_.address, lock_amt_wei, {"from": acct})
         time.sleep(1)
-        tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+        tx = veOCEAN_.create_lock(lock_amt_wei, lock_time, {"from": acct})
         receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
 
         initial_time = time.time()
@@ -1119,21 +1119,21 @@ def _lock(accts: list, lock_amt: float, lock_time: int):
             time.sleep(1)
             receipt = w3.eth.wait_for_transaction_receipt(tx.transactionHash)
             if time.time() > initial_time + 60:
-                tx = veOCEAN.create_lock(lock_amt_wei, lock_time, {"from": acct})
+                tx = veOCEAN_.create_lock(lock_amt_wei, lock_time, {"from": acct})
                 assert tx.status == 1
                 break
 
-        lock_end_time = veOCEAN.locked__end(acct)
+        lock_end_time = veOCEAN_.locked__end(acct)
         print(f"    lock end time: {lock_end_time}")
 
 
 @enforce_types
 def _allocate(accts: list, assets: list):
     print("Allocate...")
-    veAllocate = veAllocate(CHAINID)
+    veAllocate_ = veAllocate(CHAINID)
     for i, (acct, asset) in enumerate(zip(accts, assets)):
         print(f"  Allocate veOCEAN on acct #{i+1}/{len(accts)}...")
-        veAllocate.setAllocation(100, asset.nft, CHAINID, {"from": acct})
+        veAllocate_.setAllocation(100, asset.nft, CHAINID, {"from": acct})
 
 
 @enforce_types
@@ -1172,8 +1172,8 @@ def _clear_dir(csv_dir: str):
 
 @enforce_types
 def setup_function():
-    global OCEAN, veOCEAN
+    global OCEAN, veOCEAN_
     record_dev_deployed_contracts()
 
     OCEAN = OCEAN_token(DEV_CHAINID)
-    veOCEAN = veOCEAN(DEV_CHAINID)
+    veOCEAN_ = veOCEAN(DEV_CHAINID)

@@ -1,9 +1,9 @@
 import os
 
 from enforce_typing import enforce_types
-from web3.exceptions import ExtraDataLengthError
-from web3.main import Web3
-from web3.middleware import geth_poa_middleware
+from web3.exceptions import ExtraDataLengthError  # pylint: disable=no-name-in-module
+from web3.main import Web3  # pylint: disable=no-name-in-module
+from web3.middleware import geth_poa_middleware  # pylint: disable=no-name-in-module
 
 
 from df_py.httputil.http_provider import get_web3_connection_provider

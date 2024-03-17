@@ -1,7 +1,7 @@
 from typing import Dict, Optional
 
 from enforce_typing import enforce_types
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 
 @enforce_types

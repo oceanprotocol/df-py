@@ -10,8 +10,8 @@ from typing import Any, Dict, Optional
 import solcx
 from enforce_typing import enforce_types
 from solcx import compile_source
-from web3.contract import Contract
-from web3.main import Web3
+from web3.contract import Contract  # pylint: disable=no-name-in-module
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 import artifacts
 

@@ -2,7 +2,7 @@ import os
 from typing import Union
 
 from enforce_typing import enforce_types
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 from df_py.web3util.constants import MULTISIG_ADDRS
 from df_py.web3util.web3 import get_rpc_url, get_web3

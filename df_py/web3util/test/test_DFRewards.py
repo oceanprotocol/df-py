@@ -1,6 +1,6 @@
 from enforce_typing import enforce_types
 import pytest
-from web3.exceptions import ContractLogicError
+from web3.exceptions import ContractLogicError  # pylint: disable=no-name-in-module
 
 from df_py.mathutil.base18 import to_wei
 from df_py.web3util.contract_base import ContractBase

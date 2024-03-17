@@ -2,6 +2,7 @@ from typing import Union
 
 from enforce_typing import enforce_types
 import numpy as np
+import scipy
 
 from df_py.web3util.constants import MAX_N_RANK_ASSETS, RANK_SCALE_OP
 

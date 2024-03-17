@@ -1,16 +1,11 @@
-from datetime import datetime, timedelta
-from typing import Dict, List, Tuple, Union
 from unittest.mock import MagicMock, patch
 
-import numpy as np
-import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
 from df_py.volume import csvs
-from df_py.volume.reward_calc_main import TARGET_WPY
 from df_py.volume.reward_calc_wrapper import calc_volume_rewards_from_csvs
-from df_py.volume.test.conftest import *
+from df_py.volume.test.conftest import *  # pylint: disable=wildcard-import
 from df_py.web3util.constants import ZERO_ADDRESS
 
 
@@ -67,7 +62,8 @@ def test_volume_reward_calculator_no_pdrs(tmp_path):
         # OCEAN_reward was 1000
         # volumes were 300 (NA) & 600 (NB), for 900 total
         # Since fee multiplier is 1.0, DCV bound is 300 for NA, 600 for NB
-        # Therefore DCV bound is the constraint on rewards # Therefore 300 OCEAN goes to NA, 600 goes to NB
+        # Therefore DCV bound is the constraint on rewards
+        # Therefore 300 OCEAN goes to NA, 600 goes to NB
 
         # NA's LPs are {LP1}, therefore LP1 gets all 300 OCEAN
         assert rewards_per_lp[C1][LP1] == 300
@@ -103,7 +99,7 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 
     predictoor_feed_addrs = {C1: [NA], C2: []}
 
-    def mock_multipliers(DF_week, is_predictoor):
+    def mock_multipliers(DF_week, is_predictoor):  # pylint: disable=unused-argument
         if not is_predictoor:
             return MagicMock(return_value=1)
         return 0.201

@@ -10,7 +10,7 @@ from df_py.mathutil.crypto import (
 
 @enforce_types
 def test_asym_encrypt_decrypt():
-    alice = Account.create()
+    alice = Account.create()  # pylint: disable=no-value-for-parameter
 
     privkey = alice._private_key.hex()  # str
     pubkey = calc_pubkey(privkey)  # str

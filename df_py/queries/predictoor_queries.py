@@ -1,11 +1,11 @@
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 from enforce_typing import enforce_types
-from web3 import Web3
 
+from df_py.queries.submit_query import submit_query
 from df_py.predictoor.models import PredictContract, Prediction, Predictoor
 from df_py.web3util.constants import DEPLOYER_ADDRS
-from df_py.queries.submit_query import submit_query
+from df_py.web3util.erc725 import info_from_725
 from df_py.web3util.networkutil import DEV_CHAINID
 
 
@@ -204,11 +204,12 @@ def query_predictoor_feed_addrs(chainIDs: List[int]) -> Dict[int, List[str]]:
       addrs -- dict of [chainID] : list of addr_of_predictoor_feed_nft
 
     @notes
-      This will only return the prediction feeds that are owned by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
+      This will only return the prediction feeds that are owned
+      by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
     """
     addrs: Dict[int, List[str]] = {chain_id: [] for chain_id in chainIDs}
 
-    for chain_id in DEPLOYER_ADDRS.keys():
+    for chain_id in DEPLOYER_ADDRS:
         addrs[chain_id] = query_predictoor_contracts(chain_id).keys()
 
     return addrs

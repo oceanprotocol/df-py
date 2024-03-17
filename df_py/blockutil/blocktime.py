@@ -4,7 +4,7 @@ from typing import Union
 
 from enforce_typing import enforce_types
 from scipy import optimize
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 
 @enforce_types

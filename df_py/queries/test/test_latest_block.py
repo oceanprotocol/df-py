@@ -27,24 +27,24 @@ def test_get_last_block():
 
 def test_wait_to_latest_block(w3):
     block_number = w3.eth.get_block("latest")["number"]
-    with patch("df_py.queries.latest_block.get_last_block") as get_last_block_mock:
-        get_last_block_mock.return_value = block_number - 1
+    with patch("df_py.queries.latest_block.get_last_block") as mock:
+        mock.return_value = block_number - 1
 
         with pytest.raises(Exception):
             wait_to_latest_block(8996, 4)
 
-        assert get_last_block_mock.call_count == 2
+        assert mock.call_count == 2
 
     block_number = w3.eth.get_block("latest")["number"]
-    with patch.object(graphutil, "get_last_block") as get_last_block_mock:
-        get_last_block_mock.return_value = block_number
+    with patch("df_py.queries.latest_block.get_last_block") as mock:
+        mock.return_value = block_number
 
         wait_to_latest_block(8996, 4)
-        assert get_last_block_mock.call_count == 1
+        assert mock.call_count == 1
 
 
 def test_obsolete_chain_id():
-    with patch.object(graphutil, "get_last_block") as mock:
+    with patch("df_py.queries.latest_block.get_last_block") as mock:
         # obsolete chain id so nothing gets called
         wait_to_latest_block(246, 4)
         assert mock.call_count == 0

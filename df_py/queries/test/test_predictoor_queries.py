@@ -32,7 +32,7 @@ def test_query_predictoors(mock_submit_query):
 @pytest.mark.skip(reason="Requires predictoor support in subgraph")
 def test_query_predictoors_request():
     ST = 0
-    FIN = chain[-1].number
+    FIN = chain[-1].number  # pylint: disable=undefined-variable
     predictoors = query_predictoors(ST, FIN, CHAINID)
     assert predictoors is not None
     assert isinstance(predictoors, dict)

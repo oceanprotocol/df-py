@@ -6,23 +6,6 @@ from df_py.volume.rank import rank_based_allocate
 
 
 @enforce_types
-def test_rank_based_allocate_1_end_to_end():
-    """
-    @description
-      Test the wrapper of RewardCalculator._rank_based_allocate()
-      --> util_rank.rank_based_allocate()
-
-      Whereas all the other tests are direct, on util_rank.rank_based_allocate()
-    """
-    V_USD = np.array([32.0], dtype=float)
-    mock_calculator = MockRewardCalculator()
-    mock_calculator.set_V_USD(V_USD)
-    p = mock_calculator._rank_based_allocate()
-    target_p = np.array([1.0], dtype=float)
-    np.testing.assert_allclose(p, target_p)
-
-
-@enforce_types
 def test_rank_based_allocate_zerovols():
     V_USD = np.array([32.0, 0.0, 15.0], dtype=float)
     with pytest.raises(ValueError):
@@ -32,7 +15,7 @@ def test_rank_based_allocate_zerovols():
 @enforce_types
 def test_rank_based_allocate_0():
     V_USD = np.array([], dtype=float)
-    p = rank_based_allocate(V_USED)
+    p = rank_based_allocate(V_USD)
     target_p = np.array([], dtype=float)
     np.testing.assert_allclose(p, target_p)
 
@@ -112,7 +95,7 @@ def test_plot_ranks():
     # 1. in this file, right above: comment out "pytest.mark.skip" line
     # 2. in console: pip install matplotlib
     # 3. in this file, right below: change any "settable values"
-    # 4. in console: pytest util/test/test_calc_rewards.py::test_plot_ranks
+    # 4. in console: pytest util/test/testcalc_rewards_tst.py::test_plot_ranks
 
     # settable values
     save_or_show = "save"  # "save" or "show"

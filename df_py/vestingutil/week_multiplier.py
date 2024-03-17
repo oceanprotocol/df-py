@@ -3,6 +3,8 @@ from datetime import datetime
 from enforce_typing import enforce_types
 import numpy as np
 
+from df_py.web3util.constants import PREDICTOOR_MULTIPLIER
+
 
 @enforce_types
 def get_df_week_number(dt: datetime) -> int:

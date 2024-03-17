@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 
 import requests
 from enforce_typing import enforce_types
-from web3.main import Web3
+from web3.main import Web3  # pylint: disable=no-name-in-module
 
 from df_py.blockutil.blockrange import BlockRange
 from df_py.mathutil.base18 import from_wei
@@ -214,7 +214,7 @@ def queryVebalances(
             offset += chunk_size
         n_blocks_sampled += 1
 
-    # TODO: this assertion doesn't work with nsamples = 1, failing in test_queries all
+    # TO DO: this assertion doesn't work with nsamples = 1, failing in test_queries all
     # assert n_blocks_sampled > 0
 
     # get average
@@ -312,7 +312,7 @@ def queryAllocations(
             offset += chunk_size
         n_blocks_sampled += 1
 
-    # TODO: this assertion doesn't work with nsamples = 1, failing in test_queries all
+    # TO DO: this assertion doesn't work with nsamples = 1, failing in test_queries all
     # assert n_blocks_sampled > 0
 
     # get average
@@ -451,33 +451,33 @@ def _queryNftinfo(chainID, endBlock) -> List[SimpleDataNft]:
     return nftinfo
 
 
+@enforce_types
 def _calculate_gas_vols(
     txgascost: Dict[str, Dict[str, float]], native_token_addr: str
 ) -> Dict[str, Dict[str, float]]:
     """
     @description
-      Calculate the gas volumes attributed to each NFT based on shared transaction gas costs.
+      Calculate gas volumes for each NFT, based on shared tx gas costs.
 
     @arguments
-      txgascost (Dict[str, Dict[str, float]]): A dictionary mapping transaction hashes to another dictionary,
-        where the inner dictionary maps NFT addresses to their tx associated gas costs.
-      native_token_addr (str): The address of the native token used to pay for gas.
+      txgascost -- dict of [tx_hash][nft_addr] : gas_cost_float
+      native_token_addr -- address of native token used to pay for gas
 
     @return
-      Dict[str, Dict[str, float]]: A dictionary mapping the native token address to another dictionary,
-        where the inner dictionary maps NFT addresses to the gas volumes attributed to them.
+      gasvols -- dict of [native_token_addr][nft_addr] : gas_vol_float
     """
     gasvols: Dict[str, Dict[str, float]] = {}
     gasvols[native_token_addr] = {}
     for tx in txgascost:
-        nfts = txgascost[tx].keys()
+        nft_addrs = txgascost[tx].keys()
         gas_cost = list(txgascost[tx].values())[0]
-        tot_nfts = len(nfts)
+        tot_nfts = len(nft_addrs)
         gas_attributed = gas_cost / tot_nfts
 
-        for nft in nfts:
-            gasvols[native_token_addr].setdefault(nft, 0)
-            gasvols[native_token_addr][nft] += gas_attributed
+        for nft_addr in nft_addrs:
+            gasvols[native_token_addr].setdefault(nft_addr, 0)
+            gasvols[native_token_addr][nft_addr] += gas_attributed
+
     return gasvols
 
 

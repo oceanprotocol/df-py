@@ -1,7 +1,7 @@
 import pytest
 from enforce_typing import enforce_types
-from web3.exceptions import ContractLogicError
-from web3.logs import DISCARD
+from web3.exceptions import ContractLogicError  # pylint: disable=no-name-in-module
+from web3.logs import DISCARD  # pylint: disable=no-name-in-module
 
 from df_py.web3util.contract_base import ContractBase
 from df_py.web3util.networkutil import chain_id_to_web3

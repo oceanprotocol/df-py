@@ -8,7 +8,7 @@ from df_py.web3util.oceantestutil import get_account0, get_all_accounts
 
 def pytest_sessionstart():
     record_dev_deployed_contracts()
-    accs = oceantestutil.get_all_accounts()
+    accs = get_all_accounts()
     OCEAN_token(DEV_CHAINID).mint(accs[0], to_wei(10_000), {"from": accs[0]})
 
 

@@ -1,13 +1,15 @@
 # Test calc_rewards.py's helper functions
 
 from enforce_typing import enforce_types
+import numpy as np
+
+from df_py.volume.test.conftest import *  # pylint: disable=wildcard-import
 
 
 @enforce_types
 def test_get_nft_addrs():
-    nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
-    mock_calculator = MockRewardCalculator()
-    mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
+    mock_calculator = reward_calculator_with_empty_defaults()
+    mock_calculator.nftvols_USD = {C1: {NA: 1.0, NB: 1.0}, C2: {NC: 1.0}}
     nft_addrs = mock_calculator._get_nft_addrs()
     assert isinstance(nft_addrs, list)
     assert sorted(nft_addrs) == sorted([NA, NB, NC])
@@ -25,8 +27,7 @@ def test_get_lp_addrs():
             NC: {LP4: 1.0},
         },
     }
-    mock_calculator = MockRewardCalculator()
-    mock_calculator.set_mock_attribute("stakes", stakes)
+    mock_calculator = reward_calculator_with_empty_defaults(stakes=stakes)
     LP_addrs = mock_calculator._get_lp_addrs()
     assert isinstance(LP_addrs, list)
     assert sorted(LP_addrs) == sorted([LP1, LP2, LP3, LP4])
@@ -55,23 +56,22 @@ def test_stake_vol_owner_dicts_to_arrays():
             ND: {LP3: 70.0, LP4: 80.0},
         },
     }
-    nftvols_USD = {
+    mock_calculator = reward_calculator_with_empty_defaults(
+        stakes=stakes,
+        locked_ocean_amts=locked_ocean_amts,
+    )
+
+    mock_calculator.nftvols_USD = {
         1: {NA: 15.0, NB: 25.0},
         2: {NC: 35.0, ND: 45.0},
     }
-    lp_addrs = [LP1, LP2, LP3, LP4]
-    chain_nft_tups = [(1, NA), (1, NB), (2, NC), (2, ND)]
+    mock_calculator.LP_addrs = [LP1, LP2, LP3, LP4]
+    mock_calculator.chain_nft_tups = [(1, NA), (1, NB), (2, NC), (2, ND)]
+    mock_calculator.predictoor_feed_addrs = {1: "", 2: ""}
 
-    mock_calculator = MockRewardCalculator()
-    mock_calculator.set_mock_attribute("stakes", stakes)
-    mock_calculator.set_mock_attribute("locked_ocean_amts", locked_ocean_amts)
-    mock_calculator.set_mock_attribute("nftvols_USD", nftvols_USD)
-    mock_calculator.set_mock_attribute("LP_addrs", lp_addrs)
-    mock_calculator.set_mock_attribute("chain_nft_tups", chain_nft_tups)
-    mock_calculator.set_mock_attribute("predictoor_feed_addrs", {1: "", 2: ""})
-
-    owners = _null_owners_from_chain_nft_tups(chain_nft_tups)
-    mock_calculator.set_mock_attribute("owners", owners)
+    mock_calculator.owners = null_owners_from_chain_nft_tups(
+        mock_calculator.chain_nft_tups
+    )
 
     S, V_USD, _, _, L = mock_calculator._stake_vol_owner_dicts_to_arrays()
 

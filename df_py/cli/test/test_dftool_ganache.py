@@ -8,21 +8,15 @@ from unittest.mock import patch
 import pytest
 from enforce_typing import enforce_types
 
-from df_py.predictoor.csvs import (
-    load_predictoor_data_csv,
-    load_predictoor_rewards_csv,
-    predictoor_data_csv_filename,
-    predictoor_rewards_csv_filename,
-    sample_predictoor_data_csv,
-    sample_predictoor_rewards_csv,
-)
+from df_py.cli import dftool_module
+from df_py.cli.dftool_module import do_predictoor_data
+from df_py.mathutil.base18 import from_wei, to_wei
+from df_py.predictoor import csvs as predictoor_csvs
 from df_py.predictoor.models import PredictContract
 from df_py.predictoor.predictoor_testutil import create_mock_responses
-from df_py.util import dftool_module, networkutil, oceantestutil, oceanutil
-from df_py.mathutil.base18 import from_wei, to_wei
+from df_py.volume import csvs as volume_csvs
 from df_py.web3util.contract_base import ContractBase
-from df_py.cli.dftool_module import do_predictoor_data
-from df_py.volume import csvs
+from df_py.web3util import networkutil, oceantestutil, oceanutil
 
 PREV, DFTOOL_ACCT = {}, None
 
@@ -55,23 +49,23 @@ def test_calc_volume(tmp_path):
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.save_allocation_csv(allocations, csv_dir)
+    volume_csvs.save_allocation_csv(allocations, csv_dir)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1.0}}
-    csvs.save_nftvols_csv(nftvols_at_chain, csv_dir, CHAINID)
+    volume_csvs.save_nftvols_csv(nftvols_at_chain, csv_dir, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
+    volume_csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
 
     vebals = {"0xlp_addr1": 1.0}
     locked_amt = {"0xlp_addr1": 10.0}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
+    volume_csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.save_symbols_csv(symbols_at_chain, csv_dir, CHAINID)
+    volume_csvs.save_symbols_csv(symbols_at_chain, csv_dir, CHAINID)
 
-    csvs.save_rate_csv("OCEAN", 0.50, csv_dir)
+    volume_csvs.save_rate_csv("OCEAN", 0.50, csv_dir)
 
     # main cmd
     TOT_OCEAN = 1000.0
@@ -92,7 +86,7 @@ def test_calc_volume(tmp_path):
             dftool_module.do_calc()
 
     # test result
-    rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)
+    rewards_csv = volume_csvs.volume_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
 
 
@@ -154,10 +148,10 @@ def test_predictoor_data(tmp_path):
                 do_predictoor_data()
 
         # test result
-        predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
+        predictoor_data_csv = predictoor_csvs.predictoor_data_csv_filename(csv_dir)
         assert os.path.exists(predictoor_data_csv)
 
-        predictoors = load_predictoor_data_csv(csv_dir)
+        predictoors = predictoor_csvs.load_predictoor_data_csv(csv_dir)
         for user in users:
             if stats[user]["total"] == 0:
                 assert user not in predictoors
@@ -176,8 +170,8 @@ def test_predictoor_data(tmp_path):
 def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_path):
     csv_dir = str(tmp_path)
 
-    predictoor_data_csv = predictoor_data_csv_filename(csv_dir)
-    sample_data = sample_predictoor_data_csv(50000)
+    predictoor_data_csv = predictoor_csvs.predictoor_data_csv_filename(csv_dir)
+    sample_data = predictoor_csvs.sample_predictoor_data_csv(50000)
     contract_addresses = {f"0xContract{i}": 0 for i in range(1, 4)}
     mock_query_predictoor_contracts.return_value = contract_addresses
     with open(predictoor_data_csv, "w") as f:
@@ -189,7 +183,7 @@ def test_calc_predictoor_rose_substream(mock_query_predictoor_contracts, tmp_pat
         with patch("df_py.predictoor.calc_rewards.wait_to_latest_block"):
             dftool_module.do_calc()
 
-    rewards = load_predictoor_rewards_csv(csv_dir)
+    rewards = predictoor_csvs.load_predictoor_rewards_csv(csv_dir)
     print(rewards)
     assert len(rewards) == 3
     for address in contract_addresses:
@@ -204,23 +198,23 @@ def test_calc_without_amount(tmp_path, monkeypatch):
 
     # insert fake csvs
     allocations = {CHAINID: {"0xnft_addra": {"0xlp_addr1": 1.0}}}
-    csvs.save_allocation_csv(allocations, csv_dir)
+    volume_csvs.save_allocation_csv(allocations, csv_dir)
 
     nftvols_at_chain = {OCEAN_addr: {"0xnft_addra": 1e10}}
-    csvs.save_nftvols_csv(nftvols_at_chain, csv_dir, CHAINID)
+    volume_csvs.save_nftvols_csv(nftvols_at_chain, csv_dir, CHAINID)
 
     owners_at_chain = {"0xnft_addra": "0xlp_addr1"}
-    csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
+    volume_csvs.save_owners_csv(owners_at_chain, csv_dir, CHAINID)
 
     vebals = {"0xlp_addr1": 1e8}
     locked_amt = {"0xlp_addr1": 1e8}
     unlock_time = {"0xlp_addr1": 1}
-    csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
+    volume_csvs.save_vebals_csv(vebals, locked_amt, unlock_time, csv_dir)
 
     symbols_at_chain = {OCEAN_addr: "OCEAN"}
-    csvs.save_symbols_csv(symbols_at_chain, csv_dir, CHAINID)
+    volume_csvs.save_symbols_csv(symbols_at_chain, csv_dir, CHAINID)
 
-    csvs.save_rate_csv("OCEAN", 0.50, csv_dir)
+    volume_csvs.save_rate_csv("OCEAN", 0.50, csv_dir)
 
     # main cmd
     start_date = "2023-03-16"  # first week of df main
@@ -234,13 +228,13 @@ def test_calc_without_amount(tmp_path, monkeypatch):
                 dftool_module.do_calc()
 
     # test result
-    rewards_csv = csvs.volume_rewards_csv_filename(csv_dir)
+    rewards_csv = volume_csvs.volume_rewards_csv_filename(csv_dir)
     assert os.path.exists(rewards_csv)
 
     # get total reward amount
     with patch("web3.main.Web3.to_checksum_address") as mock_checksum:
         mock_checksum.side_effect = lambda value: value
-        rewards = csvs.load_volume_rewards_csv(csv_dir)
+        rewards = volume_csvs.load_volume_rewards_csv(csv_dir)
 
     total_reward = 0
     for _, addrs in rewards.items():
@@ -268,7 +262,7 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
         CHAINID: {address1: 400},
         "5": {address1: 300, address2: 100},
     }
-    csvs.save_volume_rewards_csv(rewards, csv_dir)
+    volume_csvs.save_volume_rewards_csv(rewards, csv_dir)
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
 
     # main command
@@ -294,8 +288,8 @@ def test_dispense(tmp_path, all_accounts, account0, w3):
 
 
 def test_dispense_predictoor_rose(tmp_path):
-    rewards = sample_predictoor_rewards_csv()
-    with open(predictoor_rewards_csv_filename(tmp_path), "w") as f:
+    rewards = predictoor_csvs.sample_predictoor_rewards_csv()
+    with open(predictoor_csvs.predictoor_rewards_csv_filename(tmp_path), "w") as f:
         f.write(rewards)
 
     sys_argv = [
@@ -416,7 +410,7 @@ def test_calc_passive(tmp_path, account0, w3):
         locked_amt[acc.address] = OCEAN_lock_amt
         unlock_times[acc.address] = unlock_time
 
-    csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, csv_dir, False)
+    volume_csvs.save_vebals_csv(fake_vebals, locked_amt, unlock_times, csv_dir, False)
     date = w3.eth.get_block("latest").timestamp // S_PER_WEEK * S_PER_WEEK
     date = datetime.datetime.utcfromtimestamp(date).strftime("%Y-%m-%d")
 
@@ -426,7 +420,7 @@ def test_calc_passive(tmp_path, account0, w3):
         with sysargs_context(sys_argv):
             dftool_module.do_calculate_passive()
 
-    filename = csvs.passive_csv_filename(csv_dir)
+    filename = volume_csvs.passive_csv_filename(csv_dir)
     assert os.path.exists(filename)
 
     # number of lines must be >=3

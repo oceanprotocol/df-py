@@ -68,6 +68,7 @@ class BlockRange:
         )
 
 
+@enforce_types
 def create_range(web3, st, fin, samples, rndseed) -> BlockRange:
     st_block, fin_block = get_st_fin_blocks(web3, st, fin)
     rng = BlockRange(st_block, fin_block, samples, rndseed, web3=web3)

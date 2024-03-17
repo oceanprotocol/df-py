@@ -1,14 +1,11 @@
-from datetime import datetime
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
-import scipy
 from enforce_typing import enforce_types
 
 from df_py.queries.predictoor_queries import query_predictoor_feed_addrs
 from df_py.vestingutil.week_multiplier import (
     calc_dcv_multiplier,
-    get_df_week_number,
 )
 from df_py.volume.cleancase import (
     mod_stakes,
@@ -19,18 +16,13 @@ from df_py.volume.cleancase import (
 )
 from df_py.volume.rank import rank_based_allocate
 from df_py.volume.to_usd import nft_vols_to_usd
-from df_py.web3util.constants import (
-    DEPLOYER_ADDRS,
-    MAX_N_RANK_ASSETS,
-    PREDICTOOR_MULTIPLIER,
-    RANK_SCALE_OP,
-    TARGET_WPY,
-)
+from df_py.web3util.constants import TARGET_WPY
 
 
+# pylint: disable=too-many-instance-attributes
+@enforce_types
 class RewardCalculator:
 
-    @enforce_types
     def __init__(
         self,
         stakes: Dict[int, Dict[str, Dict[str, float]]],
@@ -66,15 +58,15 @@ class RewardCalculator:
 
         self.nftvols_USD = nft_vols_to_usd(self.nftvols, self.symbols, self.rates)
 
-        self.chain_nft_tups = RewardCalculator._get_chain_nft_tups()
-        self.LP_addrs = RewardCalculator._get_lp_addrs()
+        self.chain_nft_tups = self._get_chain_nft_tups()
+        self.LP_addrs = self._get_lp_addrs()
 
         self.df_week = df_week
         self.OCEAN_avail = OCEAN_avail
         self.do_pubrewards = do_pubrewards
         self.do_rank = do_rank
 
-        self.predictoor_feed_addrs = RewardCalculator._get_predictoor_feed_addrs()
+        self.predictoor_feed_addrs = self._get_predictoor_feed_addrs()
 
         # will be filled in by calculate()
         self.S: np.ndarray
@@ -83,7 +75,8 @@ class RewardCalculator:
         self.R: np.ndarray
         self.L: np.ndarray
 
-    @enforce_types
+        self.C: np.ndarray
+
     def calculate(self):
         """
         @notes
@@ -91,15 +84,14 @@ class RewardCalculator:
           chain where rewards go.
         """
         self.S, self.V_USD, self.M, self.C, self.L = (
-            RewardCalculator._stake_vol_owner_dicts_to_arrays()
+            self._stake_vol_owner_dicts_to_arrays()
         )
-        self.R = RewardCalculator._calc_rewards_usd()
+        self.R = self.calc_rewards_usd()
 
-        (rewardsperlp, rewardsinfo) = RewardCalculator._reward_array_to_dicts()
+        (rewardsperlp, rewardsinfo) = self._reward_array_to_dicts()
 
         return rewardsperlp, rewardsinfo
 
-    @staticmethod
     def _stake_vol_owner_dicts_to_arrays(
         self,
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
@@ -136,9 +128,7 @@ class RewardCalculator:
 
         return S, V_USD, M, C, L
 
-    @enforce_types
-    @staticmethod
-    def _calc_rewards_usd(self) -> np.ndarray:
+    def calc_rewards_usd(self) -> np.ndarray:
         """
         @return
           R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -210,8 +200,6 @@ class RewardCalculator:
 
         return R
 
-    @enforce_types
-    @staticmethod
     def _reward_array_to_dicts(self) -> Tuple[dict, dict]:
         """
         @return
@@ -245,15 +233,13 @@ class RewardCalculator:
 
         return rewardsperlp, rewardsinfo
 
-    @enforce_types
-    @staticmethod
     def _get_chain_nft_tups(self) -> List[Tuple[int, str]]:
         """
         @return
           chain_nft_tups -- list of (chainID, nft_addr), indexed by j
         """
         chainIDs = list(self.stakes.keys())
-        nft_addrs = RewardCalculator._get_nft_addrs()
+        nft_addrs = self._get_nft_addrs()
         chain_nft_tups = [
             (chainID, nft_addr)  # all (chain, nft) tups with stake
             for chainID in chainIDs
@@ -262,8 +248,6 @@ class RewardCalculator:
         ]
         return chain_nft_tups
 
-    @enforce_types
-    @staticmethod
     def _get_nft_addrs(self) -> List[str]:
         """
         @return
@@ -276,8 +260,6 @@ class RewardCalculator:
 
         return sorted(nft_addrs)
 
-    @enforce_types
-    @staticmethod
     def _get_lp_addrs(self) -> List[str]:
         """
         @return
@@ -291,8 +273,6 @@ class RewardCalculator:
 
         return sorted(LP_addrs)
 
-    @enforce_types
-    @staticmethod
     def _get_predictoor_feed_addrs(self) -> Dict[int, List[str]]:
         """
         @return
