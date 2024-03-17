@@ -29,3 +29,4 @@ jobs:
       - name: Run Pylint
         run: |
           pylint --recursive=true --rcfile .pylintrc *
+          pylint --rcfile .pylintrc df_py/* 
