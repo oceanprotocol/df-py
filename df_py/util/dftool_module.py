@@ -57,7 +57,7 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth_by_stream,
 )
 from df_py.volume import csvs, queries
-from df_py.volume.reward_calculator import RewardShaper
+from df_py.util.reward_shaper import RewardShaper
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 
 
