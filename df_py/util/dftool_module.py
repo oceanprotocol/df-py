@@ -398,12 +398,14 @@ def do_calc():
 
     if tot_ocean == 0:
         # Vesting wallet contract is used to calculate the reward amount for given week / start date
-        # currently only deployed on Goerli
+        # currently only deployed on Sepolia
+
         current_dir = os.path.dirname(os.path.abspath(__file__))
         address_path = os.path.join(
             current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         )
-        record_deployed_contracts(address_path, 5)
+        record_deployed_contracts(address_path, 11155111)
+
         tot_ocean = get_active_reward_amount_for_week_eth_by_stream(
             start_date, arguments.SUBSTREAM
         )
