@@ -405,7 +405,7 @@ def do_calc():
 
         # current_dir = os.path.dirname(os.path.abspath(__file__))
         # address_path = os.path.join(
-            # current_dir, "..", "..", ".github", "workflows", "data", "address.json"
+        # current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         # )
         # record_deployed_contracts(address_path, 5)
         tot_ocean = get_active_reward_amount_for_week_eth_by_stream(
