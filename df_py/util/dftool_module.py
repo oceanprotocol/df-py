@@ -407,7 +407,9 @@ def do_calc():
         # address_path = os.path.join(
         # current_dir, "..", "..", ".github", "workflows", "data", "address.json"
         # )
-        # record_deployed_contracts(address_path, 5)
+        # Change this to the network vesting wallet is deployed on
+        # record_deployed_contracts(address_path, 1) # LOAD MAINNET CONTRACTS
+
         tot_ocean = get_active_reward_amount_for_week_eth_by_stream(
             start_date, arguments.SUBSTREAM
         )
