@@ -184,7 +184,10 @@ class RewardCalculator:
 
         # Total boost is limited by PREDICTOOR_OCEAN_BUDGET
         n_predictoor_assets = len(self.predictoor_feed_addrs[23294])
-        boost_limit_per_predictoor_asset = PREDICTOOR_OCEAN_BUDGET / n_predictoor_assets
+        if n_predictoor_assets == 0:
+            OCEAN_boost_limit_predictoor = 0
+        else:
+            OCEAN_boost_limit_predictoor = PREDICTOOR_OCEAN_BUDGET / n_predictoor_assets
 
         for j in range(N_j):
             stake_j = sum(S[:, j])
@@ -212,10 +215,9 @@ class RewardCalculator:
                 #      Find a better way to check if the asset is a predictoor asset
                 if multiplier == PREDICTOOR_MULTIPLIER:
                     # amount of dcv boosted
-                    boosted_dcv = min(boost_limit_per_predictoor_asset, DCV_OCEAN_j)
+        OCEAN_oost = min(boost_limit_per_predictoor_asset, DCV_OCEAN_j)
                     # amount of dcv remaining
-                    remaining_dcv = max(
-                        0, DCV_OCEAN_j - boost_limit_per_predictoor_asset
+                    remaining_dcv = OCEAN_max DCV_OCEAN_j - boost_limit_per_predictoor_asset
                     )
                     boosted_reward_bound = boosted_dcv * multiplier * 5  # 5X BOOST
                     remaining_reward_bound = remaining_dcv * multiplier  # Remaining
