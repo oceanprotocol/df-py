@@ -756,18 +756,18 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 
 @enforce_types
 def test_volume_reward_calculator_pdr_boost(tmp_path):
-    C1 = 23294
+    SAPPHIRE_MAINNET = 23294
     stakes = {
-        C1: {NA: {LP1: 2e8}, NB: {LP2: 1e8}},
+        SAPPHIRE_MAINNET: {NA: {LP1: 2e8}, NB: {LP2: 1e8}},
     }
     locked_amts = {
-        C1: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
+        SAPPHIRE_MAINNET: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
     }
     volumes = {
-        C1: {OCN_ADDR: {NA: 300.0, NB: PREDICTOOR_OCEAN_BUDGET * 2}},
+        SAPPHIRE_MAINNET: {OCN_ADDR: {NA: 300.0, NB: PREDICTOOR_OCEAN_BUDGET * 2}},
     }
-    owners = {C1: {NA: LP5, NB: LP2}}
-    symbols = {C1: {OCN_ADDR: OCN_SYMB}}
+    owners = {SAPPHIRE_MAINNET: {NA: LP5, NB: LP2}}
+    symbols = {SAPPHIRE_MAINNET: {OCN_ADDR: OCN_SYMB}}
     rates = {OCN_SYMB: 1.0}
 
     predictoor_contracts = {NA: {}, NB: {}}
@@ -795,7 +795,7 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         return_value=predictoor_contracts,
     ), patch(
         "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
-        {C1: ""},
+        {SAPPHIRE_MAINNET: ""},
     ), patch(
         "df_py.util.dcv_multiplier.get_df_week_number", return_value=30
     ), patch(
@@ -819,7 +819,7 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         # Thus only the volume up to the budget is boosted
         #   --> DCV bound = PREDICTOOR_BUDGET / 2 + PREDICTOOR_BUDGET * 0.201
 
-        assert rewards_per_lp[C1][LP1] == approx(301.5, abs=1e-5)
+        assert rewards_per_lp[SAPPHIRE_MAINNET][LP1] == approx(301.5, abs=1e-5)
 
         vol2 = PREDICTOOR_OCEAN_BUDGET * 2
         boosted_amt = (
@@ -827,4 +827,4 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         )  # divided by 2 because 2 predictoor assets
         boosted = (boosted_amt) * 0.201 * 5  # 5x boost
         remaining_dcv = (vol2 - boosted_amt) * 0.201
-        assert rewards_per_lp[C1][LP2] == approx(boosted + remaining_dcv, abs=1e-5)
+        assert rewards_per_lp[SAPPHIRE_MAINNET][LP2] == approx(boosted + remaining_dcv, abs=1e-5)
