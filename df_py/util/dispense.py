@@ -3,11 +3,11 @@ import os
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional
 
-from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from enforce_typing import enforce_types
 from web3.main import Web3
 
 from df_py.util.base18 import to_wei
+from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from df_py.util.contract_base import ContractBase
 from df_py.util.logger import logger
 from df_py.util.multisig import send_multisig_tx
