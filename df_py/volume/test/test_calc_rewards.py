@@ -764,7 +764,12 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         SAPPHIRE_MAINNET: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
     }
     volumes = {
-        SAPPHIRE_MAINNET: {OCN_ADDR: {NA: PREDICTOOR_OCEAN_BUDGET / 2 - 1, NB: PREDICTOOR_OCEAN_BUDGET * 2}},
+        SAPPHIRE_MAINNET: {
+            OCN_ADDR: {
+                NA: PREDICTOOR_OCEAN_BUDGET / 2 - 1,
+                NB: PREDICTOOR_OCEAN_BUDGET * 2,
+            }
+        },
     }
     owners = {SAPPHIRE_MAINNET: {NA: LP5, NB: LP2}}
     symbols = {SAPPHIRE_MAINNET: {OCN_ADDR: OCN_SYMB}}
@@ -831,4 +836,6 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         )  # divided by 2 because 2 predictoor assets
         boosted = (boosted_amt) * 0.201 * 5  # 5x boost
         remaining_dcv = (vol2 - boosted_amt) * 0.201
-        assert rewards_per_lp[SAPPHIRE_MAINNET][LP2] == approx(boosted + remaining_dcv, abs=1e-5)
+        assert rewards_per_lp[SAPPHIRE_MAINNET][LP2] == approx(
+            boosted + remaining_dcv, abs=1e-5
+        )
