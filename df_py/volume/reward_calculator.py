@@ -8,6 +8,7 @@ from df_py.util.constants import (
     DEPLOYER_ADDRS,
     PREDICTOOR_MULTIPLIER,
     PREDICTOOR_OCEAN_BUDGET,
+    SAPPHIRE_MAINNET_CHAINID,
     TARGET_WPY,
 )
 from df_py.util.dcv_multiplier import calc_dcv_multiplier
@@ -184,10 +185,12 @@ class RewardCalculator:
 
         OCEAN_boost_limit_predictoor = 0.0
         # Boost is limited to Sapphire mainnet only
-        if 23294 in self.predictoor_feed_addrs:
+        if SAPPHIRE_MAINNET_CHAINID in self.predictoor_feed_addrs:
             # Total boost is limited by PREDICTOOR_OCEAN_BUDGET
             # Get the number of predictoor assets and calculate the limit per asset
-            n_predictoor_assets = len(self.predictoor_feed_addrs[23294])
+            n_predictoor_assets = len(
+                self.predictoor_feed_addrs[SAPPHIRE_MAINNET_CHAINID]
+            )
             if n_predictoor_assets != 0:
                 OCEAN_boost_limit_predictoor = (
                     PREDICTOOR_OCEAN_BUDGET / n_predictoor_assets

@@ -6,7 +6,11 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util.constants import PREDICTOOR_OCEAN_BUDGET, ZERO_ADDRESS
+from df_py.util.constants import (
+    PREDICTOOR_OCEAN_BUDGET,
+    SAPPHIRE_MAINNET_CHAINID,
+    ZERO_ADDRESS,
+)
 from df_py.volume import csvs
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 from df_py.volume.reward_calculator import TARGET_WPY, RewardCalculator
@@ -756,23 +760,23 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 
 @enforce_types
 def test_volume_reward_calculator_pdr_boost(tmp_path):
-    SAPPHIRE_MAINNET = 23294
+    chain_id = SAPPHIRE_MAINNET_CHAINID
     stakes = {
-        SAPPHIRE_MAINNET: {NA: {LP1: 2e8}, NB: {LP2: 1e8}},
+        chain_id: {NA: {LP1: 2e8}, NB: {LP2: 1e8}},
     }
     locked_amts = {
-        SAPPHIRE_MAINNET: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
+        chain_id: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
     }
     volumes = {
-        SAPPHIRE_MAINNET: {
+        chain_id: {
             OCN_ADDR: {
                 NA: PREDICTOOR_OCEAN_BUDGET / 2 - 1,
                 NB: PREDICTOOR_OCEAN_BUDGET * 2,
             }
         },
     }
-    owners = {SAPPHIRE_MAINNET: {NA: LP5, NB: LP2}}
-    symbols = {SAPPHIRE_MAINNET: {OCN_ADDR: OCN_SYMB}}
+    owners = {chain_id: {NA: LP5, NB: LP2}}
+    symbols = {chain_id: {OCN_ADDR: OCN_SYMB}}
     rates = {OCN_SYMB: 1.0}
 
     predictoor_contracts = {NA: {}, NB: {}}
@@ -800,7 +804,7 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         return_value=predictoor_contracts,
     ), patch(
         "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
-        {SAPPHIRE_MAINNET: ""},
+        {chain_id: ""},
     ), patch(
         "df_py.util.dcv_multiplier.get_df_week_number", return_value=30
     ), patch(
@@ -828,7 +832,7 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
 
         vol1 = PREDICTOOR_OCEAN_BUDGET / 2 - 1
         boosted = vol1 * 0.201 * 5
-        assert rewards_per_lp[SAPPHIRE_MAINNET][LP1] == approx(boosted, abs=1e-5)
+        assert rewards_per_lp[chain_id][LP1] == approx(boosted, abs=1e-5)
 
         vol2 = PREDICTOOR_OCEAN_BUDGET * 2
         boosted_amt = (
@@ -836,6 +840,6 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         )  # divided by 2 because 2 predictoor assets
         boosted = (boosted_amt) * 0.201 * 5  # 5x boost
         remaining_dcv = (vol2 - boosted_amt) * 0.201
-        assert rewards_per_lp[SAPPHIRE_MAINNET][LP2] == approx(
+        assert rewards_per_lp[chain_id][LP2] == approx(
             boosted + remaining_dcv, abs=1e-5
         )

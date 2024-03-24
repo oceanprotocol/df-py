@@ -3,6 +3,7 @@ import os
 # pylint: disable=logging-fstring-interpolation
 from typing import Dict, Optional
 
+from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from enforce_typing import enforce_types
 from web3.main import Web3
 
@@ -63,7 +64,7 @@ def dispense(
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
 
     LEGACY_TX = False
-    if web3.eth.chain_id == 23294:
+    if web3.eth.chain_id == SAPPHIRE_MAINNET_CHAINID:
         LEGACY_TX = True
 
     def approveAmt(amt):
