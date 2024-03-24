@@ -6,7 +6,7 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util.constants import ZERO_ADDRESS
+from df_py.util.constants import PREDICTOOR_OCEAN_BUDGET, ZERO_ADDRESS
 from df_py.volume import csvs
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 from df_py.volume.reward_calculator import TARGET_WPY, RewardCalculator
@@ -752,3 +752,79 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
         assert rewards_info[C1][NA][LP1] == approx(60.3, abs=1e-5)
         assert rewards_info[C2][NB][LP2] == 300
         assert rewards_info[C2][NB][LP3] == 300
+
+
+@enforce_types
+def test_volume_reward_calculator_pdr_boost(tmp_path):
+    C1 = 23294
+    stakes = {
+        C1: {NA: {LP1: 2e8}, NB: {LP2: 1e8}},
+    }
+    locked_amts = {
+        C1: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
+    }
+    volumes = {
+        C1: {OCN_ADDR: {NA: 300.0, NB: PREDICTOOR_OCEAN_BUDGET * 2}},
+    }
+    owners = {C1: {NA: LP5, NB: LP2}}
+    symbols = {C1: {OCN_ADDR: OCN_SYMB}}
+    rates = {OCN_SYMB: 1.0}
+
+    predictoor_contracts = {NA: {}, NB: {}}
+
+    def mock_multipliers(DF_week, is_predictoor):  # pylint: disable=unused-argument
+        if not is_predictoor:
+            return MagicMock(return_value=1)
+        return 0.201
+
+    OCEAN_reward = 1e24
+
+    with patch(
+        "df_py.volume.allocations.load_stakes",
+        return_value=(stakes, locked_amts),
+    ), patch("df_py.volume.csvs.load_nftvols_csvs", return_value=volumes), patch(
+        "df_py.volume.csvs.load_owners_csvs", return_value=owners
+    ), patch(
+        "df_py.volume.csvs.load_symbols_csvs", return_value=symbols
+    ), patch(
+        "df_py.volume.csvs.load_rate_csvs", return_value=rates
+    ), patch(
+        "df_py.volume.reward_calculator.calc_dcv_multiplier", mock_multipliers
+    ), patch(
+        "df_py.volume.reward_calculator.query_predictoor_contracts",
+        return_value=predictoor_contracts,
+    ), patch(
+        "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
+        {C1: ""},
+    ), patch(
+        "df_py.util.dcv_multiplier.get_df_week_number", return_value=30
+    ), patch(
+        "df_py.volume.calc_rewards.wait_to_latest_block"
+    ), patch(
+        "web3.main.Web3.to_checksum_address"
+    ) as mock:
+        mock.side_effect = lambda value: value
+
+        calc_volume_rewards_from_csvs(tmp_path, None, OCEAN_reward, True, False)
+
+        rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
+
+        # OCEAN_reward was 1e24, it's a lot so it's not a constraint
+        # volumes were 300 (NA) & 600 (NB), for 900 total
+        # NA and NB are predictoor assets
+        #   --> since 300 is smaller than boost limit, all DCV is boosted to 5x
+        #   --> DCV bound = 300 * 0.201 * 5 = 301.5
+
+        # NB has PREDICTOOR_BUDGET * 2 volume
+        # Thus only the volume up to the budget is boosted
+        #   --> DCV bound = PREDICTOOR_BUDGET / 2 + PREDICTOOR_BUDGET * 0.201
+
+        assert rewards_per_lp[C1][LP1] == approx(301.5, abs=1e-5)
+
+        vol2 = PREDICTOOR_OCEAN_BUDGET * 2
+        boosted_amt = (
+            PREDICTOOR_OCEAN_BUDGET / 2
+        )  # divided by 2 because 2 predictoor assets
+        boosted = (boosted_amt) * 0.201 * 5  # 5x boost
+        remaining_dcv = (vol2 - boosted_amt) * 0.201
+        assert rewards_per_lp[C1][LP2] == approx(boosted + remaining_dcv, abs=1e-5)
