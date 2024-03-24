@@ -764,7 +764,7 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         SAPPHIRE_MAINNET: {NA: {LP1: 1e8}, NB: {LP2: 1e8}},
     }
     volumes = {
-        SAPPHIRE_MAINNET: {OCN_ADDR: {NA: 300.0, NB: PREDICTOOR_OCEAN_BUDGET * 2}},
+        SAPPHIRE_MAINNET: {OCN_ADDR: {NA: PREDICTOOR_OCEAN_BUDGET / 2 - 1, NB: PREDICTOOR_OCEAN_BUDGET * 2}},
     }
     owners = {SAPPHIRE_MAINNET: {NA: LP5, NB: LP2}}
     symbols = {SAPPHIRE_MAINNET: {OCN_ADDR: OCN_SYMB}}
@@ -810,16 +810,20 @@ def test_volume_reward_calculator_pdr_boost(tmp_path):
         rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
 
         # OCEAN_reward was 1e24, it's a lot so it's not a constraint
-        # volumes were 300 (NA) & 600 (NB), for 900 total
+        # The predictoor boost per asset is limited at PREDICTOOR_BUDGET / 2
         # NA and NB are predictoor assets
-        #   --> since 300 is smaller than boost limit, all DCV is boosted to 5x
-        #   --> DCV bound = 300 * 0.201 * 5 = 301.5
+
+        # NA has PREDICTOOR_OCEAN_BUDGET / 2 - 2 volume
+        #   --> since the volume is smaller than boost limit, all DCV is boosted to 5x
+        #   --> DCV bound = (PREDICTOOR_BUDGET / 2 - 1) * 0.201 * 5
 
         # NB has PREDICTOOR_BUDGET * 2 volume
         # Thus only the volume up to the budget is boosted
-        #   --> DCV bound = PREDICTOOR_BUDGET / 2 + PREDICTOOR_BUDGET * 0.201
+        #   --> DCV bound = PREDICTOOR_BUDGET / 2 * 0.201 * 5 + (PREDICTOOR_BUDGET / 2) * 0.201
 
-        assert rewards_per_lp[SAPPHIRE_MAINNET][LP1] == approx(301.5, abs=1e-5)
+        vol1 = PREDICTOOR_OCEAN_BUDGET / 2 - 1
+        boosted = vol1 * 0.201 * 5
+        assert rewards_per_lp[SAPPHIRE_MAINNET][LP1] == approx(boosted, abs=1e-5)
 
         vol2 = PREDICTOOR_OCEAN_BUDGET * 2
         boosted_amt = (
