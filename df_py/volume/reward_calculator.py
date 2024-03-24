@@ -182,12 +182,14 @@ class RewardCalculator:
         # compute rewards
         R = np.zeros((N_i, N_j), dtype=float)
 
-        # Total boost is limited by PREDICTOOR_OCEAN_BUDGET
-        n_predictoor_assets = len(self.predictoor_feed_addrs[23294])
-        if n_predictoor_assets == 0:
-            OCEAN_boost_limit_predictoor = 0.0
-        else:
-            OCEAN_boost_limit_predictoor = PREDICTOOR_OCEAN_BUDGET / n_predictoor_assets
+        OCEAN_boost_limit_predictoor = 0.0
+        # Boost is limited to Sapphire mainnet only
+        if 23294 in self.predictoor_feed_addrs:
+            # Total boost is limited by PREDICTOOR_OCEAN_BUDGET
+            # Get the number of predictoor assets and calculate the limit per asset
+            n_predictoor_assets = len(self.predictoor_feed_addrs[23294])
+            if n_predictoor_assets != 0:
+                OCEAN_boost_limit_predictoor = PREDICTOOR_OCEAN_BUDGET / n_predictoor_assets
 
         for j in range(N_j):
             stake_j = sum(S[:, j])
