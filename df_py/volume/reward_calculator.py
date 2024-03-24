@@ -215,7 +215,7 @@ class RewardCalculator:
                 #      Find a better way to check if the asset is a predictoor asset
                 if multiplier == PREDICTOOR_MULTIPLIER:
                     # amount of dcv boosted
-        OCEAN_oost = min(boost_limit_per_predictoor_asset, DCV_OCEAN_j)
+                    OCEAN_boost = min(boost_limit_per_predictoor_asset, DCV_OCEAN_j)
                     # amount of dcv remaining
                     remaining_dcv = OCEAN_max DCV_OCEAN_j - boost_limit_per_predictoor_asset
                     )
