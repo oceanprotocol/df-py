@@ -3,7 +3,6 @@ import argparse
 import os
 import sys
 
-from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from enforce_typing import enforce_types
 from eth_account import Account
 from web3.main import Web3
@@ -25,6 +24,7 @@ from df_py.predictoor.queries import query_predictoor_contracts, query_predictoo
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.blocktime import get_fin_block, timestr_to_timestamp
+from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_arguments import (
     CHAINID_EXAMPLES,
