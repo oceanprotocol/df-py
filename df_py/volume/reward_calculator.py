@@ -4,13 +4,7 @@ import numpy as np
 from enforce_typing import enforce_types
 
 from df_py.predictoor.queries import query_predictoor_contracts
-from df_py.util.constants import (
-    DEPLOYER_ADDRS,
-    PREDICTOOR_MULTIPLIER,
-    PREDICTOOR_OCEAN_BUDGET,
-    SAPPHIRE_MAINNET_CHAINID,
-    TARGET_WPY,
-)
+from df_py.util.constants import DEPLOYER_ADDRS, TARGET_WPY
 from df_py.util.dcv_multiplier import calc_dcv_multiplier
 from df_py.volume import cleancase as cc
 from df_py.volume.rank import rank_based_allocate
@@ -182,20 +176,6 @@ class RewardCalculator:
 
         # compute rewards
         R = np.zeros((N_i, N_j), dtype=float)
-
-        OCEAN_boost_limit_predictoor = 0.0
-        # Boost is limited to Sapphire mainnet only
-        if SAPPHIRE_MAINNET_CHAINID in self.predictoor_feed_addrs:
-            # Total boost is limited by PREDICTOOR_OCEAN_BUDGET
-            # Get the number of predictoor assets and calculate the limit per asset
-            n_predictoor_assets = len(
-                self.predictoor_feed_addrs[SAPPHIRE_MAINNET_CHAINID]
-            )
-            if n_predictoor_assets != 0:
-                OCEAN_boost_limit_predictoor = (
-                    PREDICTOOR_OCEAN_BUDGET / n_predictoor_assets
-                )
-
         for j in range(N_j):
             stake_j = sum(S[:, j])
             multiplier = self.M[j]
@@ -213,28 +193,10 @@ class RewardCalculator:
 
                 # main formula!
                 # reward amount in OCEAN
-                rewards = perc_at_j * perc_at_ij * self.OCEAN_avail
-                apy_bound = TARGET_WPY * ocean_locked_ij
-                dcv_bound = DCV_OCEAN_j * perc_at_ij * multiplier
-
-                # check if predictoor asset and apply boost
-                # NOTE another asset might have the same multiplier value in the future
-                #      Find a better way to check if the asset is a predictoor asset
-                if multiplier == PREDICTOOR_MULTIPLIER:
-                    # amount of dcv boosted
-                    boosted_dcv = min(OCEAN_boost_limit_predictoor, DCV_OCEAN_j)
-                    # amount of dcv remaining
-                    remaining_dcv = max(0, DCV_OCEAN_j - OCEAN_boost_limit_predictoor)
-                    boosted_reward_bound = boosted_dcv * multiplier * 5  # 5X BOOST
-                    remaining_reward_bound = remaining_dcv * multiplier  # Remaining
-                    dcv_bound = (
-                        boosted_reward_bound + remaining_reward_bound
-                    ) * perc_at_ij
-
                 R[i, j] = min(
-                    rewards,
-                    apy_bound,
-                    dcv_bound,
+                    perc_at_j * perc_at_ij * self.OCEAN_avail,
+                    ocean_locked_ij * TARGET_WPY,  # bound rewards by max APY
+                    DCV_OCEAN_j * perc_at_ij * multiplier,  # bound rewards by DCV
                 )
 
         # filter negligible values
