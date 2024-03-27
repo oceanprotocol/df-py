@@ -814,7 +814,7 @@ def _test_volume_reward_calculator_pdr_mult(tmp_path, DF_week, expected_rewards)
         "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
         {chain_id: ""},
     ), patch(
-        "df_py.volume.calc_rewards.get_df_week_number", return_value=df_week
+        "df_py.volume.calc_rewards.get_df_week_number", return_value=DF_week
     ), patch(
         "df_py.volume.calc_rewards.wait_to_latest_block"
     ), patch(
