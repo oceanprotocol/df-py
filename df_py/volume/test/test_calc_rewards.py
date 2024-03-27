@@ -759,16 +759,23 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 
 
 @enforce_types
-@pytest.mark.parametrize(
-    "df_week, expected_rewards",
-    [
-        (80, 20.1),
-        (81, 20.1),
-        (82, 20.1 * 5),
-        (83, 20.1 * 5),
-    ],
-)
-def test_volume_reward_calculator_pdr_multiplier(tmp_path, df_week, expected_rewards):
+def test_volume_reward_calculator_pdr_mult_week81(tmp_path):
+    expected_rewards = 20.1
+    _test_volume_reward_calculator_pdr_mult(
+        tmp_path, DF_week=81, expected_rewards=expected_rewards
+    )
+
+
+@enforce_types
+def test_volume_reward_calculator_pdr_mult_week82(tmp_path):
+    expected_rewards = 20.1 * 5
+    _test_volume_reward_calculator_pdr_mult(
+        tmp_path, DF_week=82, expected_rewards=expected_rewards
+    )
+
+
+@enforce_types
+def _test_volume_reward_calculator_pdr_mult(tmp_path, DF_week, expected_rewards):
     chain_id = SAPPHIRE_MAINNET_CHAINID
     stakes = {
         chain_id: {NA: {LP1: 1e8}},
