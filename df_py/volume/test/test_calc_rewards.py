@@ -762,10 +762,10 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
 @pytest.mark.parametrize(
     "df_week, expected_rewards",
     [
-        (80, 100.5),
-        (81, 100.5),
-        (82, 100.5 * 5),
-        (83, 100.5 * 5),
+        (80, 20.1),
+        (81, 20.1),
+        (82, 20.1 * 5),
+        (83, 20.1 * 5),
     ],
 )
 def test_volume_reward_calculator_pdr_multiplier(tmp_path, df_week, expected_rewards):
@@ -779,7 +779,7 @@ def test_volume_reward_calculator_pdr_multiplier(tmp_path, df_week, expected_rew
     volumes = {
         chain_id: {
             OCN_ADDR: {
-                NA: 500,
+                NA: 100,
             }
         },
     }
