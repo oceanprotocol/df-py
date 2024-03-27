@@ -8,7 +8,6 @@ from enforce_typing import enforce_types
 from pytest import approx
 
 from df_py.util.constants import (
-    PREDICTOOR_OCEAN_BUDGET,
     SAPPHIRE_MAINNET_CHAINID,
     ZERO_ADDRESS,
 )
