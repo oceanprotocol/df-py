@@ -24,6 +24,7 @@ from df_py.predictoor.queries import query_predictoor_contracts, query_predictoo
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.blocktime import get_fin_block, timestr_to_timestamp
+from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_arguments import (
     CHAINID_EXAMPLES,
@@ -437,12 +438,10 @@ def do_calc():
         calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
 
     if arguments.SUBSTREAM == "predictoor_rose":
-        SAPPHIRE_MAINNET_ID = 23294
-
         predictoor_data = load_predictoor_data_csv(csv_dir)
         print("Loaded predictoor data:", predictoor_data)
         predictoor_rewards = calc_predictoor_rewards(
-            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_ID
+            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_CHAINID
         )
         print("Calculated rewards:", predictoor_rewards)
 

@@ -1,4 +1,5 @@
 # pylint: disable=too-many-lines
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -6,7 +7,10 @@ import pytest
 from enforce_typing import enforce_types
 from pytest import approx
 
-from df_py.util.constants import ZERO_ADDRESS
+from df_py.util.constants import (
+    SAPPHIRE_MAINNET_CHAINID,
+    ZERO_ADDRESS,
+)
 from df_py.volume import csvs
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 from df_py.volume.reward_calculator import TARGET_WPY, RewardCalculator
@@ -752,3 +756,76 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
         assert rewards_info[C1][NA][LP1] == approx(60.3, abs=1e-5)
         assert rewards_info[C2][NB][LP2] == 300
         assert rewards_info[C2][NB][LP3] == 300
+
+
+@enforce_types
+def test_volume_reward_calculator_pdr_mult_week81(tmp_path):
+    expected_rewards = 20.1
+    _test_volume_reward_calculator_pdr_mult(
+        tmp_path, DF_week=81, expected_rewards=expected_rewards
+    )
+
+
+@enforce_types
+def test_volume_reward_calculator_pdr_mult_week82(tmp_path):
+    expected_rewards = 20.1 * 5
+    _test_volume_reward_calculator_pdr_mult(
+        tmp_path, DF_week=82, expected_rewards=expected_rewards
+    )
+
+
+@enforce_types
+def _test_volume_reward_calculator_pdr_mult(tmp_path, DF_week, expected_rewards):
+    chain_id = SAPPHIRE_MAINNET_CHAINID
+    stakes = {
+        chain_id: {NA: {LP1: 1e8}},
+    }
+    locked_amts = {
+        chain_id: {NA: {LP1: 1e8}},
+    }
+    volumes = {
+        chain_id: {
+            OCN_ADDR: {
+                NA: 100,
+            }
+        },
+    }
+    owners = {chain_id: {NA: LP2}}
+    symbols = {chain_id: {OCN_ADDR: OCN_SYMB}}
+    rates = {OCN_SYMB: 1.0}
+
+    predictoor_contracts = {NA: {}, NB: {}}
+
+    OCEAN_reward = 1e24
+
+    with patch(
+        "df_py.volume.allocations.load_stakes",
+        return_value=(stakes, locked_amts),
+    ), patch("df_py.volume.csvs.load_nftvols_csvs", return_value=volumes), patch(
+        "df_py.volume.csvs.load_owners_csvs", return_value=owners
+    ), patch(
+        "df_py.volume.csvs.load_symbols_csvs", return_value=symbols
+    ), patch(
+        "df_py.volume.csvs.load_rate_csvs", return_value=rates
+    ), patch(
+        "df_py.volume.reward_calculator.query_predictoor_contracts",
+        return_value=predictoor_contracts,
+    ), patch(
+        "df_py.volume.reward_calculator.DEPLOYER_ADDRS",
+        {chain_id: ""},
+    ), patch(
+        "df_py.volume.calc_rewards.get_df_week_number", return_value=DF_week
+    ), patch(
+        "df_py.volume.calc_rewards.wait_to_latest_block"
+    ), patch(
+        "web3.main.Web3.to_checksum_address"
+    ) as mock:
+        mock.side_effect = lambda value: value
+
+        calc_volume_rewards_from_csvs(
+            tmp_path, datetime.now(), OCEAN_reward, True, False
+        )
+
+        rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
+
+        assert rewards_per_lp[chain_id][LP1] == approx(expected_rewards, 1e-6)

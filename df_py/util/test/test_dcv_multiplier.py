@@ -71,7 +71,10 @@ def test_calc_dcv_multiplier():
     assert mult(100, False) == 0.001
     assert mult(10000, False) == 0.001
 
+    # PREDICTOOR MULTIPLIERS
     assert mult(-10, True) == 0.201
     assert mult(9, True) == 0.201
     assert mult(12, True) == 0.201
-    assert mult(10000, True) == 0.201
+    assert mult(81, True) == 0.201
+    assert mult(82, True) == 0.201 * 5
+    assert mult(10000, True) == 0.201 * 5
