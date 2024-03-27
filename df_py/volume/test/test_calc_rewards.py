@@ -767,7 +767,7 @@ def test_volume_reward_calculator_pdr_mul(tmp_path):
         (81, 100.5),
         (82, 100.5 * 5),
         (83, 100.5 * 5),
-    ]
+    ],
 )
 def test_volume_reward_calculator_pdr_multiplier(tmp_path, df_week, expected_rewards):
     chain_id = SAPPHIRE_MAINNET_CHAINID
@@ -816,7 +816,9 @@ def test_volume_reward_calculator_pdr_multiplier(tmp_path, df_week, expected_rew
     ) as mock:
         mock.side_effect = lambda value: value
 
-        calc_volume_rewards_from_csvs(tmp_path, datetime.now(), OCEAN_reward, True, False)
+        calc_volume_rewards_from_csvs(
+            tmp_path, datetime.now(), OCEAN_reward, True, False
+        )
 
         rewards_per_lp = csvs.load_volume_rewards_csv(str(tmp_path))
 
