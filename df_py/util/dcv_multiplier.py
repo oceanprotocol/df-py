@@ -34,7 +34,9 @@ def calc_dcv_multiplier(DF_week: int, is_predictoor: bool) -> float:
       DCV_multiplier --
     """
     if is_predictoor:
-        return PREDICTOOR_MULTIPLIER
+        if DF_week < 82:
+            return PREDICTOOR_MULTIPLIER
+        return PREDICTOOR_MULTIPLIER * 5
 
     if DF_week < 9:
         return np.inf
