@@ -26,6 +26,7 @@ from df_py.predictoor.queries import query_predictoor_contracts, query_predictoo
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
 from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
+from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_arguments import (
     CHAINID_EXAMPLES,
@@ -60,6 +61,7 @@ from df_py.util.vesting_schedule import (
 )
 from df_py.volume import csvs, queries
 from df_py.volume.reward_calculator import RewardShaper, get_df_week_number
+from df_py.util.reward_shaper import RewardShaper
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
 from df_py.util.datanft_blocktime import (
     get_block_number_from_weeknumber,
@@ -510,16 +512,14 @@ def do_calc():
 
     if tot_ocean == 0:
         # Vesting wallet contract is used to calculate the reward amount for given week / start date
-        # currently only deployed on Goerli
+        # currently only deployed on Sepolia
 
-        # NOTE Goerli is being shut down so disable this for now
-        # NOTE Enable this once the Exp Vesting contract is deployed on mainnet
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        address_path = os.path.join(
+            current_dir, "..", "..", ".github", "workflows", "data", "address.json"
+        )
+        record_deployed_contracts(address_path, 11155111)
 
-        # current_dir = os.path.dirname(os.path.abspath(__file__))
-        # address_path = os.path.join(
-        #     current_dir, "..", "..", ".github", "workflows", "data", "address.json"
-        # )
-        # record_deployed_contracts(address_path, 5)
         tot_ocean = get_active_reward_amount_for_week_eth_by_stream(
             start_date, arguments.SUBSTREAM
         )
@@ -551,12 +551,10 @@ def do_calc():
         calc_volume_rewards_from_csvs(csv_dir, start_date, tot_ocean)
 
     if arguments.SUBSTREAM == "predictoor_rose":
-        SAPPHIRE_MAINNET_ID = 23294
-
         predictoor_data = load_predictoor_data_csv(csv_dir)
         print("Loaded predictoor data:", predictoor_data)
         predictoor_rewards = calc_predictoor_rewards(
-            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_ID
+            predictoor_data, arguments.TOT_OCEAN, SAPPHIRE_MAINNET_CHAINID
         )
         print("Calculated rewards:", predictoor_rewards)
 
@@ -1188,7 +1186,10 @@ def _getSecretSeedOrExit() -> int:
 def _getPrivateAccount():
     private_key = os.getenv("DFTOOL_KEY")
     assert private_key is not None, "Need to set envvar DFTOOL_KEY"
+
+    # pylint: disable=no-value-for-parameter
     account = Account.from_key(private_key=private_key)
+
     print(f"For private key DFTOOL_KEY, address is: {account.address}")
     return account
 

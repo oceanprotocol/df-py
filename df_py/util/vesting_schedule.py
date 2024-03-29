@@ -11,7 +11,7 @@ from df_py.util.constants import (
     PREDICTOOR_OCEAN_BUDGET,
     PREDICTOOR_RELEASE_WEEK,
 )
-from df_py.volume.reward_calculator import get_df_week_number
+from df_py.util.dcv_multiplier import get_df_week_number
 
 
 @enforce_types

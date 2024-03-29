@@ -1,7 +1,8 @@
+from typing import Tuple
+
 from enforce_typing import enforce_types
 
 from df_py.volume import cleancase, csvs
-from typing import Tuple
 
 
 @enforce_types

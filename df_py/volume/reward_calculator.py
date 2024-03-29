@@ -1,20 +1,14 @@
-from datetime import datetime
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 import numpy as np
-import scipy
 from enforce_typing import enforce_types
 
 from df_py.predictoor.queries import query_predictoor_contracts
-from df_py.util.constants import (
-    DEPLOYER_ADDRS,
-    MAX_N_RANK_ASSETS,
-    PREDICTOOR_MULTIPLIER,
-    RANK_SCALE_OP,
-    TARGET_WPY,
-)
+from df_py.util.constants import DEPLOYER_ADDRS, TARGET_WPY
+from df_py.util.dcv_multiplier import calc_dcv_multiplier
 from df_py.volume import cleancase as cc
-from df_py.volume import to_usd
+from df_py.volume.rank import rank_based_allocate
+from df_py.volume.to_usd import nft_vols_to_usd
 
 
 def freeze_attributes(func):
@@ -30,6 +24,7 @@ def freeze_attributes(func):
     return wrapper
 
 
+# pylint: disable=too-many-instance-attributes
 class RewardCalculator:
     def __setattr__(self, attr, value):
         if getattr(self, "_freeze_attributes", False) and attr != "_freeze_attributes":
@@ -71,9 +66,7 @@ class RewardCalculator:
         self.symbols = cc.mod_symbols(symbols)
         self.rates = cc.mod_rates(rates)
 
-        self.nftvols_USD = to_usd.nft_vols_to_usd(
-            self.nftvols, self.symbols, self.rates
-        )
+        self.nftvols_USD = nft_vols_to_usd(self.nftvols, self.symbols, self.rates)
 
         self.chain_nft_tups = self._get_chain_nft_tups()
         self.LP_addrs = self._get_lp_addrs()
@@ -92,6 +85,8 @@ class RewardCalculator:
         self.R: np.ndarray
         self.L: np.ndarray
 
+        self.C: np.ndarray
+
         self._freeze_attributes = True
 
     @enforce_types
@@ -106,7 +101,7 @@ class RewardCalculator:
         self.S, self.V_USD, self.M, self.C, self.L = (
             self._stake_vol_owner_dicts_to_arrays()
         )
-        self.R = self._calc_rewards_usd()
+        self.R = self.calc_rewards__usd()
 
         self._freeze_attributes = True
 
@@ -155,7 +150,7 @@ class RewardCalculator:
 
     @freeze_attributes
     @enforce_types
-    def _calc_rewards_usd(self) -> np.ndarray:
+    def calc_rewards__usd(self) -> np.ndarray:
         """
         @return
           R -- 2d array of [LP i, chain_nft j] -- rewards denominated in OCEAN
@@ -175,7 +170,7 @@ class RewardCalculator:
                     S[self.C[j], j] *= 2.0
         # perc_per_j
         if self.do_rank:
-            perc_per_j = self._rank_based_allocate()
+            perc_per_j = rank_based_allocate(self.V_USD)
         else:
             perc_per_j = self.V_USD / np.sum(self.V_USD)
 
@@ -201,7 +196,7 @@ class RewardCalculator:
                 R[i, j] = min(
                     perc_at_j * perc_at_ij * self.OCEAN_avail,
                     ocean_locked_ij * TARGET_WPY,  # bound rewards by max APY
-                    DCV_OCEAN_j * multiplier,  # bound rewards by DCV
+                    DCV_OCEAN_j * perc_at_ij * multiplier,  # bound rewards by DCV
                 )
 
         # filter negligible values
@@ -224,67 +219,6 @@ class RewardCalculator:
         assert sum1 <= self.OCEAN_avail * (1 + tol), (sum2, self.OCEAN_avail, R)
 
         return R
-
-    @freeze_attributes
-    @enforce_types
-    def _rank_based_allocate(
-        self,
-        max_n_rank_assets: int = MAX_N_RANK_ASSETS,
-        rank_scale_op: str = RANK_SCALE_OP,
-        return_info: bool = False,
-    ) -> Union[np.ndarray, tuple]:
-        """
-        @return
-        Always return:
-          perc_per_j -- 1d array of [chain_nft j] -- percentage
-
-        Also return, if return_info == True:
-          ranks, max_N, allocs, I -- details in code itself
-        """
-        if len(self.V_USD) == 0:
-            return np.array([], dtype=float)
-        if min(self.V_USD) <= 0.0:
-            raise ValueError(
-                f"each nft needs volume > 0. min(self.V_USD)={min(self.V_USD)}"
-            )
-
-        # compute ranks. highest-DCV is rank 1. Then, rank 2. Etc
-        ranks = scipy.stats.rankdata(-1 * self.V_USD, method="min")
-
-        # compute allocs
-        N = len(ranks)
-        max_N = min(N, max_n_rank_assets)
-        allocs = np.zeros(N, dtype=float)
-        I = np.where(ranks <= max_N)[0]  # indices that we'll allocate to
-        assert len(I) > 0, "should be allocating to *something*"
-
-        if rank_scale_op == "LIN":
-            allocs[I] = max(ranks[I]) - ranks[I] + 1.0
-        elif rank_scale_op == "SQRT":
-            sqrtranks = np.sqrt(ranks)
-            allocs[I] = max(sqrtranks[I]) - sqrtranks[I] + 1.0
-        elif rank_scale_op == "POW2":
-            allocs[I] = (max(ranks[I]) - ranks[I] + 1.0) ** 2
-        elif rank_scale_op == "POW4":
-            allocs[I] = (max(ranks[I]) - ranks[I] + 1.0) ** 4
-        elif rank_scale_op == "LOG":
-            logranks = np.log10(ranks)
-            allocs[I] = max(logranks[I]) - logranks[I] + np.log10(1.5)
-        else:
-            raise ValueError(rank_scale_op)
-
-        # normalize
-        perc_per_j = allocs / sum(allocs)
-
-        # postconditions
-        tol = 1e-8
-        assert (1.0 - tol) <= sum(perc_per_j) <= (1.0 + tol)
-
-        # return
-        if return_info:
-            return perc_per_j, ranks, max_N, allocs, I
-
-        return perc_per_j
 
     @freeze_attributes
     @enforce_types
@@ -375,83 +309,17 @@ class RewardCalculator:
           predictoor_feed_addrs -- dict of (chainID, list of nft_addrs)
 
         @notes
-          This will only return the prediction feeds that are owned by DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
+          This will only return the prediction feeds that are owned by
+          DEPLOYER_ADDRS, due to functionality of query_predictoor_contracts().
         """
         chainIDs = list(self.stakes.keys())
         predictoor_feed_addrs: Dict[int, List[str]] = {
             chain_id: [] for chain_id in chainIDs
         }
 
-        for chain_id in DEPLOYER_ADDRS.keys():
+        for chain_id in DEPLOYER_ADDRS:
             predictoor_feed_addrs[chain_id] = query_predictoor_contracts(
                 chain_id
             ).keys()
 
         return predictoor_feed_addrs
-
-
-class RewardShaper:
-    @staticmethod
-    @enforce_types
-    def flatten(rewards: Dict[int, Dict[str, float]]) -> Dict[str, float]:
-        """
-        @arguments
-          rewards -- dict of [chainID][LP_addr] : reward_float
-
-        @return
-          flats -- dict of [LP_addr] : reward_float
-        """
-        flats: Dict[str, float] = {}
-        for chainID in rewards:
-            for LP_addr in rewards[chainID]:
-                flats[LP_addr] = flats.get(LP_addr, 0.0) + rewards[chainID][LP_addr]
-
-        return flats
-
-    @staticmethod
-    def merge(*reward_dicts):
-        merged_dict = {}
-
-        for reward_dict in reward_dicts:
-            for key, value in reward_dict.items():
-                merged_dict[key] = merged_dict.get(key, 0) + value
-
-        return merged_dict
-
-
-@enforce_types
-def get_df_week_number(dt: datetime) -> int:
-    """Return the DF week number. This is used by boundRewardsByDcv().
-    There was a gap from DF4 to DF5. Since we only care about future dates,
-    don't bother to properly support this gap, just focus on future.
-    """
-    DF5_start = datetime(2022, 9, 29)  # Thu Sep 29
-    if dt < DF5_start:
-        return -1
-
-    days_offset = (dt - DF5_start).days
-    weeks_offset = days_offset // 7
-    DF_week = weeks_offset + 1 + 4
-    return DF_week
-
-
-def calc_dcv_multiplier(DF_week: int, is_predictoor: bool) -> float:
-    """
-    Calculate DCV multiplier, for use in bounding rewards_avail by DCV
-
-    @arguments
-      DF_week -- e.g. 9 for DF9
-
-    @return
-      DCV_multiplier --
-    """
-    if is_predictoor:
-        return PREDICTOOR_MULTIPLIER
-
-    if DF_week < 9:
-        return np.inf
-
-    if 9 <= DF_week <= 28:
-        return -0.0485 * (DF_week - 9) + 1.0
-
-    return 0.001

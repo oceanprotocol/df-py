@@ -5,9 +5,10 @@ from typing import Dict, Optional, Union
 from enforce_typing import enforce_types
 
 from df_py.util.constants import DO_PUBREWARDS, DO_RANK
+from df_py.util.dcv_multiplier import get_df_week_number
 from df_py.util.graphutil import wait_to_latest_block
 from df_py.volume import allocations, csvs
-from df_py.volume.reward_calculator import RewardCalculator, get_df_week_number
+from df_py.volume.reward_calculator import RewardCalculator
 
 
 @enforce_types
@@ -45,6 +46,7 @@ def calc_volume_rewards_from_csvs(
     csvs.save_volume_rewardsinfo_csv(rewinfo, str(csv_dir))
 
 
+@enforce_types
 def calc_volume_rewards(
     S: Dict[int, Dict[str, Dict[str, float]]],
     L: Dict[int, Dict[str, Dict[str, float]]],
