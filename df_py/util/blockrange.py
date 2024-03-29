@@ -68,8 +68,10 @@ class BlockRange:
         )
 
 
-def create_range(web3, st, fin, samples, rndseed) -> BlockRange:
-    st_block, fin_block = get_st_fin_blocks(web3, st, fin)
+def create_range(
+    web3, st, fin, samples, rndseed, use_data_nft: bool = False
+) -> BlockRange:
+    st_block, fin_block = get_st_fin_blocks(web3, st, fin, use_data_nft)
     rng = BlockRange(st_block, fin_block, samples, rndseed, web3=web3)
     rng.filter_by_max_block(web3.eth.get_block("latest").number - 4)
 

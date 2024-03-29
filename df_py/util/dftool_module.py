@@ -3,6 +3,8 @@ import argparse
 import os
 import sys
 
+from datetime import datetime
+
 from enforce_typing import enforce_types
 from eth_account import Account
 from web3.main import Web3
@@ -23,7 +25,7 @@ from df_py.predictoor.calc_rewards import (
 from df_py.predictoor.queries import query_predictoor_contracts, query_predictoors
 from df_py.util import blockrange, dispense, get_rate, networkutil, oceantestutil
 from df_py.util.base18 import from_wei, to_wei
-from df_py.util.blocktime import get_fin_block, timestr_to_timestamp
+from df_py.util.blocktime import get_fin_block, get_st_fin_blocks, timestr_to_timestamp
 from df_py.util.constants import SAPPHIRE_MAINNET_CHAINID
 from df_py.util.contract_base import ContractBase
 from df_py.util.dftool_arguments import (
@@ -58,8 +60,13 @@ from df_py.util.vesting_schedule import (
     get_active_reward_amount_for_week_eth_by_stream,
 )
 from df_py.volume import csvs, queries
+from df_py.volume.reward_calculator import RewardShaper, get_df_week_number
 from df_py.util.reward_shaper import RewardShaper
 from df_py.volume.calc_rewards import calc_volume_rewards_from_csvs
+from df_py.util.datanft_blocktime import (
+    get_block_number_from_weeknumber,
+    set_blocknumber_to_datanft,
+)
 
 
 @enforce_types
@@ -72,6 +79,13 @@ def do_volsym():
         """,
         command_name="volsym",
         csv_names="nftvols-CHAINID.csv, owners-CHAINID.csv, symbols-CHAINID.csv",
+    )
+    parser.add_argument(
+        "--USE_DATANFT",
+        default=False,
+        type=bool,
+        help="Use DataNFT contract for block numbers",
+        required=False,
     )
 
     arguments = parser.parse_args()
@@ -93,7 +107,12 @@ def do_volsym():
 
     # main work
     rng = blockrange.create_range(
-        web3, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
+        web3,
+        arguments.ST,
+        arguments.FIN,
+        arguments.NSAMP,
+        SECRET_SEED,
+        arguments.USE_DATANFT,
     )
 
     (Vi, Ci, SYMi) = retry_function(
@@ -167,6 +186,13 @@ def do_allocations():
         command_name="allocations",
         csv_names="allocations.csv or allocations_realtime.csv",
     )
+    parser.add_argument(
+        "--USE_DATANFT",
+        default=False,
+        type=bool,
+        help="Use DataNFT contract for block numbers",
+        required=False,
+    )
 
     arguments = parser.parse_args()
     print_arguments(arguments)
@@ -182,7 +208,7 @@ def do_allocations():
 
     # main work
     rng = blockrange.create_range(
-        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
+        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED, arguments.USE_DATANFT
     )
     allocs = retry_function(
         queries.queryAllocations, arguments.RETRIES, 10, rng, chain_id
@@ -205,6 +231,13 @@ def do_vebals():
         command_name="vebals",
         csv_names="vebals.csv or vebals_realtime.csv",
     )
+    parser.add_argument(
+        "--USE_DATANFT",
+        default=False,
+        type=bool,
+        help="Use DataNFT contract for block numbers",
+        required=False,
+    )
     arguments = parser.parse_args()
     print_arguments(arguments)
 
@@ -217,7 +250,7 @@ def do_vebals():
 
     web3 = networkutil.chain_id_to_web3(chain_id)
     rng = blockrange.create_range(
-        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED
+        web3, arguments.ST, arguments.FIN, n_samp, SECRET_SEED, arguments.USE_DATANFT
     )
 
     balances, locked_amt, unlock_time = retry_function(
@@ -353,6 +386,86 @@ def do_predictoor_data():
         save_predictoor_data_csv(predictoor_data, csv_dir)
         save_predictoor_summary_csv(predictoor_data, csv_dir)
     print("dftool predictoor_data: Done")
+
+
+# ========================================================================
+
+
+@enforce_types
+def do_set_datanft_block_numbers():
+    parser = argparse.ArgumentParser(
+        description="Set the block numbers in the DataNFT \
+              contract for given start and end dates if not already set"
+    )
+    parser.add_argument("command", choices=["set_datanft_block_numbers"])
+    parser.add_argument(
+        "ST",
+        type=valid_date,
+        help="start date -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "FIN",
+        type=valid_date,
+        help="end date -- YYYY-MM-DD",
+    )
+    parser.add_argument(
+        "CHAINID",
+        type=chain_type,
+        help=f"DFRewards contract's network.{CHAINID_EXAMPLES}. If not given, uses 1 (mainnet).",
+    )
+
+    arguments = parser.parse_args()
+    print_arguments(arguments)
+    st_date = datetime.strptime(arguments.ST, "%Y-%m-%d")
+    start_week_number = get_df_week_number(st_date)
+    end_week_number = start_week_number + 1
+    from_account = _getPrivateAccount()
+    web3 = networkutil.chain_id_to_web3(arguments.CHAINID)
+
+    # get the block numbers
+    block_number_start = get_block_number_from_weeknumber(
+        web3.eth.chain_id, start_week_number
+    )
+    block_number_end = get_block_number_from_weeknumber(
+        web3.eth.chain_id, end_week_number
+    )
+    st_block, fin_block = get_st_fin_blocks(web3, arguments.ST, arguments.FIN, False)
+    print(
+        "Start and end block numbers:",
+        block_number_start,
+        block_number_end,
+        st_block,
+        fin_block,
+    )
+    if block_number_start == 0:
+        # not set, so set it
+        print(f"Setting block number {st_block} for week {start_week_number}")
+        done = set_blocknumber_to_datanft(
+            web3.eth.chain_id, from_account.address, st_block, start_week_number
+        )
+        if done:
+            print(f"Block number {st_block} set for week {start_week_number}")
+        else:
+            print(
+                f"Transaction failed for week {start_week_number} \
+                      while setting block number {st_block}"
+            )
+
+    if block_number_end == 0:
+        # not set, so set it
+        print(f"Setting block number {fin_block} for week {end_week_number}")
+        done = set_blocknumber_to_datanft(
+            web3.eth.chain_id, from_account.address, fin_block, end_week_number
+        )
+        if done:
+            print(f"Block number {fin_block} set for week {end_week_number}")
+        else:
+            print(
+                f"Transaction failed for week {end_week_number} \
+                      while setting block number {fin_block}"
+            )
+
+    print("dftool set_datanft_block_numbers: Done")
 
 
 # ========================================================================
