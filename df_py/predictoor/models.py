@@ -23,9 +23,7 @@ class Prediction:
 
     @property
     def revenue(self) -> float:
-        if self.payout > 0:
-            return self.payout
-        return -self.stake
+        return self.payout - self.stake
 
     @classmethod
     def from_query_result(cls, prediction_dict: Dict) -> "Prediction":
