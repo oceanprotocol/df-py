@@ -29,7 +29,7 @@ def sample_predictoor_data_csv(num_rows=50000):
         predictor_address = random_predictor_address()
         slot = random_slot()
         payout = random_payout()
-        stake = 1 if payout == 0 else 0.5
+        stake = 0.1
         contract_address = random_contract_address()
         result += f"{predictor_address},{slot},{payout},{stake},{contract_address}\n"
 
