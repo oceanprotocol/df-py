@@ -27,7 +27,7 @@ def create_mock_responses(n: int):
                     stats[user]["total"] += 1
                     if payout > 0:
                         stats[user]["correct"] += 1
-                        stats[user]["revenue"] += payout
+                        stats[user]["revenue"] += payout - 0.1
                     else:
                         stats[user]["revenue"] -= 0.1
 
