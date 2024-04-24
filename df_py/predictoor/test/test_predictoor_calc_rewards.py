@@ -56,7 +56,7 @@ def test_calc_predictoor_rewards_small_amount_two_predictoors():
     p2 = Predictoor("0x2")
 
     for _ in range(10000):
-        p2.add_prediction(Prediction(1, 100.0, 100.0, "0xContract1"))
+        p2.add_prediction(Prediction(1, 200.0, 100.0, "0xContract1"))
 
     predictoors = {"0x1": p1, "0x2": p2}
 
@@ -76,19 +76,22 @@ def test_calc_predictoor_rewards_small_amount_two_predictoors():
 
 def test_calc_predictoor_rewards_with_predictions():
     p1 = Predictoor("0x1")
-    for i in range(5):
+    # profit = 1.0
+    for i in range(7):
         p1.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
     for i in range(5):
         p1.add_prediction(Prediction(1, 0.0, 0.5, "0xContract1"))
 
     p2 = Predictoor("0x2")
-    for i in range(20):
+    # profit = 2.5
+    for i in range(15):
         p2.add_prediction(Prediction(1, 1.0, 0.5, "0xContract2"))
-    for i in range(20):
+    for i in range(10):
         p2.add_prediction(Prediction(1, 0.0, 0.5, "0xContract2"))
 
     p3 = Predictoor("0x3")
-    for i in range(5):
+    # profit = 1.5
+    for i in range(8):
         p3.add_prediction(Prediction(1, 1.0, 0.5, "0xContract2"))
     for i in range(5):
         p3.add_prediction(Prediction(1, 0.0, 0.5, "0xContract2"))
@@ -98,8 +101,8 @@ def test_calc_predictoor_rewards_with_predictions():
 
     assert len(rewards) == 2
     assert rewards["0xContract1"]["0x1"] == 50.0
-    assert rewards["0xContract2"]["0x2"] == 40.0
-    assert rewards["0xContract2"]["0x3"] == 10.0
+    assert rewards["0xContract2"]["0x2"] == 31.25
+    assert rewards["0xContract2"]["0x3"] == 18.75
 
 
 def test_negative_revenue():
