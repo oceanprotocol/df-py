@@ -108,12 +108,14 @@ def test_calc_predictoor_rewards_with_predictions():
 def test_negative_revenue():
     p1 = Predictoor("0x1")
     for _ in range(5):
+        # profit = 0.5 * 5
         p1.add_prediction(Prediction(1, 1.0, 0.5, "0xContract1"))
     for _ in range(5):
+        # profit = -2.0 * 5
         p1.add_prediction(Prediction(1, 0.0, 2.0, "0xContract1"))
 
     summary = p1.get_prediction_summary("0xContract1")
-    assert summary.total_revenue == -5
+    assert summary.total_revenue == -7.5
 
 
 def test_reward_calculation_with_negative():
