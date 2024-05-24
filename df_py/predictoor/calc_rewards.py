@@ -49,6 +49,7 @@ def calc_predictoor_rewards(
             slots.extend(slots_p)
 
         unique_slots = set(slots)
+        print("Contract", contract, "has", len(unique_slots), "unique slots", "and", len(predictoors), "predictoors")
         if len(unique_slots) == 0:
             print("No slots for contract", contract)
             continue
@@ -62,7 +63,8 @@ def calc_predictoor_rewards(
             for predictoor in predictoors.values():
                 predictoor_summary = predictoor.get_prediction_summary(contract, slot)
                 predictoor_revenue = predictoor_summary.total_revenue
-                total_revenue_slot += predictoor_revenue
+                if predictoor_revenue > 0:
+                    total_revenue_slot += predictoor_revenue
 
             for predictoor in predictoors.values():
                 predictoor_summary = predictoor.get_prediction_summary(contract, slot)
