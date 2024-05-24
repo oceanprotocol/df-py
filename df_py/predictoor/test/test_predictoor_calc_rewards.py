@@ -214,7 +214,6 @@ def test_calc_predictoor_different_slots():
     p2.add_prediction(Prediction(2, 1.0, 0.1, "0xContract1"))
     p2.add_prediction(Prediction(5, 1.0, 0.1, "0xContract1"))
 
-
     # p1 and p2 and p3 will share slot 1 reward
     # p1 and p3 will share slot 3
     # p1 and p2 will share slot 2

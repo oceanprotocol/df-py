@@ -49,7 +49,16 @@ def calc_predictoor_rewards(
             slots.extend(slots_p)
 
         unique_slots = set(slots)
-        print("Contract", contract, "has", len(unique_slots), "unique slots", "and", len(predictoors), "predictoors")
+        print(
+            "Contract",
+            contract,
+            "has",
+            len(unique_slots),
+            "unique slots",
+            "and",
+            len(predictoors),
+            "predictoors",
+        )
         if len(unique_slots) == 0:
             print("No slots for contract", contract)
             continue
@@ -71,13 +80,14 @@ def calc_predictoor_rewards(
                 predictoor_revenue = predictoor_summary.total_revenue
                 if not total_revenue_slot > 0:
                     continue
-                reward = token_avail_per_slot * (predictoor_revenue / total_revenue_slot)
+                reward = token_avail_per_slot * (
+                    predictoor_revenue / total_revenue_slot
+                )
                 if contract not in rewards:
                     rewards[contract] = {}
                 if predictoor.address not in rewards[contract]:
                     rewards[contract][predictoor.address] = 0
                 rewards[contract][predictoor.address] += reward
-
 
         # filter out predictoors with rewards below MIN_REWARD
         for predictoor in predictoors.values():

@@ -130,7 +130,9 @@ class Predictoor(PredictoorBase):
             slots.append(prediction.slot)
         return slots
 
-    def get_prediction_summary(self, contract_addr: str, slot: int = 0) -> PredictionSummary:
+    def get_prediction_summary(
+        self, contract_addr: str, slot: int = 0
+    ) -> PredictionSummary:
         """
         Get the prediction summary for a specific contract address.
 
