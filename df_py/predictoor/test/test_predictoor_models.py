@@ -49,6 +49,21 @@ def test_predictoor_summary():
     assert summary.total_stake == 12.0  # 1 + 1 + 10
 
 
+def test_predictoor_summary_with_slot():
+    predictoor = Predictoor("0x1")
+    predictoor.add_prediction(Prediction(123, 10.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(123, 5.0, 1.0, "0x1"))
+    predictoor.add_prediction(Prediction(124, 0.0, 10.0, "0x1"))
+
+    summary = predictoor.get_prediction_summary("0x1", 123)
+    assert summary.prediction_count == 2
+    assert summary.correct_prediction_count == 2
+    assert summary.contract_addr == "0x1"
+    assert summary.total_payout == 15.0
+    assert summary.total_revenue == 13.0  # 9.0 + 4.0
+    assert summary.total_stake == 2.0  # 1 + 1
+
+
 def test_prediction_from_query_result():
     prediction_dict = {
         "slot": {

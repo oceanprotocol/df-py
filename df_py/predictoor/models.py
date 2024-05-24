@@ -122,7 +122,7 @@ class Predictoor(PredictoorBase):
         super().__init__(address, 0, 0, 0, 0)
         self._predictions: List[Prediction] = []
 
-    def get_prediction_summary(self, contract_addr: str) -> PredictionSummary:
+    def get_prediction_summary(self, contract_addr: str, slot: int = 0) -> PredictionSummary:
         """
         Get the prediction summary for a specific contract address.
 
@@ -138,6 +138,8 @@ class Predictoor(PredictoorBase):
         total_revenue = 0.0
 
         for prediction in self._predictions:
+            if slot != 0 and prediction.slot != slot:
+                continue
             if prediction.contract_addr != contract_addr:
                 continue
             prediction_count += 1
