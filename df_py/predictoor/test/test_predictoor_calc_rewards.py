@@ -198,3 +198,47 @@ def test_aggregate_rewards():
     }
 
     assert result == expected_output
+
+
+def test_calc_predictoor_different_slots():
+    p1 = Predictoor("0x1")
+    p2 = Predictoor("0x2")
+    p3 = Predictoor("0x3")
+
+    p1.add_prediction(Prediction(1, 1.0, 0.1, "0xContract1"))
+    p2.add_prediction(Prediction(1, 1.0, 0.1, "0xContract1"))
+    p3.add_prediction(Prediction(1, 1.0, 0.1, "0xContract1"))
+    p1.add_prediction(Prediction(3, 1.0, 0.1, "0xContract1"))
+    p3.add_prediction(Prediction(3, 1.0, 0.1, "0xContract1"))
+    p1.add_prediction(Prediction(2, 1.0, 0.1, "0xContract1"))
+    p2.add_prediction(Prediction(2, 1.0, 0.1, "0xContract1"))
+    p2.add_prediction(Prediction(5, 1.0, 0.1, "0xContract1"))
+
+
+    # p1 and p2 and p3 will share slot 1 reward
+    # p1 and p3 will share slot 3
+    # p1 and p2 will share slot 2
+    # p2 will have slot 5 to itself
+
+    # total of 4 slots, 100 rewards, 25 per each slot
+    p1_expected = 25 / 3 + 25 / 2 + 25 / 2
+    p2_expected = 25 / 3 + 25 / 2 + 25
+    p3_expected = 25 / 3 + 25 / 2
+
+    predictoors = {"0x1": p1, "0x2": p2, "0x3": p3}
+
+    rewards = calc_predictoor_rewards(predictoors, 200, DEV_CHAINID)
+
+    total_rewards_for_p1 = sum(
+        contract_rewards.get(p1.address, 0) for contract_rewards in rewards.values()
+    )
+    total_rewards_for_p2 = sum(
+        contract_rewards.get(p2.address, 0) for contract_rewards in rewards.values()
+    )
+    total_rewards_for_p3 = sum(
+        contract_rewards.get(p3.address, 0) for contract_rewards in rewards.values()
+    )
+
+    assert total_rewards_for_p1 == pytest.approx(p1_expected)
+    assert total_rewards_for_p2 == pytest.approx(p2_expected)
+    assert total_rewards_for_p3 == pytest.approx(p3_expected)
