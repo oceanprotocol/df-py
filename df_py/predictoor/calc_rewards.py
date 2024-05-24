@@ -78,7 +78,7 @@ def calc_predictoor_rewards(
             for predictoor in predictoors.values():
                 predictoor_summary = predictoor.get_prediction_summary(contract, slot)
                 predictoor_revenue = predictoor_summary.total_revenue
-                if total_revenue_slot <= 0:
+                if predictoor_revenue <= 0:
                     continue
                 reward = token_avail_per_slot * (
                     predictoor_revenue / total_revenue_slot
