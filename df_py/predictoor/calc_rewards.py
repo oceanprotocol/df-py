@@ -42,30 +42,46 @@ def calc_predictoor_rewards(
     # Loop through each contract and calculate the rewards for predictions
     # made for that specific contract
     for contract in predictoor_contracts:
-        total_revenue_for_contract = 0
-        for p in predictoors.values():
-            summary = p.get_prediction_summary(contract)
-            total_revenue_for_contract += max(
-                summary.total_revenue, 0
-            )  # ignore negative values
+        slots = []
+        # Find the unique slots for the contract
+        for predictoor in predictoors.values():
+            slots_p = predictoor.slots_for_contract(contract)
+            slots.extend(slots_p)
 
-        # If total revenue for this contract is 0, no rewards are distributed
-        if total_revenue_for_contract == 0:
-            print("Total revenue for contract: ", contract, " was zero")
+        unique_slots = set(slots)
+        if len(unique_slots) == 0:
+            print("No slots for contract", contract)
             continue
 
-        # Calculate rewards for each predictoor for this contract
-        for pdr_address, predictoor in predictoors.items():
-            revenue_contract = predictoor.get_prediction_summary(contract).total_revenue
-            if revenue_contract <= 0:
-                # ignore negative revenues
-                continue
-            reward_amt = (
-                revenue_contract / total_revenue_for_contract * tokens_per_contract
-            )
-            if reward_amt < MIN_REWARD:
-                continue
-            rewards[contract][pdr_address] = reward_amt
+        # Calculate the rewards for each predictoor for the contract
+        token_avail_per_slot = tokens_per_contract / len(unique_slots)
+
+        # go over each slot, compare predictoors, and distribute rewards
+        for slot in unique_slots:
+            total_revenue_slot = 0.0
+            for predictoor in predictoors.values():
+                predictoor_summary = predictoor.get_prediction_summary(contract, slot)
+                predictoor_revenue = predictoor_summary.total_revenue
+                total_revenue_slot += predictoor_revenue
+
+            for predictoor in predictoors.values():
+                predictoor_summary = predictoor.get_prediction_summary(contract, slot)
+                predictoor_revenue = predictoor_summary.total_revenue
+                if not total_revenue_slot > 0:
+                    continue
+                reward = token_avail_per_slot * (predictoor_revenue / total_revenue_slot)
+                if contract not in rewards:
+                    rewards[contract] = {}
+                if predictoor.address not in rewards[contract]:
+                    rewards[contract][predictoor.address] = 0
+                rewards[contract][predictoor.address] += reward
+
+
+        # filter out predictoors with rewards below MIN_REWARD
+        for predictoor in predictoors.values():
+            if contract in rewards and predictoor.address in rewards[contract]:
+                if rewards[contract][predictoor.address] < MIN_REWARD:
+                    del rewards[contract][predictoor.address]
 
     return rewards
 
