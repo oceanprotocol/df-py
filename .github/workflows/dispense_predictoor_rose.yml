@@ -126,7 +126,7 @@ jobs:
           if [[ "${{ github.event_name }}" == "schedule" ]]; then
             echo "DESTINATION=df-historical-data" >> $GITHUB_ENV
           else
-            echo "DESTINATION=df-historical-data-test" >> $GITHUB_ENV
+            echo "DESTINATION=df-historical-data" >> $GITHUB_ENV
           fi
 
       - name: Remove predictoor_data.csv
