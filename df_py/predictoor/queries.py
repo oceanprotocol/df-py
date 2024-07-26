@@ -31,6 +31,7 @@ WHITELIST_FEEDS_MAINNET = [
     "0xfa69b2c1224cebb3b6a36fb5b8c3c419afab08dd",
 ]
 
+
 @enforce_types
 def key_to_725(key: str):
     key725 = Web3.keccak(key.encode("utf-8")).hex()
@@ -242,10 +243,13 @@ def query_predictoors(st_ts: int, end_ts: int, chainID: int) -> Dict[str, Predic
             break
 
         for prediction_dict in predictions:
-            if prediction_dict["slot"]["predictContract"]["id"] not in WHITELIST_FEEDS_MAINNET:
-                owner = prediction_dict["slot"]["predictContract"]["token"]["nft"]["owner"][
-                    "id"
-                ]
+            if (
+                prediction_dict["slot"]["predictContract"]["id"]
+                not in WHITELIST_FEEDS_MAINNET
+            ):
+                owner = prediction_dict["slot"]["predictContract"]["token"]["nft"][
+                    "owner"
+                ]["id"]
                 if chainID != DEV_CHAINID:
                     if owner not in DEPLOYER_ADDRS[chainID]:
                         print("noowner", owner, chainID, DEPLOYER_ADDRS)
