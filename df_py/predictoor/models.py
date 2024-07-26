@@ -38,9 +38,7 @@ class Prediction:
             ValueError: If the input dictionary is invalid.
         """
         try:
-            contract_addr = prediction_dict["slot"]["predictContract"]["token"]["nft"][
-                "id"
-            ]
+            contract_addr = prediction_dict["slot"]["predictContract"]["id"]
             slot = int(prediction_dict["slot"]["slot"])
             if (
                 prediction_dict["payout"] is not None

@@ -63,7 +63,7 @@ def test_prediction_from_query_result():
     assert prediction.payout == 1.23
     assert prediction.stake == 0.22352
     assert prediction.revenue == prediction.payout - prediction.stake
-    assert prediction.contract_addr == "0x2"
+    assert prediction.contract_addr == "0x1"
     with pytest.raises(ValueError):
         prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
         Prediction.from_query_result(prediction_dict)
@@ -83,7 +83,7 @@ def test_prediction_from_query_result_no_payout():
     assert prediction.payout == 0.0
     assert prediction.stake == 0.22352
     assert prediction.revenue == -0.22352
-    assert prediction.contract_addr == "0x2"
+    assert prediction.contract_addr == "0x1"
     with pytest.raises(ValueError):
         prediction_dict = {"slot": {"predictContract": "0x123"}, "payout": "invalid"}
         Prediction.from_query_result(prediction_dict)

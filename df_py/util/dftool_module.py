@@ -515,7 +515,7 @@ def do_dispense_active():
 
         print("Distributing VOLUME DF rewards")
         rewards = volume_rewards
-    elif arguments.PREDICTOOR_ROSE is True:
+    else:
         predictoor_rewards = load_predictoor_rewards_csv(arguments.CSV_DIR)
         rewards = aggregate_predictoor_rewards(predictoor_rewards)
 
