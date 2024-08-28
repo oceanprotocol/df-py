@@ -18,7 +18,7 @@ install_requirements = [
     "coverage",
     "ccxt==3.0.84",
     "eciespy",
-    "web3",
+    "web3==6.20.3",
     "py-solc-x",
     "enforce_typing",
     "mypy",
