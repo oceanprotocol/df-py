@@ -38,7 +38,7 @@ jobs:
 
       - name: Check if the Year is 2024 (ROSE reward distribution ends at the end of 2024)
         run: |
-          current_year=$(date -d "last-thursday  - 1 week" '+%Y')
+          current_year=$(date -d "last-thursday  - 2 week" '+%Y')
           if [ "$current_year" != "2024" ]; then
             echo "Current year is not 2024, exiting workflow."
             exit 1
