@@ -3,10 +3,6 @@ name: Dispense Predictoor ROSE Rewards
 on:
   schedule:
     - cron: "0 0 * * 1"
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
       amt_of_tokens:
