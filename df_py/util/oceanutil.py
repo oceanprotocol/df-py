@@ -374,7 +374,7 @@ def get_zero_provider_fee_dict(web3: Web3, provider_account) -> Dict[str, Any]:
         "providerFeeToken": provider_fee_token,
         "providerFeeAmount": provider_fee_amount,
         "providerData": Web3.to_hex(Web3.to_bytes(text=provider_data)),
-        # make it compatible with last openzepellin
+        # make it compatible with last openzeppelin
         # https://github.com/OpenZeppelin/openzeppelin-contracts/pull/1622
         "v": signature.v,
         "r": signature.r,
