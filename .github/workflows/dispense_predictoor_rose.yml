@@ -91,7 +91,7 @@ jobs:
           ./dftool calc predictoor_rose $CSV_DIR 20000
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: CSV Files
           retention-days: 5
