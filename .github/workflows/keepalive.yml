@@ -9,8 +9,10 @@ jobs:
   dummy-commit:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repo
+      - name: Checkout dummy-commits branch (or create it)
         uses: actions/checkout@v3
+        with:
+          ref: dummy-commits
 
       - name: Restore last-run cache
         id: cache
