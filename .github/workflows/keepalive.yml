@@ -1,0 +1,57 @@
+name: Dummy Commit Every 50 Days
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+  workflow_dispatch:
+
+jobs:
+  dummy-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Restore last-run cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: .last-run
+          key: dummy-commit-last-run
+
+      - name: Check time since last run
+        id: check
+        run: |
+          mkdir -p .last-run
+          file=".last-run/timestamp"
+
+          if [ ! -f "$file" ]; then
+            echo "No timestamp found. Proceeding."
+            echo "run=true" >> $GITHUB_OUTPUT
+          else
+            last=$(cat "$file")
+            now=$(date +%s)
+            delta_days=$(( (now - last) / 86400 ))
+            echo "Last run was $delta_days days ago."
+
+            if [ "$delta_days" -ge 50 ]; then
+              echo "run=true" >> $GITHUB_OUTPUT
+            else
+              echo "run=false" >> $GITHUB_OUTPUT
+            fi
+          fi
+
+      - name: Make dummy commit
+        if: steps.check.outputs.run == 'true'
+        run: |
+          echo "Dummy commit on $(date -u)" >> dummy_commit.log
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add dummy_commit.log
+          git commit -m "chore: dummy keep-alive commit"
+          git push
+
+      - name: Save timestamp to cache
+        if: steps.check.outputs.run == 'true'
+        run: |
+          date +%s > .last-run/timestamp
