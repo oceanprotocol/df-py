@@ -1,12 +1,6 @@
 name: Dispense Predictoor ROSE Rewards
 
 on:
-  schedule:
-    - cron: "0 0 * * 1"
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
   workflow_dispatch:
     inputs:
       amt_of_tokens:
@@ -42,7 +36,7 @@ jobs:
 
       - name: Set branch to checkout
         id: set_branch
-        run: echo "BRANCH=${{ github.event_name == 'schedule' && steps.df-py.outputs.release || github.ref }}" >> $GITHUB_ENV
+        run: echo "BRANCH=${{ github.ref }}" >> $GITHUB_ENV
 
       - uses: actions/checkout@v3
         with:
@@ -68,8 +62,8 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
-          echo "date=$(date -d "last-thursday - 1 week" '+%Y-%m-%d')" >> $GITHUB_ENV
-          echo "now=$(date -d "last-thursday" '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "date=$(date -d "last-thursday - 3 week" '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "now=$(date -d "last-thursday - 2 week" '+%Y-%m-%d')" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
           echo "POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/" >> $GITHUB_ENV
@@ -100,7 +94,7 @@ jobs:
       - name: Distribute Predictoor rewards
         env:
           USE_MULTISIG: false
-        if: github.event_name == 'schedule'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           ./dftool dispense_active $CSV_DIR 23294 --DFREWARDS_ADDR="0xc37F8341Ac6e4a94538302bCd4d49Cf0852D30C0" --TOKEN_ADDR="0x8Bc2B030b299964eEfb5e1e0b36991352E56D2D3" --PREDICTOOR_ROSE True
 
@@ -115,7 +109,7 @@ jobs:
 
       - name: Set upload destination
         run: |
-          if [[ "${{ github.event_name }}" == "schedule" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
             echo "DESTINATION=df-historical-data" >> $GITHUB_ENV
           else
             echo "DESTINATION=df-historical-data-test" >> $GITHUB_ENV
