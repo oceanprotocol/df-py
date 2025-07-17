@@ -62,8 +62,8 @@ jobs:
           echo "ADDRESS_FILE=.github/workflows/data/address.json" >> $GITHUB_ENV
           echo "WEB3_INFURA_PROJECT_ID=${{ secrets.WEB3_INFURA_PROJECT_ID }}" >> $GITHUB_ENV
           echo "SECRET_SEED=${{ secrets.SECRET_SEED }}" >> $GITHUB_ENV
-          echo "date=$(date -d "last-thursday - 2 week" '+%Y-%m-%d')" >> $GITHUB_ENV
-          echo "now=$(date -d "last-thursday - 1 week" '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "date=$(date -d "last-thursday - 1 week" '+%Y-%m-%d')" >> $GITHUB_ENV
+          echo "now=$(date -d "last-thursday" '+%Y-%m-%d')" >> $GITHUB_ENV
           echo "CSV_DIR=/tmp/csv" >> $GITHUB_ENV
           echo "RETRY_TIMES=5" >> $GITHUB_ENV
           echo "POLYGON_RPC_URL=https://polygon-mainnet.infura.io/v3/" >> $GITHUB_ENV
