@@ -141,6 +141,7 @@ Now, you can use those networks simply by specifying a different chainid in `dft
 Happens via regularly-scheduled Github Actions:
 
 - Active: [flow.yml](.github/workflows/flow.yml)
+- Predictoor: [PREDICTOOR-DISPENSE.md](PREDICTOOR-DISPENSE.md)
 
 More info: [README-crons-ops.md](README-crons-ops.md)
 
