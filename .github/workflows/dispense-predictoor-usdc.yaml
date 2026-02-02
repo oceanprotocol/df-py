@@ -1,6 +1,8 @@
 name: Dispense Predictoor USDC Rewards
 
 on:
+  schedule:
+    - cron: "0 0 * * 1"
   push:
     branches: [main]
   pull_request:
@@ -99,7 +101,7 @@ jobs:
 
       - name: Rename folder to round number
         run: |
-          bash ./scripts/workflow_rename_folder.sh $now
+          bash ./scripts/workflow_rename_folder.sh $now -USDC
 
       - id: "auth"
         uses: "google-github-actions/auth@v1"

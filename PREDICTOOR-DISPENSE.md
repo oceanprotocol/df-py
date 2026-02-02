@@ -18,7 +18,7 @@ The workflow performs the following steps:
 2. **Data Retrieval:** Runs `dftool predictoor_data` to fetch predictoor performance data for the previous week.
 3. **Reward Calculation:** Runs `dftool calc predictoor_rose` to calculate rewards based on the fetched data.
 4. **Dispense:** Runs `dftool dispense_active` to send rewards to the `DFRewards` contract on Sapphire.
-5. **Upload:** Renames the results folder and uploads the CSV files to Google Cloud Storage for historical tracking.
+5. **Upload:** Renames the results folder (appending `-USDC` to the round number) and uploads the CSV files to Google Cloud Storage for historical tracking.
 
 ## Networks and Tokens
 

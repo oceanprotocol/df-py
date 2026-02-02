@@ -10,10 +10,13 @@ else
 	now="$1"
 fi
 
+suffix="$2"
+
 df_week=$(($(($(($(($(date -d "$now" +%s) - $(date -d "$count_start" +%s))) / 86400)) / 7)) + 4))
-echo $df_week
+df_foldersuffix="${df_week}${suffix}"
+echo $df_foldersuffix
 
-mkdir -p /tmp/csv/$df_week
-cp /tmp/csv/*.csv /tmp/csv/$df_week
+mkdir -p /tmp/csv/$df_foldersuffix
+cp /tmp/csv/*.csv /tmp/csv/$df_foldersuffix
 
-echo "DFWEEK=$df_week" >>$GITHUB_ENV
+echo "DFWEEK=$df_foldersuffix" >>$GITHUB_ENV
