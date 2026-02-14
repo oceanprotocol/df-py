@@ -13,5 +13,8 @@ The server runs a cron job that calculates the allocations, vebalances, volumes,
 ## Weekly Rewards
 Every Thursday at 12:00 UTC, Github Actions calculates the weekly rewards for the previous week. The results are then uploaded as an artifact to the Github Actions.
 
+## Predictoor Rewards
+Every Monday at 00:00 UTC, Github Actions calculates and dispenses rewards for Predictoors. [More info.](PREDICTOOR-DISPENSE.md)
+
 ## Contract Checkpoint
 Every Thursday at 12:00 UTC, Github Actions checkpoints the `FeeDistributor` smart contract. This ensures that the `FeeEstimate` smart contract serves the correct data.
