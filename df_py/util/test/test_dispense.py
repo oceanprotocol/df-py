@@ -112,7 +112,7 @@ def test_dispense_with_9_decimals(w3):
     token = ContractBase(
         w3,
         "OceanToken",
-        constructor_args=["USDC", "USDC", 9, to_wei(100e18, decimals=9)],
+        constructor_args=["USDC", "USDC", 9, to_wei(100000, decimals=9)],
     )
 
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
