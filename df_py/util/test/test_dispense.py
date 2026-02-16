@@ -110,7 +110,9 @@ def test_multisig_transfer_tokens(w3):
 def test_dispense_with_9_decimals(w3):
     # Create a token with 9 decimals (like USDC on Sapphire)
     token = ContractBase(
-        w3, "OceanToken", constructor_args=["USDC", "USDC", 9, to_wei(100e18, decimals=9)]
+        w3,
+        "OceanToken",
+        constructor_args=["USDC", "USDC", 9, to_wei(100e18, decimals=9)],
     )
 
     df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])

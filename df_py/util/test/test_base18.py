@@ -24,9 +24,17 @@ def test_wei_with_custom_decimals():
     assert from_wei(int(12.34 * 1e9), decimals=9) == 12.34
     assert from_wei(int(0.1234 * 1e9), decimals=9) == 0.1234
 
-    assert to_wei(1234, decimals=9) == 1234 * 1e9 and type(to_wei(1234, decimals=9)) == int
-    assert to_wei(12.34, decimals=9) == 12.34 * 1e9 and type(to_wei(12.34, decimals=9)) == int
-    assert to_wei(0.1234, decimals=9) == 0.1234 * 1e9 and type(to_wei(0.1234, decimals=9)) == int
+    assert (
+        to_wei(1234, decimals=9) == 1234 * 1e9 and type(to_wei(1234, decimals=9)) == int
+    )
+    assert (
+        to_wei(12.34, decimals=9) == 12.34 * 1e9
+        and type(to_wei(12.34, decimals=9)) == int
+    )
+    assert (
+        to_wei(0.1234, decimals=9) == 0.1234 * 1e9
+        and type(to_wei(0.1234, decimals=9)) == int
+    )
 
     assert str_with_wei(int(12.34 * 1e9), decimals=9) == "12.34 (12340000000 wei)"
 
