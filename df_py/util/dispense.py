@@ -53,12 +53,14 @@ def dispense(
         multisigaddr = chain_id_to_multisig_addr(web3.eth.chain_id)
     df_rewards = ContractBase(web3, "DFRewards", dfrewards_addr)
     TOK = ContractBase(web3, "OceanToken", token_addr)
+    token_decimals = TOK.decimals()
+    logger.info(f"  Token decimals: {token_decimals}")
     logger.info(f"  Total amount: {sum(rewards.values())} {TOK.symbol()}")
 
     # checksum addresses
     rewards = {web3.to_checksum_address(k): v for k, v in rewards.items()}
     to_addrs = list(rewards.keys())
-    values = [to_wei(rewards[to_addr]) for to_addr in to_addrs]
+    values = [to_wei(rewards[to_addr], token_decimals) for to_addr in to_addrs]
 
     N = len(rewards)
     sts = list(range(N))[::batch_size]  # send in batches to avoid gas issues
@@ -140,7 +142,8 @@ def dispense(
 
 @enforce_types
 def multisig_transfer_tokens(web3, ocean, receiver_address, amount):
-    amount_wei = to_wei(amount)
+    token_decimals = ocean.decimals()
+    amount_wei = to_wei(amount, token_decimals)
     transfer_data = ocean.contract.encodeABI(
         fn_name="transfer", args=[receiver_address, amount_wei]
     )

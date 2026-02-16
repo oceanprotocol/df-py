@@ -107,5 +107,39 @@ def test_multisig_transfer_tokens(w3):
 
 
 @enforce_types
+def test_dispense_with_9_decimals(w3):
+    # Create a token with 9 decimals (like USDC on Sapphire)
+    token = ContractBase(
+        w3, "OceanToken", constructor_args=["USDC", "USDC", 9, to_wei(100e18, decimals=9)]
+    )
+
+    df_rewards = ContractBase(w3, "DFRewards", constructor_args=[])
+    df_strategy = ContractBase(
+        w3, "DFStrategyV1", constructor_args=[df_rewards.address]
+    )
+
+    rewards_at_chain = {a1.address: 10.5, a2.address: 20.5, a3.address: 30.5}
+    dispense.dispense(
+        w3,
+        rewards_at_chain,
+        dfrewards_addr=df_rewards.address,
+        token_addr=token.address,
+        from_account=accounts[0],
+    )
+
+    # a1 claims for itself - should receive rewards with 9 decimals
+    bal_before = from_wei(token.balanceOf(a1), decimals=9)
+    df_strategy.claim([token.address], {"from": accounts[1]})
+    bal_after = from_wei(token.balanceOf(a1), decimals=9)
+    assert (bal_after - bal_before) == pytest.approx(10.5)
+
+    # a3 claims
+    bal_before = from_wei(token.balanceOf(a3), decimals=9)
+    df_rewards.claimFor(a3, token.address, {"from": accounts[8]})
+    bal_after = from_wei(token.balanceOf(a3), decimals=9)
+    assert (bal_after - bal_before) == pytest.approx(30.5)
+
+
+@enforce_types
 def setup_function():
     oceantestutil.fill_accounts_with_OCEAN(accounts)
