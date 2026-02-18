@@ -67,7 +67,8 @@ def do_volsym():
     parser = StartFinArgumentParser(
         description="Query chain, output volumes, symbols, owners",
         epilog=f"""Uses these envvars:
-          \nADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          \nADDRESS_FILE -- eg: export ADDRESS_FILE="""
+        f"""{networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
           \nSECRET_SEED -- secret integer used to seed the rng
         """,
         command_name="volsym",
@@ -96,7 +97,7 @@ def do_volsym():
         web3, arguments.ST, arguments.FIN, arguments.NSAMP, SECRET_SEED
     )
 
-    (Vi, Ci, SYMi) = retry_function(
+    Vi, Ci, SYMi = retry_function(
         queries.queryVolsOwnersSymbols, arguments.RETRIES, 60, rng, chain_id
     )
 
@@ -628,7 +629,8 @@ def do_init_dev_wallets():
         "Init wallets with OCEAN. (GANACHE ONLY)",
         "init_dev_wallets",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE="""
+        f"""{networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
     chain_id = parser.print_args_and_get_chain()
@@ -661,7 +663,8 @@ def do_many_random():
         "deploy many datatokens + locks OCEAN + allocates + consumes (for testing)",
         "many_random",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE="""
+        f"""{networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
 
@@ -703,7 +706,8 @@ def do_fake_rewards():
         "create some rewards (for testing)",
         "fake_rewards",
         epilog=f"""Uses these envvars:
-          ADDRESS_FILE -- eg: export ADDRESS_FILE={networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
+          ADDRESS_FILE -- eg: export ADDRESS_FILE="""
+        f"""{networkutil.chain_id_to_address_file(chainID=DEV_CHAINID)}
         """,
     )
 
@@ -833,12 +837,10 @@ def do_new_veallocate():
 # ========================================================================
 @enforce_types
 def do_ve_set_allocation():
-    parser = argparse.ArgumentParser(
-        description="""
+    parser = argparse.ArgumentParser(description="""
         Allocate weight to veAllocate contract (for testing).
         Set to 0 to trigger resetAllocation event.
-    """
-    )
+    """)
     parser.add_argument("command", choices=["ve_set_allocation"])
     parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=int, help="")
