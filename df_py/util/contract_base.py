@@ -4,6 +4,7 @@
 #
 
 """All contracts inherit from `ContractBase` class."""
+
 import logging
 from typing import Optional
 

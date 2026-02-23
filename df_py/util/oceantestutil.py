@@ -128,7 +128,7 @@ def random_create_dataNFT_with_FREs(web3: Web3, num_FRE: int, base_token):
         else:
             account_i = random.randint(0, len(accounts))
 
-        (data_NFT, DT, exchangeId) = oceanutil.create_data_nft_with_fre(
+        data_NFT, DT, exchangeId = oceanutil.create_data_nft_with_fre(
             web3, accounts[account_i], base_token
         )
         assert oceanutil.FixedPrice(web3.eth.chain_id).isActive(exchangeId) is True
@@ -166,7 +166,7 @@ def random_consume_FREs(FRE_tup: list, base_token):
     # consume data assets from FREs randomly
     for consume_i in range(NUM_CONSUMES):
         tup = random.choice(FRE_tup)
-        (pub_account_i, _, DT, exchangeId) = tup
+        pub_account_i, _, DT, exchangeId = tup
 
         # choose consume account
         cand_I = [i for i in range(9) if i != pub_account_i]

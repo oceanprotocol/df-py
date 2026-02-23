@@ -41,7 +41,7 @@ def test_rank_based_allocate_3_simple():
 def test_rank_based_allocate_3_exact(op):
     V_USD = np.array([10.0, 99.0, 3.0], dtype=float)
 
-    (p, ranks, max_N, allocs, I) = rank_based_allocate(
+    p, ranks, max_N, allocs, I = rank_based_allocate(
         V_USD, max_n_rank_assets=100, rank_scale_op=op, return_info=True
     )
 

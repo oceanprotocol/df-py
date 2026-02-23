@@ -297,7 +297,7 @@ def _test_queryVolsOwnersSymbols(w3, st, fin):
     print("_test_queryVolsOwnersSymbols()...")
     n = 500
     rng = BlockRange(st, fin, n, web3=w3)
-    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
+    V0, C0, SYM0 = queries.queryVolsOwnersSymbols(rng, CHAINID)
 
     assert CO2_addr in V0
     assert C0
@@ -410,7 +410,7 @@ def _test_dftool_allocations(tmp_path, start_block, fin_block):
 @enforce_types
 def _test_end_to_end_without_csvs(rng):
     print("_test_end_to_end_without_csvs()...")
-    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
+    V0, C0, SYM0 = queries.queryVolsOwnersSymbols(rng, CHAINID)
     V = {CHAINID: V0}
     C = {CHAINID: C0}
     SYM = {CHAINID: SYM0}
@@ -452,7 +452,7 @@ def _test_end_to_end_with_csvs(w3, rng, tmp_path, god_acct):
     csvs.save_rate_csv(CO2_sym, 1.00, csv_dir)
 
     # 2. simulate "dftool volsym"
-    (V0, C0, SYM0) = queries.queryVolsOwnersSymbols(rng, CHAINID)
+    V0, C0, SYM0 = queries.queryVolsOwnersSymbols(rng, CHAINID)
     csvs.save_nftvols_csv(V0, csv_dir, CHAINID)
     csvs.save_owners_csv(C0, csv_dir, CHAINID)
     csvs.save_symbols_csv(SYM0, csv_dir, CHAINID)
@@ -550,10 +550,10 @@ def _test_queryPassiveRewards(addresses, god_acct):
 
 def _test_ghost_consume(start_block, fin_block, rng, ghost_consume_nft_addr):
     print("_test_ghost_consume()...")
-    (V0, _, _) = queries.queryVolsOwnersSymbols(rng, CHAINID)
+    V0, _, _ = queries.queryVolsOwnersSymbols(rng, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == approx(1.0, 0.5)
 
-    (V0, _, _) = queries._queryVolsOwners(start_block, fin_block, CHAINID)
+    V0, _, _ = queries._queryVolsOwners(start_block, fin_block, CHAINID)
     assert V0[CO2_addr][ghost_consume_nft_addr] == 21.0
 
     swaps = queries._querySwaps(start_block, fin_block, CHAINID)
