@@ -34,6 +34,7 @@ ignore=
   LICENSE,
   docker-compose.yml,
   brownie-config.yaml,
+  PREDICTOOR-DISPENSE.md,
   Dockerfile,
   dfpy_docker,
   package-lock.json,
@@ -65,7 +66,7 @@ persistent=yes
 
 # When enabled, pylint would attempt to guess common misconfiguration and emit
 # user-friendly hints instead of false-positive error messages.
-suggestion-mode=yes
+# suggestion-mode=yes  # Deprecated in newer versions of pylint
 
 # Allow loading of arbitrary C extensions. Extensions are imported into the
 # active Python interpreter and may run arbitrary code.

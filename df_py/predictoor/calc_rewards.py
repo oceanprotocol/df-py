@@ -71,7 +71,7 @@ def calc_predictoor_rewards(
 
 
 def aggregate_predictoor_rewards(
-    predictoor_rewards: Dict[str, Dict[str, float]]
+    predictoor_rewards: Dict[str, Dict[str, float]],
 ) -> Dict[str, float]:
     # Aggregate total reward per predictor address
     aggregated_rewards: Dict[str, float] = {}
