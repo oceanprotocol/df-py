@@ -34,6 +34,7 @@ ignore=
   LICENSE,
   docker-compose.yml,
   brownie-config.yaml,
+  PREDICTOOR-DISPENSE.md,
   Dockerfile,
   dfpy_docker,
   package-lock.json,
