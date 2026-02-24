@@ -837,10 +837,12 @@ def do_new_veallocate():
 # ========================================================================
 @enforce_types
 def do_ve_set_allocation():
-    parser = argparse.ArgumentParser(description="""
+    parser = argparse.ArgumentParser(
+        description="""
         Allocate weight to veAllocate contract (for testing).
         Set to 0 to trigger resetAllocation event.
-    """)
+    """
+    )
     parser.add_argument("command", choices=["ve_set_allocation"])
     parser.add_argument("CHAINID", type=chain_type, help=CHAINID_EXAMPLES)
     parser.add_argument("amount", type=int, help="")
