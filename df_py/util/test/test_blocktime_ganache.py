@@ -172,24 +172,24 @@ def test_get_st_fin_blocks(w3):
     provider.make_request("evm_mine", [])
 
     # by block number
-    st, fin = get_st_fin_blocks(w3, "0", "1")
+    (st, fin) = get_st_fin_blocks(w3, "0", "1")
     assert st == 0
     assert fin > 0
 
     # get by latest fin
-    st, fin = get_st_fin_blocks(w3, "0", "latest")
+    (st, fin) = get_st_fin_blocks(w3, "0", "latest")
     assert st == 0
     assert fin > 0
 
     # get by thu fin
-    st, fin = get_st_fin_blocks(w3, "0", "thu")
+    (st, fin) = get_st_fin_blocks(w3, "0", "thu")
     assert st == 0
     assert fin > 0
 
     # get by datetime YYYY-MM-DD
     now_date = datetime.utcfromtimestamp(w3.eth.get_block("latest").timestamp)
     now_date = now_date.strftime("%Y-%m-%d")
-    st, fin = get_st_fin_blocks(w3, "0", now_date)
+    (st, fin) = get_st_fin_blocks(w3, "0", now_date)
     assert st == 0
     assert fin >= 0
 

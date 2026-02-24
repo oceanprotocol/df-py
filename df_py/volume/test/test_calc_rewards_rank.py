@@ -63,7 +63,7 @@ def _test_rank_N_NFTs(N: int):
     OCEAN_avail = 10.0
 
     # equal volumes
-    _, LP_addrs, stakes, nftvols = _rank_testvals(N, equal_vol=True)
+    (_, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=True)
     rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     assert len(rew) == N
     assert LP_addrs == sorted(rew.keys())
@@ -71,7 +71,7 @@ def _test_rank_N_NFTs(N: int):
     assert min(rew.values()) == max(rew.values())
 
     # unequal volumes
-    _, LP_addrs, stakes, nftvols = _rank_testvals(N, equal_vol=False)
+    (_, LP_addrs, stakes, nftvols) = _rank_testvals(N, equal_vol=False)
     rew, _ = calc_rewards_C1(stakes, nftvols, OCEAN_avail, do_rank=True)
     max_N = min(N, MAX_N_RANK_ASSETS)
     assert len(rew) == max_N

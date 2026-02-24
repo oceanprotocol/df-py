@@ -105,7 +105,7 @@ class RewardCalculator:
 
         self._freeze_attributes = True
 
-        rewardsperlp, rewardsinfo = self._reward_array_to_dicts()
+        (rewardsperlp, rewardsinfo) = self._reward_array_to_dicts()
 
         return rewardsperlp, rewardsinfo
 

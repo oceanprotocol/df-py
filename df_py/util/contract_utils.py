@@ -142,7 +142,7 @@ def get_contracts_addresses(config: dict) -> Optional[Dict[str, str]]:
 # Check singnet/snet-cli#142 (comment). You need to provide a lowercase address
 # then call web3.to_checksum_address() for software safety.
 def _checksum_contract_addresses(
-    network_addresses: Dict[str, Any],
+    network_addresses: Dict[str, Any]
 ) -> Optional[Dict[str, Any]]:
     for key, value in network_addresses.items():
         if key == "chainId":

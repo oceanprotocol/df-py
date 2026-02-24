@@ -8,6 +8,7 @@ from df_py.util import networkutil, vesting_schedule
 from df_py.util.base18 import from_wei
 from df_py.util.constants import ACTIVE_REWARDS_MULTIPLIER, PREDICTOOR_OCEAN_BUDGET
 
+
 predictoor_substream = "predictoor"
 volume_substream = "volume"
 test_params = [

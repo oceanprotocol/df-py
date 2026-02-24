@@ -140,7 +140,7 @@ def timestamp_to_block(web3, timestamp: Union[float, int]) -> int:
         return web3.eth.get_block("latest").number
 
     # pylint: disable=unused-variable
-    block_i, results = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
+    (block_i, results) = optimize.bisect(f, a, b, xtol=0.4, full_output=True)
 
     # uncomment to debug
     # ---
