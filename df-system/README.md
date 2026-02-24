@@ -38,7 +38,7 @@ The all.sh script is used to run the full df-py flow and calculate rewards amoun
 - Retrieves rate data for a selection of cryptocurrencies, spanning the date range from the previously defined 'date' to 'now'
 - Fetches volumes, symbols, allocations and veOCEAN balances by calling the `dftool volsym`, `vebals`, and `allocations` commands.
 - Calculates the active and passive rewards.
-- Moves all CSV files generated during the process from /tmp/dfpy directory to the ~/.dfcsv dicretory.
+- Moves all CSV files generated during the process from /tmp/dfpy directory to the ~/.dfcsv directory.
 
 ### nftinfo.sh
 
