@@ -144,7 +144,7 @@ def test_epoch_based_rewards_bound_single_epoch_capture():
         mock.return_value = {
             # 10 possible weekly epochs. A predictoor active in one epoch can
             # win at most 1/10 of this contract's budget.
-            "0xContract1": MockPredictContract(WEEK_SECONDS / 10),
+            "0xContract1": MockPredictContract(WEEK_SECONDS // 10),
         }
 
         whale = Predictoor("0x1")
@@ -159,7 +159,7 @@ def test_epoch_based_rewards_do_not_compare_profit_across_epochs():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
         mock.return_value = {
             # Two possible weekly epochs, so each epoch has 50 tokens.
-            "0xContract1": MockPredictContract(WEEK_SECONDS / 2),
+            "0xContract1": MockPredictContract(WEEK_SECONDS // 2),
         }
 
         whale = Predictoor("0x1")
