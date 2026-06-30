@@ -53,7 +53,7 @@ def calc_predictoor_rewards(
 
     # dict to store rewards per contract
     rewards: Dict[str, Dict[str, float]] = {
-        contract: {} for contract in predictoor_contracts.keys()
+        contract: {} for contract in predictoor_contracts
     }
 
     for contract, contract_obj in predictoor_contracts.items():
