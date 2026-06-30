@@ -69,7 +69,7 @@ def calc_predictoor_rewards(
                     slot_profits.get(pdr_address, 0.0) + prediction.revenue
                 )
 
-        seconds_per_epoch = contract_obj.blocks_per_epoch
+        seconds_per_epoch = int(contract_obj.blocks_per_epoch)
         num_epochs = int(WEEK_SECONDS / seconds_per_epoch)
         if num_epochs == 0:
             print("No epochs for contract: ", contract)
