@@ -10,7 +10,7 @@
 
 CLI-based Data Farming (DF) & veOCEAN (VE) backend. It's used for weekly "dispense" ops and to create data for VE/DF frontend.
 
-Usage: in console, type `dftool` to see further commads.
+Usage: in console, type `dftool` to see further commands.
 
 Data flow and csvs: See "Data Flow in dftool" **[GSlides 2&3](https://docs.google.com/presentation/d/15Zys9X5eLzlApqhobdGpn9SdGrFuKyr2W14D4dSSzgk/edit?usp=share_link)**
 
