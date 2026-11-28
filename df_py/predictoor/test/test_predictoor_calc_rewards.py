@@ -5,6 +5,7 @@ from unittest.mock import patch
 import pytest
 
 from df_py.predictoor.calc_rewards import (
+    WEEK_SECONDS,
     aggregate_predictoor_rewards,
     calc_predictoor_rewards,
 )
@@ -13,10 +14,18 @@ from df_py.util.networkutil import DEV_CHAINID
 from df_py.util.reward_shaper import RewardShaper
 
 
+class MockPredictContract:
+    def __init__(self, seconds_per_epoch):
+        self.blocks_per_epoch = seconds_per_epoch
+
+
 @pytest.fixture(autouse=True)
 def mock_query_functions():
     with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
-        mock.return_value = {"0xContract1": "", "0xContract2": ""}
+        mock.return_value = {
+            "0xContract1": MockPredictContract(WEEK_SECONDS),
+            "0xContract2": MockPredictContract(WEEK_SECONDS),
+        }
         yield
 
 
@@ -128,6 +137,43 @@ def test_reward_calculation_with_negative():
     rewards = calc_predictoor_rewards({"0x1": p1}, 1000, DEV_CHAINID)
     assert len(rewards["0xContract1"]) == 0
     assert len(rewards["0xContract2"]) == 0
+
+
+def test_epoch_based_rewards_bound_single_epoch_capture():
+    with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
+        mock.return_value = {
+            # 10 possible weekly epochs. A predictoor active in one epoch can
+            # win at most 1/10 of this contract's budget.
+            "0xContract1": MockPredictContract(WEEK_SECONDS // 10),
+        }
+
+        whale = Predictoor("0x1")
+        whale.add_prediction(Prediction(1, 10000.0, 0.0, "0xContract1"))
+
+        rewards = calc_predictoor_rewards({"0x1": whale}, 100, DEV_CHAINID)
+
+        assert rewards["0xContract1"]["0x1"] == 10.0
+
+
+def test_epoch_based_rewards_do_not_compare_profit_across_epochs():
+    with patch("df_py.predictoor.calc_rewards.query_predictoor_contracts") as mock:
+        mock.return_value = {
+            # Two possible weekly epochs, so each epoch has 50 tokens.
+            "0xContract1": MockPredictContract(WEEK_SECONDS // 2),
+        }
+
+        whale = Predictoor("0x1")
+        whale.add_prediction(Prediction(1, 10000.0, 0.0, "0xContract1"))
+
+        small = Predictoor("0x2")
+        small.add_prediction(Prediction(2, 1.0, 0.0, "0xContract1"))
+
+        rewards = calc_predictoor_rewards(
+            {"0x1": whale, "0x2": small}, 100, DEV_CHAINID
+        )
+
+        assert rewards["0xContract1"]["0x1"] == 50.0
+        assert rewards["0xContract1"]["0x2"] == 50.0
 
 
 def test_calc_predictoor_rewards_fuzz():
